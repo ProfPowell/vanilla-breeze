@@ -34,7 +34,9 @@ crumbLabel: Data Attributes
       <li>Add <code>data-math</code> to a <code>&lt;code&gt;</code> element with LaTeX source as its text content</li>
       <li>Add <code>data-mathml</code> with the precompiled MathML string</li>
       <li>On page load, the script reads <code>data-mathml</code>, injects a <code>&lt;math&gt;</code> element, and hides the original <code>&lt;code&gt;</code></li>
-      <li>Without <code>data-mathml</code>, the LaTeX source displays as-is &mdash; readable fallback with no JS dependency</li>
+      <li>Without <code>data-mathml</code>, or in a browser that cannot render MathML, the LaTeX source displays as-is &mdash; readable fallback with no JS dependency</li>
+      <li>The rendered <code>&lt;math&gt;</code> gets <code>alttext</code> set to the LaTeX source (unless your MathML already has one)</li>
+      <li>The <code>data-mathml</code> string is sanitized before insertion: only MathML elements survive, and event handlers, <code>href</code>, <code>src</code>, <code>style</code>, <code>id</code>, <code>name</code> and <code>xlink:</code>/<code>xml:</code> attributes are removed. Treat it as author-controlled markup all the same &mdash; generate it at build time, not from user input.</li>
     </ol>
   </section>
 
@@ -60,6 +62,21 @@ crumbLabel: Data Attributes
           <td>Precompiled MathML string to inject. Without this, the element shows the raw LaTeX source.</td>
         </tr>
         <tr>
+          <td><code>data-label-copy</code></td>
+          <td>string</td>
+          <td>Copy button text for <code>copyable</code>. Default <code>"Copy LaTeX"</code>. Read from the element or its nearest ancestor that sets it, so one attribute on <code>&lt;article&gt;</code> localises every equation.</td>
+        </tr>
+        <tr>
+          <td><code>data-label-copied</code></td>
+          <td>string</td>
+          <td>Announced (and shown on the button for two seconds) after a successful copy. Default <code>"Copied to clipboard"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-label-copy-failed</code></td>
+          <td>string</td>
+          <td>Announced (and shown on the button) when the clipboard refuses. Default <code>"Copy failed"</code>.</td>
+        </tr>
+        <tr>
           <td><code>data-math-state</code></td>
           <td>string</td>
           <td>Set automatically: <code>"rendered"</code> when MathML injected, <code>"source"</code> when showing raw LaTeX.</td>
@@ -67,7 +84,7 @@ crumbLabel: Data Attributes
         <tr>
           <td><code>data-math-init</code></td>
           <td>boolean</td>
-          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+          <td>State hook, set once the element is enhanced. Do not set it. Enhancement is tracked internally, so a cloned equation is adopted (not rendered twice) and its copy button works.</td>
         </tr>
       </tbody>
     </table>
@@ -85,15 +102,15 @@ crumbLabel: Data Attributes
       <tbody>
         <tr>
           <td><code>inline</code></td>
-          <td>Renders inline math, wrapping in a <code>&lt;span&gt;</code> instead of a <code>&lt;div&gt;</code>.</td>
+          <td>Renders inline math, wrapped in a <code>&lt;span&gt;</code> instead of a block wrapper.</td>
         </tr>
         <tr>
           <td><code>numbered</code></td>
-          <td>Auto-increments the equation counter and displays a number. Registers in <code>window.VBMath.equations</code> if the element has an <code>id</code>.</td>
+          <td>Displays an equation number. Numbers follow document order and are renumbered when equations are added or removed. Equations with an <code>id</code> are listed in <code>window.VBMath.equations</code> (<code>{ id, number, latex }</code>, rebuilt in document order).</td>
         </tr>
         <tr>
           <td><code>copyable</code></td>
-          <td>Clicking the rendered math copies the original LaTeX source to the clipboard with a screen reader announcement.</td>
+          <td>Adds a <strong>Copy LaTeX</strong> <code>&lt;button&gt;</code> after the rendered math. Activating it copies the original LaTeX source and announces the result.</td>
         </tr>
       </tbody>
     </table>
@@ -103,14 +120,12 @@ crumbLabel: Data Attributes
     <h2>Inline Math</h2>
     <p>Use the <code>inline</code> token for math that flows within paragraph text.</p>
 
-    <div class="example">
-      <p>The area is
-        <code data-math="inline"
-          data-mathml="<math><mi>&pi;</mi><msup><mi>r</mi><mn>2</mn></msup></math>">
-          \pi r^2
-        </code>.
-      </p>
-    </div>
+    <browser-window
+      src="/docs/examples/demos/data-math-inline.html"
+      url="https://vanilla-breeze.com/data-math/inline"
+      title="Inline Math"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Inline math" data-escape><p>The area is
   <code data-math="inline"
@@ -124,12 +139,12 @@ crumbLabel: Data Attributes
     <h2>Numbered Equations</h2>
     <p>Combine <code>numbered</code> with an <code>id</code> for linkable, numbered equations.</p>
 
-    <div class="example">
-      <code data-math="numbered" id="eq-energy-demo"
-        data-mathml="<math display='block'><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></math>">
-        E = mc^2
-      </code>
-    </div>
+    <browser-window
+      src="/docs/examples/demos/data-math-numbered.html"
+      url="https://vanilla-breeze.com/data-math/numbered"
+      title="Numbered Equations"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Numbered equation" data-escape><code data-math="numbered" id="eq-energy"
   data-mathml="<math display='block'><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></math>">
@@ -141,14 +156,14 @@ crumbLabel: Data Attributes
 
   <section>
     <h2>Copyable Math</h2>
-    <p>The <code>copyable</code> token adds a click-to-copy interaction. Clicking copies the LaTeX source to the clipboard and announces it to screen readers.</p>
+    <p>The <code>copyable</code> token adds a <strong>Copy LaTeX</strong> button after the rendered math. Activating it (click, Enter or Space) copies the LaTeX source to the clipboard, announces the result through VB's shared live region and shows it on the button for two seconds. A refused copy (no clipboard permission, insecure context) is announced too. Localise the texts with <code>data-label-copy</code>, <code>data-label-copied</code> and <code>data-label-copy-failed</code> on the element or an ancestor.</p>
 
-    <div class="example">
-      <code data-math="copyable"
-        data-mathml="<math display='block'><msubsup><mo>&int;</mo><mn>0</mn><mo>&infin;</mo></msubsup><msup><mi>e</mi><mrow><mo>-</mo><msup><mi>x</mi><mn>2</mn></msup></mrow></msup><mi>d</mi><mi>x</mi><mo>=</mo><mfrac><msqrt><mi>&pi;</mi></msqrt><mn>2</mn></mfrac></math>">
-        \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
-      </code>
-    </div>
+    <browser-window
+      src="/docs/examples/demos/data-math-copyable.html"
+      url="https://vanilla-breeze.com/data-math/copyable"
+      title="Copyable Math"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Copyable math" data-escape><code data-math="copyable"
   data-mathml="<math display='block'><msubsup><mo>&int;</mo><mn>0</mn><mo>&infin;</mo></msubsup><msup><mi>e</mi><mrow><mo>-</mo><msup><mi>x</mi><mn>2</mn></msup></mrow></msup><mi>d</mi><mi>x</mi><mo>=</mo><mfrac><msqrt><mi>&pi;</mi></msqrt><mn>2</mn></mfrac></math>">
@@ -174,6 +189,40 @@ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
   </section>
 
   <section>
+    <h2>Styling</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Hook</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>[data-math-rendered]</code></td>
+          <td>The wrapper holding the rendered <code>&lt;math&gt;</code> (a block wrapper, or a <code>&lt;span&gt;</code> for <code>inline</code>). It takes the source's <code>id</code>, so <code>:target</code> highlights a linked equation.</td>
+        </tr>
+        <tr>
+          <td><code>[data-math-numbered]</code></td>
+          <td>Numbered wrapper; a grid with the number in <code>::after</code>.</td>
+        </tr>
+        <tr>
+          <td><code>[data-equation-number]</code></td>
+          <td>The equation's number on the wrapper (read by <code>attr()</code> in <code>::after</code>).</td>
+        </tr>
+        <tr>
+          <td><code>[data-math-copyable]</code>, <code>button[data-math-copy]</code></td>
+          <td>Copyable wrapper and its button. The button carries <code>data-state="copied"</code> or <code>"failed"</code> for two seconds after use.</td>
+        </tr>
+        <tr>
+          <td><code>[data-math-state="source"]</code></td>
+          <td>The fallback: source shown as code.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
     <h2>Events</h2>
     <table class="props-table">
       <thead>
@@ -187,7 +236,7 @@ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
         <tr>
           <td><code>math:rendered</code></td>
           <td><code>{ latex, inline, number }</code></td>
-          <td>Fired after MathML is injected. <code>latex</code> is the source text, <code>inline</code> is a boolean, <code>number</code> is the equation number (or null).</td>
+          <td>Fired on the source element after MathML is injected. <code>latex</code> is the source text, <code>inline</code> is a boolean, <code>number</code> is the equation number at that moment (or null); a later insert above it renumbers the wrapper.</td>
         </tr>
       </tbody>
     </table>
@@ -226,9 +275,19 @@ document.body.appendChild(code);
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>The injected <code>&lt;math&gt;</code> element is natively understood by screen readers (VoiceOver, NVDA)</li>
-      <li>The original LaTeX source is preserved in the DOM as hidden fallback content</li>
-      <li>Copy confirmation uses <code>aria-live="polite"</code> for screen reader announcements</li>
-      <li>Numbered equations are linkable via <code>id</code> and standard <code>&lt;a href&gt;</code></li>
+      <li>The injected <code>&lt;math&gt;</code> is read as math by screen readers with MathML support (VoiceOver; NVDA and JAWS with a math add-on such as MathCAT). Support elsewhere, notably TalkBack, is limited.</li>
+      <li>For those, the <code>&lt;math&gt;</code> carries <code>alttext</code> with the LaTeX source. Where LaTeX is a poor spoken form, put a plain-language <code>alttext</code> in your MathML (it is kept), or describe the equation in the surrounding text.</li>
+      <li>The original LaTeX source stays in the DOM, hidden</li>
+      <li>Copy results are announced through VB's shared <code>role="status"</code> live region (a refused copy through the assertive one), placed outside the button so the button's name does not change for assistive tech mid-announcement</li>
+      <li>Numbered equations are linkable via <code>id</code> and standard <code>&lt;a href&gt;</code>; the number is drawn in CSS, so write "Equation 1" in your link text</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/math/"><code>&lt;math&gt;</code></a> &mdash; MathML itself, its styling and the math font.</li>
+      <li><a href="/docs/elements/native/code/"><code>&lt;code&gt;</code></a> &mdash; the element that carries the LaTeX source.</li>
+      <li><a href="/docs/attributes/data-copy/"><code>data-copy</code></a> &mdash; copy buttons for any text. <code>copyable</code> is the math-specific version that copies the LaTeX behind a rendered equation.</li>
     </ul>
   </section>

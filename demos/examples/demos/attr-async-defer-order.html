@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>async and defer: script execution order</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+  <script>
+    // Classic inline script in <head>: runs immediately, before <body> is parsed.
+    window.runLog = [`Classic inline script in <head> (body parsed: ${Boolean(document.body)})`];
+  </script>
+  <script type="module">
+    // Module script in <head>: deferred, so it runs after the whole document is parsed.
+    window.runLog.push(`Module script in <head> (list in DOM: ${Boolean(document.querySelector('#run-order'))})`);
+  </script>
+  <script defer>
+    // defer is ignored on classic inline scripts: this runs straight away.
+    window.runLog.push('Classic inline script with defer (ignored, ran immediately)');
+  </script>
+</head>
+<body data-layout="stack" data-layout-gap="m">
+  <h1>Order the scripts on this page ran in</h1>
+  <ol id="run-order"></ol>
+  <p>The module was written first in <code>&lt;head&gt;</code> but ran after the parser reached the end of the document.</p>
+
+  <script>
+    window.runLog.push('Classic inline script at the end of <body>');
+    document.addEventListener('DOMContentLoaded', () => {
+      window.runLog.push('DOMContentLoaded fired (after deferred and module scripts)');
+      const list = document.querySelector('#run-order');
+      for (const entry of window.runLog) {
+        const li = document.createElement('li');
+        li.textContent = entry;
+        list.append(li);
+      }
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

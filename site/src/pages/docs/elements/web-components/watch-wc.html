@@ -13,7 +13,7 @@ crumbLabel: Web Components
 <section>
   <h2>Overview</h2>
   <p><code>&lt;watch-wc&gt;</code> wraps the <a href="/docs/attributes/data-watch-page/"><code>data-watch-page</code></a> button into a one-tag component. Drop it anywhere on a page and a user can toggle whether that page is in their watch list. State persists in <a href="/docs/concepts/architecture-decisions/">VBStore</a> under the <code>watches</code> namespace; the bell&rsquo;s <a href="/docs/elements/web-components/notification-wc/">Watching tab</a> surfaces the list.</p>
-  <p>The component is a thin author convenience &mdash; the watch state machine still lives in <code>src/utils/page-watch-init.js</code>. The wrapper just renders <code>&lt;button data-watch-page&gt;</code> with the right markup, label, and icon for the chosen variant, and re-syncs across instances when watch state changes anywhere on the page.</p>
+  <p>The component is a thin author convenience &mdash; the watch state machine still lives in <code>src/utils/page-watch-init.js</code>. The wrapper renders a <code>&lt;button data-watch-page aria-pressed&gt;</code> with the right markup, label, and icon for the chosen variant, then repaints its label and icon whenever <code>aria-pressed</code> changes. The state script keeps <code>aria-pressed</code> in step with the store: on load (so an already-watched page shows &ldquo;Watching&rdquo; straight away), on click, and when the page is watched or unwatched anywhere else on the page.</p>
 </section>
 
 <section>
@@ -24,19 +24,18 @@ crumbLabel: Web Components
     src="/docs/examples/demos/watch-wc-basic.html"
     url="https://vanilla-breeze.com/watch"
     title="watch-wc variants"
-    style="min-height: 16rem;"
     shadow>
   </browser-window>
 
   <code-block language="html" label="The three variants" data-escape><watch-wc></watch-wc>                          <!-- icon (default) -->
 <watch-wc variant="compact"></watch-wc>        <!-- small icon + text -->
 <watch-wc variant="button"></watch-wc>         <!-- full ghost button -->
-<watch-wc variant="button" label="Save for later"></watch-wc></code-block>
+<watch-wc variant="button" label="Save for later"></watch-wc>  <!-- constant label --></code-block>
 </section>
 
 <section>
   <h2>Where to put it</h2>
-  <p>The four docs layouts (<code>guide</code>, <code>element</code>, <code>attribute</code>, <code>pattern</code>) ship a <code>&lt;watch-wc&gt;</code> inside their <code>&lt;page-tools&gt;</code> sticky sidebar &mdash; that&rsquo;s the eye icon you see on this page next to print and share. Other natural places: the floating <code>fab-stack</code>, an article header, or a sidebar block.</p>
+  <p>The four docs layouts (<code>guide</code>, <code>element</code>, <code>attribute</code>, <code>pattern</code>) ship a <code>&lt;watch-wc&gt;</code> inside their <code>&lt;page-tools&gt;</code> sticky sidebar &mdash; that&rsquo;s the bookmark icon you see on this page next to print and share (it switches to a bookmark with a check mark while you watch the page). Other natural places: the floating <code>fab-stack</code>, an article header, or a sidebar block.</p>
 
   <code-block language="html" label="Inside page-tools" data-escape><page-tools data-position="sticky" data-orientation="horizontal">
   <print-page></print-page>
@@ -51,10 +50,15 @@ crumbLabel: Web Components
     <thead><tr><th>Attribute</th><th>Values</th><th>Description</th></tr></thead>
     <tbody>
       <tr><td><code>variant</code></td><td><code>icon</code> (default), <code>compact</code>, <code>button</code></td><td>Visual preset. <code>icon</code> is a 2.25-rem ghost icon button, <code>compact</code> is small icon plus text, <code>button</code> is a full-size ghost button.</td></tr>
-      <tr><td><code>label</code></td><td>string</td><td>Override the visible text in <code>compact</code> and <code>button</code> variants. Default toggles between &ldquo;Watch for updates&rdquo; and &ldquo;Watching&rdquo;.</td></tr>
-      <tr><td><code>server-sync</code></td><td>boolean</td><td>Per-instance opt-in for server-side sync via <a href="/docs/concepts/service-contracts/"><code>VBService('notify')</code></a>. Sets <code>window.vbPageWatch.serverSync = true</code> before the page-watch script evaluates.</td></tr>
+      <tr><td><code>label</code></td><td>string</td><td>Constant visible text for the <code>compact</code> and <code>button</code> variants, used in both states. Without it the text toggles between <code>data-label-watch</code> and <code>data-label-watching</code>.</td></tr>
+      <tr><td><code>server-sync</code></td><td>boolean</td><td>Turns on server-side sync via <a href="/docs/concepts/service-contracts/"><code>VBService('notify')</code></a> for the <strong>whole page</strong>, not just this instance: it sets the page-global <code>window.vbPageWatch.serverSync</code> flag, which every watch button and the notification panel&rsquo;s unwatch then use. Equivalent to <code>&lt;meta name="vb-page-watch-server" content="true"&gt;</code>.</td></tr>
+      <tr><td><code>data-label-watch</code></td><td>string</td><td>Text of the <code>compact</code> / <code>button</code> variants while the page is not watched. Default &ldquo;Watch for updates&rdquo;.</td></tr>
+      <tr><td><code>data-label-watching</code></td><td>string</td><td>Text of the <code>compact</code> / <code>button</code> variants while the page is watched. Default &ldquo;Watching&rdquo;.</td></tr>
+      <tr><td><code>data-label-action</code></td><td>string</td><td>Icon variant: accessible name (<code>aria-label</code>) and tooltip while not watched. Default &ldquo;Watch this page for updates&rdquo;.</td></tr>
+      <tr><td><code>data-label-stop</code></td><td>string</td><td>Icon variant: tooltip while watched. Default &ldquo;Stop watching this page&rdquo;.</td></tr>
     </tbody>
   </table>
+  <p>Changing <code>variant</code>, <code>label</code> or a <code>data-label-*</code> attribute after upgrade re-renders the button.</p>
 </section>
 
 <section>
@@ -71,19 +75,33 @@ crumbLabel: Web Components
 
 <section>
   <h2>Multiple instances stay in sync</h2>
-  <p>Put two or three <code>&lt;watch-wc&gt;</code> elements on the same page (article header, sticky sidebar, footer call-to-action) and they&rsquo;ll stay synchronised &mdash; clicking any one of them updates the others. The component listens for <code>page-watch:add</code> / <code>page-watch:remove</code> on the document and re-reads VBStore to repaint its own button.</p>
+  <p>Put two or three <code>&lt;watch-wc&gt;</code> elements on the same page (article header, sticky sidebar, footer call-to-action) and they&rsquo;ll stay synchronised &mdash; clicking any one of them updates the others, and so do plain <code>[data-watch-page]</code> buttons and the &times; in the notification panel&rsquo;s Watching tab. The state script listens for <code>page-watch:add</code> / <code>page-watch:remove</code> on the document and repaints every watch button from VBStore.</p>
+  <p>Watches are keyed by a normalised path, so <code>/guide</code>, <code>/guide/</code> and <code>/guide/index.html</code> are the same watch. Entries saved under an older un-normalised key move to the new key the next time the page loads.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The button is a toggle: <code>aria-pressed="true"</code> while the page is watched, <code>"false"</code> otherwise. The icon (<code>bookmark</code> / <code>bookmark-check</code>) is decorative (<code>aria-hidden</code>).</li>
+    <li>The <code>icon</code> variant has no visible text, so it is named by <code>aria-label</code> (<code>data-label-action</code>); its tooltip says what a click will do.</li>
+    <li>The <code>compact</code> and <code>button</code> variants carry no <code>aria-label</code>: the visible text <em>is</em> the accessible name, so speech-input users can say what they see (WCAG 2.5.3 Label in Name). Use <code>label</code> for a text that stays the same in both states.</li>
+    <li>Localise every string with the <code>data-label-*</code> attributes.</li>
+  </ul>
 </section>
 
 <section>
   <h2>Without JavaScript</h2>
-  <p>The component is hidden via <code>watch-wc:not(:defined)</code> until JS upgrades it. If you want a no-JS fallback (e.g. a server-rendered &ldquo;subscribe by email&rdquo; link), put it inside the element &mdash; the wrapper appends its own button after upgrade and the static fallback can be styled away with a sibling selector or removed entirely.</p>
+  <p>Watching needs JavaScript (the state lives in the browser), so there is nothing to show by default: an empty <code>&lt;watch-wc&gt;</code> renders nothing until it upgrades. For a no-JS fallback, put something that works without JS inside the element, such as a feed or &ldquo;subscribe by email&rdquo; link. It shows until the component upgrades and is hidden from then on, so you never get two controls.</p>
+  <code-block language="html" label="No-JS fallback" data-escape><watch-wc variant="button">
+  <a href="/feed.xml">Follow updates by feed</a>
+</watch-wc></code-block>
 </section>
 
 <section>
   <h2>Related</h2>
   <ul>
     <li><a href="/docs/attributes/data-watch-page/"><code>data-watch-page</code></a> &mdash; the underlying attribute pattern this component wraps</li>
-    <li><a href="/docs/elements/web-components/notification-wc/"><code>&lt;notification-wc&gt;</code></a> &mdash; surfaces the watch list in its Watching tab</li>
+    <li><a href="/docs/elements/web-components/notification-wc/"><code>&lt;notification-wc&gt;</code></a> &mdash; surfaces the watch list in its Watching tab, and a &ldquo;content changed&rdquo; notice when a watched page changed since your last visit</li>
     <li><a href="/docs/concepts/service-contracts/">Service contracts</a> &mdash; the <code>/go/notify/subscribe</code> endpoint server-sync uses</li>
   </ul>
 </section>

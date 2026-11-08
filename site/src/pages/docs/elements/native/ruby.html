@@ -13,16 +13,16 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;ruby&gt;</code> element represents a ruby annotation &mdash; small text above or beside base text, typically showing pronunciation. Ruby annotations are essential for East Asian typography (furigana in Japanese, pinyin in Chinese) but can also help with pronunciation guides in any language.</p>
+    <p>The <code>&lt;ruby&gt;</code> element represents a ruby annotation &mdash; small text above or beside base text, typically showing pronunciation. Ruby annotations are essential for East Asian typography (furigana in Japanese, pinyin or bopomofo in Chinese) but can also help with pronunciation guides in any language.</p>
     <p>A ruby annotation consists of base text, ruby text (<a href="/docs/elements/native/rt/"><code>&lt;rt&gt;</code></a>), and optional fallback parentheses (<a href="/docs/elements/native/rp/"><code>&lt;rp&gt;</code></a>).</p>
-    <p>VB provides <a href="/docs/i18n/">i18n-aware styling</a>: CJK script fonts for ruby text, and a <code>data-ruby</code> visibility system to control when annotations appear.</p>
+    <p>Annotations are <strong>visible by default</strong> on every page, whatever its language. VB adds <a href="/docs/i18n/">i18n-aware styling</a> on top: a CJK script face for CJK readings, and an opt-in <code>data-ruby</code> attribute to hide annotations on any part of the page.</p>
   </section>
 
   <section>
     <h2>When to Use</h2>
     <ul>
       <li><strong>Japanese furigana:</strong> Pronunciation guides for kanji</li>
-      <li><strong>Chinese pinyin:</strong> Romanized pronunciation for Chinese characters</li>
+      <li><strong>Chinese pinyin or bopomofo:</strong> Pronunciation for Chinese characters</li>
       <li><strong>Korean:</strong> Hanja pronunciation guides</li>
       <li><strong>Language learning:</strong> Pronunciation for unfamiliar words in any language</li>
       <li><strong>Accessibility:</strong> Helping users with reading difficulties</li>
@@ -34,25 +34,39 @@ crumbLabel: Native Elements
 
     <browser-window src="/docs/snippets/demos/ruby-annotations.html" url="ruby-annotations.html" title="Ruby annotations" shadow></browser-window>
 
-    <code-block language="html" show-lines label="Japanese furigana" data-escape><p>
+    <p>Set <code>lang</code> on the paragraph (or the <code>&lt;ruby&gt;</code>) so the reading gets the right script face and screen readers the right voice. Tag romanised readings such as pinyin with <code>lang="zh-Latn"</code> so they keep the Latin face.</p>
+
+    <code-block language="html" show-lines label="Japanese furigana" data-escape><p lang="ja">
   <ruby>東京<rp>(</rp><rt>とうきょう</rt><rp>)</rp></ruby>は日本の首都です。
 </p></code-block>
-    <code-block language="html" show-lines label="Chinese pinyin" data-escape><p>
-  <ruby>北京<rp>(</rp><rt>Běijīng</rt><rp>)</rp></ruby>
+    <code-block language="html" show-lines label="Chinese pinyin in English text" data-escape><p>
+  <ruby lang="zh">北京<rp>(</rp><rt lang="zh-Latn">Běijīng</rt><rp>)</rp></ruby>
   is the capital of China.
 </p></code-block>
-    <code-block language="html" show-lines label="Per-character annotations" data-escape><ruby>
-  漢 <rp>(</rp><rt>かん</rt><rp>)</rp>
-  字 <rp>(</rp><rt>じ</rt><rp>)</rp>
-</ruby></code-block>
     <code-block language="html" show-lines label="English pronunciation" data-escape><p>
   How to pronounce <ruby>Versailles<rp>(</rp><rt>vair-SIGH</rt><rp>)</rp></ruby>.
 </p></code-block>
   </section>
 
   <section>
+    <h2>Mono Ruby vs Group Ruby</h2>
+    <p><strong>Mono ruby</strong> pairs each character with its own reading: several base/<code>&lt;rt&gt;</code> pairs inside one <code>&lt;ruby&gt;</code>. Use it when each character's reading is separable, so each reading sits over its own character.</p>
+    <p><strong>Group ruby</strong> gives one reading to a whole word. Use it for compounds whose reading cannot be split per character (jukujikun such as 明日 <em>ashita</em>).</p>
+    <code-block language="html" show-lines label="Mono ruby (per character)" data-escape><ruby lang="ja">漢<rt>かん</rt>字<rt>じ</rt></ruby></code-block>
+    <code-block language="html" show-lines label="Group ruby (one reading for the compound)" data-escape><ruby lang="ja">明日<rt>あした</rt></ruby></code-block>
+  </section>
+
+  <section>
+    <h2>Bopomofo (Zhuyin)</h2>
+    <p>In Taiwan, bopomofo readings are set vertically to the right of each character. Tag the readings <code>lang="zh-Bopo"</code> and VB sets <code>ruby-position: inter-character</code> on the ruby. Firefox and Safari honour it; Chromium ignores the value and keeps the reading above the character.</p>
+    <code-block language="html" show-lines label="Bopomofo readings" data-escape><p lang="zh-Hant-TW">
+  <ruby>注<rt lang="zh-Bopo">ㄓㄨˋ</rt>音<rt lang="zh-Bopo">ㄧㄣ</rt></ruby>
+</p></code-block>
+  </section>
+
+  <section>
     <h2>Ruby Visibility Control</h2>
-    <p>VB's <a href="/docs/i18n/">i18n system</a> provides a <code>data-ruby</code> attribute on <code>&lt;html&gt;</code> to control when annotations display:</p>
+    <p>Annotations show unless you hide them. Put <code>data-ruby</code> on any element &mdash; <code>&lt;html&gt;</code>, a section, a paragraph, or the <code>&lt;ruby&gt;</code> itself &mdash; to control the annotations inside it. The nearest <code>data-ruby</code> wins, so you can hide readings on a whole page and turn them back on for one passage.</p>
 
     <browser-window src="/docs/snippets/demos/ruby-visibility.html" url="ruby-visibility.html" title="Ruby visibility" shadow></browser-window>
 
@@ -65,49 +79,60 @@ crumbLabel: Native Elements
       </thead>
       <tbody>
         <tr>
+          <td>(absent)</td>
+          <td>Visible (browser default)</td>
+        </tr>
+        <tr>
           <td><code>show</code></td>
-          <td>Always visible</td>
+          <td>Visible. Use it to undo a <code>hide</code> or <code>auto</code> set further out.</td>
         </tr>
         <tr>
           <td><code>hide</code></td>
-          <td>Visually hidden, kept in DOM for screen readers</td>
+          <td>Visually hidden: the annotation collapses to zero size, so the line gets no extra height. It stays in the accessibility tree, so screen readers still read it.</td>
         </tr>
         <tr>
           <td><code>auto</code></td>
-          <td>Visible for CJK languages (<code>ja</code>, <code>zh</code>, <code>ko</code>), hidden otherwise</td>
-        </tr>
-        <tr>
-          <td>(absent)</td>
-          <td>Browser default (always visible)</td>
+          <td>Visible only when the annotation's own language is <code>ja</code>, <code>zh</code>, <code>ko</code>, <code>yue</code> or <code>wuu</code> (from <code>lang</code> on the <code>&lt;rt&gt;</code>, the <code>&lt;ruby&gt;</code> or an ancestor); others are hidden like <code>hide</code>.</td>
         </tr>
       </tbody>
     </table>
 
     <code-block language="html" show-lines label="Ruby visibility markup" data-escape><html lang="ja" data-ruby="auto">
 <body>
-  <!-- Ruby visible (CJK language) -->
+  <!-- Visible: the annotation's language is ja -->
   <ruby>漢字<rt>かんじ</rt></ruby>
 
   <section lang="en">
-    <!-- Ruby hidden (non-CJK) -->
+    <!-- Hidden: the annotation's language is en -->
     <ruby>ruby<rt>annotation</rt></ruby>
   </section>
+
+  <!-- Readings hidden for a reading test, except one passage -->
+  <article data-ruby="hide">
+    <p><ruby>試験<rt>しけん</rt></ruby></p>
+    <p data-ruby="show"><ruby>例<rt>れい</rt></ruby></p>
+  </article>
 </body>
 </html></code-block>
-    <code-block language="css" show-lines label="Ruby visibility CSS (simplified)" data-escape>/* data-ruby="show" — always visible */
-:root[data-ruby="show"] rt { display: block; }
-
-/* data-ruby="hide" — visually hidden, accessible */
-:root[data-ruby="hide"] rt {
-  position: absolute; width: 1px; height: 1px;
-  overflow: hidden; clip: rect(0,0,0,0);
+    <code-block language="css" show-lines label="Ruby visibility CSS" data-escape>/* hide: from the nearest [data-ruby="hide"] down to the next [data-ruby] */
+@scope ([data-ruby="hide"]) to ([data-ruby]) {
+  :scope:is(rt),
+  rt {
+    font-size: 0;
+    line-height: 0;
+    clip-path: inset(50%);
+  }
 }
 
-/* data-ruby="auto" — visible for CJK only */
-:root[data-ruby="auto"] rt { /* hidden by default */ }
-:root[data-ruby="auto"]:lang(ja) rt,
-:root[data-ruby="auto"]:lang(zh) rt,
-:root[data-ruby="auto"]:lang(ko) rt { /* shown */ }</code-block>
+/* auto: hide annotations whose own language is not CJK */
+@scope ([data-ruby="auto"]) to ([data-ruby]) {
+  rt:not(:lang(ja), :lang(zh), :lang(ko), :lang(yue), :lang(wuu)) {
+    font-size: 0;
+    line-height: 0;
+    clip-path: inset(50%);
+  }
+}</code-block>
+    <p>Hidden annotations are not <code>visibility: hidden</code> or <code>display: none</code>: both would remove the reading from the accessibility tree. They also stay in the ruby layout (no <code>position: absolute</code>), so showing them again needs no relayout tricks. <code>&lt;rp&gt;</code> stays hidden in every mode &mdash; see <a href="/docs/elements/native/rp/"><code>&lt;rp&gt;</code></a>.</p>
   </section>
 
   <section>
@@ -123,7 +148,20 @@ rt {
 }
 
 rp {
-  display: none;  /* hidden in supporting browsers */
+  display: none;  /* re-asserts the UA rule */
+}
+
+/* CJK readings use the CJK face; romanised readings keep the body face */
+rt:is(:lang(ja), :lang(zh), :lang(ko), :lang(yue), :lang(wuu)):not(:lang(ja-Latn), :lang(zh-Latn), :lang(ko-Latn), :lang(yue-Latn), :lang(wuu-Latn)) {
+  font-family: var(--font-cjk);
+}
+rt:is(:lang(ja-Latn), :lang(zh-Latn), :lang(ko-Latn), :lang(yue-Latn), :lang(wuu-Latn)) {
+  font-family: var(--font-sans);
+}
+
+/* Bopomofo to the right of each character */
+ruby:has(> rt:lang(zh-Bopo)) {
+  ruby-position: inter-character;
 }</code-block>
 
     <h3>Styling Options</h3>
@@ -144,6 +182,10 @@ rp {
           <td>Annotation below base text</td>
         </tr>
         <tr>
+          <td><code>ruby-position: inter-character</code></td>
+          <td>Annotation to the right of each character (bopomofo; Firefox and Safari)</td>
+        </tr>
+        <tr>
           <td><code>ruby-align: center</code></td>
           <td>Center annotation over base text (VB default)</td>
         </tr>
@@ -153,15 +195,19 @@ rp {
         </tr>
       </tbody>
     </table>
+
+    <h3>Line Spacing</h3>
+    <p>A visible annotation needs room above the base text. CJK text already has generous leading (VB sets <code>line-height: 1.8</code> for <code>ja</code>, <code>zh</code> and <code>ko</code>), so furigana fits inside the line. Latin body text uses <code>1.5</code>, so a line that carries ruby can grow taller than its neighbours and the spacing looks uneven. If a Latin passage carries a lot of ruby, give it more line height, or hide the annotations with <code>data-ruby="hide"</code>.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Screen readers may read both base text and ruby text, or provide options for users to hear annotations</li>
-      <li>The <code>&lt;rp&gt;</code> fallback ensures annotations appear in parentheses when ruby is not supported</li>
+      <li>Screen readers handle ruby differently: some read the base text then the annotation, some read only one of them, and some let the user choose</li>
+      <li>Set <code>lang</code> so the base text and the reading are spoken with the right voice</li>
+      <li><code>data-ruby="hide"</code> and the hidden half of <code>auto</code> only hide the annotation visually; it stays in the accessibility tree</li>
+      <li>In forced-colors mode annotations inherit the system text colour and stay legible</li>
       <li>Ruby text benefits language learners and those with reading difficulties</li>
-      <li>The <code>data-ruby="hide"</code> mode keeps annotations in the DOM for accessibility even when visually hidden</li>
     </ul>
   </section>
 
@@ -178,5 +224,5 @@ rp {
 
   <section>
     <h2>Browser Support</h2>
-    <p>Ruby annotations are supported in all modern browsers. The <code>ruby-position</code> CSS property is supported in Chrome, Edge, Safari, and Firefox 38+.</p>
+    <p>Ruby annotations and <code>ruby-position: over</code> / <code>under</code> are supported in all modern browsers. <code>inter-character</code> is supported in Firefox and Safari. The <code>data-ruby</code> scoping uses CSS <code>@scope</code> (Chrome 118, Safari 17.4, Firefox 146); older browsers ignore it and show every annotation.</p>
   </section>

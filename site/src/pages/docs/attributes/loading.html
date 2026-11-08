@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "loading"
-description: "Lazy loading, fetch priority, and image decoding hints. Three attributes that work as a set to control how and when the browser loads resources."
+description: "Lazy loading, fetch priority and image decoding hints: three attributes that decide when and how urgently the browser fetches images, iframes and scripts."
 attributeName: loading
 attributeType: native
 nativeGroup: Performance
@@ -12,119 +12,144 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>Three native attributes control when and how the browser fetches resources. Used together, they form a performance strategy:</p>
-<ul>
-  <li><strong><code>loading</code></strong> controls <em>when</em> a resource starts loading</li>
-  <li><strong><code>fetchpriority</code></strong> controls <em>how urgently</em> a resource is fetched relative to others</li>
-  <li><strong><code>decoding</code></strong> controls <em>whether</em> image decoding blocks rendering</li>
-</ul>
+<section>
+  <h2>Overview</h2>
+  <p>Three native attributes decide when and how urgently the browser fetches a resource. This page covers all three:</p>
+  <ul>
+    <li><strong><code>loading</code></strong> &mdash; <em>when</em> to fetch: now, or when the element comes near the viewport.</li>
+    <li><strong><code>fetchpriority</code></strong> &mdash; <em>how urgently</em> to fetch, relative to other resources of the same kind.</li>
+    <li><strong><code>decoding</code></strong> &mdash; whether the image may be decoded <em>without holding up</em> other content.</li>
+  </ul>
+  <p><strong>Applies to:</strong> <code>loading</code> on <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> and <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a>; the spec has added <a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> and <a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a>, so far only in Chrome. <code>fetchpriority</code> on <code>&lt;img&gt;</code>, <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> and <a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a>. <code>decoding</code> on <code>&lt;img&gt;</code>.</p>
 
-<h2>loading</h2>
-<p>Defers resource loading until the element is near the viewport. Use <code>loading="lazy"</code> on images and iframes below the fold.</p>
+  <browser-window
+    src="/docs/examples/demos/attr-loading-lazy.html"
+    url="https://vanilla-breeze.com/lazy-images"
+    title="Lazy images load as you scroll"
+    shadow>
+  </browser-window>
 
-<table>
-  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
-  <tbody>
-    <tr><td><code>eager</code></td><td>Load immediately (the default)</td></tr>
-    <tr><td><code>lazy</code></td><td>Defer loading until near the viewport</td></tr>
-  </tbody>
-</table>
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a>, <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a></p>
+  <code-block language="html" show-lines label="Eager hero, lazy images below the fold" data-escape><img src="hero.jpg" fetchpriority="high" width="1200" height="600"
+     alt="Volunteers planting trees on a hillside">
 
-<code-block language="html" label="Lazy loading" data-escape><img src="hero.jpg" alt="Hero banner" />
-
-<!-- Below the fold: defer loading until the user scrolls near -->
-<img src="gallery-1.jpg" alt="Gallery photo 1" loading="lazy" />
-<img src="gallery-2.jpg" alt="Gallery photo 2" loading="lazy" />
-
-<!-- Lazy-load an iframe -->
-<iframe src="/embed/widget" loading="lazy"></iframe></code-block>
-
-<h3>When Not to Lazy Load</h3>
-<ul>
-  <li><strong>Above-the-fold images</strong> should load immediately. Lazy-loading your LCP image delays it.</li>
-  <li><strong>Small images</strong> (icons, avatars) have little to gain from lazy loading.</li>
-  <li><strong>Background images</strong> in CSS are not affected by the <code>loading</code> attribute.</li>
-</ul>
-
-<h2>fetchpriority</h2>
-<p>Tells the browser how important a resource is relative to others of the same type. The browser already assigns default priorities; this attribute lets you override them.</p>
-
-<table>
-  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
-  <tbody>
-    <tr><td><code>high</code></td><td>Fetch at higher priority than normal</td></tr>
-    <tr><td><code>low</code></td><td>Fetch at lower priority than normal</td></tr>
-    <tr><td><code>auto</code></td><td>Let the browser decide (the default)</td></tr>
-  </tbody>
-</table>
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a>, <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a>, <a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a>, <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a></p>
-
-<code-block language="html" label="Fetch priority" data-escape><!-- LCP image: fetch as fast as possible -->
-<img src="hero.jpg" alt="Hero" fetchpriority="high" />
-
-<!-- Carousel images not initially visible: lower priority -->
-<img src="slide-2.jpg" alt="Slide 2" fetchpriority="low" loading="lazy" />
-<img src="slide-3.jpg" alt="Slide 3" fetchpriority="low" loading="lazy" />
-
-<!-- Preload a critical font -->
-<link rel="preload" href="/fonts/body.woff2" as="font"
-  type="font/woff2" crossorigin fetchpriority="high" />
-
-<!-- Lower priority for non-critical script -->
-<script src="/analytics.js" fetchpriority="low"></script></code-block>
-
-<h3>LCP Optimization</h3>
-<p>The most common use: add <code>fetchpriority="high"</code> to your Largest Contentful Paint image. This tells the browser to prioritize that image over other resources discovered at the same time.</p>
-
-<h2>decoding</h2>
-<p>Hints whether image decoding should block rendering. Decoding converts the compressed image data into pixels. For large images, this can take noticeable time.</p>
-
-<table>
-  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
-  <tbody>
-    <tr><td><code>async</code></td><td>Decode off the main thread (non-blocking)</td></tr>
-    <tr><td><code>sync</code></td><td>Decode synchronously (blocks rendering)</td></tr>
-    <tr><td><code>auto</code></td><td>Let the browser decide (the default)</td></tr>
-  </tbody>
-</table>
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a></p>
-
-<code-block language="html" label="Decoding hints" data-escape><!-- Let the browser decode off the main thread -->
-<img src="photo.jpg" alt="Large photo" decoding="async" />
-
-<!-- Must render immediately (rare: icons, inline SVG replacements) -->
-<img src="icon.svg" alt="" decoding="sync" /></code-block>
-
-<h2>Putting It All Together</h2>
-<p>A typical page uses all three attributes as a system:</p>
-<ol>
-  <li>Hero/LCP image: <code>fetchpriority="high"</code> + <code>decoding="async"</code></li>
-  <li>Below-fold images: <code>loading="lazy"</code> + <code>decoding="async"</code></li>
-  <li>Third-party embeds: <code>loading="lazy"</code></li>
-</ol>
-
-<code-block language="html" label="Combined usage" data-escape><!-- Hero image: load immediately, high priority, async decode -->
-<img src="hero.jpg" alt="Hero banner"
-  fetchpriority="high"
-  decoding="async" />
-
-<!-- Below-fold content image: lazy load, async decode -->
-<img src="content-photo.jpg" alt="Content photo"
-  loading="lazy"
-  decoding="async" />
-
-<!-- Below-fold iframe: lazy load -->
-<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-  loading="lazy"
-  title="Video embed"></iframe></code-block>
+<img src="gallery-1.jpg" loading="lazy" decoding="async" width="600" height="400"
+     alt="Seedlings in biodegradable pots"></code-block>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <h3>loading</h3>
+  <table class="props-table">
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>eager</code></td><td>Fetch straight away.</td></tr>
+      <tr><td><code>lazy</code></td><td>Wait until the element is near the viewport. The browser decides how near.</td></tr>
+      <tr><td>Absent or invalid (the default)</td><td><code>eager</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="fetchpriority">fetchpriority</h3>
+  <table class="props-table">
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>high</code></td><td>Fetch ahead of other resources of the same type.</td></tr>
+      <tr><td><code>low</code></td><td>Fetch behind other resources of the same type.</td></tr>
+      <tr><td><code>auto</code>, absent or invalid (the default)</td><td>The browser's own priority.</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="decoding">decoding</h3>
+  <table class="props-table">
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>async</code></td><td>Other content may be shown before this image has decoded.</td></tr>
+      <tr><td><code>sync</code></td><td>Show this image together with the content around it.</td></tr>
+      <tr><td><code>auto</code>, absent or invalid (the default)</td><td>The browser decides.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>The LCP image</h3>
+  <p>Never lazy-load the Largest Contentful Paint image. Give it <code>fetchpriority="high"</code> so it is fetched ahead of other images found at the same time.</p>
+  <code-block language="html" show-lines label="LCP image" data-escape><img src="hero.jpg" fetchpriority="high" width="1600" height="700"
+     alt="Cyclists on a coastal road at sunrise"></code-block>
+
+  <h3>Lazy images with sizes="auto"</h3>
+  <p>A lazy image can let the browser measure its slot instead of a hand-written <code>sizes</code>. See <a href="/docs/attributes/srcset/"><code>srcset</code></a>.</p>
+  <code-block language="html" show-lines label="Lazy responsive image" data-escape><img loading="lazy" decoding="async" sizes="auto, 100vw"
+     src="trail-800.jpg"
+     srcset="trail-400.jpg 400w, trail-800.jpg 800w, trail-1200.jpg 1200w"
+     width="1200" height="800"
+     alt="Gravel trail through a pine forest"></code-block>
+
+  <h3>Lazy iframes</h3>
+  <p>Maps, video and social embeds below the fold are the biggest wins: each one can pull in megabytes of script. Every iframe needs a <code>title</code>.</p>
+  <code-block language="html" show-lines label="Lazy embed" data-escape><iframe src="https://www.openstreetmap.org/export/embed.html?bbox=-0.13,51.50,-0.12,51.51"
+        loading="lazy" title="Map of the venue" width="600" height="400"></iframe></code-block>
+
+  <h3>Priorities for links and scripts</h3>
+  <code-block language="html" show-lines label="fetchpriority on link and script" data-escape><!-- A font the first render needs -->
+<link rel="preload" href="/fonts/body.woff2" as="font" type="font/woff2" crossorigin fetchpriority="high">
+
+<!-- Independent, non-critical script: async and low priority -->
+<script src="https://analytics.example.com/tag.js" async fetchpriority="low"></script></code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> element reference</li>
-    <li><a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> element reference</li>
-    <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> for preload and prefetch</li>
+    <li><strong><a href="/docs/attributes/data-responsive/"><code>data-responsive</code></a></strong> runs after the parser has requested the image, so <code>loading</code> and <code>fetchpriority</code> must be in your markup to have any effect. It adds <code>decoding="async"</code> when you have not set <code>decoding</code>, and it leaves <code>sizes="auto"</code> on lazy images to the browser (<code>src/utils/responsive-init.js</code>).</li>
+    <li><strong><a href="/docs/elements/web-components/youtube-player/"><code>&lt;youtube-player&gt;</code></a></strong> renders a lazy, async-decoded thumbnail and only inserts the YouTube iframe (with <code>loading="lazy"</code>) when the user presses play.</li>
+    <li><strong>Components that render images</strong> set <code>loading="lazy"</code> on them: <a href="/docs/elements/web-components/image-gallery/"><code>&lt;image-gallery&gt;</code></a> thumbnails, <a href="/docs/elements/web-components/activity-feed/"><code>&lt;activity-feed&gt;</code></a> and <a href="/docs/elements/web-components/comment-thread/"><code>&lt;comment-thread&gt;</code></a> avatars, and <a href="/docs/elements/web-components/social-embed/"><code>&lt;social-embed&gt;</code></a> iframes.</li>
+    <li><strong><a href="/docs/attributes/data-mock/"><code>data-mock</code></a></strong> marks the remote placeholder images it generates (photo, placehold and portrait presets) as lazy. VB's own demos use local SVG placeholders from <code>src/assets/placeholders/</code>.</li>
+    <li><strong>Image defaults.</strong> <code>src/native-elements/image/styles.css</code> makes images fluid (<code>max-inline-size: 100%; block-size: auto</code>), so <code>width</code> and <code>height</code> attributes reserve the right aspect ratio without fixing the size. That is what lazy images need.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Lazy loading does not change <code>alt</code>: assistive technology reads it whether or not the image has loaded.</li>
+    <li>Lazy iframes still need a <code>title</code> describing their content.</li>
+    <li>Reserve space with <code>width</code> and <code>height</code>. Content that jumps as images arrive is hard to read and to click, especially with magnification.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <p><code>loading</code> on images: Chrome 77, Firefox 75, Safari 15.4. On iframes: Chrome 77, Firefox 121, Safari 16.4. On <code>&lt;video&gt;</code> and <code>&lt;audio&gt;</code>: Chrome 150 only, experimental. <code>fetchpriority</code>: Chrome 101, Firefox 132, Safari 17.2. <code>decoding</code>: all current browsers (November 2026). Unsupported values and attributes are ignored, so the resource loads normally.</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Lazy loading is off when scripting is off.</strong> The spec disables it so that lazy images cannot be used to track scroll position without JavaScript. Such images load eagerly.</li>
+    <li><strong>Lazy images need a size.</strong> An image with no <code>width</code>/<code>height</code> and no CSS size is 0&times;0 before it loads, so many of them can sit "in view" at once and all load together.</li>
+    <li><strong>Do not lazy-load above the fold.</strong> It delays the images people see first, often including the LCP image.</li>
+    <li><strong>CSS backgrounds</strong> are not affected by <code>loading</code>.</li>
+    <li><strong><code>fetchpriority</code> is relative.</strong> Marking everything <code>high</code> is the same as marking nothing. Use it for one or two resources.</li>
+    <li><strong><code>decoding="sync"</code></strong> rarely helps; leave it at the default unless you have measured a problem.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/srcset/"><code>srcset</code></a> &mdash; candidates, <code>sizes</code> and <code>sizes="auto"</code>.</li>
+    <li><a href="/docs/attributes/data-responsive/"><code>data-responsive</code></a> &mdash; measured <code>sizes</code> for eager images.</li>
+    <li><a href="/docs/attributes/poster/"><code>poster</code></a> and <a href="/docs/attributes/preload/"><code>preload</code></a> &mdash; loading strategy for video and audio.</li>
+    <li><a href="/docs/attributes/async-defer/"><code>async / defer</code></a> and <a href="/docs/attributes/blocking/"><code>blocking</code></a> &mdash; script and render timing.</li>
+    <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a>, <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> and <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> &mdash; element references.</li>
+    <li><a href="/docs/performance/">Performance</a> &mdash; VB's performance guide.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong>LCP / hero image</strong> &mdash; eager (no <code>loading</code>) with <code>fetchpriority="high"</code>.</li>
+    <li><strong>Images below the fold</strong> &mdash; <code>loading="lazy"</code>, <code>decoding="async"</code>, <code>width</code>/<code>height</code>, and <code>sizes="auto"</code> if they have a <code>srcset</code>.</li>
+    <li><strong>Embeds below the fold</strong> &mdash; <code>loading="lazy"</code>, or a facade component such as <code>&lt;youtube-player&gt;</code> that loads nothing until asked.</li>
+    <li><strong>Non-critical scripts</strong> &mdash; <code>async fetchpriority="low"</code>.</li>
   </ul>
 </section>

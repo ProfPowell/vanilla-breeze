@@ -1,10 +1,10 @@
 ---
 layout: attribute
 title: "translate"
-description: "Tell translation tools whether content should be translated. Use translate='no' for brand names, code snippets, and technical terms."
+description: "Marks text and translatable attribute values that machine translation must leave alone: code, brand names, identifiers. Inherited; empty means yes."
 attributeName: translate
 attributeType: native
-nativeGroup: Accessibility
+nativeGroup: Internationalization
 category: native
 currentPath: /docs/attributes/translate/
 
@@ -12,115 +12,123 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>translate</code> attribute tells translation tools — Google Translate, browser auto-translate, and machine translation APIs — whether an element's content should be translated. By default, all content is translatable. Set <code>translate="no"</code> on content that should remain in its original language.</p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>translate</code> attribute tells translation tools (a browser's "Translate page", translation services, and tools used by human translators) whether an element's text and its <em>translatable attributes</em> should be translated. Everything is translatable by default. Set <code>translate="no"</code> on content that must stay as written. It has no visible effect until someone translates the page.</p>
+  <p><strong>Applies to:</strong> every element (it is a global attribute). It is inherited by descendants.</p>
 
-<h2>Values</h2>
+  <browser-window
+    src="/docs/examples/demos/attr-translate-basic.html"
+    url="https://vanilla-breeze.com/translate"
+    title="translate"
+    shadow>
+  </browser-window>
 
-<table>
-  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
-  <tbody>
-    <tr><td><code>yes</code></td><td>Content should be translated (the default). No attribute needed.</td></tr>
-    <tr><td><code>no</code></td><td>Content should not be translated. Inherited by child elements.</td></tr>
-  </tbody>
-</table>
-
-<code-block language="html" label="Basic usage" data-escape><!-- Brand names should not be translated -->
-<p>Built with <span translate="no">Vanilla Breeze</span>.</p>
-
-<!-- Code should not be translated -->
-<p>Run <code translate="no">npm install vanilla-breeze</code> to get started.</p>
-
-<!-- Regular prose is translatable by default (no attribute needed) -->
-<p>This paragraph will be translated normally.</p></code-block>
-
-<h2>When to Use translate="no"</h2>
-<p>Mark content as non-translatable when translation would break meaning or functionality:</p>
-<ul>
-  <li><strong>Brand names:</strong> Vanilla Breeze, GitHub, Eleventy</li>
-  <li><strong>Code snippets:</strong> <code>npm install</code>, <code>&lt;div class="example"&gt;</code></li>
-  <li><strong>Technical terms:</strong> API endpoints, CSS property names, HTML attribute names</li>
-  <li><strong>Proper nouns:</strong> personal names, place names that should not be localized</li>
-  <li><strong>Identifiers:</strong> API keys, order numbers, serial numbers</li>
-  <li><strong>Command-line instructions:</strong> terminal commands, file paths</li>
-  <li><strong>Programming keywords:</strong> <code>function</code>, <code>return</code>, <code>const</code></li>
-</ul>
-
-<h2>When to Keep the Default</h2>
-<p>Regular content is translatable by default — you do not need to add <code>translate="yes"</code>. Leave the attribute off for:</p>
-<ul>
-  <li>Regular prose and paragraphs</li>
-  <li>UI labels and button text</li>
-  <li>Error messages and help text</li>
-  <li>Navigation links</li>
-  <li>Headings and descriptions</li>
-</ul>
-
-<h2>Code Documentation</h2>
-<p>Technical documentation frequently mixes translatable prose with non-translatable code. Use <code>translate="no"</code> on code blocks to protect them.</p>
-
-<code-block language="html" label="Code in documentation" data-escape><article>
-  <h2>Getting Started</h2>
-  <p>Install the package using your preferred package manager:</p>
-
-  <pre><code translate="no">npm install vanilla-breeze</code></pre>
-
-  <p>Then import the stylesheet in your HTML:</p>
-
-  <pre><code translate="no">&lt;link rel="stylesheet" href="vanilla-breeze.css" /&gt;</code></pre>
-
-  <p>The framework provides native element styling out of the box.</p>
-</article></code-block>
-
-<h3>The code Element</h3>
-<p>Many translation tools already treat <code>&lt;code&gt;</code> content as non-translatable, but this is a heuristic, not a guarantee. Adding <code>translate="no"</code> is the explicit, standards-based declaration.</p>
-
-<h2>Brand Names</h2>
-<p>Wrap brand names in <code>&lt;span translate="no"&gt;</code> so they survive translation intact. This is especially important when brand names contain common words that a translator might convert.</p>
-
-<code-block language="html" label="Brand names" data-escape><header>
-  <h1><span translate="no">Vanilla Breeze</span> Documentation</h1>
-  <p>A lightweight CSS framework built on native HTML.</p>
-</header>
-
-<footer>
-  <p>Powered by <span translate="no">Vanilla Breeze</span>.
-    Hosted on <span translate="no">GitHub Pages</span>.
-    Built with <span translate="no">Eleventy</span>.</p>
-</footer></code-block>
-
-<h2>Forms with Mixed Content</h2>
-<p>Form labels should be translated, but values like API keys and endpoints should not.</p>
-
-<code-block language="html" label="Form with mixed content" data-escape><form>
-  <label for="name">Name</label>
-  <input type="text" id="name" />
-
-  <label for="api-key">API Key</label>
-  <input type="text" id="api-key" translate="no" />
-
-  <label for="endpoint">Endpoint</label>
-  <input type="url" id="endpoint" translate="no"
-    value="https://api.example.com/v1/users" />
-
-  <button type="submit">Save Settings</button>
-</form></code-block>
-
-<h2>Legacy: class="notranslate"</h2>
-<p>Before the <code>translate</code> attribute was standardized, the convention was <code>class="notranslate"</code> — a class recognized by Google Translate. The <code>translate="no"</code> attribute is the standard approach and is supported by all modern browsers and translation tools. There is no need to use both.</p>
-
-<table>
-  <thead><tr><th>Approach</th><th>Standard</th><th>Google Translate</th><th>Browser Translate</th></tr></thead>
-  <tbody>
-    <tr><td><code>translate="no"</code></td><td>Yes (HTML spec)</td><td>Yes</td><td>Yes</td></tr>
-    <tr><td><code>class="notranslate"</code></td><td>No (convention)</td><td>Yes</td><td>Varies</td></tr>
-  </tbody>
-</table>
+  <code-block language="html" show-lines label="Keep brand names, code and identifiers as written" data-escape><h1><span translate="no">Vanilla Breeze</span> quick start</h1>
+<p>Install the package, then add the stylesheet to every page.</p>
+<pre translate="no"><code>npm install vanilla-breeze</code></pre>
+<p>Press <kbd translate="no">Ctrl</kbd> + <kbd translate="no">K</kbd> to open the command palette.</p>
+<p>Your order number is <span translate="no">VB-2026-1042</span>.</p></code-block>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>yes</code> or <code>""</code> (empty)</td><td>Translate this element's text and translatable attributes.</td></tr>
+      <tr><td><code>no</code></td><td>Leave them unchanged.</td></tr>
+      <tr><td>Absent or an unknown value</td><td>Inherited from the parent. The root defaults to <code>yes</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Translatable attributes</h3>
+  <p><code>translate</code> covers these attribute values as well as text:</p>
   <ul>
-    <li><a href="/docs/attributes/lang/"><code>lang</code></a> — declare the language of content</li>
-    <li><a href="/docs/attributes/dir/"><code>dir</code></a> — set text direction for RTL languages</li>
+    <li><code>title</code> on any element</li>
+    <li><code>alt</code> on <code>img</code>, <code>area</code> and <code>input</code></li>
+    <li><code>placeholder</code> on <code>input</code> and <code>textarea</code></li>
+    <li><code>label</code> on <code>option</code>, <code>optgroup</code> and <code>track</code></li>
+    <li><code>value</code> on <code>input type="button"</code> and <code>type="reset"</code></li>
+    <li><code>abbr</code> on <code>th</code></li>
+    <li><code>download</code> on <code>a</code> and <code>area</code></li>
+    <li><code>content</code> on <code>meta name="description"</code> and <code>name="keywords"</code></li>
+    <li><code>srcdoc</code> on <code>iframe</code></li>
+  </ul>
+  <p>What a user types into a field is never translated, so <code>translate="no"</code> on a text input only protects its <code>placeholder</code> and <code>title</code>.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Code in documentation</h3>
+  <code-block language="html" show-lines label="Code stays verbatim" data-escape><p>Install the package with your package manager:</p>
+<pre translate="no"><code>npm install vanilla-breeze</code></pre>
+<p>Then set <code translate="no">data-theme</code> on the root element.</p></code-block>
+
+  <h3>Placeholders and titles that must not change</h3>
+  <code-block language="html" show-lines label="Translatable attributes" data-escape><form-field>
+  <label for="endpoint">API endpoint</label>
+  <!-- The label is translated; the example URL in the placeholder is not -->
+  <input type="url" id="endpoint" name="endpoint" translate="no" placeholder="https://api.example.com/v1">
+</form-field>
+
+<button type="button" title="Copy the install command" data-copy="npm install vanilla-breeze">Copy command</button></code-block>
+
+  <h3>Brand names</h3>
+  <code-block language="html" show-lines label="Brand names in a footer" data-escape><footer class="site">
+  <p>Built with <span translate="no">Vanilla Breeze</span>, hosted on <span translate="no">Cloudflare Pages</span>.</p>
+</footer></code-block>
+
+  <h3>When to keep the default</h3>
+  <p>Leave prose, headings, labels, button text, error messages and navigation translatable. Do not put <code>translate="no"</code> on a whole page or component to protect a few words.</p>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
+  <ul>
+    <li><strong>No CSS can do this.</strong> The CSS <code>translate</code> property is a transform; machine-translation opt-out only exists as this HTML attribute. VB's i18n stylesheet has no rules for it on purpose (<code>src/native-elements/i18n/styles.css</code>, section 4).</li>
+    <li><strong>Mark code yourself.</strong> VB does not add <code>translate="no"</code> to <code>&lt;code&gt;</code>, <code>&lt;kbd&gt;</code>, <code>&lt;samp&gt;</code>, <code>&lt;pre&gt;</code> or <code>&lt;var&gt;</code>. The <a href="/docs/i18n/">i18n guide</a> asks authors to mark them in markup.</li>
+    <li><strong><code>data-lorem</code> placeholder text</strong> gets <code>translate="no"</code> automatically, so translation tools do not try to translate Latin filler (<code>src/utils/lorem-init.js</code>).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Translation is an accessibility tool.</strong> Many readers rely on it. Mark only what must stay unchanged, so the rest stays readable.</li>
+    <li><strong>It does not set the language.</strong> Untranslated text in another language still needs <a href="/docs/attributes/lang/"><code>lang</code></a> for screen readers.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <p>Baseline widely available since 2025 (Chrome 19, Firefox 111, Safari 6). Translation services such as Google Translate honour it regardless of the browser.</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>It is a request.</strong> Translation tools generally honour it, but nothing enforces it.</li>
+    <li><strong><code>class="notranslate"</code></strong> is an older Google Translate convention. <code>translate="no"</code> is the standard; you do not need both.</li>
+    <li><strong>Inheritance cuts both ways.</strong> <code>translate="no"</code> on a container protects every descendant. Use <code>translate="yes"</code> on a child to re-enable translation inside it.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/i18n/">Internationalization guide</a> &mdash; VB's translate conventions.</li>
+    <li><a href="/docs/attributes/lang/"><code>lang</code></a> &mdash; the language of the content.</li>
+    <li><a href="/docs/attributes/dir/"><code>dir</code></a> &mdash; text direction.</li>
+    <li><a href="/docs/attributes/title/"><code>title</code></a> &mdash; a translatable attribute.</li>
+    <li><a href="/docs/attributes/data-lorem/"><code>data-lorem</code></a> &mdash; placeholder text marked untranslatable.</li>
+    <li><a href="/docs/elements/native/code/"><code>&lt;code&gt;</code></a>, <a href="/docs/elements/native/kbd/"><code>&lt;kbd&gt;</code></a></li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>translate="no"</code></strong> &mdash; text that must survive translation unchanged.</li>
+    <li><strong><code>lang</code></strong> &mdash; text in a specific language that may or may not be translated.</li>
+    <li><strong><code>data-i18n</code></strong> with VB's <code>VbI18n</code> &mdash; your own translated UI strings, swapped by script.</li>
   </ul>
 </section>

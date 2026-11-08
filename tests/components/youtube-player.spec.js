@@ -5,6 +5,14 @@ const DEMO = '/docs/examples/demos/youtube-player-basic.html';
 
 test.describe('youtube-player', () => {
   test.beforeEach(async ({ page }) => {
+    // Keep the suite offline: stub YouTube's thumbnail and embed hosts.
+    await page.route('https://i.ytimg.com/**', (route) => route.fulfill({
+      status: 200, contentType: 'image/svg+xml',
+      body: '<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360"/>',
+    }));
+    await page.route('https://www.youtube-nocookie.com/**', (route) => route.fulfill({
+      status: 200, contentType: 'text/html', body: '<!doctype html><title>embed</title>',
+    }));
     await page.goto(DEMO);
     await page.waitForSelector('youtube-player[state]');
   });
@@ -29,10 +37,17 @@ test.describe('youtube-player', () => {
     expect(label).toContain('Play');
   });
 
-  test('host has tabindex and role in facade state', async ({ page }) => {
+  test('the inner button is the only control (host has no role/tabindex)', async ({ page }) => {
     const player = page.locator('youtube-player').first();
-    await expect(player).toHaveAttribute('tabindex', '0');
-    await expect(player).toHaveAttribute('role', 'button');
+    await expect(player).not.toHaveAttribute('tabindex', /.*/);
+    await expect(player).not.toHaveAttribute('role', /.*/);
+    await expect(player.locator('button')).toHaveCount(1);
+  });
+
+  test('poster replaces the YouTube thumbnail', async ({ page }) => {
+    const img = page.locator('youtube-player[poster]').first().locator('img');
+    const src = await img.getAttribute('src');
+    expect(src).toContain('/src/assets/placeholders/');
   });
 
   test('click activates iframe with youtube-nocookie.com', async ({ page }) => {
@@ -55,16 +70,15 @@ test.describe('youtube-player', () => {
     expect(title).toBeTruthy();
   });
 
-  test('host removes tabindex and role after activation', async ({ page }) => {
+  test('focus moves to the iframe after activation', async ({ page }) => {
     const player = page.locator('youtube-player').first();
-    await player.click();
-    await expect(player).not.toHaveAttribute('tabindex');
-    await expect(player).not.toHaveAttribute('role');
+    await player.locator('button').click();
+    await expect(player.locator('iframe')).toBeFocused();
   });
 
   test('keyboard activation with Enter', async ({ page }) => {
     const player = page.locator('youtube-player').first();
-    await player.focus();
+    await player.locator('button').focus();
     await page.keyboard.press('Enter');
     await expect(player).toHaveAttribute('state', 'active');
     await expect(player.locator('iframe')).toBeVisible();
@@ -73,7 +87,7 @@ test.describe('youtube-player', () => {
   test('keyboard activation with Space', async ({ page }) => {
     // Use the second player to avoid the first already being activated
     const player = page.locator('youtube-player').nth(1);
-    await player.focus();
+    await player.locator('button').focus();
     await page.keyboard.press(' ');
     await expect(player).toHaveAttribute('state', 'active');
     await expect(player.locator('iframe')).toBeVisible();

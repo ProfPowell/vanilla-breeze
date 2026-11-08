@@ -13,6 +13,8 @@
 @layer bundle-theme {
   :root[data-theme~="cyber"],
   [data-theme~="cyber"] {
+    color-scheme: dark;
+
     /* ===== COLORS ===== */
     --color-surface: oklch(12% 0.02 280);
     --color-surface-alt: oklch(15% 0.025 280);
@@ -119,9 +121,9 @@
     --control-checked-bg: oklch(75% 0.25 180);
     --control-checked-border: oklch(75% 0.25 180);
     --input-bg: oklch(10% 0.02 280);
-    --input-border: oklch(40% 0.06 280);
+    --input-border: color-mix(in oklab, oklch(40% 0.06 280), var(--color-text) 40%); /* 3:1 non-text contrast */
     --input-border-focus: oklch(75% 0.25 180);
-    --range-track-bg: oklch(25% 0.04 280);
+    --range-track-bg: color-mix(in oklab, oklch(25% 0.04 280), var(--color-text) 40%); /* 3:1 non-text contrast */
     --range-track-fill: oklch(75% 0.25 180);
     --range-thumb-bg: oklch(12% 0.02 280);
     --range-thumb-border: oklch(75% 0.25 180);
@@ -172,7 +174,7 @@
     }
 
     & h1::before {
-      content: "// ";
+      content: "// " / "";
       opacity: 0.5;
     }
 
@@ -250,7 +252,7 @@
     & input,
     & textarea {
       background: var(--color-surface-sunken);
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--input-border); /* 3:1 non-text contrast */
 
       &:focus {
         border-color: var(--color-primary);
@@ -288,6 +290,13 @@
       padding: 1rem 1.5rem;
       font-style: normal;
 
+      /* Core toggles emphasis to upright inside a blockquote because it
+         assumes the quote is italic; this quote is upright, so emphasis
+         re-asserts italic (unless it sits in another italic context). */
+      & :is(em, i):not(:where(em, i, cite:not([data-variant~="quoted"]), dfn, var) *) {
+        font-style: italic;
+      }
+
       /* Decorative glyph: empty alt text keeps it out of the a11y tree */
       &::before {
         content: "\0022" / "";
@@ -300,7 +309,7 @@
     }
 
     /* HR with gradient */
-    & hr:not([data-ornament]) {
+    & hr:not([data-ornament], [class]) {
       border: none;
       height: 1px;
       background: linear-gradient(
@@ -340,7 +349,7 @@
 
     /* ===== SHAPE OVERRIDES ===== */
     /* Angular, sharp shapes — chevron/diagonal defaults */
-    --shape-depth: 10%;
+    --shape-depth: 40px;
     --shape-bevel: 24px;
 
     /* Cyber HR dividers: neon gradient */
@@ -351,36 +360,39 @@
       background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
     }
 
-    /* Cyber badges: neon glow */
-    & [data-badge] {
-      background: var(--color-primary);
+    /* Cyber shaped badges: neon glow. The shape is painted on the badge's
+       ::before layer, so the glow is a drop-shadow that follows it (a
+       box-shadow would draw a rectangle). */
+    & layout-badge:is([data-shape="ribbon"], [data-shape="notch"], [data-shape="flag"], [data-shape="double-arrow"], [data-shape="stamp"]) {
+      --badge-shape-fill: var(--color-primary);
       color: oklch(10% 0.02 180);
-      box-shadow: var(--_cyber-glow-cyan);
+      filter: drop-shadow(var(--_cyber-glow-cyan));
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      font-size: var(--font-size-xs, 0.75rem);
     }
 
-    /* Cyber callouts: notched with neon glow */
-    & [data-callout="notched"] {
-      background: var(--color-surface);
-      border: 1px solid var(--color-primary);
-      box-shadow: var(--_cyber-glow-cyan);
+    /* Cyber callouts: neon glow. Shaped callouts paint on ::before, so the
+       theme sets the --callout-* hooks and glows with a drop-shadow filter
+       (it follows the shape; a border or box-shadow would draw a rectangle). */
+    & [data-callout~="notched"] {
+      --callout-bg: var(--color-surface);
+      --callout-accent: var(--color-primary);
+      filter: drop-shadow(0 0 4px color-mix(in oklch, var(--color-primary) 70%, transparent));
     }
 
-    & [data-callout="speech"] {
-      background: var(--color-surface);
-      border: 1px solid var(--color-accent);
+    & [data-callout~="speech"] {
+      --callout-bg: var(--color-surface);
+      filter: drop-shadow(0 0 4px color-mix(in oklch, var(--color-accent) 70%, transparent));
     }
 
-    /* Cyber bubbles: neon-tinted */
+    /* Cyber bubbles: neon-tinted (via the --bubble-bg hook) */
     & [data-bubble="outgoing"] {
-      background: var(--color-primary);
+      --bubble-bg: var(--color-primary);
       color: oklch(10% 0.02 180);
     }
 
     & [data-bubble="assistant"] {
-      background: color-mix(in oklch, var(--color-accent) 15%, var(--color-surface));
+      --bubble-bg: color-mix(in oklch, var(--color-accent) 15%, var(--color-surface));
     }
 
     /* Cyber morph: faster, glitchy */
@@ -437,7 +449,7 @@
 
     /* Form controls: match light surface */
     --input-bg: oklch(96% 0.015 250);
-    --input-border: oklch(85% 0.02 250);
+    --input-border: color-mix(in oklab, oklch(85% 0.02 250), var(--color-text) 40%); /* 3:1 non-text contrast */
     --input-border-focus: oklch(50% 0.22 180);
 
     /* Toned-down glows for light mode */
@@ -459,11 +471,16 @@
   /* Light mode: component overrides */
   :root[data-theme~="cyber"][data-mode="light"],
   [data-theme~="cyber"][data-mode="light"] {
+    /* Shaped badges: the light-mode primary is darker, so light text */
+    & layout-badge:is([data-shape="ribbon"], [data-shape="notch"], [data-shape="flag"], [data-shape="double-arrow"], [data-shape="stamp"]) {
+      color: oklch(99% 0 0);
+    }
+
     & :is(main, article) {
       & input,
       & textarea {
         background: var(--color-surface);
-        border: 1px solid var(--color-border);
+        border: 1px solid var(--input-border);
 
         &:focus {
           border-color: var(--color-primary);
@@ -523,10 +540,10 @@
     }
 
     /* Control overrides for light mode */
-    --control-border: oklch(70% 0.04 250);
+    --control-border: color-mix(in oklab, oklch(70% 0.04 250), var(--color-text) 20%); /* 3:1 non-text contrast */
     --control-checked-bg: oklch(50% 0.22 180);
     --control-checked-border: oklch(50% 0.22 180);
-    --range-track-bg: oklch(88% 0.02 250);
+    --range-track-bg: color-mix(in oklab, oklch(88% 0.02 250), var(--color-text) 40%); /* 3:1 non-text contrast */
     --range-track-fill: oklch(50% 0.22 180);
     --range-thumb-bg: oklch(98% 0.01 250);
     --range-thumb-border: oklch(50% 0.22 180);

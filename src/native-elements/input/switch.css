@@ -1,21 +1,33 @@
 /* Toggle Switch
    Checkbox styled as an on/off toggle.
-   Sizes: default, data-switch="sm", data-switch="lg"
+   Sizes: default, data-switch="s", data-switch="l" (the VB size
+   vocabulary; renamed from sm / lg pre-release, no alias)
+   Geometry is driven by --_switch-w / --_switch-h so the knob travel is
+   derived once; --_switch-dir flips that travel under RTL (translate is
+   physical, so the knob would otherwise slide out of the track).
    ---------------------------------------------------------------- */
 
 input[data-switch] {
+  --_switch-w: 2.75rem;
+  --_switch-h: 1.5rem;
+  --_switch-dir: 1;
+
   appearance: none;
   position: relative;
   display: inline-block;
-  inline-size: 2.75rem;
-  block-size: 1.5rem;
+  inline-size: var(--_switch-w);
+  block-size: var(--_switch-h);
   border-radius: var(--radius-pill, 999px);
-  background: var(--color-border, oklch(75% 0 0));
+  background: var(--switch-track-bg);
   border: none;
   cursor: var(--cursor-custom-pointer, pointer);
   vertical-align: middle;
   flex-shrink: 0;
   transition: background-color var(--duration-fast, 150ms) var(--ease-default, ease);
+
+  &:dir(rtl) {
+    --_switch-dir: -1;
+  }
 }
 
 /* Knob */
@@ -24,21 +36,29 @@ input[data-switch]::before {
   position: absolute;
   inset-block-start: 2px;
   inset-inline-start: 2px;
-  inline-size: calc(1.5rem - 4px);
-  block-size: calc(1.5rem - 4px);
+  inline-size: calc(var(--_switch-h) - 4px);
+  block-size: calc(var(--_switch-h) - 4px);
   border-radius: 50%;
-  background: white;
+  background: var(--switch-knob-bg);
   box-shadow: 0 1px 3px oklch(0% 0 0 / 0.2);
   transition: translate var(--duration-fast, 150ms) var(--ease-default, ease);
 }
 
 /* Checked state */
 input[data-switch]:checked {
-  background: var(--color-interactive, oklch(55% 0.2 260));
+  background: var(--switch-track-checked-bg);
 }
 
 input[data-switch]:checked::before {
-  translate: calc(2.75rem - 1.5rem) 0;
+  translate: calc((var(--_switch-w) - var(--_switch-h)) * var(--_switch-dir)) 0;
+}
+
+/* Invalid (a required switch left off, after interaction). The track has
+   no border to recolour, so a dashed error outline marks it; dashed is the
+   non-colour cue. Focus below wins while the switch is focused. */
+input[data-switch]:is(:user-invalid, [aria-invalid="true"]) {
+  outline: 2px dashed var(--color-error);
+  outline-offset: 2px;
 }
 
 /* Focus */
@@ -54,33 +74,65 @@ input[data-switch]:disabled {
 }
 
 /* Small variant */
-input[data-switch="sm"] {
-  inline-size: 2rem;
-  block-size: 1.125rem;
-}
-
-input[data-switch="sm"]::before {
-  inline-size: calc(1.125rem - 4px);
-  block-size: calc(1.125rem - 4px);
-}
-
-input[data-switch="sm"]:checked::before {
-  translate: calc(2rem - 1.125rem) 0;
+input[data-switch="s"] {
+  --_switch-w: 2rem;
+  --_switch-h: 1.125rem;
 }
 
 /* Large variant */
-input[data-switch="lg"] {
-  inline-size: 3.5rem;
-  block-size: 2rem;
+input[data-switch="l"] {
+  --_switch-w: 3.5rem;
+  --_switch-h: 2rem;
 }
 
-input[data-switch="lg"]::before {
-  inline-size: calc(2rem - 4px);
-  block-size: calc(2rem - 4px);
-}
+/* Forced colors: the track and knob are backgrounds only, which forced
+   colors flattens — on and off would be indistinguishable. Opt out and
+   repaint: track outlined in CanvasText, knob CanvasText, checked track
+   Highlight with a HighlightText knob; disabled in GrayText. */
+@media (forced-colors: active) {
+  input[data-switch] {
+    forced-color-adjust: none;
+    background: Canvas;
+    border: 1px solid CanvasText;
+  }
 
-input[data-switch="lg"]:checked::before {
-  translate: calc(3.5rem - 2rem) 0;
+  input[data-switch]::before {
+    /* Border box shifts by the 1px border; keep the knob inset. */
+    inset-block-start: 1px;
+    inset-inline-start: 1px;
+    background: CanvasText;
+    box-shadow: none;
+  }
+
+  input[data-switch]:checked {
+    background: Highlight;
+    border-color: Highlight;
+  }
+
+  input[data-switch]:checked::before {
+    background: HighlightText;
+  }
+
+  input[data-switch]:focus-visible {
+    outline-color: Highlight;
+  }
+
+  input[data-switch]:disabled {
+    opacity: 1;
+    border-color: GrayText;
+  }
+
+  input[data-switch]:disabled::before {
+    background: GrayText;
+  }
+
+  input[data-switch]:disabled:checked {
+    background: GrayText;
+  }
+
+  input[data-switch]:disabled:checked::before {
+    background: Canvas;
+  }
 }
 
 /* Reduced motion */

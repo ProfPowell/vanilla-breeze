@@ -35,12 +35,12 @@ crumbLabel: Native Elements
     <h2>Examples</h2>
 
     <h3>SVG with Fallback</h3>
-    <p>Embed an SVG file with a PNG fallback for older browsers.</p>
+    <p>Embed an SVG file with fallback content for when it can't load. Vanilla Breeze makes <code>&lt;object&gt;</code> and <code>&lt;embed&gt;</code> <code>display: block</code> with <code>max-inline-size: 100%</code>; add <code>data-ratio</code> so the height scales with the width.</p>
 
     <browser-window
       src="/docs/snippets/demos/object-embed.html"
-      url="https://vanilla-breeze.com/object/svg-fallback"
-      title="Object embedding SVG with image fallback"
+      url="object-embed.html"
+      title="Object embedding SVG and HTML with fallback content"
       shadow>
     </browser-window>
 
@@ -49,14 +49,17 @@ crumbLabel: Native Elements
 </object></code-block>
 
     <h3>PDF Embed</h3>
-    <p>Display a PDF inline with a download link fallback.</p>
-    <code-block language="html" show-lines label="PDF with download fallback" data-escape><object data="document.pdf" type="application/pdf" width="100%" height="600">
+    <p>Display a PDF inline with a download link fallback. This is the recommended PDF pattern: browsers without a built-in PDF viewer (many mobile browsers; check <code>navigator.pdfViewerEnabled</code>) render the fallback content, so the reader gets the link instead of an empty box. Always keep a plain download link somewhere on the page as well. <code>width</code>/<code>height</code> take integers only; <code>data-ratio="page"</code> makes the box responsive (see <a href="/docs/elements/native/embed/#sizing">embed sizing</a>, which applies to <code>&lt;object&gt;</code> too).</p>
+    <code-block language="html" show-lines label="PDF with download fallback" data-escape><object data="document.pdf" type="application/pdf"
+        width="800" height="1131" data-ratio="page"
+        title="2026 annual report (PDF)">
   <p>This browser does not support inline PDFs.
      <a href="document.pdf">Download the PDF</a>.</p>
 </object></code-block>
 
     <h3>Nested Fallback Chain</h3>
     <p><code>&lt;object&gt;</code> elements can be nested to create a fallback chain. The browser tries each in order, stopping at the first one it can render.</p>
+    <p>The innermost fallback is the one assistive technology and no-plugin browsers reach, so make it the most accessible: an <code>&lt;img alt&gt;</code> or text.</p>
     <code-block language="html" show-lines label="Nested fallback chain" data-escape><object data="animation.svg" type="image/svg+xml">
   <object data="animation.gif" type="image/gif">
     <img src="animation.png" alt="Animated diagram showing data flow" />
@@ -76,6 +79,17 @@ crumbLabel: Native Elements
   </section>
 
   <section>
+    <h2 id="security">Security</h2>
+    <p><code>&lt;object&gt;</code> has none of the controls <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> offers: no <code>sandbox</code>, no <code>allow</code>, no <code>referrerpolicy</code>, no <code>loading="lazy"</code>. Treat it as trusted-content only.</p>
+    <ul>
+      <li><strong>Untrusted HTML</strong>: an HTML document in <code>&lt;object data&gt;</code> runs with full script privileges, and a same-origin one can reach the parent page. Use <code>&lt;iframe sandbox&gt;</code> instead.</li>
+      <li><strong>Untrusted SVG</strong>: an SVG loaded as a document (object, embed, iframe) runs its scripts. <code>&lt;img src="file.svg"&gt;</code> renders it as an image with scripts disabled.</li>
+      <li><strong>Always set <code>type</code></strong>: it tells the browser what to expect before fetching, and resources whose type it can't render fall back cleanly instead of being sniffed.</li>
+      <li><strong>Content Security Policy</strong>: the <code>object-src</code> directive governs both <code>&lt;object&gt;</code> and <code>&lt;embed&gt;</code>. Strict policies commonly set <code>object-src 'none'</code>, which blocks every object on the page (the fallback content renders instead). Cross-origin documents are also subject to the embedded site's <code>frame-ancestors</code> / <code>X-Frame-Options</code>.</li>
+    </ul>
+  </section>
+
+  <section>
     <h2>Attributes</h2>
     <table class="props-table">
       <thead>
@@ -87,27 +101,31 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>data</code></td>
-          <td>URL of the resource to embed. Required for most use cases.</td>
+          <td>URL of the resource to embed. Only point it at resources you trust (see <a href="#security">Security</a>).</td>
         </tr>
         <tr>
           <td><code>type</code></td>
-          <td>MIME type of the resource (e.g., <code>image/svg+xml</code>, <code>application/pdf</code>). Helps the browser decide how to handle the content.</td>
+          <td>MIME type of the resource (e.g., <code>image/svg+xml</code>, <code>application/pdf</code>). Lets the browser skip types it can't render and show the fallback content.</td>
         </tr>
         <tr>
           <td><code>width</code></td>
-          <td>Display width of the object in pixels.</td>
+          <td>Preferred width in CSS pixels (integer, no units). Clamped to the container by <code>max-inline-size: 100%</code>.</td>
         </tr>
         <tr>
           <td><code>height</code></td>
-          <td>Display height of the object in pixels.</td>
+          <td>Height in CSS pixels (integer, no units). Fixed unless <code>data-ratio</code> is set; with it, the height follows the used width.</td>
         </tr>
         <tr>
           <td><code>name</code></td>
-          <td>Name for the embedded browsing context (used with forms and links targeting this object).</td>
+          <td>Name of the embedded browsing context, so links and forms can target it with <code>target="name"</code>.</td>
         </tr>
         <tr>
           <td><code>form</code></td>
-          <td>Associates the object with a <code>&lt;form&gt;</code> element by ID.</td>
+          <td>Associates the object with a <code>&lt;form&gt;</code> element by ID (it appears in <code>form.elements</code>; nothing is submitted).</td>
+        </tr>
+        <tr>
+          <td><code>data-ratio</code></td>
+          <td>Vanilla Breeze: <code>1:1</code>, <code>4:3</code>, <code>3:2</code>, <code>16:9</code>, <code>21:9</code>, <code>2:3</code>, <code>3:4</code>, <code>9:16</code>, or <code>page</code> (portrait document). Block size follows the width; <code>width</code> becomes the preferred width, and without it the object fills its container.</td>
         </tr>
       </tbody>
     </table>
@@ -126,7 +144,8 @@ crumbLabel: Native Elements
     <h3>Best Practices</h3>
     <ul>
       <li>Always provide meaningful fallback content between the <code>&lt;object&gt;</code> tags</li>
-      <li>Add <code>role="img"</code> and <code>aria-label</code> when embedding images or charts</li>
+      <li>Add <code>role="img"</code> and <code>aria-label</code> when embedding images or charts, and keep that fallback to plain text: <code>img</code> has presentational children, so some assistive technology hides links or controls inside it. Put a download link next to the object instead</li>
+      <li>For non-image content (PDFs, HTML), name the object with <code>title</code> or <code>aria-label</code> and don't add <code>role="img"</code></li>
       <li>Fallback content should convey the same information as the embedded resource</li>
       <li>Include download links in fallback content so users can still access the resource</li>
       <li>Prefer native elements (<code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>) which have built-in accessibility semantics</li>

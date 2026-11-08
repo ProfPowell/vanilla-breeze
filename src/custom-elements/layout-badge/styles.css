@@ -1,159 +1,298 @@
+/* layout-badge: small inline status / count chip.
+   Every private property is declared on the host itself (no var() fallback
+   chains), so values set by an ancestor component never leak in. */
+
 layout-badge {
+  --_badge-padding-x: var(--size-2xs);
+  --_badge-padding-y: 0.125rem;
+  --_badge-font-size: var(--font-size-xs);
+  --_badge-bg: var(--color-surface-alt);
+  --_badge-color: var(--color-text);
+  /* Base hue for derived (mode-aware) subtle / outlined colours */
+  --_badge-hue: var(--color-interactive);
+  /* Mode-aware tint + readable text derived from --_badge-hue: light tint with
+     dark text in light mode, dark tint with light text in dark mode. */
+  --_badge-tint: light-dark(
+    oklch(from var(--_badge-hue) 0.95 min(c, 0.05) h),
+    oklch(from var(--_badge-hue) 0.28 min(c, 0.07) h)
+  );
+  --_badge-ink: light-dark(
+    oklch(from var(--_badge-hue) 0.42 min(c, 0.16) h),
+    oklch(from var(--_badge-hue) 0.84 min(c, 0.12) h)
+  );
+  /* Solid-badge text where contrast-color() is unsupported: black or white,
+     whichever contrasts more with the badge's own background, so it works in
+     either mode and under any theme. WCAG relative luminance is the y channel
+     of xyz-d65; at y = 0.1791 black and white give equal contrast. k is 1
+     (white, the D65 white point) below that and 0 (black) above it. */
+  --_badge-auto-k: clamp(0, (0.1791 - y) * 100000, 1);
+  --_badge-auto-ink: color(from var(--_badge-bg) xyz-d65
+    calc(0.9505 * var(--_badge-auto-k))
+    var(--_badge-auto-k)
+    calc(1.089 * var(--_badge-auto-k)));
+
   display: inline-flex;
   align-items: center;
   gap: var(--size-2xs);
-  padding-inline: var(--_padding-x, var(--size-2xs));
-  padding-block: var(--_padding-y, 0.125rem);
-  font-size: var(--_font-size, var(--font-size-xs));
+  padding-inline: var(--_badge-padding-x);
+  padding-block: var(--_badge-padding-y);
+  font-size: var(--_badge-font-size);
   font-weight: var(--font-weight-medium);
   line-height: 1;
   border-radius: var(--radius-full);
-  background: var(--_bg, var(--color-gray-200));
-  color: var(--_color, var(--color-gray-700));
+  background: var(--_badge-bg);
+  color: var(--_badge-color);
   white-space: nowrap;
 
-  /* Sizes */
-  &[data-size="sm"] {
-    --_padding-x: 0.25rem;
-    --_padding-y: 0.0625rem;
-    --_font-size: 0.625rem; /* 10px */
+  /* Sizes: s | (default) | l */
+  &[data-size="s"] {
+    --_badge-padding-x: 0.25rem;
+    --_badge-padding-y: 0.0625rem;
+    /* Type-scale token with an 11px legibility floor */
+    --_badge-font-size: max(var(--font-size-2xs), 0.6875rem);
   }
 
-  &[data-size="lg"] {
-    --_padding-x: var(--size-xs);
-    --_padding-y: var(--size-3xs);
-    --_font-size: var(--font-size-s);
+  &[data-size="l"] {
+    --_badge-padding-x: var(--size-xs);
+    --_badge-padding-y: var(--size-3xs);
+    --_badge-font-size: var(--font-size-s);
   }
 
   /* Colors - Solid (default) */
   &[data-color="primary"] {
-    --_bg: var(--color-interactive);
-    --_color: var(--color-text-on-interactive-auto, white);
+    --_badge-hue: var(--color-interactive);
+    --_badge-bg: var(--color-interactive);
+    --_badge-color: var(--color-text-on-interactive-auto, var(--_badge-auto-ink));
   }
 
   &[data-color="success"] {
-    --_bg: var(--color-success);
-    --_color: var(--color-text-on-success-auto, white);
+    --_badge-bg: var(--color-success);
+    --_badge-color: var(--color-text-on-success-auto, var(--_badge-auto-ink));
   }
 
   &[data-color="warning"] {
-    --_bg: var(--color-warning);
-    --_color: var(--color-text-on-warning-auto, var(--color-gray-900));
+    --_badge-bg: var(--color-warning);
+    --_badge-color: var(--color-text-on-warning-auto, var(--_badge-auto-ink));
   }
 
   &[data-color="error"] {
-    --_bg: var(--color-error);
-    --_color: var(--color-text-on-error-auto, white);
+    --_badge-bg: var(--color-error);
+    --_badge-color: var(--color-text-on-error-auto, var(--_badge-auto-ink));
   }
 
   &[data-color="info"] {
-    --_bg: var(--color-info);
-    --_color: var(--color-text-on-info-auto, white);
+    --_badge-bg: var(--color-info);
+    --_badge-color: var(--color-text-on-info-auto, var(--_badge-auto-ink));
   }
 
   /* Theme-aware colors (respond to --hue-* variables) */
   &[data-color="brand"] {
-    --_bg: var(--color-primary);
-    --_color: var(--color-text-on-primary, white);
+    --_badge-hue: var(--color-primary);
+    --_badge-bg: var(--color-primary);
+    --_badge-color: var(--color-text-on-primary-auto, var(--_badge-auto-ink));
   }
 
   &[data-color="secondary"] {
-    --_bg: var(--color-secondary);
-    --_color: var(--color-text-on-secondary-auto, white);
+    --_badge-hue: var(--color-secondary);
+    --_badge-bg: var(--color-secondary);
+    --_badge-color: var(--color-text-on-secondary-auto, var(--_badge-auto-ink));
   }
 
   &[data-color="accent"] {
-    --_bg: var(--color-accent);
-    --_color: var(--color-text-on-accent-auto, var(--color-gray-900));
+    --_badge-hue: var(--color-accent);
+    --_badge-bg: var(--color-accent);
+    --_badge-color: var(--color-text-on-accent-auto, var(--_badge-auto-ink));
   }
 
-  /* Variant: Subtle */
+  /* Variant: Subtle — tinted surface, mode-aware text */
   &[data-variant="subtle"] {
-    --_bg: var(--color-gray-100);
-    --_color: var(--color-gray-700);
+    --_badge-bg: var(--color-surface-raised);
+    --_badge-color: var(--color-text-muted);
 
-    &[data-color="primary"] {
-      --_bg: oklch(95% 0.05 260);
-      --_color: var(--color-interactive);
+    &:is([data-color="primary"], [data-color="brand"], [data-color="secondary"], [data-color="accent"]) {
+      --_badge-bg: var(--_badge-tint);
+      --_badge-color: var(--_badge-ink);
     }
 
     &[data-color="success"] {
-      --_bg: var(--color-success-subtle);
-      --_color: var(--color-success);
+      --_badge-bg: var(--color-success-subtle);
+      --_badge-color: var(--color-success-text);
     }
 
     &[data-color="warning"] {
-      --_bg: var(--color-warning-subtle);
-      --_color: oklch(45% 0.15 70);
+      --_badge-bg: var(--color-warning-subtle);
+      --_badge-color: var(--color-warning-text);
     }
 
     &[data-color="error"] {
-      --_bg: var(--color-error-subtle);
-      --_color: var(--color-error);
+      --_badge-bg: var(--color-error-subtle);
+      --_badge-color: var(--color-error-text);
     }
 
     &[data-color="info"] {
-      --_bg: var(--color-info-subtle);
-      --_color: var(--color-info);
-    }
-
-    &[data-color="brand"] {
-      --_bg: var(--color-primary-subtle);
-      --_color: var(--color-primary);
-    }
-
-    &[data-color="secondary"] {
-      --_bg: oklch(from var(--color-secondary) 0.95 0.04 h);
-      --_color: var(--color-secondary);
-    }
-
-    &[data-color="accent"] {
-      --_bg: oklch(from var(--color-accent) 0.95 0.06 h);
-      --_color: oklch(from var(--color-accent) 0.45 c h);
+      --_badge-bg: var(--color-info-subtle);
+      --_badge-color: var(--color-info-text);
     }
   }
 
-  /* Variant: Outlined */
+  /* Variant: Outlined — transparent, text + border follow the surface mode */
   &[data-variant="outlined"] {
-    --_bg: transparent;
-    --_color: var(--color-gray-600);
+    --_badge-bg: transparent;
+    --_badge-color: var(--color-text-muted);
     border: var(--border-width-thin) solid currentColor;
 
-    &[data-color="primary"] {
-      --_color: var(--color-interactive);
+    &:is([data-color="primary"], [data-color="brand"], [data-color="secondary"], [data-color="accent"]) {
+      --_badge-color: var(--_badge-ink);
     }
 
-    &[data-color="success"] {
-      --_color: var(--color-success);
-    }
-
-    &[data-color="warning"] {
-      --_color: oklch(55% 0.18 70);
-    }
-
-    &[data-color="error"] {
-      --_color: var(--color-error);
-    }
-
-    &[data-color="info"] {
-      --_color: var(--color-info);
-    }
-
-    &[data-color="brand"] {
-      --_color: var(--color-primary);
-    }
-
-    &[data-color="secondary"] {
-      --_color: var(--color-secondary);
-    }
-
-    &[data-color="accent"] {
-      --_color: oklch(from var(--color-accent) 0.55 c h);
-    }
+    &[data-color="success"] { --_badge-color: var(--color-success-text); }
+    &[data-color="warning"] { --_badge-color: var(--color-warning-text); }
+    &[data-color="error"]   { --_badge-color: var(--color-error-text); }
+    &[data-color="info"]    { --_badge-color: var(--color-info-text); }
   }
 
   /* Pill shape (default is already pill, but explicit) */
   &[data-shape="square"] {
     border-radius: var(--radius-s);
+  }
+}
+
+/* Decorative shapes: ribbon | notch | flag | double-arrow | stamp.
+   The shape is painted on a ::before layer behind the text instead of
+   clipping the badge itself, so the badge's own focus outline, a theme's
+   filter: drop-shadow() and its text are never cut off. Notch depth is an
+   absolute length (--badge-notch, default 0.75em) and the padding on the
+   notched side grows by the same length, so long labels never run under a
+   notch. Coordinates are drawn for left-to-right; in RTL the layer is
+   mirrored, so notches and points follow the inline direction like the
+   logical padding does. polygon() works everywhere; only the stamp's concave
+   corners need shape() and fall back to chamfered corners. */
+layout-badge:is([data-shape="ribbon"], [data-shape="notch"], [data-shape="flag"], [data-shape="double-arrow"], [data-shape="stamp"]) {
+  --_badge-notch: var(--badge-notch, 0.75em);
+  --_badge-notch-start: 0px;
+  --_badge-notch-end: 0px;
+  --_badge-clip: none;
+
+  position: relative;
+  isolation: isolate;
+  padding-inline:
+    calc(var(--_badge-padding-x) + 0.35em + var(--_badge-notch-start))
+    calc(var(--_badge-padding-x) + 0.35em + var(--_badge-notch-end));
+  padding-block: max(var(--_badge-padding-y), 0.3em);
+  border: 0;
+  border-radius: 0;
+  background: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--badge-shape-fill, var(--_badge-bg));
+    clip-path: var(--_badge-clip);
+  }
+
+  &:dir(rtl)::before {
+    scale: -1 1;
+  }
+
+  /* An outline cannot follow a clipped edge, so an outlined shape badge is
+     drawn as a light wash of its own ink instead of a border. */
+  &[data-variant="outlined"] {
+    --_badge-bg: color-mix(in oklch, currentColor 12%, transparent);
+    border: 0;
+  }
+}
+
+/* Ribbon: V cut into the inline-end edge */
+layout-badge[data-shape="ribbon"] {
+  --_badge-notch-end: var(--_badge-notch);
+  --_badge-clip: polygon(
+    0 0, 100% 0,
+    calc(100% - var(--_badge-notch)) 50%,
+    100% 100%, 0 100%
+  );
+}
+
+/* Notch: V cut into the inline-start edge, like a bookmark */
+layout-badge[data-shape="notch"] {
+  --_badge-notch-start: var(--_badge-notch);
+  --_badge-clip: polygon(
+    0 0, 100% 0, 100% 100%, 0 100%,
+    var(--_badge-notch) 50%
+  );
+}
+
+/* Flag: point on the inline-end edge */
+layout-badge[data-shape="flag"] {
+  --_badge-notch-end: var(--_badge-notch);
+  --_badge-clip: polygon(
+    0 0, calc(100% - var(--_badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--_badge-notch)) 100%, 0 100%
+  );
+}
+
+/* Double arrow: points on both edges, breadcrumb style */
+layout-badge[data-shape="double-arrow"] {
+  --_badge-notch-start: var(--_badge-notch);
+  --_badge-notch-end: var(--_badge-notch);
+  --_badge-clip: polygon(
+    var(--_badge-notch) 0, calc(100% - var(--_badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--_badge-notch)) 100%, var(--_badge-notch) 100%,
+    0 50%
+  );
+}
+
+/* Stamp: small concave bites out of each corner (chamfers without shape()) */
+layout-badge[data-shape="stamp"] {
+  --_badge-corner: calc(var(--_badge-notch) * 0.5);
+  --_badge-clip: polygon(
+    var(--_badge-corner) 0, calc(100% - var(--_badge-corner)) 0,
+    100% var(--_badge-corner), 100% calc(100% - var(--_badge-corner)),
+    calc(100% - var(--_badge-corner)) 100%, var(--_badge-corner) 100%,
+    0 calc(100% - var(--_badge-corner)), 0 var(--_badge-corner)
+  );
+
+  @supports (clip-path: shape(from 0 0, line to 1px 1px)) {
+    --_badge-clip: shape(
+      from var(--_badge-corner) 0,
+      line to calc(100% - var(--_badge-corner)) 0,
+      curve to 100% var(--_badge-corner) with calc(100% - var(--_badge-corner)) var(--_badge-corner),
+      line to 100% calc(100% - var(--_badge-corner)),
+      curve to calc(100% - var(--_badge-corner)) 100% with calc(100% - var(--_badge-corner)) calc(100% - var(--_badge-corner)),
+      line to var(--_badge-corner) 100%,
+      curve to 0 calc(100% - var(--_badge-corner)) with var(--_badge-corner) calc(100% - var(--_badge-corner)),
+      line to 0 var(--_badge-corner),
+      curve to var(--_badge-corner) 0 with var(--_badge-corner) var(--_badge-corner),
+      close
+    );
+  }
+}
+
+/* Forced colors drop backgrounds, so solid/subtle badges would read as plain
+   inline text. Give every badge a system-colour edge. Shaped badges lose
+   their (now invisible) shape layer and show the same rectangular edge. */
+@media (forced-colors: active) {
+  layout-badge {
+    border: 1px solid CanvasText;
+  }
+
+  /* Shaped badges zero their border; restore the edge */
+  layout-badge:is([data-shape="ribbon"], [data-shape="notch"], [data-shape="flag"], [data-shape="double-arrow"], [data-shape="stamp"]) {
+    border: 1px solid CanvasText;
+  }
+
+  layout-badge:is([data-shape="ribbon"], [data-shape="notch"], [data-shape="flag"], [data-shape="double-arrow"], [data-shape="stamp"])::before {
+    display: none;
+  }
+}
+
+/* Paper: browsers drop backgrounds when printing, which would leave a shaped
+   badge as bare text (the shape lives only in its fill). Keep the fill. */
+@media print {
+  layout-badge:is([data-shape="ribbon"], [data-shape="notch"], [data-shape="flag"], [data-shape="double-arrow"], [data-shape="stamp"])::before {
+    print-color-adjust: exact;
   }
 }

@@ -1,0 +1,130 @@
+---
+layout: attribute
+title: "accept"
+description: "Tells a file input which file types to offer, by extension or MIME type. It filters the picker but is only a hint; Vanilla Breeze's data-upload applies the same rules to dropped files."
+attributeName: accept
+attributeType: native
+nativeGroup: Forms
+category: native
+currentPath: /docs/attributes/accept/
+
+crumbHref: /docs/attributes/native/
+crumbLabel: Native Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>accept</code> lists the file types a file input expects. The operating system's picker uses it to filter what is shown, and on phones it decides whether to offer the camera, photo library or file browser. It does not validate: the user can usually switch the picker to "All files", and nothing stops a renamed file. Always check files on the server.</p>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input type="file"&gt;</code></a> only.</p>
+
+  <browser-window
+    src="/docs/examples/demos/attr-accept-basic.html"
+    url="https://vanilla-breeze.com/attributes/accept"
+    title="accept"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Documents, and images through a drop zone" data-escape><form-field>
+  <label for="cv">CV</label>
+  <input type="file" id="cv" name="cv" accept=".pdf,.docx,application/pdf" />
+  <output class="hint" for="cv">PDF or Word, up to 5 MB.</output>
+</form-field>
+
+<form-field>
+  <label for="photos">Project photos</label>
+  <input type="file" id="photos" name="photos" accept="image/*" multiple data-upload />
+</form-field></code-block>
+</section>
+
+<section>
+  <h2>Values</h2>
+  <p>A comma-separated list of tokens. A file is offered if it matches any token. Matching is case-insensitive.</p>
+  <table class="props-table">
+    <thead><tr><th>Token</th><th>Matches</th></tr></thead>
+    <tbody>
+      <tr><td><code>.pdf</code>, <code>.docx</code></td><td>File names ending in that extension.</td></tr>
+      <tr><td><code>application/pdf</code></td><td>Files of that exact MIME type.</td></tr>
+      <tr><td><code>image/*</code>, <code>audio/*</code>, <code>video/*</code></td><td>Any image, audio or video file.</td></tr>
+      <tr><td>Absent or empty</td><td>Any file (the default).</td></tr>
+    </tbody>
+  </table>
+  <p>List both the extension and the MIME type when you can (<code>.pdf,application/pdf</code>). Operating systems differ in which they use to filter.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Camera capture on phones</h3>
+  <p>With an image or video <code>accept</code>, the <code>capture</code> attribute asks a phone to open the camera directly: <code>environment</code> for the rear camera, <code>user</code> for the front. Desktop browsers ignore it.</p>
+  <code-block language="html" label="Photo of a receipt" data-escape><form-field>
+  <label for="receipt">Receipt photo</label>
+  <input type="file" id="receipt" name="receipt" accept="image/*" capture="environment" />
+</form-field></code-block>
+  <p>Leave <code>capture</code> off when users may already have the photo; it can hide the photo library.</p>
+
+  <h3>Checking type and size before upload</h3>
+  <p>A quick client-side check saves a slow upload, but the server must repeat it.</p>
+  <code-block language="js" label="Reject large files early" data-escape>const input = document.querySelector('#cv');
+const MAX_BYTES = 5_000_000;
+
+input.addEventListener('change', () => {
+  const tooBig = [...input.files].find((file) => file.size > MAX_BYTES);
+  input.setCustomValidity(tooBig ? `${tooBig.name} is over 5 MB.` : '');
+});</code-block>
+  <p>Inside <code>&lt;form-field&gt;</code>, a custom validity message like this one is shown in the field's <code>output.error</code>.</p>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
+  <ul>
+    <li><strong><a href="/docs/attributes/data-upload/"><code>data-upload</code></a></strong> wraps a file input in a drop zone. Dropped files are checked against <code>accept</code> with the picker's rules (<code>.ext</code> against the name, <code>type/*</code> against the MIME family, anything else as an exact MIME type); files that don't match are left out and named in a polite status line. Without <code>multiple</code>, only the first accepted file is kept. The zone's prompt lists the accepted types in words: <code>.pdf</code> and <code>application/pdf</code> read "PDF", <code>image/*</code> reads "images" (<code>data-label-images</code>, <code>-audio</code>, <code>-video</code> translate the wildcard words), and other MIME types show as written (<code>src/utils/upload-init.js</code>).</li>
+    <li><strong>Not the same as <a href="/docs/attributes/data-accept/"><code>data-accept</code></a>.</strong> <code>data-accept</code> is a keystroke filter for text inputs (<code>data-accept="digits"</code>, <code>"phone"</code>, <code>"[0-9a-f]"</code>) that also sets a matching <code>inputmode</code>. It has nothing to do with files.</li>
+    <li><strong>File input styling</strong> lives in <code>src/native-elements/input/file.css</code>; see <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Say which types and sizes are allowed in visible hint text. Users can't see the filter until they open the picker, and a rejected file is frustrating to discover after choosing it.</li>
+    <li>A drop zone must not be the only way in. <code>data-upload</code> keeps the native input as the single, focusable control, so keyboard and screen-reader users can open the picker.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Security</h2>
+  <ul>
+    <li><code>accept</code> is a convenience, not a control. Check the file's real type on the server from its contents, not its name or the browser-reported MIME type, and enforce size limits there.</li>
+    <li>Treat file names as untrusted text: escape them when you display them, and don't use them as storage paths.</li>
+    <li>Be careful with <code>image/*</code>: it includes SVG, which can contain script. Serve uploaded SVG with a restrictive <code>Content-Type</code> and <code>Content-Security-Policy</code>, or convert it, or list the raster types you want (<code>image/png,image/jpeg,image/webp</code>).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <p><code>accept</code> works in every browser. <code>capture</code> works only in mobile browsers: Chrome for Android 25, Safari on iOS 10, Firefox for Android 79; desktop browsers ignore it.</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li>Dragging a file onto a plain file input bypasses the picker's filter in some browsers. Use <code>data-upload</code>, which filters drops, or check in <code>change</code>.</li>
+    <li>MIME types for the same file differ between systems (a <code>.csv</code> may be <code>text/csv</code>, <code>application/vnd.ms-excel</code> or empty). Prefer extensions for document formats.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-upload/"><code>data-upload</code></a> &mdash; drop zone and file list that respect <code>accept</code></li>
+    <li><a href="/docs/attributes/multiple/"><code>multiple</code></a> &mdash; more than one file</li>
+    <li><a href="/docs/attributes/data-accept/"><code>data-accept</code></a> &mdash; character filter for text inputs (unrelated to files)</li>
+    <li><a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a>, <a href="/docs/elements/web-components/form-field/"><code>&lt;form-field&gt;</code></a></li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>accept</code></strong> &mdash; every file input with an expected type.</li>
+    <li><strong><code>accept</code> + <code>data-upload</code></strong> &mdash; users will drag files in, or should see what they picked.</li>
+    <li><strong><code>capture</code></strong> &mdash; the photo is taken there and then (a receipt, an ID document).</li>
+  </ul>
+</section>

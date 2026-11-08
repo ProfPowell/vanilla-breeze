@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>min, max and step: number, date, time and range inputs</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <form data-validate data-submit="event" class="stacked" id="mms-form">
+      <form-field>
+        <label for="mms-guests">Guests</label>
+        <input id="mms-guests" type="number" name="guests" min="1" max="8" step="1" value="2" data-stepper
+               data-message-rangeoverflow="Tables seat up to 8. Call us for larger groups." />
+        <output class="hint" for="mms-guests">1 to 8. The buttons stop at the limits.</output>
+        <output class="error" for="mms-guests" aria-live="polite">Choose 1 to 8 guests.</output>
+      </form-field>
+
+      <form-field>
+        <label for="mms-tip">Tip (USD)</label>
+        <input id="mms-tip" type="number" name="tip" min="0" step="0.01" inputmode="decimal"
+               data-message-stepmismatch="Use dollars and cents, for example 4.50." />
+        <output class="error" for="mms-tip" aria-live="polite">Check the amount.</output>
+      </form-field>
+
+      <form-field>
+        <label for="mms-date">Date</label>
+        <input id="mms-date" type="date" name="date" min="2026-11-09" max="2027-02-28" required
+               data-message-rangeunderflow="Bookings open from tomorrow."
+               data-message-rangeoverflow="Bookings close on 28 February 2027." />
+        <output class="hint" for="mms-date">9 November 2026 to 28 February 2027.</output>
+        <output class="error" for="mms-date" aria-live="polite">Choose a date in the booking window.</output>
+      </form-field>
+
+      <form-field>
+        <label for="mms-time">Time</label>
+        <input id="mms-time" type="time" name="time" min="17:00" max="22:00" step="900" value="19:00"
+               data-message-stepmismatch="Times are in 15-minute slots." />
+        <output class="hint" for="mms-time">17:00 to 22:00, every 15 minutes.</output>
+        <output class="error" for="mms-time" aria-live="polite">Choose a time slot.</output>
+      </form-field>
+
+      <form-field>
+        <label for="mms-spice">Spice level</label>
+        <input id="mms-spice" type="range" name="spice" min="0" max="4" step="1" value="1" data-range data-bubble data-markers />
+      </form-field>
+
+      <button type="submit">Book table</button>
+      <pre><output id="mms-result">Submitted data appears here.</output></pre>
+    </form>
+  </layout-center>
+
+  <script type="module">
+    const result = document.querySelector('#mms-result');
+    document.querySelector('#mms-form').addEventListener('vb:submit', (e) => {
+      result.textContent = [...e.detail].map(([name, value]) => `${name} = ${value}`).join('\n');
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

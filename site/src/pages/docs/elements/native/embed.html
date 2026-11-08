@@ -37,18 +37,22 @@ crumbLabel: Native Elements
 
     <browser-window
       src="/docs/snippets/demos/object-embed.html"
-      url="https://vanilla-breeze.com/embed"
+      url="object-embed.html"
       title="Embed element examples"
       shadow>
     </browser-window>
 
     <h3>SVG File</h3>
     <code-block language="html" show-lines label="Embed an SVG" data-escape><embed src="diagram.svg" type="image/svg+xml"
-       width="600" height="400"></code-block>
+       width="600" height="400" data-ratio="3:2"
+       title="Network diagram: three servers behind a load balancer"></code-block>
 
     <h3>PDF Document</h3>
+    <p><code>width</code> and <code>height</code> take integers (CSS pixels) only &mdash; <code>width="100%"</code> is invalid. Give integer fallback dimensions and let CSS make the box responsive.</p>
     <code-block language="html" show-lines label="Embed a PDF" data-escape><embed src="document.pdf" type="application/pdf"
-       width="100%" height="600"></code-block>
+       width="800" height="1131" data-ratio="page"
+       title="2026 annual report (PDF)"></code-block>
+    <p>Inline PDF rendering is a desktop-browser feature. Most mobile browsers do not render a PDF inside <code>&lt;embed&gt;</code>, and because <code>&lt;embed&gt;</code> has no fallback, those users see an empty box. For PDFs, prefer <a href="/docs/elements/native/object/"><code>&lt;object&gt;</code></a> with a download link inside it, and consider a visible download link next to the embed as well. Exact behaviour varies by browser and settings (some desktop users disable the built-in viewer), so test on your target devices.</p>
 
     <h3>Legacy Plugin Content</h3>
     <code-block language="html" show-lines label="Legacy Flash embed (non-functional)" data-escape><embed src="animation.swf" type="application/x-shockwave-flash"
@@ -72,6 +76,37 @@ crumbLabel: Native Elements
 <img src="chart.svg" alt="Quarterly revenue chart" width="400" height="300"></code-block>
 
     <p>For any use case where the resource might not load, prefer <code>&lt;object&gt;</code> or a native element over <code>&lt;embed&gt;</code>.</p>
+  </section>
+
+  <section>
+    <h2 id="sizing">Sizing</h2>
+    <p>VB styles <code>&lt;embed&gt;</code> and <code>&lt;object&gt;</code> as <code>display: block</code> with <code>max-inline-size: 100%</code>. On their own that clamps the width but not the height, because these elements have no natural aspect ratio &mdash; in a narrow container a 600&times;400 embed becomes a tall, letterboxed box. Two primitives fix that without inline styles:</p>
+    <ul>
+      <li><strong><code>data-ratio</code> on the element</strong> &mdash; the block size follows the used width. A <code>width</code> attribute stays the preferred (maximum) width; without one the element fills its container. Values: <code>1:1</code>, <code>4:3</code>, <code>3:2</code>, <code>16:9</code> (default), <code>21:9</code>, <code>2:3</code>, <code>3:4</code>, <code>9:16</code>, and <code>page</code> (1&nbsp;:&nbsp;1.414, a portrait document page). Also works on <code>&lt;iframe&gt;</code>.</li>
+      <li><strong><code>data-media</code> wrapper</strong> &mdash; a ratio box (<code>data-ratio</code>, <code>data-radius</code>) whose child <code>&lt;embed&gt;</code>, <code>&lt;object&gt;</code> or <code>&lt;iframe&gt;</code> fills it. The legacy <code>.embed-responsive</code> class works the same way. If the wrapper is a <code>&lt;figure&gt;</code> with a <code>&lt;figcaption&gt;</code>, the ratio applies to the media child and the caption flows below it (see <a href="/docs/elements/native/figure/#data-media">figure</a>).</li>
+    </ul>
+    <code-block language="html" show-lines label="Responsive embed sizing" data-escape><!-- Ratio on the element: 600px wide at most, height follows -->
+<embed src="diagram.svg" type="image/svg+xml"
+       width="600" height="400" data-ratio="3:2"
+       title="Network diagram: three servers behind a load balancer">
+
+<!-- Ratio box wrapper: the embed fills it -->
+<figure data-media data-ratio="16:9">
+  <embed src="slides.svg" type="image/svg+xml" title="Launch slides, slide 1">
+</figure></code-block>
+    <p>When printing, VB keeps <code>&lt;embed&gt;</code> and <code>&lt;object&gt;</code> from splitting across pages and caps them at the page width.</p>
+  </section>
+
+  <section>
+    <h2>Security</h2>
+    <p><code>&lt;embed&gt;</code> (like <code>&lt;object&gt;</code>) has <strong>no <code>sandbox</code> attribute</strong>. Embedded SVG and HTML documents run their scripts with the embedded document's origin, and same-origin content can reach into your page.</p>
+    <ul>
+      <li>For untrusted or user-supplied SVG, use <code>&lt;img&gt;</code> &mdash; SVG loaded as an image never runs script.</li>
+      <li>For untrusted HTML, use <a href="/docs/elements/native/iframe/"><code>&lt;iframe sandbox&gt;</code></a>, which can strip script, forms and same-origin access.</li>
+      <li>The <code>type</code> attribute is only a hint. The server's <code>Content-Type</code> header decides how the resource is handled, so <code>type="image/svg+xml"</code> does not stop an HTML response from being rendered as HTML.</li>
+      <li>If you don't use these elements, turn them off with Content Security Policy: <code>object-src 'none'</code> blocks both <code>&lt;object&gt;</code> and <code>&lt;embed&gt;</code>.</li>
+    </ul>
+    <code-block language="text" show-lines label="Disable object and embed with CSP" data-escape>Content-Security-Policy: object-src 'none'</code-block>
   </section>
 
   <section>
@@ -110,7 +145,7 @@ crumbLabel: Native Elements
     <p>The <code>&lt;embed&gt;</code> element has significant accessibility limitations:</p>
     <ul>
       <li>No fallback content mechanism -- if the resource cannot be loaded, the user gets nothing</li>
-      <li>No native <code>alt</code> attribute like <code>&lt;img&gt;</code></li>
+      <li>No native <code>alt</code> attribute like <code>&lt;img&gt;</code> &mdash; give every embed an accessible name with <code>title</code> or <code>aria-label</code> that describes the content (&ldquo;2026 annual report (PDF)&rdquo;), not the element (&ldquo;Embedded content&rdquo;)</li>
       <li>Embedded content is opaque to screen readers unless the content itself is accessible</li>
       <li>Prefer elements with built-in accessibility semantics (<code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>, <code>&lt;audio&gt;</code>) whenever possible</li>
     </ul>

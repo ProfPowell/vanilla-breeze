@@ -1,29 +1,43 @@
 /**
  * autosave-init: Form draft persistence
  *
- * Saves form data to localStorage on input, restores on page load.
- * Skips password fields. Clears on submit/reset. Expires after 24 hours.
+ * Saves form data through VBStore (localStorage key `vb:autosave:{key}`,
+ * envelope `{ data, timestamp }`) on input, restores it on page load, and
+ * deletes drafts older than 24 hours instead of restoring them. Clears on
+ * submit and reset.
+ *
+ * Never stored, never restored (shared filter, src/utils/_persist-filter.js):
+ * password/hidden/file inputs, buttons, autocomplete="off", secret
+ * autocomplete tokens (cc-number, cc-csc, cc-exp*, one-time-code,
+ * new-password, current-password) and anything marked data-autosave-ignore
+ * (or inside a [data-autosave-ignore] container). Restore also skips
+ * readonly and disabled controls.
  *
  * @attr {string} data-autosave - Storage key. When empty, derived from form.method + form.action.
  * @attr {string} data-autosave-retain - Space-separated allowlist of field names to persist.
+ * @attr {string} data-label-restored - Announcement after a draft is restored (default "Draft restored").
+ * @attr {boolean} data-autosave-ignore - On a control or container: never persist it.
+ *
+ * @fires autosave:restore - On the form after a draft was applied. detail: { key, fields } (restored field names).
  *
  * @example
- *   <!-- Explicit key -->
  *   <form data-autosave="contact-form">…</form>
- *
- *   <!-- Auto-derived key from method + action -->
  *   <form action="/contact" method="post" data-autosave>…</form>
- *
- *   <!-- Only persist specific fields -->
  *   <form data-autosave="checkout" data-autosave-retain="name email">…</form>
  */
 
 import { VBStore } from '../lib/vb-store.js';
+import { registerInit } from './_init-registry.js';
+import { isPersistable } from './_persist-filter.js';
 
 const SELECTOR = 'form[data-autosave]';
 const STORAGE_NS = 'autosave';
 const DEBOUNCE_MS = 500;
 const EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+/** Forms actually wired by this module (the attribute flag survives cloning). */
+/** @type {WeakSet<HTMLFormElement>} */
+const wired = new WeakSet();
 
 /**
  * Resolve the storage key for a form.
@@ -60,137 +74,171 @@ function getRetainSet(form) {
  * @param {HTMLFormElement} form
  */
 function enhanceForm(form) {
-  if (form.hasAttribute('data-autosave-init')) return;
+  if (wired.has(form)) return;
+  wired.add(form);
   form.setAttribute('data-autosave-init', '');
 
   const key = getStorageKey(form);
   const retain = getRetainSet(form);
+  /** @type {ReturnType<typeof setTimeout> | undefined} */
   let saveTimer;
 
   /**
-   * Whether a field's name is allowed by the retain allowlist (or no list set).
-   * @param {string} name
+   * Named, persistable controls the allowlist accepts.
+   * @returns {any[]}
    */
-  function isRetained(name) {
-    return retain === null || retain.has(name);
+  function fields() {
+    return Array.from(form.elements).filter((el) => {
+      const name = /** @type {any} */ (el).name;
+      return name && (retain === null || retain.has(name)) && isPersistable(el);
+    });
   }
 
   /**
-   * Collect saveable form data (skip passwords and file inputs)
+   * Collect saveable form data. Checkboxes are stored per name as an array
+   * of checked values, so a group sharing one name round-trips.
    * @returns {Record<string, string | string[]>}
    */
   function collectData() {
     /** @type {Record<string, string | string[]>} */
     const data = {};
-    const elements = form.elements;
-    for (const el of elements) {
-      const field = /** @type {HTMLInputElement} */ (el);
-      if (!field.name) continue;
-      if (field.type === 'password' || field.type === 'file') continue;
-      if (!isRetained(field.name)) continue;
+    for (const field of fields()) {
+      if (field.disabled) continue; // not submitted, and restore skips it
+      const { name } = field;
       if (field.type === 'checkbox') {
-        data[field.name] = field.checked ? 'on' : '';
+        const list = /** @type {string[]} */ (Array.isArray(data[name]) ? data[name] : (data[name] = []));
+        if (field.checked) list.push(field.value);
       } else if (field.type === 'radio') {
-        if (field.checked) data[field.name] = field.value;
+        if (field.checked) data[name] = field.value;
       } else if (field instanceof HTMLSelectElement && field.multiple) {
-        data[field.name] = Array.from(field.selectedOptions).map(o => o.value);
-      } else {
-        data[field.name] = field.value;
+        data[name] = Array.from(field.selectedOptions).map((o) => o.value);
+      } else if (typeof field.value === 'string') {
+        data[name] = field.value;
       }
     }
     return data;
   }
 
-  /**
-   * Save form data through VBStore (timestamp envelope is automatic).
-   */
   function save() {
+    saveTimer = undefined;
     VBStore.set(STORAGE_NS, key, collectData()).catch(() => { /* ignore */ });
   }
 
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(save, DEBOUNCE_MS);
+  }
+
+  function cancelSave() {
+    clearTimeout(saveTimer);
+    saveTimer = undefined;
+  }
+
   /**
-   * Restore form data from VBStore (24-hour expiry via maxAge).
-   * @returns {Promise<boolean>} Whether data was restored
+   * Apply the stored draft. Writable, persistable controls only.
+   * @returns {Promise<any[]>} The controls that were written
    */
   async function restore() {
     const data = /** @type {Record<string, string | string[]>|null} */ (
       await VBStore.get(STORAGE_NS, key, { maxAge: EXPIRY_MS })
     );
-    if (!data) return false;
-
-    let restored = false;
-    for (const [name, value] of Object.entries(data)) {
-      if (!isRetained(name)) continue;
-      const fields = form.querySelectorAll(`[name="${CSS.escape(name)}"]`);
-      fields.forEach(f => {
-        const field = /** @type {HTMLInputElement} */ (f);
-        if (field.type === 'checkbox') {
-          field.checked = value === 'on';
-        } else if (field.type === 'radio') {
-          field.checked = field.value === value;
-        } else if (field instanceof HTMLSelectElement && field.multiple) {
-          const values = Array.isArray(value) ? value : [value];
-          Array.from(field.options).forEach(opt => {
-            opt.selected = values.includes(opt.value);
-          });
-        } else if (typeof value === 'string') {
-          field.value = value;
-        }
-      });
-      if (fields.length) restored = true;
+    if (!data || typeof data !== 'object') {
+      // Missing, unreadable or older than 24h: make sure nothing lingers.
+      VBStore.remove(STORAGE_NS, key).catch(() => { /* ignore */ });
+      return [];
     }
-    return restored;
+
+    const touched = [];
+    for (const field of fields()) {
+      if (!Object.hasOwn(data, field.name)) continue;
+      if (field.disabled || field.readOnly) continue;
+      const value = data[field.name];
+      const values = Array.isArray(value) ? value : [value];
+      if (field.type === 'checkbox') {
+        field.checked = values.includes(field.value);
+      } else if (field.type === 'radio') {
+        field.checked = field.value === value;
+      } else if (field instanceof HTMLSelectElement && field.multiple) {
+        for (const opt of field.options) opt.selected = values.includes(opt.value);
+      } else if (typeof value === 'string') {
+        field.value = value;
+      } else {
+        continue;
+      }
+      touched.push(field);
+    }
+    return touched;
   }
 
-  /**
-   * Clear saved draft (fire-and-forget)
-   */
   function clear() {
+    cancelSave();
     VBStore.remove(STORAGE_NS, key).catch(() => { /* ignore */ });
   }
 
   /**
-   * Show a "Draft restored" notification via toast-msg if available
+   * Announce the restore: through the page's <toast-msg> stack when that
+   * component is registered, otherwise through a polite status region
+   * appended to the form so screen-reader users still learn that fields
+   * were pre-filled.
    */
   function notifyRestored() {
+    const message = form.dataset.labelRestored || 'Draft restored';
     if (customElements.get('toast-msg')) {
-      const toast = document.createElement('toast-msg');
-      toast.setAttribute('variant', 'info');
-      toast.setAttribute('duration', '3000');
-      toast.textContent = 'Draft restored';
-      document.body.appendChild(toast);
+      let host = /** @type {any} */ (document.querySelector('toast-msg'));
+      if (!host) {
+        host = document.createElement('toast-msg');
+        document.body.appendChild(host);
+      }
+      if (typeof host.show === 'function') {
+        host.show({ message, variant: 'info', duration: 3000, source: 'autosave' });
+        return;
+      }
     }
+    let status = /** @type {HTMLElement|null} */ (form.querySelector(':scope > [data-autosave-status]'));
+    if (!status) {
+      status = document.createElement('span');
+      status.className = 'visually-hidden';
+      status.setAttribute('role', 'status');
+      status.setAttribute('data-autosave-status', '');
+      form.append(status);
+    }
+    status.textContent = '';
+    const region = status;
+    requestAnimationFrame(() => { region.textContent = message; });
   }
 
-  // Restore on init (async — wires listeners immediately, restores when ready)
-  restore().then((didRestore) => {
-    if (!didRestore) return;
+  // Restore on init (async: listeners are wired immediately)
+  restore().then((touched) => {
+    if (!touched.length) return;
     notifyRestored();
-    // Trigger input events so other enhancements (count, grow) update
-    Array.from(form.elements).forEach(e => {
-      const el = /** @type {HTMLInputElement} */ (e);
-      if (el.name && el.type !== 'password' && el.type !== 'file') {
-        el.dispatchEvent(new Event('input', { bubbles: true }));
-      }
-    });
+    // Let other enhancements (count, grow, show-when) catch up.
+    for (const el of touched) {
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    // The events above schedule a save of the same data; it is harmless but
+    // unnecessary.
+    cancelSave();
+    form.dispatchEvent(new CustomEvent('autosave:restore', {
+      bubbles: true,
+      detail: { key, fields: [...new Set(touched.map((el) => el.name))] },
+    }));
   });
 
-  // Save on input (debounced)
-  form.addEventListener('input', () => {
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(save, DEBOUNCE_MS);
-  });
+  form.addEventListener('input', scheduleSave);
+  form.addEventListener('change', scheduleSave);
 
-  form.addEventListener('change', () => {
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(save, DEBOUNCE_MS);
-  });
-
-  // Clear on submit or reset
+  // Submit: drop the draft and any pending save, so a debounced save cannot
+  // write the sent data back (fetch submits keep the page alive).
   form.addEventListener('submit', clear);
-  form.addEventListener('reset', () => {
-    // Defer clear so the reset completes first
-    setTimeout(clear, 0);
+
+  // Reset: cancel the pending save now; drop the draft once the reset has
+  // actually happened (a cancelled reset keeps it).
+  form.addEventListener('reset', (event) => {
+    cancelSave();
+    setTimeout(() => {
+      if (!event.defaultPrevented) clear();
+    }, 0);
   });
 }
 
@@ -199,28 +247,9 @@ function enhanceForm(form) {
  * @param {Element|Document} root
  */
 function initAutosave(root = document) {
-  root.querySelectorAll(SELECTOR).forEach(enhanceForm);
+  root.querySelectorAll(SELECTOR).forEach((form) => enhanceForm(/** @type {HTMLFormElement} */ (form)));
 }
 
-// Auto-init
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => initAutosave());
-} else {
-  initAutosave();
-}
-
-// Watch for dynamically added forms
-const observer = new MutationObserver((mutations) => {
-  for (const mutation of mutations) {
-    for (const node of mutation.addedNodes) {
-      if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      const el = /** @type {Element} */ (node);
-      if (el.matches(SELECTOR)) enhanceForm(/** @type {HTMLFormElement} */ (el));
-      el.querySelectorAll(SELECTOR).forEach(enhanceForm);
-    }
-  }
-});
-
-observer.observe(document.documentElement, { childList: true, subtree: true });
+registerInit(SELECTOR, enhanceForm);
 
 export { initAutosave };

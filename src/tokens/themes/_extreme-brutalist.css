@@ -128,7 +128,7 @@
   [data-theme~="brutalist"] {
     & :is(main, article) {
     /* Raw dividers */
-    & hr:not([data-ornament]) {
+    & hr:not([data-ornament], [class]) {
       border: none;
       height: 4px;
       background: repeating-linear-gradient(
@@ -269,6 +269,13 @@
       padding: 1rem 1.5rem;
       background: var(--color-surface);
       font-style: normal;
+
+      /* Core toggles emphasis to upright inside a blockquote because it
+         assumes the quote is italic; this quote is upright, so emphasis
+         re-asserts italic (unless it sits in another italic context). */
+      & :is(em, i):not(:where(em, i, cite:not([data-variant~="quoted"]), dfn, var) *) {
+        font-style: italic;
+      }
 
       /* Decorative glyph: empty alt text keeps it out of the a11y tree */
       &::before {
@@ -414,7 +421,7 @@
       border-block-end-color: var(--color-border);
     }
 
-    & :is(main, article) hr:not([data-ornament]) {
+    & :is(main, article) hr:not([data-ornament], [class]) {
       background: repeating-linear-gradient(
         90deg,
         var(--color-border),

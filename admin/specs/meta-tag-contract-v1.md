@@ -65,7 +65,7 @@ VB reads these names as authoritative. Authors SHOULD emit them via whatever bui
 
 | Field | Source | Consumers |
 |---|---|---|
-| `<meta property="og:title" content="…">` | Open Graph | `<page-info data-show-og-preview>` |
+| `<meta property="og:title" content="…">` | Open Graph | social previews (no VB reader) |
 | `<meta property="og:description" content="…">` | Open Graph | same |
 | `<meta property="og:image" content="…">` | Open Graph | same |
 | `<meta property="og:type" content="article">` | Open Graph | same |
@@ -135,6 +135,16 @@ The `link rel="author-key"` claims the rel name for this purpose. See `canonical
 
 These are available for lens components to consume but are **owned by the analytics subsystem**, not the provenance initiative. Changes to their vocabulary belong in the analytics spec.
 
+### Reading-history switches (configuration, not taxonomy)
+
+| Field | Values | Consumer |
+|---|---|---|
+| `vb:track-history` | `on` | `src/utils/recently-visited-init.js` — opts the page in to local reading history (a `<recently-visited>` on the page also opts in) |
+| `vb:track-history-params` | space-separated query parameter names | same — query strings are stripped unless listed here |
+| `vb:no-track-history` | any | same — this page is never recorded |
+
+`<html data-vb-no-track>` also blocks recording site-wide. These are runtime switches: analytics excludes them from its event taxonomy.
+
 ---
 
 ## Section C — DOM attributes (not meta tags)
@@ -147,7 +157,7 @@ Applied to block-level content elements (articles, sections, asides), sometimes 
 | `data-provenance` | How was this content made? | `<article data-provenance="ai-assisted">` | Vocabulary as in §B `vb:provenance` |
 | `data-review` | What review did it receive? | `<article data-review="fact-checked">` | Vocabulary as in §B `vb:review` |
 | `data-status` | What's its publication state? | `<article data-status="draft">` | Vocabulary as in §B `vb:status` |
-| `data-trust` | **Verification tier** (on `.page-info-badge` only) | `<span data-trust="verified">` | `undeclared`, `declared`, `domain-anchored`, `verified`, `failed`, `key-unavailable` |
+| `data-trust` | **Verification tier** (on `.page-info-badge` only) | `<span data-trust="verified">` | `undeclared`, `declared`, `verified`, `failed`, `key-unavailable` |
 
 **`data-trust` is reserved for the verification badge.** Do not use it for authorship. Authorship is `data-provenance`. The two attributes answer different questions:
 - `data-provenance` — claim about how the content was made (author-declared, unverifiable on its own)

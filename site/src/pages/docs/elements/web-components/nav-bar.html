@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "nav-bar"
-description: "Top-level site/app navigation primitive. HTML-first wrap or JSON-first .items setter; auto aria-current sync via pathname matching with popstate listener."
+description: "Top-level site/app navigation primitive. HTML-first wrap or JSON-first .items setter; auto aria-current sync via URL matching on popstate and Navigation API entry changes."
 elementName: nav-bar
 category: component
 currentPath: /docs/elements/web-components/nav-bar/
@@ -18,6 +18,8 @@ crumbLabel: Web Components
     <li><strong>JS-first:</strong> assign <code>.items = [...]</code> and let the default renderer build the link list from data.</li>
   </ul>
   <p>It is deliberately small — no router, no click interception, no custom renderer in v1. See <a href="#reactive-integration">Reactive integration</a> for the trade-offs.</p>
+
+  <browser-window src="/docs/examples/demos/nav-bar-basic.html" url="https://vanilla-breeze.com/nav-bar" title="nav-bar — HTML-first, JS-first and exact match" shadow></browser-window>
 </section>
 
 <section>
@@ -33,6 +35,7 @@ crumbLabel: Web Components
 
   <p>Matching policy:</p>
   <ol>
+    <li>Each link is resolved against the document base URL (so relative hrefs and <code>&lt;base&gt;</code> work) and compared by origin plus pathname. Trailing slashes, query strings and hashes are ignored, so <code>/docs</code> matches <code>/docs/</code>. Other-origin, non-http(s) and bare <code>#fragment</code> links never match.</li>
     <li>Exact pathname match wins.</li>
     <li>Otherwise, longest <code>href</code> prefix wins. So on <code>/docs/elements/web-components/nav-bar/</code> the link <code>/docs/elements/</code> beats <code>/docs/</code>.</li>
     <li>Ties broken by first-in-DOM-order.</li>
@@ -40,7 +43,7 @@ crumbLabel: Web Components
   <p>Add <code>data-match="exact"</code> on the <code>&lt;nav-bar&gt;</code> to opt out of prefix matching.</p>
 </section>
 
-<section>
+<section id="nested-links">
   <h2>Nested links (e.g. inside <code>&lt;drop-down&gt;</code> or <code>&lt;li&gt;</code>)</h2>
   <p>By default <code>nav-bar</code> only manages <strong>direct <code>&lt;a&gt;</code> children</strong>. If your link list is wrapped (each item inside a <code>&lt;li&gt;</code>, or each section in a <code>&lt;drop-down&gt;</code>), tag the canonical link in each item with <code>data-nav-link</code>:</p>
   <code-block language="html" label="Nested links opt in via data-nav-link"><nav-bar aria-label="Main">
@@ -54,6 +57,15 @@ crumbLabel: Web Components
   </ul>
 </nav-bar></code-block>
   <p>When any descendant link carries <code>data-nav-link</code>, those become the candidate set; otherwise direct-children behavior applies.</p>
+  <p>When the host wraps a <code>&lt;nav&gt;</code>, <code>nav-bar</code> does not add <code>role="navigation"</code> to itself, so there is only one landmark. Put the <code>aria-label</code> on the inner <code>&lt;nav&gt;</code>:</p>
+  <code-block language="html" label="Wrapped nav: label the nav, not the host"><nav-bar>
+  <nav class="horizontal pills" aria-label="Main navigation">
+    <ul>
+      <li><a href="/docs/" data-nav-link>Docs</a></li>
+      <li><a href="/blog/" data-nav-link>Blog</a></li>
+    </ul>
+  </nav>
+</nav-bar></code-block>
 </section>
 
 <section>
@@ -71,7 +83,7 @@ nav.items = [
   { href: 'https://github.com/...', label: 'Repo', external: true },
 ];</code-block>
 
-  <p>The setter is idempotent — assigning a deep-equal array is a no-op and emits no event.</p>
+  <p>The setter is idempotent — assigning a deep-equal array is a no-op and emits no event. It replaces only the direct <code>&lt;a&gt;</code> children; other content (and nested <code>data-nav-link</code> anchors) stays. In nested mode the rendered links get <code>data-nav-link</code> so they join the candidate set. If <code>.current</code> is explicitly owned, the owned value is re-applied to the new links and no <code>nav-bar:current-changed</code> fires.</p>
 </section>
 
 <section>
@@ -81,11 +93,11 @@ nav.items = [
       <tr><th>Field</th><th>Type</th><th>Description</th></tr>
     </thead>
     <tbody>
-      <tr><td><code>href</code></td><td>string</td><td>Required. Anchor target.</td></tr>
+      <tr><td><code>href</code></td><td>string</td><td>Required. Anchor target. Only <code>http:</code>, <code>https:</code> and relative URLs are rendered; any other scheme (<code>javascript:</code>, <code>data:</code>, &hellip;) produces an anchor with no <code>href</code>.</td></tr>
       <tr><td><code>label</code></td><td>string</td><td>Required. Link text.</td></tr>
       <tr><td><code>route</code></td><td>string</td><td>Optional. <code>.current</code> diff target. Falls back to <code>href</code>.</td></tr>
       <tr><td><code>icon</code></td><td>string</td><td>Optional. Renders <code>&lt;icon-wc name="..."&gt;</code> before the label.</td></tr>
-      <tr><td><code>external</code></td><td>boolean</td><td>Adds <code>target="_blank"</code>, <code>rel="noopener noreferrer"</code>, and an SR-only "(opens in new tab)" suffix.</td></tr>
+      <tr><td><code>external</code></td><td>boolean</td><td>Adds <code>target="_blank"</code>, <code>rel="noopener noreferrer"</code>, and an SR-only "(opens in new tab)" suffix (override with <code>data-label-new-tab</code> on the host).</td></tr>
       <tr><td><code>badge</code></td><td>string | number</td><td>Optional pill chip after the label.</td></tr>
     </tbody>
   </table>
@@ -97,7 +109,7 @@ nav.items = [
     <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
     <tbody>
       <tr><td><code>.items</code></td><td>NavItem[] | null</td><td>Read returns last assignment, else inferred from children. Set replaces children with default renderer; idempotent.</td></tr>
-      <tr><td><code>.current</code></td><td>string | null</td><td>Read returns the active route (data-route or href of the <code>aria-current</code> link). Set takes ownership and disables popstate sync.</td></tr>
+      <tr><td><code>.current</code></td><td>string | null</td><td>Read returns the active route (data-route or href of the <code>aria-current</code> link). Set takes ownership and disables URL sync until <code>.releaseCurrent()</code>.</td></tr>
     </tbody>
   </table>
 </section>
@@ -108,7 +120,7 @@ nav.items = [
     <thead><tr><th>Method</th><th>Description</th></tr></thead>
     <tbody>
       <tr><td><code>.releaseCurrent()</code></td><td>Restore auto mode after explicit assignment to <code>.current</code>. Re-runs pathname matching.</td></tr>
-      <tr><td><code>.refresh()</code></td><td>Manually re-run pathname matching. Useful for AJAX frameworks (e.g. HTML-Star) that change the URL without firing <code>popstate</code>. No-op when <code>.current</code> is explicitly owned.</td></tr>
+      <tr><td><code>.refresh()</code></td><td>Manually re-run pathname matching. Browsers with the Navigation API re-sync on <code>pushState</code> automatically; call this for routers in other browsers, or frameworks (e.g. HTML-Star) that change the URL without firing <code>popstate</code>. No-op when <code>.current</code> is explicitly owned.</td></tr>
     </tbody>
   </table>
 </section>
@@ -118,9 +130,9 @@ nav.items = [
   <table class="props-table">
     <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
     <tbody>
-      <tr><td><code>nav-bar:upgraded</code></td><td>—</td><td>Once after first connect.</td></tr>
+      <tr><td><code>nav-bar:upgraded</code></td><td>—</td><td>After every connect, including a reconnect after the element is moved.</td></tr>
       <tr><td><code>nav-bar:items-changed</code></td><td><code>{ items, source: 'property' }</code></td><td>After <code>.items</code> is assigned to a new value.</td></tr>
-      <tr><td><code>nav-bar:current-changed</code></td><td><code>{ current, previous, source }</code></td><td><code>source</code> is one of <code>'property'</code> | <code>'popstate'</code> | <code>'pathname'</code>.</td></tr>
+      <tr><td><code>nav-bar:current-changed</code></td><td><code>{ current, previous, source }</code></td><td><code>source</code> is one of <code>'property'</code> | <code>'popstate'</code> | <code>'navigation'</code> (Navigation API <code>currententrychange</code>, e.g. <code>pushState</code>) | <code>'pathname'</code> (initial match, <code>.items</code>, <code>releaseCurrent()</code>, <code>refresh()</code>).</td></tr>
     </tbody>
   </table>
 </section>
@@ -143,8 +155,8 @@ nav.items = [
 <section>
   <h2>Composition</h2>
   <ul>
-    <li><strong>Inside <code>&lt;mobile-menu&gt;</code></strong> — <code>nav-bar</code> is content; <code>mobile-menu</code> is the off-canvas shell. They compose: <code>&lt;mobile-menu&gt;&lt;nav-bar&gt;...&lt;/nav-bar&gt;&lt;/mobile-menu&gt;</code>.</li>
-    <li><strong>With <code>&lt;drop-down&gt;</code></strong> — wrap an item in <code>&lt;drop-down&gt;</code> for a sub-menu. <code>nav-bar</code> only manages its direct <code>&lt;a&gt;</code> children.</li>
+    <li><strong>With <code>&lt;mobile-menu&gt;</code></strong> — <code>mobile-menu</code> is a breakpoint observer, not a shell. Below its breakpoint it hides sibling <code>nav</code>, <code>nav-bar</code> and <code>site-tools</code> elements in the header and shows the trigger for <em>your</em> popover panel. For active-link sync in the mobile menu, put a second <code>nav-bar</code> inside that popover panel: <code>&lt;mobile-menu&gt;&lt;button popovertarget="m"&gt;&lt;/button&gt;&lt;nav popover id="m" aria-label="Site menu"&gt;&lt;nav-bar&gt;...&lt;/nav-bar&gt;&lt;/nav&gt;&lt;/mobile-menu&gt;</code>.</li>
+    <li><strong>With <code>&lt;drop-down&gt;</code></strong> — wrap an item in <code>&lt;drop-down&gt;</code> for a sub-menu and tag the item's canonical link with <code>data-nav-link</code> (see <a href="#nested-links">Nested links</a>). Without any <code>data-nav-link</code>, <code>nav-bar</code> manages only its direct <code>&lt;a&gt;</code> children.</li>
     <li><strong>Not</strong> a router and not a view-switcher. See <a href="#reactive-integration">Reactive integration</a>.</li>
   </ul>
 </section>
@@ -152,9 +164,9 @@ nav.items = [
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li>Sets <code>role="navigation"</code> on the host if absent.</li>
-    <li><code>aria-current="page"</code> on the active link only.</li>
-    <li>External links get <code>target="_blank"</code>, <code>rel="noopener noreferrer"</code>, and an SR-only "(opens in new tab)" suffix.</li>
+    <li>Sets <code>role="navigation"</code> on the host if absent, unless the host contains a <code>&lt;nav&gt;</code>. Then the inner <code>&lt;nav&gt;</code> is the only landmark, and the label belongs on it.</li>
+    <li><code>aria-current="page"</code> on the active link only. In forced-colors mode the current link also gets an outline and underline, because the background and colour cues are dropped.</li>
+    <li>External links get <code>target="_blank"</code>, <code>rel="noopener noreferrer"</code>, and an SR-only "(opens in new tab)" suffix. Translate it with <code>data-label-new-tab</code> on the host.</li>
     <li>Native keyboard navigation — Tab through links, Enter / Space activates. No custom focus management.</li>
   </ul>
 </section>

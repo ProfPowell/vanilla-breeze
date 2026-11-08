@@ -2,7 +2,7 @@
   "$schema": "../../schemas/api.schema.json",
   "element": "layout-stack",
   "type": "custom-element",
-  "description": "Vertical flex stack with a consistent gap between children. Attribute form: any semantic element with data-layout=\"stack\".",
+  "description": "Vertical flex stack with a consistent gap between children. Attribute form: any semantic element with data-layout=\"stack\". With data-layout-align start/center/end, main/article/section/aside children drop container-type so they size to content instead of collapsing to zero width; add data-container to such a child to keep its container queries.",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -42,7 +42,15 @@
         "stretch"
       ],
       "default": "stretch",
-      "description": "Cross-axis (inline) alignment of children."
+      "description": "Cross-axis (inline) alignment of children. start/center/end make children content-sized (semantic sectioning children stop being query containers — see data-container)."
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "data-container",
+      "on": "main, article, section, aside",
+      "description": "Opt a semantic child back into container queries when the stack is aligned start/center/end. The layout removes container-type from such children so they size to content; this restores it (give the child an explicit inline size, or it collapses).",
+      "type": "boolean"
     }
   ]
 }

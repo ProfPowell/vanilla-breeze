@@ -12,6 +12,10 @@
 
   --_column-width: var(--column-min-width, 38ch);
   --_column-gap: var(--column-gap, var(--size-2xl));
+  /* Narrowest a column may get in the fixed 2/3 counts before the count
+     drops: column-count is a maximum when column-width is also set, so the
+     columns collapse on the element's OWN width (no container needed). */
+  --_column-floor: 14rem;
 
   &[data-layout-align="justify"] {
     text-align: justify;
@@ -20,39 +24,57 @@
     text-justify: inter-word;
   }
 
-  /* ── Column: explicit counts
-     column-width: unset prevents the column-width constraint
-     interfering with the explicit count.
-  ── */
+  /* ── Column: explicit counts ──
+     2 and 3 are maximums: below (count × 14rem + gaps) they drop to
+     fewer columns, down to one on a phone. Without data-layout-measure the
+     block fills its container (max-inline-size: none); with it, the measure
+     caps each column's line length, so the block is capped at
+     count × measure + gaps. When --_measure is unset the calc() is invalid
+     at computed-value time and max-inline-size falls back to none. */
   &[data-layout-column-count="1"] {
     column-count: 1;
     column-width: unset;
   }
 
   &[data-layout-column-count="2"] {
-    max-inline-size: none;
-    column-count: 2;
-    column-width: unset;
+    max-inline-size: calc(2 * var(--_measure) + var(--_column-gap) + 2 * var(--size-m));
+    columns: var(--_column-floor) 2;
     column-gap: var(--_column-gap);
     column-rule: var(--border-width-thin, 1px) solid var(--color-border);
   }
 
   &[data-layout-column-count="3"] {
-    max-inline-size: none;
-    column-count: 3;
-    column-width: unset;
+    max-inline-size: calc(3 * var(--_measure) + 2 * var(--_column-gap) + 2 * var(--size-m));
+    columns: var(--_column-floor) 3;
     column-gap: var(--_column-gap);
     column-rule: var(--border-width-thin, 1px) solid var(--color-border);
   }
 
-  /* ── Prose reset: neutralise theme borders on flow content ──
-     Themes (brutalist, swiss, etc.) add borders to headings,
-     paragraphs, and block elements. Inside column flow these
-     borders clash with column-rules and fragment across breaks.
-     Preserve blockquote inline-start border (standard reading cue).
-  ── */
-  & :is(article, section, header, footer, aside, nav, h1, h2, h3, h4, h5, h6, p, figure, pre, ul, ol, dl, details) {
-    border: none;
+  /* ── Column: auto ──
+     As many columns as fit --column-min-width (or the measure, when one is
+     set). column-width already answers to the element's own width, so a
+     narrow container gets one column without any media/container query —
+     the old `@media (min-width: 48rem)` gate looked at the viewport. */
+  &[data-layout-column-count="auto"] {
+    max-inline-size: none;
+    columns: var(--_measure, var(--_column-width));
+    column-gap: var(--_column-gap);
+    column-rule: var(--border-width-thin, 1px) solid var(--color-border);
+  }
+
+  /* ── Prose reset: neutralise theme borders on headings and paragraphs ──
+     Themes (brutalist h2, swiss, …) put rules under headings. Inside column
+     flow those clash with the column-rules and fragment across breaks.
+     Theme rules live in the later bundle-theme layer, which beats this
+     custom-elements layer whatever the specificity — so the reset is
+     !important (an important declaration in an earlier layer beats normal
+     declarations in every later one). Scoped to the flow's own headings and
+     paragraphs: direct children, or children of one wrapping article or
+     section. Nested components (nav, details, cards, asides) keep their
+     borders. Preserve blockquote inline-start border (standard reading cue). */
+  & > :is(h1, h2, h3, h4, h5, h6, p),
+  & > :is(article, section) > :is(h1, h2, h3, h4, h5, h6, p) {
+    border: none !important;
   }
 
   & blockquote {
@@ -67,18 +89,5 @@
 
   & :is(h2, h3, h4) {
     break-after: avoid;
-  }
-}
-
-/* ── Column: auto
-   Single column below 48rem, column-width-driven above.
-   max-inline-size lifted so columns can expand to fill.
-── */
-@media (min-width: 48rem) {
-  :is(layout-columns, [data-layout="columns"])[data-layout-column-count="auto"] {
-    max-inline-size: none;
-    columns: var(--_column-width);
-    column-gap: var(--_column-gap);
-    column-rule: var(--border-width-thin, 1px) solid var(--color-border);
   }
 }

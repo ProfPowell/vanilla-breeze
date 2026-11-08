@@ -42,7 +42,7 @@ const PUBLIC_CONTENT_TOKENS = [
 ];
 const PUBLIC_SCALE_TOKENS = [
   '--color-black', // the palette anchor; taught in the tokens starter
-  '--duration-slower', '--line-height-snug', '--line-height-loose',
+  '--duration-slower', '--line-height-loose',
   '--ease-elastic-1', '--ease-elastic-2', '--shadow-none',
   '--color-overlay-subtle',
 ];

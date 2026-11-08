@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "var"
-description: "Represents a variable in mathematics or programming, visually distinguished with italic style and accent color."
+description: "Represents a variable in mathematics or programming, set in italic (upright with a dashed underline in Chinese, Japanese and Korean text)."
 elementName: var
 category: native
 nativeGroup: Text Semantics
@@ -13,7 +13,7 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;var&gt;</code> element represents a variable in a mathematical expression or programming context. VB styles it with italic text and <code>var(--color-interactive)</code> to visually distinguish it from general italic text like <a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a>. Unlike the rest of the code family it keeps the body font (no monospace). Add the HTML <code>translate="no"</code> attribute when a variable name must survive browser translation (see <a href="/docs/i18n/">Internationalization</a>).</p>
+    <p>The <code>&lt;var&gt;</code> element represents a variable in a mathematical expression or programming context. VB styles it in italic, the mathematical convention, in the surrounding text colour. It deliberately does not use the link colour: where links are not underlined (navigation, cards, <code>a.plain</code>) a coloured variable looked clickable. A theme can tint variables with the <code>--var-color</code> custom property. Unlike the rest of the code family it keeps the body font (no monospace). Add the HTML <code>translate="no"</code> attribute when a variable name must survive browser translation (see <a href="/docs/i18n/">Internationalization</a>).</p>
   </section>
 
   <section>
@@ -43,11 +43,12 @@ crumbLabel: Native Elements
 <p>The function returns <var>result</var> after processing.</p></code-block>
     <code-block language="html" show-lines label="Placeholder values" data-escape><p>Replace <var>your-api-key</var> with the key from your dashboard.</p>
 <p>Navigate to <code>https://example.com/users/<var>id</var></code></p></code-block>
+    <code-block language="html" show-lines label="Variables in Chinese text" data-escape><p lang="zh-Hans">把<var>半径</var>代入公式即可求出面积。</p></code-block>
   </section>
 
   <section>
     <h2>var vs em vs code</h2>
-    <p>All three render distinctly in VB:</p>
+    <p><code>&lt;var&gt;</code> and <code>&lt;em&gt;</code> share the italic, so they look alike unless a theme sets <code>--var-color</code>. The difference is semantic: a variable is a name for a value, emphasis changes how a sentence is read. <code>&lt;code&gt;</code> renders distinctly:</p>
     <table class="props-table">
       <thead>
         <tr>
@@ -59,7 +60,7 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>&lt;var&gt;</code></td>
-          <td>Italic + <code>--color-interactive</code></td>
+          <td>Italic, text colour (or <code>--var-color</code>)</td>
           <td>Variables, placeholders</td>
         </tr>
         <tr>
@@ -80,16 +81,44 @@ crumbLabel: Native Elements
     <h2>CSS Reference</h2>
     <code-block language="css" show-lines label="var CSS" data-escape>var {
   font-style: italic;
-  color: var(--color-interactive);
+  font-synthesis: weight style;
+  color: var(--var-color, currentColor);
+}
+
+/* Chinese, Japanese, Korean: no synthesised slant */
+var:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
+  font-style: normal;
+  text-decoration: underline dashed var(--color-text-muted);
+  text-underline-position: under;
+  text-decoration-thickness: from-font;
 }</code-block>
-    <p>The accent color makes variables scannable in technical prose without the visual weight of <code>&lt;code&gt;</code>'s background. To stop browser translation from mangling variable names, put <code>translate="no"</code> on the element (or an ancestor) in your HTML: <code>&lt;var translate="no"&gt;maxRetries&lt;/var&gt;</code>.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Custom property</th>
+          <th>Default</th>
+          <th>Effect</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--var-color</code></td>
+          <td><code>currentColor</code></td>
+          <td>Text colour of every <code>&lt;var&gt;</code>. If you set it, check it reaches 4.5:1 contrast and is not your link colour.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Italic on single-face fonts:</strong> <code>font-synthesis: weight style</code> keeps a synthesised slant when the theme font ships no italic face, the same as <code>&lt;em&gt;</code> and <code>&lt;i&gt;</code>. A real italic face always wins when the font has one.</p>
+    <p><strong>CJK text:</strong> most Chinese, Japanese and Korean fonts have no italic, and the browser would slant the glyphs artificially. In <code>lang="zh"</code>, <code>ja</code> or <code>ko</code> text <code>&lt;var&gt;</code> stays upright and takes a dashed underline instead. That line differs from the CJK cues on <code>&lt;u&gt;</code> (solid), <code>&lt;i&gt;</code> (dotted) and <code>&lt;cite&gt;</code> (wavy). Romanised tags such as <code>zh-Latn</code> keep the italic.</p>
+    <p>To stop browser translation from mangling variable names, put <code>translate="no"</code> on the element (or an ancestor) in your HTML: <code>&lt;var translate="no"&gt;maxRetries&lt;/var&gt;</code>.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Screen readers announce <code>&lt;var&gt;</code> as plain text &mdash; the italic and accent color are not conveyed</li>
-      <li>The accent color is a visual cue only &mdash; context should make the variable clear</li>
+      <li>Screen readers announce <code>&lt;var&gt;</code> as plain text &mdash; the italic is not conveyed</li>
+      <li>The italic is a visual cue only &mdash; context should make the variable clear</li>
+      <li>VB keeps variables out of the link colour, so they are never mistaken for links</li>
       <li>For complex math where variables are critical, consider MathML or <code>aria-label</code></li>
     </ul>
   </section>

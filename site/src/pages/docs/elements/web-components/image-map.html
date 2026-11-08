@@ -10,6 +10,14 @@ crumbHref: /docs/elements/web-components/
 crumbLabel: Web Components
 ---
 
+<template slot="extraHead">
+<style>
+  /* Room for the image plus tooltips inside the demo frame. */
+  browser-window[data-demo-height="m"] { min-block-size: 38rem; }
+  browser-window[data-demo-height="l"] { min-block-size: 44rem; }
+</style>
+</template>
+
 <section>
   <h2>Overview</h2>
   <p>The <code>&lt;image-map&gt;</code> component replaces native HTML <code>&lt;map&gt;</code>/<code>&lt;area&gt;</code> with percentage-based coordinates that scale responsively. Areas are defined as <code>&lt;map-area&gt;</code> children with rich HTML tooltip content, full keyboard navigation, and progressive enhancement.</p>
@@ -18,7 +26,7 @@ crumbLabel: Web Components
     src="/docs/snippets/demos/image-map-basic.html"
     url="https://vanilla-breeze.com/image-map"
     title="Image Map Demo"
-    style="min-height: 38rem;"
+    data-demo-height="m"
     shadow>
   </browser-window>
 
@@ -27,25 +35,22 @@ crumbLabel: Web Components
 
   <map-area shape="rect" coords="5 8 40 44"
     label="Conference Hall" href="/rooms/conference">
-    <strong>Conference Hall</strong>
     <p>Seats 120 people. AV equipment available.</p>
   </map-area>
 
   <map-area shape="circle" coords="62.5 32 10"
     label="Server Room" href="/rooms/server">
-    <strong>Server Room</strong>
     <p>24 racks, climate controlled.</p>
   </map-area>
 
   <map-area shape="rect" coords="60 56 95 92"
     label="Open Office" href="/rooms/office">
-    <strong>Open Office</strong>
     <p>80 hot-desk workstations.</p>
   </map-area>
 </image-map></code-block>
 
   <aside class="note">
-    <strong>Progressive enhancement:</strong> Without JavaScript, the image renders normally and each <code>&lt;map-area&gt;</code> displays as a labeled list item below. The overlay and tooltips only activate when JS registers the components.
+    <strong>Progressive enhancement:</strong> Without JavaScript, the image renders normally and each <code>&lt;map-area&gt;</code> displays as a list item below it: the <code>label</code> in bold, then the area content. <code>&lt;map-area href&gt;</code> is not a link without JS &mdash; if the destination must stay reachable, put an <code>&lt;a href&gt;</code> in the content (see <a href="#progressive-enhancement">Progressive Enhancement</a>).
   </aside>
 </section>
 
@@ -102,7 +107,7 @@ crumbLabel: Web Components
     src="/docs/snippets/demos/image-map-shapes.html"
     url="https://vanilla-breeze.com/shapes"
     title="All Shape Types"
-    style="min-height: 38rem;"
+    data-demo-height="m"
     shadow>
   </browser-window>
 </section>
@@ -112,7 +117,8 @@ crumbLabel: Web Components
   <p>The inner HTML of each <code>&lt;map-area&gt;</code> becomes the tooltip content. Use any HTML: headings, paragraphs, lists, images, links.</p>
 
   <h3>Tooltip modes</h3>
-  <p>By default, tooltips show on hover (<code>tooltip=&quot;hover&quot;</code>). Set <code>tooltip=&quot;click&quot;</code> for click-to-toggle, which is better for tooltips with interactive content like links. Set <code>tooltip=&quot;none&quot;</code> to disable tooltips entirely.</p>
+  <p>By default, tooltips show on hover and keyboard focus (<code>tooltip=&quot;hover&quot;</code>). The tooltip is hoverable: moving the pointer from the area onto it keeps it open, and <kbd>Escape</kbd> dismisses it wherever focus is. Set <code>tooltip=&quot;click&quot;</code> for a click-to-toggle disclosure, which is better for interactive content like links: click, <kbd>Enter</kbd>, or <kbd>Space</kbd> opens it, keyboard activation moves focus to the first link inside, and <kbd>Escape</kbd> closes it and returns focus to the hotspot. Set <code>tooltip=&quot;none&quot;</code> to disable tooltips entirely (on hover and focus).</p>
+  <p>Content is cloned from the <code>&lt;map-area&gt;</code> into a single tooltip container that is <code>hidden</code> (out of the accessibility tree and tab order) while closed and placed right after the active hotspot, so <kbd>Tab</kbd> flows from the hotspot into the tooltip content.</p>
 
   <code-block language="html" show-lines label="Click-mode tooltip" data-escape><map-area shape="rect" coords="5 8 40 44"
   label="Conference Hall" tooltip="click">
@@ -125,7 +131,7 @@ crumbLabel: Web Components
     src="/docs/snippets/demos/image-map-rich-tooltips.html"
     url="https://vanilla-breeze.com/rich-tooltips"
     title="Rich Tooltip Content"
-    style="min-height: 44rem;"
+    data-demo-height="l"
     shadow>
   </browser-window>
 </section>
@@ -151,6 +157,11 @@ crumbLabel: Web Components
         <td><code>--map-area-stroke</code></td>
         <td><code>oklch(60% 0.2 250 / 0.3)</code></td>
         <td>Default area outline stroke</td>
+      </tr>
+      <tr>
+        <td><code>--map-area-stroke-hover</code></td>
+        <td><code>oklch(60% 0.2 250 / 0.6)</code></td>
+        <td>Hover/focus area outline stroke</td>
       </tr>
       <tr>
         <td><code>--map-tooltip-bg</code></td>
@@ -206,7 +217,12 @@ crumbLabel: Web Components
       <tr>
         <td><code>aria-label</code></td>
         <td>string</td>
-        <td>Accessible label for the map group (defaults to img alt)</td>
+        <td>Accessible label for the map group (defaults to the img alt)</td>
+      </tr>
+      <tr>
+        <td><code>data-label-map</code></td>
+        <td>string</td>
+        <td>Group name when there is no <code>aria-label</code> and the image has no alt (default &ldquo;Image map&rdquo;)</td>
       </tr>
     </tbody>
   </table>
@@ -220,8 +236,8 @@ crumbLabel: Web Components
       <tr>
         <td><code>shape</code></td>
         <td>string</td>
-        <td>Yes</td>
-        <td><code>rect</code>, <code>circle</code>, or <code>poly</code></td>
+        <td>No</td>
+        <td><code>rect</code> (default), <code>circle</code>, or <code>poly</code></td>
       </tr>
       <tr>
         <td><code>coords</code></td>
@@ -232,14 +248,14 @@ crumbLabel: Web Components
       <tr>
         <td><code>label</code></td>
         <td>string</td>
-        <td>Yes</td>
-        <td>Accessible name for the hotspot</td>
+        <td>Recommended</td>
+        <td>Accessible name for the hotspot (falls back to the area&rsquo;s text content)</td>
       </tr>
       <tr>
         <td><code>href</code></td>
         <td>string</td>
         <td>No</td>
-        <td>Navigation target. Creates an <code>&lt;a&gt;</code> focus anchor</td>
+        <td>Navigation target. Creates an <code>&lt;a&gt;</code> focus anchor (not a link without JS)</td>
       </tr>
       <tr>
         <td><code>target</code></td>
@@ -257,10 +273,26 @@ crumbLabel: Web Components
         <td><code>disabled</code></td>
         <td>boolean</td>
         <td>No</td>
-        <td>Suppresses interaction and tooltip</td>
+        <td>Suppresses interaction and tooltip; removes the hotspot from the tab order</td>
       </tr>
     </tbody>
   </table>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <p>The <code>regions</code> property reads or replaces the <code>&lt;map-area&gt;</code> children. Each entry is <code>{ shape, coords, label, href, target, tooltip, disabled, content }</code>. String <code>content</code> renders as plain text, never HTML; pass a Node, <code>DocumentFragment</code>, or <code>&lt;template&gt;</code> for rich tooltips. Reading returns a cloned <code>DocumentFragment</code> for areas with markup, so <code>map.regions = map.regions</code> round-trips.</p>
+
+  <code-block language="javascript" show-lines label="regions property" data-escape>const map = document.querySelector('image-map');
+
+map.addEventListener('image-map:regions-changed', (e) => {
+  console.log(e.detail.regions.length, e.detail.source); // 2 'property'
+});
+
+map.regions = [
+  { shape: 'rect', coords: '5 8 40 44', label: 'Conference Hall', href: '/rooms/conference', content: 'Seats 120.' },
+  { shape: 'circle', coords: '62.5 32 10', label: 'Server Room', tooltip: 'none' },
+];</code-block>
 </section>
 
 <section>
@@ -273,7 +305,7 @@ crumbLabel: Web Components
       <tr>
         <td><code>image-map:area-enter</code></td>
         <td><code>{ area }</code></td>
-        <td>Pointer or focus entered an area</td>
+        <td>Pointer entered or focus moved onto an area (<code>area</code> is the <code>&lt;map-area&gt;</code>)</td>
       </tr>
       <tr>
         <td><code>image-map:area-leave</code></td>
@@ -283,7 +315,12 @@ crumbLabel: Web Components
       <tr>
         <td><code>image-map:area-activate</code></td>
         <td><code>{ area }</code></td>
-        <td>Area clicked or Enter pressed</td>
+        <td>Area clicked, tapped, or activated with <kbd>Enter</kbd>/<kbd>Space</kbd>. Cancelable: <code>preventDefault()</code> stops link navigation</td>
+      </tr>
+      <tr>
+        <td><code>image-map:regions-changed</code></td>
+        <td><code>{ regions, source }</code></td>
+        <td>The <code>regions</code> setter rebuilt the map</td>
       </tr>
     </tbody>
   </table>
@@ -291,11 +328,11 @@ crumbLabel: Web Components
   <code-block language="javascript" show-lines label="Event handling" data-escape>const map = document.querySelector('image-map');
 
 map.addEventListener('image-map:area-enter', (e) => {
-  console.log('Entered:', e.detail.area.label);
+  console.log('Entered:', e.detail.area.getAttribute('label'));
 });
 
 map.addEventListener('image-map:area-activate', (e) => {
-  console.log('Activated:', e.detail.area.label);
+  console.log('Activated:', e.detail.area.getAttribute('label'));
 });</code-block>
 </section>
 
@@ -309,39 +346,39 @@ map.addEventListener('image-map:area-activate', (e) => {
       <tr><td><kbd>Tab</kbd></td><td>Move focus between area anchors</td></tr>
       <tr><td><kbd>&darr;</kbd> / <kbd>&rarr;</kbd></td><td>Focus next area</td></tr>
       <tr><td><kbd>&uarr;</kbd> / <kbd>&larr;</kbd></td><td>Focus previous area</td></tr>
-      <tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>Activate area (follow link or dispatch event)</td></tr>
-      <tr><td><kbd>Escape</kbd></td><td>Dismiss tooltip</td></tr>
+      <tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>Activate area: dispatch <code>image-map:area-activate</code>, then follow the link or toggle a click-mode tooltip</td></tr>
+      <tr><td><kbd>Escape</kbd></td><td>Dismiss the tooltip (from anywhere); returns focus to the hotspot if it was inside the tooltip</td></tr>
     </tbody>
   </table>
 </section>
 
 <section>
   <h2>Accessibility</h2>
-  <p>Each <code>&lt;map-area&gt;</code> generates a focusable anchor element (<code>&lt;a&gt;</code> when <code>href</code> is set, <code>&lt;button&gt;</code> otherwise) with <code>aria-label</code> matching the area&rsquo;s <code>label</code> attribute. The SVG overlay is <code>aria-hidden</code> &mdash; it handles only pointer hit-testing. The tooltip uses <code>role=&quot;tooltip&quot;</code> and <code>aria-live=&quot;polite&quot;</code> for screen reader announcements.</p>
-  <p>The host element uses <code>role=&quot;group&quot;</code> with an <code>aria-label</code> derived from the image alt text.</p>
+  <p>Each <code>&lt;map-area&gt;</code> generates a focusable anchor element (<code>&lt;a&gt;</code> when <code>href</code> is set, <code>&lt;button&gt;</code> otherwise) named by the area&rsquo;s <code>label</code> (or its text content). Hover-mode hotspots are described by their own area content via <code>aria-describedby</code>; click-mode hotspots expose <code>aria-expanded</code>/<code>aria-controls</code> instead. The SVG overlay is <code>aria-hidden</code> &mdash; it handles only pointer hit-testing.</p>
+  <p>The tooltip is <code>hidden</code> whenever it is not showing, so it is never an empty stop in the tab order or the accessibility tree. It meets WCAG 1.4.13: it can be hovered, dismissed with <kbd>Escape</kbd> without moving focus, and stays until the pointer or focus leaves.</p>
+  <p>The host element uses <code>role=&quot;group&quot;</code> with an <code>aria-label</code> derived from the image alt text. Do not put <code>role=&quot;img&quot;</code> on the host &mdash; it hides the hotspots from assistive technology. In forced-colors mode the area outlines use system colours and thicken on hover/focus.</p>
 </section>
 
 <section>
-  <h2>Progressive Enhancement</h2>
-  <code-block language="html" show-lines label="Without JavaScript" data-escape><!-- Without JS, image renders normally -->
-<!-- map-area elements display as a labeled list -->
-
-<image-map>
+  <h2 id="progressive-enhancement">Progressive Enhancement</h2>
+  <p>Without JavaScript the image renders and every <code>&lt;map-area&gt;</code> becomes a list item showing its <code>label</code> followed by its content. <code>href</code> on <code>&lt;map-area&gt;</code> only works once JS creates the hotspot anchor, so author a real link in the content when the destination must be reachable without JS. With JS, that content becomes the tooltip.</p>
+  <code-block language="html" show-lines label="Without JavaScript" data-escape><image-map>
   <img src="plan.svg" alt="Floor plan" />
-  <map-area shape="rect" coords="..." label="Room A" href="/a">
-    tooltip content (hidden without JS)
+  <map-area shape="rect" coords="10 10 40 40" label="Room A" href="/a">
+    <p>Seats 12. <a href="/a">Room A details</a></p>
   </map-area>
 </image-map>
 
-<!-- Renders as:
+<!-- Renders without JS as:
      [image]
      • Room A
+       Seats 12. Room A details (link)
 --></code-block>
 </section>
 
 <section>
   <h2>Touch Behaviour</h2>
-  <p>On touch devices with <code>tooltip=&quot;hover&quot;</code>, a two-tap pattern is used: the first tap shows the tooltip, the second tap navigates (if <code>href</code> is set). For <code>tooltip=&quot;click&quot;</code>, tapping toggles the tooltip on/off. Press <kbd>Escape</kbd> or tap elsewhere to dismiss.</p>
+  <p>On touch devices with <code>tooltip=&quot;hover&quot;</code>, a two-tap pattern is used: the first tap shows the tooltip, the second tap navigates (if <code>href</code> is set). For <code>tooltip=&quot;click&quot;</code>, tapping toggles the tooltip on/off. Press <kbd>Escape</kbd> or tap outside the map and tooltip to dismiss. The tooltip follows its hotspot while the page scrolls.</p>
 </section>
 
 <section>

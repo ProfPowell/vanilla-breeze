@@ -148,14 +148,42 @@ reaction-bar .reaction-palette-option:focus-visible {
   background: var(--color-surface-sunken, oklch(94% 0 0));
 }
 
+/* -------- Pending (toggle in flight, until setCount) -------- */
+
+reaction-bar > button[data-reaction][data-pending] {
+  cursor: progress;
+  opacity: 0.7;
+}
+
 /* -------- Disabled bar -------- */
 
+/* Chips stay focusable (aria-disabled) so their counts can still be read. */
 reaction-bar[data-disabled] > button[data-reaction] {
   pointer-events: none;
+  cursor: default;
 }
 reaction-bar[data-disabled] > button[data-reaction]:hover {
   background: var(--color-surface-raised, transparent);
   border-color: var(--color-border);
+}
+
+/* -------- Forced colors -------- */
+
+/* The pressed state is a tinted background + accent border, both of which
+   forced colors flatten — repaint it with the system highlight pair. */
+@media (forced-colors: active) {
+  reaction-bar > button[data-reaction][data-mine] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+
+  reaction-bar > button[data-reaction][aria-disabled="true"]:not([data-mine]),
+  reaction-bar > .reaction-trigger:disabled {
+    color: GrayText;
+    border-color: GrayText;
+  }
 }
 
 /* -------- Print -------- */

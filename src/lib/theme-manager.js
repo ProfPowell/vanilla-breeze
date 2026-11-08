@@ -13,11 +13,17 @@
  * Integrates with ThemeLoader for on-demand CSS loading of externalized themes.
  * init() and setBrand() are async — they ensure theme CSS is loaded before applying.
  *
- * @example
- * import { ThemeManager } from './lib/theme-manager.js';
+ * Authored root attributes are page defaults. A page that ships
+ * `<html data-fluid data-accent="ocean" data-border-style="sketch">` keeps
+ * them until the visitor picks something else (a setter call, or a stored
+ * preference); reset() restores them. Same rule as a pinned data-theme.
  *
- * // Initialize on page load (loads saved theme CSS)
- * await ThemeManager.init();
+ * Public API: `window.VB.themeManager`, or the `ThemeManager` export of the
+ * bundles (vanilla-breeze.js / -core.js / -autoload.js). Every bundle runs
+ * init() on load, so pages call the setters directly.
+ *
+ * @example
+ * const { themeManager: ThemeManager } = window.VB;
  *
  * // Change mode
  * ThemeManager.setMode('dark');
@@ -40,7 +46,104 @@ import { VBStore } from './vb-store.js';
 
 const NS = 'theme';
 const KEY = 'current';
-const DEFAULTS = { mode: 'auto', brand: 'default', accent: 'default', borderStyle: '', iconSet: '', fluid: '', backdrop: '', backdropChrome: '', pageBgType: '', pageBgColor: '', pageBgGradStart: '', pageBgGradEnd: '', pageBgGradDir: '' };
+
+/**
+ * Storage schema. v2: a root-attribute key holding null means "no choice —
+ * use the page's authored attribute". v1 blobs wrote every key on every
+ * save ('' / accent 'default'), so those values never recorded a choice.
+ */
+const STATE_VERSION = 2;
+
+/** Root attributes a page may author as its own defaults, by pref key. */
+export const ROOT_ATTRS = /** @type {const} */ ({
+  accent: 'data-accent',
+  borderStyle: 'data-border-style',
+  iconSet: 'data-icon-set',
+  fluid: 'data-fluid',
+  backdrop: 'data-backdrop',
+  backdropChrome: 'data-backdrop-chrome',
+});
+
+/** @type {VBThemePrefs} */
+const DEFAULTS = { mode: 'auto', brand: 'default', accent: null, borderStyle: null, iconSet: null, fluid: null, backdrop: null, backdropChrome: null, pageBgType: '', pageBgColor: '', pageBgGradStart: '', pageBgGradEnd: '', pageBgGradDir: '' };
+
+/**
+ * Upgrade a stored blob to the current schema: v1 '' / accent 'default'
+ * values become null (= page default). Pure.
+ *
+ * @param {any} stored
+ * @returns {Partial<VBThemePrefs>|null}
+ */
+export function normalizeStored(stored) {
+  if (!stored || typeof stored !== 'object') return null;
+  const out = { ...stored };
+  if (!(Number(out.v) >= STATE_VERSION)) {
+    for (const key of Object.keys(ROOT_ATTRS)) {
+      if (out[key] === '' || (key === 'accent' && out[key] === 'default')) out[key] = null;
+    }
+  }
+  return out;
+}
+
+/**
+ * Resolve a root-attribute preference against the page's authored value:
+ * no preference (null/undefined) → the authored value; any string —
+ * including '' (explicitly off) — wins. Pure.
+ *
+ * @param {string|null|undefined} pref
+ * @param {string|null} [authored]
+ * @returns {string}
+ */
+export function resolveRootPref(pref, authored) {
+  return pref == null ? (authored ?? '') : pref;
+}
+
+/** @type {Record<string, string|null>|null} */
+let _authored = null;
+
+/**
+ * The root attributes as the page authored them. The docs boot script
+ * writes stored prefs onto <html> before any module runs, so it snapshots
+ * the authored values first (window.__vbAuthoredRoot, keyed by attribute
+ * name, null = absent); without a boot script the live attributes are
+ * still the authored ones. Values are null when the attribute is absent.
+ * @returns {Record<string, string|null>}
+ */
+function authoredRoot() {
+  if (_authored) return _authored;
+  const root = document.documentElement;
+  const boot = /** @type {any} */ (window).__vbAuthoredRoot;
+  /** @param {string} attr */
+  const read = (attr) => (boot && typeof boot === 'object' && attr in boot)
+    ? (boot[attr] ?? null)
+    : root.getAttribute(attr);
+  /** @type {Record<string, string|null>} */
+  const snap = { theme: read('data-theme') };
+  for (const [key, attr] of Object.entries(ROOT_ATTRS)) snap[key] = read(attr);
+  _authored = snap;
+  return snap;
+}
+
+/**
+ * Convert any CSS colour the browser computed (rgb(), oklch(), …) to
+ * #rrggbb — the form every browser accepts in <meta name="theme-color">.
+ * @param {string} color
+ * @returns {string}
+ */
+function toHexColor(color) {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 1;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return color;
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, 1, 1);
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+    return '#' + [r, g, b].map((n) => n.toString(16).padStart(2, '0')).join('');
+  } catch {
+    return color;
+  }
+}
 
 /**
  * The brand token a page pinned via `<html data-theme="…">`, ignoring a11y
@@ -99,11 +202,13 @@ export const ThemeManager = {
     if (this._initPromise) return this._initPromise;
 
     this._initPromise = (async () => {
-      const stored = /** @type {Partial<VBThemePrefs>|null} */ (await VBStore.get(NS, KEY));
+      const stored = normalizeStored(await VBStore.get(NS, KEY));
       _state = stored ? { ...DEFAULTS, ...stored } : { ...DEFAULTS };
       // A brand the page pinned via <html data-theme="…"> is this page's
       // default; only an explicit, different stored brand replaces it.
-      _pinnedBrand = pinnedBrandFrom(document.documentElement.dataset.theme);
+      // Read from the authored snapshot: the boot script may already have
+      // written the stored brand onto <html>.
+      _pinnedBrand = pinnedBrandFrom(authoredRoot().theme ?? '');
       _state.brand = resolveInitialBrand(stored, _pinnedBrand);
 
       // Load saved brand CSS before applying
@@ -151,11 +256,11 @@ export const ThemeManager = {
       let next;
       try {
         const envelope = JSON.parse(e.newValue);
-        next = envelope?.data;
+        next = normalizeStored(envelope?.data);
       } catch {
         return;
       }
-      if (!next || typeof next !== 'object') return;
+      if (!next) return;
 
       const merged = { ...DEFAULTS, ..._state, ...next };
       // Same precedence as init(): this document's pinned brand beats a
@@ -196,18 +301,24 @@ export const ThemeManager = {
    * @returns {VBThemePrefs} - Updated full preferences
    */
   save(prefs) {
-    const updated = { ...(_state ?? DEFAULTS), ...prefs };
+    const updated = { ...(_state ?? DEFAULTS), ...prefs, v: STATE_VERSION };
     _state = updated;
     VBStore.set(NS, KEY, updated).catch(() => { /* ignore */ });
     return updated;
   },
 
   /**
-   * Apply theme to document root
+   * Apply theme to document root.
+   *
+   * Root-attribute prefs (fluid, backdrop, backdropChrome, borderStyle,
+   * iconSet, and the cached accent) that are null/undefined fall back to
+   * the page's authored attribute, so a page's own `<html data-fluid>` is
+   * never stripped just because the visitor has no preference.
    * @param {Partial<VBThemePrefs>} prefs
    */
-  apply({ mode = 'auto', brand = 'default', borderStyle = '', iconSet = '', fluid = '', backdrop = '', backdropChrome = '', pageBgType = '', pageBgColor = '', pageBgGradStart = '', pageBgGradEnd = '', pageBgGradDir = '' } = {}) {
+  apply({ mode = 'auto', brand = 'default', borderStyle = null, iconSet = null, fluid = null, backdrop = null, backdropChrome = null, pageBgType = '', pageBgColor = '', pageBgGradStart = '', pageBgGradEnd = '', pageBgGradDir = '' } = {}) {
     const root = document.documentElement;
+    const authored = authoredRoot();
 
     // Apply mode — always set data-mode to effective value so theme
     // light/dark selectors match even in auto mode (OS-preference-driven)
@@ -224,42 +335,25 @@ export const ThemeManager = {
       delete root.dataset.theme;
     }
 
-    // Border style — read CSS hint if user hasn't explicitly set one
-    const borderPref = borderStyle || this._readCSSHint('--theme-border-style');
-    if (borderPref && borderPref !== 'clean') {
-      root.dataset.borderStyle = borderPref;
-    } else {
-      delete root.dataset.borderStyle;
-    }
+    // Border style / icon set — a chosen value, else the page's authored
+    // attribute, else the theme's CSS hint. 'clean' / 'lucide' are the
+    // framework defaults and need no attribute.
+    const borderPref = borderStyle || authored.borderStyle || this._readCSSHint('--theme-border-style');
+    this._setRootAttr('data-border-style', borderPref && borderPref !== 'clean' ? borderPref : '');
 
-    // Icon set — read CSS hint if user hasn't explicitly set one
-    const iconPref = iconSet || this._readCSSHint('--theme-icon-set');
-    if (iconPref && iconPref !== 'lucide') {
-      root.dataset.iconSet = iconPref;
-    } else {
-      delete root.dataset.iconSet;
-    }
+    const iconPref = iconSet || authored.iconSet || this._readCSSHint('--theme-icon-set');
+    this._setRootAttr('data-icon-set', iconPref && iconPref !== 'lucide' ? iconPref : '');
 
-    // Fluid scaling
-    if (fluid) {
-      root.dataset.fluid = fluid;
-    } else {
-      delete root.dataset.fluid;
-    }
+    // Fluid scaling, canvas backdrop, backdrop chrome: pref → authored.
+    // An explicit '' (setFluid('')) turns an authored value off.
+    const fluidVal = resolveRootPref(fluid, authored.fluid);
+    this._setRootAttr('data-fluid', fluidVal, true);
 
-    // Canvas backdrop
-    if (backdrop) {
-      root.dataset.backdrop = backdrop;
-    } else {
-      delete root.dataset.backdrop;
-    }
+    const backdropVal = resolveRootPref(backdrop, authored.backdrop);
+    this._setRootAttr('data-backdrop', backdropVal, true);
 
-    // Backdrop chrome mode
-    if (backdropChrome && backdropChrome !== 'card') {
-      root.dataset.backdropChrome = backdropChrome;
-    } else {
-      delete root.dataset.backdropChrome;
-    }
+    const chromeVal = resolveRootPref(backdropChrome, authored.backdropChrome);
+    this._setRootAttr('data-backdrop-chrome', chromeVal && chromeVal !== 'card' ? chromeVal : '');
 
     // Page background overrides
     if (pageBgType === 'color' && pageBgColor) {
@@ -274,14 +368,81 @@ export const ThemeManager = {
       root.style.removeProperty('--page-bg-gradient');
     }
 
-    // Apply color accent (inline styles on :root for hue/lightness/chroma seeds)
-    const accent = this.load().accent || 'default';
-    this._applyAccent(accent);
+    // Colour accent (data-accent on <html>): cached pref → authored
+    this._applyAccent(this.load().accent);
+    const accent = this.getState().accent;
+
+    this._syncThemeColor();
 
     // Dispatch event for listeners
     window.dispatchEvent(new CustomEvent('vb:theme-change', {
-      detail: { mode, brand, accent, borderStyle: borderPref, iconSet: iconPref, fluid, backdrop, backdropChrome, pageBgType, effectiveMode: this.getEffectiveMode() }
+      detail: { mode, brand, accent, borderStyle: borderPref, iconSet: iconPref, fluid: fluidVal, backdrop: backdropVal, backdropChrome: chromeVal, pageBgType, effectiveMode: this.getEffectiveMode() }
     }));
+  },
+
+  /**
+   * Set or remove a root attribute. With `keepEmpty`, a present-but-empty
+   * authored attribute (`<html data-fluid>`) is kept as such.
+   * @param {string} attr
+   * @param {string} value - '' removes the attribute
+   * @param {boolean} [keepEmpty]
+   * @private
+   */
+  _setRootAttr(attr, value, keepEmpty = false) {
+    const root = document.documentElement;
+    if (value) {
+      root.setAttribute(attr, value);
+    } else if (keepEmpty && this._authoredHas(attr)) {
+      root.setAttribute(attr, '');
+    } else {
+      root.removeAttribute(attr);
+    }
+  },
+
+  /**
+   * Was `attr` authored on <html> as a bare boolean attribute? (`data-fluid`
+   * with no value is the documented "default preset" form.) Only true when
+   * no preference turned it off explicitly.
+   * @param {string} attr
+   * @returns {boolean}
+   * @private
+   */
+  _authoredHas(attr) {
+    const key = Object.keys(ROOT_ATTRS).find((k) => ROOT_ATTRS[/** @type {keyof typeof ROOT_ATTRS} */ (k)] === attr);
+    if (!key) return false;
+    const pref = /** @type {any} */ (this.load())[key];
+    return pref == null && authoredRoot()[key] != null;
+  },
+
+  /**
+   * Point <meta name="theme-color"> at the page's painted background (the
+   * <html> background: --page-bg-color, else --color-surface; falls back to
+   * --color-background), so the browser chrome follows mode / brand
+   * changes — the docs boot script only seeds it. The media-scoped
+   * light/dark pair collapses to one value: the mode is known now. No-op
+   * when the page has no theme-color meta.
+   * @private
+   */
+  _syncThemeColor() {
+    const metas = document.querySelectorAll('meta[name="theme-color"]');
+    if (!metas.length) return;
+    /** @param {string} c */
+    const isClear = (c) => !c || c === 'transparent' || /^rgba\(.*,\s*0\)$/.test(c);
+    let computed = getComputedStyle(document.documentElement).backgroundColor;
+    if (isClear(computed)) {
+      const probe = document.createElement('span');
+      probe.style.setProperty('position', 'absolute');
+      probe.style.setProperty('background-color', 'var(--color-background)');
+      (document.body || document.documentElement).append(probe);
+      computed = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+    }
+    if (isClear(computed)) return;
+    const hex = toHexColor(computed);
+    metas.forEach((meta) => {
+      meta.removeAttribute('media');
+      meta.setAttribute('content', hex);
+    });
   },
 
   /**
@@ -317,6 +478,7 @@ export const ThemeManager = {
   setAccent(accentId) {
     this.save({ accent: accentId });
     this._applyAccent(accentId);
+    this._syncThemeColor();
     // Dispatch event
     window.dispatchEvent(new CustomEvent('vb:theme-change', {
       detail: { ...this.getState() }
@@ -393,7 +555,28 @@ export const ThemeManager = {
    */
   getState() {
     const { mode, brand, accent, borderStyle, iconSet, fluid, backdrop, backdropChrome, pageBgType, pageBgColor, pageBgGradStart, pageBgGradEnd, pageBgGradDir } = this.load();
-    return { mode, brand, accent, borderStyle, iconSet, fluid, backdrop, backdropChrome, pageBgType, pageBgColor, pageBgGradStart, pageBgGradEnd, pageBgGradDir, effectiveMode: this.getEffectiveMode() };
+    // Root-attribute keys resolve to what the page shows: the visitor's
+    // choice, else the authored attribute.
+    /** @type {Record<string, string|null>} */
+    const a = typeof document === 'undefined' ? {} : authoredRoot();
+    // A bare authored `<html data-fluid>` / `data-backdrop` is the default
+    // preset, not "off": report it as 'default' so UIs show it switched on.
+    /**
+     * @param {'fluid'|'backdrop'} key
+     * @param {string|null} pref
+     */
+    const preset = (key, pref) => (pref == null && a[key] === '') ? 'default' : resolveRootPref(pref, a[key]);
+    return {
+      mode, brand,
+      accent: resolveRootPref(accent, a.accent) || 'default',
+      borderStyle: resolveRootPref(borderStyle, a.borderStyle),
+      iconSet: resolveRootPref(iconSet, a.iconSet),
+      fluid: preset('fluid', fluid),
+      backdrop: preset('backdrop', backdrop),
+      backdropChrome: resolveRootPref(backdropChrome, a.backdropChrome),
+      pageBgType, pageBgColor, pageBgGradStart, pageBgGradEnd, pageBgGradDir,
+      effectiveMode: this.getEffectiveMode(),
+    };
   },
 
   /**
@@ -408,7 +591,8 @@ export const ThemeManager = {
 
   /**
    * Reset to the default theme — for a page that pinned a brand via
-   * `<html data-theme>`, that pin is its default.
+   * `<html data-theme>`, that pin is its default, and authored root
+   * attributes (data-fluid, data-accent, …) come back.
    */
   reset() {
     _state = { ...DEFAULTS, brand: _pinnedBrand || DEFAULTS.brand };
@@ -440,13 +624,23 @@ export const ThemeManager = {
    * (generated from COLOR_ACCENTS), so the same accent also works on any
    * element (vanilla-breeze-5z8i). Inline seeds from older versions are
    * cleared.
-   * @param {string} accentId - Accent ID from COLOR_ACCENTS
+   *
+   * No preference (null) keeps the page's authored data-accent, verbatim
+   * (a site may define its own accent in CSS). A chosen id applies only if
+   * it is a known accent; 'default' or an unknown id removes it.
+   * @param {string|null|undefined} accentId - Accent ID from COLOR_ACCENTS
    * @private
    */
   _applyAccent(accentId) {
     const root = document.documentElement;
     for (const prop of SEED_PROPERTIES) {
       root.style.removeProperty(prop);
+    }
+    if (accentId == null) {
+      const authored = authoredRoot().accent;
+      if (authored) root.dataset.accent = authored;
+      else delete root.dataset.accent;
+      return;
     }
     const entry = COLOR_ACCENTS.find(a => a.id === accentId);
     if (!entry || !entry.seeds || Object.keys(entry.seeds).length === 0) {
@@ -518,6 +712,7 @@ export const ThemeManager = {
     // can't be expressed directly on the attribute (we always write the
     // effective value), so we only see concrete 'light'/'dark' here.
     _state.mode = /** @type {'light' | 'dark'} */ (raw);
+    this._syncThemeColor();
     window.dispatchEvent(new CustomEvent('vb:theme-change', {
       detail: { ...this.getState() }
     }));
@@ -538,3 +733,11 @@ export const ThemeManager = {
     });
   }
 };
+
+// Public entry point for sites: window.VB.themeManager (vb.js keeps it when
+// it installs the effects runtime on window.VB; VB.theme is the effects
+// runtime's own token helper).
+if (typeof window !== 'undefined') {
+  const ns = /** @type {any} */ (window).VB ?? (/** @type {any} */ (window).VB = {});
+  ns.themeManager ??= ThemeManager;
+}

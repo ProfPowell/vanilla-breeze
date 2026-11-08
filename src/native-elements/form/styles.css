@@ -30,9 +30,13 @@ form {
   }
 }
 
-/* --- Form Group (wrapper pattern) --- */
+/* --- Form Group (wrapper pattern) ---
+   Helper classes are scoped so a .group/.actions/.help/.error used by a
+   component, a list or a chart outside a form never picks these up.
+   :where() keeps each selector at the old single-class specificity. */
 
-.group {
+:where(form) .group,
+:where(fieldset).group {
   display: flex;
   flex-direction: column;
   gap: var(--size-2xs);
@@ -58,8 +62,8 @@ fieldset {
   padding: var(--size-m);
   margin: 0;
 
-  /* Minimal fieldset */
-  &.minimal {
+  /* Minimal fieldset: no border or padding, legend reads as a heading */
+  &[data-variant="minimal"] {
     border: none;
     padding: 0;
 
@@ -71,25 +75,31 @@ fieldset {
   }
 }
 
+/* Disabled: dim once. The fieldset itself takes no opacity -- its
+   controls are :disabled too and already dim themselves (button opacity,
+   raised input surface, UA checkbox/radio), so a fieldset opacity would
+   compound to ~0.25. Muted text and a dashed border mark the group. */
 fieldset:disabled {
-  opacity: 0.5;
-  filter: saturate(0.3);
-}
-
-fieldset:disabled legend {
   color: var(--color-text-muted);
 }
 
-fieldset[data-status="success"] {
-  border-color: color-mix(in oklab, var(--color-success) 40%, var(--color-border));
+fieldset:disabled:not([data-variant="minimal"]) {
+  border-style: dashed;
 }
 
-fieldset[data-status="warning"] {
-  border-color: color-mix(in oklab, var(--color-warning) 40%, var(--color-border));
+fieldset:disabled :is(legend, input, textarea, select) {
+  color: var(--color-text-muted);
 }
 
-fieldset[data-status="error"] {
-  border-color: color-mix(in oklab, var(--color-error) 40%, var(--color-border));
+/* Status tint. Colour alone carries no meaning, so pair data-status with
+   words (legend text or a message). Themes that restyle the fieldset
+   border can reuse --fieldset-status-color. */
+fieldset[data-status="success"] { --fieldset-status-color: var(--color-success); }
+fieldset[data-status="warning"] { --fieldset-status-color: var(--color-warning); }
+fieldset[data-status="error"] { --fieldset-status-color: var(--color-error); }
+
+fieldset[data-status] {
+  border-color: color-mix(in oklab, var(--fieldset-status-color, var(--color-border)) 40%, var(--color-border));
 }
 
 legend {
@@ -98,9 +108,40 @@ legend {
   font-size: var(--font-size-s);
 }
 
+/* Forced colors flatten every border to one system colour, so status and
+   validity get a non-colour cue: a heavier border whose style differs
+   per state. Disabled groups use GrayText. !important so theme layers
+   (bundle-theme beats native-elements) cannot erase the cue. */
+@media (forced-colors: active) {
+  fieldset:is([data-status], [data-invalid]) {
+    border-width: 3px !important;
+    border-style: solid !important;
+    border-color: CanvasText !important;
+  }
+
+  fieldset:is([data-status="error"], [data-invalid]) {
+    border-style: double !important;
+    border-width: var(--border-width-thick, 4px) !important;
+  }
+
+  fieldset[data-status="warning"] {
+    border-style: dotted !important;
+  }
+
+  fieldset:disabled {
+    color: GrayText;
+    border-color: GrayText !important;
+  }
+
+  fieldset:disabled legend {
+    color: GrayText;
+  }
+}
+
 /* --- Form Actions (wrapper pattern) --- */
 
-.actions {
+:where(form, dialog) .actions,
+:where(footer).actions {
   display: flex;
   gap: var(--size-s);
   margin-block-start: var(--size-m);
@@ -116,12 +157,12 @@ legend {
 
 /* --- Form Help Text --- */
 
-.help {
+:where(p, span, small).help {
   font-size: var(--font-size-s);
   color: var(--color-text-muted);
 }
 
-.error {
+:where(p, span, small).error {
   font-size: var(--font-size-s);
   color: var(--color-error);
 }
@@ -147,9 +188,6 @@ form footer {
     color: var(--color-text-muted);
   }
 }
-
-/* --- Verification Code Inputs (6-digit pattern) --- */
-
 
 /* ── Honeypot trap ─────────────────────────────────────────────────────
    Hides a decoy field from humans. Bots that fill it are scored.

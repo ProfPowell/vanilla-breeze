@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "social-embed"
-description: "Privacy-first social content embed with click-to-activate. Supports Bluesky, Mastodon, X, Instagram, and YouTube via a provider registry."
+description: "Privacy-first social post embed: a fallback link plus a Load button, then a sandboxed iframe built from the validated post URL. Bluesky, Mastodon, X, Instagram and YouTube, with a provider registry."
 elementName: social-embed
 category: component
 currentPath: /docs/elements/web-components/social-embed/
@@ -12,183 +12,143 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>A <strong>privacy-first</strong> social content embed component. Click-to-activate by default — no third-party scripts or network requests execute until the user clicks the embed card. Supports Bluesky, Mastodon, X, Instagram, and YouTube out of the box, with an extensible provider registry for custom platforms.</p>
-  <p>The inner fallback content (typically an <code>&lt;a&gt;</code>) renders without JavaScript, is indexable by search engines, and remains accessible to all users.</p>
-</section>
+  <p>A <strong>privacy-first</strong> embed for social posts. Before activation the reader sees your fallback link and a <strong>Load {platform} post</strong> button with a note naming the host the post loads from. Nothing is requested from the platform until they press it (the default <code>activate="click"</code>). The post then loads in a <strong>sandboxed iframe</strong> that the component builds itself from the validated post URL: no oEmbed HTML is inserted into your page and no platform script runs in your page's origin.</p>
+  <p>The fallback content (typically an <code>&lt;a&gt;</code>) renders without JavaScript, is indexable, and stays the only content for URLs no provider accepts.</p>
 
-<section>
-  <h2>Bluesky</h2>
-  <p>Auto-detected from <code>bsky.app</code> URLs. Uses oEmbed — no third-party script injected.</p>
-  <code-block language="html" show-lines label="Bluesky post" data-escape><social-embed url="https://bsky.app/profile/bsky.app/post/3lb55bvibcs2w">
-  <a href="https://bsky.app/profile/bsky.app/post/3lb55bvibcs2w">View post on Bluesky</a>
+  <browser-window
+    src="/docs/examples/demos/social-embed.html"
+    url="https://vanilla-breeze.com/social-embed"
+    title="Social Embed"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Basic usage" data-escape><social-embed url="https://bsky.app/profile/did:plc:z72i7hdynmk6r22z27h6tvur/post/3l6oveex3ii2l">
+  <a href="https://bsky.app/profile/bsky.app/post/3l6oveex3ii2l">View post on Bluesky</a>
 </social-embed></code-block>
 </section>
 
 <section>
-  <h2>Mastodon</h2>
-  <p>Auto-detected from <code>@user/id</code> URL patterns. Parses the instance hostname from the URL and fetches oEmbed from the correct server.</p>
-  <code-block language="html" show-lines label="Mastodon post" data-escape><social-embed url="https://mastodon.social/@Mastodon/109838793196353548">
-  <a href="https://mastodon.social/@Mastodon/109838793196353548">View post on Mastodon</a>
-</social-embed></code-block>
-</section>
+  <h2>Providers</h2>
+  <p>The provider is detected from the URL. Every built-in provider parses the URL with <code>new URL()</code>, accepts only <code>https</code> on an exact list of hostnames, and rebuilds the embed URL from the validated parts (post id, handle, shortcode). Anything else is <code>unsupported</code> and keeps the fallback link.</p>
+  <table>
+    <thead><tr><th>Key</th><th>Accepted URLs</th><th>Embed</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>bluesky</code></td><td><code>https://bsky.app/profile/{handle|did}/post/{rkey}</code></td><td><code>embed.bsky.app/embed/{did}/app.bsky.feed.post/{rkey}</code></td><td>A handle URL is resolved to its DID with one request to <code>public.api.bsky.app</code> on load; a DID URL needs no lookup. Themeable.</td></tr>
+      <tr><td><code>mastodon</code></td><td><code>https://{any instance}/@{user}/{id}</code></td><td><code>{instance}/@{user}/{id}/embed</code></td><td>Any instance is allowed, so the frame gets the tightest sandbox (no <code>allow-popups-to-escape-sandbox</code>).</td></tr>
+      <tr><td><code>x</code></td><td><code>https://x.com/{user}/status/{id}</code> (also twitter.com, www., mobile.)</td><td><code>platform.twitter.com/embed/Tweet.html?id={id}</code></td><td>No <code>widgets.js</code>. Themeable.</td></tr>
+      <tr><td><code>instagram</code></td><td><code>https://www.instagram.com/p|reel|tv/{shortcode}/</code></td><td><code>www.instagram.com/p/{shortcode}/embed/</code></td><td>No <code>embed.js</code>.</td></tr>
+      <tr><td><code>youtube</code></td><td>youtube.com <code>/watch?v=</code>, <code>/shorts/</code>, <code>/embed/</code>, <code>/live/</code>; <code>youtu.be/</code></td><td><code>&lt;youtube-player&gt;</code></td><td>Renders the player at once (its own facade is the click gate). <code>t=</code> becomes <code>start</code>.</td></tr>
+    </tbody>
+  </table>
+  <p>Frames are created with <code>sandbox</code> (<code>allow-scripts allow-same-origin allow-popups</code>, plus <code>allow-popups-to-escape-sandbox</code> for the fixed-host providers), <code>referrerpolicy="strict-origin"</code>, <code>loading="lazy"</code>, a <code>title</code> and a minimal <code>allow</code> list. Their height follows each platform's resize message; messages are accepted only from that frame's window and origin.</p>
+  <code-block language="html" show-lines label="Mastodon, X, YouTube" data-escape><social-embed url="https://mastodon.social/@Mastodon/116765910384325070">
+  <a href="https://mastodon.social/@Mastodon/116765910384325070">View post on Mastodon</a>
+</social-embed>
 
-<section>
-  <h2>X (Twitter)</h2>
-  <p>Auto-detected from <code>x.com</code> or <code>twitter.com</code> status URLs. Loads the X widgets script on activation.</p>
-  <code-block language="html" show-lines label="X post" data-escape><social-embed url="https://x.com/github/status/1234567890">
-  <a href="https://x.com/github/status/1234567890">View post on X</a>
-</social-embed></code-block>
-</section>
+<social-embed url="https://x.com/jack/status/20">
+  <a href="https://x.com/jack/status/20">View post on X</a>
+</social-embed>
 
-<section>
-  <h2>YouTube</h2>
-  <p>Automatically delegates to <code>&lt;youtube-player&gt;</code>. The YouTube provider sets <code>delegatesActivation: true</code>, so social-embed skips its own click gate — youtube-player handles its own facade pattern (thumbnail + play button). One click, not two.</p>
-  <code-block language="html" show-lines label="YouTube video" data-escape><social-embed url="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
+<social-embed url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" data-title="Never Gonna Give You Up">
   <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">Watch on YouTube</a>
 </social-embed></code-block>
 </section>
 
 <section>
-  <h2>Explicit Provider</h2>
-  <p>Use <code>provider</code> to bypass auto-detection when the URL pattern is ambiguous.</p>
-  <code-block language="html" show-lines label="Explicit provider" data-escape><social-embed provider="mastodon" url="https://mastodon.social/@user/12345">
-  <a href="https://mastodon.social/@user/12345">View post on Mastodon</a>
-</social-embed></code-block>
-</section>
-
-<section>
   <h2>Activation Modes</h2>
-  <p>Control when the embed loads with <code>activate</code>.</p>
   <table>
     <thead><tr><th>Value</th><th>Behaviour</th></tr></thead>
     <tbody>
-      <tr><td><code>click</code> (default)</td><td>User must click the idle card to trigger loading</td></tr>
-      <tr><td><code>visible</code></td><td>Loads when scrolled into viewport (IntersectionObserver with 200px margin)</td></tr>
-      <tr><td><code>eager</code></td><td>Loads immediately on page load</td></tr>
+      <tr><td><code>click</code> (default)</td><td>Loads when the reader presses the Load button</td></tr>
+      <tr><td><code>visible</code></td><td>Loads when scrolled within 200px of the viewport (no consent step)</td></tr>
+      <tr><td><code>eager</code></td><td>Loads immediately (no consent step)</td></tr>
     </tbody>
   </table>
-  <code-block language="html" show-lines label="Visible activation" data-escape><social-embed url="https://bsky.app/profile/user/post/3abc" activate="visible">
-  <a href="https://bsky.app/profile/user/post/3abc">View post on Bluesky</a>
+  <code-block language="html" show-lines label="Visible activation" data-escape><social-embed url="https://x.com/jack/status/20" activate="visible">
+  <a href="https://x.com/jack/status/20">View post on X</a>
 </social-embed></code-block>
 </section>
 
 <section>
-  <h2>Dark Theme</h2>
-  <p>Pass <code>theme="dark"</code> to hint to providers that support themed embeds. The default <code>auto</code> reads <code>prefers-color-scheme</code>.</p>
-  <code-block language="html" show-lines label="Dark theme" data-escape><social-embed url="https://x.com/user/status/123" theme="dark">
-  <a href="https://x.com/user/status/123">View post on X</a>
-</social-embed></code-block>
-</section>
-
-<section>
-  <h2>With Caption</h2>
-  <p>Wrap in a <code>&lt;figure&gt;</code> with <code>&lt;figcaption&gt;</code> for semantic context.</p>
-  <code-block language="html" show-lines label="Captioned embed" data-escape><figure>
-  <social-embed url="https://bsky.app/profile/user/post/3abc">
-    <a href="https://bsky.app/profile/user/post/3abc">View post on Bluesky</a>
-  </social-embed>
-  <figcaption>A post about the new CSS features.</figcaption>
-</figure></code-block>
+  <h2>Theme</h2>
+  <p><code>theme="light"</code> or <code>"dark"</code> is passed to providers that support it (X and Bluesky). The default <code>auto</code> uses the host's computed <code>color-scheme</code> (set by the active VB theme), then the page's <code>data-mode</code>, then <code>prefers-color-scheme</code>. When the VB theme changes, loaded X and Bluesky embeds re-render; other providers are left alone, so a playing video or a scrolled post is never reset.</p>
 </section>
 
 <section>
   <h2>Attributes</h2>
   <table>
-    <thead><tr><th>Attribute</th><th>Required</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <thead><tr><th>Attribute</th><th>Default</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>url</code></td><td>Yes</td><td>string</td><td>—</td><td>URL of content to embed</td></tr>
-      <tr><td><code>provider</code></td><td>—</td><td>string</td><td>—</td><td>Explicit provider key. If omitted, auto-detection runs.</td></tr>
-      <tr><td><code>theme</code></td><td>—</td><td>string</td><td><code>auto</code></td><td><code>light</code>, <code>dark</code>, or <code>auto</code> (reads <code>prefers-color-scheme</code>)</td></tr>
-      <tr><td><code>activate</code></td><td>—</td><td>string</td><td><code>click</code></td><td><code>click</code>, <code>visible</code>, or <code>eager</code></td></tr>
+      <tr><td><code>url</code></td><td>—</td><td>Post or video URL (required; the element does not upgrade without it)</td></tr>
+      <tr><td><code>provider</code></td><td>auto</td><td>Provider key. Skips auto-detection; the provider must still accept the URL.</td></tr>
+      <tr><td><code>theme</code></td><td><code>auto</code></td><td><code>light</code>, <code>dark</code> or <code>auto</code></td></tr>
+      <tr><td><code>activate</code></td><td><code>click</code></td><td><code>click</code>, <code>visible</code> or <code>eager</code></td></tr>
+      <tr><td><code>data-title</code></td><td>"{provider} post"</td><td>Accessible name of the frame (the player title for YouTube)</td></tr>
+      <tr><td><code>poster</code></td><td>—</td><td>YouTube only: local image passed to <code>&lt;youtube-player poster&gt;</code>, so no thumbnail is fetched from <code>i.ytimg.com</code></td></tr>
+      <tr><td><code>data-label-load</code></td><td>"Load {provider} {noun}"</td><td>Button text</td></tr>
+      <tr><td><code>data-label-loading</code></td><td>"Loading {provider} {noun}…"</td><td>Button text and announcement while loading</td></tr>
+      <tr><td><code>data-label-error</code></td><td>"{provider} {noun} failed to load."</td><td>Visible note and announcement on failure</td></tr>
+      <tr><td><code>data-label-note</code></td><td>"Loads content from {host}"</td><td>Consent note beside the button</td></tr>
     </tbody>
   </table>
+  <p><code>{provider}</code> is the platform name, <code>{noun}</code> is "post" ("video" for YouTube), <code>{host}</code> is the host the embed loads from.</p>
 
-  <h3>Component-Managed Attributes</h3>
+  <h3>States</h3>
   <table>
-    <thead><tr><th>Attribute</th><th>Values</th><th>Description</th></tr></thead>
+    <thead><tr><th><code>state</code></th><th>When</th><th>Shows</th></tr></thead>
     <tbody>
-      <tr><td><code>state</code></td><td><code>idle</code>, <code>loading</code>, <code>loaded</code>, <code>error</code>, <code>unsupported</code></td><td>Current lifecycle state (read-only)</td></tr>
-    </tbody>
-  </table>
-</section>
-
-<section>
-  <h2>States</h2>
-  <table>
-    <thead><tr><th>State</th><th>When</th><th>Visual</th></tr></thead>
-    <tbody>
-      <tr><td><code>idle</code></td><td>Before activation trigger</td><td>Bordered card with pointer cursor</td></tr>
-      <tr><td><code>loading</code></td><td>Provider <code>render()</code> called</td><td>Skeleton pulse animation</td></tr>
-      <tr><td><code>loaded</code></td><td><code>render()</code> resolved</td><td>Embed content displayed</td></tr>
-      <tr><td><code>error</code></td><td><code>render()</code> rejected</td><td>Error border, fallback link restored</td></tr>
-      <tr><td><code>unsupported</code></td><td>No provider matched</td><td>Fallback link only (no error treatment)</td></tr>
-    </tbody>
-  </table>
-</section>
-
-<section>
-  <h2>Built-in Providers</h2>
-  <table>
-    <thead><tr><th>Key</th><th>Mechanism</th><th>Notes</th></tr></thead>
-    <tbody>
-      <tr><td><code>bluesky</code></td><td>oEmbed fetch</td><td>No third-party script. Most private option.</td></tr>
-      <tr><td><code>mastodon</code></td><td>oEmbed fetch</td><td>Instance URL parsed automatically.</td></tr>
-      <tr><td><code>x</code></td><td>Script injection</td><td>Loads <code>platform.x.com/widgets.js</code>. Respects <code>theme</code>.</td></tr>
-      <tr><td><code>instagram</code></td><td>Script injection</td><td>Loads <code>instagram.com/embed.js</code>.</td></tr>
-      <tr><td><code>youtube</code></td><td>Delegates to <code>&lt;youtube-player&gt;</code></td><td>No double click — youtube-player handles its own facade.</td></tr>
+      <tr><td><code>idle</code></td><td>Waiting for activation</td><td>Fallback link, Load button, host note</td></tr>
+      <tr><td><code>loading</code></td><td>Provider is building the embed</td><td>Pulsing card, button reads "Loading…"</td></tr>
+      <tr><td><code>loaded</code></td><td>Embed inserted</td><td>The iframe (or youtube-player)</td></tr>
+      <tr><td><code>error</code></td><td>The provider failed</td><td>Fallback link, error note, Load button to retry</td></tr>
+      <tr><td><code>unsupported</code></td><td>No provider accepts the URL</td><td>Fallback link only</td></tr>
     </tbody>
   </table>
 </section>
 
 <section>
   <h2>Custom Provider</h2>
-  <p>Register a custom provider with <code>SocialEmbed.register()</code>:</p>
-  <code-block language="js" show-lines label="Custom provider" data-escape>import { SocialEmbed, loadScript, fetchOEmbed } from './social-embed/logic.js';
+  <p>Register a provider with <code>SocialEmbed.register()</code>. Return a node from <code>render()</code> and the component inserts it; build frames with <code>createEmbedFrame()</code> so they get the same sandbox, lazy loading and resize handling. Instances already marked <code>unsupported</code> re-initialise when a matching provider is registered later.</p>
+  <code-block language="js" show-lines label="Custom provider" data-escape>import { SocialEmbed, createEmbedFrame } from './social-embed/logic.js';
 
-SocialEmbed.register('my-platform', {
-  canHandle(url) {
-    return url.includes('my-platform.example');
-  },
-  async render(host, url, { theme }) {
-    const data = await fetchOEmbed('https://my-platform.example/oembed', url);
-    host.innerHTML = data.html;
+SocialEmbed.register('peertube', {
+  label: 'PeerTube',
+  noun: 'video',
+  canHandle: (url) => /^https:\/\/video\.example\/w\/[\w-]+$/.test(url),
+  frameHost: () => 'video.example',
+  async render(host, url, { title }) {
+    const id = new URL(url).pathname.split('/').pop();
+    return createEmbedFrame({
+      src: new URL(`https://video.example/videos/embed/${id}`),
+      title,
+      sandbox: ['allow-scripts', 'allow-same-origin'],
+      allow: 'fullscreen',
+      height: 315,
+    });
   }
 });</code-block>
-</section>
-
-<section>
-  <h2>Progressive Enhancement</h2>
-  <table>
-    <thead><tr><th>Scenario</th><th>Behaviour</th></tr></thead>
-    <tbody>
-      <tr><td>No JS</td><td>Fallback <code>&lt;a&gt;</code> link visible and clickable</td></tr>
-      <tr><td>JS + click-to-activate</td><td>Styled card with pointer cursor, loads on click</td></tr>
-      <tr><td>JS + <code>activate="visible"</code></td><td>Loads when scrolled near viewport</td></tr>
-      <tr><td>JS + <code>activate="eager"</code></td><td>Loads immediately</td></tr>
-      <tr><td>Error during render</td><td>Fallback content restored, error state styled</td></tr>
-    </tbody>
-  </table>
+  <p>Never insert oEmbed <code>html</code> (or any third-party markup) with <code>innerHTML</code>. If a platform only offers HTML, run it through <code>sanitizeToFragment()</code> from <code>src/lib/sanitize-html.js</code>.</p>
 </section>
 
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li>Fallback <code>&lt;a&gt;</code> provides a meaningful link for all users regardless of JS state</li>
-    <li>In idle state, the host has <code>role="button"</code> and <code>tabindex="0"</code> for keyboard access</li>
-    <li>Enter and Space keys activate the embed</li>
-    <li>Screen reader live region announces "Loading embed..." and "Embed failed to load." on state changes</li>
-    <li>Skeleton animation respects <code>prefers-reduced-motion</code></li>
+    <li>The idle state is a real <code>&lt;button type="button"&gt;</code> named after the platform ("Load Bluesky post") beside the fallback link. The host has no role, so there is no nested interactive content and the link still navigates.</li>
+    <li>After a load started from the button, focus moves into the embed frame (named by <code>data-title</code>). On failure, focus stays on the Load button, which retries.</li>
+    <li>A polite status region announces loading and failure.</li>
+    <li>The loading pulse respects <code>prefers-reduced-motion</code>.</li>
   </ul>
 </section>
 
 <section>
-  <h2>Privacy</h2>
+  <h2>Privacy and Security</h2>
   <ul>
-    <li><strong>Click-to-activate by default</strong> — no third-party scripts or requests until user interaction</li>
-    <li><strong>oEmbed providers</strong> (Bluesky, Mastodon) make one API request and inject HTML — no third-party scripts</li>
-    <li><strong>Script-based providers</strong> (X, Instagram) inject platform scripts only after activation</li>
-    <li><strong>YouTube delegates</strong> to <code>&lt;youtube-player&gt;</code> which uses <code>youtube-nocookie.com</code></li>
-    <li>The component itself sets no cookies or localStorage</li>
+    <li><strong>Click to load by default.</strong> No request reaches Bluesky, Mastodon, X or Instagram until the reader presses Load. The note under the button names the host. <code>activate="visible"</code> and <code>"eager"</code> skip that consent step.</li>
+    <li><strong>YouTube is the exception.</strong> <code>&lt;youtube-player&gt;</code> renders its facade at once and fetches the thumbnail from <code>i.ytimg.com</code> on page load (set <code>poster</code> to a local image to avoid that request); the video itself loads from <code>youtube-nocookie.com</code> on play. Moving the element re-renders the player's facade, so a playing video stops.</li>
+    <li><strong>Bluesky handle URLs</strong> make one lookup to <code>public.api.bsky.app</code> on load. Use the DID form of the URL to avoid it.</li>
+    <li><strong>Sandboxed, never injected.</strong> Each embed runs in its platform's own origin inside a sandboxed frame. No oEmbed HTML enters your page and no platform script runs with access to your DOM. Platforms may still set their own cookies inside the frame once loaded.</li>
+    <li><strong>Untrusted content.</strong> The shared sanitizer (<code>sanitizeHTML</code> / <code>sanitizeToFragment</code>, used by markdown-viewer, chat-window, comment-thread and others) unwraps <code>&lt;social-embed&gt;</code> to its fallback link, so user-supplied markup cannot embed third-party frames.</li>
+    <li>The component sets no cookies or storage.</li>
   </ul>
 </section>
 
@@ -196,6 +156,9 @@ SocialEmbed.register('my-platform', {
   <h2>Related</h2>
   <ul>
     <li><a href="/docs/elements/web-components/youtube-player/"><code>&lt;youtube-player&gt;</code></a> — Standalone YouTube embed with facade pattern</li>
+    <li><a href="/docs/elements/web-components/geo-map/"><code>&lt;geo-map&gt;</code></a> — Same consent pattern for map tiles (<code>loading="consent"</code>)</li>
     <li><a href="/docs/elements/web-components/share/"><code>&lt;share-wc&gt;</code></a> — Social sharing buttons</li>
+    <li><a href="/docs/attributes/sandbox/"><code>sandbox</code></a> — Lock down what an iframe may do</li>
+    <li><a href="/docs/attributes/allow/"><code>allow</code></a> — Permissions Policy for iframes</li>
   </ul>
 </section>

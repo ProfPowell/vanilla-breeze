@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "qr-code"
-description: "QR code generator web component with progressive enhancement. Shows text content before JS, then renders a scannable QR code."
+description: "QR code generator web component. Draws a black-on-white code with a quiet zone from text or a URL, keeping the element's children as the readable fallback and caption."
 elementName: qr-code
 category: component
 currentPath: /docs/elements/web-components/qr-code/
@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;qr-code&gt;</code> component generates a QR code from text or a URL. It uses progressive enhancement: the text content is visible before JavaScript loads, then replaced with a scannable QR code canvas.</p>
+    <p>The <code>&lt;qr-code&gt;</code> component encodes text or a URL as a QR code on a canvas. Without JavaScript, its children (plain text or a link to the same URL) are what readers see. After upgrade those children stay in the element as the code&rsquo;s caption.</p>
 
     <browser-window
       src="/docs/examples/demos/qr-code-basic.html"
@@ -21,104 +21,99 @@ crumbLabel: Web Components
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Basic QR code" data-escape><qr-code value="https://vanilla-breeze.com">
-  https://vanilla-breeze.com
-</qr-code></code-block>
+    <code-block language="html" show-lines label="Basic QR code" data-escape><qr-code value="https://vanilla-breeze.com" data-caption="visible">
+  <a href="https://vanilla-breeze.com">vanilla-breeze.com</a>
+</qr-code>
+
+<!-- No value attribute: the text content is encoded -->
+<qr-code data-caption="visible">Hello, World!</qr-code></code-block>
 
     <aside class="note">
-      <strong>Zero dependencies.</strong> The QR encoder is built-in &mdash; no external library required. Supports byte mode encoding for versions 1&ndash;10.
+      <p><strong>Encoder.</strong> Encoding uses Project Nayuki&rsquo;s <a href="https://www.nayuki.io/page/qr-code-generator-library">QR Code generator library</a> (MIT), vendored in <code>src/vendor/qrcodegen/</code>. It supports versions 1&ndash;40 and numeric, alphanumeric and byte (UTF-8) modes, and it picks the smallest version and the best mask. A unit test decodes generated codes at every level with an independent decoder (jsQR). There are no runtime dependencies.</p>
     </aside>
   </section>
 
+  {% from "partials/attribute-table.njk" import attributeTable, eventsTable %}
   <section>
     <h2>Attributes</h2>
+    {{ attributeTable("qr-code", apiRegistry) }}
+  </section>
+
+  <section>
+    <h2>Sizes</h2>
+    <p><code>size</code> sets the edge of the whole box in CSS pixels, with the quiet zone included. Each module is drawn as a whole number of device pixels, and the canvas is scaled for <code>devicePixelRatio</code>. Any pixels left over widen the white margin. For phone scanning, keep the code at least about 2&nbsp;cm across in print and 100&nbsp;px on screen.</p>
+
+    <browser-window
+      src="/docs/examples/demos/qr-code-sizes.html"
+      url="https://vanilla-breeze.com/qr-code/sizes"
+      title="QR Code Sizes"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Size variations" data-escape><qr-code value="https://example.com" size="100">100px</qr-code>
+<qr-code value="https://example.com">200px (default)</qr-code>
+<qr-code value="https://example.com" size="300">300px</qr-code></code-block>
+  </section>
+
+  <section>
+    <h2>Colors</h2>
+    <p>By default every code is black modules on an opaque white background with a four-module quiet zone. The theme, dark mode and forced colours do not change it, because inverted (light-on-dark) or low-contrast codes fail on many scanners. In forced-colours mode the canvas keeps its pixels and gets a <code>CanvasText</code> border so the edge of the box stays visible.</p>
+    <p><code>color</code> and <code>background</code> are explicit opt-ins and accept any CSS colour. Keep the modules darker than the background. When a custom pair is inverted, below about 4:1 contrast, or translucent, the element logs a console warning.</p>
+
+    <browser-window
+      src="/docs/examples/demos/qr-code-colors.html"
+      url="https://vanilla-breeze.com/qr-code/colors"
+      title="QR Code Colors"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Custom colors" data-escape><qr-code value="https://example.com" color="#1a5276" background="#f0f0f0">
+  https://example.com
+</qr-code></code-block>
+  </section>
+
+  <section>
+    <h2>Error Correction and Capacity</h2>
+    <p><code>error-correction</code> accepts <code>L</code>, <code>M</code>, <code>Q</code> or <code>H</code> (case-insensitive), or <code>0</code>&ndash;<code>3</code>. The default is <code>M</code>. Higher levels let a damaged or partly covered code still scan, but they hold less data, so the code needs more modules for the same text. The level you set is the level that is used.</p>
+
     <table class="props-table">
       <thead>
         <tr>
-          <th>Attribute</th>
-          <th>Type</th>
-          <th>Default</th>
-          <th>Description</th>
+          <th>Level</th>
+          <th>Recovers up to</th>
+          <th>Max bytes (UTF-8)</th>
+          <th>Max alphanumeric</th>
+          <th>Max digits</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td><code>value</code></td>
-          <td>string</td>
-          <td>textContent</td>
-          <td>Text or URL to encode. Falls back to element text content.</td>
-        </tr>
-        <tr>
-          <td><code>size</code></td>
-          <td>number</td>
-          <td><code>200</code></td>
-          <td>Canvas size in pixels.</td>
-        </tr>
-        <tr>
-          <td><code>color</code></td>
-          <td>CSS color</td>
-          <td>currentColor</td>
-          <td>Foreground (module) color.</td>
-        </tr>
-        <tr>
-          <td><code>background</code></td>
-          <td>CSS color</td>
-          <td>transparent</td>
-          <td>Background color.</td>
-        </tr>
-        <tr>
-          <td><code>error-correction</code></td>
-          <td>0&ndash;3</td>
-          <td><code>1</code> (M)</td>
-          <td>Error correction level: 0=L, 1=M, 2=Q, 3=H.</td>
-        </tr>
+        <tr><td><code>L</code> / <code>0</code></td><td>~7%</td><td>2953</td><td>4296</td><td>7089</td></tr>
+        <tr><td><code>M</code> / <code>1</code> (default)</td><td>~15%</td><td>2331</td><td>3391</td><td>5596</td></tr>
+        <tr><td><code>Q</code> / <code>2</code></td><td>~25%</td><td>1663</td><td>2420</td><td>3993</td></tr>
+        <tr><td><code>H</code> / <code>3</code></td><td>~30%</td><td>1273</td><td>1852</td><td>3057</td></tr>
       </tbody>
     </table>
-  </section>
+    <p>These are the limits of the largest code (version 40, 177 modules per side). In practice keep URLs short: a code above about version 10 needs a large <code>size</code> to scan reliably. Alphanumeric means digits, upper-case <code>A</code>&ndash;<code>Z</code>, space and <code>$%*+-./:</code>. Any other text is encoded as UTF-8 bytes.</p>
+    <p>When the text does not fit, no code is drawn, so there is never a truncated or unreadable one. Instead the element sets <code>data-error="capacity"</code>, shows its caption, and fires <code>qr-code:error</code>.</p>
 
-  <section>
-    <h2>Custom Sizes</h2>
-    <div class="example" style="display: flex; align-items: flex-end; gap: var(--size-l); flex-wrap: wrap;">
-      <figure style="margin: 0; text-align: center;">
-        <qr-code value="https://example.com" size="100" background="white" color="#000">Small</qr-code>
-        <figcaption>100px</figcaption>
-      </figure>
-      <figure style="margin: 0; text-align: center;">
-        <qr-code value="https://example.com" size="200" background="white" color="#000">Medium</qr-code>
-        <figcaption>200px (default)</figcaption>
-      </figure>
-      <figure style="margin: 0; text-align: center;">
-        <qr-code value="https://example.com" size="300" background="white" color="#000">Large</qr-code>
-        <figcaption>300px</figcaption>
-      </figure>
-    </div>
+    <browser-window
+      src="/docs/examples/demos/qr-code-error-correction.html"
+      url="https://vanilla-breeze.com/qr-code/error-correction"
+      title="QR Code Error Correction"
+      shadow>
+    </browser-window>
 
-    <code-block language="html" show-lines label="Size variations" data-escape><!-- Small -->
-<qr-code value="https://example.com" size="100">URL</qr-code>
+    <code-block language="html" show-lines label="Error correction levels" data-escape><qr-code value="https://example.com" error-correction="L">L</qr-code>
+<qr-code value="https://example.com" error-correction="H">H</qr-code>
 
-<!-- Default -->
-<qr-code value="https://example.com" size="200">URL</qr-code>
-
-<!-- Large -->
-<qr-code value="https://example.com" size="300">URL</qr-code></code-block>
-  </section>
-
-  <section>
-    <h2>Custom Colors</h2>
-    <p>Override the foreground and background colors to match your brand.</p>
-
-    <div class="example">
-      <qr-code value="https://example.com" color="#1a5276" background="#f0f0f0">
-        https://example.com
-      </qr-code>
-    </div>
-
-    <code-block language="html" show-lines label="Custom colors" data-escape><qr-code
-  value="https://example.com"
-  color="#1a5276"
-  background="#f0f0f0">
-  https://example.com
-</qr-code></code-block>
+<qr-code id="qr" error-correction="H">
+  <a href="https://example.com/a-very-long-link">The link, as text</a>
+</qr-code>
+<script type="module">
+  const qr = document.getElementById('qr');
+  qr.addEventListener('qr-code:error', (e) => console.log(e.detail.reason)); // "capacity"
+  qr.value = 'x'.repeat(1300); // more than H holds
+</script></code-block>
   </section>
 
   <section>
@@ -126,39 +121,70 @@ crumbLabel: Web Components
     <table class="props-table">
       <thead>
         <tr>
-          <th>Method</th>
+          <th>Member</th>
           <th>Returns</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
         <tr>
+          <td><code>value</code></td>
+          <td>string</td>
+          <td>The encoded text. Setting it sets the <code>value</code> attribute and redraws. Setting <code>''</code> removes the attribute, and the element falls back to its original text content.</td>
+        </tr>
+        <tr>
           <td><code>toDataURL(type?)</code></td>
           <td>string</td>
-          <td>Get the QR code as a data URL for download or embedding.</td>
+          <td>The code as a data URL (default <code>image/png</code>), opaque and with the quiet zone. Returns <code>''</code> when no code is drawn.</td>
+        </tr>
+        <tr>
+          <td><code>copy(options?)</code></td>
+          <td>Promise&lt;boolean&gt;</td>
+          <td>Copies the code to the clipboard as the encoded text (<code>text/plain</code>) and a PNG (<code>image/png</code>), so it pastes as text in text fields and as an image in design and chat tools. Browsers without <code>ClipboardItem</code> get text only. <code>options.button</code> gets <code>data-state="copied"</code> and a <code>copy:done</code> event (<code>data-state="failed"</code> and <code>copy:error</code> on failure). Screen readers hear <code>data-label-copied</code>. Resolves <code>false</code> when no code is drawn or the write fails.</td>
         </tr>
       </tbody>
     </table>
 
-    <code-block language="javascript" show-lines label="Export as image" data-escape>const qr = document.querySelector('qr-code');
+    <browser-window
+      src="/docs/examples/demos/qr-code-copy.html"
+      url="https://vanilla-breeze.com/qr-code/copy"
+      title="Copy a QR Code"
+      shadow>
+    </browser-window>
 
-// Get as image data URL
-const dataUrl = qr.toDataURL('image/png');
+    <code-block language="html" show-lines label="Copy and export" data-escape><qr-code id="qr" value="https://vanilla-breeze.com">
+  <a href="https://vanilla-breeze.com">vanilla-breeze.com</a>
+</qr-code>
+<button type="button" id="copy-btn">Copy QR code</button>
 
-// Use in an img tag or download link
-const img = new Image();
-img.src = dataUrl;</code-block>
+<script type="module">
+  const qr = document.getElementById('qr');
+  const button = document.getElementById('copy-btn');
+  button.addEventListener('click', () => qr.copy({ button }));
+
+  // Or export it
+  const img = new Image();
+  img.src = qr.toDataURL('image/png');
+</script></code-block>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    {{ eventsTable("qr-code", apiRegistry) }}
   </section>
 
   <section>
     <h2>Progressive Enhancement</h2>
-    <p>Without JavaScript, the text content inside the element remains visible as a readable fallback. This means the URL or text is always accessible, even if the QR code can&rsquo;t render.</p>
+    <p>Without JavaScript, the element&rsquo;s children are shown as they are. A link to the encoded URL is the best fallback, because it does what scanning would do. After upgrade the canvas is added before the children, and the children are not removed.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>The canvas element gets <code>role="img"</code> with an <code>aria-label</code> describing the QR content.</li>
-      <li>The original text serves as a fallback for non-visual users.</li>
+      <li>The canvas has <code>role="img"</code> and a short name, &ldquo;QR code&rdquo;. Change it with <code>data-label-prefix</code>, for example to translate it.</li>
+      <li>The children (the caption) carry the value. They are visually hidden by default and read once, after the image. Add <code>data-caption="visible"</code> to show them under the code.</li>
+      <li>A link in a hidden caption is still keyboard-reachable, and the caption is shown while the link has focus.</li>
+      <li>When no code can be drawn, the caption is shown so the content is never lost.</li>
+      <li>Colours are fixed black on white, with an opaque quiet zone, in every theme, in dark mode and in forced colours.</li>
     </ul>
   </section>

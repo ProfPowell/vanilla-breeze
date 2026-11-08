@@ -64,23 +64,54 @@ crumbLabel: Native Elements
     <browser-window src="/docs/snippets/demos/header-card.html" url="https://vanilla-breeze.com/header/card" title="Card header" shadow></browser-window>
     <code-block language="html" label="Card header" data-escape><layout-card>
   <header class="card">
-    <h3>Card Title</h3>
+    <h2>Card Title</h2>
   </header>
   <p>Card content goes here...</p>
 </layout-card></code-block>
 
     <h3>Sticky</h3>
     <p>Add <code>data-sticky</code> to pin the header to the top of the viewport during scroll. See the <a href="/docs/attributes/data-sticky/">data-sticky attribute</a> page for full details and recipes.</p>
+    <p>Put the sticky header directly in <code>&lt;body&gt;</code>. Sticky positioning only holds inside the header's parent, and a body-level header is also what gets anchor protection: <code>html:has(&gt; body &gt; header[data-sticky])</code> sets <code>scroll-padding-block-start</code> so in-page links land below the header instead of under it. The padding uses <code>--sticky-offset</code> (measured by the coordinated <code>&lt;html data-sticky&gt;</code> system), falling back to <code>--header-sticky-size</code>, which defaults to the <code>.site</code> header's reserved height. Set <code>--header-sticky-size</code> on <code>:root</code> if your header is taller.</p>
     <browser-window src="/docs/snippets/demos/header-sticky.html" url="https://vanilla-breeze.com/header/sticky" title="Sticky header" shadow></browser-window>
-    <code-block language="html" label="Sticky header" data-escape><header data-sticky class="site">
-  <strong>Sticky Header</strong>
-  <nav class="horizontal pills">
+    <code-block language="html" label="Sticky header" data-escape><body>
+  <header data-sticky class="site">
+    <strong>Sticky Header</strong>
+    <nav class="horizontal pills" aria-label="Main">
+      <ul>
+        <li><a href="#line-1">Line 1</a></li>
+        <li><a href="#line-10">Line 10</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>...</main>
+</body></code-block>
+
+    <h3>Auto-hiding (data-scroll-hide)</h3>
+    <p>Add <code>data-scroll-hide</code> to make the header sticky, slide it away as the reader scrolls down, and bring it back once they scroll up about 40px. The upward distance adds up across small scroll steps, so slow trackpad or keyboard scrolling reveals it too. A small script loads automatically when the attribute is present. It sets <code>data-hidden</code> while the header is away.</p>
+    <p>If focus moves into a hidden header, for example when tabbing back to the navigation, the header slides back in, so a focused link is never offscreen. With <code>prefers-reduced-motion: reduce</code> the header still hides and returns, but without the slide.</p>
+    <browser-window src="/docs/snippets/demos/header-scroll-hide.html" url="https://vanilla-breeze.com/header/scroll-hide" title="Auto-hiding header" shadow></browser-window>
+    <code-block language="html" label="Auto-hiding header" data-escape><header data-scroll-hide class="site">
+  <strong>Auto-hiding Header</strong>
+  <nav class="horizontal pills" aria-label="Main">
     <ul>
-      <li><a href="#">Link 1</a></li>
-      <li><a href="#">Link 2</a></li>
+      <li><a href="#line-1">Line 1</a></li>
+      <li><a href="#line-10">Line 10</a></li>
     </ul>
   </nav>
 </header></code-block>
+
+    <h3>.transparent</h3>
+    <p>Positions the header absolutely over the top of the page with no background, for headers that sit on a hero image or colour band. Give the hero enough top padding to clear the header, and check the header text still has enough contrast against whatever is behind it.</p>
+    <browser-window src="/docs/snippets/demos/header-transparent.html" url="https://vanilla-breeze.com/header/transparent" title="Transparent header" shadow></browser-window>
+    <code-block language="html" label="Transparent header" data-escape><header class="site transparent">
+  <strong>Brand</strong>
+  <nav class="horizontal pills" aria-label="Main">...</nav>
+</header>
+<main>
+  <section class="hero-band">
+    <h1>Header over a hero</h1>
+  </section>
+</main></code-block>
 
     <h3>.centered</h3>
     <p>Centered header for landing pages.</p>
@@ -96,7 +127,7 @@ crumbLabel: Native Elements
     <browser-window src="/docs/snippets/demos/header-compact.html" url="https://vanilla-breeze.com/header/compact" title="Compact header" shadow></browser-window>
     <code-block language="html" label="Compact header" data-escape><header class="compact site">
   <strong>Brand</strong>
-  <nav class="horizontal minimal">
+  <nav class="horizontal minimal" aria-label="Main">
     <ul>
       <li><a href="#">Home</a></li>
       <li><a href="#">Docs</a></li>
@@ -133,6 +164,10 @@ crumbLabel: Native Elements
           <td>Pins header to top of viewport on scroll (<a href="/docs/attributes/data-sticky/">see attribute page</a>)</td>
         </tr>
         <tr>
+          <td><code>data-scroll-hide</code></td>
+          <td>Sticky header that hides on scroll down and returns on scroll up or when it receives focus (sets <code>data-hidden</code> while hidden)</td>
+        </tr>
+        <tr>
           <td><code>.transparent</code></td>
           <td>Absolute positioning with transparent background for hero overlays</td>
         </tr>
@@ -151,10 +186,11 @@ crumbLabel: Native Elements
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>The document's main header becomes a banner landmark (only when not nested)</li>
+      <li>A <code>&lt;header&gt;</code> is exposed as the <code>banner</code> landmark only when it is scoped to <code>&lt;body&gt;</code> &mdash; that is, it has no <code>&lt;article&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;nav&gt;</code> or <code>&lt;section&gt;</code> ancestor. Non-sectioning wrappers, including VB layout custom elements such as <code>&lt;layout-stack&gt;</code> at body level, don't change this. A header inside one of those elements is a plain section header with no landmark role.</li>
+      <li>Keep one body-level header per page so there is a single <code>banner</code> landmark. The sticky system (<code>&lt;html data-sticky&gt;</code>) uses the same rule to pick which header to pin, so an article or card header is never made sticky.</li>
       <li>Include skip links at the start of the header to bypass navigation</li>
       <li>Use <code>&lt;nav&gt;</code> with <code>aria-label</code> to identify navigation regions</li>
-      <li>Sticky headers should not obscure content when users navigate with keyboard</li>
+      <li>Sticky headers must not cover focused or linked content. A body-level sticky header gets matching scroll padding automatically. An auto-hiding header slides back when anything inside it receives focus.</li>
       <li>Ensure transparent headers maintain sufficient contrast with background</li>
       <li>Consider <code>prefers-reduced-motion</code> for sticky header animations</li>
     </ul>
@@ -164,6 +200,7 @@ crumbLabel: Native Elements
     <h2>Related</h2>
     <ul>
       <li><a href="/docs/elements/native/nav/"><code>&lt;nav&gt;</code></a> - Primary navigation typically lives in site headers</li>
+      <li><a href="/docs/patterns/navigation/navbar/">Navbar patterns</a> - Complete site-header recipes: simple, dropdown, sticky, with search and mobile</li>
       <li><a href="/docs/elements/native/hgroup/"><code>&lt;hgroup&gt;</code></a> - For grouping heading with subtitle in headers</li>
       <li><a href="/docs/elements/native/footer/"><code>&lt;footer&gt;</code></a> - Complementary element for closing content</li>
       <li><a href="/docs/elements/native/article/"><code>&lt;article&gt;</code></a> - Header provides article metadata</li>

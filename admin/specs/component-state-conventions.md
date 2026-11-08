@@ -88,7 +88,7 @@ The following 90+ components had nothing to surface. Categorized by reason:
 - **Already documented public attributes:** `audio-player` (data-active), `combo-box` (data-active), `content-lens` (data-active-lens), `change-set` (view), `card-list` (data-loading), `include-file` (data-loading), `markdown-viewer` (data-loading), `notification-wc`, `recently-visited`, `site-search` ([open]), `time-picker` (data-open), `context-menu` (data-open), and many more.
 - **ARIA-driven state:** `tab-set`, `glossary-wc`, `site-map-wc`, `accordion-wc`, etc.
 - **Form-associated validity:** `combo-box`, `date-picker`, `time-picker`, `calendar-wc`, `color-picker`, `chat-input`, `star-rating` — all use `internals.setValidity()`.
-- **No CSS-relevant state:** layout primitives in `src/custom-elements/` (layout-stack, layout-grid, layout-cluster, etc.), pure-render components (icon-wc, brand-mark, qr-code), data-display components without ephemeral states (chart-wc, gantt-chart, day-view, week-view).
+- **No CSS-relevant state:** layout primitives in `src/custom-elements/` (layout-stack, layout-grid, layout-cluster, etc.), pure-render components (icon-wc, brand-mark). `qr-code` outputs one state, `data-error="capacity"`, when the value doesn't fit, data-display components without ephemeral states (chart-wc, gantt-chart, day-view, week-view).
 
 ## How a candidate becomes a shipped state
 

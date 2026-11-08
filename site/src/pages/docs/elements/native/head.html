@@ -14,7 +14,7 @@ crumbLabel: Native Elements
 <!-- Description Section -->
   <section>
     <h2>Description</h2>
-    <p>The <code>&lt;head&gt;</code> element is VB's configuration surface. It controls document metadata, theming, performance hints, social sharing, and service worker opt-in. VB's <code>partials/head.njk</code> template generates the full <code>&lt;head&gt;</code> from frontmatter variables, so most pages only need to set <code>title</code>, <code>description</code>, and optionally <code>image</code> in their YAML front matter.</p>
+    <p>The <code>&lt;head&gt;</code> element holds document metadata. For a Vanilla Breeze page it is also where the stylesheet, the JS bundle and a tiny inline boot script go. This page describes the recommended head for a VB page: what is required, what VB reads, and what is optional.</p>
   </section>
 
   <!-- Basic Example Section -->
@@ -27,58 +27,44 @@ crumbLabel: Native Elements
   <title>Page Title</title>
 </head></code-block>
 
-    <h3>Typical VB Page</h3>
-    <p>The <code>partials/head.njk</code> template generates this structure automatically:</p>
-    <code-block language="html" label="Full VB head output" data-escape><head>
-  <!-- Global Metadata -->
+    <h3>Recommended VB head</h3>
+    <p>A complete head for a site loading VB from <code>/cdn/</code> (the <code>dist/cdn/</code> folder of the npm package, or your copy of it):</p>
+    <code-block language="html" label="Recommended VB head" data-escape><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
-  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1a1a">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-
-  <!-- Primary Meta Tags -->
+  <meta name="theme-color" content="#ffffff">
   <title>Page Title | Site Name</title>
   <meta name="description" content="A short description of this page.">
   <link rel="canonical" href="https://example.com/page/">
 
-  <!-- Open Graph -->
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+  <!-- Social preview -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://example.com/page/">
-  <meta property="og:title" content="Page Title | Site Name">
+  <meta property="og:title" content="Page Title">
   <meta property="og:description" content="A short description of this page.">
   <meta property="og:image" content="https://example.com/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
 
-  <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://example.com/page/">
-  <meta property="twitter:title" content="Page Title | Site Name">
-  <meta property="twitter:description" content="A short description of this page.">
-  <meta property="twitter:image" content="https://example.com/og-image.png">
+  <!-- Theme flash prevention (see below) -->
+  <script>/* boot snippet */</script>
 
-  <!-- Theme flash prevention -->
-  <script>/* ... inline script ... */</script>
-
-  <!-- Performance -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-
-  <!-- CSS -->
+  <!-- VB: CSS, an optional decorative theme, then the JS bundle -->
   <link rel="stylesheet" href="/cdn/vanilla-breeze.css">
-
-  <!-- Service Worker opt-in -->
-  <meta name="vb-service-worker" content="true">
+  <link rel="stylesheet" href="/cdn/themes/swiss.css">
+  <script type="module" src="/cdn/vanilla-breeze-autoload.js"></script>
 </head></code-block>
+    <p>Root configuration (<code>lang</code>, <code>data-theme="swiss"</code>, <code>data-fluid</code>, …) goes on <a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a>.</p>
   </section>
 
   <!-- Required Elements Section -->
   <section>
     <h2>Required Elements</h2>
-    <p>Every VB page must include these elements. The head partial handles all of them automatically.</p>
     <table class="props-table">
       <thead>
         <tr>
@@ -93,28 +79,241 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>&lt;meta name="viewport" ...&gt;</code></td>
-          <td>Viewport configuration for responsive layout. VB sets <code>width=device-width, initial-scale=1.0</code>.</td>
-        </tr>
-        <tr>
-          <td><code>&lt;meta name="color-scheme" content="light dark"&gt;</code></td>
-          <td>Tells the browser the page supports both color schemes before CSS loads. Prevents a white flash for dark-mode users and enables correct form control styling.</td>
+          <td>Viewport configuration for responsive layout: <code>width=device-width, initial-scale=1.0</code>. Do not disable zoom.</td>
         </tr>
         <tr>
           <td><code>&lt;title&gt;</code></td>
-          <td>Page title. VB concatenates as <code>Page Title | Site Name</code>, or just the site name if no page title is set.</td>
-        </tr>
-        <tr>
-          <td><code>&lt;meta name="description"&gt;</code></td>
-          <td>Page description for search engines and social previews. Set via the <code>description</code> frontmatter field.</td>
+          <td>Page title, announced first by screen readers and shown in tabs and search results. <code>Page Title | Site Name</code> gives both the page and the site.</td>
         </tr>
       </tbody>
     </table>
+    <p>Strongly recommended: <code>&lt;meta name="color-scheme" content="light dark"&gt;</code> tells the browser before any CSS arrives that the page supports both schemes, so a dark-mode visitor gets a dark canvas and dark form controls from the first paint instead of a white flash. <code>&lt;meta name="description"&gt;</code> is the summary search engines and social previews show.</p>
+  </section>
+
+  <!-- Loading VB Section -->
+  <section>
+    <h2>Loading Vanilla Breeze</h2>
+
+    <h3>CSS</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>File (<code>/cdn/</code>)</th>
+          <th>npm specifier</th>
+          <th>Contents</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>vanilla-breeze.css</code></td>
+          <td><code>vanilla-breeze/css</code></td>
+          <td>Everything: native elements, layouts, all component styles, the bundled themes (modern, minimal, classic, a11y-*)</td>
+        </tr>
+        <tr>
+          <td><code>vanilla-breeze-core.css</code></td>
+          <td><code>vanilla-breeze/core-css</code></td>
+          <td>Same foundation with core component styles only; pair with <code>vanilla-breeze-core.js</code></td>
+        </tr>
+        <tr>
+          <td><code>themes/&lt;name&gt;.css</code></td>
+          <td><code>vanilla-breeze/themes/&lt;name&gt;</code></td>
+          <td>One decorative theme. Optional: the JS bundle loads it on demand when <code>data-theme</code> names it, but a <code>&lt;link&gt;</code> avoids the late repaint and works without JS.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Link order between VB files does not matter. Every theme file declares <code>@layer bundle-theme</code> itself and starts with VB's layer-order statement, so a theme linked before or after the main stylesheet lands in the same layer. Your own unlayered CSS beats all VB layers.</p>
+
+    <h3>JavaScript</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>File (<code>/cdn/</code>)</th>
+          <th>npm specifier</th>
+          <th>Contents</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>vanilla-breeze-autoload.js</code></td>
+          <td>&mdash;</td>
+          <td>Core components up front; every other component loaded the first time it appears on the page. The easiest choice.</td>
+        </tr>
+        <tr>
+          <td><code>vanilla-breeze-core.js</code></td>
+          <td><code>vanilla-breeze/core-js</code></td>
+          <td>Core components only; add <code>vanilla-breeze-extras.js</code> (<code>vanilla-breeze/extras-js</code>) for the rest</td>
+        </tr>
+        <tr>
+          <td><code>vanilla-breeze.js</code></td>
+          <td><code>vanilla-breeze</code>, <code>vanilla-breeze/js</code></td>
+          <td>Every component in one file</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>All three are ES modules (<code>type="module"</code>, deferred by default), and all three start the theme system on load. Load one of them, not several.</p>
+
+    <h3>Preloading</h3>
+    <p>A module script is discovered when the parser reaches it. To start the download earlier, preload the entry you load (the bundles are single files, so there is nothing else to preload):</p>
+    <code-block language="html" label="Module preload" data-escape><link rel="modulepreload" href="/cdn/vanilla-breeze-autoload.js"></code-block>
+    <p>VB itself needs no <code>preconnect</code>: it makes no third-party requests (the a11y-dyslexia theme's Atkinson Hyperlegible font is self-hosted in <code>/cdn/fonts/</code> and only downloads while that theme is active). Preconnect only to origins your own page uses, for example a separate CDN host:</p>
+    <code-block language="html" label="Preconnect to your own asset host" data-escape><link rel="preconnect" href="https://assets.example.com" crossorigin></code-block>
+  </section>
+
+  <!-- Theme Flash Prevention Section -->
+  <section>
+    <h2>Theme Flash Prevention</h2>
+    <p>The bundles are modules, so they run after first paint. A returning visitor who chose dark mode or a brand theme would see one frame of the defaults first. A small classic inline <code>&lt;script&gt;</code> placed before the stylesheet applies the saved preferences to <code>&lt;html&gt;</code> synchronously.</p>
+    <p>Preferences are stored by <a href="/docs/concepts/vb-store/">VBStore</a> under <code>vb:{namespace}:{key}</code>, each value wrapped as <code>{ "data": …, "timestamp": … }</code>:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Preference</th>
+          <th>Storage key → field</th>
+          <th>Applied as</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Light/dark mode</td>
+          <td><code>vb:theme:current</code> → <code>mode</code></td>
+          <td><code>data-mode</code></td>
+        </tr>
+        <tr>
+          <td>Brand theme</td>
+          <td><code>vb:theme:current</code> → <code>brand</code></td>
+          <td rowspan="2"><code>data-theme</code></td>
+        </tr>
+        <tr>
+          <td>Accessibility themes</td>
+          <td><code>vb:settings:a11y</code> (array)</td>
+        </tr>
+        <tr>
+          <td>Accent, fluid, border style, icon set, backdrop</td>
+          <td><code>vb:theme:current</code> → <code>accent</code>, <code>fluid</code>, <code>borderStyle</code>, <code>iconSet</code>, <code>backdrop</code>, <code>backdropChrome</code></td>
+          <td><code>data-accent</code>, <code>data-fluid</code>, <code>data-border-style</code>, <code>data-icon-set</code>, <code>data-backdrop</code>, <code>data-backdrop-chrome</code></td>
+        </tr>
+        <tr>
+          <td>Reduced motion</td>
+          <td><code>vb:settings:extensions</code> → <code>motionFx === false</code></td>
+          <td><code>data-motion-reduced</code></td>
+        </tr>
+        <tr>
+          <td>Sticky header</td>
+          <td><code>vb:settings:sticky</code> = <code>"on"</code></td>
+          <td><code>data-sticky</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>A root-attribute field that is <code>null</code> or missing means "no choice": the attribute you authored on <code>&lt;html&gt;</code> stays. The snippet records your authored values in <code>window.__vbAuthoredRoot</code> before writing, so <code>ThemeManager</code> can restore them on reset.</p>
+    <code-block language="html" label="Theme flash prevention snippet" data-escape><script>
+  try {
+    const root = document.documentElement;
+    const read = (ns, key) => {
+      try {
+        const env = JSON.parse(localStorage.getItem(`vb:${ns}:${key}`));
+        return env && typeof env === 'object' && 'data' in env ? env.data : null;
+      } catch { return null; }
+    };
+    const ATTRS = ['data-theme', 'data-accent', 'data-border-style', 'data-icon-set',
+      'data-fluid', 'data-backdrop', 'data-backdrop-chrome'];
+    window.__vbAuthoredRoot = Object.fromEntries(ATTRS.map((a) => [a, root.getAttribute(a)]));
+
+    const stored = read('theme', 'current') || {};
+    // null = no choice. Older saves (no "v") stored '' for untouched keys.
+    const pref = (key) => {
+      const v = stored[key];
+      if (v == null) return null;
+      if (!(stored.v >= 2) && (v === '' || (key === 'accent' && v === 'default'))) return null;
+      return typeof v === 'string' && /^[a-z0-9 -]*$/.test(v) ? v : null;
+    };
+    const set = (attr, value, off) => {
+      if (value == null) return;
+      if (value === '' || value === off) root.removeAttribute(attr);
+      else root.setAttribute(attr, value);
+    };
+
+    // Mode
+    const mode = stored.mode || 'auto';
+    const dark = mode === 'dark' || (mode === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+    if (mode !== 'auto' || dark) root.dataset.mode = dark ? 'dark' : 'light';
+
+    // Brand + accessibility themes (a brand pinned on <html> is the default)
+    const pinned = (root.getAttribute('data-theme') || '').split(/\s+/)
+      .find((t) => t && !t.startsWith('a11y-')) || '';
+    const brand = stored.brand && stored.brand !== 'default' ? stored.brand : pinned;
+    const a11y = read('settings', 'a11y');
+    const parts = [brand, ...(Array.isArray(a11y) ? a11y : [])].filter(Boolean);
+    if (parts.length) root.dataset.theme = parts.join(' ');
+
+    // Other root preferences
+    set('data-fluid', pref('fluid'));
+    set('data-backdrop', pref('backdrop'));
+    set('data-backdrop-chrome', pref('backdropChrome'), 'card');
+    set('data-border-style', pref('borderStyle'), 'clean');
+    set('data-icon-set', pref('iconSet'), 'lucide');
+    set('data-accent', pref('accent'), 'default');
+
+    // Browser chrome colour for the known mode (ThemeManager refines it)
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
+      m.removeAttribute('media');
+      m.content = dark ? '#080d16' : '#ffffff';
+    });
+
+    const ext = read('settings', 'extensions') || {};
+    if (ext.motionFx === false) root.dataset.motionReduced = '';
+    if (read('settings', 'sticky') === 'on') root.dataset.sticky = '';
+  } catch {}
+</script></code-block>
+    <p>A decorative brand theme saved by the visitor still needs its CSS: either link the themes you offer up front, or let the JS bundle fetch it (one repaint). The VB documentation site's own copy of this script (<code>site/src/includes/head.html</code> in the repository) additionally writes the theme <code>&lt;link&gt;</code> during parsing and hides the body until it loads.</p>
+  </section>
+
+  <!-- Theme color Section -->
+  <section>
+    <h2>Theme Color</h2>
+    <p><code>&lt;meta name="theme-color"&gt;</code> tints the browser's address bar and tab strip. Give one value (or a <code>media</code>-scoped light/dark pair) as the default. Once the JS bundle runs, <code>ThemeManager</code> sets every theme-color meta to the page's actual background colour after each mode or theme change, removing the <code>media</code> attributes: the mode is known by then.</p>
+    <code-block language="html" label="Theme color meta tags" data-escape><meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#080d16"></code-block>
+  </section>
+
+  <!-- Metadata VB reads Section -->
+  <section>
+    <h2>Metadata VB Reads</h2>
+    <p>Several components read standard metadata from the head rather than asking you to repeat it in attributes: <code>&lt;page-info&gt;</code> reads <code>author</code>, <code>last-modified</code>, <code>license</code>, Open Graph article dates and the <code>vb:*</code> provenance fields; <code>&lt;site-index&gt;</code> aggregates <code>keywords</code> and <code>article:tag</code>; the topic and analytics systems read repeated <code>&lt;meta name="concept"&gt;</code>. The principle is public standards first, with <code>vb:*</code> names only for what no standard covers. The field families are summarised on <a href="/docs/concepts/document-provenance/">Document provenance</a>.</p>
+    <code-block language="html" label="Metadata VB components read" data-escape><meta name="author" content="Ada Lovelace">
+<meta name="last-modified" content="2026-10-30">
+<meta name="license" content="CC BY 4.0">
+<meta property="article:published_time" content="2026-10-01T09:00:00Z">
+<meta name="concept" content="design-tokens">
+<meta name="vb:provenance" content="ai-assisted">
+<meta name="vb:status" content="published"></code-block>
+  </section>
+
+  <!-- Social Metadata Section -->
+  <section>
+    <h2>Social Metadata</h2>
+    <h3>Open Graph</h3>
+    <p>Open Graph tags use the <code>property</code> attribute:</p>
+    <code-block language="html" label="Open Graph tags" data-escape><meta property="og:type" content="website">
+<meta property="og:url" content="https://example.com/page/">
+<meta property="og:title" content="Page Title">
+<meta property="og:description" content="A short description of this page.">
+<meta property="og:image" content="https://example.com/og-image.png"></code-block>
+
+    <h3>Twitter / X Card</h3>
+    <p>Twitter card tags use <code>name</code>, not <code>property</code>. Title, description and image fall back to the Open Graph values, so <code>twitter:card</code> is usually the only one you need:</p>
+    <code-block language="html" label="Twitter Card tags" data-escape><meta name="twitter:card" content="summary_large_image"></code-block>
+  </section>
+
+  <!-- Canonical URL Section -->
+  <section>
+    <h2>Canonical URL</h2>
+    <p>The canonical link tells search engines the preferred URL for a page, so query-string and trailing-slash variants do not compete as duplicates:</p>
+    <code-block language="html" label="Canonical link" data-escape><link rel="canonical" href="https://example.com/page/"></code-block>
   </section>
 
   <!-- Favicon Strategy Section -->
   <section>
-    <h2>Favicon Strategy</h2>
-    <p>VB uses a three-tier favicon approach for maximum browser coverage:</p>
+    <h2>Favicons</h2>
     <code-block language="html" label="Favicon links" data-escape><link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"></code-block>
@@ -128,11 +327,11 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>favicon.svg</code></td>
-          <td>Primary. Scales perfectly, supports <code>prefers-color-scheme</code> media queries for dark-mode favicons.</td>
+          <td>Primary. Scales cleanly and can carry a <code>prefers-color-scheme</code> media query for a dark-mode icon.</td>
         </tr>
         <tr>
           <td><code>favicon-32x32.png</code></td>
-          <td>Fallback for browsers that don't support SVG favicons (older Safari, some RSS readers).</td>
+          <td>Fallback for clients without SVG favicon support (older Safari, some RSS readers).</td>
         </tr>
         <tr>
           <td><code>apple-touch-icon.png</code></td>
@@ -142,148 +341,13 @@ crumbLabel: Native Elements
     </table>
   </section>
 
-  <!-- Social Metadata Section -->
+  <!-- CSP Section -->
   <section>
-    <h2>Social Metadata</h2>
-    <p>VB generates Open Graph and Twitter Card tags automatically from frontmatter.</p>
-
-    <h3>Open Graph</h3>
-    <code-block language="html" label="Open Graph tags" data-escape><meta property="og:type" content="website">
-<meta property="og:url" content="https://example.com/page/">
-<meta property="og:title" content="Page Title | Site Name">
-<meta property="og:description" content="A short description of this page.">
-<meta property="og:image" content="https://example.com/og-image.png"></code-block>
-
-    <h3>Twitter Card</h3>
-    <code-block language="html" label="Twitter Card tags" data-escape><meta property="twitter:card" content="summary_large_image">
-<meta property="twitter:url" content="https://example.com/page/">
-<meta property="twitter:title" content="Page Title | Site Name">
-<meta property="twitter:description" content="A short description of this page.">
-<meta property="twitter:image" content="https://example.com/og-image.png"></code-block>
-
-    <h3>Custom OG Image</h3>
-    <p>Override the default <code>/og-image.png</code> with the <code>image</code> frontmatter field:</p>
-    <code-block language="yaml" label="Frontmatter with custom OG image" data-escape>---
-title: "My Page"
-description: "Page description."
-image: "/images/custom-og.png"
----</code-block>
-  </section>
-
-  <!-- Canonical URL Section -->
-  <section>
-    <h2>Canonical URL</h2>
-    <p>VB auto-generates a canonical URL from <code>site.url</code> + <code>page.url</code>. This tells search engines the preferred URL for each page, preventing duplicate content issues.</p>
-    <code-block language="html" label="Canonical link" data-escape><link rel="canonical" href="https://example.com/page/"></code-block>
-  </section>
-
-  <!-- Theme Flash Prevention Section -->
-  <section>
-    <h2>Theme Flash Prevention</h2>
-    <p>An inline <code>&lt;script&gt;</code> runs before CSS loads to prevent a flash of wrong theme. It reads the user's saved preferences from <code>localStorage</code> and applies data attributes to <code>&lt;html&gt;</code> synchronously:</p>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Preference</th>
-          <th>Storage Key</th>
-          <th>Attribute Set</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Light/dark mode</td>
-          <td><code>vb-theme</code> → <code>.mode</code></td>
-          <td><code>data-mode</code></td>
-        </tr>
-        <tr>
-          <td>Brand theme</td>
-          <td><code>vb-theme</code> → <code>.brand</code></td>
-          <td rowspan="2"><code>data-theme</code></td>
-        </tr>
-        <tr>
-          <td>Accessibility themes</td>
-          <td><code>vb-a11y-themes</code></td>
-        </tr>
-        <tr>
-          <td>Fluid scaling preset</td>
-          <td><code>vb-theme</code> → <code>.fluid</code></td>
-          <td><code>data-fluid</code></td>
-        </tr>
-        <tr>
-          <td>Reduced motion</td>
-          <td><code>vb-extensions</code> → <code>.motionFx</code></td>
-          <td><code>data-motion-reduced</code></td>
-        </tr>
-        <tr>
-          <td>Browser chrome color</td>
-          <td><em>(derived from mode)</em></td>
-          <td><code>&lt;meta name="theme-color"&gt;</code></td>
-        </tr>
-      </tbody>
-    </table>
-    <p>The script also updates the <code>theme-color</code> meta tag so the browser chrome matches the applied mode rather than the OS preference.</p>
-    <code-block language="html" label="Theme flash prevention script" data-escape><script>
-  try {
-    const stored = JSON.parse(localStorage.getItem('vb-theme') || '{}');
-    const mode = stored.mode || 'auto';
-    const brand = stored.brand || 'default';
-
-    // Apply mode before CSS loads
-    if (mode !== 'auto') {
-      document.documentElement.dataset.mode = mode;
-    } else if (matchMedia('(prefers-color-scheme: dark)').matches) {
-      document.documentElement.dataset.mode = 'dark';
-    }
-
-    // Compose theme: brand + accessibility layers
-    const a11y = JSON.parse(localStorage.getItem('vb-a11y-themes') || '[]');
-    const parts = [];
-    if (brand && brand !== 'default') parts.push(brand);
-    parts.push(...a11y);
-    if (parts.length) document.documentElement.dataset.theme = parts.join(' ');
-
-    // Fluid scaling preset
-    if (stored.fluid) document.documentElement.dataset.fluid = stored.fluid;
-
-    // Update theme-color meta to match applied mode
-    const effective = mode !== 'auto' ? mode
-      : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    const color = effective === 'dark' ? '#1a1a1a' : '#ffffff';
-    document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
-      m.removeAttribute('media');
-    });
-    document.querySelector('meta[name="theme-color"]').content = color;
-
-    // Reduced motion preference
-    const ext = JSON.parse(localStorage.getItem('vb-extensions') || '{}');
-    if (ext.motionFx === false) {
-      document.documentElement.dataset.motionReduced = '';
-    }
-  } catch(e) {}
-</script></code-block>
-  </section>
-
-  <!-- Performance Section -->
-  <section>
-    <h2>Performance</h2>
-
-    <h3>Preconnect</h3>
-    <p>VB preconnects to Google Fonts so the DNS lookup, TCP handshake, and TLS negotiation happen in parallel with CSS parsing:</p>
-    <code-block language="html" label="Font preconnect" data-escape><link rel="preconnect" href="https://fonts.googleapis.com" crossorigin></code-block>
-
-    <h3>Theme Color</h3>
-    <p>Two <code>&lt;meta name="theme-color"&gt;</code> tags tell the browser what color to paint the address bar and tab strip, matched to VB's default backgrounds:</p>
-    <code-block language="html" label="Theme color meta tags" data-escape><meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1a1a"></code-block>
-    <p>The theme flash prevention script dynamically updates these to match the user's chosen mode, so the browser chrome stays in sync even when the mode is explicitly set (not following OS preference).</p>
-
-    <h3>CSS Loading</h3>
-    <p>VB uses different CSS paths in development and production:</p>
-    <code-block language="html" label="Development CSS" data-escape><!-- Development: source CSS -->
-<link rel="stylesheet" href="/src/main.css"></code-block>
-    <code-block language="html" label="Production CSS" data-escape><!-- Production: bundled CSS -->
-<link rel="stylesheet" href="/cdn/vanilla-breeze.css"></code-block>
-    <p>The <code>site.css</code> data variable handles this automatically — <code>/src/main.css</code> in dev mode (served by Caddy), <code>/cdn/vanilla-breeze.css</code> in production.</p>
+    <h2>Content Security Policy</h2>
+    <p>Under a CSP without <code>'unsafe-inline'</code>, the inline boot script needs a <a href="/docs/attributes/nonce/"><code>nonce</code></a> (or a <code>'sha256-…'</code> hash of its exact text) in <code>script-src</code>, and so does any inline <code>&lt;style&gt;</code> in <code>style-src</code>. VB's own files need only <code>'self'</code> (or the CDN origin you serve them from) for <code>script-src</code>, <code>style-src</code> and <code>font-src</code>; no third-party origins are involved.</p>
+    <code-block language="html" label="Nonced boot script" data-escape><script nonce="r4nd0m">/* boot snippet */</script></code-block>
+    <code-block language="text" label="Matching header" data-escape>Content-Security-Policy: script-src 'self' 'nonce-r4nd0m'; style-src 'self'; font-src 'self'</code-block>
+    <p>Components and <code>ThemeManager</code> change styles through the CSSOM (<code>element.style.setProperty</code>), which <code>style-src</code> does not block.</p>
   </section>
 
   <!-- Service Worker Section -->
@@ -291,23 +355,9 @@ image: "/images/custom-og.png"
     <h2>Service Worker</h2>
     <p>VB's service worker is opt-in. Add the meta tag to enable offline caching and background updates:</p>
     <code-block language="html" label="Service worker opt-in" data-escape><meta name="vb-service-worker" content="true"></code-block>
-    <p>Alternatively, set the flag in JavaScript before VB's autoloader runs:</p>
+    <p>Alternatively, set the flag in JavaScript before the VB bundle runs:</p>
     <code-block language="html" label="JavaScript opt-in" data-escape><script>window.__VB_SERVICE_WORKER = true;</script></code-block>
-    <p>When enabled, VB registers a service worker that caches CSS, JS, and font assets using a stale-while-revalidate strategy. See the <a href="/docs/performance/">Performance page</a> for details on cache strategies and lifecycle.</p>
-  </section>
-
-  <!-- Extension Point Section -->
-  <section>
-    <h2>Extension Point</h2>
-    <p>Child layouts can inject additional content into <code>&lt;head&gt;</code> using the <code>extraHead</code> block. This is the recommended way to add page-specific styles, fonts, or scripts:</p>
-    <code-block language="html" label="Using the extraHead block" data-escape><template slot="extraHead">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter&display=swap">
-<style>
-  .page-specific { color: var(--color-accent); }
-</style>
-</template></code-block>
-    <p>The block appears after all standard head content, so page-specific styles can override defaults without specificity battles.</p>
+    <p>When enabled, VB registers a service worker that caches CSS, JS, and font assets using a stale-while-revalidate strategy. See the <a href="/docs/performance/">Performance page</a> for cache strategies and lifecycle. For an installable app, pair it with a web app manifest (<code>&lt;link rel="manifest" href="/manifest.webmanifest"&gt;</code>); VB does not ship one yet.</p>
   </section>
 
   <!-- Permitted Child Elements Section -->
@@ -340,7 +390,7 @@ image: "/images/custom-og.png"
         </tr>
         <tr>
           <td><code>&lt;script&gt;</code></td>
-          <td>JavaScript (VB uses this for theme flash prevention)</td>
+          <td>JavaScript (VB recommends one inline script for theme flash prevention; the bundles themselves are modules)</td>
         </tr>
         <tr>
           <td><code>&lt;base&gt;</code></td>
@@ -358,10 +408,10 @@ image: "/images/custom-og.png"
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li><strong><code>lang</code> on <code>&lt;html&gt;</code>:</strong> Set on the parent <code>&lt;html&gt;</code> element (not <code>&lt;head&gt;</code>), this attribute tells screen readers which pronunciation rules to use. VB's base layout sets <code>lang="en"</code> by default.</li>
-      <li><strong><code>description</code> meta:</strong> Provides a concise page summary for search engines and assistive technology. Screen readers can announce this to help users decide whether to continue reading.</li>
-      <li><strong><code>color-scheme</code> meta:</strong> Informs the browser about supported color schemes before CSS loads. This is essential for <code>forced-colors</code> mode and ensures native form controls (inputs, selects, textareas) render in the correct scheme from the first paint.</li>
-      <li><strong>Title pattern:</strong> The <code>Page Title | Site Name</code> format gives screen reader users immediate context about both the specific page and the site they're on.</li>
+      <li><strong><code>lang</code> on <code>&lt;html&gt;</code>:</strong> set on the parent <code>&lt;html&gt;</code> element (not <code>&lt;head&gt;</code>); screen readers use it to pick pronunciation rules.</li>
+      <li><strong>Title:</strong> the <code>&lt;title&gt;</code> is the first thing announced when a page loads. Put the page-specific part first: <code>Page Title | Site Name</code>.</li>
+      <li><strong>Viewport:</strong> never add <code>maximum-scale=1</code> or <code>user-scalable=no</code>; zoom is how many low-vision users read.</li>
+      <li><strong><code>color-scheme</code> meta:</strong> lets dark-mode users get a dark canvas and native controls from the first paint, avoiding a bright flash.</li>
     </ul>
   </section>
 
@@ -378,5 +428,7 @@ image: "/images/custom-og.png"
       <li><a href="/docs/fluid-scaling/">Fluid Scaling</a> - How <code>data-fluid</code> presets work</li>
       <li><a href="/docs/tokens/">Design Tokens</a> - Color, spacing, and typography tokens</li>
       <li><a href="/docs/performance/">Performance</a> - Caching strategies and service worker details</li>
+      <li><a href="/docs/concepts/document-provenance/">Document provenance</a> - The metadata VB components read</li>
+      <li><a href="/docs/attributes/nonce/"><code>nonce</code></a> - Allowing inline scripts and styles under a CSP</li>
     </ul>
   </section>

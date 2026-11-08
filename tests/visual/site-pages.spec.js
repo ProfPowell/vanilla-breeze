@@ -152,3 +152,47 @@ test.describe('site pages under aggressive themes', () => {
     }
   }
 });
+
+/* <ins>/<del> tints vs body text (vanilla-breeze-9vrm): the ins/del docs
+ * claim the success/error tints keep body text at AA. The page sweep above
+ * only measures what the five pages happen to contain, so inject an inline
+ * and a block change into <main> and measure their text on their own tint
+ * under every theme and mode. No screenshot. */
+test.describe('ins/del tint contrast under aggressive themes', () => {
+  for (const theme of THEMES) {
+    for (const mode of MODES) {
+      test(`ins/del · ${theme} · ${mode}`, async ({ page }, info) => {
+        test.skip(info.project.name !== 'desktop', 'colour check; viewport-independent');
+        await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: mode });
+        await page.goto('/docs/typography/', { waitUntil: 'networkidle' });
+        await applyTheme(page, theme, mode);
+        const ratios = await page.evaluate(() => {
+          const probe = document.createElement('section');
+          probe.innerHTML = '<p>Was <del>Tuesday</del> now <ins>Wednesday</ins>.</p>'
+            + '<ins><p>Inserted paragraph.</p></ins><del><p>Deleted paragraph.</p></del>';
+          document.querySelector('main').prepend(probe);
+          const c = document.createElement('canvas');
+          c.width = c.height = 1;
+          const x = c.getContext('2d', { willReadFrequently: true });
+          const rgba = (v) => { x.clearRect(0, 0, 1, 1); x.fillStyle = '#000'; x.fillStyle = v; x.fillRect(0, 0, 1, 1); return [...x.getImageData(0, 0, 1, 1).data]; };
+          const lum = ([r, g, b]) => [r, g, b].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; })
+            .reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+          const ratio = (a, b) => { const [p, q] = [lum(a), lum(b)].sort((m, n) => n - m); return (p + 0.05) / (q + 0.05); };
+          const out = {};
+          for (const el of probe.querySelectorAll('ins, del, ins > p, del > p')) {
+            const tint = el.matches('p') ? el.parentElement : el;
+            const bg = rgba(getComputedStyle(tint).backgroundColor);
+            if (bg[3] < 200) continue; // translucent/absent tint: nothing to pair
+            const key = (el.matches('p') ? 'block ' : 'inline ') + tint.tagName.toLowerCase();
+            out[key] = Math.round(ratio(rgba(getComputedStyle(el).color), bg) * 100) / 100;
+          }
+          probe.remove();
+          return out;
+        });
+        expect(Object.keys(ratios).sort(), 'every probe has an opaque tint').toEqual(['block del', 'block ins', 'inline del', 'inline ins']);
+        const failing = Object.entries(ratios).filter(([, r]) => r < 4.5);
+        expect(failing, `ins/del tint below AA (4.5:1): ${JSON.stringify(ratios)}`).toEqual([]);
+      });
+    }
+  }
+});

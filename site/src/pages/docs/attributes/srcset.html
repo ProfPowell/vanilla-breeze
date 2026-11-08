@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "srcset"
-description: "Responsive images: provide multiple image sources for different screen sizes and pixel densities. Works with sizes for resolution switching and picture for art direction."
+description: "Offer several image files so the browser picks the right one for the layout width and pixel density. Covers sizes, sizes=auto, picture and VB's data-responsive."
 attributeName: srcset
 attributeType: native
 nativeGroup: Media
@@ -12,120 +12,142 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>srcset</code> attribute lets you provide multiple image files at different sizes or resolutions so the browser can pick the best one for the current viewport and device pixel ratio. It replaces the old pattern of serving a single oversized image to every device.</p>
-<p>There are two approaches: <strong>width descriptors</strong> (with the <code>sizes</code> attribute) for resolution switching, and <strong>density descriptors</strong> for fixed-size images at different pixel ratios. For entirely different crops at different breakpoints, use the <code>&lt;picture&gt;</code> element for art direction.</p>
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a>, <code>&lt;source&gt;</code> (inside <code>&lt;picture&gt;</code>)</p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>srcset</code> attribute lists candidate image files so the browser can download the one that suits the rendered size and the screen's pixel density, instead of sending every device the largest file.</p>
+  <p>There are two kinds of candidate. <strong>Width descriptors</strong> (<code>800w</code>), together with <code>sizes</code>, are for images that change size with the layout. <strong>Density descriptors</strong> (<code>2x</code>) are for images shown at a fixed size. For a different crop at different breakpoints, use <code>&lt;picture&gt;</code> with <code>&lt;source media&gt;</code> (art direction).</p>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a>, and <a href="/docs/elements/native/source/"><code>&lt;source&gt;</code></a> inside <a href="/docs/elements/native/picture/"><code>&lt;picture&gt;</code></a>. Its partner <code>sizes</code> applies to the same elements.</p>
 
-<h2>Values</h2>
-<table>
-  <thead><tr><th>Descriptor</th><th>Syntax</th><th>Use Case</th></tr></thead>
-  <tbody>
-    <tr><td>Width (<code>w</code>)</td><td><code>photo-800.jpg 800w</code></td><td>Browser picks based on viewport width + <code>sizes</code></td></tr>
-    <tr><td>Density (<code>x</code>)</td><td><code>logo@2x.png 2x</code></td><td>Fixed-size images at different pixel ratios (icons, logos)</td></tr>
-  </tbody>
-</table>
-<p>You cannot mix <code>w</code> and <code>x</code> descriptors in the same <code>srcset</code>.</p>
+  <browser-window
+    src="/docs/examples/demos/attr-srcset-basic.html"
+    url="https://vanilla-breeze.com/srcset"
+    title="srcset candidates and currentSrc"
+    shadow>
+  </browser-window>
 
-<h2>Width Descriptors + sizes</h2>
-<p>For content images that scale with the layout, use width descriptors. The <code>sizes</code> attribute tells the browser how wide the image will render at each breakpoint, so it can calculate which file to download before CSS is parsed.</p>
-
-<code-block language="html" label="Width descriptors with sizes" data-escape><!-- Width descriptors: browser picks the best file based on viewport -->
-<img
-  src="photo-400.jpg"
-  srcset="photo-400.jpg 400w,
-          photo-800.jpg 800w,
-          photo-1200.jpg 1200w"
-  sizes="(min-width: 768px) 50vw, 100vw"
-  alt="Landscape photo" /></code-block>
-
-<p>The <code>sizes</code> value <code>(min-width: 768px) 50vw, 100vw</code> means: above 768px the image occupies 50% of the viewport; below that, 100%. The browser multiplies this by the device pixel ratio to pick a file.</p>
-
-<h3>Common Mistake</h3>
-<p>Using <code>srcset</code> with width descriptors but omitting <code>sizes</code> causes the browser to assume <code>sizes="100vw"</code>. On a page where the image is only 50% wide, the browser downloads a file twice as large as needed.</p>
-
-<h2>Density Descriptors</h2>
-<p>For fixed-size images (logos, icons, avatars), density descriptors are simpler. The browser matches the descriptor to the device pixel ratio.</p>
-
-<code-block language="html" label="Density descriptors" data-escape><!-- Density descriptors: match device pixel ratio -->
-<img
-  src="logo.png"
-  srcset="logo.png 1x,
-          logo@2x.png 2x,
-          logo@3x.png 3x"
-  alt="Company logo" /></code-block>
-
-<h2>Art Direction with picture</h2>
-<p>When you need different crops or aspect ratios at different breakpoints (not just different resolutions of the same image), use <code>&lt;picture&gt;</code> with <code>&lt;source media="..."&gt;</code> elements. The browser picks the first <code>&lt;source&gt;</code> whose <code>media</code> query matches.</p>
-
-<code-block language="html" label="Art direction" data-escape><!-- Art direction: different crops for different breakpoints -->
-<picture>
-  <source
-    media="(min-width: 1024px)"
-    srcset="hero-wide-800.jpg 800w,
-            hero-wide-1600.jpg 1600w"
-    sizes="100vw" />
-  <source
-    media="(min-width: 640px)"
-    srcset="hero-medium-600.jpg 600w,
-            hero-medium-1200.jpg 1200w"
-    sizes="100vw" />
-  <img
-    src="hero-narrow-400.jpg"
-    srcset="hero-narrow-400.jpg 400w,
-            hero-narrow-800.jpg 800w"
-    sizes="100vw"
-    alt="Mountain landscape" />
-</picture></code-block>
-
-<h2>Format Negotiation</h2>
-<p>Combine <code>&lt;picture&gt;</code> with <code>type</code> to serve modern formats (AVIF, WebP) with JPEG fallback. The browser picks the first format it supports.</p>
-
-<code-block language="html" label="Format fallback" data-escape><!-- Modern formats with fallback -->
-<picture>
-  <source
-    type="image/avif"
-    srcset="photo-400.avif 400w,
-            photo-800.avif 800w" />
-  <source
-    type="image/webp"
-    srcset="photo-400.webp 400w,
-            photo-800.webp 800w" />
-  <img
-    src="photo-400.jpg"
-    srcset="photo-400.jpg 400w,
-            photo-800.jpg 800w"
-    sizes="(min-width: 768px) 50vw, 100vw"
-    alt="Vacation photo" />
-</picture></code-block>
-
-<h2>Accessibility</h2>
-<ul>
-  <li>The <code>alt</code> attribute is still required on the <code>&lt;img&gt;</code> element. It applies regardless of which source the browser selects.</li>
-  <li>Screen readers announce the same alt text no matter which resolution loads, so ensure it describes the content, not the file size.</li>
-  <li>Art direction changes (e.g., cropping out context at mobile sizes) may lose information relevant to the alt text. Review alt descriptions for all crops.</li>
-</ul>
-
-<h2>Limitations</h2>
-<ul>
-  <li>The browser's source selection is a hint, not a guarantee. It may cache a higher-resolution image from a previous visit and reuse it.</li>
-  <li>You cannot control which image the browser selects via JavaScript; the selection algorithm is internal.</li>
-  <li><code>srcset</code> does not work on CSS <code>background-image</code>. Use <code>image-set()</code> in CSS for similar resolution switching.</li>
-  <li>Width descriptors require accurate <code>sizes</code> values. If your layout changes via CSS later, the <code>sizes</code> may become stale.</li>
-  <li>Density descriptors are limited to fixed-size images. For fluid layouts, width descriptors are the correct choice.</li>
-</ul>
-
-<aside>
-  <h3>VB Enhancement</h3>
-  <p>A future <code>data-responsive</code> attribute could simplify srcset authoring by generating width descriptors and sizes from a single base URL pattern, plus provide a dev overlay showing which source the browser selected and why.</p>
-</aside>
+  <code-block language="html" show-lines label="Width descriptors with sizes" data-escape><img src="photo-800.jpg"
+     srcset="photo-400.jpg 400w, photo-800.jpg 800w, photo-1200.jpg 1200w"
+     sizes="(min-width: 48rem) 50vw, 100vw"
+     width="1200" height="600"
+     alt="Harbour at dusk with fishing boats moored along the quay"></code-block>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <p>A comma-separated list of candidates. Each is a URL followed by at most one descriptor.</p>
+  <table class="props-table">
+    <thead><tr><th>Descriptor</th><th>Example</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Width <code>w</code></td><td><code>photo-800.jpg 800w</code></td><td>The file is 800 pixels wide. Needs <code>sizes</code>.</td></tr>
+      <tr><td>Density <code>x</code></td><td><code>logo@2x.png 2x</code></td><td>For screens with this device pixel ratio.</td></tr>
+      <tr><td>None</td><td><code>logo.png</code></td><td>Same as <code>1x</code>.</td></tr>
+    </tbody>
+  </table>
+  <p>Do not mix <code>w</code> and <code>x</code> in one list. <code>src</code> stays the fallback for browsers that ignore <code>srcset</code>. With density descriptors it also counts as the <code>1x</code> candidate when the list has none.</p>
+  <table class="props-table">
+    <thead><tr><th><code>sizes</code> value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Media conditions and lengths, e.g. <code>(min-width: 48rem) 50vw, 100vw</code></td><td>The first matching condition gives the slot width; the last entry has no condition.</td></tr>
+      <tr><td><code>auto</code></td><td>Lazy images only: the browser uses the image's laid-out width. Write <code>auto, 100vw</code> to give older browsers a fallback.</td></tr>
+      <tr><td>Absent</td><td><code>100vw</code>. The spec requires <code>sizes</code> whenever <code>srcset</code> uses <code>w</code> descriptors.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>sizes="auto" for lazy images</h3>
+  <p>Writing <code>sizes</code> by hand means repeating your CSS layout in the markup, and it goes stale. A lazy image is laid out before it is fetched, so the browser can measure it instead. <code>sizes="auto"</code> only works together with <code>loading="lazy"</code>; on an eager image it is ignored and the fallback after the comma applies.</p>
+  <code-block language="html" show-lines label="Measured sizes for a lazy image" data-escape><img loading="lazy" sizes="auto, 100vw"
+     src="card-400.jpg"
+     srcset="card-400.jpg 400w, card-800.jpg 800w, card-1200.jpg 1200w"
+     width="1200" height="800"
+     alt="Trail runner crossing a stream on a forest path"></code-block>
+  <p>Give the image <code>width</code> and <code>height</code> (or a CSS size): an image that is 0&times;0 before it loads measures as 0.</p>
+
+  <h3>Density descriptors</h3>
+  <p>For logos, icons and avatars shown at a fixed CSS size.</p>
+  <code-block language="html" show-lines label="1x, 2x and 3x candidates" data-escape><img src="logo.png"
+     srcset="logo.png 1x, logo@2x.png 2x, logo@3x.png 3x"
+     width="160" height="40"
+     alt="Northwind Outfitters"></code-block>
+
+  <h3>Art direction with picture</h3>
+  <p>When small screens need a different crop, not just a smaller file, use <code>&lt;source media&gt;</code>. The browser takes the first matching source. Give each source its own <code>width</code> and <code>height</code> when the crops have different aspect ratios, so the right box is reserved (Chrome 90, Firefox 108, Safari 15).</p>
+  <code-block language="html" show-lines label="Different crops per breakpoint" data-escape><picture>
+  <source media="(min-width: 64rem)"
+          srcset="hero-wide-1600.jpg 1600w, hero-wide-2400.jpg 2400w"
+          sizes="100vw" width="2400" height="900">
+  <img src="hero-square-800.jpg"
+       srcset="hero-square-800.jpg 800w, hero-square-1200.jpg 1200w"
+       sizes="100vw" width="1200" height="1200"
+       alt="Climbers on a ridge above the clouds">
+</picture></code-block>
+
+  <h3>Format fallback</h3>
+  <code-block language="html" show-lines label="AVIF and WebP with a JPEG fallback" data-escape><picture>
+  <source type="image/avif" srcset="photo-400.avif 400w, photo-800.avif 800w" sizes="(min-width: 48rem) 50vw, 100vw">
+  <source type="image/webp" srcset="photo-400.webp 400w, photo-800.webp 800w" sizes="(min-width: 48rem) 50vw, 100vw">
+  <img src="photo-800.jpg"
+       srcset="photo-400.jpg 400w, photo-800.jpg 800w"
+       sizes="(min-width: 48rem) 50vw, 100vw"
+       width="800" height="533"
+       alt="Market stall stacked with lemons and oranges">
+</picture></code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy loading and fetch priority for images</li>
-    <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> element reference</li>
-    <li><a href="/docs/elements/native/picture/"><code>&lt;picture&gt;</code></a> element reference</li>
-    <li><a href="/docs/attributes/poster/"><code>poster</code></a> &mdash; placeholder images for video elements</li>
+    <li><strong><a href="/docs/attributes/data-responsive/"><code>data-responsive</code></a></strong> (<code>src/utils/responsive-init.js</code>, <code>src/utils/responsive.css</code>) measures an image's rendered width and writes it to <code>sizes</code>, which is useful for eager images where <code>sizes="auto"</code> is not allowed. Given a list of widths (<code>data-responsive="400,800,1200"</code>) it generates <code>srcset</code> from the <code>src</code> file name. An authored <code>srcset</code> wins, and an authored <code>sizes="auto"</code> on a lazy image is left to the browser. <code>data-responsive-debug</code> adds a badge naming the chosen file, read from <code>img.currentSrc</code>.</li>
+    <li><strong>Image defaults.</strong> <code>src/native-elements/image/styles.css</code> makes every <code>&lt;img&gt;</code> <code>max-inline-size: 100%; block-size: auto; display: block</code>, so the <code>width</code> and <code>height</code> attributes set the aspect ratio without fixing the size.</li>
+    <li><strong>Placeholders.</strong> VB's demos use local SVG placeholders in <code>src/assets/placeholders/</code>; the <code>responsive-400/800/1200.svg</code> set prints its own width, which makes <code>srcset</code> choices visible. <a href="/docs/attributes/data-mock/"><code>data-mock</code></a> generates placeholders in prototypes.</li>
+  </ul>
+  <browser-window
+    src="/docs/examples/demos/responsive-basic.html"
+    url="https://vanilla-breeze.com/responsive"
+    title="data-responsive"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The <code>alt</code> on the <code>&lt;img&gt;</code> applies to whichever candidate loads. Describe the content, not the file.</li>
+    <li>If an art-directed crop drops something the <code>alt</code> mentions, rewrite the <code>alt</code> so it is true for every crop.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <p><code>srcset</code>, <code>sizes</code> and <code>&lt;picture&gt;</code> work in all current browsers. <code>sizes="auto"</code>: Chrome 126, Firefox 150, Safari 27 (partial: SVG images with <code>object-fit</code> are distorted), as of November 2026.</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><code>w</code> descriptors without <code>sizes</code> mean <code>100vw</code>. An image in a half-width column then downloads a file twice as wide as it needs.</li>
+    <li>The choice is the browser's. It may reuse a larger file it already has in cache, or pick a smaller one on a slow connection. You cannot set it from script, but <code>img.currentSrc</code> tells you what it chose.</li>
+    <li><code>srcset</code> does not apply to CSS backgrounds. Use <code>image-set()</code> there.</li>
+    <li>Hand-written <code>sizes</code> go stale when the CSS layout changes. Prefer <code>sizes="auto"</code> on lazy images, or <code>data-responsive</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy loading, <code>fetchpriority</code> and <code>decoding</code>; needed for <code>sizes="auto"</code>.</li>
+    <li><a href="/docs/attributes/data-responsive/"><code>data-responsive</code></a> &mdash; measured <code>sizes</code> and a <code>srcset</code> shorthand.</li>
+    <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a>, <a href="/docs/elements/native/picture/"><code>&lt;picture&gt;</code></a> and <a href="/docs/elements/native/source/"><code>&lt;source&gt;</code></a> &mdash; element references.</li>
+    <li><a href="/docs/attributes/poster/"><code>poster</code></a> &mdash; video posters, which have no <code>srcset</code>.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>srcset</code> + <code>sizes="auto"</code></strong> &mdash; lazy images below the fold. No hand-written sizes.</li>
+    <li><strong><code>srcset</code> + hand-written <code>sizes</code></strong> &mdash; the LCP image and other eager images, when you know the layout widths.</li>
+    <li><strong><code>data-responsive</code></strong> &mdash; eager images whose width you do not want to hard-code, or to generate <code>srcset</code> from a list of widths.</li>
+    <li><strong><code>&lt;picture&gt;</code></strong> &mdash; different crops or formats.</li>
   </ul>
 </section>

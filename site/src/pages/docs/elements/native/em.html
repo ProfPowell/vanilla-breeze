@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "em"
-description: "Marks text with stress emphasis that changes the meaning of a sentence. Rendered as italic with font-synthesis protection."
+description: "Marks text with stress emphasis that changes the meaning of a sentence. Rendered as italic, with synthesized italic as a fallback."
 elementName: em
 category: native
 nativeGroup: Text Semantics
@@ -14,7 +14,8 @@ crumbLabel: Native Elements
 <section>
     <h2>Description</h2>
     <p>The <code>&lt;em&gt;</code> element marks text with stress emphasis &mdash; the kind that changes the meaning of a sentence when spoken aloud. Moving the emphasis to a different word changes what the sentence communicates.</p>
-    <p>VB styles <code>&lt;em&gt;</code> with <code>font-synthesis: none</code> to prevent browsers from generating faux italic glyphs, and <code>font-optical-sizing: auto</code> for proper rendering in variable fonts.</p>
+    <p>VB styles <code>&lt;em&gt;</code> with <code>font-synthesis: weight style</code> and <code>font-optical-sizing: auto</code> for proper rendering in variable fonts.</p>
+    <p>A real italic face always wins. If the active font has none, the browser synthesizes a slanted version, so the emphasis stays visible; load an italic face if you want true italic letterforms. CJK fonts almost never ship italics, so VB swaps italic for emphasis marks in those languages (see <a href="#cjk-emphasis">CJK emphasis</a>).</p>
   </section>
 
   <section>
@@ -50,7 +51,7 @@ crumbLabel: Native Elements
         <tr>
           <td><code>&lt;em&gt;</code></td>
           <td>Stress emphasis &mdash; changes meaning</td>
-          <td>May be announced with emphasis</td>
+          <td>Usually not conveyed by default</td>
         </tr>
         <tr>
           <td><code>&lt;i&gt;</code></td>
@@ -77,19 +78,40 @@ crumbLabel: Native Elements
   </section>
 
   <section>
-    <h2>Blockquote Behavior</h2>
-    <p>Inside <code>&lt;blockquote&gt;</code>, VB de-emphasizes italic text &mdash; <code>&lt;em&gt;</code> and <code>&lt;i&gt;</code> become normal-style with <code>font-weight: var(--font-weight-medium)</code>. This prevents double-emphasis, since the blockquote itself is already visually offset.</p>
+    <h2 id="italic-contexts">Emphasis in Italic Contexts</h2>
+    <p>Italic emphasis inside text that is already italic would disappear. VB uses the classic typographic toggle: <code>&lt;em&gt;</code> and <code>&lt;i&gt;</code> inside an italic context &mdash; <code>&lt;blockquote&gt;</code>, <code>&lt;cite&gt;</code>, <code>&lt;dfn&gt;</code>, <code>&lt;var&gt;</code>, or another <code>&lt;em&gt;</code>/<code>&lt;i&gt;</code> &mdash; switch back to upright. The toggle goes one level deep.</p>
+    <p>Only contexts that are actually italic count:</p>
+    <ul>
+      <li><code>&lt;address&gt;</code> and <code>&lt;cite data-variant="quoted"&gt;</code> are upright, so <code>&lt;em&gt;</code> inside them stays italic.</li>
+      <li>A blockquote's attribution line (<code>blockquote &gt; footer</code>, <code>blockquote &gt; cite</code>) is upright, so <code>&lt;em&gt;</code> there is italic again &mdash; unless another italic context sits between the attribution and the emphasis.</li>
+      <li>Themes with an upright blockquote (brutalist, cyber, super2026, swiss) re-assert italic inside it; the editorial theme's italic <code>&lt;h1&gt;</code> and <code>&lt;h3&gt;</code> toggle like a blockquote does.</li>
+      <li>The dyslexia theme makes <code>&lt;em&gt;</code> upright and semibold instead of italic.</li>
+    </ul>
 
-    <code-block language="html" show-lines label="Italic in blockquote" data-escape><!-- In blockquotes, em is de-emphasized -->
-<blockquote>
-  <p>In VB, <em>italic text</em> inside a blockquote becomes
-  normal-style with medium weight instead.</p>
-</blockquote></code-block>
+    <code-block language="html" show-lines label="Emphasis toggles inside italic contexts" data-escape><blockquote>
+  <p>The quote is italic, so <em>this emphasis</em> is upright.</p>
+  <footer>Said <em>twice</em>, by the captain</footer> <!-- attribution is upright: em is italic -->
+</blockquote>
+
+<p><cite>The Hitchhiker's Guide to the <em>Galaxy</em></cite></p>
+<p><cite data-variant="quoted">A <em>Very</em> Short Story</cite></p> <!-- quoted cite is upright: em is italic -->
+
+<p><em>Never, and I mean <em>never</em>, press that button.</em></p></code-block>
+  </section>
+
+  <section>
+    <h2 id="cjk-emphasis">CJK Emphasis</h2>
+    <p>Chinese, Japanese and Korean fonts generally have no italic face, and a slanted CJK glyph is a poor cue for stress. When the content language is <code>zh</code>, <code>ja</code> or <code>ko</code> (set via <code>lang</code>), VB draws emphasis marks instead: sesame dots over the characters for Japanese and Korean, and filled dots under the characters for Chinese. Emphasis marks are reserved for <code>&lt;em&gt;</code>: <a href="/docs/elements/native/i/"><code>&lt;i&gt;</code></a> gets a calligraphic face with a dotted underline, <a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a> a heavier weight and <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a> a wavy underline.</p>
+    <p>Romanised text (<code>lang="ja-Latn"</code>, <code>zh-Latn</code>, <code>ko-Latn</code>) is Latin script and keeps the real italic.</p>
+
+    <code-block language="html" show-lines label="CJK emphasis marks" data-escape><p lang="ja">これは<em>とても</em>大切です。</p>
+<p lang="zh-Hans">这是<em>非常</em>重要的。</p>
+<p lang="ja-Latn">Kore wa <em>totemo</em> taisetsu desu.</p> <!-- romanised: stays italic --></code-block>
   </section>
 
   <section>
     <h2>Combined Bold + Italic</h2>
-    <p>When <code>&lt;em&gt;</code> is nested inside <code>&lt;strong&gt;</code> (or vice versa), VB ensures the combined style renders correctly with <code>font-synthesis: none</code>:</p>
+    <p>When <code>&lt;em&gt;</code> is nested inside <code>&lt;strong&gt;</code> (or vice versa), VB applies both weight and style; a bold-italic face is used when the font has one, otherwise the browser synthesizes the missing weight or slant:</p>
     <code-block language="html" show-lines label="Combined bold and italic" data-escape><p><strong><em>Bold italic via strong+em</em></strong></p>
 <p><b><i>Bold italic via b+i</i></b></p></code-block>
   </section>
@@ -98,7 +120,7 @@ crumbLabel: Native Elements
     <h2>CSS Reference</h2>
     <code-block language="css" show-lines label="em and i CSS" data-escape>em, i {
   font-style: italic;
-  font-synthesis: none;     /* prevent faux italic */
+  font-synthesis: weight style; /* real face wins; synthesize if missing */
   font-optical-sizing: auto;
 }
 
@@ -106,22 +128,42 @@ crumbLabel: Native Elements
 :where(b i, i b, strong em, em strong) {
   font-weight: 600;
   font-style: italic;
-  font-synthesis: none;
+  font-synthesis: weight style;
 }
 
-/* Italic in blockquote — de-emphasize */
-:where(blockquote) :where(i, em) {
+/* Toggle: emphasis inside an italic context is upright */
+:where(blockquote, cite:not([data-variant~="quoted"]), dfn, var, em, i) :is(em, i) {
   font-style: normal;
-  font-weight: var(--font-weight-medium);
+}
+
+/* Upright islands (attribution, quoted cite) restore italic */
+:where(blockquote > :is(footer, cite), cite[data-variant~="quoted"]) :is(em, i):not(
+  :where(blockquote > :is(footer, cite), cite[data-variant~="quoted"])
+  :where(em, i, cite:not([data-variant~="quoted"]), dfn, var) *
+) {
+  font-style: italic;
+}
+
+/* CJK: emphasis marks instead of a missing italic (i18n styles);
+   romanised -Latn tags keep the real italic */
+em:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
+  font-style: normal;
+  text-emphasis: filled sesame;
+  text-emphasis-position: over right;
+}
+
+em:lang(zh):not(:lang(zh-Latn)) {
+  text-emphasis: filled dot;
+  text-emphasis-position: under right;
 }</code-block>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Some screen readers announce <code>&lt;em&gt;</code> with a change in voice tone or pitch</li>
-      <li>This distinguishes it from <code>&lt;i&gt;</code> which is not announced differently</li>
-      <li>Nesting <code>&lt;em&gt;</code> increases the degree of emphasis</li>
+      <li>Most screen readers do not convey <code>&lt;em&gt;</code> by default; a few can be configured to announce emphasis or change voice, but you cannot count on it</li>
+      <li>Treat <code>&lt;em&gt;</code> as meaning for authors, search engines and reading tools &mdash; the visual style is what most users get</li>
+      <li>Nesting <code>&lt;em&gt;</code> increases the degree of emphasis (VB shows the inner level upright)</li>
       <li>Do not rely on emphasis alone to convey critical meaning &mdash; combine with context</li>
     </ul>
   </section>

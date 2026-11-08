@@ -5,10 +5,25 @@
  * <button aria-describedby="tip1">Hover me</button>
  * <div id="tip1" popover="hint" role="tooltip">Tooltip content</div>
  *
- * For click-triggered (no JS needed):
+ * For click-triggered (no JS needed where anchor positioning is
+ * supported: the invoker is the popover's implicit anchor):
  * <button popovertarget="tip2">Click me</button>
  * <div id="tip2" popover="auto" role="tooltip">Click tooltip</div>
  */
+
+/* --- Interest timing ---
+   Native interest invokers and VB's polyfill (utils/interest-polyfill.js)
+   both read the delays from the INVOKER, not the popover, so VB's
+   tooltip timing sits on [interestfor]. The standard properties are for
+   native support (Chrome 142+); the custom properties are what the
+   polyfill reads where they are not. Set as shorthands so an author's
+   shorthand or longhand (the polyfill reads its longhands first) both
+   override them. Override both on the invoker:
+   [interestfor] { interest-delay: 0s 300ms; --interest-delay: 0s 300ms } */
+[interestfor] {
+  interest-delay: 200ms 100ms;
+  --interest-delay: 200ms 100ms;
+}
 
 [role="tooltip"][popover] {
   /* Reset popover defaults */
@@ -65,29 +80,51 @@
   inset: auto;
 }
 
-[role="tooltip"][popover][data-anchor]:not([data-tooltip-position]),
-[role="tooltip"][popover][data-anchor][data-tooltip-position="top"] {
-  bottom: anchor(top);
-  left: anchor(center);
-  translate: -50% calc(-1 * var(--size-xs));
+/* Anything else (a click tooltip opened by popovertarget, an authored
+   interestfor tip) anchors to its invoker: a popover shown by an invoker
+   has it as its implicit anchor, and the interest polyfill writes an
+   inline position-anchor (which wins over auto). position-anchor: auto is
+   set explicitly because Chromium 144-150 made the initial value none.
+   tool-tip's pop-over (data-anchor-name) places itself. Without anchor
+   positioning, tooltip-init.js positions click tooltips with top/left. */
+@supports (anchor-name: --x) {
+  [role="tooltip"][popover]:not([data-anchor], [data-anchor-name]) {
+    position-anchor: auto;
+    inset: auto;
+  }
 }
 
-[role="tooltip"][popover][data-anchor][data-tooltip-position="bottom"] {
-  top: anchor(bottom);
-  left: anchor(center);
-  translate: -50% var(--size-xs);
-}
+/* anchor() and the centring translate only make sense with anchor
+   positioning. Unguarded, the translate still applied on the JS
+   fallback path (pixel insets) and shifted the tip twice; tool-tip
+   worked around it with an inline translate:none. inset:auto stays
+   outside the guard so the UA popover inset:0 never fights the
+   fallback's pixel insets. */
+@supports (anchor-name: --x) {
+  [role="tooltip"][popover]:not([data-anchor-name]):not([data-tooltip-position]),
+  [role="tooltip"][popover]:not([data-anchor-name])[data-tooltip-position="top"] {
+    bottom: anchor(top);
+    left: anchor(center);
+    translate: -50% calc(-1 * var(--size-xs));
+  }
 
-[role="tooltip"][popover][data-anchor][data-tooltip-position="left"] {
-  right: anchor(left);
-  top: anchor(center);
-  translate: calc(-1 * var(--size-xs)) -50%;
-}
+  [role="tooltip"][popover]:not([data-anchor-name])[data-tooltip-position="bottom"] {
+    top: anchor(bottom);
+    left: anchor(center);
+    translate: -50% var(--size-xs);
+  }
 
-[role="tooltip"][popover][data-anchor][data-tooltip-position="right"] {
-  left: anchor(right);
-  top: anchor(center);
-  translate: var(--size-xs) -50%;
+  [role="tooltip"][popover]:not([data-anchor-name])[data-tooltip-position="left"] {
+    right: anchor(left);
+    top: anchor(center);
+    translate: calc(-1 * var(--size-xs)) -50%;
+  }
+
+  [role="tooltip"][popover]:not([data-anchor-name])[data-tooltip-position="right"] {
+    left: anchor(right);
+    top: anchor(center);
+    translate: var(--size-xs) -50%;
+  }
 }
 
 /* --- Arrow (optional) --- */
@@ -115,19 +152,23 @@
   inset-inline-start: calc(50% - 4px);
 }
 
+/* left/right are physical sides (the tip sits physically left/right of
+   the trigger in any direction), so the arrow uses physical insets to
+   keep pointing at the trigger in RTL. */
 [role="tooltip"][popover][data-tooltip-position="left"] > .tooltip-arrow {
-  inset-inline-end: -4px;
+  right: -4px;
   inset-block-start: calc(50% - 4px);
 }
 
 [role="tooltip"][popover][data-tooltip-position="right"] > .tooltip-arrow {
-  inset-inline-start: -4px;
+  left: -4px;
   inset-block-start: calc(50% - 4px);
 }
 
 /* --- Content inside tooltips --- */
 
-[role="tooltip"][popover] {
+/* Plain hints share the inverted surface, so they share the overlays. */
+:is([role="tooltip"][popover], [popover="hint"]) {
   /* The tooltip surface is always dark (in light mode) / always light
      (in dark mode) regardless of theme, so kbd / code overlays can't
      use the light-dark() overlay tokens — those flip with the page mode,
@@ -181,10 +222,6 @@
   margin-block-end: 8px;
   position-try-fallbacks: flip-block;
 
-  /* Polyfill timing */
-  --interest-delay-start: 200ms;
-  --interest-delay-end: 100ms;
-
   /* Animation */
   opacity: 0;
   transform: translateY(4px);
@@ -208,6 +245,19 @@
 }
 
 /* Dark mode handled automatically via light-dark() semantic tokens */
+
+/* --- Forced Colors --- */
+
+@media (forced-colors: active) {
+  [role="tooltip"][popover],
+  [popover="hint"]:not([role="tooltip"]) {
+    border: 1px solid CanvasText;
+  }
+
+  [role="tooltip"][popover] > .tooltip-arrow {
+    background: CanvasText;
+  }
+}
 
 /* --- Reduced Motion --- */
 

@@ -2,6 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "text-reader",
   "type": "web-component",
+  "description": "Text-to-speech reader with word-level highlighting (Web Speech API + CSS Custom Highlight API)",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -15,6 +16,16 @@
       "purpose": "config",
       "type": "string",
       "description": "ID of the element to read (required)"
+    },
+    {
+      "name": "variant",
+      "kind": "host-api",
+      "purpose": "visual-variant",
+      "type": "enum",
+      "values": [
+        "icon"
+      ],
+      "description": "\"icon\" renders a compact speaker trigger with a floating mini-toolbar instead of the full control bar"
     },
     {
       "name": "selectors",
@@ -52,46 +63,180 @@
       "description": "Set to \"false\" to disable auto-scroll"
     },
     {
-      "name": "part",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "label-play",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "label-pause",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "label-stop",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "data-speed-group",
+      "name": "data-label-play",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Play",
+      "description": "Play button label (i18n override)"
     },
     {
-      "name": "data-speed-value",
+      "name": "data-label-pause",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Pause",
+      "description": "Pause button label (i18n override)"
     },
     {
-      "name": "slot",
-      "kind": "native",
-      "purpose": "config"
+      "name": "data-label-stop",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Stop",
+      "description": "Stop button label (i18n override)"
+    },
+    {
+      "name": "data-label-reader",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Article reader",
+      "description": "Control-bar group label and icon trigger label (i18n override)"
+    },
+    {
+      "name": "data-label-controls",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Reader controls",
+      "description": "Icon-variant toolbar group label (i18n override)"
+    },
+    {
+      "name": "data-label-voice",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Voice",
+      "description": "Voice select label (i18n override)"
+    },
+    {
+      "name": "data-label-loading-voices",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Loading voices…",
+      "description": "Voice select placeholder while voices load (i18n override)"
+    },
+    {
+      "name": "data-label-speed",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Speed",
+      "description": "Speed slider label (i18n override)"
+    },
+    {
+      "name": "data-label-slower",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Slower",
+      "description": "Icon-toolbar slower button label (i18n override)"
+    },
+    {
+      "name": "data-label-faster",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Faster",
+      "description": "Icon-toolbar faster button label (i18n override)"
     }
   ],
-  "childAttributes": [],
-  "structure": []
+  "childAttributes": [
+    {
+      "name": "slot",
+      "on": "direct child",
+      "type": "enum",
+      "values": [
+        "icon-play",
+        "icon-pause",
+        "icon-stop",
+        "icon-trigger"
+      ],
+      "description": "Moves the element into the matching generated button (icon-trigger: icon variant only); restored on disconnect"
+    }
+  ],
+  "structure": [],
+  "events": [
+    {
+      "name": "text-reader:play",
+      "detail": "{ voice, speed }",
+      "description": "Speech started"
+    },
+    {
+      "name": "text-reader:pause",
+      "detail": "{}",
+      "description": "Speech paused"
+    },
+    {
+      "name": "text-reader:resume",
+      "detail": "{}",
+      "description": "Speech resumed"
+    },
+    {
+      "name": "text-reader:stop",
+      "detail": "{}",
+      "description": "Speech stopped by stop(), a target change, or another reader taking over the speech queue"
+    },
+    {
+      "name": "text-reader:end",
+      "detail": "{ duration }",
+      "description": "Reached the end of the text (duration in ms)"
+    },
+    {
+      "name": "text-reader:word",
+      "detail": "{ word, charIndex, element }",
+      "description": "Word boundary reached"
+    },
+    {
+      "name": "text-reader:error",
+      "detail": "{ error }",
+      "description": "SpeechSynthesisUtterance error (also logged with console.warn)"
+    }
+  ],
+  "methods": [
+    {
+      "name": "play()",
+      "description": "Start reading from the beginning (re-extracts the target text), or resume if paused"
+    },
+    {
+      "name": "pause()",
+      "description": "Pause speech"
+    },
+    {
+      "name": "resume()",
+      "description": "Resume paused speech"
+    },
+    {
+      "name": "stop()",
+      "description": "Cancel speech and reset; no-op when this reader is not speaking"
+    }
+  ],
+  "properties": [
+    {
+      "name": "voices",
+      "type": "Promise<SpeechSynthesisVoice[]>",
+      "readonly": true,
+      "description": "Available voices"
+    },
+    {
+      "name": "speaking",
+      "type": "boolean",
+      "readonly": true,
+      "description": "Speech is active (including paused)"
+    },
+    {
+      "name": "paused",
+      "type": "boolean",
+      "readonly": true,
+      "description": "Speech is paused"
+    },
+    {
+      "name": "progress",
+      "type": "number",
+      "readonly": true,
+      "description": "Position as a 0–1 fraction of the extracted text"
+    }
+  ]
 }

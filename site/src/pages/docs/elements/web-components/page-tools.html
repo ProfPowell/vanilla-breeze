@@ -40,7 +40,7 @@ crumbLabel: Web Components
         <td><code>data-orientation</code></td>
         <td>string</td>
         <td><code>auto</code></td>
-        <td>Tool strip direction: <code>auto</code>, <code>vertical</code>, <code>horizontal</code>. Auto resolves to vertical for sticky/fixed, horizontal for inline.</td>
+        <td>Tool strip direction: <code>auto</code>, <code>vertical</code>, <code>horizontal</code>. Auto resolves to vertical for sticky/fixed, horizontal for inline. The resolved value is reflected as <code>data-resolved-orientation</code> and <code>aria-orientation</code>, and re-resolves when <code>data-orientation</code> or <code>data-position</code> changes.</td>
       </tr>
       <tr>
         <td><code>data-gap</code></td>
@@ -64,8 +64,63 @@ crumbLabel: Web Components
         <td><code>data-breakpoint</code></td>
         <td>string</td>
         <td><code>48rem</code></td>
-        <td>Viewport width below which the toolbar collapses to FAB</td>
+        <td>Viewport width at or below which the toolbar collapses to FAB</td>
       </tr>
+    </tbody>
+  </table>
+
+  <h3>Reflected state</h3>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-resolved-orientation</code></td>
+        <td><code>vertical</code> or <code>horizontal</code> &mdash; the effective direction</td>
+      </tr>
+      <tr>
+        <td><code>data-collapsed</code></td>
+        <td>Present while the toolbar is collapsed to the FAB</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>JavaScript</h3>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>tools</code></td>
+        <td>Read-only array of the tool elements (your children, excluding the generated FAB and popover panel)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>CSS custom properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--page-tools-gap</code></td><td>Gap between tools (set by <code>data-gap</code>)</td></tr>
+      <tr><td><code>--page-tools-offset</code></td><td>Sticky top offset / fixed inline-end offset</td></tr>
+      <tr><td><code>--page-tools-button-padding</code></td><td>Padding of normalised icon tool buttons</td></tr>
+      <tr><td><code>--page-tools-icon-size</code></td><td>Icon size inside tool buttons (default <code>1.25rem</code>)</td></tr>
+      <tr><td><code>--page-tools-fab-size</code></td><td>FAB diameter (default <code>3rem</code>)</td></tr>
+      <tr><td><code>--page-tools-fab-bottom</code></td><td>FAB distance from the bottom of the viewport</td></tr>
+      <tr><td><code>--page-tools-fab-end</code></td><td>FAB distance from the inline-end edge of the viewport</td></tr>
     </tbody>
   </table>
 </section>
@@ -108,7 +163,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Mobile FAB Collapse</h2>
-  <p>Below the breakpoint (default 48rem), the toolbar collapses into a floating action button. Tapping the FAB opens a native popover panel containing the tools. Tools are DOM-moved (not cloned) so event listeners are preserved.</p>
+  <p>At or below the breakpoint (default 48rem), the toolbar collapses into a floating action button pinned to the bottom inline-end corner. The tools stay hidden until the FAB is activated; it then opens a native popover panel just above it containing the tools. Tools are DOM-moved (not cloned) so event listeners are preserved.</p>
 
   <browser-window url="page-tools-mobile" src="/docs/examples/demos/page-tools-mobile.html"></browser-window>
 </section>
@@ -133,10 +188,11 @@ crumbLabel: Web Components
   <code-block language="html" data-escape>
 <page-tools>
   <print-page></print-page>
-  <share-wc></share-wc>
+  <share-wc variant="icon" size="s"></share-wc>
   <note-wc for="post"></note-wc>
 </page-tools>
   </code-block>
+  <p>Use the icon variants of the built-in tools (<code>share-wc variant="icon"</code>, <code>text-reader variant="icon"</code>) so they pick up the toolbar&rsquo;s button normalisation.</p>
   <p>For the inline selection toolbar (highlight + note on demand), use <code>&lt;<a href="/docs/elements/web-components/selection-menu/">selection-menu</a>&gt;</code> alongside the article. Both surfaces talk to the same engine and storage.</p>
 </section>
 
@@ -147,5 +203,11 @@ crumbLabel: Web Components
 
 <section>
   <h2>Accessibility</h2>
-  <p>The component sets <code>role="toolbar"</code> and <code>aria-label="Page tools"</code> on upgrade. The FAB button has an accessible label, and focus returns to the FAB when the popover is dismissed. The popover supports light dismiss via Escape key.</p>
+  <ul>
+    <li>The component sets <code>role="toolbar"</code> and <code>aria-label="Page tools"</code> on upgrade (authored values are kept), plus <code>aria-orientation</code> from the resolved direction (always <code>vertical</code> while collapsed, matching the popover column).</li>
+    <li>It follows the toolbar keyboard pattern: the tools form a single <kbd>Tab</kbd> stop (roving <code>tabindex</code>); <kbd>&larr;</kbd>/<kbd>&rarr;</kbd> (horizontal, mirrored in RTL) or <kbd>&uarr;</kbd>/<kbd>&darr;</kbd> (vertical) move between tools and wrap; <kbd>Home</kbd>/<kbd>End</kbd> jump to the first/last tool. Text inputs and selects keep their own arrow keys.</li>
+    <li>The FAB is a native button with an accessible label (<code>data-fab-label</code>) and controls the popover via <code>popovertarget</code>; the panel is named with the same label.</li>
+    <li>The popover light-dismisses on <kbd>Escape</kbd> or a click outside. Focus returns to the FAB only when focus was inside the panel as it closed (for example <kbd>Escape</kbd> from a tool); a click elsewhere keeps focus where you clicked.</li>
+    <li>While collapsed and closed, the panel is <code>display: none</code>, so its tools are neither visible nor focusable.</li>
+  </ul>
 </section>

@@ -14,7 +14,7 @@ crumbLabel: Native Elements
   <section>
     <h2>Description</h2>
     <p>The <code>&lt;tbody&gt;</code> element contains one or more <a href="/docs/elements/native/tr/"><code>&lt;tr&gt;</code></a> elements that make up the data portion of a table. It should appear after <a href="/docs/elements/native/thead/"><code>&lt;thead&gt;</code></a> and before <a href="/docs/elements/native/tfoot/"><code>&lt;tfoot&gt;</code></a> in the source order.</p>
-    <p>Vanilla Breeze applies a hover highlight on <code>tbody tr</code> rows using <code>var(--color-surface-raised)</code>, and supports a <code>.striped</code> variant that applies alternating background colors to odd rows for easier row tracking.</p>
+    <p>Vanilla Breeze applies a hover highlight on <code>tbody tr</code> rows using <code>var(--color-hover-bg)</code>, and supports a <code>data-striped</code> variant that applies alternating background colors to odd rows for easier row tracking.</p>
   </section>
 
   <section>
@@ -63,9 +63,9 @@ crumbLabel: Native Elements
 </table></code-block>
 
     <h3>Striped Rows</h3>
-    <p>Add <code>class="striped"</code> to the <code>&lt;table&gt;</code> element. VB alternates backgrounds on odd rows within tbody, making it easier to track data across wide tables.</p>
+    <p>Add the boolean <code>data-striped</code> attribute to the <code>&lt;table&gt;</code> element. VB alternates backgrounds on odd <em>visible</em> rows within tbody, making it easier to track data across wide tables. Rows hidden by <code>&lt;data-table&gt;</code> filtering or paging (<code>data-state-hidden</code>, <code>hidden</code>) and expandable detail rows (<code>data-expand-content</code>) are skipped, so the stripes keep alternating.</p>
     <browser-window src="/docs/snippets/demos/table-variants.html" url="https://vanilla-breeze.com/table/variants" title="Striped table variant" shadow></browser-window>
-    <code-block language="html" label="Striped table" data-escape><table class="striped">
+    <code-block language="html" label="Striped table" data-escape><table data-striped>
   <thead>
     <tr>
       <th scope="col">ID</th>
@@ -101,14 +101,22 @@ crumbLabel: Native Elements
     <h2>CSS Reference</h2>
     <p>Vanilla Breeze applies these styles to rows within tbody:</p>
 
-    <code-block language="css" label="VB tbody CSS" data-escape>/* VB default hover state */
+    <code-block language="css" label="VB tbody CSS" data-escape>/* Rows paint through --_row-bg so frozen (sticky) cells
+   can repeat the same tint over an opaque surface */
+tr { background: var(--_row-bg); }
+
+/* VB default hover state */
 tbody tr:hover {
-  background: var(--color-surface-raised);
+  --_row-bg: var(--color-hover-bg);
 }
 
-/* Striped variant — add .striped to the table */
-table.striped tbody tr:nth-child(odd) {
-  background: var(--color-surface-raised);
+/* Striped variant — add data-striped to the table.
+   Hidden and detail rows don't count toward odd/even. */
+table[data-striped] tbody tr:nth-child(odd of :where(:not([data-state-hidden], [hidden], [data-expand-content]))) {
+  --_row-bg: var(--color-row-stripe);
+}
+table[data-striped] tbody tr:hover {
+  --_row-bg: color-mix(in oklch, var(--color-text) 10%, transparent);
 }</code-block>
 
     <table class="props-table">
@@ -122,13 +130,13 @@ table.striped tbody tr:nth-child(odd) {
       <tbody>
         <tr>
           <td><code>tbody tr:hover</code></td>
-          <td><code>background: var(--color-surface-raised)</code></td>
+          <td><code>--_row-bg: var(--color-hover-bg)</code></td>
           <td>Highlights the row under the pointer for easier scanning</td>
         </tr>
         <tr>
-          <td><code>table.striped tbody tr:nth-child(odd)</code></td>
-          <td><code>background: var(--color-surface-raised)</code></td>
-          <td>Alternating row backgrounds for dense data tables</td>
+          <td><code>table[data-striped] tbody tr:nth-child(odd of …)</code></td>
+          <td><code>--_row-bg: var(--color-row-stripe)</code></td>
+          <td>Alternating backgrounds on visible rows; a text-tinted wash that stays distinct from the hover colour</td>
         </tr>
       </tbody>
     </table>
@@ -140,7 +148,7 @@ table.striped tbody tr:nth-child(odd) {
       <li><strong>Structural separation:</strong> Helps assistive technologies distinguish data from headers and footers</li>
       <li><strong>Implicit role:</strong> tbody has an implicit ARIA role of <code>rowgroup</code></li>
       <li><strong>Row headers:</strong> When rows have their own headers, use <a href="/docs/elements/native/th/"><code>&lt;th scope="row"&gt;</code></a> in the first cell</li>
-      <li><strong>Row navigation:</strong> Screen readers can navigate between different table sections (thead, tbody, tfoot)</li>
+      <li><strong>Stripes are decoration:</strong> they help sighted users track wide rows but carry no meaning, and in forced-colors mode they are painted out (rows stay ruled by their borders)</li>
     </ul>
   </section>
 

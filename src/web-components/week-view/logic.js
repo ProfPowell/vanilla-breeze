@@ -10,10 +10,17 @@
  * computes the hour range, and builds the table automatically.
  *
  * @attr {string}        data-start-date - ISO date for first day of the week
- * @attr {number}        data-days       - Number of day columns (default: 7)
+ *                                         (default: the current week, starting
+ *                                         on the locale's first day of week)
+ * @attr {number}        data-days       - Number of day columns, 1-14 (default: 7)
  * @attr {number|"auto"} data-start-hour - First visible hour (default: "auto")
  * @attr {number}        data-end-hour   - Last visible hour (default: 19)
  * @attr {string}        data-label-continues - Text appended to a clipped span's name
+ * @attr {string}        data-label-time - Name of the corner (hours) column header
+ *
+ * Changing any of these attributes after upgrade rebuilds a generated table.
+ * Today's day header carries aria-current="date". Events whose date is
+ * outside the range (or that have no time) are not placed and are hidden.
  *
  * Times ("HH:MM" or full ISO) and durations are read with lib/time-grid.js,
  * the same parser <day-view> uses. A fixed hour range grows to fit events
@@ -30,12 +37,16 @@
 
 import { VBElement } from '../../lib/vb-element.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
-import {
-  parseTime, parseDuration, layoutColumns, eventLabel,
-  DEFAULT_DURATION_MINUTES, SPAN_STYLE_PROPS,
-} from '../../lib/time-grid.js';
+import { parseTime, parseDuration, layoutColumns, eventLabel, DEFAULT_DURATION_MINUTES, SPAN_STYLE_PROPS, sharesHalfHour } from '../../lib/time-grid.js';
 
 const NAV_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+const REBUILD_ATTRS = [
+  'data-start-date', 'data-days', 'data-start-hour', 'data-end-hour',
+  'data-label-time', 'data-label-continues',
+];
+/** Regions whose week starts on Sunday, for engines without Intl weekInfo. */
+const SUNDAY_REGIONS = new Set(['US', 'CA', 'MX', 'BR', 'JP', 'KR', 'TW', 'HK', 'PH', 'IL', 'IN', 'ZA', 'SA', 'PE', 'CO', 'VE', 'GT', 'HN', 'NI', 'PA', 'PR', 'DO', 'AR']);
+
 
 /** @param {Date} d */
 function toISO(d) {
@@ -43,6 +54,41 @@ function toISO(d) {
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
+}
+
+/**
+ * Locale's first day of the week, 1 (Monday) … 7 (Sunday).
+ * @param {string} locale
+ * @returns {number}
+ */
+function firstDayOfWeek(locale) {
+  try {
+    const loc = /** @type {any} */ (new Intl.Locale(locale));
+    const info = typeof loc.getWeekInfo === 'function' ? loc.getWeekInfo() : loc.weekInfo;
+    if (info && Number.isInteger(info.firstDay)) return info.firstDay;
+    const region = loc.maximize?.().region;
+    return region && SUNDAY_REGIONS.has(region) ? 7 : 1;
+  } catch {
+    return 1;
+  }
+}
+
+/**
+ * First day of the week containing `today`, aligned to the locale.
+ * @param {string} locale
+ * @param {Date} today
+ */
+function weekStart(locale, today) {
+  const first = firstDayOfWeek(locale) % 7; // JS getDay(): 0 = Sunday
+  const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  d.setDate(d.getDate() - ((d.getDay() - first + 7) % 7));
+  return d;
+}
+
+/** @param {string | undefined} value */
+function clampDays(value) {
+  const n = parseInt(value ?? '', 10);
+  return Number.isNaN(n) ? 7 : Math.min(14, Math.max(1, n));
 }
 
 /**
@@ -59,6 +105,8 @@ function readHour(value, fallback) {
 const ownLabels = new WeakMap();
 
 class WeekView extends VBElement {
+  static observedAttributes = REBUILD_ATTRS;
+
   /** @type {HTMLTableElement | null} */
   #table = null;
   #raf = 0;
@@ -90,6 +138,24 @@ class WeekView extends VBElement {
     return true;
   }
 
+  attributeChangedCallback(_name, oldValue, newValue) {
+    if (oldValue === newValue || !this.hasAttribute('data-upgraded')) return;
+    // Only a generated table can be rebuilt; an authored one is left alone.
+    if (!this.#table?.hasAttribute('data-wv-generated')) return;
+    this.#unbuild();
+    this._reinit();
+  }
+
+  /** Move placed events back out of the generated table and drop it. */
+  #unbuild() {
+    const table = this.#table;
+    if (!table) return;
+    this.#clearSpans();
+    for (const el of this.#events()) this.appendChild(el);
+    table.remove();
+    this.#table = null;
+  }
+
   teardown() {
     if (this.#raf) cancelAnimationFrame(this.#raf);
     this.#raf = 0;
@@ -114,7 +180,9 @@ class WeekView extends VBElement {
    * @returns {Array<{ date?: string, time?: string, text: string, category?: string, duration?: string }>} Event records.
    */
   get events() {
-    return this.#events().map((el) => ({
+    const all = /** @type {HTMLElement[]} */ ([...this.querySelectorAll('calendar-event')])
+      .filter((el) => el.closest('week-view') === this);
+    return all.map((el) => ({
       date: el.dataset.date || undefined,
       time: el.querySelector('time[datetime]')?.getAttribute('datetime') || undefined,
       text: el.textContent?.trim() ?? '',
@@ -215,20 +283,21 @@ class WeekView extends VBElement {
       }
       el.setAttribute('tabindex', '-1');
     }
-    const stop = current ?? events[0];
+    const stop = current ?? this.#navOrder()[0]?.el;
     if (stop) stop.setAttribute('tabindex', '0');
   }
 
   #buildAutoTable() {
     const events = /** @type {HTMLElement[]} */ ([...this.querySelectorAll(':scope > calendar-event')]);
-    if (events.length === 0) return;
 
-    const startDate = this.dataset.startDate;
-    if (!startDate) return;
-
-    const numDays = parseInt(this.dataset.days || '7', 10);
-    const [sy, sm, sd] = startDate.split('-').map(Number);
-    const start = new Date(sy, sm - 1, sd);
+    const locale = this.#locale();
+    const now = new Date();
+    const numDays = clampDays(this.dataset.days);
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(this.dataset.startDate || '');
+    const start = match
+      ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+      : weekStart(locale, now);
+    const todayISO = toISO(now);
 
     // Generate date range
     const dates = [];
@@ -280,30 +349,47 @@ class WeekView extends VBElement {
       }
     }
 
-    // Locale formatting
-    const locale = this.#locale();
-    const dayFmt = new Intl.DateTimeFormat(locale, { weekday: 'short', day: 'numeric' });
+    // Locale formatting. The visible header adds the month when the range
+    // crosses one; the accessible header text is always the full date.
+    const crossesMonth = dates[0].getMonth() !== dates[dates.length - 1].getMonth();
+    const dayFmt = new Intl.DateTimeFormat(locale, crossesMonth
+      ? { weekday: 'short', day: 'numeric', month: 'short' }
+      : { weekday: 'short', day: 'numeric' });
+    const fullFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'full' });
     const hourFmt = new Intl.DateTimeFormat(locale, { hour: 'numeric' });
 
     this.style.setProperty('--wv-days', String(numDays));
 
     // Build <table>
     const table = document.createElement('table');
+    table.setAttribute('data-wv-generated', '');
 
     // <thead>
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
 
     const cornerTh = document.createElement('th');
-    cornerTh.setAttribute('aria-label', 'Time');
+    cornerTh.setAttribute('scope', 'col');
+    const cornerText = document.createElement('span');
+    cornerText.className = 'visually-hidden';
+    cornerText.textContent = this.dataset.labelTime || 'Time';
+    cornerTh.appendChild(cornerText);
     headerRow.appendChild(cornerTh);
 
     dates.forEach(d => {
       const th = document.createElement('th');
       th.setAttribute('scope', 'col');
+      const iso = toISO(d);
+      if (iso === todayISO) th.setAttribute('aria-current', 'date');
       const time = document.createElement('time');
-      time.setAttribute('datetime', toISO(d));
-      time.textContent = dayFmt.format(d);
+      time.setAttribute('datetime', iso);
+      const short = document.createElement('span');
+      short.setAttribute('aria-hidden', 'true');
+      short.textContent = dayFmt.format(d);
+      const full = document.createElement('span');
+      full.className = 'visually-hidden';
+      full.textContent = fullFmt.format(d);
+      time.append(short, full);
       th.appendChild(time);
       headerRow.appendChild(th);
     });
@@ -330,8 +416,9 @@ class WeekView extends VBElement {
 
         if (cellEvents.length > 0) {
           const hourView = document.createElement('hour-view');
-          // Spanning events are lifted out of the grid, so only in-grid ones share columns
-          if (cellEvents.filter((e) => !e.dataset.duration).length > 1) hourView.dataset.overlap = '';
+          // Columns only when in-grid events share a half-hour row (spanning
+          // events are lifted out of the grid and laid out by JS)
+          if (sharesHalfHour(cellEvents)) hourView.dataset.overlap = '';
           cellEvents.forEach(evt => hourView.appendChild(evt));
           td.appendChild(hourView);
         }
@@ -453,6 +540,25 @@ class WeekView extends VBElement {
     }
   }
 
+  /**
+   * Placed events in date-then-time order: column (day), minute of day,
+   * then DOM order. The minute comes from the event's own time, else its
+   * hour row plus data-start.
+   * @returns {Array<{ el: HTMLElement, col: number, min: number }>}
+   */
+  #navOrder() {
+    return this.#events().map((el, i) => {
+      const td = /** @type {HTMLTableCellElement | null} */ (el.closest('td'));
+      const rowT = parseTime(td?.closest('tr')?.querySelector('th time[datetime]')?.getAttribute('datetime'));
+      const own = parseTime(el.querySelector('time[datetime]')?.getAttribute('datetime'));
+      const min = own
+        ? own.hour * 60 + own.minute
+        : (rowT ? rowT.hour * 60 : 0) + (parseInt(el.dataset.start || '0', 10) || 0);
+      return { el, col: td?.cellIndex ?? 0, min, i };
+    }).sort((a, b) => a.col - b.col || a.min - b.min || a.i - b.i)
+      .map(({ el, col, min }) => ({ el, col, min }));
+  }
+
   #setupKeyboardNav() {
     const table = this.#table;
     if (!table) return;
@@ -472,39 +578,34 @@ class WeekView extends VBElement {
       /** @type {Element | null | undefined} */
       let target = null;
 
+      const order = this.#navOrder();
+      const here = order.find((o) => o.el === current);
+      if (!here) return;
+
       if (ke.key === 'Home' || ke.key === 'End') {
-        const events = this.#events();
-        target = ke.key === 'Home' ? events[0] : events[events.length - 1];
+        // Date-then-time order across the whole view
+        target = (ke.key === 'Home' ? order[0] : order[order.length - 1])?.el;
+      } else if (ke.key === 'ArrowDown' || ke.key === 'ArrowUp') {
+        // Walk this day's events in time order (siblings in one cell included)
+        const day = order.filter((o) => o.col === here.col);
+        const i = day.indexOf(here) + (ke.key === 'ArrowDown' ? 1 : -1);
+        target = day[i]?.el;
       } else {
-        const td = current.closest('td');
-        const tr = td?.closest('tr');
-        if (!td || !tr || !tr.parentElement) return;
-
-        const rows = [...tr.parentElement.children];
-        const rowIdx = rows.indexOf(tr);
-        const cells = [...tr.children];
-        const colIdx = cells.indexOf(td);
-        // Physical arrows follow the visual direction of the day columns
+        // Nearest event (by time) in the closest day, in the arrow's visual
+        // direction, that has any events.
         const rtl = getComputedStyle(table).direction === 'rtl';
-        const forward = rtl ? 'ArrowLeft' : 'ArrowRight';
-        const backward = rtl ? 'ArrowRight' : 'ArrowLeft';
-
-        if (ke.key === 'ArrowDown') {
-          for (let r = rowIdx + 1; r < rows.length && !target; r++) {
-            target = rows[r].children[colIdx]?.querySelector('calendar-event');
+        const forward = (ke.key === 'ArrowRight') !== rtl;
+        const cols = [...new Set(order.map((o) => o.col))];
+        const nextCol = forward
+          ? cols.find((c) => c > here.col)
+          : cols.filter((c) => c < here.col).pop();
+        if (nextCol !== undefined) {
+          let best = null;
+          for (const o of order) {
+            if (o.col !== nextCol) continue;
+            if (!best || Math.abs(o.min - here.min) < Math.abs(best.min - here.min)) best = o;
           }
-        } else if (ke.key === 'ArrowUp') {
-          for (let r = rowIdx - 1; r >= 0 && !target; r--) {
-            target = rows[r].children[colIdx]?.querySelector('calendar-event');
-          }
-        } else if (ke.key === forward) {
-          for (let c = colIdx + 1; c < cells.length && !target; c++) {
-            target = cells[c]?.querySelector('calendar-event');
-          }
-        } else if (ke.key === backward) {
-          for (let c = colIdx - 1; c >= 1 && !target; c--) {
-            target = cells[c]?.querySelector('calendar-event');
-          }
+          target = best?.el;
         }
       }
 

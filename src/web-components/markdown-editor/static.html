@@ -12,6 +12,8 @@
     */
     *, *::before, *::after { box-sizing: border-box; }
 
+    textarea { inline-size: 100%; font-family: monospace; }
+
     body {
       font-family: system-ui, sans-serif;
       line-height: 1.5;
@@ -28,20 +30,32 @@
     ====================
     This static HTML IS the baseline that <markdown-editor> enhances.
 
-    When JavaScript loads and the <markdown-editor> custom element is
-    defined, the markup is progressively enhanced with additional
-    interactivity, ARIA attributes, and keyboard navigation.
-
-    Without JS the core content remains accessible and functional.
+    Without JavaScript this is a plain, labelled, required <textarea> that
+    submits as "body". When <markdown-editor> upgrades it ADOPTS this same
+    textarea (id, name, required, maxlength, dir are all kept) and adds the
+    live preview pane beside it. Form submission, validation and reset stay
+    the textarea's own, so nothing changes for the form.
   -->
 
   <h1>Markdown Editor</h1>
 
-  <noscript>
-    <p>This component works best with JavaScript enabled.</p>
-  </noscript>
+  <form action="#" method="post">
+    <p>
+      <label for="body">Message (markdown)</label>
+    </p>
+    <markdown-editor>
+      <textarea id="body" name="body" rows="10" required maxlength="5000">
+# Release notes
 
-  <!-- TODO: Add meaningful static fallback markup for <markdown-editor> -->
+- **Fixed** the login redirect
+- Added `dark` theme support
+</textarea>
+    </markdown-editor>
+    <p>
+      <button type="submit">Post</button>
+      <button type="reset">Reset</button>
+    </p>
+  </form>
 
 </body>
 </html>

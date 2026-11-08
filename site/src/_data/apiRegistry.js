@@ -4,7 +4,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-badge",
     "type": "custom-element",
-    "description": "Small inline status or count badge. Surface elements use bare data-* attributes.",
+    "description": "Small inline status or count badge. Colour reinforces the text, never replaces it. Surface elements use bare data-* attributes.",
     "htmlvalidate": {
       "flow": true,
       "phrasing": true,
@@ -19,10 +19,10 @@ export default {
         "purpose": "config",
         "type": "enum",
         "values": [
-          "sm",
-          "lg"
+          "s",
+          "l"
         ],
-        "description": "Size: sm or lg (default medium)."
+        "description": "Size: s (11px floor) or l; omit for the default (--font-size-xs)."
       },
       {
         "name": "data-color",
@@ -39,7 +39,7 @@ export default {
           "secondary",
           "accent"
         ],
-        "description": "Semantic or brand color."
+        "description": "Semantic (primary, success, warning, error, info) or theme (brand, secondary, accent) colour. Colour is never the only signal: the badge text must carry the meaning."
       },
       {
         "name": "data-variant",
@@ -50,7 +50,7 @@ export default {
           "subtle",
           "outlined"
         ],
-        "description": "subtle (tinted) or outlined instead of filled."
+        "description": "subtle (mode-aware tint with --color-*-text ink) or outlined (transparent, border in the text colour) instead of filled."
       },
       {
         "name": "data-shape",
@@ -58,9 +58,24 @@ export default {
         "purpose": "config",
         "type": "enum",
         "values": [
-          "square"
+          "square",
+          "ribbon",
+          "notch",
+          "flag",
+          "double-arrow",
+          "stamp"
         ],
-        "description": "square corners instead of a pill."
+        "description": "square: square corners instead of a pill. ribbon (V cut at the inline end), notch (V cut at the inline start), flag (point at the inline end), double-arrow (points at both ends) and stamp (concave corners) are decorative shapes painted behind the text; they mirror in RTL, never clip the label or the focus outline, and fall back to a bordered rectangle in forced colours. Tune the notch depth with --badge-notch."
+      }
+    ],
+    "cssProperties": [
+      {
+        "name": "--badge-notch",
+        "description": "Notch / point depth of the decorative data-shape values (default 0.75em); the padding on the notched side grows by the same length."
+      },
+      {
+        "name": "--badge-shape-fill",
+        "description": "Fill of a decorative shape (default: the badge background for its data-color / data-variant). Accepts gradients."
       }
     ]
   },
@@ -68,7 +83,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-canvas",
     "type": "custom-element",
-    "description": "Elevated content surface (a raised panel with radius and shadow). Attribute form: data-canvas on a semantic element. Surface elements use bare data-* attributes.",
+    "description": "Elevated content surface (a panel with radius, shadow and a 1px edge: a hairline on a plain page, transparent under data-backdrop, CanvasText in forced colours). Attribute form: data-canvas on a semantic element (not data-layout), with the variant as its value: data-canvas (default), data-canvas=\"flush\" or data-canvas=\"elevated\". Below 37.5rem every canvas goes flush with reduced inline padding unless data-padding is set. Surface elements use bare data-* attributes.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -76,6 +91,18 @@ export default {
       ]
     },
     "attributes": [
+      {
+        "name": "data-canvas",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "",
+          "flush",
+          "elevated"
+        ],
+        "description": "Attribute form: makes any element a canvas; the value is the variant (bare = default, flush, elevated). Use data-variant on the <layout-canvas> element instead."
+      },
       {
         "name": "data-variant",
         "kind": "data",
@@ -85,7 +112,7 @@ export default {
           "flush",
           "elevated"
         ],
-        "description": "flush (no radius or shadow) or elevated (larger radius and shadow)."
+        "description": "Element form only: flush (no radius or shadow) or elevated (larger radius and shadow, 37.5rem and up). The attribute form puts the variant in data-canvas itself."
       },
       {
         "name": "data-max",
@@ -113,7 +140,7 @@ export default {
           "xl"
         ],
         "default": "l",
-        "description": "Padding on all sides."
+        "description": "Padding on all sides. An explicit value is kept below 37.5rem (otherwise the inline padding drops to --size-m there)."
       },
       {
         "name": "data-canvas-depth",
@@ -124,7 +151,7 @@ export default {
           "1",
           "2"
         ],
-        "description": "Stacked-paper effect with 1 or 2 sheets behind the surface."
+        "description": "Stacked-paper effect with 1 or 2 sheets behind the surface (37.5rem and wider; not on flush)."
       }
     ]
   },
@@ -132,7 +159,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-card",
     "type": "custom-element",
-    "description": "Card surface. A plain padded block by default; header / section / footer children switch it into a named-area grid. Surface elements use bare data-* attributes.",
+    "description": "Card surface. Element only: there is no data-layout or data-card attribute form; for a surface on a semantic element use data-canvas, for collections use <card-list>. A plain padded block by default; a header / section / footer child (or slot=\"header|content|footer\") switches it to structured mode: header pinned on top, footer pinned at the bottom, every other child stacked between in source order. Surface elements use bare data-* attributes.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -165,7 +192,7 @@ export default {
           "xl"
         ],
         "default": "m",
-        "description": "Internal padding (applies to grid-area children in grid mode)."
+        "description": "Internal padding. Block mode pads the card by the token (none/s/m/l/xl). Structured mode pads the children one step up: header/footer --size-m/--size-l and content --size-l at the default m (s: xs/s and s; l: l/xl and xl; xl: xl/2xl and 2xl); none also drops the header/footer dividers."
       },
       {
         "name": "data-max",
@@ -178,7 +205,39 @@ export default {
           "wide",
           "prose"
         ],
-        "description": "Max inline size, centered: --content-narrow / --content-normal / --content-wide, or prose (65ch). Same keyword set as layout-center and canvas."
+        "description": "Max inline size, centered (margin-inline: auto in block flow, align-self in flex/grid): --content-narrow / --content-normal / --content-wide, or prose (65ch). Same keyword set as layout-center and canvas."
+      }
+    ],
+    "structure": [
+      {
+        "element": "header",
+        "required": false,
+        "description": "Structured mode: pinned to the top, padded, with a bottom divider. A direct h1-h6 inside loses its margin and uses --font-size-l."
+      },
+      {
+        "element": "section",
+        "required": false,
+        "description": "Structured mode: a content child. Every child that is not the header or footer is content and stacks in source order, one body padding apart."
+      },
+      {
+        "element": "footer",
+        "required": false,
+        "description": "Structured mode: pinned to the bottom (margin-block-start: auto), top divider, wrapping flex row of actions aligned to the inline end."
+      },
+      {
+        "element": "[slot=\"header\"]",
+        "required": false,
+        "description": "Any element treated as the header (also triggers structured mode)."
+      },
+      {
+        "element": "[slot=\"content\"]",
+        "required": false,
+        "description": "Any element treated as content (also triggers structured mode, so a slot-only card works)."
+      },
+      {
+        "element": "[slot=\"footer\"]",
+        "required": false,
+        "description": "Any element treated as the footer (also triggers structured mode)."
       }
     ]
   },
@@ -206,7 +265,7 @@ export default {
           "prose"
         ],
         "default": "normal",
-        "description": "Max inline size: narrow (--content-narrow, 40rem), normal (--content-normal, 60rem), wide (--content-wide, 80rem) or prose (65ch)."
+        "description": "Max inline size of the content box (box-sizing: content-box; the gutter is added outside): narrow (--content-narrow, 40rem), normal (--content-normal, 60rem), wide (--content-wide, 80rem) or prose (65ch)."
       },
       {
         "name": "data-layout-intrinsic",
@@ -233,7 +292,7 @@ export default {
           "l"
         ],
         "default": "m",
-        "description": "Inline padding: none, s or l (default m)."
+        "description": "Inline padding on each side: none, s or l. The default --size-m applies when the attribute is omitted; there is no m value. The box is content-box, so the gutter adds to the max width."
       },
       {
         "name": "data-layout-gap",
@@ -254,7 +313,7 @@ export default {
           "3xl"
         ],
         "default": "m",
-        "description": "Become a flex column with this gap between children, on the shared size scale. Bare attribute = m."
+        "description": "Become a full-width flex column (inline-size fills the parent minus the gutters) with this gap between children, on the shared size scale. Bare attribute = m."
       }
     ]
   },
@@ -324,7 +383,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Keep everything on one line; no wrapping."
+        "description": "Keep everything on one line; no wrapping. Items overflow a narrow container, so let it scroll (overflow-x: auto)."
       },
       {
         "name": "data-layout-overlap",
@@ -339,7 +398,7 @@ export default {
           "l"
         ],
         "default": "s",
-        "description": "Overlap items (avatar groups) in DOM order, later items on top, each with a surface-coloured ring. Forces gap 0. Bare attribute = s."
+        "description": "Overlap items (avatar groups) in DOM order, later items on top, each with a surface-coloured ring. Items after the first are pulled back by xs 0.25rem, s 0.5rem, m 0.75rem or l 1rem. Forces gap 0. Bare attribute = s. Use a ul with one li per avatar, aria-labelledby on the list and an aria-label on the \"+N\" chip."
       }
     ],
     "childAttributes": [
@@ -355,7 +414,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-columns",
     "type": "custom-element",
-    "description": "Multi-column text flow with a readable measure, vertical rhythm, column rules and break hygiene. Attribute form: data-layout=\"columns\".",
+    "description": "Multi-column text flow with a readable measure, vertical rhythm (between direct children), column rules and break hygiene. Attribute form: data-layout=\"columns\" (same modifiers), usually on an <article data-prose>. <reader-view> needs the element form.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -371,7 +430,7 @@ export default {
         "values": [
           "justify"
         ],
-        "description": "justify: justified text with automatic hyphenation."
+        "description": "justify: justified text with automatic hyphenation. Justified narrow columns form uneven word gaps (WCAG 1.4.8, AAA): prefer ragged-right for long text."
       },
       {
         "name": "data-layout-column-count",
@@ -385,7 +444,7 @@ export default {
           "auto"
         ],
         "default": "1",
-        "description": "Number of columns; auto derives columns from --column-min-width above 48rem."
+        "description": "Number of columns. 2 and 3 are maximums: below about 14rem per column they drop to fewer columns (one on a phone). auto fits as many --column-min-width (38ch) columns as the element's own width allows."
       },
       {
         "name": "data-layout-measure",
@@ -398,7 +457,7 @@ export default {
           "wide"
         ],
         "default": "normal",
-        "description": "Line measure: --measure-narrow / --measure-normal / --measure-wide."
+        "description": "Line measure (--measure-narrow / --measure-normal / --measure-wide). Count 1 caps the block width. Counts 2 and 3 cap each column, so the block is at most count × measure + gaps (without the attribute they fill the container). auto uses the measure as the column width."
       },
       {
         "name": "data-layout-max",
@@ -411,21 +470,21 @@ export default {
           "wide"
         ],
         "default": "normal",
-        "description": "Same as data-layout-measure."
+        "description": "Same as data-layout-measure (ch-based, unlike layout-center's rem-based data-layout-max)."
       },
       {
         "name": "data-layout-centered",
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Center the container (columns are centered by default)."
+        "description": "No effect: columns are always centered (margin-inline: auto). Read by the shared typographic core."
       }
     ],
     "childAttributes": [
       {
         "name": "data-bleed",
-        "on": "any child",
-        "description": "Break out to the full viewport width.",
+        "on": "direct child",
+        "description": "Break out to the full inline size of the nearest query container (main, article, section). Spans every column in a multi-column flow.",
         "type": "boolean"
       }
     ]
@@ -434,7 +493,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-cover",
     "type": "custom-element",
-    "description": "Full-height (min-block-size) container that vertically centers a principal element, with optional top and bottom elements. Attribute form: data-layout=\"cover\".",
+    "description": "Full-height (min-block-size) flex column that vertically centers a principal element (data-layout-principal; a sole child auto-centers), with header/footer or cover-top/-bottom children pinned to the edges. Attribute form: data-layout=\"cover\".",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -455,7 +514,7 @@ export default {
           "auto"
         ],
         "default": "xl",
-        "description": "Minimum block size: 50 / 70 / 80vh, xl = 100dvh, auto = none. One-off: set --layout-min in a stylesheet rule (e.g. .hero { --layout-min: 65vh; })."
+        "description": "Minimum block size: 50 / 70 / 80vh, xl = 100dvh, auto = none. One-off: style=\"--layout-min: 65vh\" (beats the token; registered inherits:false so it never reaches nested layouts; layout-grid reads the same property as its minimum column width)."
       },
       {
         "name": "data-layout-padding",
@@ -552,7 +611,7 @@ export default {
           "xl"
         ],
         "default": "m",
-        "description": "Minimum column width before wrapping: 8 / 10 / 15 / 20 / 25rem. One-off lengths: style=\"--layout-min: 220px\"."
+        "description": "Minimum column width before wrapping: 8 / 10 / 15 / 20 / 25rem. Tracks are clamped to the container (min(…, 100%)), so a grid narrower than the minimum shows one full-width column instead of overflowing. One-off lengths: style=\"--layout-min: 220px\" (not inherited by nested grids)."
       },
       {
         "name": "data-layout-gap",
@@ -582,10 +641,19 @@ export default {
         "values": [
           "",
           "2",
+          "3",
           "4"
         ],
         "default": "3",
-        "description": "Children become subgrid rows so header/content/footer align across cells. Bare = span 3 rows; 2 or 4 for other card shapes."
+        "description": "Each child becomes a subgrid spanning 2, 3 or 4 rows (bare = 3; any other value also spans 3) so header/content/footer line up across siblings. The subgridded rows use the grid's row gap, so data-layout-gap also spaces the parts inside each child — set row-gap on the children to override. Any child works, including article/section (they are not query containers here unless they carry data-container, which opts them out of subgrid alignment)."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-container",
+        "on": "main, article, section, aside",
+        "description": "Opt a semantic child of a data-layout-subgrid grid back into container queries. The layout removes container-type from such children so they can be subgrids; this restores it, and the child then sizes its own rows.",
+        "type": "boolean"
       }
     ]
   },
@@ -593,7 +661,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-imposter",
     "type": "custom-element",
-    "description": "Positioned overlay centered over (or pinned to an edge of) its containing block. The container needs position: relative.",
+    "description": "Positioned overlay centred over (or pinned to an edge or corner of) its containing block, logically (mirrored in RTL). Element only: there is no data-layout form. Prerequisite: the element it sits over needs position: relative (any non-static position); data-layout-fixed positions against the viewport instead. Visual positioning only: no focus trap, inert background or dialog semantics; use <dialog> or [popover] for modal UI. Stacking order: --imposter-z (default 1, --z-float when fixed).",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -619,7 +687,7 @@ export default {
           "l",
           "xl"
         ],
-        "description": "Inset from the edges when pinned to one."
+        "description": "Inset from the edges when pinned to one (and the contain inset)."
       },
       {
         "name": "data-layout-position",
@@ -645,7 +713,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Keep the overlay within the viewport, minus the margin, when fixed."
+        "description": "Never larger than the containing block (the positioned ancestor, or the viewport when fixed) minus the margin on each side; scrolls inside when the content is bigger."
       }
     ]
   },
@@ -653,7 +721,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-reel",
     "type": "custom-element",
-    "description": "Horizontal scrolling strip with snap points and optional scrollbar and edge hints.",
+    "description": "Horizontal scrolling strip with proximity snap points, an optional scrollbar and edge hints. Attribute form: data-layout=\"reel\" (same modifiers). When the items hold no focusable content, name the reel and make it focusable: <section data-layout=\"reel\" aria-label=\"…\" tabindex=\"0\">, or <layout-reel role=\"region\" aria-label=\"…\" tabindex=\"0\">.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -666,7 +734,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Show a thin scrollbar (hidden by default)."
+        "description": "Show a thin scrollbar. Hidden by default, except under forced colours and on touch-only (hover: none) devices, where it always shows."
       },
       {
         "name": "data-layout-gap",
@@ -700,7 +768,7 @@ export default {
           "l"
         ],
         "default": "s",
-        "description": "Inline padding and scroll padding."
+        "description": "Padding on all sides (block padding leaves room for focus rings and shadows); the same value is the inline scroll padding."
       },
       {
         "name": "data-layout-item-width",
@@ -741,7 +809,7 @@ export default {
           "",
           "start"
         ],
-        "description": "Fade both edges to hint at overflow; start fades only the end edge."
+        "description": "Fade the edges to hint at overflow, logically (mirrored in RTL). Where scroll-driven animations are supported each edge fades only while there is more content that way; elsewhere both edges fade. start: only the end edge ever fades."
       }
     ],
     "childAttributes": [
@@ -757,7 +825,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-sidebar",
     "type": "custom-element",
-    "description": "Two-column layout: a fixed-basis sidebar beside a flexible content column that wraps below it when there is no room. nav and aside children are the sidebar; every other child is content; without nav/aside the first child is the sidebar. Attribute form: data-layout=\"sidebar\".",
+    "description": "Two-column layout: a fixed-basis sidebar beside a flexible content column that wraps below it when there is no room. nav and aside children are the sidebar; every other child is content (hr, [role=separator], template, script and style are skipped); without nav/aside the first child is the sidebar and the last the content. Attribute form: data-layout=\"sidebar\".",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -793,7 +861,7 @@ export default {
         "values": [
           "end"
         ],
-        "description": "end: put the sidebar on the end side. nav/aside children keep DOM order (order: 1); the positional fallback reverses the row."
+        "description": "end: put the sidebar on the end side. Omit the attribute for the start side (there is no start value). nav/aside children keep DOM order (order: 1); the positional fallback reverses the row (flex-direction: row-reverse), so visual order then differs from DOM order."
       },
       {
         "name": "data-layout-sidebar-width",
@@ -826,7 +894,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Never wrap; the sidebar stays beside the content."
+        "description": "Never wrap; the sidebar stays beside the content, also inside a narrow (< 40rem) data-page-layout main."
       }
     ],
     "childAttributes": [
@@ -842,7 +910,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-stack",
     "type": "custom-element",
-    "description": "Vertical flex stack with a consistent gap between children. Attribute form: any semantic element with data-layout=\"stack\".",
+    "description": "Vertical flex stack with a consistent gap between children. Attribute form: any semantic element with data-layout=\"stack\". With data-layout-align start/center/end, main/article/section/aside children drop container-type so they size to content instead of collapsing to zero width; add data-container to such a child to keep its container queries.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -882,7 +950,15 @@ export default {
           "stretch"
         ],
         "default": "stretch",
-        "description": "Cross-axis (inline) alignment of children."
+        "description": "Cross-axis (inline) alignment of children. start/center/end make children content-sized (semantic sectioning children stop being query containers — see data-container)."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-container",
+        "on": "main, article, section, aside",
+        "description": "Opt a semantic child back into container queries when the stack is aligned start/center/end. The layout removes container-type from such children so they size to content; this restores it (give the child an explicit inline size, or it collapses).",
+        "type": "boolean"
       }
     ]
   },
@@ -890,7 +966,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-switcher",
     "type": "custom-element",
-    "description": "Flex row that switches to a column once the container is narrower than the threshold. Attribute form: data-layout=\"switcher\".",
+    "description": "Flex row that switches to a column once the switcher's own width drops below the threshold (a flex-basis formula, no media or container query). Attribute form: data-layout=\"switcher\" (same modifiers).",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -924,13 +1000,12 @@ export default {
         "purpose": "config",
         "type": "enum",
         "values": [
-          "",
           "s",
           "m",
           "l"
         ],
         "default": "m",
-        "description": "Container width at which the row becomes a column: 25 / 30 / 40rem. One-off: style=\"--layout-threshold: 35rem\"."
+        "description": "The switcher's own width below which the row becomes a column: 25 / 30 / 40rem. No container query is involved. One-off: style=\"--layout-threshold: 35rem\" (not inherited by nested switchers)."
       },
       {
         "name": "data-layout-limit",
@@ -949,7 +1024,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Reverse the visual order when stacked."
+        "description": "Reverse the visual order when stacked (flex-wrap: wrap-reverse): the last item is on top once items wrap onto their own lines; the row keeps DOM order. Visual only — focus and reading order stay in DOM order, so use it only when the stacked order is presentational."
       }
     ]
   },
@@ -957,7 +1032,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-text",
     "type": "custom-element",
-    "description": "Long-form reading container: a readable measure plus vertical rhythm between block children. Owns the typographic core shared with layout-columns and data-layout=\"columns\" / \"prose\".",
+    "description": "Long-form reading container: a readable measure plus vertical rhythm between direct children. Attribute form: data-layout=\"prose\" (there is no data-layout=\"text\"). article[data-measure] gives the measure (centered) without the rhythm. Owns the typographic core shared with layout-columns and data-layout=\"columns\".",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -976,7 +1051,7 @@ export default {
           "wide"
         ],
         "default": "normal",
-        "description": "Line measure: --measure-narrow / --measure-normal / --measure-wide."
+        "description": "Line measure: --measure-narrow / --measure-normal / --measure-wide (45 / 65 / 80ch by default; data-fluid and the accessibility themes adjust the tokens). Released to 100% in containers narrower than 30rem."
       },
       {
         "name": "data-layout-max",
@@ -989,7 +1064,7 @@ export default {
           "wide"
         ],
         "default": "normal",
-        "description": "Same as data-layout-measure (the prose attribute form spells it this way)."
+        "description": "Same as data-layout-measure (the prose attribute form spells it this way). ch-based — layout-center's data-layout-max=\"narrow\" is 40rem, this one is 45ch."
       },
       {
         "name": "data-layout-centered",
@@ -1002,8 +1077,8 @@ export default {
     "childAttributes": [
       {
         "name": "data-bleed",
-        "on": "any child",
-        "description": "Break out to the full viewport width.",
+        "on": "direct child",
+        "description": "Break out to the full inline size of the nearest query container (main, article, section). Works centered or not; centered text bleeds symmetrically.",
         "type": "boolean"
       }
     ]
@@ -1239,7 +1314,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "fab-stack",
     "type": "custom-element",
-    "description": "Fixed action button stack. Pins to one of 8 screen positions via the shared data-float system; stacks children vertically with a gap. Default position is bottom-right.",
+    "description": "Fixed action button stack. Pins to one of 8 screen positions via the shared data-float system; stacks children vertically with a gap. The first child is the primary action: it sits nearest the anchored edge and is focused first. Default position is bottom-right (inline-end). Dialog and popover children are left to the top layer.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -1263,7 +1338,7 @@ export default {
           "bottom-right"
         ],
         "default": "bottom-right",
-        "description": "Screen position via the shared [data-float] system. Mirrors in RTL (left/right are logical inline-start/end)."
+        "description": "Screen position via the shared [data-float] system. Mirrors in RTL (left/right are logical inline-start/end, with the matching physical safe-area inset); *-center stays on the viewport midpoint."
       }
     ],
     "structure": [
@@ -1308,8 +1383,10 @@ export default {
     ]
   },
   "loading-spinner": {
+    "$schema": "../../schemas/api.schema.json",
     "element": "loading-spinner",
     "type": "custom-element",
+    "description": "CSS-only animated loading spinner. Standalone: add role=\"status\" + aria-label. Next to visible text: add aria-hidden=\"true\".",
     "htmlvalidate": {
       "flow": true,
       "phrasing": true,
@@ -1329,19 +1406,51 @@ export default {
           "m",
           "l",
           "xl"
-        ]
+        ],
+        "default": "m",
+        "description": "Spinner diameter and stroke: xs 0.75em, s 1em, m 1.5em, l 2.5em, xl 4em (em-relative, so it scales with the surrounding text)."
       },
       {
         "name": "data-variant",
         "kind": "data",
         "purpose": "visual-variant",
-        "type": "string"
+        "type": "enum",
+        "values": [
+          "primary",
+          "success",
+          "warning",
+          "error"
+        ],
+        "description": "Arc colour from a theme token (--color-interactive / -success / -warning / -error). Without it the arc uses currentColor."
       },
       {
         "name": "data-overlay",
         "kind": "data",
         "purpose": "config",
-        "type": "boolean"
+        "type": "boolean",
+        "description": "position: absolute; inset: 0 over the nearest positioned ancestor, with a translucent surface backdrop and the spinner centered. The container must have a non-static position."
+      }
+    ],
+    "cssProperties": [
+      {
+        "name": "--spinner-size",
+        "description": "Spinner diameter (default 1.5em; data-size presets override)."
+      },
+      {
+        "name": "--spinner-width",
+        "description": "Ring stroke width (default 0.2em)."
+      },
+      {
+        "name": "--spinner-color",
+        "description": "Arc colour (default currentColor)."
+      },
+      {
+        "name": "--spinner-track",
+        "description": "Track colour (default the arc colour at 20% alpha)."
+      },
+      {
+        "name": "--spinner-speed",
+        "description": "Duration of one rotation (default 0.7s; 1.5s under reduced motion)."
       }
     ]
   },
@@ -1349,7 +1458,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "mobile-menu",
     "type": "custom-element",
-    "description": "Responsive mobile navigation menu with hamburger toggle and popover panel",
+    "description": "Breakpoint observer for a header menu. Sets [data-mobile] at or below the breakpoint, which shows the author's trigger and hides sibling nav, nav-bar and site-tools in the parent header. The author supplies the trigger and the native popover panel.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -1362,17 +1471,29 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "CSS length at which mobile mode activates (default: 52rem)"
+        "default": "52rem",
+        "description": "Viewport max-width (CSS length) at or below which mobile mode activates. Observed: changing it re-evaluates. The default 52rem also applies via a CSS media query before upgrade."
+      },
+      {
+        "name": "data-mobile",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "boolean",
+        "description": "Set by the element while mobile mode is active. Read-only state for styling."
       }
     ],
     "structure": [
       {
-        "element": "<button data-trigger>",
-        "description": "Hamburger toggle button (auto-generated or slotted)"
+        "element": "<button data-trigger popovertarget>",
+        "description": "Author-supplied menu toggle; popovertarget names the panel's id. Give it an aria-label."
       },
       {
-        "element": "<nav popover>",
-        "description": "Popover panel containing mobile navigation"
+        "element": "<nav popover class=\"mobile-menu-panel\">",
+        "description": "Author-supplied native popover panel, placed inside <mobile-menu> so the link styles apply. Label it (aria-label). Esc closes and focus returns to the trigger; it is not modal (no focus trap or scroll lock)."
+      },
+      {
+        "element": "<button class=\"mobile-menu-close\" popovertargetaction=\"hide\">",
+        "description": "Optional author-supplied close button inside the panel."
       }
     ],
     "css": {
@@ -1415,19 +1536,47 @@ export default {
         "@flow"
       ]
     },
-    "attributes": [],
+    "attributes": [
+      {
+        "name": "data-justify",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "start",
+          "center",
+          "end",
+          "between"
+        ],
+        "default": "center",
+        "description": "Row alignment (sets --site-legal-justify). start and between also clip the separator that would lead a wrapped row."
+      }
+    ],
     "structure": [
       {
         "element": "<span>",
-        "description": "Copyright or license text"
+        "description": "Copyright or license text (author the year as text, e.g. <time datetime=\"2026\">2026</time>)"
       },
       {
         "element": "<a>",
-        "description": "Legal page link (privacy, terms)"
+        "description": "Legal page link (privacy, terms); always underlined"
+      },
+      {
+        "element": "<ul> / <ol>",
+        "description": "List form: a single list whose <li> children are the items (list semantics and an item count)"
       }
     ],
     "css": {
-      "tokens": []
+      "tokens": [
+        {
+          "name": "--sep-list",
+          "description": "Separator text between items (default \"\\00B7\", a middle dot); decorative, kept out of link names"
+        },
+        {
+          "name": "--site-legal-justify",
+          "description": "justify-content of the row (default center); start or space-between also clip the separator that would lead a wrapped row"
+        }
+      ]
     }
   },
   "site-tools": {
@@ -1454,10 +1603,19 @@ export default {
       {
         "element": "<settings-panel>",
         "description": "Full settings panel"
+      },
+      {
+        "element": "<notification-wc>",
+        "description": "Notification bell (keep it outside site-tools, or repeat it, if it must stay reachable on mobile)"
       }
     ],
     "css": {
-      "tokens": []
+      "tokens": [
+        {
+          "name": "--site-tools-gap",
+          "description": "Space between tools (default var(--size-s))"
+        }
+      ]
     }
   },
   "status-message": {
@@ -1483,15 +1641,73 @@ export default {
     "attributes": []
   },
   "user-avatar": {
+    "$schema": "../../schemas/api.schema.json",
     "element": "user-avatar",
     "type": "custom-element",
+    "description": "CSS-only avatar shell: a photo <img>, an initials / icon fallback stacked under it, and an optional presence dot. No JavaScript; the accessible name comes from the img alt, or from role=\"img\" + aria-label on the host when the avatar is initials-only.",
     "htmlvalidate": {
       "flow": true,
+      "phrasing": true,
       "permittedContent": [
         "@flow"
       ]
     },
-    "attributes": []
+    "attributes": [
+      {
+        "name": "data-size",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "xs",
+          "sm",
+          "md",
+          "lg",
+          "xl",
+          "2xl"
+        ],
+        "default": "md",
+        "description": "Size: xs (1.5rem) to 2xl (8rem); omit for md (3rem). Initials never drop below 0.625rem."
+      },
+      {
+        "name": "data-shape",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "rounded",
+          "square"
+        ],
+        "description": "rounded (large radius) or square (medium radius) instead of a circle."
+      },
+      {
+        "name": "data-ring",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "boolean",
+        "description": "Decorative ring (surface gap + border colour); kept inside overlap clusters, drawn as an outline in forced colours."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-fallback",
+        "on": "span",
+        "type": "boolean",
+        "description": "Initials or icon shown when there is no photo; stacked under the <img>, so a failed or transparent image reveals it. Add aria-hidden=\"true\" when the host or img already carries the name."
+      },
+      {
+        "name": "data-status",
+        "on": "span",
+        "type": "enum",
+        "values": [
+          "online",
+          "away",
+          "busy",
+          "offline"
+        ],
+        "description": "Presence dot (colour + shape). Give it text: role=\"img\" aria-label=\"Online\", or text content, which is read but clipped visually."
+      }
+    ]
   },
   "vb-canvas": {
     "element": "vb-canvas",
@@ -6140,71 +6356,231 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "emoji-picker",
     "type": "web-component",
-    "description": "Accessible emoji picker with search, categories, and insertion",
+    "description": "Accessible emoji picker with search, a category toolbar, a listbox of emoji, and undoable insertion into a target field",
     "attributes": [
       {
         "name": "for",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "ID of target input/textarea/contenteditable for insertion"
+        "description": "ID of the input, textarea or contenteditable the emoji is inserted into (at the saved caret, as an undoable edit that fires an insertText input event). Omit to handle emoji-picker:select yourself."
       },
       {
         "name": "recent-limit",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Max recent emoji stored (default: 24)"
+        "default": "24",
+        "description": "Maximum number of recently used emoji kept in localStorage (vb-emoji-recent)"
       },
       {
         "name": "data-trigger",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Marks the trigger button (a direct child). Without one the first child <button> is used, else a trigger is created. Hidden until the element is defined (no-JS)."
       },
       {
-        "name": "aria-haspopup",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "data-group",
+        "name": "data-label-trigger",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Open emoji picker",
+        "description": "Trigger accessible name, applied only when the trigger has no text and no aria-label"
       },
       {
-        "name": "data-group-heading",
+        "name": "data-label-dialog",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Emoji picker",
+        "description": "Accessible name of the picker panel"
       },
       {
-        "name": "data-shortcode",
+        "name": "data-label-search",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Search emoji",
+        "description": "Accessible name of the search input"
+      },
+      {
+        "name": "data-label-placeholder",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search emoji…",
+        "description": "Search input placeholder"
+      },
+      {
+        "name": "data-label-categories",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Emoji categories",
+        "description": "Accessible name of the category toolbar"
+      },
+      {
+        "name": "data-label-emoji",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Emoji",
+        "description": "Accessible name of the emoji listbox"
+      },
+      {
+        "name": "data-label-recent",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Recently used",
+        "description": "Name of the recently used group"
+      },
+      {
+        "name": "data-label-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No emoji found",
+        "description": "Empty search message (shown and announced)"
+      },
+      {
+        "name": "data-label-results",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} emoji found",
+        "description": "Result-count announcement; {count} is replaced"
+      },
+      {
+        "name": "data-label-smileys",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Smileys & Emotion",
+        "description": "Category name for smileys"
+      },
+      {
+        "name": "data-label-people",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "People & Body",
+        "description": "Category name for people"
+      },
+      {
+        "name": "data-label-animals",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Animals & Nature",
+        "description": "Category name for animals"
+      },
+      {
+        "name": "data-label-food",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Food & Drink",
+        "description": "Category name for food"
+      },
+      {
+        "name": "data-label-travel",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Travel & Places",
+        "description": "Category name for travel"
+      },
+      {
+        "name": "data-label-activities",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Activities",
+        "description": "Category name for activities"
+      },
+      {
+        "name": "data-label-objects",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Objects",
+        "description": "Category name for objects"
+      },
+      {
+        "name": "data-label-symbols",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Symbols",
+        "description": "Category name for symbols"
+      },
+      {
+        "name": "data-label-flags",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Flags",
+        "description": "Category name for flags"
       },
       {
         "name": "open",
         "kind": "native",
-        "purpose": "config"
+        "purpose": "output-state",
+        "type": "boolean",
+        "direction": "output",
+        "description": "Reflected state — set by open()/close()/toggle(), not intended as initial markup"
       }
     ],
     "events": [
       {
-        "name": "emoji-picker:select"
+        "name": "emoji-picker:select",
+        "detail": "{ shortcode, emoji, name, keywords }",
+        "description": "Fired when an emoji is selected, after it was inserted into the for target"
       },
       {
-        "name": "emoji-picker:open"
+        "name": "emoji-picker:open",
+        "description": "Fired when the picker opens"
       },
       {
-        "name": "emoji-picker:close"
+        "name": "emoji-picker:close",
+        "description": "Fired when the picker closes"
+      }
+    ],
+    "properties": [
+      {
+        "name": "isOpen",
+        "type": "boolean",
+        "description": "Read-only. Whether the panel is open"
+      },
+      {
+        "name": "ready",
+        "type": "Promise<void>",
+        "description": "Read-only. Resolves once the panel is built (emoji data loads asynchronously); data-upgraded is set at the same time"
+      }
+    ],
+    "methods": [
+      {
+        "name": "open()",
+        "description": "Open the panel and focus the search input. Queued until the panel is built"
+      },
+      {
+        "name": "close()",
+        "description": "Close the panel (focus is not moved). Before the build it cancels a queued open"
+      },
+      {
+        "name": "toggle()",
+        "description": "Open when closed, close when open. Queued until the panel is built"
       }
     ],
     "childAttributes": [],
-    "structure": [],
+    "structure": [
+      {
+        "element": "<button data-trigger>",
+        "description": "Optional trigger. An emoji-only trigger needs an aria-label."
+      }
+    ],
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -6216,7 +6592,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "flow-diagram",
     "type": "web-component",
-    "description": "User flow and sequence visualization — progressively enhances an ol into a connected node graph with actions, decisions, and branches",
+    "description": "User flow and sequence visualization — progressively enhances an ol into a labelled figure holding a nested list drawn as a connected node graph with actions, decisions, and branches",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -6225,44 +6601,177 @@ export default {
     },
     "attributes": [
       {
-        "name": "title",
-        "kind": "host-api",
+        "name": "data-title",
+        "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Diagram heading"
+        "description": "Diagram heading, rendered as a real heading that labels the figure. Observed."
+      },
+      {
+        "name": "data-heading-level",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": "2",
+        "description": "Heading level (1-6) for data-title. Observed."
       },
       {
         "name": "src",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL to JSON flow data"
+        "description": "URL to JSON flow data: { title?, steps }. Loaded on connect when there is no inline <ol>, and whenever it changes."
       },
       {
         "name": "data-direction",
         "kind": "data",
-        "purpose": "config",
-        "type": "string",
-        "description": "Layout: vertical (default) or horizontal"
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "vertical",
+          "horizontal"
+        ],
+        "default": "vertical",
+        "description": "Layout direction. Horizontal follows the writing direction (arrows point toward inline-end in RTL). CSS only."
       },
       {
         "name": "compact",
         "kind": "host-api",
-        "purpose": "config",
+        "purpose": "visual-variant",
         "type": "boolean",
-        "description": "Reduced spacing"
+        "description": "Reduced spacing and node sizes. CSS only (no re-render)."
+      },
+      {
+        "name": "data-label",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Flow diagram",
+        "description": "Accessible name of the figure when there is no data-title. Observed."
+      },
+      {
+        "name": "data-label-selected",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Selected: {text}",
+        "description": "Live-region announcement on select; {text} is replaced with the node text."
+      },
+      {
+        "name": "data-label-steps-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} step",
+        "description": "Step-count summary for the Intl.PluralRules \"one\" category ({count} is replaced). Any category works: data-label-steps-few, -many, -zero, -two."
+      },
+      {
+        "name": "data-label-steps-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} steps",
+        "description": "Step-count summary for the \"other\" category and the fallback for unset categories."
+      },
+      {
+        "name": "data-label-type-start",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Start",
+        "description": "Spoken type prefix for start nodes (\"Start: …\")."
+      },
+      {
+        "name": "data-label-type-action",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Action",
+        "description": "Spoken type prefix for action nodes."
+      },
+      {
+        "name": "data-label-type-decision",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Decision",
+        "description": "Spoken type prefix for decision nodes."
+      },
+      {
+        "name": "data-label-type-process",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Process",
+        "description": "Spoken type prefix for process nodes."
+      },
+      {
+        "name": "data-label-type-wait",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Wait",
+        "description": "Spoken type prefix for wait nodes."
+      },
+      {
+        "name": "data-label-type-end",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "End",
+        "description": "Spoken type prefix for end nodes."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-type",
+        "on": "li",
+        "type": "enum",
+        "values": [
+          "start",
+          "action",
+          "decision",
+          "process",
+          "wait",
+          "end"
+        ],
+        "description": "Node type (default action). Other values render with action styling and the raw type as the spoken prefix unless data-label-type-<type> is set."
+      },
+      {
+        "name": "data-annotation",
+        "on": "li",
+        "type": "string",
+        "description": "Note shown under the node; also the node button's accessible description"
+      },
+      {
+        "name": "data-branch",
+        "on": "li",
+        "type": "string",
+        "description": "Branch label on a decision's nested <li>, which holds its own <ol> of steps. \"Yes\"/\"No\" get success/error colouring."
+      }
+    ],
+    "properties": [
+      {
+        "name": "steps",
+        "type": "Array<{ type, text, annotation?, branches?: Array<{ label, steps }> }>",
+        "description": "Get the parsed flow, or assign one to rebuild. Input is normalized (branches default to [], strings become action steps, malformed entries are dropped) and written into the source <ol>, so it survives re-renders and moves."
       }
     ],
     "events": [
       {
         "name": "flow-diagram:ready",
         "detail": "{ nodeCount }",
-        "description": "After setup"
+        "description": "After every render: initial upgrade, observed attribute change, src load, and .steps assignment"
       },
       {
         "name": "flow-diagram:select",
         "detail": "{ type, text }",
-        "description": "Node clicked"
+        "description": "Node activated by click, Enter or Space"
+      },
+      {
+        "name": "flow-diagram:steps-changed",
+        "detail": "{ steps, source: 'property' }",
+        "description": "After .steps assignment (fires after the render's ready)"
       }
     ]
   },
@@ -6282,41 +6791,77 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "foot-notes",
     "type": "web-component",
-    "description": "Progressive enhancement for footnotes",
+    "description": "Progressive enhancement for footnotes: collects the <foot-note> elements that precede it into a labelled doc-endnotes list (or margin sidenotes), with doc-noteref references, doc-backlink return links, shared notes for repeat citations and a hover/focus preview.",
     "attributes": [
-      {
-        "name": "data-back-label",
-        "kind": "data",
-        "purpose": "config"
-      },
       {
         "name": "data-mode",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "sidenotes"
+        ],
+        "description": "Omit for a collected notes list; \"sidenotes\" places each note in the margin beside its reference (notes with data-side=\"false\" still go to the list). Observed: changing it re-renders."
       },
       {
-        "name": "data-enhanced",
+        "name": "data-label-back",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Back to content",
+        "description": "Accessible name of the backlinks; a note cited several times gets \" (a)\", \" (b)\" … appended. Observed at runtime."
       },
       {
-        "name": "data-side",
+        "name": "data-label-ref",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Footnote {n}",
+        "description": "Accessible name of each reference link; {n} is replaced by the note number. Observed at runtime."
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "data-backref",
+        "name": "data-label-heading",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Notes",
+        "description": "Text of the generated, visually hidden heading that labels the doc-endnotes section. Ignored when the author supplies a heading child (h1–h6), which is used as the label instead. Observed at runtime."
+      },
+      {
+        "name": "data-preview",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "false"
+        ],
+        "description": "\"false\" disables the hover / keyboard-focus preview popover on references. Observed at runtime."
       }
     ],
-    "childAttributes": [],
-    "structure": [],
+    "childAttributes": [
+      {
+        "name": "data-side",
+        "on": "foot-note",
+        "type": "string",
+        "description": "\"false\" opts a note out of sidenote placement in data-mode=\"sidenotes\"; it is collected into the list instead."
+      },
+      {
+        "name": "data-ref",
+        "on": "foot-note",
+        "type": "string",
+        "description": "Id of an earlier or later <foot-note> collected by the same <foot-notes>: this element becomes another citation of that note (no content of its own) and the note gets one backlink per citation (a, b, …)."
+      }
+    ],
+    "structure": [
+      {
+        "element": "<foot-note>",
+        "description": "Inline note anywhere BEFORE the <foot-notes> in document order (not necessarily a child). Phrasing content; without JS it renders in parentheses. Enhanced: its content nodes are moved (not copied) into the note, and it holds a superscript <a role=\"doc-noteref\"> (id fnref-I-N, fnref-I-N-b for repeat citations)."
+      },
+      {
+        "element": "<h1>–<h6> (optional)",
+        "description": "A heading child of <foot-notes> labels the generated <section role=\"doc-endnotes\">; otherwise a visually hidden <h2> with data-label-heading is generated."
+      }
+    ],
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -6328,7 +6873,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "form-field",
     "type": "web-component",
-    "description": "Accessible form field web component",
+    "description": "Accessible form field: binds its control (native or form-associated custom element), times validation, shows hint/error outputs and wires aria-describedby / aria-invalid",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -6339,22 +6884,369 @@ export default {
       {
         "name": "data-valid",
         "kind": "data",
-        "purpose": "semantic-state"
+        "purpose": "semantic-state",
+        "type": "boolean",
+        "description": "Valid state. Set by the component when a valid field has a value (not for empty optional fields); can be set by hand."
       },
       {
         "name": "data-invalid",
         "kind": "data",
-        "purpose": "semantic-state"
+        "purpose": "semantic-state",
+        "type": "boolean",
+        "description": "Invalid state: reveals output.error and the error icon. Set by validate()/setError(); survives moving the field."
+      },
+      {
+        "name": "data-type",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "string",
+        "description": "Inline label + control layout for checkable controls. No validation icon.",
+        "enum": [
+          "checkbox",
+          "radio"
+        ]
+      },
+      {
+        "name": "data-no-icon",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Disable the validation status icons."
+      },
+      {
+        "name": "data-floating-label",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Animated floating label (floating-label-init). A real placeholder keeps the label floated. Adds data-floating-label-ready when enhanced."
+      },
+      {
+        "name": "data-pending",
+        "kind": "data",
+        "purpose": "semantic-state",
+        "type": "boolean",
+        "description": "Dims the field and blocks pointer input while something is in flight."
+      },
+      {
+        "name": "data-state",
+        "kind": "data",
+        "purpose": "semantic-state",
+        "type": "string",
+        "description": "Async validation hook: warning border and spinner in the icon slot.",
+        "enum": [
+          "validating"
+        ]
+      },
+      {
+        "name": "data-message-invalid",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Last-resort error message when no data-message-*, authored error text or control message applies.",
+        "default": "Please check this field."
+      },
+      {
+        "name": "data-label-show-password",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Accessible name of the password toggle while the password is hidden.",
+        "default": "Show password"
+      },
+      {
+        "name": "data-label-hide-password",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Accessible name of the password toggle while the password is shown.",
+        "default": "Hide password"
+      },
+      {
+        "name": "data-label-digit",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "OTP/PIN box name; {n} and {total} are replaced.",
+        "default": "Digit {n} of {total}"
+      },
+      {
+        "name": "data-label-incomplete",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "OTP/PIN partial-code message (used when the input has no data-message-patternmismatch); {total} is replaced.",
+        "default": "Enter all {total} digits"
+      },
+      {
+        "name": "data-label-strength",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Accessible name of the password strength meter.",
+        "default": "Password strength"
+      },
+      {
+        "name": "data-label-strength-weak",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Strength level text.",
+        "default": "Weak"
+      },
+      {
+        "name": "data-label-strength-fair",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Strength level text.",
+        "default": "Fair"
+      },
+      {
+        "name": "data-label-strength-good",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Strength level text.",
+        "default": "Good"
+      },
+      {
+        "name": "data-label-strength-strong",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Strength level text.",
+        "default": "Strong"
+      },
+      {
+        "name": "data-label-requirements",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Accessible name of the password rules checklist.",
+        "default": "Password requirements"
+      },
+      {
+        "name": "data-label-rule-length",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Length rule text; {n} is replaced.",
+        "default": "At least {n} characters"
+      },
+      {
+        "name": "data-label-rule-uppercase",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Uppercase rule text.",
+        "default": "One uppercase letter"
+      },
+      {
+        "name": "data-label-rule-lowercase",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Lowercase rule text.",
+        "default": "One lowercase letter"
+      },
+      {
+        "name": "data-label-rule-number",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Number rule text.",
+        "default": "One number"
+      },
+      {
+        "name": "data-label-rule-special",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Special-character rule text.",
+        "default": "One special character"
+      },
+      {
+        "name": "data-label-strength-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Meter value text (aria-valuetext) when the password is empty.",
+        "default": "No password entered"
+      },
+      {
+        "name": "data-label-strength-too-weak",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Validity message when the password is below data-strength-min.",
+        "default": "Choose a stronger password. Meet more of the requirements."
+      },
+      {
+        "name": "data-label-rule-met",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Visually hidden state text appended to a met rule.",
+        "default": "met"
+      },
+      {
+        "name": "data-label-rule-unmet",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Visually hidden state text appended to an unmet rule.",
+        "default": "not met"
+      },
+      {
+        "name": "data-floating-label-ready",
+        "kind": "data",
+        "purpose": "internal-hook",
+        "type": "boolean",
+        "description": "Set by floating-label-init once the floating label is wired. Do not set by hand."
+      },
+      {
+        "name": "data-otp-ready",
+        "kind": "data",
+        "purpose": "internal-hook",
+        "type": "boolean",
+        "description": "Set once the OTP/PIN boxes are built (hides the status icon). Do not set by hand."
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "childAttributes": [
+      {
+        "name": "data-message-valuemissing",
+        "on": "input",
+        "type": "string",
+        "description": "Message for valueMissing. Every ValidityState key has one: data-message-badinput, -typemismatch, -patternmismatch, -tooshort, -toolong, -rangeunderflow, -rangeoverflow, -stepmismatch, -customerror. On a custom element (or the field) for custom controls."
+      },
+      {
+        "name": "data-message-badinput",
+        "on": "input",
+        "type": "string",
+        "description": "Message when the browser can't parse the entry (e.g. letters in type=number)."
+      },
+      {
+        "name": "data-message-customerror",
+        "on": "input",
+        "type": "string",
+        "description": "Message for a custom validity error; without it the custom message itself is shown."
+      },
+      {
+        "name": "data-type",
+        "on": "input",
+        "type": "string",
+        "enum": [
+          "otp",
+          "pin"
+        ],
+        "description": "Multi-box OTP/PIN entry. The input stays a visually hidden, validatable text input (required + a \\d{length} pattern)."
+      },
+      {
+        "name": "data-length",
+        "on": "input",
+        "type": "number",
+        "default": "6",
+        "description": "Number of OTP/PIN digits."
+      },
+      {
+        "name": "data-strength",
+        "on": "input",
+        "type": "boolean",
+        "description": "Password strength meter + rules checklist."
+      },
+      {
+        "name": "data-rules",
+        "on": "input",
+        "type": "string",
+        "default": "length:8",
+        "description": "Comma-separated strength rules: length:N, uppercase, lowercase, number, special. Unicode-aware; unknown rules are skipped with a warning."
+      },
+      {
+        "name": "data-strength-min",
+        "on": "input",
+        "type": "string",
+        "enum": [
+          "fair",
+          "good",
+          "strong"
+        ],
+        "description": "Minimum strength level; weaker non-empty passwords get a custom validity error. Advisory when absent."
+      },
+      {
+        "name": "data-count",
+        "on": "textarea",
+        "type": "string",
+        "description": "Character (\"\") or word (\"words\") counter, added to aria-describedby; announced only near the limit."
+      },
+      {
+        "name": "class",
+        "on": "output",
+        "type": "string",
+        "enum": [
+          "hint",
+          "error"
+        ],
+        "description": "hint: help text, collapses when valid; error: hidden (visibility: hidden) until invalid, authored text is the fallback message."
+      }
+    ],
+    "structure": [
+      {
+        "element": "<label>",
+        "description": "Field label (for= the control id). The required asterisk goes on it when it is the field's only label."
+      },
+      {
+        "element": "<input> | <textarea> | <select> | form-associated custom element",
+        "description": "The bound control. Radios bind their whole name group."
+      },
+      {
+        "element": "<output class=\"hint\">",
+        "required": false,
+        "description": "Help text; listed in aria-describedby."
+      },
+      {
+        "element": "<output class=\"error\">",
+        "required": false,
+        "description": "Error message; in aria-describedby only while invalid."
+      }
+    ],
+    "events": [
+      {
+        "name": "form-field:upgraded",
+        "description": "Bubbles once the field has bound its control."
+      }
+    ],
+    "properties": [
+      {
+        "name": "fieldName",
+        "type": "string",
+        "description": "Human-readable field name (label or legend text, else aria-label, name or id) for error summaries. Read-only."
+      },
+      {
+        "name": "input",
+        "type": "HTMLElement | null",
+        "description": "The bound control: the first form-associated custom element in the field (date-picker, star-rating, combo-box …), else the first native input/textarea/select. Read-only."
+      }
+    ],
+    "methods": [
+      {
+        "name": "validate({ show = true } = {})",
+        "description": "Validate the bound control and show the result immediately (error text, data-invalid/data-valid, aria-invalid, aria-describedby) — no blur needed; the form coordinator calls it on submit. Returns the validity. { show: false } returns validity without touching the UI."
+      },
+      {
+        "name": "setError(message)",
+        "description": "Show a programmatic (e.g. server) error. Also set as the native control's custom validity so the form won't submit; cleared on the user's next edit. Never clears a custom error set by other code."
+      },
+      {
+        "name": "clearError()",
+        "description": "Clear the field's own programmatic error and return to the neutral state."
+      }
+    ]
   },
   "geo-map": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "geo-map",
     "type": "web-component",
-    "description": "A zero-dependency map component using OSM tiles.",
+    "description": "A zero-dependency map component using OpenStreetMap / CARTO raster tiles or your own tile proxy, with a lazy-loaded interactive pan / zoom mode.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -6367,131 +7259,437 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Latitude of map center"
+        "description": "Latitude of the map centre. With lng, highest-priority coordinate source."
       },
       {
         "name": "lng",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Longitude of map center"
+        "description": "Longitude of the map centre."
       },
       {
         "name": "zoom",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Tile zoom level 1–19 (default: 15)"
+        "default": "15",
+        "description": "Tile zoom level 1–19; out-of-range values fall back to 15."
       },
       {
         "name": "marker",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Show pin at center; \"false\" to hide"
+        "type": "enum",
+        "values": [
+          "",
+          "true",
+          "false"
+        ],
+        "default": "true",
+        "description": "Show the pin at the centre (bare or \"true\"); \"false\" hides it."
       },
       {
         "name": "marker-color",
         "kind": "host-api",
-        "purpose": "config",
+        "purpose": "visual-variant",
         "type": "string",
-        "description": "Pin fill color (default: #e74c3c)"
+        "description": "Pin fill, any CSS colour. Invalid values are ignored (the pin falls back to --geo-map-marker-color, then --color-error)."
       },
       {
         "name": "provider",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Tile source: osm, carto-light, carto-dark"
+        "type": "enum",
+        "values": [
+          "osm",
+          "carto-light",
+          "carto-dark",
+          "carto-auto"
+        ],
+        "default": "osm",
+        "description": "Built-in tile source. carto-auto picks carto-dark or carto-light from the nearest data-mode (else prefers-color-scheme) and follows changes. Each provider shows its required credit."
       },
       {
         "name": "tile-url",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL template with {z}/{x}/{y} placeholders for first-party tile proxying. Overrides provider when set. See /docs/concepts/service-facade/."
+        "description": "Tile URL template overriding provider: {z} {x} {y}, {s} (a/b/c subdomain rotation) and {r} (\"@2x\" on high-density screens). Set attribution for the credit. See /docs/concepts/service-facade/."
+      },
+      {
+        "name": "attribution",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Credit text shown for a tile-url source (built-in providers always show their own). A child with slot=\"attribution\" replaces it."
+      },
+      {
+        "name": "attribution-href",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Link for the attribution credit (http/https only)."
       },
       {
         "name": "interactive",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "click",
+          "eager",
+          "none"
+        ],
+        "default": "click",
+        "description": "click: the map surface is an activation button; eager: interactive on load (without moving focus); none: static view only."
       },
       {
         "name": "static-only",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Never activate (same as interactive=\"none\")."
+      },
+      {
+        "name": "loading",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "lazy",
+          "eager",
+          "consent"
+        ],
+        "default": "lazy",
+        "description": "Tile loading. consent: request nothing from the tile host until the user presses \"Load map\" (shows a placeholder naming the host; the slotted address stays visible)."
+      },
+      {
+        "name": "label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Accessible name of the map. Default: \"Map of …\" from the slotted <address> text, the src address / JSON-LD name, or place; else \"Map\"."
       },
       {
         "name": "src",
-        "kind": "native",
-        "purpose": "config"
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "ID of an <address data-lat data-lng> or a <script type=\"application/ld+json\"> with geo.latitude / geo.longitude to read coordinates (and the name) from."
       },
       {
         "name": "place",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "description": "Name matched against JSON-LD scripts on the page (data.name); the match's geo supplies coordinates."
       },
       {
-        "name": "content",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "data-has-caption",
+        "name": "data-ready",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "description": "Set when the static tiles have finished loading (with geo-map:ready); removed on each re-render."
       },
       {
-        "name": "data-interactive-active",
+        "name": "data-label-map",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Map",
+        "description": "Accessible name when nothing names the place."
       },
       {
-        "name": "data-state",
+        "name": "data-label-map-of",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Map of {name}",
+        "description": "Accessible name template; {name} is the address text, src name or place."
+      },
+      {
+        "name": "data-label-activate",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Activate interactive map",
+        "description": "Visible text (and name) of the activation button."
+      },
+      {
+        "name": "data-label-consent",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Load map",
+        "description": "Consent button text (loading=\"consent\")."
+      },
+      {
+        "name": "data-label-consent-note",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Loads map images from {host}",
+        "description": "Consent note; {host} is the tile host."
+      },
+      {
+        "name": "data-label-zoom-in",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Zoom in",
+        "description": "Zoom-in button name."
+      },
+      {
+        "name": "data-label-zoom-out",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Zoom out",
+        "description": "Zoom-out button name."
+      },
+      {
+        "name": "data-label-recenter",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Recenter map",
+        "description": "Recenter button name."
+      },
+      {
+        "name": "data-label-exit",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Exit map",
+        "description": "Exit button name (returns to the static view)."
+      },
+      {
+        "name": "data-label-controls",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Map controls",
+        "description": "Name of the control button group."
+      },
+      {
+        "name": "data-label-instructions",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Key / gesture instructions referenced by aria-describedby in interactive mode."
+      },
+      {
+        "name": "data-label-moved",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Map centred on {lat}, {lng}, zoom {zoom}",
+        "description": "Polite live-region announcement after pan / zoom."
+      },
+      {
+        "name": "data-label-error-coords",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Map location unavailable",
+        "description": "On-screen text when no coordinates resolve."
+      },
+      {
+        "name": "data-label-error-tiles",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Map images failed to load",
+        "description": "On-screen text when every tile fails."
+      }
+    ],
+    "properties": [
+      {
+        "name": "data",
+        "type": "{ lat?: number, lng?: number, zoom: number, marker: boolean, markerColor: string }",
+        "description": "Get the map state, or assign a partial object: attributes are written as one batch and the map re-renders once. Assigning the current state is a no-op; an invalid markerColor is ignored, '' clears it. Emits geo-map:data-changed."
+      },
+      {
+        "name": "markers",
+        "type": "Array<{ lat: number, lng: number, color: string }>",
+        "readonly": true,
+        "description": "The centre marker as a one-element array when coordinates resolve, else []."
+      },
+      {
+        "name": "active",
+        "type": "boolean",
+        "readonly": true,
+        "description": "True while interactive mode is on (also the :state(active) custom state)."
       }
     ],
     "events": [
       {
-        "name": "geo-map:ready"
+        "name": "geo-map:ready",
+        "detail": "{ lat, lng, zoom }",
+        "description": "Static tiles finished loading (data-ready is set)."
       },
       {
-        "name": "geo-map:activate"
+        "name": "geo-map:activate",
+        "detail": "{ lat, lng, zoom }",
+        "description": "Interactive mode started."
       },
       {
-        "name": "geo-map:error"
+        "name": "geo-map:move",
+        "detail": "{ lat, lng, zoom }",
+        "description": "After a pan or zoom in interactive mode (new centre, 6 decimal places)."
+      },
+      {
+        "name": "geo-map:data-changed",
+        "detail": "{ data, source: 'property' }",
+        "description": "After a .data assignment that changed something."
+      },
+      {
+        "name": "geo-map:error",
+        "detail": "{ message }",
+        "description": "No coordinates resolved, or every tile failed to load."
       }
     ],
-    "childAttributes": [],
+    "childAttributes": [
+      {
+        "name": "data-lat",
+        "on": "address",
+        "type": "number",
+        "description": "Latitude on a slotted (or src-referenced) <address>."
+      },
+      {
+        "name": "data-lng",
+        "on": "address",
+        "type": "number",
+        "description": "Longitude on a slotted (or src-referenced) <address>."
+      },
+      {
+        "name": "slot",
+        "on": "*",
+        "type": "enum",
+        "values": [
+          "attribution"
+        ],
+        "description": "slot=\"attribution\" replaces the credit line."
+      }
+    ],
     "structure": []
   },
   "glossary-index": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "glossary-index",
     "type": "web-component",
-    "description": "Interactive glossary with search and scroll-spy",
+    "description": "Interactive glossary with search filtering, scroll-spy letter tracking and copyable term permalinks",
     "attributes": [
       {
         "name": "placeholder",
-        "kind": "native",
+        "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Placeholder text for the search input"
+        "default": "Filter terms…",
+        "description": "Placeholder text for the injected search input (a hint, not its label — see data-label-filter)"
       },
       {
-        "name": "data-glossary-search",
+        "name": "data-label-filter",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Filter glossary terms",
+        "description": "Accessible name of the search input"
       },
       {
-        "name": "href",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-label-matches-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} term matches",
+        "description": "Polite match-count announcement for the Intl.PluralRules \"one\" category ({count} is replaced). Any category works: -few, -many, -zero, -two."
+      },
+      {
+        "name": "data-label-matches-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} terms match",
+        "description": "Match-count announcement for the \"other\" category and the fallback for unset categories"
+      },
+      {
+        "name": "data-label-all-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Showing {count} term",
+        "description": "Announcement when the filter is cleared (\"one\" category)"
+      },
+      {
+        "name": "data-label-all-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Showing all {count} terms",
+        "description": "Announcement when the filter is cleared (\"other\" category and fallback)"
+      },
+      {
+        "name": "data-label-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No terms match your filter.",
+        "description": "Visible empty-state message when nothing matches"
+      },
+      {
+        "name": "data-label-permalink",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Copy link to",
+        "description": "Permalink name prefix; the term text is appended"
+      },
+      {
+        "name": "data-label-copied",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Link copied to clipboard",
+        "description": "Screen-reader announcement after a permalink copies the term URL"
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "childAttributes": [
+      {
+        "name": "id",
+        "on": "dt",
+        "type": "string",
+        "description": "Term anchor. Each dt with an id gets a permalink that follows the fragment and copies the term URL."
+      }
+    ],
+    "structure": [
+      {
+        "element": "nav.glossary-jump",
+        "required": false,
+        "description": "Letter jump navigation; its fragment links get aria-current=\"true\" for the section in view and aria-disabled while their section is filtered out"
+      },
+      {
+        "element": "section.glossary-section",
+        "description": "One per letter group, with an id the jump links target (section[id^=\"glossary-\"] also matches)"
+      },
+      {
+        "element": "dl",
+        "description": "Terms inside each section: dt/dd groups (several dt per dd, several dd per dt, or div-wrapped groups)"
+      },
+      {
+        "element": "dfn",
+        "required": false,
+        "description": "The defined term inside dt; used as the filter target when present (otherwise the dt text)"
+      }
+    ],
+    "events": [
+      {
+        "name": "glossary-index:filter",
+        "detail": "{ query, matchCount }",
+        "description": "After the filter is applied"
+      }
+    ]
   },
   "glossary-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -6507,32 +7705,140 @@ export default {
     },
     "attributes": [
       {
-        "name": "title",
-        "kind": "host-api",
+        "name": "data-title",
+        "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Glossary heading"
+        "description": "Glossary heading, rendered as a real heading (the title attribute is not used). Observed."
+      },
+      {
+        "name": "data-heading-level",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": "2",
+        "description": "Heading level (1-6) for data-title. Observed."
       },
       {
         "name": "src",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL to JSON term data"
+        "description": "URL to JSON term data: { title?, terms: [{ id, term, definition, category?, seeAlso?, definitionHtml? }] }. Fetched once per URL; an inline <dl> renders as the fallback while loading and if the fetch fails. Observed."
       },
       {
         "name": "searchable",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Enables search input"
+        "description": "Adds a search input (inside a <search> landmark) that filters terms by name and definition. Observed."
       },
       {
         "name": "compact",
         "kind": "host-api",
-        "purpose": "config",
+        "purpose": "visual-variant",
         "type": "boolean",
-        "description": "Reduced spacing variant"
+        "description": "Reduced spacing variant. CSS only."
+      },
+      {
+        "name": "data-state",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "enum",
+        "values": [
+          "loading",
+          "ready",
+          "error"
+        ],
+        "description": "Set in src mode: loading while fetching, ready after the data renders, error when the fetch fails (an error message is shown and the fallback <dl> is kept)."
+      },
+      {
+        "name": "data-label-search",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search glossary terms",
+        "description": "Accessible name of the search input."
+      },
+      {
+        "name": "data-label-search-placeholder",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search terms…",
+        "description": "Search input placeholder."
+      },
+      {
+        "name": "data-label-terms",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Glossary terms",
+        "description": "Accessible name of the terms region."
+      },
+      {
+        "name": "data-label-alphabet",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Alphabet navigation",
+        "description": "Accessible name of the jump-bar nav."
+      },
+      {
+        "name": "data-label-found-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} term found",
+        "description": "Search announcement for the Intl.PluralRules \"one\" category ({count} is replaced). Any category works: data-label-found-few, -many, -zero, -two."
+      },
+      {
+        "name": "data-label-found-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} terms found",
+        "description": "Search announcement for the \"other\" category and the fallback for unset categories."
+      },
+      {
+        "name": "data-label-all-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Showing {count} term",
+        "description": "Announcement when the search is cleared (\"one\" category; other categories as for found)."
+      },
+      {
+        "name": "data-label-all-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Showing all {count} terms",
+        "description": "Announcement when the search is cleared (\"other\" category and fallback)."
+      },
+      {
+        "name": "data-label-uncategorized",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Uncategorized",
+        "description": "Category label for terms without data-category."
+      },
+      {
+        "name": "data-label-see-also",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "See also:",
+        "description": "Prefix for seeAlso links generated from JSON / .terms data."
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Could not load the glossary terms.",
+        "description": "Message shown when src fails to load."
       }
     ],
     "childAttributes": [
@@ -6546,19 +7852,47 @@ export default {
         "name": "data-term-id",
         "on": "div",
         "type": "string",
-        "description": "Unique term identifier, used as fragment anchor"
+        "description": "Unique term identifier, set as the div's id (fragment anchor). Jump-bar letters link to the first term of each letter."
+      }
+    ],
+    "structure": [
+      {
+        "element": "dl",
+        "required": false,
+        "description": "Source definition list (optional with src: rendered as the fallback). Kept in place, hidden, while upgraded; restored on teardown."
+      },
+      {
+        "element": "div[data-term-id]",
+        "description": "One per term inside the dl, wrapping its dt and dd"
+      }
+    ],
+    "properties": [
+      {
+        "name": "terms",
+        "type": "Array<{ id, term, definition, category?, seeAlso?, definitionHtml? }>",
+        "description": "Get the parsed terms ({ id, term, definition, category, seeAlso? }; definition is text), or assign to rebuild. Assigned entries are written into the source <dl>, so they survive moves and re-renders. definition is rendered as text; definitionHtml is an explicit opt-in passed through VB's HTML sanitizer."
       }
     ],
     "events": [
       {
         "name": "glossary-wc:ready",
         "detail": "{ termCount, categories }",
-        "description": "After setup completes"
+        "description": "After every render (upgrade, reconnect, observed attribute change, .terms assignment, src load). Not fired while src is loading."
       },
       {
         "name": "glossary-wc:search",
         "detail": "{ query, matchCount }",
-        "description": "On search input"
+        "description": "After the (debounced) search input is applied"
+      },
+      {
+        "name": "glossary-wc:terms-changed",
+        "detail": "{ terms, source: 'property' }",
+        "description": "After .terms assignment (fires after the render's ready)"
+      },
+      {
+        "name": "glossary-wc:error",
+        "detail": "{ url, error }",
+        "description": "When src fails to load (HTTP error, invalid JSON, or no terms array)"
       }
     ]
   },
@@ -6566,32 +7900,49 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "heading-links",
     "type": "web-component",
-    "description": "Add anchor links to headings",
+    "description": "Add permalink anchors to headings; activating one follows the fragment and copies the section URL",
     "attributes": [
       {
         "name": "levels",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Heading levels to process (default: 'h2,h3')"
+        "description": "Comma-separated heading levels to process, h1–h6 only (default: 'h2,h3'). Invalid tokens are ignored; changes are observed",
+        "default": "h2,h3"
       },
       {
-        "name": "data-toc-ignore",
+        "name": "data-label-anchor",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "description": "Anchor accessible-name prefix; the anchor is named \"<prefix> <heading text>\" (default: 'Copy link to'). Observed",
+        "default": "Copy link to"
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-label-copied",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Screen-reader announcement after the URL is copied (default: 'Link copied to clipboard')",
+        "default": "Link copied to clipboard"
       }
     ],
     "events": [
       {
-        "name": "heading-links:navigate"
+        "name": "heading-links:navigate",
+        "description": "Fires when an anchor is activated (unmodified primary click or Enter), after the fragment navigation and before the clipboard write",
+        "detail": "{ id: string, url: string, heading: HTMLElement }"
       }
     ],
-    "childAttributes": [],
+    "childAttributes": [
+      {
+        "name": "data-toc-ignore",
+        "on": "*",
+        "type": "boolean",
+        "required": false,
+        "description": "Skip this heading (or every heading inside this element): no anchor, no generated id. Shared with page-toc"
+      }
+    ],
     "structure": [],
     "htmlvalidate": {
       "flow": true,
@@ -6604,7 +7955,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "highlight-wc",
     "type": "web-component",
-    "description": "Medium-style text highlighting and annotation component with color swatches, private notes, and localStorage persistence",
+    "description": "Text highlighting with localStorage persistence. Inside <selection-menu> it renders a highlighter button + colour palette for the selection; standalone it renders no UI and exposes a JS API and events",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -6617,53 +7968,151 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "ID of element to annotate (defaults to first child element)"
+        "description": "Standalone mode: ID of the element to annotate (defaults to the first child element). Ignored inside <selection-menu>, which highlights its own targets"
       },
       {
         "name": "colors",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Comma-separated color names (default: yellow,green,blue,pink)"
+        "default": "yellow,green,blue,pink",
+        "description": "Comma-separated palette colour names; each needs a --highlight-{name} token"
       },
       {
         "name": "readonly",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Render stored highlights but disable creating new ones"
+        "description": "Render stored highlights but disable creating new ones. Inside <selection-menu> no highlighter button is rendered"
       },
       {
         "name": "storage-key",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Custom localStorage key suffix (default: page pathname)"
+        "description": "Custom storage key suffix (default: page pathname)"
+      },
+      {
+        "name": "data-label-button",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Highlight selection",
+        "description": "Accessible name of the highlighter button (selection-menu mode)"
+      },
+      {
+        "name": "data-label-palette",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Highlight color",
+        "description": "Accessible name of the colour palette group (selection-menu mode)"
+      },
+      {
+        "name": "data-label-annotation",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "You highlighted",
+        "description": "Margin annotation text; forwarded to the target as data-highlights-label-annotation"
+      },
+      {
+        "name": "data-label-added",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Highlight added",
+        "description": "Screen-reader announcement when a highlight is created; forwarded as data-highlights-label-added"
+      },
+      {
+        "name": "data-label-removed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Highlight removed",
+        "description": "Screen-reader announcement when a highlight is removed; forwarded as data-highlights-label-removed"
       }
     ],
     "structure": [
       {
         "element": "<article>",
-        "description": "Content to annotate (when not using for= attribute)"
+        "description": "Standalone mode: content to annotate (when not using for=)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "highlightSelection(color?)",
+        "description": "Highlight the current text selection in the given palette colour (default: last used). No-op when readonly or the colour is not in the palette"
+      },
+      {
+        "name": "getHighlights()",
+        "description": "Array of { id, startOffset, endOffset, text, color, note, created } records. Inside <selection-menu> the methods act on the most recently highlighted target (initially the first)"
+      },
+      {
+        "name": "removeHighlight(id)",
+        "description": "Remove one highlight by id"
+      },
+      {
+        "name": "clearAll()",
+        "description": "Remove every highlight on the target"
+      },
+      {
+        "name": "exportHighlights()",
+        "description": "JSON string { version: 1, highlights: [...] }"
+      },
+      {
+        "name": "importHighlights(json)",
+        "description": "Replace the highlights from an exported string or object. Records with a bad shape, offsets outside the text or a colour not in the palette are dropped. Returns { imported, rejected }"
+      }
+    ],
+    "events": [
+      {
+        "name": "highlights:added",
+        "detail": "{ id, text, color, note }",
+        "description": "A highlight was created. Dispatched on the target element and bubbles"
+      },
+      {
+        "name": "highlights:removed",
+        "detail": "{ id }",
+        "description": "A highlight was removed via removeHighlight(). Dispatched on the target and bubbles"
+      },
+      {
+        "name": "highlights:selected",
+        "detail": "{ text, rect }",
+        "description": "Text was selected inside an interactive target — hook for a custom UI in standalone mode. Dispatched on the target and bubbles"
+      },
+      {
+        "name": "highlights:clicked",
+        "detail": "{ id, highlight }",
+        "description": "An existing highlight or its margin annotation was clicked. Dispatched on the target and bubbles"
+      },
+      {
+        "name": "highlights:note-changed",
+        "detail": "{ id, note }",
+        "description": "A note was saved (via <note-wc>). Dispatched on the target and bubbles"
       }
     ],
     "css": {
       "tokens": [
         {
           "name": "--highlight-yellow",
-          "description": "Yellow highlight color"
+          "description": "Yellow highlight wash (light-dark() pair)"
         },
         {
           "name": "--highlight-green",
-          "description": "Green highlight color"
+          "description": "Green highlight wash (light-dark() pair)"
         },
         {
           "name": "--highlight-blue",
-          "description": "Blue highlight color"
+          "description": "Blue highlight wash (light-dark() pair)"
         },
         {
           "name": "--highlight-pink",
-          "description": "Pink highlight color"
+          "description": "Pink highlight wash (light-dark() pair)"
+        },
+        {
+          "name": "--highlight-ink",
+          "description": "Text colour of highlighted text (light-dark() pair); per-colour override --highlight-{name}-ink"
         }
       ]
     }
@@ -6672,7 +8121,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "icon-wc",
     "type": "web-component",
-    "description": "Inline icon element using SVG sprite sets with accessible labelling",
+    "description": "Inline SVG icon: fetches one sanitized SVG file per icon from <base-path>/<set>/<name>.svg, sized by preset and labelled for assistive tech",
     "htmlvalidate": {
       "flow": true,
       "phrasing": true
@@ -6683,58 +8132,133 @@ export default {
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Icon name (required, matches filename without .svg)"
+        "description": "Icon name (required): the SVG filename without .svg"
       },
       {
         "name": "set",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Icon set directory (default: \"lucide\", or \"custom\")"
+        "description": "Icon set directory (lucide, phosphor, tabler, mage, bold, custom). Defaults to the nearest data-icon-set on the element, an ancestor or <html>, then lucide. Icons missing from the set fall back to Lucide."
       },
       {
         "name": "size",
         "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Icon size: xs, sm, md, lg, xl, 2xl (default: md)"
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "xs",
+          "sm",
+          "md",
+          "lg",
+          "xl",
+          "2xl"
+        ],
+        "default": "md",
+        "description": "Size preset relative to the font size: 1em, 1.25em, 1.5em, 2em, 2.5em, 3em"
       },
       {
         "name": "label",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Accessible label for functional icons"
+        "description": "Accessible name for a meaningful icon (role=\"img\"). Without it the icon is decorative (aria-hidden). Adding or removing it updates the icon live."
       },
       {
         "name": "base-path",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "/cdn/icons",
+        "description": "Icon base URL for this icon. Defaults to <html data-icon-path>, then /cdn/icons (root-absolute: <base href> is not applied)."
       },
       {
-        "name": "width",
-        "kind": "host-api",
-        "purpose": "config"
+        "name": "data-flip-rtl",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "boolean",
+        "description": "Mirror the glyph horizontally when the icon is in a right-to-left context (directional icons such as arrows and chevrons)"
       },
       {
-        "name": "height",
-        "kind": "host-api",
-        "purpose": "config"
+        "name": "data-animate",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "spin"
+        ],
+        "description": "Spins the icon while an ancestor has [data-loading] (disabled under prefers-reduced-motion)"
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-error",
+        "kind": "data",
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "description": "Present when the icon could not be loaded from the requested set or the Lucide fallback; light-DOM content is shown instead"
+      },
+      {
+        "name": "data-upgraded",
+        "kind": "data",
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "public": false,
+        "description": "Present while the element is connected and upgraded"
+      }
+    ],
+    "properties": [
+      {
+        "name": "name",
+        "type": "string",
+        "readonly": true,
+        "description": "The name attribute"
+      },
+      {
+        "name": "set",
+        "type": "string",
+        "readonly": true,
+        "description": "Resolved set: set attribute, else nearest data-icon-set, else lucide"
+      },
+      {
+        "name": "size",
+        "type": "string",
+        "readonly": true,
+        "description": "The size attribute (default md)"
+      },
+      {
+        "name": "label",
+        "type": "string | null",
+        "readonly": true,
+        "description": "The label attribute"
+      },
+      {
+        "name": "basePath",
+        "type": "string",
+        "readonly": true,
+        "description": "Resolved base URL: base-path attribute, else <html data-icon-path>, else /cdn/icons"
+      },
+      {
+        "name": "iconPath",
+        "type": "string",
+        "readonly": true,
+        "description": "URL of the requested icon file (before any Lucide fallback)"
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [
+      {
+        "element": "light-DOM content",
+        "required": false,
+        "description": "Optional fallback shown until the SVG loads and when it fails (data-error)"
+      }
+    ]
   },
   "image-gallery": {
     "$schema": "../../../.claude/schemas/api.schema.json",
     "element": "image-gallery",
     "type": "web-component",
-    "description": "Thumbnail grid with lightbox viewer. Progressive enhancement: thumbnails link to full images without JS. With JS, opens a fullscreen dialog with navigation, swipe, keyboard, and View Transitions.",
+    "description": "Thumbnail grid with lightbox viewer. Progressive enhancement: thumbnails link to full images without JS. With JS, opens a native <dialog> lightbox with prev/next, keyboard (direction-aware), swipe, and View Transitions.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -6806,7 +8330,7 @@ export default {
           "minimal"
         ],
         "default": "edge",
-        "description": "Lightbox control layout. 'edge' puts prev/next on sides with floating header. 'bar' puts all controls in a top bar. 'minimal' shows close only (swipe/keyboard for nav)."
+        "description": "Lightbox control layout. 'edge' puts prev/next on the sides with a floating header, 'bar' moves prev/next into the top bar, 'minimal' shows close only (swipe/keyboard to navigate). Changing it rebuilds the lightbox on next open."
       },
       {
         "name": "loop",
@@ -6828,7 +8352,7 @@ export default {
           "hidden"
         ],
         "default": "auto",
-        "description": "Caption display in lightbox. 'auto' shows via popover button, 'overlay' shows persistent bar, 'hidden' suppresses."
+        "description": "Caption display in the lightbox. 'auto' adds an info button in a footer that toggles the caption text (hidden attribute), 'overlay' shows the caption under the image, 'hidden' suppresses it. Changing it rebuilds the lightbox on next open."
       },
       {
         "name": "transition",
@@ -6843,6 +8367,94 @@ export default {
         ],
         "default": "morph",
         "description": "View Transition type. 'morph' animates thumbnail to full image, 'fade' cross-fades, 'none' disables."
+      },
+      {
+        "name": "data-label-dialog",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Image viewer",
+        "description": "Accessible name of the lightbox dialog."
+      },
+      {
+        "name": "data-label-close",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Close gallery",
+        "description": "Close button name."
+      },
+      {
+        "name": "data-label-prev",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Previous image",
+        "description": "Previous button name."
+      },
+      {
+        "name": "data-label-next",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Next image",
+        "description": "Next button name."
+      },
+      {
+        "name": "data-label-show-details",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Show image details",
+        "description": "Info button name while the caption is collapsed (captions=\"auto\")."
+      },
+      {
+        "name": "data-label-hide-details",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Hide image details",
+        "description": "Info button name while the caption is expanded (captions=\"auto\")."
+      },
+      {
+        "name": "data-label-counter",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Image {n} of {total}",
+        "description": "Counter text template, announced politely on navigation; {n} and {total} are replaced."
+      }
+    ],
+    "events": [
+      {
+        "name": "image-gallery:images-changed",
+        "detail": "{ images, source: 'property' }",
+        "description": "Fired after the images setter rebuilds the gallery."
+      }
+    ],
+    "properties": [
+      {
+        "name": "images",
+        "type": "Array<{ href, thumbSrc, alt?, caption? }>",
+        "description": "Get the image set (caption is a string for text-only captions, a cloned DocumentFragment for markup, or null) or assign one to rebuild the thumbnails. String captions render as text, never HTML; pass a Node, DocumentFragment or <template> for rich captions. Assigning closes an open lightbox and fires image-gallery:images-changed with source 'property'."
+      }
+    ],
+    "methods": [
+      {
+        "name": "open(index)",
+        "description": "Open the lightbox at a zero-based index (no-op when out of range)."
+      },
+      {
+        "name": "close()",
+        "description": "Close the lightbox (with the morph transition when enabled)."
+      },
+      {
+        "name": "next()",
+        "description": "Show the next image (wraps with loop)."
+      },
+      {
+        "name": "prev()",
+        "description": "Show the previous image (wraps with loop)."
       }
     ],
     "structure": [
@@ -6860,152 +8472,153 @@ export default {
       },
       {
         "element": "<figcaption>",
-        "description": "Optional caption inside figure. Supports HTML including links."
+        "description": "Optional caption inside figure. Supports HTML including links; its nodes are cloned into the lightbox."
       }
     ]
   },
   "image-map": {
-    "$schema": "../../../schemas/api.schema.json",
+    "$schema": "../../../.claude/schemas/api.schema.json",
     "element": "image-map",
     "type": "web-component",
-    "description": "map + map-area: Modern responsive image map with percentage coordinates",
-    "attributes": [
-      {
-        "name": "x",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "y",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "width",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "height",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "cx",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "cy",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "r",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "points",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "shape",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "coords",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "label",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "href",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "target",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "tooltip",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "disabled",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "src",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "alt",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "viewBox",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "preserveAspectRatio",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "data-disabled",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-hover",
-        "kind": "data",
-        "purpose": "config"
-      }
-    ],
-    "events": [
-      {
-        "name": "image-map:area-enter"
-      },
-      {
-        "name": "image-map:area-leave"
-      },
-      {
-        "name": "image-map:area-activate"
-      }
-    ],
-    "childAttributes": [],
-    "structure": [],
+    "description": "Responsive image map: <map-area> children define percentage-coordinate hotspots (rect, circle, poly) over a child <img>, with an SVG hit-testing overlay, keyboard-focusable anchors, and rich HTML tooltips. Without JS the image renders and each map-area shows as a labeled list item.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
         "@flow"
       ]
-    }
+    },
+    "attributes": [
+      {
+        "name": "src",
+        "kind": "host-api",
+        "direction": "input",
+        "purpose": "config",
+        "type": "string",
+        "description": "Image URL used to create the <img> when no child <img> is authored."
+      },
+      {
+        "name": "alt",
+        "kind": "host-api",
+        "direction": "input",
+        "purpose": "config",
+        "type": "string",
+        "description": "Alt text for the generated <img>."
+      },
+      {
+        "name": "data-label-map",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Image map",
+        "description": "Group name fallback when there is no aria-label/aria-labelledby and the image has no alt."
+      }
+    ],
+    "events": [
+      {
+        "name": "image-map:area-enter",
+        "detail": "{ area }",
+        "description": "Pointer entered or focus moved onto an area; area is the <map-area> element."
+      },
+      {
+        "name": "image-map:area-leave",
+        "detail": "{ area }",
+        "description": "Pointer left or focus moved off an area."
+      },
+      {
+        "name": "image-map:area-activate",
+        "detail": "{ area }",
+        "description": "Area clicked, tapped, or activated with Enter/Space. Cancelable: preventDefault() stops link navigation."
+      },
+      {
+        "name": "image-map:regions-changed",
+        "detail": "{ regions, source: 'property' }",
+        "description": "Fired after the regions setter rebuilds the map."
+      }
+    ],
+    "properties": [
+      {
+        "name": "regions",
+        "type": "Array<{ shape, coords, label?, href?, target?, tooltip?, disabled?, content? }>",
+        "description": "Get the regions from the <map-area> children (content is a string for text-only areas or a cloned DocumentFragment for markup) or assign to rebuild them. String content renders as text, never HTML; pass a Node, DocumentFragment or <template> for rich tooltips. Fires image-map:regions-changed with source 'property'."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "shape",
+        "on": "map-area",
+        "type": "enum",
+        "values": [
+          "rect",
+          "circle",
+          "poly"
+        ],
+        "required": false,
+        "description": "Hotspot shape (default rect)."
+      },
+      {
+        "name": "coords",
+        "on": "map-area",
+        "type": "string",
+        "required": true,
+        "description": "Percentage coordinates (0-100), space or comma separated: rect x1 y1 x2 y2, circle cx cy r, poly x1 y1 x2 y2 ..."
+      },
+      {
+        "name": "label",
+        "on": "map-area",
+        "type": "string",
+        "required": false,
+        "description": "Accessible name of the hotspot; falls back to the area's text content. Shown as the list label without JS."
+      },
+      {
+        "name": "href",
+        "on": "map-area",
+        "type": "string",
+        "required": false,
+        "description": "Navigation target; the hotspot becomes an <a> focus anchor. Not a link without JS: also author an <a href> in the content for no-JS reachability."
+      },
+      {
+        "name": "target",
+        "on": "map-area",
+        "type": "string",
+        "required": false,
+        "description": "Link target for href (e.g. _blank)."
+      },
+      {
+        "name": "tooltip",
+        "on": "map-area",
+        "type": "enum",
+        "values": [
+          "hover",
+          "click",
+          "none"
+        ],
+        "required": false,
+        "description": "Tooltip mode: hover (default; on hover/focus, hoverable), click (toggle on click/Enter/Space, focus moves into interactive content, Escape returns), none."
+      },
+      {
+        "name": "disabled",
+        "on": "map-area",
+        "type": "boolean",
+        "required": false,
+        "description": "Removes the hotspot from interaction and the tab order."
+      }
+    ],
+    "structure": [
+      {
+        "element": "<img>",
+        "description": "Direct child image the overlay is laid over (or use src/alt on the host)."
+      },
+      {
+        "element": "<map-area>",
+        "description": "Hotspot definition; its child content becomes the tooltip (and the no-JS list item body)."
+      }
+    ]
   },
   "include-file": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "include-file",
     "type": "web-component",
-    "description": "Fetch and inject HTML content from a URL into the page",
+    "description": "Fetch a same-origin HTML fragment, sanitize it, and insert it into the page",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -7018,7 +8631,7 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL to fetch HTML from"
+        "description": "URL of the HTML fragment, resolved against the page (document.baseURI). Only same-origin http(s) URLs load; blob:, data:, javascript: and other schemes are always refused; other origins need allow-cross-origin. A same-origin URL that redirects off-origin is refused. Observed: changing it re-fetches (honouring lazy); a change made while detached loads on reconnect."
       },
       {
         "name": "mode",
@@ -7031,21 +8644,43 @@ export default {
           "prepend"
         ],
         "default": "replace",
-        "description": "How fetched content is inserted"
+        "description": "How fetched content is inserted. append/prepend leave existing children (including author scripts) untouched. Unknown values behave as replace and log a warning."
       },
       {
         "name": "lazy",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Defer loading until element enters viewport"
+        "description": "Defer loading until the element is within 200px of the viewport (also for later src changes)"
+      },
+      {
+        "name": "trusted",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Author vouches for the source: insert the fetched HTML without sanitizing. Without it the fragment goes through VB's sanitizer (no scripts, on* handlers, javascript: URLs, iframes, forms…). Never set it for URLs that serve user-generated content."
       },
       {
         "name": "allow-scripts",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Re-execute inline scripts in loaded content (trusted sources only)"
+        "description": "Run the fragment's scripts (each once per load). Requires trusted; ignored with a console warning otherwise."
+      },
+      {
+        "name": "allow-cross-origin",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Permit fetching from another origin (the server must allow it via CORS). Content is still sanitized unless trusted is also set."
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Failed to load content",
+        "description": "Text of the role=\"alert\" error message shown when a load fails and no fallback content remains"
       },
       {
         "name": "data-loading",
@@ -7054,7 +8689,7 @@ export default {
         "type": "boolean",
         "direction": "output",
         "public": false,
-        "description": "Present while content is loading"
+        "description": "Present while content is loading (aria-busy=\"true\" is set alongside)"
       },
       {
         "name": "data-loaded",
@@ -7072,19 +8707,38 @@ export default {
         "type": "boolean",
         "direction": "output",
         "public": false,
-        "description": "Present if fetch fails"
+        "description": "Present if the fetch fails or the URL is refused (origin, scheme, include cycle, nesting deeper than 10)"
+      }
+    ],
+    "properties": [
+      {
+        "name": "src",
+        "type": "string",
+        "description": "Mirror of the src attribute. Setting it updates the attribute (which loads the new URL) and fires include-file:src-changed."
+      }
+    ],
+    "methods": [
+      {
+        "name": "reload()",
+        "returns": "void",
+        "description": "Re-fetch the current src (same policy checks as a normal load)."
       }
     ],
     "events": [
       {
         "name": "include-file:loaded",
-        "detail": "{ src, html }",
-        "description": "Fired after successful content load"
+        "detail": "{ src, url, html }",
+        "description": "After the fragment is inserted. src is the attribute value, url the resolved absolute URL, html the markup as inserted (sanitized unless trusted)."
       },
       {
         "name": "include-file:error",
         "detail": "{ src, error }",
-        "description": "Fired if fetch fails"
+        "description": "When the fetch fails or the load is refused; error is a message string. The original fallback is restored on a first-load failure in replace mode."
+      },
+      {
+        "name": "include-file:src-changed",
+        "detail": "{ src, source: 'property' }",
+        "description": "After .src is assigned a new value from script (not for direct attribute changes)"
       }
     ]
   },
@@ -7092,7 +8746,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "markdown-editor",
     "type": "web-component",
-    "description": "Side-by-side markdown editor with live preview. Composes a textarea with markdown-viewer.",
+    "description": "Side-by-side markdown editor with live preview. Adopts the authored textarea and composes markdown-viewer.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -7102,40 +8756,40 @@ export default {
     },
     "attributes": [
       {
-        "name": "name",
-        "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Form field name reflected to the textarea"
-      },
-      {
         "name": "placeholder",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Textarea placeholder text"
+        "description": "Textarea placeholder; overrides the textarea's own. No default placeholder"
       },
       {
         "name": "rows",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
+        "type": "number",
         "default": "10",
-        "description": "Textarea rows"
+        "description": "Textarea rows; overrides the textarea's own rows"
       },
       {
         "name": "highlight",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Pass highlight attribute to the preview viewer"
+        "description": "Pass highlight attribute to the preview viewer (markdown-viewer:highlight per code block)"
       },
       {
         "name": "data-tab-indent",
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Tab key inserts spaces instead of moving focus"
+        "description": "Tab inserts two spaces instead of moving focus. Escape then Tab moves focus; Shift+Tab is never captured. Read at upgrade"
+      },
+      {
+        "name": "data-auto-mermaid",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Upgrade ```mermaid fences in the live preview to diagram-wc (loads the mermaid bridge)"
       },
       {
         "name": "data-theme",
@@ -7143,6 +8797,30 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "Theme propagated to the preview pane"
+      },
+      {
+        "name": "data-label-source",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Markdown source",
+        "description": "Accessible name of the source pane; also names the textarea when nothing else does"
+      },
+      {
+        "name": "data-label-preview",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Rendered preview",
+        "description": "Accessible name of the preview pane"
+      },
+      {
+        "name": "data-label-tab-hint",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Tab inserts spaces. Press Escape, then Tab, to move focus.",
+        "description": "Description read with the textarea when data-tab-indent is set"
       },
       {
         "name": "data-editing",
@@ -7154,28 +8832,62 @@ export default {
         "description": "Present when textarea is focused"
       }
     ],
+    "childAttributes": [
+      {
+        "name": "name",
+        "on": "textarea",
+        "type": "string",
+        "description": "Form field name. Goes on the textarea, so the value submits with or without JavaScript"
+      },
+      {
+        "name": "required",
+        "on": "textarea",
+        "type": "boolean",
+        "description": "Native constraint validation (also minlength, maxlength, readonly, form)"
+      },
+      {
+        "name": "id",
+        "on": "textarea",
+        "type": "string",
+        "description": "Kept on upgrade, so a <label for> keeps naming the textarea"
+      },
+      {
+        "name": "dir",
+        "on": "textarea",
+        "type": "string",
+        "description": "Base direction for the source and the preview (default auto)"
+      }
+    ],
+    "structure": [
+      {
+        "element": "textarea",
+        "required": false,
+        "description": "The editable source. Adopted and moved into the source pane with its attributes; created when absent"
+      }
+    ],
     "events": [
       {
         "name": "markdown-editor:input",
         "detail": "{ value }",
-        "description": "Fired on each keystroke"
+        "description": "Fired on each keystroke. Bubbles, composed"
       },
       {
         "name": "markdown-editor:change",
-        "detail": "{ value }",
-        "description": "Fired on blur after content changed"
+        "detail": "{ value, source }",
+        "description": "source \"user\": on blur after the content changed. source \"api\": when .value is assigned (the next blur does not repeat it). Not fired by form reset. Bubbles, composed"
       }
     ],
     "properties": [
       {
         "name": "value",
         "type": "string",
-        "description": "Get/set the current markdown content"
+        "description": "Get/set the markdown. Setting updates the preview immediately and fires markdown-editor:change with source \"api\""
       },
       {
         "name": "textarea",
         "type": "HTMLTextAreaElement",
-        "description": "Reference to the internal textarea element"
+        "readonly": true,
+        "description": "The backing textarea: the authored one when provided. Stable across reconnects"
       }
     ]
   },
@@ -7202,16 +8914,11 @@ export default {
         "description": "URL of external markdown file"
       },
       {
-        "name": "loading",
+        "name": "allow-cross-origin",
         "kind": "host-api",
         "purpose": "config",
-        "type": "enum",
-        "values": [
-          "eager",
-          "lazy"
-        ],
-        "default": "eager",
-        "description": "Defer fetch until element enters viewport (Phase 3)"
+        "type": "boolean",
+        "description": "Permit a src on another origin (CORS still applies; content is still sanitized unless sanitize=\"off\"). Without it src must be same-origin http(s); redirects are re-checked"
       },
       {
         "name": "sanitize",
@@ -7220,10 +8927,11 @@ export default {
         "type": "enum",
         "values": [
           "on",
-          "off"
+          "off",
+          "false"
         ],
         "default": "on",
-        "description": "Strip scripts, embeds, on* handlers and javascript: URLs from rendered HTML via the shared sanitizer. On by default; set sanitize=\"off\" only for trusted first-party markdown that needs raw embeds"
+        "description": "Sanitizing is on unless this is \"off\" or \"false\" (any other value, or no attribute, keeps it on). Off writes parser output raw with innerHTML: trusted first-party markdown only, never with a cross-origin or user-influenced src"
       },
       {
         "name": "highlight",
@@ -7245,6 +8953,21 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "Theme name propagated to .md-content container"
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Failed to load markdown",
+        "description": "Text of the role=\"alert\" message shown when src fails to load or parse and no <pre> fallback is visible"
+      },
+      {
+        "name": "data-auto-mermaid",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Upgrade ```mermaid fences in the rendered output to <diagram-wc> (main.js loads the markdown-mermaid bridge when present)"
       },
       {
         "name": "data-rendered",
@@ -7300,7 +9023,12 @@ export default {
       {
         "name": "parser",
         "type": "Function|null",
-        "description": "Custom parser function (markdown string → HTML string). Overrides the default marked parser."
+        "description": "Custom parser function (markdown string → HTML string). Overrides the default marked parser. Its output is still sanitized unless sanitize=\"off\""
+      },
+      {
+        "name": "markdown",
+        "type": "string",
+        "description": "Get the current markdown source, or set a string to render it instead of the slots/src (null or '' falls back to them)"
       }
     ],
     "methods": [
@@ -7320,7 +9048,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "nav-bar",
     "type": "web-component",
-    "description": "Top-level site/app navigation primitive. HTML-first wrap or JSON-first .items setter; auto aria-current sync via pathname matching with popstate listener.",
+    "description": "Top-level site/app navigation primitive. HTML-first wrap or JSON-first .items setter; auto aria-current sync via URL matching (origin + normalised pathname) on popstate and Navigation API entry changes.",
     "attributes": [
       {
         "name": "aria-label",
@@ -7338,19 +9066,51 @@ export default {
           "exact"
         ],
         "description": "Pathname matching strictness. 'exact' requires exact match. Default: exact wins, longest prefix breaks ties, first-in-DOM-order breaks remaining ties."
+      },
+      {
+        "name": "data-label-new-tab",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Screen-reader suffix appended to external .items links. Default: '(opens in new tab)'."
+      }
+    ],
+    "properties": [
+      {
+        "name": "items",
+        "type": "Array<{ href, label, route?, icon?, external?, badge? }>",
+        "description": "Read returns the last assigned array, else { href, label } inferred from the managed links. Assigning replaces the direct <a> children with the default renderer (deep-equal assignment is a no-op). Only http(s) and relative hrefs render as links."
+      },
+      {
+        "name": "current",
+        "type": "string | null",
+        "description": "Read returns the active route (data-route or href of the aria-current link, or the explicit value). Assigning takes ownership: URL sync stops until releaseCurrent()."
+      }
+    ],
+    "methods": [
+      {
+        "name": "releaseCurrent()",
+        "description": "Drop explicit ownership of .current and re-run URL matching."
+      },
+      {
+        "name": "refresh()",
+        "description": "Re-run URL matching manually (for routers that change the URL without popstate or the Navigation API). No-op while .current is explicitly owned."
       }
     ],
     "events": [
       {
-        "name": "nav-bar:upgraded"
+        "name": "nav-bar:upgraded",
+        "description": "Fired after every connect, including reconnects after a move."
       },
       {
         "name": "nav-bar:items-changed",
-        "detail": "{ items, source: 'property' }"
+        "detail": "{ items, source: 'property' }",
+        "description": "Fired after .items is assigned a new (not deep-equal) value."
       },
       {
         "name": "nav-bar:current-changed",
-        "detail": "{ current, previous, source: 'property' | 'popstate' | 'pathname' }"
+        "detail": "{ current, previous, source: 'property' | 'popstate' | 'navigation' | 'pathname' }",
+        "description": "Fired when the active link changes."
       }
     ],
     "childAttributes": [
@@ -7358,7 +9118,7 @@ export default {
         "name": "href",
         "on": "a",
         "type": "string",
-        "description": "Standard anchor href. Used for both navigation and pathname matching."
+        "description": "Standard anchor href. Resolved against the document base URL and matched by origin + normalised pathname (trailing slash, query and hash ignored)."
       },
       {
         "name": "data-route",
@@ -7385,14 +9145,93 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "note-wc",
     "type": "web-component",
-    "description": "Private note action button for use inside selection-menu",
+    "description": "Private reader notes on highlights: a note action inside selection-menu, a page-level button with for=\"id\", and the note panel itself. Also opens the panel for margin-annotation clicks (it listens for highlights:request-note on document).",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
         "@flow"
       ]
     },
-    "attributes": [],
+    "attributes": [
+      {
+        "name": "for",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "ID of the target article (page-level mode). The button opens the panel for the first noted, else first, highlight on it. Without for and outside selection-menu, note-wc renders no button and only hosts the panel."
+      },
+      {
+        "name": "data-label-add",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Add private note",
+        "description": "Accessible name of the button inside selection-menu."
+      },
+      {
+        "name": "data-label-view",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "View notes",
+        "description": "Accessible name of the page-level (for=\"id\") button."
+      },
+      {
+        "name": "data-label-dialog",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Private note",
+        "description": "Accessible name of the note panel dialog."
+      },
+      {
+        "name": "data-label-heading",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Private note",
+        "description": "Visible panel heading (uppercased by CSS)."
+      },
+      {
+        "name": "data-label-placeholder",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Add a note…",
+        "description": "Textarea placeholder."
+      },
+      {
+        "name": "data-label-textarea",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Note for highlighted text",
+        "description": "Textarea accessible name."
+      },
+      {
+        "name": "data-label-save",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Save",
+        "description": "Save button text."
+      },
+      {
+        "name": "data-label-cancel",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Cancel",
+        "description": "Cancel button text."
+      }
+    ],
+    "methods": [
+      {
+        "name": "openFor",
+        "returns": "void",
+        "description": "openFor(highlight, controller, opener?) opens the note panel for a highlight record on a highlights controller (from initHighlights). Focus returns to opener (default: the element focused when it opened) on close. The highlights:request-note document event calls this on the first connected note-wc."
+      }
+    ],
     "structure": [],
     "css": {
       "tokens": []
@@ -7433,7 +9272,7 @@ export default {
           "warning",
           "error"
         ],
-        "description": "Banner mode: color variant"
+        "description": "Banner mode: color variant (reactive)"
       },
       {
         "name": "position",
@@ -7444,7 +9283,7 @@ export default {
           "top",
           "bottom"
         ],
-        "description": "Banner mode: sticky position"
+        "description": "Banner mode: top = sticky to the viewport top, bottom = fixed to the viewport bottom (reactive)"
       },
       {
         "name": "expires",
@@ -7458,7 +9297,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Panel mode: absolute URL or VBService role name for dynamic notifications"
+        "description": "Panel mode: absolute or root-relative URL, or a VBService role name, for dynamic notifications"
       },
       {
         "name": "poll",
@@ -7471,8 +9310,8 @@ export default {
         "name": "toast-new",
         "kind": "data",
         "purpose": "config",
-        "type": "boolean",
-        "description": "Panel mode: fire a toast via the nearest <toast-msg> when a new dynamic notification arrives"
+        "type": "string",
+        "description": "Panel mode: on each poll after the first, show a toast for every never-seen dynamic notification on the <toast-msg> matched by the value (a selector, e.g. #id); bare, invalid, or no matching <toast-msg> = first <toast-msg> in the document"
       },
       {
         "name": "storage-key",
@@ -7482,36 +9321,183 @@ export default {
         "description": "Panel mode: VBStore namespace for read state (default: notifications)"
       },
       {
-        "name": "data-trigger",
+        "name": "data-label-trigger",
         "kind": "data",
         "purpose": "config",
-        "description": "Panel mode: marks a custom trigger element, replacing the auto-generated bell"
+        "type": "string",
+        "default": "Notifications",
+        "description": "Panel mode: Trigger accessible name (minted bell; an authored trigger keeps its own name)."
+      },
+      {
+        "name": "data-label-unread",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{n} unread",
+        "description": "Panel mode: Unread count appended to the trigger name ({n} = count)."
+      },
+      {
+        "name": "data-label-title",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Notifications",
+        "description": "Panel mode: Panel heading and dialog name."
+      },
+      {
+        "name": "data-label-mark-all",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Mark all read",
+        "description": "Panel mode: Mark-all button text."
+      },
+      {
+        "name": "data-label-tabs",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Notification categories",
+        "description": "Panel mode: Tab list accessible name."
+      },
+      {
+        "name": "data-label-all",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "All",
+        "description": "Panel mode: All tab text."
+      },
+      {
+        "name": "data-label-watching",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Watching",
+        "description": "Panel mode: Watching tab text."
+      },
+      {
+        "name": "data-label-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No notifications",
+        "description": "Panel mode: Empty-state text for the All tab."
+      },
+      {
+        "name": "data-label-watch-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "You aren’t watching any pages yet. Use the “Watch” button on a page to start.",
+        "description": "Panel mode: Empty-state text for the Watching tab."
+      },
+      {
+        "name": "data-label-last-checked",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Last checked: {date}",
+        "description": "Panel mode: Watch row check time ({date} = formatted date)."
+      },
+      {
+        "name": "data-label-never",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "—",
+        "description": "Panel mode: Watch row check time when never checked."
+      },
+      {
+        "name": "data-label-changed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Changed",
+        "description": "Panel mode: Badge on watched pages whose content changed."
+      },
+      {
+        "name": "data-label-unwatch",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Unwatch {title}",
+        "description": "Panel mode: Unwatch button accessible name ({title} = page title)."
+      },
+      {
+        "name": "data-label-new",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "New notification",
+        "description": "Panel mode: Toast text when a new notification has no title or body."
+      },
+      {
+        "name": "data-label-variant-info",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Information:",
+        "description": "Banner mode: visually hidden prefix announcing the info variant, so it isn't conveyed by colour alone."
+      },
+      {
+        "name": "data-label-variant-success",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Success:",
+        "description": "Banner mode: visually hidden prefix announcing the success variant, so it isn't conveyed by colour alone."
+      },
+      {
+        "name": "data-label-variant-warning",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Warning:",
+        "description": "Banner mode: visually hidden prefix announcing the warning variant, so it isn't conveyed by colour alone."
+      },
+      {
+        "name": "data-label-variant-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Error:",
+        "description": "Banner mode: visually hidden prefix announcing the error variant, so it isn't conveyed by colour alone."
       }
     ],
     "events": [
       {
         "name": "notification-wc:new",
-        "detail": {
-          "notification": "object"
-        }
+        "detail": "{ notification }",
+        "description": "A never-seen entry arrived in a dynamic fetch"
       },
       {
         "name": "notification-wc:read",
-        "detail": {
-          "id": "string"
-        }
+        "detail": "{ id }",
+        "description": "An entry was marked read"
       },
       {
         "name": "notification-wc:dismiss",
-        "detail": {
-          "id": "string"
-        }
+        "detail": "{ id }",
+        "description": "Banner was dismissed (id = persist key)"
       },
       {
-        "name": "notification-wc:open"
+        "name": "notification-wc:open",
+        "description": "Panel opened"
       },
       {
-        "name": "notification-wc:close"
+        "name": "notification-wc:close",
+        "description": "Panel closed"
+      },
+      {
+        "name": "notification-wc:notifications-changed",
+        "detail": "{ notifications, source: 'property' }",
+        "description": "The notifications setter replaced the dynamic list"
+      },
+      {
+        "name": "page-watch:remove",
+        "detail": "{ url, subscriptionId }",
+        "description": "A page was unwatched from the Watching tab"
       }
     ],
     "htmlvalidate": {
@@ -7519,7 +9505,54 @@ export default {
       "permittedContent": [
         "@flow"
       ]
-    }
+    },
+    "childAttributes": [
+      {
+        "name": "data-trigger",
+        "on": "button",
+        "type": "boolean",
+        "description": "Panel mode: marks an authored trigger button that replaces the minted bell. An unread badge is appended inside it."
+      },
+      {
+        "name": "data-id",
+        "on": "article",
+        "type": "string",
+        "description": "Panel mode: notification id (read state and dynamic merge key)."
+      },
+      {
+        "name": "data-type",
+        "on": "article",
+        "type": "enum",
+        "values": [
+          "update",
+          "alert",
+          "watch",
+          "system",
+          "message",
+          "stewardship"
+        ],
+        "description": "Panel mode: row icon (default update)."
+      },
+      {
+        "name": "data-date",
+        "on": "article",
+        "type": "string",
+        "description": "Panel mode: ISO date; sorts rows newest first and is shown formatted in the document language."
+      },
+      {
+        "name": "value",
+        "on": "button",
+        "type": "string",
+        "description": "Banner mode: value=\"dismiss\" (or data-dismiss) marks the dismiss button."
+      }
+    ],
+    "properties": [
+      {
+        "name": "notifications",
+        "type": "Array<{ id, title, body?, date?, type?, url?, dismissed? }>",
+        "description": "Panel mode: dynamic notifications merged over static <article> children by id (same shape as the src feed). The getter returns a copy; the setter re-renders and fires notification-wc:notifications-changed. url renders as a link only when it resolves to http(s). Banner mode ignores the setter."
+      }
+    ]
   },
   "page-info": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7532,33 +9565,247 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Render from <meta> tags instead of light DOM"
+        "description": "Render the whole panel from <meta> tags in <head> (meta-tag contract v1): author, link[rel=author] / article:author, last-modified / article:modified_time, article:published_time, itemprop=version, vb:version-url, vb:provenance, vb:ai-tools, vb:review, vb:status, license + link[rel=license], keywords, repeated meta[name=concept]. Values are inserted as text; links are used only when they resolve to http(s)."
       },
       {
-        "name": "og-preview",
-        "kind": "host-api",
-        "purpose": "config",
-        "type": "boolean",
-        "description": "Show Open Graph social preview card"
-      },
-      {
-        "name": "datetime",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "data-trust",
+        "name": "data-concept-base",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "/topics/",
+        "description": "Auto mode: base path for concept links ({base}{id}/). Must be relative or http(s); otherwise concepts render as plain text."
+      },
+      {
+        "name": "data-heading-level",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "2",
+          "3",
+          "4",
+          "5",
+          "6"
+        ],
+        "default": "2",
+        "description": "Auto mode: heading level of the panel section headings."
+      },
+      {
+        "name": "data-label-reading-time",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "~{n}",
+        "description": "Template for [data-reading-time]; {n} is the Intl-formatted minute value (\"5 min\")."
+      },
+      {
+        "name": "data-label-author",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Author",
+        "description": "Auto mode UI string (default \"Author\")."
+      },
+      {
+        "name": "data-label-history",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "History",
+        "description": "Auto mode UI string (default \"History\")."
+      },
+      {
+        "name": "data-label-provenance",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "How this was made",
+        "description": "Auto mode UI string (default \"How this was made\")."
+      },
+      {
+        "name": "data-label-topic",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Topic",
+        "description": "Auto mode UI string (default \"Topic\")."
+      },
+      {
+        "name": "data-label-published",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Published",
+        "description": "Auto mode UI string (default \"Published\")."
+      },
+      {
+        "name": "data-label-updated",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Last updated",
+        "description": "Auto mode UI string (default \"Last updated\")."
+      },
+      {
+        "name": "data-label-version",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Version",
+        "description": "Auto mode UI string (default \"Version\")."
+      },
+      {
+        "name": "data-label-authorship",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Authorship",
+        "description": "Auto mode UI string (default \"Authorship\")."
+      },
+      {
+        "name": "data-label-ai-tools",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "AI tools used",
+        "description": "Auto mode UI string (default \"AI tools used\")."
+      },
+      {
+        "name": "data-label-review",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Review",
+        "description": "Auto mode UI string (default \"Review\")."
+      },
+      {
+        "name": "data-label-status",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Status",
+        "description": "Auto mode UI string (default \"Status\")."
+      },
+      {
+        "name": "data-label-license",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "License",
+        "description": "Auto mode UI string (default \"License\")."
+      },
+      {
+        "name": "data-label-concepts",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Concepts",
+        "description": "Auto mode UI string (default \"Concepts\")."
+      },
+      {
+        "name": "data-label-keywords",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Keywords",
+        "description": "Auto mode UI string (default \"Keywords\")."
+      },
+      {
+        "name": "data-label-tier-declared",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Self-declared",
+        "description": "Visible trust-tier text appended to the badge for data-trust=\"declared\" (default \"Self-declared\")."
+      },
+      {
+        "name": "data-label-tier-verified",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Verified",
+        "description": "Visible trust-tier text appended to the badge for data-trust=\"verified\" (default \"Verified\")."
+      },
+      {
+        "name": "data-label-tier-failed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Signature failed",
+        "description": "Visible trust-tier text appended to the badge for data-trust=\"failed\" (default \"Signature failed\")."
+      },
+      {
+        "name": "data-label-tier-key-unavailable",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Key unavailable",
+        "description": "Visible trust-tier text appended to the badge for data-trust=\"key-unavailable\" (default \"Key unavailable\")."
       }
     ],
     "events": [
       {
-        "name": "page-info:verified"
+        "name": "page-info:verified",
+        "detail": "{ status: 'undeclared' | 'declared' | 'verified' | 'failed' | 'key-unavailable', tier: 0 | 1 | 3 | -1 | -2, reason?: string }",
+        "description": "Bubbles. Fired on every setup with the declared tier (undeclared/declared, no reason), then again with the verification result when the page carries meta[name=vb:signature]. reason: 'ok', 'mismatch', 'missing-author-key', 'unsupported-algorithm:…', 'canonicalize:…', 'verify:…', or the key fetch error."
       }
     ],
-    "childAttributes": [],
-    "structure": [],
+    "childAttributes": [
+      {
+        "name": "data-trust",
+        "on": ".page-info-badge",
+        "type": "enum",
+        "values": [
+          "undeclared",
+          "declared",
+          "verified",
+          "failed",
+          "key-unavailable"
+        ],
+        "description": "Verification tier, written by the component (the first .page-info-badge without data-status). A .page-info-tier span with the tier text is appended inside the badge."
+      },
+      {
+        "name": "data-provenance",
+        "on": ".page-info-badge",
+        "type": "string",
+        "description": "vb:provenance token(s) the badge describes (styling hook)."
+      },
+      {
+        "name": "data-status",
+        "on": ".page-info-badge",
+        "type": "enum",
+        "values": [
+          "draft",
+          "archived"
+        ],
+        "description": "Publication-status badge (auto mode renders it for non-published pages); excluded from trust updates."
+      },
+      {
+        "name": "data-relative",
+        "on": "time",
+        "type": "boolean",
+        "description": "Rewrite the text as a localized relative time (Intl.RelativeTimeFormat, closest [lang]) from the datetime attribute; the absolute date is put in title unless the author set one. Future dates read \"in 3 days\"."
+      },
+      {
+        "name": "datetime",
+        "on": "time",
+        "type": "string",
+        "description": "ISO date or datetime read by time[data-relative]. Date-only values are formatted in UTC."
+      },
+      {
+        "name": "data-reading-time",
+        "on": "any element",
+        "type": "boolean",
+        "description": "Filled with the estimated reading time of the page's outermost [data-signable] roots (238 wpm / 500 CJK chars per minute, shared with page-stats; skips [data-signable=false], hidden and script content)."
+      }
+    ],
+    "structure": [
+      {
+        "element": "details",
+        "required": false,
+        "description": "Static mode: <details> with a <summary> trust bar (author as plain text, time[data-relative], .page-info-badge) and a .page-info-panel of sections. Keep links out of <summary>."
+      }
+    ],
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -7577,24 +9824,79 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "ID of the target content element to analyze"
+        "description": "ID of the target content element to analyze. Without it (or with an author-rendered <dl> inside) the component renders nothing and adopts the existing markup."
       },
       {
         "name": "data-wpm",
         "kind": "data",
         "purpose": "config",
         "type": "number",
-        "description": "Words per minute for reading time (default: 238)"
+        "default": "238",
+        "description": "Words per minute for reading time (default 238, shared with page-info). Chinese/Japanese text is timed at 500 characters per minute."
       },
       {
         "name": "data-show",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Comma-separated stats to display:"
+        "default": "reading-time",
+        "description": "Comma-separated list of stats to display, in fixed order: reading-time, word-count, last-modified. Unknown tokens are ignored. last-modified reads meta[name=last-modified], then meta[property=article:modified_time]; it is omitted when neither is present."
+      },
+      {
+        "name": "data-label-reading-time",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Reading time",
+        "description": "Visually hidden dt label for the reading-time item."
+      },
+      {
+        "name": "data-label-word-count",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Word count",
+        "description": "Visually hidden dt label for the word-count item."
+      },
+      {
+        "name": "data-label-last-modified",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Last updated",
+        "description": "Visually hidden dt label for the last-modified item."
+      },
+      {
+        "name": "data-label-min-read",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{n} read",
+        "description": "Reading-time text template; {n} is the Intl-formatted minute value (\"5 min\"). Default \"{n} read\" for English documents, \"{n}\" otherwise."
+      },
+      {
+        "name": "data-label-words",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{n} words",
+        "description": "Word-count text template; {n} is the Intl-formatted count. Per-plural overrides: data-label-words-zero/-one/-two/-few/-many (Intl.PluralRules category of the document language)."
       }
     ],
-    "childAttributes": [],
+    "childAttributes": [
+      {
+        "name": "data-generated",
+        "on": "dl",
+        "type": "boolean",
+        "description": "Set by the component on the <dl> it renders itself. A <dl> without it is author/SSR markup and is adopted unchanged."
+      },
+      {
+        "name": "data-stats-ignore",
+        "on": "any element inside the target",
+        "type": "boolean",
+        "description": "Exclude this subtree from the word count (script, style, template, noscript, [hidden], [aria-hidden=true] and [inert] are always excluded)."
+      }
+    ],
     "structure": [],
     "htmlvalidate": {
       "flow": true,
@@ -7614,32 +9916,66 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Heading levels to include (default: 'h2,h3')"
+        "default": "h2,h3",
+        "description": "Comma-separated heading levels to include (auto-generated mode)"
       },
       {
-        "name": "title",
-        "kind": "native",
+        "name": "scope",
+        "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "ToC title (default: 'On this page')"
+        "default": "main",
+        "description": "CSS selector for the container whose headings are scanned (first match wins; docs layouts use 'main article')"
       },
       {
-        "name": "href",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-title",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "On this page",
+        "description": "Summary text and nav aria-label of the generated ToC"
       },
+      {
+        "name": "orientation",
+        "kind": "host-api",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "horizontal"
+        ],
+        "description": "'horizontal' renders an inline, horizontally scrollable bar (summary hidden, nesting flattened). Omit for the default vertical tree"
+      }
+    ],
+    "childAttributes": [
       {
         "name": "data-toc-ignore",
-        "kind": "data",
-        "purpose": "config"
+        "on": "heading (or any ancestor) inside the scope container",
+        "type": "boolean",
+        "description": "Exclude the heading, or every heading inside the marked container, from the generated ToC"
+      }
+    ],
+    "properties": [
+      {
+        "name": "entries",
+        "type": "Array<{ id?: string, text: string, level: number }>",
+        "readonly": true,
+        "description": "Current ToC entries derived from the page headings"
+      }
+    ],
+    "methods": [
+      {
+        "name": "refresh",
+        "returns": "void",
+        "description": "Rebuild the ToC (auto mode) or re-scan authored links (manual mode) after content changes"
       }
     ],
     "events": [
       {
-        "name": "page-toc:navigate"
+        "name": "page-toc:navigate",
+        "detail": "{ id }",
+        "description": "Fired when a ToC link is activated; id is the target heading's id"
       }
     ],
-    "childAttributes": [],
     "structure": [],
     "htmlvalidate": {
       "flow": true,
@@ -7658,78 +9994,147 @@ export default {
         "name": "data-position",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "Positioning: 'sticky' (default), 'fixed', 'inline'"
+        "type": "enum",
+        "description": "Positioning strategy",
+        "values": [
+          "sticky",
+          "fixed",
+          "inline"
+        ],
+        "default": "sticky"
       },
       {
         "name": "data-orientation",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "Direction: 'auto' (default), 'vertical', 'horizontal'"
+        "type": "enum",
+        "description": "Tool strip direction; auto resolves to horizontal for inline, vertical otherwise. Re-resolved when changed",
+        "values": [
+          "auto",
+          "vertical",
+          "horizontal"
+        ],
+        "default": "auto"
       },
       {
         "name": "data-gap",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "Gap token: 's' (default)"
+        "type": "enum",
+        "description": "Gap token between tools",
+        "values": [
+          "2xs",
+          "xs",
+          "s",
+          "m",
+          "l"
+        ],
+        "default": "s"
       },
       {
         "name": "data-fab-icon",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Icon name for FAB (default: 'ellipsis-vertical')"
+        "description": "Icon name for the mobile FAB",
+        "default": "ellipsis-vertical"
       },
       {
         "name": "data-fab-label",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Accessible label for FAB (default: 'Page tools')"
+        "description": "Accessible label for the FAB and its popover panel",
+        "default": "Page tools"
       },
       {
         "name": "data-breakpoint",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Collapse width (default: '48rem')"
-      },
-      {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "data-page-tools-internal",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "popovertarget",
-        "kind": "host-api",
-        "purpose": "config"
+        "description": "Viewport width at or below which the toolbar collapses to a FAB",
+        "default": "48rem"
       },
       {
         "name": "data-resolved-orientation",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "output-state",
+        "type": "enum",
+        "values": [
+          "vertical",
+          "horizontal"
+        ],
+        "direction": "output",
+        "public": true,
+        "description": "Reflected effective orientation (data-orientation resolved against data-position)"
       },
       {
         "name": "data-collapsed",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "output-state",
+        "type": "boolean",
+        "direction": "output",
+        "public": true,
+        "description": "Present while the toolbar is collapsed to the FAB (viewport at or below data-breakpoint)"
       }
     ],
     "childAttributes": [],
-    "structure": [],
+    "structure": [
+      {
+        "element": "button.page-tools-fab",
+        "required": false,
+        "description": "Generated FAB (popovertarget → panel); visible only while collapsed. Internal (data-page-tools-internal)"
+      },
+      {
+        "element": "section.page-tools-popover[popover]",
+        "required": false,
+        "description": "Generated popover panel that holds the tools while collapsed. Internal (data-page-tools-internal)"
+      }
+    ],
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
         "@flow"
       ]
-    }
+    },
+    "properties": [
+      {
+        "name": "tools",
+        "type": "Element[]",
+        "readonly": true,
+        "description": "The tool elements (author children, excluding the generated FAB and popover; read from the popover while collapsed)"
+      }
+    ],
+    "cssProperties": [
+      {
+        "name": "--page-tools-gap",
+        "description": "Gap between tools (set by data-gap)"
+      },
+      {
+        "name": "--page-tools-offset",
+        "description": "Sticky top offset / fixed inline-end offset"
+      },
+      {
+        "name": "--page-tools-button-padding",
+        "description": "Padding of normalised icon tool buttons"
+      },
+      {
+        "name": "--page-tools-icon-size",
+        "description": "Icon size inside tool buttons (default 1.25rem)"
+      },
+      {
+        "name": "--page-tools-fab-size",
+        "description": "FAB diameter (default 3rem)"
+      },
+      {
+        "name": "--page-tools-fab-bottom",
+        "description": "FAB distance from the viewport block-end edge"
+      },
+      {
+        "name": "--page-tools-fab-end",
+        "description": "FAB distance from the viewport inline-end edge"
+      }
+    ]
   },
   "page-tour": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7750,8 +10155,8 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "default": "Tour",
-        "description": "Tour name for aria-label and heading"
+        "default": "Page Tour",
+        "description": "Tour name; the accessible name of the tour card"
       },
       {
         "name": "data-trigger",
@@ -7777,7 +10182,7 @@ export default {
           "forced"
         ],
         "default": "passive",
-        "description": "Skip and action-gate behaviour"
+        "description": "Skip behaviour: passive and active allow skipping (Skip button, Escape, backdrop click); forced removes all three. Action gates come from each step's data-action, not the mode"
       },
       {
         "name": "data-persist",
@@ -7804,8 +10209,71 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "default": "8",
-        "description": "Pixel padding around the spotlight rect"
+        "description": "Pixel padding around the spotlight; overrides the --tour-spotlight-padding token"
+      },
+      {
+        "name": "data-label-step",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "Step {n} of {total}",
+        "description": "Step counter template; {n} and {total} are replaced"
+      },
+      {
+        "name": "data-label-skip",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "Skip tour",
+        "description": "Skip button text"
+      },
+      {
+        "name": "data-label-close",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "Close",
+        "description": "Skip button text on the last step"
+      },
+      {
+        "name": "data-label-prev",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "Previous",
+        "description": "Previous button text"
+      },
+      {
+        "name": "data-label-next",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "Next",
+        "description": "Next button text"
+      },
+      {
+        "name": "data-label-finish",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "Finish",
+        "description": "Next button text on the last step"
+      },
+      {
+        "name": "data-label-nav",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "Tour navigation",
+        "description": "Accessible name of the card's button group"
+      },
+      {
+        "name": "data-label-ready",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "Done. Next is available.",
+        "description": "Announced when a step's required action completes"
       },
       {
         "name": "data-step",
@@ -7861,12 +10329,12 @@ export default {
         "values": [
           "top",
           "bottom",
-          "left",
-          "right",
+          "inline-start",
+          "inline-end",
           "auto"
         ],
         "default": "auto",
-        "description": "Preferred card placement relative to target"
+        "description": "Preferred card side; inline-start/inline-end follow the text direction. Flips when there is no room"
       },
       {
         "name": "data-action",
@@ -7877,10 +10345,11 @@ export default {
           "click",
           "focus",
           "input",
+          "change",
           "custom"
         ],
         "default": "none",
-        "description": "Required user action before Next is enabled"
+        "description": "Required user action on the target before Next is enabled (custom: the page dispatches tour:action on the <page-tour>)"
       },
       {
         "name": "data-action-hint",
@@ -7897,7 +10366,7 @@ export default {
           "false"
         ],
         "default": "true",
-        "description": "Whether this step can be skipped"
+        "description": "false hides Skip and ignores Escape and backdrop clicks on this step (forced mode already does this for every step)"
       },
       {
         "name": "data-scroll",
@@ -7938,20 +10407,88 @@ export default {
         "detail": "{ step }",
         "description": "Fired when user skips the tour"
       }
+    ],
+    "methods": [
+      {
+        "name": "start(step?)",
+        "description": "Start at a step index (default 0). While already running, moves to that step instead"
+      },
+      {
+        "name": "stop()",
+        "description": "End the tour silently (no event)"
+      },
+      {
+        "name": "next()",
+        "description": "Advance; ignored while the step's action gate is waiting. On the last step, completes the tour"
+      },
+      {
+        "name": "prev()",
+        "description": "Go to the previous step"
+      },
+      {
+        "name": "goto(index)",
+        "description": "Jump to a step (0-based); steps whose target is missing are skipped"
+      },
+      {
+        "name": "skip()",
+        "description": "Skip the tour (fires tour:skip); ignored when the current step is not skippable"
+      },
+      {
+        "name": "reset()",
+        "description": "Clear persisted progress and reset data-step to 0"
+      }
+    ],
+    "cssProperties": [
+      {
+        "name": "--tour-backdrop-color",
+        "description": "Overlay colour (default oklch(0% 0 0 / 0.5))"
+      },
+      {
+        "name": "--tour-spotlight-ring",
+        "description": "Spotlight ring and active pip colour (default var(--color-primary))"
+      },
+      {
+        "name": "--tour-spotlight-padding",
+        "description": "Space between the target and the spotlight edge (default 8px)"
+      },
+      {
+        "name": "--tour-spotlight-radius",
+        "description": "Spotlight corner radius"
+      },
+      {
+        "name": "--tour-card-max-width",
+        "description": "Maximum card width (default 22rem)"
+      },
+      {
+        "name": "--tour-card-min-width",
+        "description": "Minimum card width (default 16rem)"
+      },
+      {
+        "name": "--tour-card-offset",
+        "description": "Gap between the spotlight and the card"
+      },
+      {
+        "name": "--tour-transition-duration",
+        "description": "Spotlight and backdrop transition duration"
+      },
+      {
+        "name": "--tour-z-index",
+        "description": "Stacking level of the backdrop and spotlight"
+      }
     ]
   },
   "pager-wc": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "pager-wc",
     "type": "web-component",
-    "description": "Standalone pagination controls element targeting any [data-paged] container. The element form of the data-paged primitive — same shape as the layout-grid / data-layout-* element-attribute symmetry across VB. Authors pick the surface that fits the markup; both feed the same engine. Multiple <pager-wc> instances pointing at the same target stay in sync via paged:change.",
+    "description": "Standalone pagination controls element targeting any [data-paged] container. The element form of the data-paged primitive — same shape as the layout-grid / data-layout-* element-attribute symmetry across VB. Authors pick the surface that fits the markup; both feed the same engine. Multiple <pager-wc> instances pointing at the same target stay in sync via paged:change; a target inserted later is picked up.",
     "attributes": [
       {
         "name": "target",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "CSS selector for the [data-paged] container (preferred form)."
+        "description": "CSS selector for the [data-paged] container (preferred form). Only an element carrying data-paged counts; resolution is retried when a paged:change fires and on click."
       },
       {
         "name": "for",
@@ -7961,9 +10498,9 @@ export default {
         "description": "ID of the target container (HTML-form-style alternative to target)."
       },
       {
-        "name": "style",
-        "kind": "host-api",
-        "purpose": "config",
+        "name": "data-style",
+        "kind": "data",
+        "purpose": "visual-variant",
         "type": "enum",
         "values": [
           "numbered",
@@ -7971,13 +10508,78 @@ export default {
           "load-more"
         ],
         "default": "numbered",
-        "description": "Control style. Infinite is intentionally unsupported — a sentinel pattern doesn't make sense for decoupled controls."
+        "description": "Control style. load-more needs a progressive target (data-paged-style=\"load-more\" on the container, plus data-paged-controls=\"none\" to drop its own button). Infinite is intentionally unsupported — a sentinel pattern doesn't make sense for decoupled controls."
+      },
+      {
+        "name": "data-label-nav",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Pagination",
+        "description": "Accessible name of the rendered <nav> landmark. Give top and bottom pagers distinct names."
+      },
+      {
+        "name": "data-label-prev",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Previous",
+        "description": "Previous button text."
+      },
+      {
+        "name": "data-label-next",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Next",
+        "description": "Next button text."
+      },
+      {
+        "name": "data-label-page",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Page {page}",
+        "description": "Accessible name of each page-number button; {page} is the number."
+      },
+      {
+        "name": "data-label-status",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Page {page} of {total}",
+        "description": "prev-next status text (polite live region); {page} and {total}."
+      },
+      {
+        "name": "data-label-load-more",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Load more ({n})",
+        "description": "Load-more button text; {n} is the number of items still hidden."
+      },
+      {
+        "name": "data-label-no-more",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No more",
+        "description": "Load-more button text once every item is shown."
+      },
+      {
+        "name": "data-label-missing",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No paginated target found",
+        "description": "Visible note rendered while no [data-paged] target resolves (not a live region)."
       }
     ],
     "events": [
       {
         "name": "pager-wc:navigate",
-        "description": "Bubbles before the target's data-paged engine processes the navigation. detail: { page }. Use for analytics / scroll-restore hooks."
+        "detail": "{ page }",
+        "description": "Bubbles from the pager before it dispatches paged:goto on the target. Fired for page navigations only (numbered / prev-next), not for load-more. Not cancelable. Use for analytics / scroll-restore hooks; listen for paged:change on the target for after-navigation work."
       }
     ],
     "htmlvalidate": {
@@ -7991,14 +10593,14 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "poll-wc",
     "type": "web-component",
-    "description": "Voting + live results. Per-option counts and own-vote flag, single or multi-choice, optional closed (results-only) state. Mirrors the reaction-bar author-owned-state pattern: presentational; emits poll-wc:vote; author calls setCount after the server confirms.",
+    "description": "Voting + live results. Per-option counts, visible percentages and own-vote flag, single or multi-choice, optional closed (results-only) state. Presentational (reaction-bar pattern): emits poll-wc:vote, marks the option data-pending until the author calls setCount after the server confirms. Can enhance a native <form><fieldset> of radios/checkboxes as a no-JS fallback.",
     "attributes": [
       {
         "name": "aria-label",
         "kind": "aria",
         "purpose": "config",
         "type": "string",
-        "description": "Group label (defaults to question text if a slot is provided, else \"Poll\")"
+        "description": "Group label when there is no question slot; moved onto the option group (the host has no role)"
       },
       {
         "name": "data-multi",
@@ -8019,13 +10621,54 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Suppress the numeric count beside each bar"
+        "description": "Hide per-option counts, percentages and bars, visually and from assistive tech"
       },
       {
         "name": "disabled",
-        "kind": "native",
+        "kind": "host-api",
         "purpose": "config",
-        "type": "boolean"
+        "type": "boolean",
+        "description": "Disable voting; observed, so toggling it updates aria-disabled immediately"
+      },
+      {
+        "name": "data-label-vote",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "vote",
+        "description": "Singular count noun (Intl.PluralRules \"one\")"
+      },
+      {
+        "name": "data-label-votes",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "votes",
+        "description": "Count noun for other plural categories"
+      },
+      {
+        "name": "data-label-your-choice",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "your choice",
+        "description": "Appended to the accessible name of the user's own option"
+      },
+      {
+        "name": "data-label-closed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "closed",
+        "description": "Appended to the total when data-closed is set"
+      },
+      {
+        "name": "data-label-poll",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Poll",
+        "description": "Fallback group name with no question and no aria-label"
       }
     ],
     "events": [
@@ -8044,12 +10687,12 @@ export default {
       {
         "name": "setCount",
         "type": "(option, count, opts?) => void",
-        "description": "Update a single option after the server confirms"
+        "description": "Update a single option after the server confirms (or roll back on failure); clears data-pending"
       },
       {
         "name": "setCounts",
         "type": "(counts, opts?) => void",
-        "description": "Bulk-update counts; opts.mine accepts a string or string[]"
+        "description": "Bulk-update counts; opts.mine accepts a string or string[]; clears every data-pending"
       },
       {
         "name": "open",
@@ -8087,6 +10730,12 @@ export default {
         "on": "button",
         "type": "boolean",
         "description": "Current user voted for this option"
+      },
+      {
+        "name": "data-pending",
+        "on": "button",
+        "type": "boolean",
+        "description": "Output: a vote for this option is in flight; further clicks are ignored until setCount/setCounts"
       }
     ],
     "structure": [],
@@ -8101,7 +10750,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "pop-over",
     "type": "web-component",
-    "description": "General-purpose popover container with CSS Anchor Positioning. Wraps the native Popover API, binds an anchor element, and re-asserts display:none under VB's cascade layers. Trigger via standard popovertarget attribute.",
+    "description": "General-purpose popover container with CSS Anchor Positioning. Wraps the native Popover API, binds an anchor element (appending to its anchor-name list), and re-asserts display:none under VB's cascade layers. Trigger via the standard popovertarget attribute. The host has no role: authors supply the semantics.",
     "attributes": [
       {
         "name": "data-mode",
@@ -8113,14 +10762,15 @@ export default {
           "manual",
           "hint"
         ],
-        "description": "Popover dismissal mode: 'auto' (default, light-dismiss + ESC), 'manual' (script-only), 'hint' (auto with hint-stack semantics)."
+        "description": "Popover type: 'auto' (default, light-dismiss + Escape, closes other auto popovers), 'manual' (script-only), 'hint' (light-dismiss without closing open auto popovers; falls back to 'auto' where popover=\"hint\" is unsupported). Hover opening is not wired (use interestfor or tool-tip). Changes after upgrade re-apply the popover attribute; an authored popover attribute wins at upgrade.",
+        "default": "auto"
       },
       {
         "name": "data-anchor",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "ID (or CSS selector) of the anchor element to position against. If omitted, the component finds the first element with popovertarget pointing at this pop-over."
+        "description": "ID (or CSS selector) of the anchor element to position against. If omitted, the component uses the first element whose popovertarget points at this pop-over. Changes after upgrade re-wire the anchor."
       },
       {
         "name": "data-position",
@@ -8141,7 +10791,8 @@ export default {
           "right-start",
           "right-end"
         ],
-        "description": "Where to place the popover relative to the anchor. Default: 'bottom'."
+        "description": "Where to place the popover relative to the anchor; -start/-end are logical (mirror in RTL). Flips to the opposite side instead of overflowing the viewport. Default: 'bottom'.",
+        "default": "bottom"
       },
       {
         "name": "data-offset",
@@ -8155,7 +10806,49 @@ export default {
           "m",
           "l"
         ],
-        "description": "Gap between popover and anchor, mapped to --size-* tokens. Default: 'xs'."
+        "description": "Gap between popover and anchor, mapped to --size-* tokens. Default: 'xs'.",
+        "default": "xs"
+      },
+      {
+        "name": "data-anchor-name",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "string",
+        "direction": "output",
+        "description": "Set by the runtime when an anchor is bound with CSS Anchor Positioning: the dashed-ident appended to the anchor's anchor-name and used as this host's position-anchor. Absent when there is no anchor or no anchor-positioning support."
+      }
+    ],
+    "events": [
+      {
+        "name": "pop-over:show",
+        "detail": "{ state: 'open' }",
+        "description": "Fired (bubbles, composed) on beforetoggle as the popover opens, whether by popovertarget, show() or showPopover()."
+      },
+      {
+        "name": "pop-over:hide",
+        "detail": "{ state: 'closed' }",
+        "description": "Fired (bubbles, composed) on beforetoggle as the popover closes, including light-dismiss and Escape."
+      }
+    ],
+    "properties": [
+      {
+        "name": "open",
+        "type": "boolean",
+        "description": "Read-only. True while the popover is open (:popover-open)."
+      }
+    ],
+    "methods": [
+      {
+        "name": "show()",
+        "description": "Open the popover (no-op if already open)."
+      },
+      {
+        "name": "hide()",
+        "description": "Close the popover (no-op if already closed)."
+      },
+      {
+        "name": "toggle()",
+        "description": "Open if closed, close if open."
       }
     ],
     "childAttributes": [],
@@ -8171,42 +10864,122 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "popularity-index",
     "type": "web-component",
-    "description": "Aggregated most-visited lens (degrades gracefully when endpoint is unavailable)",
+    "description": "Aggregated most-visited lens. Reads /api/analytics/popular (or any { pages: [{ url, title?, views }] } endpoint), enriches titles/provenance from pages.json, and reflects loading/ready/empty/unavailable state.",
     "attributes": [
       {
         "name": "analytics-src",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Popularity endpoint URL (default \"/api/analytics/popular\")"
+        "default": "/api/analytics/popular",
+        "description": "Popularity endpoint URL. Re-fetches when changed."
       },
       {
         "name": "data-meta-src",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Optional pages.json URL for metadata enrichment"
+        "description": "Optional pages.json URL; fills missing titles and adds the provenance chip. Fetched in parallel with the endpoint."
       },
       {
         "name": "data-lens-src",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Shared lens pages.json URL (forwarded by content-lens); metadata fallback when data-meta-src is unset"
+        "description": "Shared lens pages.json URL (forwarded by content-lens); metadata fallback when data-meta-src is unset. Never used as the endpoint."
       },
       {
         "name": "limit",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Max entries shown (default 10)"
+        "default": 10,
+        "description": "Max entries shown (clamped to at least 1)."
       },
       {
         "name": "window",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Time-window query forwarded to endpoint (e.g. \"24h\", \"7d\", \"30d\")"
+        "description": "Time window forwarded as ?window=. The VB endpoint accepts 24h, 7d (default) and 30d."
+      },
+      {
+        "name": "data-heading-level",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": 2,
+        "description": "Heading level 1-6 for the panel heading; 0 renders no heading (e.g. inside content-lens, which already labels the lens)."
+      },
+      {
+        "name": "data-label-heading",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Most visited",
+        "description": "Heading text."
+      },
+      {
+        "name": "data-label-view",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "view",
+        "description": "Count noun used when Intl.PluralRules selects \"one\"."
+      },
+      {
+        "name": "data-label-views",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "views",
+        "description": "Count noun for every other plural category."
+      },
+      {
+        "name": "data-label-unavailable",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Popularity data is unavailable right now.",
+        "description": "Message when the endpoint fails (internal error detail is never shown)."
+      },
+      {
+        "name": "data-label-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Not enough data yet to surface most-visited pages.",
+        "description": "Message when the endpoint returns no usable pages."
+      },
+      {
+        "name": "data-state",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "enum",
+        "values": [
+          "loading",
+          "ready",
+          "empty",
+          "unavailable"
+        ],
+        "direction": "output",
+        "description": "Reflected load state; aria-busy=\"true\" accompanies loading. Hide the panel with popularity-index[data-state=\"unavailable\"] { display: none }."
+      },
+      {
+        "name": "data-error",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "string",
+        "direction": "output",
+        "public": false,
+        "description": "Internal error detail for debugging when data-state=\"unavailable\" (never rendered)."
+      }
+    ],
+    "events": [
+      {
+        "name": "popularity-index:state",
+        "detail": "{ state }",
+        "description": "Fires when a load settles (ready, empty or unavailable)."
       }
     ],
     "htmlvalidate": {
@@ -8233,24 +11006,36 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "If present, shows a checkbox to disable VB print styles"
+        "description": "Adds a checkbox that prints without VB print styles (sets data-print-raw on <html> for the print). The host becomes a labelled role=\"group\""
       },
       {
         "name": "label",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Custom button label (default: \"Print this page\")"
+        "default": "Print this page",
+        "description": "Button label / accessible name. Falls back to the authored text content, then \"Print this page\""
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "variant",
+        "kind": "host-api",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "icon",
+          "label",
+          "icon-label"
+        ],
+        "default": "icon",
+        "description": "icon: printer icon only (label becomes aria-label); label: text only; icon-label: icon and visible text"
       },
       {
-        "name": "data-print-raw",
+        "name": "data-label-raw",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Print without VB styles",
+        "description": "Text of the raw-toggle checkbox"
       }
     ],
     "childAttributes": [],
@@ -8260,41 +11045,88 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "progress-tracker",
     "type": "web-component",
-    "description": "Multi-step progress bar for wizards / checkout / onboarding flows. Distinct from <slide-accept> (slide-to-confirm). Author renders <li data-step> children; component decorates each with circle + connector + status (complete | current | upcoming | error).",
+    "description": "Multi-step progress bar for wizards / checkout / onboarding flows. Distinct from <slide-accept> (slide-to-confirm). Author writes a native <ol> of <li> steps inside the element; the component decorates each with circle + connector + status (complete | current | upcoming | error) and visually hidden status text. With data-clickable, completed steps become native buttons.",
     "attributes": [
       {
         "name": "data-current",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "1-based index OR step id of the active step"
+        "description": "Active step: matched against data-step ids first, then as a 1-based index. Defaults to the first step."
       },
       {
         "name": "data-clickable",
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Allow clicks on completed steps to navigate back"
+        "description": "Completed steps render their label inside a native <button> (keyboard and pointer) that navigates back. The current and upcoming steps are not activatable."
       },
       {
-        "name": "aria-label",
-        "kind": "aria",
+        "name": "data-direction",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "horizontal",
+          "vertical"
+        ],
+        "default": "horizontal",
+        "description": "vertical stacks the steps with a vertical connector (narrow screens, long labels, 5+ steps)."
+      },
+      {
+        "name": "data-label-list",
+        "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "List label (default \"Progress\")"
+        "default": "Progress",
+        "description": "Accessible name set on the <ol> when it has no aria-label / aria-labelledby of its own."
       },
       {
-        "name": "role",
-        "kind": "aria",
+        "name": "data-label-step",
+        "kind": "data",
         "purpose": "config",
-        "description": "Set to \"list\""
+        "type": "string",
+        "default": "Step {n} of {total}:",
+        "description": "Visually hidden position prefix read before each label; {n} and {total}. Empty string removes it."
+      },
+      {
+        "name": "data-label-complete",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "(completed)",
+        "description": "Visually hidden status text for completed steps."
+      },
+      {
+        "name": "data-label-current",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "",
+        "description": "Visually hidden status text for the current step (empty by default: aria-current=\"step\" already conveys it)."
+      },
+      {
+        "name": "data-label-upcoming",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "(not started)",
+        "description": "Visually hidden status text for upcoming steps."
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "(error)",
+        "description": "Visually hidden status text for errored steps."
       }
     ],
     "events": [
       {
         "name": "progress-tracker:step",
         "detail": "{ step, previousStep, source: 'attr'|'click' }",
-        "description": "Fires when data-current changes (programmatic) or a completed step is clicked (data-clickable mode)"
+        "description": "Bubbles when data-current changes after upgrade (source 'attr') or a completed step is activated in data-clickable mode (source 'click', one event only). Not fired on upgrade or when the current step is activated."
       }
     ],
     "childAttributes": [
@@ -8302,84 +11134,200 @@ export default {
         "name": "data-step",
         "on": "li",
         "type": "string",
-        "required": true,
-        "description": "Stable step identifier (typically 1-based number, can be any string)"
+        "description": "Stable step id (any string; defaults to the 1-based position). data-current matches it before trying an index, so numeric ids like \"2024\" are safe."
       },
       {
         "name": "data-error",
         "on": "li",
         "type": "boolean",
-        "description": "Marks this step as errored regardless of position"
+        "description": "Marks this step as errored regardless of position."
+      },
+      {
+        "name": "data-status",
+        "on": "li",
+        "type": "enum",
+        "values": [
+          "complete",
+          "current",
+          "upcoming",
+          "error"
+        ],
+        "description": "Set by the component; style hook."
+      },
+      {
+        "name": "aria-current",
+        "on": "li",
+        "type": "string",
+        "description": "Set by the component to \"step\" on the current step."
       }
     ],
-    "structure": [],
+    "structure": [
+      {
+        "element": "ol",
+        "description": "Required native ordered list of steps (renders as a plain numbered list without JS)."
+      }
+    ],
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
-        "li",
-        "@flow"
+        "ol"
       ]
-    }
+    },
+    "cssProperties": [
+      {
+        "name": "--pt-circle-size",
+        "description": "Diameter of the step circle (default 1.75rem)."
+      },
+      {
+        "name": "--pt-line-thickness",
+        "description": "Connector and circle border thickness (default 2px)."
+      },
+      {
+        "name": "--pt-color-complete",
+        "description": "Fill / connector colour for completed steps (default --color-success)."
+      },
+      {
+        "name": "--pt-color-current",
+        "description": "Outline / ring colour for the active step (default --color-interactive)."
+      },
+      {
+        "name": "--pt-color-upcoming",
+        "description": "Outline / connector colour for upcoming steps (default --color-border)."
+      },
+      {
+        "name": "--pt-color-error",
+        "description": "Fill / connector colour for errored steps (default --color-error)."
+      },
+      {
+        "name": "--pt-color-text-on-fill",
+        "description": "Glyph colour on filled (complete / error) circles (default --color-text-on-interactive-auto)."
+      }
+    ]
   },
   "qr-code": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "qr-code",
     "type": "web-component",
-    "description": "QR code generator web component",
+    "description": "QR code generator: black-on-white canvas with quiet zone, author children kept as the caption",
     "attributes": [
       {
         "name": "value",
-        "kind": "native",
+        "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "The text/URL to encode (or uses textContent). Reactive."
+        "description": "The text/URL to encode. Falls back to the element's original text content. Reactive; removing it falls back to the text again."
       },
       {
         "name": "size",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Canvas size in pixels (default: 200). Reactive."
+        "default": "200",
+        "description": "Edge of the drawn box in CSS pixels, quiet zone included. Modules are a whole number of device pixels. Reactive."
       },
       {
         "name": "color",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Foreground color (default: currentColor). Init-only."
+        "default": "#000",
+        "description": "Module colour (any CSS colour). Opt-in; logs a console warning when the pair is inverted, low-contrast or translucent. Reactive."
       },
       {
         "name": "background",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Background color (default: transparent). Init-only."
+        "default": "#fff",
+        "description": "Background colour, always painted, including the 4-module quiet zone. Reactive."
       },
       {
         "name": "error-correction",
         "kind": "host-api",
         "purpose": "config",
-        "type": "number",
-        "description": "Error correction level 0-3 (L/M/Q/H, default: 1/M). Init-only."
+        "type": "enum",
+        "values": [
+          "l",
+          "m",
+          "q",
+          "h",
+          "0",
+          "1",
+          "2",
+          "3"
+        ],
+        "default": "m",
+        "description": "Error-correction level: L (7%), M (15%, default), Q (25%), H (30%), or 0-3. Letters are case-insensitive (listed lower-case because html-validate matches enums lower-cased); other values warn and use M. Reactive."
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-caption",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "visible"
+        ],
+        "description": "Show the caption (the element's children) under the code. By default it is visually hidden but read by screen readers, and shown while a link inside it has focus."
+      },
+      {
+        "name": "data-label-prefix",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "QR code",
+        "description": "Accessible name of the canvas (role=img). The value itself is read from the caption, so it is not announced twice."
+      },
+      {
+        "name": "data-label-copied",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "QR code copied",
+        "description": "Screen-reader announcement after copy() succeeds."
+      },
+      {
+        "name": "data-error",
+        "kind": "data",
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "enum",
+        "values": [
+          "capacity",
+          "encoding"
+        ],
+        "description": "Set when no code could be drawn (the text is longer than the level holds, or cannot be encoded). The caption is then shown."
       }
     ],
     "childAttributes": [],
     "structure": [],
+    "events": [
+      {
+        "name": "qr-code:error",
+        "detail": "{ reason: 'capacity' | 'encoding', value, errorCorrection: 'L' | 'M' | 'Q' | 'H', message }",
+        "description": "Fired when the value cannot be encoded. No code is drawn and the caption (fallback) stays visible."
+      },
+      {
+        "name": "qr-code:upgraded",
+        "description": "Fired once the element has upgraded (canvas and caption in place)."
+      }
+    ],
+    "properties": [
+      {
+        "name": "value",
+        "type": "string",
+        "description": "The encoded text. Setting it sets the value attribute; '' or null removes it."
+      }
+    ],
     "methods": [
       {
         "name": "toDataURL(type?)",
         "returns": "string",
-        "description": "Returns the QR canvas as a data URL (default image/png)."
+        "description": "Returns the code as a data URL (default image/png): opaque, quiet zone included. '' when no code is drawn."
       },
       {
         "name": "copy(options?)",
         "returns": "Promise<boolean>",
-        "description": "Copies the QR to the clipboard as text/plain (the encoded value) + image/png (the canvas). Falls back to text-only on browsers without ClipboardItem support."
+        "description": "Copies the code to the clipboard as text/plain (the encoded value) + image/png. Falls back to text-only without ClipboardItem support. options.button gets data-state=\"copied\" and a copy event. Resolves false when no code is drawn."
       }
     ],
     "htmlvalidate": {
@@ -8406,7 +11354,7 @@ export default {
         "kind": "aria",
         "purpose": "config",
         "type": "string",
-        "description": "Toolbar label (default \"Reactions\")"
+        "description": "Toolbar label (default: data-label-toolbar, then \"Reactions\"). Also names the palette group."
       },
       {
         "name": "data-trigger-icon",
@@ -8423,23 +11371,45 @@ export default {
         "description": "aria-label for the trigger (default \"Add reaction\")"
       },
       {
+        "name": "data-label-toolbar",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Default toolbar label when no aria-label is authored (default \"Reactions\")"
+      },
+      {
+        "name": "data-label-dialog",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "aria-label of the palette dialog (default \"Choose a reaction\")"
+      },
+      {
+        "name": "data-label-count-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Count phrase in chip names for the Intl.PluralRules \"one\" category; {count} is replaced by the Intl.NumberFormat count (default \"{count} reaction\"). Any CLDR category works: data-label-count-zero, -two, -few, -many."
+      },
+      {
+        "name": "data-label-count-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Count phrase for every category without its own data-label-count-* (default \"{count} reactions\"). Locale comes from the closest [lang]."
+      },
+      {
         "name": "data-disabled",
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Read-only mode — chips don't toggle, trigger is disabled"
-      },
-      {
-        "name": "role",
-        "kind": "aria",
-        "purpose": "config",
-        "description": "Set to \"toolbar\""
+        "description": "Read-only mode, observed: chips get aria-disabled and do not toggle, the trigger is disabled and leaves the roving tab order, an open palette closes"
       }
     ],
     "events": [
       {
         "name": "reaction-bar:toggle",
-        "description": "Fires when a chip or palette option is clicked. detail: { reaction, action: 'add'|'remove', count, mine }"
+        "description": "Fires when a chip or palette option is clicked. detail: { reaction, action: 'add'|'remove', count, mine } — count and mine are the values BEFORE the toggle. The chip is then data-pending until setCount() is called for that reaction."
       },
       {
         "name": "reaction-bar:palette-open",
@@ -8468,7 +11438,19 @@ export default {
         "name": "data-mine",
         "on": "button",
         "type": "boolean",
-        "description": "Whether the current user has this reaction"
+        "description": "Whether the current user has this reaction (exposed as aria-pressed)"
+      },
+      {
+        "name": "data-label",
+        "on": "button",
+        "type": "string",
+        "description": "Accessible name of the reaction (e.g. \"Thumbs up\"), on chips and palette buttons; an authored aria-label works too. Falls back to the emoji."
+      },
+      {
+        "name": "data-pending",
+        "on": "button",
+        "type": "boolean",
+        "description": "Output: a toggle for this chip is in flight (also aria-busy); further clicks are ignored until setCount()"
       },
       {
         "name": "data-palette",
@@ -8477,76 +11459,379 @@ export default {
         "description": "Marks a <template> child as the available-reactions palette"
       }
     ],
-    "structure": []
+    "structure": [],
+    "methods": [
+      {
+        "name": "setCount(reaction, count, { mine })",
+        "description": "Update a chip after the server confirms (call it on failure too, with the old values, to roll back). Clears the pending state, creates the chip from the palette template button (keeping its data-label) if missing, and removes the chip at count 0 — focus moves to a neighbour if the chip had it."
+      },
+      {
+        "name": "openPalette()",
+        "description": "Open the palette popover (no-op while data-disabled)"
+      },
+      {
+        "name": "closePalette()",
+        "description": "Close the palette popover"
+      }
+    ]
   },
   "reader-view": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "reader-view",
     "type": "web-component",
-    "description": "Immersive reading shell with scroll and paged modes.",
+    "description": "Immersive reading shell with scroll and paged modes. Moves its children into a layout-columns surface with a chrome bar, page navigation, font and column controls.",
     "attributes": [
-      {
-        "name": "upgraded",
-        "kind": "host-api",
-        "purpose": "config"
-      },
       {
         "name": "mode",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "scroll",
+          "pages"
+        ],
+        "default": "scroll",
+        "direction": "both",
+        "description": "Reading mode. Observed and reflected. pages is a full-viewport overlay: the rest of the page is made inert, document scroll is locked, focus moves into the pager, Escape returns to scroll."
       },
       {
         "name": "columns",
         "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "auto",
+          "1",
+          "2",
+          "3"
+        ],
+        "default": "auto",
+        "direction": "both",
+        "description": "Column count in pages mode. Observed and reflected."
       },
       {
         "name": "font-controls",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "true",
+          "false"
+        ],
+        "default": "true",
+        "description": "Set to false to omit the font-size buttons from the default chrome."
       },
       {
         "name": "col-controls",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "true",
+          "false"
+        ],
+        "default": "true",
+        "description": "Set to false to omit the column picker from the default chrome."
       },
       {
         "name": "reader-title",
         "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "disabled",
-        "kind": "native",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "description": "Chrome bar title. Falls back to the first <h1>, then document.title."
       },
       {
         "name": "persist",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "true",
+          "false"
+        ],
+        "default": "true",
+        "description": "Set to false to disable localStorage persistence of font size, columns (and mode with data-remember-mode)."
       },
       {
         "name": "storage-key",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "description": "localStorage key. Defaults to vb-reader:<location.pathname>, plus #<id> when the element has an id."
       },
       {
-        "name": "data-reader-state",
+        "name": "data-remember-mode",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Opt in to restoring the persisted mode (including pages) on load. Without it only font size and columns are restored; an authored mode attribute always wins."
+      },
+      {
+        "name": "data-label-kicker",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Reader",
+        "description": "Override the \"Reader\" string."
+      },
+      {
+        "name": "data-label-controls",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Reading controls",
+        "description": "Override the \"Reading controls\" string."
+      },
+      {
+        "name": "data-label-mode-group",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Reading mode",
+        "description": "Override the \"Reading mode\" string."
+      },
+      {
+        "name": "data-label-mode",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Mode",
+        "description": "Override the \"Mode\" string."
+      },
+      {
+        "name": "data-label-scroll",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Scroll",
+        "description": "Override the \"Scroll\" string."
+      },
+      {
+        "name": "data-label-pages",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Pages",
+        "description": "Override the \"Pages\" string."
+      },
+      {
+        "name": "data-label-font-group",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Font size",
+        "description": "Override the \"Font size\" string."
+      },
+      {
+        "name": "data-label-type",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Type",
+        "description": "Override the \"Type\" string."
+      },
+      {
+        "name": "data-label-font-decrease",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Decrease font size",
+        "description": "Override the \"Decrease font size\" string."
+      },
+      {
+        "name": "data-label-font-increase",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Increase font size",
+        "description": "Override the \"Increase font size\" string."
+      },
+      {
+        "name": "data-label-columns-group",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Page columns",
+        "description": "Override the \"Page columns\" string."
+      },
+      {
+        "name": "data-label-cols",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Cols",
+        "description": "Override the \"Cols\" string."
+      },
+      {
+        "name": "data-label-auto",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Auto",
+        "description": "Override the \"Auto\" string."
+      },
+      {
+        "name": "data-label-column-auto",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Auto columns",
+        "description": "Override the \"Auto columns\" string."
+      },
+      {
+        "name": "data-label-column-1",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "1 column",
+        "description": "Override the \"1 column\" string."
+      },
+      {
+        "name": "data-label-column-2",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "2 columns",
+        "description": "Override the \"2 columns\" string."
+      },
+      {
+        "name": "data-label-column-3",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "3 columns",
+        "description": "Override the \"3 columns\" string."
+      },
+      {
+        "name": "data-label-pages-region",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Article pages",
+        "description": "Override the \"Article pages\" string."
+      },
+      {
+        "name": "data-label-page-nav",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Page navigation",
+        "description": "Override the \"Page navigation\" string."
+      },
+      {
+        "name": "data-label-prev",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Previous page",
+        "description": "Override the \"Previous page\" string."
+      },
+      {
+        "name": "data-label-next",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Next page",
+        "description": "Override the \"Next page\" string."
+      },
+      {
+        "name": "data-label-page-indicator",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{page} / {total}",
+        "description": "Override the \"{page} / {total}\" string ({page} and {total} are replaced)."
+      }
+    ],
+    "events": [
+      {
+        "name": "reader-view:mode",
+        "detail": "{ mode: 'scroll' | 'pages' }",
+        "description": "Mode changed (not fired for the initial mode on upgrade)."
+      },
+      {
+        "name": "reader-view:page",
+        "detail": "{ page: number, total: number }",
+        "description": "Current page changed in pages mode (page is 1-based)."
+      },
+      {
+        "name": "reader-view:font",
+        "detail": "{ size: string, index: number }",
+        "description": "Font size stepped up or down."
+      }
+    ],
+    "slots": [
+      {
+        "name": "chrome",
+        "description": "Replaces the default chrome bar. Wire controls with data-reader-action / data-reader-value / data-reader-output."
+      }
+    ],
+    "cssProperties": [
+      {
+        "name": "--reader-view-z",
+        "description": "z-index of the pages-mode overlay (default var(--z-overlay))."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-reader-action",
+        "on": "button",
+        "type": "enum",
+        "values": [
+          "toggle-mode",
+          "set-mode-scroll",
+          "set-mode-pages",
+          "font-increase",
+          "font-decrease",
+          "set-columns",
+          "prev-page",
+          "next-page"
+        ],
+        "description": "Action wired by click delegation (default and slotted chrome)."
+      },
+      {
+        "name": "data-reader-value",
+        "on": "button",
+        "type": "enum",
+        "values": [
+          "auto",
+          "1",
+          "2",
+          "3"
+        ],
+        "description": "Column value for data-reader-action=\"set-columns\"."
+      },
+      {
+        "name": "data-reader-output",
+        "on": "output",
+        "type": "enum",
+        "values": [
+          "page-indicator",
+          "mode-label"
+        ],
+        "description": "Filled by the runtime with the page indicator text or the current mode label."
       },
       {
         "name": "aria-pressed",
-        "kind": "aria",
-        "purpose": "config"
+        "on": "button",
+        "type": "enum",
+        "values": [
+          "true",
+          "false"
+        ],
+        "description": "Set by the runtime on set-mode-*, set-columns and toggle-mode buttons (runtime)."
+      },
+      {
+        "name": "data-reader-state",
+        "on": "button",
+        "type": "enum",
+        "values": [
+          "active",
+          ""
+        ],
+        "description": "Styling hook mirroring aria-pressed on mode and column buttons (runtime)."
       }
     ],
-    "childAttributes": [],
     "structure": [],
     "htmlvalidate": {
       "flow": true,
@@ -8559,25 +11844,54 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "reading-progress",
     "type": "web-component",
-    "description": "Fixed-position scroll progress indicator bar",
+    "description": "Decorative fixed-position scroll progress bar (CSS scroll-timeline for the document, JS for data-for targets).",
     "attributes": [
       {
         "name": "data-for",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "ID of the target element to bound progress against. Without it, tracks document scroll."
+        "description": "ID of the element whose bounds define the progress range. Observed. If the element does not exist the bar tracks document scroll until it appears."
       },
       {
         "name": "data-position",
         "kind": "data",
         "purpose": "visual-variant",
-        "type": "string",
-        "description": "Where to anchor the bar: 'top' (default) or 'bottom'"
+        "type": "enum",
+        "values": [
+          "top",
+          "bottom"
+        ],
+        "default": "top",
+        "description": "Viewport edge the bar is anchored to."
+      }
+    ],
+    "cssProperties": [
+      {
+        "name": "--reading-progress-color",
+        "description": "Fill colour (default var(--color-accent)); Highlight in forced-colors mode."
+      },
+      {
+        "name": "--reading-progress-height",
+        "description": "Bar thickness (default 3px)."
+      },
+      {
+        "name": "--reading-progress-offset",
+        "description": "Distance from the anchored edge, e.g. a sticky header's height (default 0)."
+      },
+      {
+        "name": "--reading-progress-z",
+        "description": "z-index (default var(--z-sticky-header))."
       }
     ],
     "childAttributes": [],
-    "structure": [],
+    "structure": [
+      {
+        "element": "progress",
+        "required": false,
+        "description": "Optional SSR child; created when absent. Always aria-hidden: the bar is decorative."
+      }
+    ],
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -8589,48 +11903,129 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "recently-visited",
     "type": "web-component",
-    "description": "Device-local reader history lens (localStorage, never aggregated)",
+    "description": "Device-local reader history lens (localStorage, never sent or aggregated). Pages are recorded only when opted in with <meta name=\"vb:track-history\" content=\"on\"> or by this element's presence; <html data-vb-no-track> and <meta name=\"vb:no-track-history\"> opt out.",
     "attributes": [
       {
         "name": "limit",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Max entries kept in local history (default 25)"
+        "default": 25,
+        "description": "Max page groups rendered. Storage itself is capped separately at 100 entries by the tracker."
       },
       {
-        "name": "no-track",
+        "name": "include-current",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Don't append the current page on connectedCallback"
+        "description": "Also list the page the reader is on (excluded by default)."
       },
       {
-        "name": "empty-text",
-        "kind": "host-api",
+        "name": "data-heading-level",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": 2,
+        "description": "Heading level 1-6 for the panel heading; 0 renders no heading (e.g. inside content-lens)."
+      },
+      {
+        "name": "data-label-heading",
+        "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Message rendered when there is no history"
+        "default": "Recently visited",
+        "description": "Heading text."
+      },
+      {
+        "name": "data-label-explainer",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Stored on this device only. Never sent to a server.",
+        "description": "Privacy note under the heading."
+      },
+      {
+        "name": "data-label-pause",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Pause tracking",
+        "description": "Pause toggle label (static; aria-pressed carries the state)."
+      },
+      {
+        "name": "data-label-anchors",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Show anchor visits",
+        "description": "Anchor-visits toggle label (static; aria-pressed carries the state)."
+      },
+      {
+        "name": "data-label-clear",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Clear history",
+        "description": "Clear button label."
+      },
+      {
+        "name": "data-label-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No recently visited pages yet.",
+        "description": "Message rendered when there is no history."
+      },
+      {
+        "name": "data-label-anchor-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "anchor",
+        "description": "Anchor count noun when Intl.PluralRules selects \"one\"."
+      },
+      {
+        "name": "data-label-anchor-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "anchors",
+        "description": "Anchor count noun for every other plural category."
       }
     ],
     "events": [
       {
         "name": "recently-visited:clear",
-        "description": "Fires when the reader clears the local history"
+        "description": "Fires when the reader clears the local history."
+      },
+      {
+        "name": "recently-visited:pause-toggle",
+        "detail": "{ paused }",
+        "description": "Fires when the reader pauses or resumes tracking."
+      },
+      {
+        "name": "recently-visited:anchors-toggle",
+        "detail": "{ showAnchors }",
+        "description": "Fires when the reader shows or hides anchor visits."
+      }
+    ],
+    "properties": [
+      {
+        "name": "entries",
+        "type": "Array<{ url, hash, title, hashTitle, ts }>",
+        "description": "Read-only. Stored history, most recent first; expired (30-day TTL), malformed and off-origin records are filtered out."
       }
     ],
     "htmlvalidate": {
       "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
+      "permittedContent": []
     }
   },
   "score-card": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "score-card",
     "type": "web-component",
-    "description": "Single KPI tile for dashboards: title, headline value, optional change indicator, sparkline (composed with <chart-wc>), description, and icon. Wrap in <a href> for drill-down.",
+    "description": "Single KPI tile for dashboards: title, headline value, optional change indicator, sparkline (composed with <chart-wc>), description, and icon. Wrap in <a href> for drill-down. Slotted children must be direct children of the host.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -8681,7 +12076,7 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Skeleton placeholder state via :state(loading)"
+        "description": "Skeleton placeholder state via :state(loading); mirrored to aria-busy=\"true\" on the host"
       }
     ],
     "slots": [
@@ -8745,7 +12140,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "selection-menu",
     "type": "web-component",
-    "description": "Floating toolbar that appears on text selection. Composes action components like highlight-wc, share-wc, note-wc.",
+    "description": "Floating toolbar that appears on text selection (pointer or keyboard). Moves its authored action children into a generated <pop-over data-mode=\"manual\" role=\"toolbar\"> in the top layer; Alt+F10 focuses it, arrow keys rove, Escape returns focus and the selection.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -8758,25 +12153,92 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "ID of a single target element to watch for text selection"
+        "description": "ID of a single target element to watch for text selection. When the menu also has an id, the target is marked data-selection-menu=\"<id>\"."
+      },
+      {
+        "name": "id",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "When set, every element with data-selection-menu=\"<id>\" is a target (many-to-one); targets added or changed later are picked up."
+      },
+      {
+        "name": "data-label",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Text selection actions",
+        "description": "Accessible name of the toolbar (aria-label on the composed pop-over)"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-selection-menu",
+        "on": "any element",
+        "type": "string",
+        "description": "On a target element: the id of the selection-menu that serves it"
+      }
+    ],
+    "events": [
+      {
+        "name": "selection-menu:select",
+        "detail": "{ range: Range, text: string, target: Element }",
+        "description": "A selection inside a target opened (or moved) the toolbar"
+      },
+      {
+        "name": "selection-menu:dismiss",
+        "description": "The toolbar was hidden (outside pointerdown, Escape, dismiss(), selection collapsed from the keyboard, or scrolled out of view)"
+      },
+      {
+        "name": "selection-menu:actions-changed",
+        "detail": "{ actions: Array<{ tag, attrs?, html? }>, source: 'property' }",
+        "description": "The actions property replaced the toolbar children"
+      }
+    ],
+    "methods": [
+      {
+        "name": "getSelection",
+        "returns": "{ range: Range, text: string, target: Element } | null",
+        "description": "The selection the toolbar is showing for (a cloned range), or null when hidden"
+      },
+      {
+        "name": "dismiss",
+        "returns": "void",
+        "description": "Hide the toolbar; focus inside it returns to the selection's target"
+      }
+    ],
+    "properties": [
+      {
+        "name": "actions",
+        "type": "Array<{ tag: string, attrs?: object, html?: string } | Element>",
+        "description": "Toolbar children as plain data; setting it replaces them and fires selection-menu:actions-changed"
       }
     ],
     "structure": [
       {
+        "element": "<pop-over data-selection-menu-host role=\"toolbar\">",
+        "required": false,
+        "description": "Generated toolbar surface; setup() moves the authored children into it. Style this node, not the host (the host is display: contents)."
+      },
+      {
         "element": "<highlight-wc>",
+        "required": false,
         "description": "Text highlighting with color palette"
       },
       {
-        "element": "<share-wc variant=\"selection\">",
-        "description": "Share selected text quote"
+        "element": "<share-wc>",
+        "required": false,
+        "description": "Share or copy the selected text as a quote (detected via closest('selection-menu'))"
       },
       {
         "element": "<note-wc>",
+        "required": false,
         "description": "Private note on highlight"
       },
       {
         "element": "<comment-wc>",
-        "description": "Inline comment (future)"
+        "required": false,
+        "description": "Inline comment on a review-surface"
       }
     ],
     "css": {
@@ -8787,40 +12249,622 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "settings-panel",
     "type": "web-component",
-    "description": "Compact settings panel",
+    "description": "Compact, non-modal site settings panel (Appearance, Accessibility, Layout, Effects, Environment, System) opened from a gear trigger; shares state with theme-picker through ThemeManager, VBStore and window events",
     "attributes": [
       {
         "name": "open",
         "kind": "native",
-        "purpose": "config",
+        "purpose": "semantic-state",
+        "direction": "output",
         "type": "boolean",
-        "description": "Reflected state only — set by open()/close()/toggle() methods, not intended as initial markup"
+        "description": "Reflected state only — set by open()/close()/toggle(), not intended as initial markup"
       },
+      {
+        "name": "data-label-trigger",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Site settings",
+        "description": "Accessible name of the minted gear trigger (an authored trigger keeps its own name)."
+      },
+      {
+        "name": "data-label-dialog",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Site settings",
+        "description": "Panel dialog accessible name."
+      },
+      {
+        "name": "data-label-title",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Settings",
+        "description": "Panel heading text."
+      },
+      {
+        "name": "data-label-close",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Close settings",
+        "description": "Close button accessible name."
+      },
+      {
+        "name": "data-label-appearance",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Appearance",
+        "description": "Text for the \"Appearance\" string."
+      },
+      {
+        "name": "data-label-color-mode",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Color mode",
+        "description": "Text for the \"Color mode\" string."
+      },
+      {
+        "name": "data-label-mode-auto",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Auto",
+        "description": "Text for the \"Auto\" string."
+      },
+      {
+        "name": "data-label-mode-light",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Light",
+        "description": "Text for the \"Light\" string."
+      },
+      {
+        "name": "data-label-mode-dark",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Dark",
+        "description": "Text for the \"Dark\" string."
+      },
+      {
+        "name": "data-label-theme",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Theme",
+        "description": "Text for the \"Theme\" string."
+      },
+      {
+        "name": "data-label-accessibility",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Accessibility",
+        "description": "Text for the \"Accessibility\" string."
+      },
+      {
+        "name": "data-label-high-contrast",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "High Contrast",
+        "description": "Text for the \"High Contrast\" string."
+      },
+      {
+        "name": "data-label-large-text",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Large Text",
+        "description": "Text for the \"Large Text\" string."
+      },
+      {
+        "name": "data-label-dyslexia",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Dyslexia-Friendly",
+        "description": "Text for the \"Dyslexia-Friendly\" string."
+      },
+      {
+        "name": "data-label-char-shortcuts",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Single-Key Shortcuts",
+        "description": "Text for the \"Single-Key Shortcuts\" toggle (WCAG 2.1.4: turns off every unscoped single-character shortcut, stored as extensions.charShortcuts)."
+      },
+      {
+        "name": "data-label-layout",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Layout",
+        "description": "Text for the \"Layout\" string."
+      },
+      {
+        "name": "data-label-fluid",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Fluid Scaling",
+        "description": "Text for the \"Fluid Scaling\" string."
+      },
+      {
+        "name": "data-label-density",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Density",
+        "description": "Text for the \"Density\" string."
+      },
+      {
+        "name": "data-label-density-compact",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Compact",
+        "description": "Text for the \"Compact\" string."
+      },
+      {
+        "name": "data-label-density-default",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Default",
+        "description": "Text for the \"Default\" string."
+      },
+      {
+        "name": "data-label-density-spacious",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Spacious",
+        "description": "Text for the \"Spacious\" string."
+      },
+      {
+        "name": "data-label-backdrop",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Canvas Backdrop",
+        "description": "Text for the \"Canvas Backdrop\" string."
+      },
+      {
+        "name": "data-label-backdrop-style",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Style",
+        "description": "Text for the \"Style\" string."
+      },
+      {
+        "name": "data-label-backdrop-default",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Default",
+        "description": "Text for the \"Default\" string."
+      },
+      {
+        "name": "data-label-backdrop-flush",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Flush",
+        "description": "Text for the \"Flush\" string."
+      },
+      {
+        "name": "data-label-backdrop-elevated",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Elevated",
+        "description": "Text for the \"Elevated\" string."
+      },
+      {
+        "name": "data-label-chrome",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Chrome",
+        "description": "Text for the \"Chrome\" string."
+      },
+      {
+        "name": "data-label-chrome-card",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Card",
+        "description": "Text for the \"Card\" string."
+      },
+      {
+        "name": "data-label-chrome-stretch",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Stretch",
+        "description": "Text for the \"Stretch\" string."
+      },
+      {
+        "name": "data-label-chrome-integrated",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Integrated",
+        "description": "Text for the \"Integrated\" string."
+      },
+      {
+        "name": "data-label-fixed-header",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Fixed Header",
+        "description": "Text for the \"Fixed Header\" string."
+      },
+      {
+        "name": "data-label-page-bg",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Page Background",
+        "description": "Text for the \"Page Background\" string."
+      },
+      {
+        "name": "data-label-page-bg-default",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Theme Default",
+        "description": "Text for the \"Theme Default\" string."
+      },
+      {
+        "name": "data-label-page-bg-color",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Solid Color",
+        "description": "Text for the \"Solid Color\" string."
+      },
+      {
+        "name": "data-label-page-bg-gradient",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Gradient",
+        "description": "Text for the \"Gradient\" string."
+      },
+      {
+        "name": "data-label-bg-color",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Color",
+        "description": "Text for the \"Color\" string."
+      },
+      {
+        "name": "data-label-grad-start",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Start",
+        "description": "Text for the \"Start\" string."
+      },
+      {
+        "name": "data-label-grad-end",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "End",
+        "description": "Text for the \"End\" string."
+      },
+      {
+        "name": "data-label-grad-direction",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Direction",
+        "description": "Text for the \"Direction\" string."
+      },
+      {
+        "name": "data-label-dir-to-bottom",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Top → Bottom",
+        "description": "Text for the \"Top → Bottom\" string."
+      },
+      {
+        "name": "data-label-dir-to-right",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Left → Right",
+        "description": "Text for the \"Left → Right\" string."
+      },
+      {
+        "name": "data-label-dir-135deg",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Diagonal ↘",
+        "description": "Text for the \"Diagonal ↘\" string."
+      },
+      {
+        "name": "data-label-dir-45deg",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Diagonal ↗",
+        "description": "Text for the \"Diagonal ↗\" string."
+      },
+      {
+        "name": "data-label-sticky",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Sticky Navigation",
+        "description": "Text for the \"Sticky Navigation\" string."
+      },
+      {
+        "name": "data-label-effects",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Effects",
+        "description": "Text for the \"Effects\" string."
+      },
+      {
+        "name": "data-label-motion",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Motion Effects",
+        "description": "Text for the \"Motion Effects\" string."
+      },
+      {
+        "name": "data-label-sounds",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Sound Effects",
+        "description": "Text for the \"Sound Effects\" string."
+      },
+      {
+        "name": "data-label-environment",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Environment",
+        "description": "Text for the \"Environment\" string."
+      },
+      {
+        "name": "data-label-time-of-day",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Time-of-Day Shifts",
+        "description": "Text for the \"Time-of-Day Shifts\" string."
+      },
+      {
+        "name": "data-label-seasonal",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Seasonal Tinting",
+        "description": "Text for the \"Seasonal Tinting\" string."
+      },
+      {
+        "name": "data-label-system",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "System",
+        "description": "Text for the \"System\" string."
+      },
+      {
+        "name": "data-label-sw-label",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Service Worker:",
+        "description": "Text for the \"Service Worker:\" string."
+      },
+      {
+        "name": "data-label-sw-checking",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "checking…",
+        "description": "Text for the \"checking…\" string."
+      },
+      {
+        "name": "data-label-sw-unsupported",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Not supported",
+        "description": "Text for the \"Not supported\" string."
+      },
+      {
+        "name": "data-label-sw-active",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Active ({n} cached files)",
+        "description": "Service-worker status ({n} = cached file count)."
+      },
+      {
+        "name": "data-label-sw-unregistered",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Not registered",
+        "description": "Text for the \"Not registered\" string."
+      },
+      {
+        "name": "data-label-clear-cache",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Clear Cache",
+        "description": "Text for the \"Clear Cache\" string."
+      },
+      {
+        "name": "data-label-clearing",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Clearing…",
+        "description": "Text for the \"Clearing…\" string."
+      },
+      {
+        "name": "data-label-cleared",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Cache cleared",
+        "description": "Text for the \"Cache cleared\" string."
+      },
+      {
+        "name": "data-label-check-update",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Check for Updates",
+        "description": "Text for the \"Check for Updates\" string."
+      },
+      {
+        "name": "data-label-checking",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Checking…",
+        "description": "Text for the \"Checking…\" string."
+      },
+      {
+        "name": "data-label-update-available",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Update available",
+        "description": "Text for the \"Update available\" string."
+      },
+      {
+        "name": "data-label-up-to-date",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Up to date",
+        "description": "Text for the \"Up to date\" string."
+      },
+      {
+        "name": "data-label-failed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Failed",
+        "description": "Text for the \"Failed\" string."
+      },
+      {
+        "name": "data-label-reset",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Reset to Defaults",
+        "description": "Text for the \"Reset to Defaults\" string."
+      },
+      {
+        "name": "data-label-reset-confirm",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Reset all settings to defaults?",
+        "description": "In-panel reset confirmation question."
+      },
+      {
+        "name": "data-label-reset-yes",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Reset",
+        "description": "Text for the \"Reset\" string."
+      },
+      {
+        "name": "data-label-reset-cancel",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Cancel",
+        "description": "Text for the \"Cancel\" string."
+      },
+      {
+        "name": "data-label-reset-done",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Settings reset to defaults",
+        "description": "Live announcement after a reset."
+      }
+    ],
+    "childAttributes": [
       {
         "name": "data-trigger",
-        "kind": "data",
-        "purpose": "config"
+        "on": "button",
+        "type": "boolean",
+        "description": "Marks an authored trigger button (else the first child <button>, else a minted gear button). The runtime sets aria-haspopup, aria-expanded and aria-controls on it."
+      }
+    ],
+    "properties": [
+      {
+        "name": "data",
+        "type": "{ a11yThemes: string[], extensions: { motionFx: boolean, sounds: boolean, charShortcuts: boolean }, sticky: boolean }",
+        "description": "Settings snapshot. The setter applies each provided field to the page at once (a11y themes on <html data-theme>, extensions incl. <html data-motion-reduced> and <html data-char-shortcuts=\"off\">, <html data-sticky>), writes it through to VBStore (vb:settings:a11y / extensions / sticky), updates the controls, and fires settings-panel:data-changed when the writes finish. Safe before the panel renders."
+      }
+    ],
+    "methods": [
+      {
+        "name": "open",
+        "returns": "void",
+        "description": "Open the panel and move focus into it. Queued if called before the element has rendered."
       },
       {
-        "name": "aria-haspopup",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "close",
+        "returns": "void",
+        "description": "Close the panel. close({ returnFocus: true }) also focuses the trigger (what Escape and the close button do)."
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "toggle",
+        "returns": "void",
+        "description": "Toggle the panel open/closed."
       }
     ],
     "events": [
       {
-        "name": "vb:a11y-themes-change"
+        "name": "settings-panel:upgraded",
+        "description": "Fired on the host (bubbles) once the element has upgraded and rendered."
       },
       {
-        "name": "vb:extensions-change"
+        "name": "settings-panel:data-changed",
+        "detail": "{ data, source: 'property' }",
+        "description": "Fired on the host (bubbles) after a data setter's VBStore writes finish."
+      },
+      {
+        "name": "vb:a11y-themes-change",
+        "detail": "string[]",
+        "description": "Dispatched on window (not the host) when the accessibility themes change; also listened for, so other components can push changes in."
+      },
+      {
+        "name": "vb:extensions-change",
+        "detail": "{ motionFx, sounds, charShortcuts }",
+        "description": "Dispatched on window (not the host) when the effects preferences change; also listened for (theme-picker dispatches it too)."
       }
     ],
-    "childAttributes": [],
     "structure": [],
     "htmlvalidate": {
       "flow": true,
@@ -8833,7 +12877,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "share-wc",
     "type": "web-component",
-    "description": "Social share component with native Web Share API and platform fallbacks",
+    "description": "Social share component: native Web Share button (falls back to copying the link), platform buttons, or enhanced slotted links; inside selection-menu, shares or copies the selected text as a quote.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -8846,108 +12890,316 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL to share (default: location.href)"
+        "description": "URL to share (default: <link rel=canonical>, then location.href)"
       },
       {
         "name": "title",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Share title (default: document.title)"
+        "description": "Share title (default: og:title, then document.title). Read from the attribute; the JS property is shareTitle."
       },
       {
         "name": "text",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Share description (default: meta description)"
+        "description": "Share description (default: meta description, then og:description)"
       },
       {
         "name": "platforms",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Comma-separated platform list (default: \"x,linkedin,bluesky,mastodon,whatsapp,email,copy\")"
+        "default": "x,linkedin,bluesky,mastodon,whatsapp,email,copy",
+        "description": "Comma-separated platform list (x, twitter, facebook, linkedin, whatsapp, telegram, bluesky, mastodon, email, copy) or \"native-only\""
       },
       {
         "name": "variant",
         "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Visual variant: \"icon\", \"label\", \"icon-label\" (default: \"icon-label\")"
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "icon",
+          "label",
+          "icon-label"
+        ],
+        "default": "icon-label",
+        "description": "Icon only (label visually hidden but still the name), label only, or both"
       },
       {
         "name": "size",
         "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Button size: \"s\", \"m\", \"l\" (default: \"m\")"
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "s",
+          "m",
+          "l"
+        ],
+        "default": "m",
+        "description": "Button size"
       },
       {
         "name": "label",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Label for native share button (default: \"Share\")"
+        "default": "Share",
+        "description": "Visible label (and accessible name) of the native share button"
       },
       {
         "name": "color",
         "kind": "host-api",
-        "purpose": "config",
+        "purpose": "visual-variant",
         "type": "boolean",
-        "description": "Present = use platform brand colours"
+        "description": "Brand colours on each platform button's border and icon (label text stays --color-text)"
       },
       {
         "name": "mastodon-instance",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Mastodon instance (default: \"mastodon.social\")"
+        "default": "mastodon.social",
+        "description": "Mastodon instance"
       },
       {
         "name": "tier",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Force tier: \"native\", \"platforms\" (overrides auto-detection)"
+        "type": "enum",
+        "values": [
+          "native",
+          "platforms"
+        ],
+        "description": "Force a tier instead of auto-detecting navigator.share (native without support resolves to hidden)"
       },
       {
         "name": "data-tier-resolved",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "enum",
+        "values": [
+          "native",
+          "platforms",
+          "hidden",
+          "selection"
+        ],
+        "description": "The tier the component rendered"
       },
       {
-        "name": "href",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-label-share-page",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Share this page",
+        "description": "Accessible name of the share nav"
       },
       {
-        "name": "content",
-        "kind": "host-api",
-        "purpose": "config"
+        "name": "data-label-share-on",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Share on {platform}",
+        "description": "Platform button name; {platform} is replaced by the platform label"
+      },
+      {
+        "name": "data-label-copy",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Copy link",
+        "description": "Copy button label"
+      },
+      {
+        "name": "data-label-copied",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Copied!",
+        "description": "Copy button label for 2s after copying"
+      },
+      {
+        "name": "data-label-link-copied",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Link copied to clipboard",
+        "description": "Announced after the link is copied"
+      },
+      {
+        "name": "data-label-share-selection",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Share selection",
+        "description": "Selection-menu button name"
+      },
+      {
+        "name": "data-label-selection-copied",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Selection copied",
+        "description": "Announced after a selection quote is copied"
       }
     ],
     "events": [
       {
-        "name": "share-wc:open"
+        "name": "share-wc:open",
+        "detail": "{ platform: string }",
+        "description": "A share was started (platform id or 'native')"
       },
       {
-        "name": "share-wc:success"
+        "name": "share-wc:success",
+        "detail": "{ platform: string }",
+        "description": "A share window opened, the native share resolved, or the link was copied ('copy')"
       },
       {
-        "name": "share-wc:error"
+        "name": "share-wc:error",
+        "detail": "{ platform: string, error?: Error }",
+        "description": "Native share failed (not cancelled) or the clipboard write failed"
       }
     ],
-    "childAttributes": [],
+    "methods": [
+      {
+        "name": "share",
+        "returns": "Promise<boolean>",
+        "description": "Native tier: open the share sheet (copying the link if it fails). Other tiers: copy the link. Resolves true when shared or copied."
+      }
+    ],
+    "properties": [
+      {
+        "name": "url",
+        "type": "string",
+        "description": "Shared URL; setting it wins over the attribute, re-substitutes slotted {url} tokens and survives reconnect"
+      },
+      {
+        "name": "shareTitle",
+        "type": "string",
+        "description": "Shared title (named to avoid shadowing HTMLElement.title); same override rules as url"
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "description": "Shared description; same override rules as url"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-platform",
+        "on": "a, button (slotted)",
+        "type": "string",
+        "description": "Marks a slotted link/button as a platform; \"copy\" copies the URL. {url}, {title}, {text} tokens in href are substituted (encoded)."
+      }
+    ],
     "structure": []
   },
   "short-cuts": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "short-cuts",
     "type": "web-component",
-    "description": "Keyboard shortcuts help overlay",
-    "attributes": [],
-    "childAttributes": [],
+    "description": "Keyboard shortcuts help overlay: a modal dialog listing the command registry ([data-command][data-shortcut]) and data-hotkey actions, toggled by ? (remappable or off) or show()/toggle().",
+    "attributes": [
+      {
+        "name": "hotkey",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "shift+?",
+        "description": "Key combo that toggles the dialog; \"none\" disables the character-key shortcut (WCAG 2.1.4). A character-key combo also stops firing, and unscoped character-key shortcuts are left out of the dialog, while <html data-char-shortcuts=\"off\"> is set (settings-panel Single-Key Shortcuts preference). Observed."
+      },
+      {
+        "name": "data-label-title",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Keyboard shortcuts",
+        "description": "Dialog heading and accessible name"
+      },
+      {
+        "name": "data-label-general",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "General",
+        "description": "Group holding the component's own shortcut"
+      },
+      {
+        "name": "data-label-self",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Show keyboard shortcuts",
+        "description": "Label of the component's own shortcut"
+      },
+      {
+        "name": "data-label-close",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Close",
+        "description": "Close button accessible name"
+      }
+    ],
+    "events": [
+      {
+        "name": "short-cuts:shortcuts-changed",
+        "detail": "{ shortcuts: Record<string, Array<{ label, shortcut }>> | null, source: 'property' }",
+        "description": "The shortcuts property was set"
+      }
+    ],
+    "methods": [
+      {
+        "name": "show",
+        "returns": "void",
+        "description": "Open the dialog (rebuilds the list from the current sources)"
+      },
+      {
+        "name": "close",
+        "returns": "void",
+        "description": "Close the dialog"
+      },
+      {
+        "name": "toggle",
+        "returns": "void",
+        "description": "Open when closed, close when open"
+      }
+    ],
+    "properties": [
+      {
+        "name": "shortcuts",
+        "type": "Record<string, Array<{ label: string, shortcut: string }>> | null",
+        "description": "Override list keyed by group name; replaces the registry sources (the component's own hotkey is still listed). null restores the registries."
+      },
+      {
+        "name": "open",
+        "type": "boolean",
+        "readonly": true,
+        "description": "Whether the dialog is open"
+      },
+      {
+        "name": "hotkey",
+        "type": "string | null",
+        "readonly": true,
+        "description": "Active combo, or null when hotkey=\"none\""
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-shortcut",
+        "on": "[data-command] (anywhere in the page)",
+        "type": "string",
+        "description": "Command-registry source: label from data-command, group from data-command-group"
+      },
+      {
+        "name": "data-hotkey",
+        "on": "any non-kbd element (anywhere in the page)",
+        "type": "string",
+        "description": "Hotkey-action source: label from data-hotkey-label or text, group from data-hotkey-group (default \"Page Actions\")"
+      }
+    ],
     "structure": [],
     "htmlvalidate": {
       "flow": true,
@@ -8960,78 +13212,198 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "site-index",
     "type": "web-component",
-    "description": "Interactive site keyword index",
+    "description": "Interactive keyword index: filter, A–Z jump strip, entry counts, display limit and sort over a hand-authored (or src JSON) index",
     "attributes": [
       {
         "name": "placeholder",
-        "kind": "native",
+        "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Search input placeholder (default \"Filter index…\")"
+        "default": "Filter index…",
+        "description": "Placeholder and accessible name of the filter input"
       },
       {
         "name": "letters",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Jump nav mode: \"entries\" (default) | \"all\" | \"none\""
+        "type": "enum",
+        "values": [
+          "entries",
+          "all",
+          "none"
+        ],
+        "default": "entries",
+        "description": "Jump strip: letters that have entries, the full A–Z plus any other letters present (É, Å…), or none"
       },
       {
         "name": "filter",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Search scope: \"topic\" (default) | \"all\""
+        "type": "enum",
+        "values": [
+          "topic",
+          "all"
+        ],
+        "default": "topic",
+        "description": "Initial filter scope: match terms only, or terms and page titles"
       },
       {
         "name": "sort",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Sort mode: \"alpha\" (default) | \"count\""
+        "type": "enum",
+        "values": [
+          "alpha",
+          "count"
+        ],
+        "default": "alpha",
+        "description": "Initial sort: authored (alphabetical) order, or sections with most entries first"
       },
       {
         "name": "limit",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Max entries per letter before \"Show more\" toggle"
+        "description": "Max entries per letter before a \"Show N more\" toggle"
       },
       {
         "name": "src",
-        "kind": "native",
+        "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL to load index data from (optional)"
+        "description": "URL of index JSON ([{ term, refs: [{ href, label, type? }] }]) that replaces the authored nav. Strings render as text; only http(s), relative and fragment hrefs become links."
       },
       {
-        "name": "data-index-controls",
+        "name": "data-label-controls",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Filter the index",
+        "description": "Accessible name of the controls search landmark"
       },
       {
-        "name": "data-index-search",
+        "name": "data-label-scope",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Search scope",
+        "description": "Accessible name of the scope select"
       },
       {
-        "name": "href",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "data-index-overflow",
+        "name": "data-label-scope-topic",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "By Topic",
+        "description": "Scope option: match terms only"
       },
       {
-        "name": "data-index-expand",
+        "name": "data-label-scope-all",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "All",
+        "description": "Scope option: match terms and page titles"
+      },
+      {
+        "name": "data-label-sort",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Sort order",
+        "description": "Accessible name of the sort select"
+      },
+      {
+        "name": "data-label-sort-alpha",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Alphabetical",
+        "description": "Sort option"
+      },
+      {
+        "name": "data-label-sort-count",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Most entries",
+        "description": "Sort option"
+      },
+      {
+        "name": "data-label-jump",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Jump to letter",
+        "description": "Accessible name of the letter strip"
+      },
+      {
+        "name": "data-label-more",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Show {count} more",
+        "description": "Show-more button ({count} is replaced)"
+      },
+      {
+        "name": "data-label-less",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Show less",
+        "description": "Show-less button"
+      },
+      {
+        "name": "data-label-matches",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} terms match",
+        "description": "Live filter count ({count} is replaced)"
+      },
+      {
+        "name": "data-label-matches-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "1 term matches",
+        "description": "Live filter count for one match"
+      },
+      {
+        "name": "data-label-no-matches",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No matches",
+        "description": "Live status when the filter matches nothing"
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "structure": [
+      {
+        "element": "<nav>",
+        "description": "The index: a direct-child <nav> of <section id=\"index-x\"> letter groups (or any <nav data-index>). Any aria-label works."
+      },
+      {
+        "element": "<section id=\"index-x\">",
+        "description": "One letter group — <h2> plus <ul> of terms. The letter comes from the id, so index-é gives É."
+      },
+      {
+        "element": "<span class=\"index-term\">",
+        "description": "The term text inside each <li>"
+      },
+      {
+        "element": "<ul class=\"index-refs\">",
+        "description": "Page references for a term"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-index",
+        "on": "nav",
+        "type": "boolean",
+        "description": "Explicitly marks the index nav (otherwise the direct-child nav holding sections is used)"
+      }
+    ]
   },
   "site-map": {
     "$schema": "../../../schemas/api.schema.json",
@@ -9049,8 +13421,13 @@ export default {
         "name": "mode",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Behavior mode: nav-enhance (default) | ia-tree"
+        "type": "enum",
+        "description": "Behavior mode: nav-enhance (static sitemap enhancer) or ia-tree (interactive IA tree)",
+        "values": [
+          "nav-enhance",
+          "ia-tree"
+        ],
+        "default": "nav-enhance"
       },
       {
         "name": "current",
@@ -9064,55 +13441,65 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL to JSON data (nav-enhance: { children }, ia-tree: { title, pages })"
+        "description": "URL to JSON data (nav-enhance: { children: [{ title, href, children }] }, ia-tree: { title, pages }). Strings render as text; only http(s), relative and fragment hrefs become links."
       },
       {
         "name": "title",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "[ia-tree] Site map heading"
+        "description": "[ia-tree] Site map heading and tree name. Changing it rebuilds the tree."
       },
       {
         "name": "collapsed",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "[ia-tree] Start all nodes collapsed"
+        "description": "[ia-tree] Start all nodes collapsed. Changing it rebuilds the tree."
       },
       {
         "name": "compact",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "[ia-tree] Reduced spacing variant"
+        "description": "[ia-tree] Reduced spacing variant (CSS only)"
       },
       {
         "name": "data-view",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "[ia-tree] Set to \"visual\" for the org-chart visualization"
+        "type": "enum",
+        "description": "[ia-tree] Set to \"visual\" for the SVG org-chart visualization. Changing it rebuilds.",
+        "values": [
+          "visual"
+        ]
       },
       {
         "name": "data-orientation",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "[ia-tree visual] Layout orientation"
+        "type": "enum",
+        "description": "[ia-tree visual] Layout orientation. The toolbar flips it; setting it re-renders the chart.",
+        "values": [
+          "vertical",
+          "horizontal"
+        ],
+        "default": "vertical"
       },
       {
         "name": "data-detail",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "[ia-tree visual] Node detail level"
-      },
-      {
-        "name": "data-sitemap-controls",
-        "kind": "data",
-        "purpose": "config",
-        "description": "[nav-enhance] Marks the generated expand/collapse-all controls nav"
+        "type": "enum",
+        "description": "[ia-tree visual] Node detail: 0 shape, 1 title, 2 full, 3 full + status, 4 wireframe. The toolbar slider sets it; setting it re-renders the chart.",
+        "values": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "default": "2"
       }
     ],
     "childAttributes": [
@@ -9139,21 +13526,38 @@ export default {
       {
         "name": "site-map:ready",
         "detail": "{ nodeCount, depth }",
-        "description": "[ia-tree] Fired after component initializes"
+        "description": "[ia-tree] Fired after the tree (or visual chart) is built"
       },
       {
         "name": "site-map:select",
         "detail": "{ href, pageType, template }",
-        "description": "[ia-tree] Node clicked — dispatched with page details"
+        "description": "[ia-tree] A node or its link was clicked"
+      },
+      {
+        "name": "site-map:pages-changed",
+        "detail": "{ pages, source: 'property' }",
+        "description": "[ia-tree] Fired after assigning the pages property rebuilds the tree"
       }
     ],
-    "structure": []
+    "structure": [
+      {
+        "element": "<nav>",
+        "description": "The sitemap: nested <ul>/<li><a> (ia-tree) or <details>/<summary> sections (nav-enhance)"
+      }
+    ],
+    "properties": [
+      {
+        "name": "pages",
+        "type": "Array<{ label, href?, pageType?, template?, status?, children? }>",
+        "description": "[ia-tree] Get the page tree as data, or assign one to rebuild (collapse state resets)"
+      }
+    ]
   },
   "site-search": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "site-search",
     "type": "web-component",
-    "description": "Full-page search dialog with keyboard navigation and result highlighting",
+    "description": "Pagefind-powered site search in a native modal <dialog>: combobox input, listbox of results, live result count",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -9168,12 +13572,155 @@ export default {
         "type": "boolean",
         "direction": "output",
         "description": "Reflected state — set by open()/close() methods, not intended as initial markup"
+      },
+      {
+        "name": "data-pagefind-path",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "/pagefind/",
+        "description": "Directory that holds pagefind.js, resolved against the document base. Set it for subpath deploys (e.g. /my-site/pagefind/)."
+      },
+      {
+        "name": "data-base-url",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Pagefind baseUrl prefixed to result URLs. Default: the directory above data-pagefind-path (\"/\" for the default path)."
+      },
+      {
+        "name": "data-label-trigger",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search",
+        "description": "Accessible name of the generated icon trigger (only when no trigger button is authored)"
+      },
+      {
+        "name": "data-label-dialog",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Site search",
+        "description": "Accessible name of the search dialog"
+      },
+      {
+        "name": "data-label-placeholder",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search documentation...",
+        "description": "Input placeholder"
+      },
+      {
+        "name": "data-label-input",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search",
+        "description": "Accessible name of the search input"
+      },
+      {
+        "name": "data-label-results",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search results",
+        "description": "Accessible name of the results listbox"
+      },
+      {
+        "name": "data-label-searching",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Searching...",
+        "description": "Status text while a search runs"
+      },
+      {
+        "name": "data-label-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No results found",
+        "description": "Status text when a query matches nothing"
+      },
+      {
+        "name": "data-label-count",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} results",
+        "description": "Status text for several results ({count} is replaced)"
+      },
+      {
+        "name": "data-label-count-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "1 result",
+        "description": "Status text for exactly one result"
+      },
+      {
+        "name": "data-label-unavailable",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search unavailable",
+        "description": "Status text when the Pagefind index cannot be loaded (the developer hint goes to the console)"
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search error. Please try again.",
+        "description": "Status text when a search throws"
+      },
+      {
+        "name": "data-label-untitled",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Untitled",
+        "description": "Title shown for a result without meta.title"
+      },
+      {
+        "name": "data-label-navigate",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "to navigate",
+        "description": "Footer hint after the arrow keys"
+      },
+      {
+        "name": "data-label-select",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "to select",
+        "description": "Footer hint after Enter"
+      },
+      {
+        "name": "data-label-close",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "to close",
+        "description": "Footer hint after Esc"
+      },
+      {
+        "name": "data-label-powered",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Powered by",
+        "description": "Footer credit prefix"
       }
     ],
     "structure": [
       {
         "element": "<button data-trigger>",
-        "description": "Button that opens the search dialog"
+        "description": "Button that opens the search dialog (generated with a search icon when absent)"
       }
     ],
     "childAttributes": [
@@ -9192,7 +13739,45 @@ export default {
       },
       {
         "name": "site-search:close",
-        "description": "Fired when the search dialog closes"
+        "description": "Fired when the search dialog closes (Escape, backdrop click, close(), or choosing a result)"
+      },
+      {
+        "name": "site-search:change",
+        "detail": "{ value, source: 'api' }",
+        "description": "Fired when the value property sets a new query"
+      }
+    ],
+    "methods": [
+      {
+        "name": "open()",
+        "description": "Open the dialog with showModal() and focus the input"
+      },
+      {
+        "name": "close()",
+        "description": "Close the dialog, clear the query and results, and return focus to the trigger"
+      }
+    ],
+    "properties": [
+      {
+        "name": "isOpen",
+        "type": "boolean",
+        "description": "Read-only: whether the dialog is open"
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "description": "The current query. Setting it runs the same debounced search as typing and fires site-search:change"
+      },
+      {
+        "name": "results",
+        "type": "Array<PagefindResultData>",
+        "description": "Read-only copy of the current Pagefind result records (url, meta, excerpt)"
+      }
+    ],
+    "states": [
+      {
+        "name": "input-debounce-pending",
+        "description": "A keystroke is waiting out the 150ms debounce before searching"
       }
     ]
   },
@@ -9200,78 +13785,126 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "slide-accept",
     "type": "web-component",
-    "description": "Slide-to-confirm interaction",
+    "description": "Slide-to-confirm interaction. The inner .slide-handle is a role=\"slider\" (aria-valuenow/-valuetext, aria-describedby hint); a tap, Enter, Space or End also confirms (WCAG 2.5.7 single-pointer alternative)",
+    "formAssociated": true,
     "attributes": [
       {
         "name": "label",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Track label text (default: \"Slide to confirm\")"
+        "description": "Track label and handle accessible name. Default: the authored text content, else \"Slide to confirm\". Observed"
       },
       {
         "name": "activated-label",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Label after activation (default: \"Confirmed!\")"
+        "description": "Label (and handle aria-valuetext) after activation, announced through a polite live region (default: \"Confirmed!\"). Observed"
+      },
+      {
+        "name": "data-label-hint",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Screen-reader hint wired with aria-describedby (default: \"Press Enter to confirm\"). Observed"
       },
       {
         "name": "attention",
         "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Attention animation: \"shimmer\" | \"pulse\""
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "shimmer",
+          "pulse"
+        ],
+        "description": "Attention animation (off under reduced motion)"
       },
       {
         "name": "threshold",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Activation threshold 0-100 (default: 90)"
+        "default": 90,
+        "description": "Drag activation threshold 0-100"
       },
       {
-        "name": "role",
+        "name": "name",
         "kind": "native",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "description": "Form field name; the value is submitted only once activated"
       },
       {
-        "name": "aria-valuemin",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "value",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "default": "on",
+        "description": "Submitted value once activated"
       },
       {
-        "name": "aria-valuemax",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "required",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "valueMissing until activated, so the form cannot submit"
       },
       {
-        "name": "aria-valuenow",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "disabled",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Blocks drag, tap and keys (a disabled fieldset does the same); handle gets aria-disabled"
       },
       {
         "name": "data-activated",
         "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "transitioning",
-        "kind": "host-api",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "description": "Present once confirmed"
       },
       {
         "name": "data-dragging",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "description": "Present while the handle is being dragged"
+      },
+      {
+        "name": "transitioning",
+        "kind": "host-api",
+        "purpose": "internal-hook",
+        "public": false,
+        "direction": "output",
+        "type": "boolean",
+        "description": "Internal: present during the spring-back transition"
       }
     ],
     "events": [
       {
-        "name": "slide-accept:reset"
+        "name": "slide-accept:accept",
+        "description": "Fired once on activation (drag past threshold, tap, Enter, Space or End)"
       },
       {
-        "name": "slide-accept:accept"
+        "name": "slide-accept:reset",
+        "description": "Fired after reset() (also on form reset when activated)"
+      }
+    ],
+    "properties": [
+      {
+        "name": "activated",
+        "type": "boolean",
+        "readonly": true,
+        "description": "Whether the component has been confirmed"
+      }
+    ],
+    "methods": [
+      {
+        "name": "reset()",
+        "description": "Return the handle to the start, restore the label, clear the form value"
       }
     ],
     "childAttributes": [],
@@ -9287,72 +13920,154 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "social-embed",
     "type": "web-component",
+    "description": "Privacy-first social post embed. Renders the authored fallback link plus a \"Load … post\" button; on activation it builds a sandboxed iframe from the validated post URL (Bluesky, Mastodon, X, Instagram) or a <youtube-player> (YouTube).",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "url",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL of content to embed (required)"
+        "required": true,
+        "description": "Post or video URL. Must be https on the provider's own host (Mastodon: any https host with a /@user/<id> path); anything else is unsupported."
       },
       {
         "name": "provider",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Explicit provider key (auto-detected if omitted)"
+        "description": "Provider key (x, instagram, bluesky, youtube, mastodon or a registered custom key). Skips auto-detection; the provider must still accept the URL."
+      },
+      {
+        "name": "poster",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "YouTube only: local image passed to <youtube-player poster>, so no thumbnail is fetched from i.ytimg.com."
       },
       {
         "name": "theme",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Theme hint: light | dark | auto (default: auto)"
+        "type": "enum",
+        "values": [
+          "light",
+          "dark",
+          "auto"
+        ],
+        "default": "auto",
+        "description": "Colour hint for themeable providers (X, Bluesky). auto: the host's computed color-scheme, then the page's data-mode, then prefers-color-scheme."
       },
       {
         "name": "activate",
         "kind": "host-api",
         "purpose": "config",
+        "type": "enum",
+        "values": [
+          "click",
+          "visible",
+          "eager"
+        ],
+        "default": "click",
+        "description": "click: load when the reader presses the Load button; visible: when scrolled within 200px of the viewport; eager: at once. YouTube always renders its own facade at once."
+      },
+      {
+        "name": "data-title",
+        "kind": "data",
+        "purpose": "config",
         "type": "string",
-        "description": "Activation trigger: click | visible | eager (default: click)"
+        "description": "Accessible name of the embedded frame (YouTube: the player title). Default: \"{provider} post\" / \"YouTube video\"."
+      },
+      {
+        "name": "data-label-load",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Load {provider} {noun}",
+        "description": "Load button text; {provider} is the platform name, {noun} is post (video for YouTube)."
+      },
+      {
+        "name": "data-label-loading",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Loading {provider} {noun}…",
+        "description": "Button text and live-region announcement while loading."
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{provider} {noun} failed to load.",
+        "description": "Visible note and announcement when loading fails (the button stays for a retry)."
+      },
+      {
+        "name": "data-label-note",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Loads content from {host}",
+        "description": "Consent note beside the Load button; {host} is the host the embed loads from."
       },
       {
         "name": "state",
         "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Lifecycle state (read-only, set by component)"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "enum",
+        "values": [
+          "idle",
+          "loading",
+          "loaded",
+          "error",
+          "unsupported"
+        ],
+        "description": "Lifecycle state, set by the component."
+      }
+    ],
+    "properties": [],
+    "methods": [
+      {
+        "name": "SocialEmbed.register(name, provider)",
+        "returns": "void",
+        "description": "Static. Add a provider { canHandle(url), render(host, url, { theme, title }) → Promise<Node | void>, label?, noun?, themeable?, delegatesActivation?, frameHost(url)? }. A returned Node replaces the fallback. Instances left unsupported re-initialise."
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "createEmbedFrame(options)",
+        "returns": "HTMLIFrameElement",
+        "description": "Module export. Build a sandboxed, lazy https iframe ({ src: URL, title, sandbox: string[], allow?, height?, measure?(data), onload?(frame) }); measure reads a height from the frame's postMessage (origin and source are checked)."
       },
       {
-        "name": "data-embed-live",
-        "kind": "data",
-        "purpose": "config"
+        "name": "loadScript(src)",
+        "returns": "Promise<void>",
+        "description": "Module export. Idempotent script loader for custom providers; a failed load is evicted so it can be retried. Built-in providers never inject script."
       },
       {
-        "name": "style",
-        "kind": "host-api",
-        "purpose": "config"
+        "name": "fetchOEmbed(endpoint, url, params?)",
+        "returns": "Promise<object>",
+        "description": "Module export. Fetch oEmbed JSON. Never insert its html with innerHTML."
+      }
+    ],
+    "events": [
+      {
+        "name": "social-embed:upgraded",
+        "description": "Fired (bubbles) after the element upgrades."
       }
     ],
     "childAttributes": [],
-    "structure": [],
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    }
+    "structure": []
   },
   "split-surface": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "split-surface",
     "type": "web-component",
-    "description": "Resizable split panel with drag, keyboard, and persistence support",
+    "description": "Resizable split panel with drag, keyboard, collapse, and persistence support. The injected .split-divider is a focusable role=\"separator\" with aria-valuenow/-valuetext",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -9370,7 +14085,7 @@ export default {
           "vertical"
         ],
         "default": "horizontal",
-        "description": "Split axis"
+        "description": "Split axis. Observed"
       },
       {
         "name": "position",
@@ -9378,8 +14093,7 @@ export default {
         "purpose": "config",
         "type": "number",
         "default": "50",
-        "direction": "both",
-        "description": "Split position as percentage (0–100)"
+        "description": "Default split position as a percentage (0–100). A persisted value wins over it on load. Observed (changes apply), not reflected: read the live value from the position property"
       },
       {
         "name": "min",
@@ -9387,7 +14101,7 @@ export default {
         "purpose": "config",
         "type": "number",
         "default": "10",
-        "description": "Minimum panel size percentage"
+        "description": "Minimum panel size percentage. Observed"
       },
       {
         "name": "max",
@@ -9395,27 +14109,43 @@ export default {
         "purpose": "config",
         "type": "number",
         "default": "90",
-        "description": "Maximum panel size percentage"
+        "description": "Maximum panel size percentage. Observed"
       },
       {
         "name": "persist",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "VBStore key suffix under namespace 'layout' (vb:layout:split:{key}) for position persistence"
+        "description": "VBStore key suffix under namespace 'layout' (vb:layout:split:{key}); stores { position, collapsed } after user resizes and wins over the position attribute on load"
       },
       {
         "name": "collapsible",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Double-click divider to collapse first panel"
+        "description": "Enter or double-click on the divider collapses / expands the first panel (collapsed panel is inert; aria-valuemin becomes 0). Observed"
+      },
+      {
+        "name": "data-label-resize",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Resize panels",
+        "description": "Accessible name of the divider"
+      },
+      {
+        "name": "data-label-collapsed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Collapsed",
+        "description": "Divider aria-valuetext while the first panel is collapsed (otherwise \"{n}%\")"
       }
     ],
     "structure": [
       {
         "element": "first child",
-        "description": "First panel content"
+        "description": "First panel content (the one the divider resizes and collapses)"
       },
       {
         "element": "second child",
@@ -9425,13 +14155,41 @@ export default {
     "events": [
       {
         "name": "split-surface:resize",
-        "detail": "{ position }",
-        "description": "Fired when panel is resized"
+        "detail": "{ position, source }",
+        "description": "Fired when the split changes; source is 'pointer', 'keyboard', 'api' or 'attribute'. Not fired on initial load / reconnect"
       },
       {
         "name": "split-surface:collapse",
-        "detail": "{ collapsed }",
-        "description": "Fired when panel is collapsed or expanded"
+        "detail": "{ collapsed, source }",
+        "description": "Fired when the first panel is collapsed or expanded"
+      }
+    ],
+    "properties": [
+      {
+        "name": "position",
+        "type": "number",
+        "description": "Live split percentage (0 while collapsed). Settable; non-numeric values are ignored. Safe to set before the element finishes initialising (queued)"
+      },
+      {
+        "name": "collapsed",
+        "type": "boolean",
+        "description": "Whether the first panel is collapsed. Settable (queued before init)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "reset()",
+        "description": "Expand, return to the position attribute (or 50), and clear the persisted value"
+      }
+    ],
+    "states": [
+      {
+        "name": "divider-dragging",
+        "description": "The divider is being dragged"
+      },
+      {
+        "name": "collapsed",
+        "description": "The first panel is collapsed"
       }
     ]
   },
@@ -9439,35 +14197,35 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "star-rating",
     "type": "web-component",
-    "description": "Form-associated star rating web component",
+    "description": "Form-associated star rating web component: generates a fieldset[data-rating] of radios (CSS layer) opted into the rating effect (clear, rating:change), and submits one name=value entry via ElementInternals.",
     "attributes": [
       {
         "name": "name",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Form field name (omit for read-only)"
+        "description": "Form field name. FormData gets exactly one name=value entry via ElementInternals; omit for read-only."
       },
       {
         "name": "value",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Current rating value (default: 0)"
+        "description": "Rating value, also the form-reset default (default: 0). Observed: changing it after upgrade updates the rating."
       },
       {
         "name": "max",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Number of stars (default: 5)"
+        "description": "Number of stars (default: 5). Observed: changing it rebuilds the stars, keeping the value."
       },
       {
         "name": "label",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Legend text (default: \"Rating\")"
+        "description": "Legend text (default: \"Rating\"). Observed."
       },
       {
         "name": "allow-half",
@@ -9481,7 +14239,7 @@ export default {
         "kind": "native",
         "purpose": "config",
         "type": "boolean",
-        "description": "Display-only mode"
+        "description": "Display-only mode (role=\"img\" summary, partial stars). Observed."
       },
       {
         "name": "icon",
@@ -9495,41 +14253,104 @@ export default {
         "kind": "native",
         "purpose": "config",
         "type": "boolean",
-        "description": "Makes rating required for form validation"
+        "description": "Makes rating required for form validation (valueMissing until a star is chosen). Observed."
       },
       {
-        "name": "data-rating",
+        "name": "data-label-one",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "description": "Radio label for the Intl.PluralRules \"one\" category; {n} is the Intl.NumberFormat value (default \"{n} star\"). Any CLDR category works (data-label-few, ...). Locale from the closest [lang]."
+      },
+      {
+        "name": "data-label-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Radio label for categories without their own data-label-* (default \"{n} stars\")"
+      },
+      {
+        "name": "data-label-readonly",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Read-only summary; {label}, {value}, {max} are replaced (default \"{label}: {value} out of {max}\")"
+      },
+      {
+        "name": "data-label-required",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Validation message when required and empty (default \"Please select a rating\")"
+      },
+      {
+        "name": "data-label-cleared",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Live-region announcement when the rating is cleared (default \"Rating cleared\")"
+      }
+    ],
+    "properties": [
+      {
+        "name": "value",
+        "type": "number",
+        "description": "Current rating (0 = none). Settable before connect; applied when the stars are built."
+      }
+    ],
+    "events": [
+      {
+        "name": "rating:change",
+        "description": "Fires (bubbling, from the inner fieldset) when the rating changes, including clear to 0. detail: { value: number }"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-rating",
+        "on": "fieldset",
+        "type": "boolean",
+        "description": "Generated: the CSS-only rating fieldset"
       },
       {
         "name": "data-rating-half",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-effect",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-half",
-        "kind": "data",
-        "purpose": "config"
+        "on": "fieldset",
+        "type": "boolean",
+        "description": "Generated with allow-half: half-star labels"
       },
       {
         "name": "data-rating-readonly",
-        "kind": "data",
-        "purpose": "config"
+        "on": "fieldset",
+        "type": "boolean",
+        "description": "Generated with readonly: display-only stars (role=img)"
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-effect",
+        "on": "fieldset",
+        "type": "string",
+        "description": "Generated: \"rating\" opts the fieldset into the rating effect"
+      },
+      {
+        "name": "data-half",
+        "on": "label",
+        "type": "enum",
+        "values": [
+          "left",
+          "right"
+        ],
+        "description": "Generated with allow-half: which half of the star the label covers"
       }
     ],
-    "childAttributes": [],
     "structure": [],
+    "cssProperties": [
+      {
+        "name": "--rating-color",
+        "description": "Filled star colour (default var(--color-warning)); set on star-rating or any [data-rating]"
+      },
+      {
+        "name": "--rating-color-empty",
+        "description": "Empty star outline colour (default var(--color-text-muted))"
+      }
+    ],
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -9576,32 +14397,46 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Set to \"off\" to suppress live-region announcements (decorative use)"
+        "description": "Set to \"off\" to drop role=\"status\"/aria-live (decorative use)"
+      },
+      {
+        "name": "data-label-*",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Visually hidden default label per variant, used when the element has no slot text (e.g. data-label-online=\"En ligne\"). Defaults: the English variant name (Live, Recording, Streaming, Error, Online, Running, Away, Paused, Busy, Offline, Stopped); a custom variant falls back to its name."
       },
       {
         "name": "aria-label",
         "kind": "aria",
         "purpose": "config",
         "type": "string",
-        "description": "Required when slot has no text content"
+        "description": "Explicit name; with no slot text it is also used as the visually hidden label text"
       },
       {
         "name": "role",
         "kind": "aria",
         "purpose": "config",
-        "description": "Defaults to \"status\""
+        "description": "Defaults to \"status\" unless the author sets role/aria-live or data-live=\"off\""
       },
       {
         "name": "aria-live",
         "kind": "aria",
         "purpose": "config",
-        "description": "Defaults to \"polite\""
+        "description": "Defaults to \"polite\" alongside role=\"status\""
+      }
+    ],
+    "properties": [
+      {
+        "name": "variant",
+        "type": "string | null",
+        "description": "Reads and writes data-variant (null/empty removes it)"
       }
     ],
     "events": [
       {
         "name": "status-wc:change",
-        "description": "Fires when data-variant mutates. detail: { variant, previousVariant }"
+        "description": "Fires when data-variant mutates after upgrade (not for the initial value). detail: { variant, previousVariant }"
       }
     ],
     "childAttributes": [],
@@ -9614,6 +14449,10 @@ export default {
       {
         "name": "--status-dot-color",
         "description": "Dot color (overrides variant default)"
+      },
+      {
+        "name": "--status-dot-ring",
+        "description": "Dot ring colour (default: a darker shade of the dot colour in light mode, the dot colour in dark mode)"
       },
       {
         "name": "--status-pulse-duration",
@@ -9639,14 +14478,16 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "stepper-wc",
     "type": "web-component",
-    "description": "Stepper for values <input type=\"number\"> + data-stepper cannot reach: formatted units, currency, time, token-snap scales, discrete enums.",
+    "description": "Stepper for values <input type=\"number\"> + data-stepper cannot reach: formatted units, currency, time, token-snap scales, discrete enums. Renders an inner role=\"spinbutton\" that receives the host's label.",
+    "formAssociated": true,
     "attributes": [
       {
         "name": "value",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Current value (string; reflected)"
+        "description": "Current value (string). Authored value is the form-reset target; changes are reflected",
+        "direction": "both"
       },
       {
         "name": "name",
@@ -9726,47 +14567,48 @@ export default {
         "description": "Enable long-press acceleration on the +/- buttons"
       },
       {
+        "name": "data-label-decrease",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Decrease",
+        "description": "Accessible name of the decrease button"
+      },
+      {
+        "name": "data-label-increase",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Increase",
+        "description": "Accessible name of the increase button"
+      },
+      {
+        "name": "aria-label",
+        "kind": "aria",
+        "purpose": "config",
+        "type": "string",
+        "description": "Forwarded to the inner role=\"spinbutton\" (prefer a <label for>)"
+      },
+      {
+        "name": "aria-labelledby",
+        "kind": "aria",
+        "purpose": "config",
+        "type": "string",
+        "description": "Forwarded to the inner role=\"spinbutton\", merged with any <label for> / wrapping <label>"
+      },
+      {
         "name": "disabled",
         "kind": "native",
         "purpose": "config",
-        "type": "boolean"
+        "type": "boolean",
+        "description": "Disables stepping and removes the spinbutton from the tab order. A disabled <fieldset> does the same"
       },
       {
         "name": "readonly",
         "kind": "native",
         "purpose": "config",
-        "type": "boolean"
-      },
-      {
-        "name": "role",
-        "kind": "aria",
-        "purpose": "config",
-        "description": "spinbutton on the inner display element"
-      },
-      {
-        "name": "aria-valuenow",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-valuemin",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-valuemax",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-valuetext",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-disabled",
-        "kind": "aria",
-        "purpose": "config"
+        "type": "boolean",
+        "description": "Value cannot change: spinbutton gets aria-readonly, +/- buttons are disabled"
       }
     ],
     "events": [
@@ -9777,6 +14619,25 @@ export default {
       {
         "name": "change",
         "description": "Fires when value changes. Bubbles."
+      }
+    ],
+    "properties": [
+      {
+        "name": "value",
+        "type": "string",
+        "description": "Current canonical value (number as string, token, or enum value). Setting it fires input + change"
+      },
+      {
+        "name": "displayText",
+        "type": "string",
+        "readonly": true,
+        "description": "The user-visible formatted text, e.g. \"$5.00\", \"2.05 KB\", \"Medium\""
+      }
+    ],
+    "methods": [
+      {
+        "name": "recomputeWidth()",
+        "description": "Rebuild the width reserve after changing data-min/-max/-values/-options/-format after upgrade"
       }
     ],
     "childAttributes": [],
@@ -9818,7 +14679,19 @@ export default {
         "kind": "aria",
         "purpose": "semantic-state",
         "type": "string",
-        "description": "Accessible label for the tab group"
+        "description": "Names the set of tabs. When the host has aria-label or aria-labelledby (and no role of its own) it gets role=\"group\" on upgrade, so the name is exposed; an unlabelled tab-set stays role-less. Read at upgrade."
+      },
+      {
+        "name": "data-orientation",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "horizontal",
+          "vertical"
+        ],
+        "default": "horizontal",
+        "description": "Vertical puts the tabs in a column at the inline start with the panel beside them, and adds ArrowUp/ArrowDown navigation. Horizontal tabs wrap onto further rows when they don't fit."
       },
       {
         "name": "transition",
@@ -9836,18 +14709,62 @@ export default {
     "structure": [
       {
         "element": "<details>",
-        "description": "One per tab — native disclosure element provides open/close state"
+        "description": "One per tab — native disclosure element provides open/close state. Give every tab the same name for no-JS exclusivity; on upgrade a missing, mixed or page-shared name is replaced with a per-instance one"
       },
       {
         "element": "<summary>",
         "description": "Tab label inside each <details>"
+      },
+      {
+        "element": "<section>",
+        "description": "Exactly one panel element per <details>, after the summary. Use <section>: it is named by its tab (aria-labelledby) and exposed as a region; a <div> panel's name is ignored"
       }
     ],
     "events": [
       {
         "name": "tab-set:change",
-        "detail": "{ index }",
-        "description": "Fired when the active tab changes"
+        "detail": "{ index, previousIndex, tab, panel }",
+        "description": "Fired once per activation (click, arrow key or setting details.open), from the newly opened tab. index is the new tab, previousIndex the one it replaced, tab its <details>, panel its panel element. Not fired during setup or when the active tab is re-selected"
+      },
+      {
+        "name": "tab-set:tabs-changed",
+        "detail": "{ tabs, source: 'property' }",
+        "description": "Fired after the tabs property rebuilds the set"
+      }
+    ],
+    "properties": [
+      {
+        "name": "tabs",
+        "type": "Array<{ id?, label, content, active? }>",
+        "description": "Get the tabs as data, or assign an array to rebuild the set (<details> + <summary> + <section> panel per entry; first tab opens unless one has active: true). content is trusted HTML written with innerHTML — never pass unsanitised user input"
+      }
+    ]
+  },
+  "table": {
+    "element": "table",
+    "type": "native",
+    "attributes": [
+      {
+        "name": "data-striped",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "boolean"
+      },
+      {
+        "name": "data-bordered",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "boolean"
+      },
+      {
+        "name": "data-density",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "compact",
+          "comfortable"
+        ]
       }
     ]
   },
@@ -9855,6 +14772,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "text-reader",
     "type": "web-component",
+    "description": "Text-to-speech reader with word-level highlighting (Web Speech API + CSS Custom Highlight API)",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -9868,6 +14786,16 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "ID of the element to read (required)"
+      },
+      {
+        "name": "variant",
+        "kind": "host-api",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "icon"
+        ],
+        "description": "\"icon\" renders a compact speaker trigger with a floating mini-toolbar instead of the full control bar"
       },
       {
         "name": "selectors",
@@ -9905,54 +14833,188 @@ export default {
         "description": "Set to \"false\" to disable auto-scroll"
       },
       {
-        "name": "part",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "label-play",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "label-pause",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "label-stop",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "data-speed-group",
+        "name": "data-label-play",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Play",
+        "description": "Play button label (i18n override)"
       },
       {
-        "name": "data-speed-value",
+        "name": "data-label-pause",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Pause",
+        "description": "Pause button label (i18n override)"
       },
       {
-        "name": "slot",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-label-stop",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Stop",
+        "description": "Stop button label (i18n override)"
+      },
+      {
+        "name": "data-label-reader",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Article reader",
+        "description": "Control-bar group label and icon trigger label (i18n override)"
+      },
+      {
+        "name": "data-label-controls",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Reader controls",
+        "description": "Icon-variant toolbar group label (i18n override)"
+      },
+      {
+        "name": "data-label-voice",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Voice",
+        "description": "Voice select label (i18n override)"
+      },
+      {
+        "name": "data-label-loading-voices",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Loading voices…",
+        "description": "Voice select placeholder while voices load (i18n override)"
+      },
+      {
+        "name": "data-label-speed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Speed",
+        "description": "Speed slider label (i18n override)"
+      },
+      {
+        "name": "data-label-slower",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Slower",
+        "description": "Icon-toolbar slower button label (i18n override)"
+      },
+      {
+        "name": "data-label-faster",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Faster",
+        "description": "Icon-toolbar faster button label (i18n override)"
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "childAttributes": [
+      {
+        "name": "slot",
+        "on": "direct child",
+        "type": "enum",
+        "values": [
+          "icon-play",
+          "icon-pause",
+          "icon-stop",
+          "icon-trigger"
+        ],
+        "description": "Moves the element into the matching generated button (icon-trigger: icon variant only); restored on disconnect"
+      }
+    ],
+    "structure": [],
+    "events": [
+      {
+        "name": "text-reader:play",
+        "detail": "{ voice, speed }",
+        "description": "Speech started"
+      },
+      {
+        "name": "text-reader:pause",
+        "detail": "{}",
+        "description": "Speech paused"
+      },
+      {
+        "name": "text-reader:resume",
+        "detail": "{}",
+        "description": "Speech resumed"
+      },
+      {
+        "name": "text-reader:stop",
+        "detail": "{}",
+        "description": "Speech stopped by stop(), a target change, or another reader taking over the speech queue"
+      },
+      {
+        "name": "text-reader:end",
+        "detail": "{ duration }",
+        "description": "Reached the end of the text (duration in ms)"
+      },
+      {
+        "name": "text-reader:word",
+        "detail": "{ word, charIndex, element }",
+        "description": "Word boundary reached"
+      },
+      {
+        "name": "text-reader:error",
+        "detail": "{ error }",
+        "description": "SpeechSynthesisUtterance error (also logged with console.warn)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "play()",
+        "description": "Start reading from the beginning (re-extracts the target text), or resume if paused"
+      },
+      {
+        "name": "pause()",
+        "description": "Pause speech"
+      },
+      {
+        "name": "resume()",
+        "description": "Resume paused speech"
+      },
+      {
+        "name": "stop()",
+        "description": "Cancel speech and reset; no-op when this reader is not speaking"
+      }
+    ],
+    "properties": [
+      {
+        "name": "voices",
+        "type": "Promise<SpeechSynthesisVoice[]>",
+        "readonly": true,
+        "description": "Available voices"
+      },
+      {
+        "name": "speaking",
+        "type": "boolean",
+        "readonly": true,
+        "description": "Speech is active (including paused)"
+      },
+      {
+        "name": "paused",
+        "type": "boolean",
+        "readonly": true,
+        "description": "Speech is paused"
+      },
+      {
+        "name": "progress",
+        "type": "number",
+        "readonly": true,
+        "description": "Position as a 0–1 fraction of the extracted text"
+      }
+    ]
   },
   "theme-picker": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "theme-picker",
     "type": "web-component",
-    "description": "Theme selection component",
+    "description": "Theme selection: color mode, brand theme, accent, sizing, accessibility themes and extensions, as a popover or inline panel",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -9964,110 +15026,298 @@ export default {
         "name": "variant",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Display variant: 'popover' (default), 'inline'"
+        "type": "enum",
+        "values": [
+          "popover",
+          "inline"
+        ],
+        "default": "popover",
+        "description": "popover: trigger + floating panel; inline: always-visible panel"
       },
       {
         "name": "compact",
         "kind": "host-api",
-        "purpose": "config",
+        "purpose": "visual-variant",
         "type": "boolean",
-        "description": "Render theme section as grouped select dropdown"
+        "description": "Segmented mode control plus selects instead of swatch grids"
       },
       {
         "name": "open",
-        "kind": "native",
-        "purpose": "config",
+        "kind": "host-api",
+        "purpose": "output-state",
+        "direction": "output",
         "type": "boolean",
-        "description": "Reflected state only — set by open()/close()/toggle() methods, not intended as initial markup (popover variant only)"
+        "description": "Reflected state only — set by open()/close()/toggle(), not intended as initial markup (popover variant only)"
       },
       {
-        "name": "data-trigger",
+        "name": "data-label-panel",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Theme settings",
+        "description": "Panel aria-label (i18n override)"
       },
       {
-        "name": "aria-haspopup",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "data-label-trigger",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Theme settings",
+        "description": "Generated trigger icon label (i18n override)"
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-label-mode",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Color Mode",
+        "description": "Color mode legend and radiogroup label (i18n override)"
       },
       {
-        "name": "aria-busy",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "data-label-accent",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Color Accent",
+        "description": "Accent legend and label (i18n override)"
+      },
+      {
+        "name": "data-label-style",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Style",
+        "description": "Style swatch group (i18n override)"
+      },
+      {
+        "name": "data-label-featured",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Featured",
+        "description": "Featured themes legend (i18n override)"
+      },
+      {
+        "name": "data-label-more-themes",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "More Themes",
+        "description": "More themes disclosure (i18n override)"
+      },
+      {
+        "name": "data-label-theme",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Theme",
+        "description": "Compact theme select (i18n override)"
+      },
+      {
+        "name": "data-label-a11y",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Accessibility",
+        "description": "Accessibility legend (i18n override)"
+      },
+      {
+        "name": "data-label-sizing",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Sizing",
+        "description": "Sizing legend and label (i18n override)"
+      },
+      {
+        "name": "data-label-extensions",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Extensions",
+        "description": "Extensions legend / disclosure (i18n override)"
+      },
+      {
+        "name": "data-label-download",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Download {name} as DTCG tokens",
+        "description": "DTCG download link label ({name} = theme name) (i18n override)"
       }
     ],
+    "childAttributes": [
+      {
+        "name": "data-trigger",
+        "on": "button",
+        "type": "boolean",
+        "description": "Marks the popover trigger (else the first child <button>; else a generated type=button icon trigger)"
+      }
+    ],
+    "structure": [],
     "events": [
       {
-        "name": "vb:extensions-change"
+        "name": "theme-picker:open",
+        "detail": "null",
+        "description": "Popover opened"
       },
       {
-        "name": "theme-picker:open"
-      },
-      {
-        "name": "theme-picker:close"
+        "name": "theme-picker:close",
+        "detail": "null",
+        "description": "Popover closed"
       },
       {
         "name": "theme-picker:dtcg-download",
-        "description": "Fired when a user clicks the per-swatch DTCG download link. Native <a download> still handles the save; this event is for analytics / consumer hooks. detail: { themeId, href }"
+        "detail": "{ themeId, href }",
+        "description": "Per-swatch DTCG download link clicked (native <a download> still saves the file)"
+      },
+      {
+        "name": "vb:a11y-themes-change",
+        "detail": "string[]",
+        "description": "Dispatched on window when an accessibility theme is toggled; the picker also listens for it from other pickers and settings-panel and re-syncs"
+      },
+      {
+        "name": "vb:extensions-change",
+        "detail": "{ motionFx, sounds }",
+        "description": "Dispatched on window when extension prefs are applied (load and toggle); also listened for from sibling controls"
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "methods": [
+      {
+        "name": "open()",
+        "description": "Open the popover and move focus into it (popover variant only)"
+      },
+      {
+        "name": "close()",
+        "description": "Close the popover"
+      },
+      {
+        "name": "toggle()",
+        "description": "Open or close the popover"
+      }
+    ],
+    "properties": [
+      {
+        "name": "isOpen",
+        "type": "boolean",
+        "readonly": true,
+        "description": "Whether the popover is open"
+      }
+    ]
   },
   "time-index": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "time-index",
     "type": "web-component",
-    "description": "Interactive changelog/timeline component",
+    "description": "Interactive changelog/timeline component: relative dates, sort toggle, version filter and a recently-updated-pages feed",
     "attributes": [
-      {
-        "name": "group",
-        "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "'month' (default) or 'version'"
-      },
-      {
-        "name": "view",
-        "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "'date' or 'version' — grouping view"
-      },
       {
         "name": "versions",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Enable version jump select"
+        "description": "Add a version filter select. Options come from each entry's data-version, own .version-tag text, or a v2-1-0 style id."
       },
       {
         "name": "updates-src",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL for recently updated pages JSON"
+        "description": "URL of a JSON array of { title, href | url, modified | date } rendered as a recently-updated-pages feed. Only http(s) and relative links are kept."
+      },
+      {
+        "name": "data-label-controls",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Timeline controls",
+        "description": "Accessible name of the injected controls nav."
+      },
+      {
+        "name": "data-label-sort",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Oldest first",
+        "description": "Sort toggle text. The label never changes; aria-pressed carries the state."
+      },
+      {
+        "name": "data-label-filter",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Filter by version",
+        "description": "Accessible name of the version select."
+      },
+      {
+        "name": "data-label-all",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "All versions",
+        "description": "Text of the select's show-everything option."
+      },
+      {
+        "name": "data-label-status",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Showing {count} of {total} entries for {version}",
+        "description": "Polite live-region text after filtering; {count}, {total} and {version} are replaced."
+      },
+      {
+        "name": "data-label-status-all",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Showing all {total} entries",
+        "description": "Live-region text when the filter is cleared; {total} is replaced."
+      },
+      {
+        "name": "data-label-recent",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Recently updated pages",
+        "description": "Heading of the recently-updated-pages feed."
       },
       {
         "name": "data-timeline-controls",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "public": false,
+        "description": "Marks the injected controls nav"
+      },
+      {
+        "name": "data-recent-pages",
+        "kind": "data",
+        "purpose": "output-state",
+        "direction": "output",
+        "public": false,
+        "description": "Marks the injected recently-updated-pages section"
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "childAttributes": [
+      {
+        "name": "data-version",
+        "on": "li, article, section",
+        "type": "string",
+        "description": "Explicit version of an entry or release for the filter (wins over .version-tag text and the id convention)."
+      }
+    ],
+    "structure": [
+      {
+        "element": ".changelog-entries",
+        "description": "One container: its li/article/section children are the entries. One per release: the host's top-level children holding them are the releases."
+      }
+    ]
   },
   "time-picker": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "time-picker",
     "type": "web-component",
-    "description": "Form-associated time input with combobox text entry",
+    "description": "Form-associated time input with combobox text entry and a spinbutton popup",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -10080,113 +15330,226 @@ export default {
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Form field name"
+        "description": "Form field name. A name on the inner input (the no-JS path) moves here on upgrade so exactly one value submits; the host's own name wins if both are set."
       },
       {
         "name": "data-format",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "\"12h\" or \"24h\" (default: locale-detected)"
+        "type": "enum",
+        "values": [
+          "12h",
+          "24h"
+        ],
+        "description": "Force a 12- or 24-hour display. Default: the hour cycle of the nearest [lang] (else the browser locale)."
       },
       {
         "name": "disabled",
         "kind": "native",
-        "purpose": "config",
+        "purpose": "semantic-state",
         "type": "boolean",
-        "description": "Disables the picker"
+        "description": "Disables the text input and clock button, closes the popup and drops the value from submission. Observed at runtime; a disabled ancestor fieldset has the same effect. A disabled on the inner input moves here on upgrade."
       },
       {
         "name": "required",
         "kind": "native",
         "purpose": "config",
         "type": "boolean",
-        "description": "Makes selection required"
+        "description": "Makes a time required (valueMissing while empty). Observed at runtime; a required on the inner input works too."
       },
       {
-        "name": "step",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "min",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "max",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "data-disabled",
+        "name": "data-label-input",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Time",
+        "description": "Accessible name for the text input when neither a <label> nor an aria-label/aria-labelledby is present."
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-haspopup",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "autocomplete",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "placeholder",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "size",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-valuemin",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-valuemax",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "data-open",
+        "name": "data-label-placeholder",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Type a time…",
+        "description": "Placeholder for the text input."
       },
       {
-        "name": "aria-valuenow",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "data-label-toggle",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Toggle time spinners",
+        "description": "Accessible name for the clock button."
       },
       {
-        "name": "aria-valuetext",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "data-label-dialog",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Choose time",
+        "description": "Accessible name for the spinner popup (role=dialog)."
+      },
+      {
+        "name": "data-label-hours",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Hours",
+        "description": "Accessible name of the hours spinbutton."
+      },
+      {
+        "name": "data-label-minutes",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Minutes",
+        "description": "Accessible name of the minutes spinbutton."
+      },
+      {
+        "name": "data-label-seconds",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Seconds",
+        "description": "Accessible name of the seconds spinbutton."
+      },
+      {
+        "name": "data-label-period",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "AM/PM",
+        "description": "Prefix of the AM/PM button's accessible name (\"AM/PM: PM\"). The AM/PM text itself comes from Intl."
+      },
+      {
+        "name": "data-label-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Not set",
+        "description": "Spinbutton value text while no time is set."
+      },
+      {
+        "name": "data-label-required",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Please select a time",
+        "description": "Validation message when required and empty. A data-message-valuemissing on the inner input wins."
+      },
+      {
+        "name": "data-label-range-underflow",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Choose a time at or after {time}",
+        "description": "Validation message when before min; {time} is the formatted min. A data-message-rangeunderflow on the inner input wins."
+      },
+      {
+        "name": "data-label-range-overflow",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Choose a time at or before {time}",
+        "description": "Validation message when after max; {time} is the formatted max. A data-message-rangeoverflow on the inner input wins."
+      },
+      {
+        "name": "data-label-step-mismatch",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Choose a valid time. The nearest are {lower} and {upper}",
+        "description": "Validation message when off the step grid; {lower}/{upper} are the nearest valid times. A data-message-stepmismatch on the inner input wins."
       }
     ],
     "events": [
       {
-        "name": "time-picker:change"
+        "name": "time-picker:change",
+        "detail": "{ value, hours, minutes, seconds, source: 'pointer' | 'keyboard' | 'api' }",
+        "description": "Fired when the value changes (not on form reset/restore, not when a commit leaves it unchanged). value is 'HH:MM' or 'HH:MM:SS', '' when cleared (hours/minutes/seconds are then null). source is 'api' for .value assignments, 'pointer' for spinner/AM-PM clicks, 'keyboard' for typed commits and spinner keys."
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "properties": [
+      {
+        "name": "value",
+        "type": "string",
+        "description": "Get or set the time as 'HH:MM' (or 'HH:MM:SS' when seconds are shown). '' when unset; assigning '' or null clears; malformed values are ignored."
+      },
+      {
+        "name": "form",
+        "type": "HTMLFormElement | null",
+        "description": "The associated form"
+      },
+      {
+        "name": "validity",
+        "type": "ValidityState",
+        "description": "Current validity, owned by the host: valueMissing, rangeUnderflow, rangeOverflow (both for a value outside an overnight range), stepMismatch. Anchored on the text input."
+      },
+      {
+        "name": "validationMessage",
+        "type": "string",
+        "description": "Current validation message"
+      },
+      {
+        "name": "willValidate",
+        "type": "boolean",
+        "description": "Whether the element is a candidate for constraint validation"
+      }
+    ],
+    "methods": [
+      {
+        "name": "checkValidity()",
+        "description": "Run constraint validation without showing UI"
+      },
+      {
+        "name": "reportValidity()",
+        "description": "Run constraint validation and show the browser message, anchored on the text input"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "value",
+        "on": "input",
+        "type": "string",
+        "description": "Initial time (HH:MM[:SS]). The value attribute is the form-reset target; omit it for an empty field."
+      },
+      {
+        "name": "min",
+        "on": "input",
+        "type": "string",
+        "description": "Earliest valid time. Spinners stay at or after it; a typed earlier time is kept and flagged rangeUnderflow. A min later than max is an overnight range."
+      },
+      {
+        "name": "max",
+        "on": "input",
+        "type": "string",
+        "description": "Latest valid time. Spinners stay at or before it; a typed later time is kept and flagged rangeOverflow."
+      },
+      {
+        "name": "step",
+        "on": "input",
+        "type": "string",
+        "description": "Step in seconds (default 60; 'any' disables step checks), counted from min. Spinners snap to it; typed off-step times are flagged stepMismatch. Under 60 (or not a whole minute) shows a seconds spinner; whole hours (3600, 7200…) step the hours spinner and make minutes read-only."
+      },
+      {
+        "name": "name",
+        "on": "input",
+        "type": "string",
+        "description": "Submission name for the no-JS fallback. Moved to the host on upgrade."
+      }
+    ],
+    "structure": [
+      {
+        "element": "<input type=\"time\">",
+        "description": "Required. Supplies value/min/max/step and is the no-JS fallback. Its <label for> (or a <label for> on the host, or an aria-label) names the generated combobox."
+      }
+    ]
   },
   "toast-msg": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "toast-msg",
     "type": "web-component",
-    "description": "Toast notification container with stacking, auto-dismiss, and position options",
+    "description": "Toast notification stack: one polite live region, queued toasts beyond max, auto-dismiss that pauses on hover/focus, localisable labels",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -10207,21 +15570,101 @@ export default {
           "bottom-center",
           "bottom-end"
         ],
-        "description": "Screen position for the toast stack"
+        "description": "Screen position for the toast stack (default top-end); centred positions stay centred in RTL"
       },
       {
         "name": "duration",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Default auto-dismiss duration in milliseconds"
+        "description": "Default auto-dismiss duration in milliseconds (default 5000; 0 = stay until dismissed). The timer pauses while the pointer is over the stack, focus is inside it, or the page is hidden"
       },
       {
         "name": "max",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Maximum number of visible toasts"
+        "description": "Maximum number of visible toasts (default 5); further toasts queue and appear as others dismiss"
+      },
+      {
+        "name": "data-label-region",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Accessible name of the stack; an authored aria-label wins (default \"Notifications\")"
+      },
+      {
+        "name": "data-label-dismiss",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Close button label (default \"Dismiss\")"
+      },
+      {
+        "name": "data-label-info",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Visually hidden prefix spoken before info messages (default \"Info\")"
+      },
+      {
+        "name": "data-label-success",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Visually hidden prefix spoken before success messages (default \"Success\")"
+      },
+      {
+        "name": "data-label-warning",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Visually hidden prefix spoken before warning messages (default \"Warning\")"
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Visually hidden prefix spoken before error messages (default \"Error\")"
+      }
+    ],
+    "events": [
+      {
+        "name": "toast-msg:enqueued",
+        "detail": "{ message, variant, duration, source, toast, queued }",
+        "description": "Fired (bubbles) on every show() call; queued is true when the toast waits behind max"
+      },
+      {
+        "name": "toast-msg:show",
+        "detail": "{ toast }",
+        "description": "Fired (bubbles) when a toast becomes visible"
+      },
+      {
+        "name": "toast-msg:hide",
+        "detail": "{ toast }",
+        "description": "Fired (bubbles) when a toast has been removed"
+      }
+    ],
+    "properties": [
+      {
+        "name": "queue",
+        "type": "Array<{ message, variant, state }>",
+        "description": "Read-only. Visible then queued toasts; state is 'visible' or 'queued'"
+      }
+    ],
+    "methods": [
+      {
+        "name": "show(options)",
+        "description": "Show a toast. options: { message, variant ('info'|'success'|'warning'|'error'), duration, dismissible (default true), action, onAction, source }. Returns the toast element"
+      },
+      {
+        "name": "dismiss(toast)",
+        "description": "Dismiss one toast (also non-dismissible ones) or drop it from the queue"
+      },
+      {
+        "name": "dismissAll()",
+        "description": "Dismiss every visible toast and clear the queue"
       }
     ]
   },
@@ -10229,96 +15672,121 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "tool-tip",
     "type": "web-component",
-    "description": "Enhanced tooltip with Popover API + interestfor",
+    "description": "Tooltip or hover card composed on <pop-over>: hover/focus with delay, interestfor where available, Escape and outside dismiss",
     "attributes": [
       {
         "name": "content",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Simple text tooltip content"
+        "description": "Plain-text tooltip content (a <template data-tooltip> child wins; the trigger's title is the last fallback)"
       },
       {
         "name": "position",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Position: 'top' (default), 'bottom', 'left', 'right'"
+        "type": "enum",
+        "values": [
+          "top",
+          "bottom",
+          "left",
+          "right"
+        ],
+        "description": "Placement; tooltips default to top, cards to bottom"
       },
       {
         "name": "delay",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Show delay in ms (default: 200)"
+        "description": "Hover show delay in ms on the JS path (default 200; cards 300)"
       },
       {
         "name": "variant",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Variant: omit for tooltip (default), 'card' for hover card"
-      },
-      {
-        "name": "data-interest-polyfill",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "title",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "data-anchor",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "interestfor",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "data-content",
-        "kind": "data",
-        "purpose": "config"
+        "type": "enum",
+        "values": [
+          "card"
+        ],
+        "description": "Omit for a text tooltip; card for an interactive hover card"
       }
     ],
     "events": [
       {
-        "name": "tool-tip:show"
+        "name": "tool-tip:show",
+        "description": "Fired (bubbles) as the tooltip or card opens"
       },
       {
-        "name": "tool-tip:hide"
+        "name": "tool-tip:hide",
+        "description": "Fired (bubbles) as the tooltip or card closes"
       }
     ],
-    "childAttributes": [],
+    "childAttributes": [
+      {
+        "name": "data-tooltip",
+        "on": "template",
+        "type": "boolean",
+        "description": "Rich tooltip content (HTML) for the default variant"
+      },
+      {
+        "name": "data-trigger",
+        "on": "*",
+        "type": "boolean",
+        "required": true,
+        "description": "Card variant: the element that opens the card"
+      },
+      {
+        "name": "data-content",
+        "on": "*",
+        "type": "boolean",
+        "required": true,
+        "description": "Card variant: the card body. Moved into the card while upgraded and put back on disconnect"
+      },
+      {
+        "name": "title",
+        "on": "*",
+        "type": "string",
+        "description": "On the trigger: tooltip text fallback. Removed while upgraded (kept as aria-label when it was the trigger's only name) and restored on disconnect"
+      }
+    ],
     "structure": [],
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
         "@flow"
       ]
-    }
+    },
+    "properties": [
+      {
+        "name": "isVisible",
+        "type": "boolean",
+        "description": "Read-only. True while the tooltip or card is open"
+      }
+    ],
+    "methods": [
+      {
+        "name": "show()",
+        "description": "Open now (no delay)"
+      },
+      {
+        "name": "hide()",
+        "description": "Close now"
+      }
+    ]
   },
   "topic-map": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "topic-map",
     "type": "web-component",
-    "description": "SKOS-aware hierarchical view of site concepts. Joins vocabulary.json (skos:broader/narrower edges) with pages.json (each page's concepts:[] array) to render a nested <details> tree rooted at top concepts.",
+    "description": "SKOS-aware hierarchical view of site concepts. Joins vocabulary.json (skos:broader/narrower edges) with pages.json (each page's concepts:[] array) to render a nested <details> tree rooted at top concepts. Counts are distinct pages per subtree; page links are scheme-checked; cyclic edges are skipped. Built by JavaScript (no-JS shows only authored fallback content).",
     "attributes": [
       {
         "name": "data-lens-src",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "URL to pages.json. Each page record must expose a concepts:[] array (per meta-tag-contract v1.1)."
+        "description": "URL to pages.json. Each page record must expose a concepts:[] array (per meta-tag-contract v1.1). Read at setup; forwarded by content-lens."
       },
       {
         "name": "src",
@@ -10340,35 +15808,115 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Render with every level expanded. Default opens only the top-level concepts."
+        "description": "Render with every level expanded. Default opens only the top-level concepts. Read at render (not observed)."
+      },
+      {
+        "name": "data-heading-level",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": 2,
+        "description": "Heading level 1-6 for the panel heading; 0 renders no heading (e.g. inside content-lens, which already labels the lens)."
+      },
+      {
+        "name": "data-label-heading",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Topics",
+        "description": "Heading text."
+      },
+      {
+        "name": "data-label-page",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} page",
+        "description": "Count template used when Intl.PluralRules selects \"one\"; {count} is the formatted number."
+      },
+      {
+        "name": "data-label-pages",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} pages",
+        "description": "Count template for every other plural category."
+      },
+      {
+        "name": "data-label-uncategorized",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Uncategorized",
+        "description": "Label of the node holding pages whose concepts are not in the vocabulary."
+      },
+      {
+        "name": "data-label-topic-link",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{label} topic page",
+        "description": "Text of the /topics/{id}/ link inside each node; {label} is the concept prefLabel."
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Topics could not be loaded.",
+        "description": "Message when a data source fails to load or the tree cannot be built (detail goes to console.warn, never rendered)."
       }
     ],
     "childAttributes": [],
+    "properties": [
+      {
+        "name": "data",
+        "type": "{ pages: object[], vocabulary: object } | null",
+        "description": "Assign in-memory payloads to bypass the fetch path (takes precedence over data-lens-src while set). Reading returns the assigned payload, or null when the tree came from src."
+      }
+    ],
+    "events": [
+      {
+        "name": "topic-map:data-changed",
+        "detail": "{ pages, vocabulary, source: 'property' }",
+        "description": "Fires after the data property is assigned and the tree re-rendered."
+      }
+    ],
     "structure": [
+      {
+        "element": "h2.topic-map-heading",
+        "required": false,
+        "description": "Generated heading (level from data-heading-level; omitted when 0) with the total page count in <small>."
+      },
       {
         "element": "details[data-topic-node]",
         "required": false,
-        "description": "Generated. One <details> per concept node. data-topic-node carries the concept @id (or '__uncategorized'). Native disclosure widgets work without JS."
+        "description": "Generated. One <details> per concept node. data-topic-node carries the concept @id (or '__uncategorized'). Top level opens by default."
       },
       {
-        "element": "summary > a.topic-name",
+        "element": "summary > .topic-name",
         "required": false,
-        "description": "Generated. Concept prefLabel linked to /topics/{id}/."
+        "description": "Generated. Concept prefLabel as plain text (the summary holds no link, so it only toggles)."
       },
       {
         "element": "summary > .topic-count",
         "required": false,
-        "description": "Generated. Total page count for the concept and all descendant concepts."
+        "description": "Generated. Distinct pages tagged with the concept or any descendant, with unit (\"5 pages\")."
+      },
+      {
+        "element": "p.topic-link > a",
+        "required": false,
+        "description": "Generated. Link to /topics/{id}/, first item in the disclosure body."
       },
       {
         "element": "ul.topic-pages > li > a",
         "required": false,
-        "description": "Generated. Pages tagged directly with this concept, in source order."
+        "description": "Generated. Pages tagged directly with this concept, in source order. URLs that are not http(s) or relative render as plain text."
       },
       {
         "element": "p[data-topic-map-error]",
         "required": false,
-        "description": "Rendered when either data source fails to load."
+        "description": "Rendered when either data source fails to load; authored fallback content is kept below it."
       }
     ],
     "htmlvalidate": {
@@ -10382,28 +15930,159 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "trust-filter",
     "type": "web-component",
-    "description": "Provenance-based filter lens (vb:provenance, vb:review, vb:status, signed)",
+    "description": "Provenance lens: filter pages.json by vb:provenance, vb:review, vb:status and whether a signature is declared (not verified). OR within a dimension, AND across. Only the count is a live region.",
     "attributes": [
       {
         "name": "data-lens-src",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "URL to pages.json (or compatible source)"
+        "description": "URL to pages.json (or compatible source). Read at setup; forwarded by content-lens."
       },
       {
         "name": "src",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Alias for data-lens-src"
+        "description": "Alias for data-lens-src."
+      },
+      {
+        "name": "data-label-form",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Filter pages",
+        "description": "Accessible name of the controls form."
+      },
+      {
+        "name": "data-label-provenance",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "How was it made",
+        "description": "Legend of the provenance group."
+      },
+      {
+        "name": "data-label-review",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Review",
+        "description": "Legend of the review group."
+      },
+      {
+        "name": "data-label-status",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Status",
+        "description": "Legend of the status group."
+      },
+      {
+        "name": "data-label-signed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Has signature",
+        "description": "Legend of the signature group. pages.json signed means a vb:signature meta is present, not that it verified."
+      },
+      {
+        "name": "data-label-yes",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Yes",
+        "description": "Signature group \"yes\" option text."
+      },
+      {
+        "name": "data-label-no",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No",
+        "description": "Signature group \"no\" option text."
+      },
+      {
+        "name": "data-label-clear",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Clear all",
+        "description": "Reset button text."
+      },
+      {
+        "name": "data-label-page",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} of {total} page",
+        "description": "Count template when Intl.PluralRules selects \"one\" for {total}."
+      },
+      {
+        "name": "data-label-pages",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} of {total} pages",
+        "description": "Count template for every other plural category."
+      },
+      {
+        "name": "data-label-has-signature",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "has signature",
+        "description": "Result-row note for pages that declare a signature."
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Pages could not be loaded.",
+        "description": "Message when the source fails (detail goes to console.warn, never rendered)."
+      },
+      {
+        "name": "data-label-no-source",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No data source set.",
+        "description": "Message when neither data-lens-src nor src is set."
       }
     ],
     "events": [
       {
         "name": "trust-filter:change",
         "detail": "{ selected, count }",
-        "description": "Fires when the reader changes any filter chip"
+        "description": "Fires when the reader ticks, unticks or clears a filter. selected is a per-dimension array of values. Not fired on the initial render or on reconnect."
+      }
+    ],
+    "structure": [
+      {
+        "element": "form[data-trust-filter-controls]",
+        "required": false,
+        "description": "Generated. One fieldset[data-dim] per dimension with nested label > input[type=checkbox][data-dim] (no ids), plus a reset button. Rebuilt unchecked on every setup, and the selection is cleared with it."
+      },
+      {
+        "element": "output[data-trust-filter-count]",
+        "required": false,
+        "description": "Generated polite live region holding only \"N of M pages\"; filled on first render without an announcement."
+      },
+      {
+        "element": "ul[data-trust-filter-results]",
+        "required": false,
+        "description": "Generated results list, a sibling of the count (not a live region); hidden when empty. Links that are not http(s) or relative render as plain text."
+      },
+      {
+        "element": "span.trust-filter-prov[data-provenance]",
+        "required": false,
+        "description": "Generated provenance chip; coloured per token (~=) with theme tokens."
+      },
+      {
+        "element": "p[data-trust-filter-error]",
+        "required": false,
+        "description": "Rendered when there is no source or the source fails to load."
       }
     ],
     "htmlvalidate": {
@@ -10417,70 +16096,215 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "version-switcher",
     "type": "web-component",
-    "description": "Surface and switch between versions of a page over time. Inline data source + trigger + picker popover; three actions (navigate / swap / diff). Modes auto-derived from data shape (releases vs history).",
+    "description": "Surface and switch between versions of a page over time. Data from inline JSON, a data-src manifest or the vb:versions-manifest meta tag; a trigger + picker popover; three actions (navigate / swap / diff). Mode (releases vs history) is derived from the data. Entry URLs are scheme-checked (javascript:/data: entries dropped); swap and diff fetch same-origin URLs only and swapped markup is sanitized.",
     "attributes": [
       {
         "name": "data-versions",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Inline JSON array of version entries: { id, label?, url?, date?, author?, summary?, archived?, draft?, current?, versionUrl? }. Alternative: a <script type=\"application/json\" data-versions> child."
+        "description": "Inline JSON array of version entries: { id, label?, url?, date?, author?, summary?, archived?, draft?, current?, versionUrl? }. Alternative: a <script type=\"application/json\" data-versions> child. Entries whose url is a script/data URL are dropped; an unsafe versionUrl drops only the changelog link. Stripped by the untrusted sanitizer profile."
       },
       {
         "name": "data-src",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "URL of a JSON manifest to fetch when no inline data is provided. Falls back to <meta name=\"vb:versions-manifest\"> if neither is set."
+        "description": "URL of a JSON manifest (same entry shape) fetched when no inline data is provided. Falls back to <meta name=\"vb:versions-manifest\"> if neither is set. Stripped by the untrusted sanitizer profile."
       },
       {
         "name": "data-mode",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "\"releases\" | \"history\" — override the auto-detected mode"
+        "type": "enum",
+        "description": "Override the derived mode: releases (entries have distinct URLs) or history (entries share one URL). Sets the picker heading; observed.",
+        "values": [
+          "releases",
+          "history"
+        ]
       },
       {
         "name": "data-action",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "\"navigate\" (default) | \"swap\" | \"diff\""
+        "type": "enum",
+        "description": "navigate sets location.href to the entry url (skipped, with an error event, when that url is the current page); swap fetches the same-origin entry url and replaces the versioned region in place (sanitized, view-transition crossfade); diff mounts a <change-set> line diff beside the versioned region.",
+        "values": [
+          "navigate",
+          "swap",
+          "diff"
+        ],
+        "default": "navigate"
       },
       {
         "name": "data-versioned-region",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "CSS selector for the swappable / diffable region (default: \"[data-versioned], main\")"
+        "description": "CSS selector for the swappable / diffable region (default: \"[data-versioned], main\")",
+        "default": "[data-versioned], main"
       },
       {
         "name": "data-diff-position",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "\"before\" (default) | \"after\" — where to mount the diff render"
+        "type": "enum",
+        "description": "Where to mount the diff render relative to the versioned region.",
+        "values": [
+          "before",
+          "after"
+        ],
+        "default": "before"
       },
       {
         "name": "data-banner",
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Render an archived-version warning banner above the trigger when current is archived AND a non-archived \"latest\" exists."
+        "description": "Render an archived-version notice (an <aside> with a polite status line, filled after insertion so it is announced) when the current entry is archived AND a non-archived latest exists; the latest is a link only when it has a safe url."
       },
       {
         "name": "data-page-info-target",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "ID of a <page-info> to mount inside as a section in its expandable panel; standalone trigger is hidden in this mode."
+        "description": "ID of a <page-info> to mount inside as a section in its expandable panel; the standalone trigger is hidden in this mode. The section is removed when the switcher disconnects."
       },
       {
         "name": "aria-label",
         "kind": "aria",
         "purpose": "config",
         "type": "string",
-        "description": "Trigger / popover label (default \"Version\")"
+        "description": "What the switcher picks (e.g. \"API version\"). Not applied to the host (it has no role): it names the trigger (\"API version: v2.1\") and the picker dialog. Falls back to data-label-trigger.",
+        "default": "Version"
+      },
+      {
+        "name": "data-label-trigger",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Version",
+        "description": "Fallback name for the trigger / picker when no aria-label is set, and trigger text with no current entry."
+      },
+      {
+        "name": "data-label-loading",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Loading…",
+        "description": "Trigger text while the manifest is fetched."
+      },
+      {
+        "name": "data-label-loading-versions",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Loading versions…",
+        "description": "Trigger title and panel row while the manifest is fetched."
+      },
+      {
+        "name": "data-label-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No versions available.",
+        "description": "Empty-state row and disabled-trigger title."
+      },
+      {
+        "name": "data-label-heading-releases",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Versions",
+        "description": "Picker / panel heading in releases mode."
+      },
+      {
+        "name": "data-label-heading-history",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "History",
+        "description": "Picker / panel heading in history mode."
+      },
+      {
+        "name": "data-label-archived",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "archived",
+        "description": "Archived badge."
+      },
+      {
+        "name": "data-label-draft",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "draft",
+        "description": "Draft badge."
+      },
+      {
+        "name": "data-label-current",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "current",
+        "description": "Current badge."
+      },
+      {
+        "name": "data-label-by",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "by {author}",
+        "description": "Author line ({author})."
+      },
+      {
+        "name": "data-label-changelog",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Changelog",
+        "description": "Changelog link text."
+      },
+      {
+        "name": "data-label-changelog-for",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{version} changelog",
+        "description": "Changelog link accessible name ({version})."
+      },
+      {
+        "name": "data-label-banner-label",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Archived version notice",
+        "description": "Banner landmark name."
+      },
+      {
+        "name": "data-label-banner",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "You’re viewing {version} (archived).",
+        "description": "Banner status text ({version})."
+      },
+      {
+        "name": "data-label-banner-latest",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Latest: {version}",
+        "description": "Banner latest link / text ({version})."
+      },
+      {
+        "name": "data-label-diff",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Diff: {from} → {to}",
+        "description": "Caption above the diff render ({from}, {to})."
       }
     ],
     "events": [
@@ -10500,17 +16324,17 @@ export default {
       {
         "name": "version-switcher:before-navigate",
         "detail": "{ entry }",
-        "description": "Cancellable. Fires before location.href is set; preventDefault() blocks navigation."
+        "description": "Cancellable. Fires before location.href is set (only for a safe url that is not the current page); preventDefault() blocks navigation."
       },
       {
         "name": "version-switcher:before-swap",
         "detail": "{ entry }",
-        "description": "Cancellable. Fires before swap fetches and replaces the versioned region."
+        "description": "Cancellable. Fires before swap fetches (same-origin only) and replaces the versioned region."
       },
       {
         "name": "version-switcher:swap",
         "detail": "{ entry, previousId }",
-        "description": "Fires after swap completes. Versioned region replaced + vb:version meta updated."
+        "description": "Fires after swap completes: versioned region replaced (sanitized) and <meta itemprop=\"version\"> updated."
       },
       {
         "name": "version-switcher:before-diff",
@@ -10525,37 +16349,19 @@ export default {
       {
         "name": "version-switcher:error",
         "detail": "{ message, entry?, error? }",
-        "description": "Parse / fetch / action failure"
+        "description": "Parse / fetch / action failure, a dropped unsafe entry, a cross-origin swap/diff url, or a navigate to the current page."
       }
     ],
     "properties": [
       {
         "name": "versions",
         "type": "VersionEntry[]",
-        "description": "Resolved version entries"
+        "description": "Resolved (URL-checked) version entries; read-only copy."
       },
       {
         "name": "currentId",
         "type": "string|null",
-        "description": "Id of the current entry"
-      },
-      {
-        "name": "openPicker",
-        "type": "() => void"
-      },
-      {
-        "name": "closePicker",
-        "type": "() => void"
-      },
-      {
-        "name": "switchTo",
-        "type": "(id) => void",
-        "description": "Programmatic selection; honors data-action"
-      },
-      {
-        "name": "refresh",
-        "type": "() => void",
-        "description": "Re-resolve the data source"
+        "description": "Id of the current entry."
       }
     ],
     "childAttributes": [
@@ -10572,133 +16378,449 @@ export default {
       "permittedContent": [
         "@flow"
       ]
-    }
+    },
+    "methods": [
+      {
+        "name": "openPicker()",
+        "returns": "void",
+        "description": "Open the picker popover."
+      },
+      {
+        "name": "closePicker()",
+        "returns": "void",
+        "description": "Close the picker popover."
+      },
+      {
+        "name": "switchTo(id)",
+        "returns": "void",
+        "description": "Programmatic selection; fires select then runs data-action."
+      },
+      {
+        "name": "refresh()",
+        "returns": "void",
+        "description": "Re-resolve the data source and re-render."
+      }
+    ]
   },
   "video-player": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "video-player",
     "type": "web-component",
-    "description": "Platform video player web component",
+    "description": "Platform video player: custom, keyboard-accessible controls (shadow DOM) over a light-DOM <video>, with optional playlist",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "autoplay",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Start playing on load (subject to browser autoplay policy)"
+        "description": "Start playing on first connect (subject to browser autoplay policy). Skipped under prefers-reduced-motion: reduce (which also cancels a native autoplay on the inner video) and never re-run when the player is moved/reconnected"
       },
       {
         "name": "loop",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Loop single track or entire playlist"
+        "description": "Single video: sets the native video.loop. Playlist: after the last track, wrap to the first"
+      },
+      {
+        "name": "shuffle",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Playlist: advance to a random other track when one ends"
       },
       {
         "name": "muted",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Start muted"
-      },
-      {
-        "name": "controls",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "data-fullscreen",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "state",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "data-video-played",
-        "kind": "data",
-        "purpose": "config"
+        "description": "Start muted. Afterwards reflects the inner video.muted (mute button, M key, an authored <video muted> or script)"
       },
       {
         "name": "captions",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Start with the first captions/subtitles track showing. Afterwards reflects whether captions are showing"
       },
       {
-        "name": "aria-pressed",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "data-video-active",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-poster",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-captions",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-dynamic",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "shuffle",
+        "name": "state",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "enum",
+        "values": [
+          "idle",
+          "playing",
+          "paused",
+          "buffering",
+          "ended"
+        ],
+        "description": "Reflected playback state, derived from the media element (also on reconnect)"
       },
       {
-        "name": "aria-valuetext",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "controls",
+        "kind": "host-api",
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "description": "Set while the overlay controls are visible; removed by the auto-hide timer during playback (never while focus is inside the controls). Not the native controls attribute"
+      },
+      {
+        "name": "data-fullscreen",
+        "kind": "data",
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "description": "Set while THIS player (or its video) is the fullscreen element"
+      },
+      {
+        "name": "data-label-player",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Video player",
+        "description": "Host accessible name (role=group) unless aria-label/aria-labelledby is authored"
+      },
+      {
+        "name": "data-label-controls",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Video controls",
+        "description": "Name of the controls group"
+      },
+      {
+        "name": "data-label-play-video",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Play video",
+        "description": "Big play overlay button"
+      },
+      {
+        "name": "data-label-play",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Play",
+        "description": "Play/pause button while paused"
+      },
+      {
+        "name": "data-label-pause",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Pause",
+        "description": "Play/pause button while playing"
+      },
+      {
+        "name": "data-label-seek",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Seek",
+        "description": "Seek slider"
+      },
+      {
+        "name": "data-label-skip-back",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Skip back 10 seconds",
+        "description": "Skip-back button"
+      },
+      {
+        "name": "data-label-skip-forward",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Skip forward 10 seconds",
+        "description": "Skip-forward button"
+      },
+      {
+        "name": "data-label-mute",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Mute",
+        "description": "Mute toggle (state is carried by aria-pressed)"
+      },
+      {
+        "name": "data-label-volume",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Volume",
+        "description": "Volume slider"
+      },
+      {
+        "name": "data-label-speed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Playback speed {rate}",
+        "description": "Speed button; {rate} is the localized rate, e.g. \"1.5x\""
+      },
+      {
+        "name": "data-label-captions",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Captions",
+        "description": "Captions toggle"
+      },
+      {
+        "name": "data-label-fullscreen",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Fullscreen",
+        "description": "Fullscreen button"
+      },
+      {
+        "name": "data-label-exit-fullscreen",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Exit fullscreen",
+        "description": "Fullscreen button while this player is fullscreen"
+      },
+      {
+        "name": "data-label-playing",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Playing",
+        "description": "Live-region announcement"
+      },
+      {
+        "name": "data-label-paused",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Paused",
+        "description": "Live-region announcement"
+      },
+      {
+        "name": "data-label-ended",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Ended",
+        "description": "Live-region announcement"
+      },
+      {
+        "name": "data-label-buffering",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Buffering",
+        "description": "Live-region announcement"
+      },
+      {
+        "name": "data-label-time-of",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{current} of {duration}",
+        "description": "Seek slider aria-valuetext; {current}/{duration} are locale clock times, e.g. \"0:05 of 3:20\""
+      }
+    ],
+    "properties": [
+      {
+        "name": "src",
+        "type": "string",
+        "description": "Get/set the inner <video> source. Setting loads it and fires video-player:src-changed"
+      },
+      {
+        "name": "currentTime",
+        "type": "number",
+        "description": "Playback position in seconds (proxies video.currentTime)"
       }
     ],
     "events": [
       {
-        "name": "video-player:play"
+        "name": "video-player:play",
+        "detail": "{ currentTime, src }",
+        "description": "Playback started"
       },
       {
-        "name": "video-player:pause"
+        "name": "video-player:pause",
+        "detail": "{ currentTime }",
+        "description": "Playback paused"
       },
       {
-        "name": "video-player:ended"
+        "name": "video-player:ended",
+        "detail": "{ src }",
+        "description": "A video played to the end"
       },
       {
-        "name": "video-player:track-change"
+        "name": "video-player:track-change",
+        "detail": "{ src, title }",
+        "description": "A playlist track was activated (click or auto-advance)"
       },
       {
-        "name": "video-player:fullscreen"
+        "name": "video-player:fullscreen",
+        "detail": "{ active }",
+        "description": "This player entered or left fullscreen"
       },
       {
-        "name": "video-player:speed"
+        "name": "video-player:speed",
+        "detail": "{ rate }",
+        "description": "Playback speed changed (cycles 0.5–2x)"
       },
       {
-        "name": "video-player:captions"
+        "name": "video-player:captions",
+        "detail": "{ active, label }",
+        "description": "Captions toggled by the button or C key"
+      },
+      {
+        "name": "video-player:src-changed",
+        "detail": "{ src, source: 'property' }",
+        "description": "The src property was set"
       }
     ],
-    "childAttributes": [],
-    "structure": [],
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    }
+    "childAttributes": [
+      {
+        "name": "controls",
+        "on": "video",
+        "type": "boolean",
+        "description": "Native controls for the no-JS fallback. Removed while the component is upgraded, restored when it disconnects"
+      },
+      {
+        "name": "data-video-active",
+        "on": "li",
+        "type": "boolean",
+        "description": "The loaded playlist track. Author sets the initial one; the component moves it"
+      },
+      {
+        "name": "data-video-played",
+        "on": "li",
+        "type": "boolean",
+        "description": "Set by the component when the track plays to the end"
+      },
+      {
+        "name": "data-poster",
+        "on": "a",
+        "type": "string",
+        "description": "Playlist link: poster image to show for that track"
+      },
+      {
+        "name": "data-captions",
+        "on": "a",
+        "type": "string",
+        "description": "Playlist link: WebVTT captions URL; the component swaps in a captions <track> (marked data-dynamic) for that track"
+      }
+    ],
+    "structure": [
+      {
+        "element": "video",
+        "required": true,
+        "description": "The native video element (light DOM), with <source>/<track> children and fallback content"
+      },
+      {
+        "element": "ol.track-list",
+        "required": false,
+        "description": "Optional playlist (usually inside <details>): one <li> per video with an <a href> to the file"
+      }
+    ],
+    "cssProperties": [
+      {
+        "name": "--video-player-accent",
+        "description": "Progress fill, slider thumbs and focus ring fallback"
+      },
+      {
+        "name": "--video-player-controls-text",
+        "description": "Controls icon/text colour"
+      },
+      {
+        "name": "--video-player-radius",
+        "description": "Player border radius"
+      },
+      {
+        "name": "--video-player-border",
+        "description": "Player border (default none)"
+      },
+      {
+        "name": "--video-player-shadow",
+        "description": "Player box shadow (default none)"
+      },
+      {
+        "name": "--video-player-controls-padding",
+        "description": "Controls bar padding"
+      },
+      {
+        "name": "--video-player-overlay-bg",
+        "description": "Big play button disc background"
+      },
+      {
+        "name": "--video-player-timeline-height",
+        "description": "Seek track thickness"
+      },
+      {
+        "name": "--video-player-timeline-buffer",
+        "description": "Buffered-range bar colour"
+      }
+    ],
+    "parts": [
+      {
+        "name": "player",
+        "description": "Outer player container"
+      },
+      {
+        "name": "play-overlay",
+        "description": "Big centered play button (shown idle/ended; inert otherwise)"
+      },
+      {
+        "name": "controls",
+        "description": "Controls overlay (role=group)"
+      },
+      {
+        "name": "timeline",
+        "description": "Seek range input"
+      },
+      {
+        "name": "play-button",
+        "description": "Play/pause button"
+      },
+      {
+        "name": "mute-button",
+        "description": "Mute toggle (aria-pressed)"
+      },
+      {
+        "name": "volume",
+        "description": "Volume range input"
+      },
+      {
+        "name": "time-display",
+        "description": "Current time / duration readout"
+      },
+      {
+        "name": "speed-button",
+        "description": "Playback speed cycle button"
+      },
+      {
+        "name": "captions-button",
+        "description": "Captions toggle (hidden without a captions/subtitles track)"
+      },
+      {
+        "name": "fullscreen-button",
+        "description": "Fullscreen toggle"
+      }
+    ]
   },
   "watch-wc": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "watch-wc",
     "type": "web-component",
-    "description": "Drop-in wrapper for the data-watch-page button. Renders an icon, compact, or full-button variant that toggles whether the current page is in the user's VBStore('watches') list. State machine lives in src/utils/page-watch-init.js — this is a one-tag author convenience.",
+    "description": "Drop-in wrapper for the data-watch-page button. Renders an icon, compact, or full-button toggle (aria-pressed) that adds or removes the current page from the user's VBStore('watches') list. The state machine lives in src/utils/page-watch-init.js; the component repaints its label, icon and title from the button's aria-pressed.",
     "attributes": [
       {
         "name": "variant",
@@ -10710,27 +16832,54 @@ export default {
           "compact",
           "button"
         ],
-        "description": "Visual preset (default: icon)"
+        "default": "icon",
+        "description": "Visual preset. icon is named by aria-label (data-label-action); compact and button are named by their visible text. Changing it after upgrade re-renders."
       },
       {
         "name": "label",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Override the visible text in compact and button variants. Defaults to 'Watch for updates' / 'Watching'."
+        "description": "Constant visible text for the compact and button variants, used in both states (overrides data-label-watch / data-label-watching). Ignored by the icon variant."
       },
       {
         "name": "server-sync",
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Per-instance opt-in for server-side sync via VBService('notify'). Sets window.vbPageWatch.serverSync = true before page-watch-init evaluates."
+        "description": "Turns on server-side sync via VBService('notify') for the whole page: sets the page-global window.vbPageWatch.serverSync flag, which every watch button (and the notification panel's unwatch) uses from then on. Equivalent to <meta name=\"vb-page-watch-server\" content=\"true\">."
       },
       {
-        "name": "data-variant",
+        "name": "data-label-watch",
         "kind": "data",
         "purpose": "config",
-        "description": "Reflected by the component to pick the visual variant in CSS"
+        "type": "string",
+        "default": "Watch for updates",
+        "description": "Visible text (and accessible name) of the compact/button variants while the page is not watched. Localisation hook."
+      },
+      {
+        "name": "data-label-watching",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Watching",
+        "description": "Visible text (and accessible name) of the compact/button variants while the page is watched. Localisation hook."
+      },
+      {
+        "name": "data-label-action",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Watch this page for updates",
+        "description": "Icon variant: the button's aria-label, and its tooltip while not watched. Localisation hook."
+      },
+      {
+        "name": "data-label-stop",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Stop watching this page",
+        "description": "Icon variant: tooltip while the page is watched. Localisation hook."
       }
     ],
     "events": [
@@ -10747,7 +16896,17 @@ export default {
           "url": "string",
           "subscriptionId": "string|null"
         },
-        "description": "Bubbles from the inner button when the user stops watching"
+        "description": "Bubbles from the inner button when the user stops watching (also dispatched by notification-wc's Watching tab)"
+      }
+    ],
+    "structure": [
+      {
+        "element": "button[data-watch-page][data-watch-wc]",
+        "description": "Generated toggle button with aria-pressed; icon variant carries aria-label, text variants a <span> label"
+      },
+      {
+        "element": "icon-wc",
+        "description": "bookmark / bookmark-check icon, aria-hidden"
       }
     ],
     "htmlvalidate": {
@@ -10761,14 +16920,14 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "week-view",
     "type": "web-component",
-    "description": "7-day time grid composing day-view-style columns in a semantic table",
+    "description": "Week time grid composing day-view-style columns in a semantic table. Defaults to the current week (locale first day); today's header has aria-current=\"date\". Changing data-start-date, data-days, data-start-hour, data-end-hour or a data-label-* after upgrade rebuilds a generated table.",
     "attributes": [
       {
         "name": "data-start-date",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "ISO date for the first day of the week (e.g., 2026-04-06)"
+        "description": "ISO date for the first day of the view (e.g., 2026-04-06). Default: the current week, starting on the locale's first day of week (Intl.Locale weekInfo, closest [lang])."
       },
       {
         "name": "data-days",
@@ -10776,7 +16935,7 @@ export default {
         "purpose": "config",
         "type": "number",
         "default": 7,
-        "description": "Number of day columns (e.g., 5 for workweek)"
+        "description": "Number of day columns, clamped to 1-14 (e.g., 5 for a workweek). Invalid values fall back to 7."
       },
       {
         "name": "data-start-hour",
@@ -10801,6 +16960,14 @@ export default {
         "type": "string",
         "default": "continues after the visible hours",
         "description": "Text appended to the accessible name of a spanning event that runs past the last visible hour (localisation hook)."
+      },
+      {
+        "name": "data-label-time",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Time",
+        "description": "Visually hidden name of the corner header over the hour labels (localisation hook)."
       }
     ],
     "events": [
@@ -10819,7 +16986,7 @@ export default {
       {
         "name": "events",
         "type": "Array<{ date?, time, text, category?, duration? }>",
-        "description": "Get the week's events as data, or assign an array to rebuild the table. time is HH:MM or a full ISO datetime (its date is used when date is omitted). Durations (data-duration): 2h, 1.5h, 45m, 90m, 1h30m, bare minutes (60), ISO-8601 (PT1H30M); unparseable values fall back to 1 hour."
+        "description": "Get the week's events as data (including unplaced ones outside the range), or assign an array to rebuild the table. time is HH:MM or a full ISO datetime (its date is used when date is omitted). Durations (data-duration): 2h, 1.5h, 45m, 90m, 1h30m, bare minutes (60), ISO-8601 (PT1H30M); unparseable values fall back to 1 hour."
       }
     ],
     "methods": [
@@ -10833,7 +17000,7 @@ export default {
         "name": "data-date",
         "on": "calendar-event",
         "type": "string",
-        "description": "ISO date assigning this event to a day column (auto mode)"
+        "description": "ISO date assigning this event to a day column (auto mode). Events outside the range, or without a time, are not placed and are hidden."
       },
       {
         "name": "data-duration",
@@ -10855,7 +17022,7 @@ export default {
       },
       {
         "element": "thead > tr > th",
-        "description": "Day column headers with <time> elements"
+        "description": "Day column headers: <time datetime> with a short visible date (month added when the range crosses one) and a visually hidden full date; today's has aria-current=\"date\""
       },
       {
         "element": "tbody > tr > th",
@@ -10885,76 +17052,121 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "youtube-player",
     "type": "web-component",
+    "description": "YouTube embed behind a facade: a thumbnail (or local poster) and one play button; the youtube-nocookie.com iframe loads only when the reader presses play. Without poster the thumbnail is requested from i.ytimg.com on render.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "video-id",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "YouTube video ID (required)"
+        "required": true,
+        "description": "YouTube video ID (6–20 of A–Z a–z 0–9 _ -). Missing or invalid: the element does not upgrade and the authored fallback stays."
       },
       {
         "name": "title",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Accessible title for iframe + play button"
+        "default": "YouTube video",
+        "description": "Video title: the iframe title and the {title} in the play-button name."
       },
       {
         "name": "start",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Start playback at N seconds"
+        "description": "Start playback at N seconds. Whole non-negative seconds only; anything else is ignored with a console warning."
+      },
+      {
+        "name": "end",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "number",
+        "description": "Stop playback at N seconds. Whole non-negative seconds only."
       },
       {
         "name": "list",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "YouTube playlist ID"
+        "description": "YouTube playlist ID."
       },
       {
         "name": "params",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Raw query string appended to embed URL"
+        "description": "Extra query string for the embed URL (escape hatch); its keys override start, end, list and autoplay. The embed host is fixed."
       },
       {
         "name": "autoplay",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Auto-initialise iframe on load (no facade)"
+        "description": "Load the iframe on connect instead of the facade (this contacts YouTube at once). Ignored under prefers-reduced-motion or data-motion-reduced. Never moves focus."
       },
       {
         "name": "thumbnail",
         "kind": "host-api",
         "purpose": "config",
+        "type": "enum",
+        "values": [
+          "hq",
+          "mq",
+          "sd",
+          "maxres"
+        ],
+        "default": "hq",
+        "description": "i.ytimg.com thumbnail size. sd and maxres fall back to hq when the video has none."
+      },
+      {
+        "name": "poster",
+        "kind": "host-api",
+        "purpose": "config",
         "type": "string",
-        "description": "Thumbnail resolution: hq | mq | sd | maxres"
+        "description": "Local image URL for the facade. When set, no thumbnail is requested from i.ytimg.com; nothing contacts Google until play."
+      },
+      {
+        "name": "data-label-play",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Play {title}",
+        "description": "Accessible name of the play button; {title} is replaced with the title."
       },
       {
         "name": "state",
         "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Component-managed: \"ready\" (facade) or \"active\" (iframe)"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "enum",
+        "values": [
+          "ready",
+          "active"
+        ],
+        "description": "Set by the component: ready = facade shown, active = iframe inserted. Reconnect (move or reinsert) renders the facade again."
+      }
+    ],
+    "properties": [],
+    "methods": [],
+    "events": [
+      {
+        "name": "youtube-player:activate",
+        "detail": "{ videoId: string, fromUser: boolean }",
+        "description": "Fired (bubbles) when the iframe is inserted; fromUser is false for the autoplay attribute."
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "youtube-player:upgraded",
+        "description": "Fired (bubbles) after the element upgrades."
       }
     ],
     "childAttributes": [],
-    "structure": [],
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    }
+    "structure": []
   }
 };

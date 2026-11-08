@@ -18,6 +18,37 @@ crumbLabel: Custom Elements
 </browser-window>
 
 <section>
+  <h2>Overview</h2>
+  <p>A canvas is a surface: a panel with a background, border radius, shadow and padding that sets a region of the page apart. Several canvases can sit on one page, side by side or nested.</p>
+  <p>Both forms consume the same <code>--canvas-*</code> design tokens used by <code>data-backdrop</code>, so theme overrides apply to both systems.</p>
+  <p>The surface always reserves a 1px edge. On a plain page, where the canvas and the page share <code>--color-surface</code>, the edge is a <code>--color-border</code> hairline so the panel reads in light and dark mode. Under <code>data-backdrop</code> the tinted page frames the surface and the edge is transparent. In forced-colours mode (Windows High Contrast) the edge is drawn in <code>CanvasText</code>.</p>
+</section>
+
+<section>
+  <h2>Element and attribute forms</h2>
+  <p>The attribute form is <a href="/docs/attributes/data-canvas/"><code>data-canvas</code></a>, not <code>data-layout="canvas"</code>, and the variant goes in its value: <code>data-canvas</code>, <code>data-canvas="flush"</code> or <code>data-canvas="elevated"</code>. The element form is <code>&lt;layout-canvas&gt;</code> with <code>data-variant</code>. <code>data-max</code>, <code>data-padding</code> and <code>data-canvas-depth</code> work on both.</p>
+  <browser-window
+    src="/docs/snippets/demos/layout-canvas-forms.html"
+    url="https://vanilla-breeze.com/canvas/forms"
+    title="Canvas attribute and element forms"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Attribute form and element form" data-escape><!-- Attribute form (preferred) -->
+<article data-canvas>
+  <h2>Article with a canvas surface</h2>
+  <p>The article itself is the surface: no wrapper element.</p>
+</article>
+
+<!-- Element form -->
+<layout-canvas>
+  <h2>Layout canvas element</h2>
+  <p>The same surface as a wrapper.</p>
+</layout-canvas></code-block>
+  <p><strong>Which to choose:</strong> prefer <code>data-canvas</code> on the semantic element that already holds the content (<code>&lt;article&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;form&gt;</code>). Use <code>&lt;layout-canvas&gt;</code> when several children with no common semantic parent need one surface. Note that <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code> are container-query containers, which <code>&lt;layout-canvas&gt;</code> is not.</p>
+  <p><strong>Why not <code>data-layout</code>?</strong> A canvas is a surface, not a flow layout. VB keeps the two apart: flow primitives (stack, grid, reel…) use <code>data-layout="…"</code> with <code>data-layout-*</code> modifiers, and surfaces (canvas, card, badge) use bare <code>data-*</code> attributes such as <code>data-max</code> and <code>data-padding</code>. That way one element can be both: <code>&lt;article data-canvas data-layout="stack"&gt;</code> is a surface whose children stack.</p>
+</section>
+
+<section>
   <h2>Attributes</h2>
   <table class="props-table">
     <thead>
@@ -25,140 +56,166 @@ crumbLabel: Custom Elements
         <th>Attribute</th>
         <th>Values</th>
         <th>Default</th>
+        <th>Applies to</th>
         <th>Description</th>
       </tr>
     </thead>
       <tbody>
         <tr>
+          <td><code>data-canvas</code></td>
+          <td>(bare), <code>flush</code>, <code>elevated</code></td>
+          <td>(bare)</td>
+          <td>attribute</td>
+          <td>Turns any element into a canvas. The value is the variant: bare for the default surface, <code>flush</code> (no radius or shadow) or <code>elevated</code> (larger radius and shadow, 37.5rem and wider). See <a href="/docs/attributes/data-canvas/"><code>data-canvas</code></a>.</td>
+        </tr>
+        <tr>
           <td><code>data-variant</code></td>
           <td><code>flush</code>, <code>elevated</code></td>
           <td>&mdash;</td>
-          <td>flush (no radius or shadow) or elevated (larger radius and shadow).</td>
+          <td>element</td>
+          <td>Variant for <code>&lt;layout-canvas&gt;</code>. Has no effect with <code>data-canvas</code>; put the variant in the <code>data-canvas</code> value instead. <code>elevated</code> applies at 37.5rem and wider.</td>
         </tr>
         <tr>
           <td><code>data-max</code></td>
           <td><code>narrow</code>, <code>normal</code>, <code>wide</code>, <code>prose</code></td>
           <td>&mdash;</td>
-          <td>Max inline size, centered: narrow / normal / wide (--content-* tokens) or prose (65ch).</td>
+          <td>both</td>
+          <td>Max inline size, centered: <code>narrow</code> / <code>normal</code> / <code>wide</code> use the <code>--content-narrow</code> / <code>--content-normal</code> / <code>--content-wide</code> tokens (40 / 60 / 80rem by default; <code>normal</code> is fluid under <code>data-fluid</code>), <code>prose</code> is 65ch.</td>
         </tr>
         <tr>
           <td><code>data-padding</code></td>
           <td><code>none</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td>
           <td><code>l</code></td>
-          <td>Padding on all sides.</td>
+          <td>both</td>
+          <td>Padding on all sides. An explicit value is kept on narrow screens (see <a href="#mobile">Mobile behavior</a>).</td>
         </tr>
         <tr>
           <td><code>data-canvas-depth</code></td>
           <td><code>1</code>, <code>2</code></td>
           <td>&mdash;</td>
-          <td>Stacked-paper effect with 1 or 2 sheets behind the surface.</td>
+          <td>both</td>
+          <td>Stacked-paper effect with 1 or 2 sheets behind the surface. 37.5rem and wider only; not on the flush variant.</td>
         </tr>
       </tbody>
   </table>
 </section>
 
 <section>
-  <h2>How It Works</h2>
-  <p><code>data-canvas</code> is an attribute you add to any semantic element to give it an elevated surface &mdash; background, border-radius, box-shadow, and padding. The <code>&lt;layout-canvas&gt;</code> custom element is an alternative wrapper for when you need a non-semantic container.</p>
-  <p>Both forms share the same CSS and consume the same <code>--canvas-*</code> design tokens used by <code>data-backdrop</code>, so theme overrides apply to both systems.</p>
+  <h2>Child attributes</h2>
+  <p>None. Any content can go inside a canvas; a canvas nested in another canvas picks up the raised surface colour automatically.</p>
 </section>
 
 <section>
-  <h2>Attribute Form (Preferred)</h2>
-  <p>Add <code>data-canvas</code> directly to a semantic element. No wrapper needed.</p>
+  <h2>Examples</h2>
 
-  <code-block language="html" show-lines label="Attribute form" data-escape><article data-canvas>
-  <h2>My Article</h2>
-  <p>Content with elevated surface styling.</p>
-</article></code-block>
-</section>
-
-<section>
-  <h2>Element Form</h2>
-  <p>Use <code>&lt;layout-canvas&gt;</code> when you need a non-semantic wrapper around multiple children.</p>
-
-  <code-block language="html" show-lines label="Element form" data-escape><layout-canvas>
-  <header>Page Header</header>
-  <main>
-    <p>Main content area wrapped in a canvas surface.</p>
-  </main>
-</layout-canvas></code-block>
-</section>
-
-<section>
-  <h2>Variants</h2>
-
-  <h3>Flush</h3>
+  <h3>Variants</h3>
+  <p><code>flush</code> drops the radius and shadow for an edge-to-edge surface; <code>elevated</code> adds a larger radius and stronger shadow for emphasis.</p>
+  <browser-window
+    src="/docs/snippets/demos/layout-canvas-variants.html"
+    url="https://vanilla-breeze.com/canvas/variants"
+    title="Canvas variants"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Flush and elevated variants" data-escape><section data-canvas="flush">
+  <h2>Flush canvas</h2>
   <p>No border radius or shadow. Edge-to-edge surface.</p>
-  <code-block language="html" show-lines label="Flush variant" data-escape><section data-canvas="flush">
-  <h2>Flush Canvas</h2>
-  <p>No border radius or shadow. Edge-to-edge surface.</p>
-</section></code-block>
-
-  <h3>Elevated</h3>
-  <p>Larger radius and dramatic shadow for emphasis.</p>
-  <code-block language="html" show-lines label="Elevated variant" data-escape><section data-canvas="elevated">
-  <h2>Elevated Canvas</h2>
-  <p>Larger radius and dramatic shadow for emphasis.</p>
-</section></code-block>
 </section>
 
-<section>
-  <h2>Width Constraints</h2>
+<section data-canvas="elevated">
+  <h2>Elevated canvas</h2>
+  <p>Larger radius and stronger shadow for emphasis.</p>
+</section>
+
+<!-- Element form: the variant is data-variant -->
+<layout-canvas data-variant="elevated">...</layout-canvas></code-block>
+
+  <h3>Width constraints</h3>
   <p>Use <code>data-max</code> to constrain the canvas width. It auto-centers with <code>margin-inline: auto</code>.</p>
-
+  <browser-window
+    src="/docs/snippets/demos/layout-canvas-width.html"
+    url="https://vanilla-breeze.com/canvas/width"
+    title="Canvas width constraints"
+    shadow>
+  </browser-window>
   <code-block language="html" show-lines label="Width constraints" data-escape><article data-canvas data-max="narrow">
-  <h2>Narrow Canvas</h2>
-  <p>Constrained to 45rem max width, centered on the page.</p>
+  <h2>Narrow canvas</h2>
+  <p>Constrained to --content-narrow, centered on the page.</p>
 </article>
 
 <article data-canvas data-max="normal">
-  <h2>Content Width</h2>
-  <p>Constrained to 60rem max width.</p>
+  <h2>Content width</h2>
+  <p>Constrained to --content-normal (fluid under data-fluid).</p>
 </article></code-block>
-</section>
 
-<section>
-  <h2>Nested Canvases</h2>
-  <p>Nested canvases automatically use <code>--color-surface-raised</code> for visual hierarchy.</p>
+  <h3>Padding</h3>
+  <p><code>data-padding</code> sets the padding on all sides, from <code>none</code> to <code>xl</code> (default <code>l</code>).</p>
+  <browser-window
+    src="/docs/snippets/demos/layout-canvas-padding.html"
+    url="https://vanilla-breeze.com/canvas/padding"
+    title="Canvas padding"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Canvas padding" data-escape><article data-canvas data-padding="s">
+  <h2>Small padding</h2>
+  <p>For dense surfaces such as toolbars or compact panels.</p>
+</article>
 
+<article data-canvas data-padding="xl">
+  <h2>Extra-large padding</h2>
+  <p>For a spacious, featured surface.</p>
+</article></code-block>
+
+  <h3>Nested canvases</h3>
+  <p>Nested canvases automatically use <code>--color-surface-raised</code> for visual hierarchy. They do it by setting <code>--canvas-bg</code>, not <code>background</code>, so the depth sheets match the nested surface and an author's own <code>--canvas-bg</code> on the nested canvas still wins.</p>
+  <browser-window
+    src="/docs/snippets/demos/layout-canvas-nested.html"
+    url="https://vanilla-breeze.com/canvas/nested"
+    title="Nested canvases"
+    shadow>
+  </browser-window>
   <code-block language="html" show-lines label="Nested canvases" data-escape><article data-canvas>
-  <h2>Outer Canvas</h2>
+  <h2>Outer canvas</h2>
   <p>Primary surface background.</p>
 
-  <aside data-canvas>
-    <h3>Nested Canvas</h3>
-    <p>Automatically uses raised surface color for hierarchy.</p>
+  <aside data-canvas aria-labelledby="nested-canvas-heading">
+    <h3 id="nested-canvas-heading">Nested canvas</h3>
+    <p>Automatically uses the raised surface colour for hierarchy.</p>
   </aside>
 </article></code-block>
-</section>
 
-<section>
-  <h2>Ghost Card Depth</h2>
-  <p>Add stacked-paper shadows beneath the canvas for a layered effect. Not available on the flush variant.</p>
-
+  <h3>Ghost card depth</h3>
+  <p>Add stacked-paper sheets beneath the canvas for a layered effect. Not available on the flush variant, and only drawn at 37.5rem and wider.</p>
+  <browser-window
+    src="/docs/snippets/demos/layout-canvas-depth.html"
+    url="https://vanilla-breeze.com/canvas/depth"
+    title="Canvas ghost card depth"
+    shadow>
+  </browser-window>
   <code-block language="html" show-lines label="Ghost card depth" data-escape><article data-canvas data-canvas-depth="1">
-  <h2>Single Ghost Card</h2>
-  <p>One stacked paper shadow beneath the canvas.</p>
+  <h2>Single ghost card</h2>
+  <p>One stacked paper sheet beneath the canvas.</p>
 </article>
 
 <article data-canvas data-canvas-depth="2">
-  <h2>Double Ghost Cards</h2>
-  <p>Two stacked paper shadows for extra depth.</p>
+  <h2>Double ghost cards</h2>
+  <p>Two stacked paper sheets for extra depth.</p>
 </article></code-block>
-</section>
 
-<section>
-  <h2>Multiple Canvases</h2>
-  <p>Unlike <code>data-backdrop</code> which styles body-level regions implicitly, <code>data-canvas</code> works on any element &mdash; so you can have multiple independent canvases on the same page.</p>
-
+  <h3>Multiple canvases</h3>
+  <p>Unlike <code>data-backdrop</code>, which styles body-level regions implicitly, <code>data-canvas</code> works on any element, so you can have multiple independent canvases on the same page.</p>
+  <browser-window
+    src="/docs/snippets/demos/layout-canvas-multiple.html"
+    url="https://vanilla-breeze.com/canvas/multiple"
+    title="Multiple canvases on one page"
+    shadow>
+  </browser-window>
   <code-block language="html" show-lines label="Multiple canvases on one page" data-escape><section data-layout="grid" data-layout-min="l">
   <article data-canvas>
-    <h3>Canvas A</h3>
+    <h2>Canvas A</h2>
     <p>Independent canvas region.</p>
   </article>
-  <aside data-canvas="elevated">
-    <h3>Canvas B</h3>
+  <aside data-canvas="elevated" aria-labelledby="canvas-b-heading">
+    <h2 id="canvas-b-heading">Canvas B</h2>
     <p>Elevated variant alongside.</p>
   </aside>
 </section></code-block>
@@ -173,16 +230,32 @@ crumbLabel: Custom Elements
     <li>Both consume the same <code>--canvas-*</code> tokens</li>
     <li>A page can use both simultaneously</li>
   </ul>
+  <h3>Token coupling</h3>
+  <p>The <code>--canvas-*</code> tokens (<code>--canvas-bg</code>, <code>--canvas-radius</code>, <code>--canvas-shadow</code>, padding and width) are only defined under <code>[data-backdrop]</code>. Without a backdrop, every canvas uses the fallbacks (surface colour, <code>--radius-l</code>, <code>--shadow-l</code>). With one, the backdrop preset decides: <code>&lt;html data-backdrop="flush"&gt;</code> sets <code>--canvas-radius: 0</code> and <code>--canvas-shadow: none</code>, which flattens every default <code>data-canvas</code> on the page too. The <code>elevated</code> variant reads <code>--radius-xl</code> and <code>--shadow-xl</code> directly, so it keeps its elevation under any backdrop preset. To restyle one canvas, set the <code>--canvas-*</code> tokens on that element.</p>
 </section>
 
 <section>
-  <h2>Mobile Behavior</h2>
-  <p>At <code>&lt;640px</code>, all canvases automatically go flush &mdash; no border radius, no shadow, reduced padding. This matches <code>data-backdrop</code> mobile behavior.</p>
+  <h2 id="mobile">Mobile behavior</h2>
+  <p>Below <code>37.5rem</code> (600px, <code>--bp-s</code>), every canvas goes flush &mdash; no border radius, no shadow (including the <code>elevated</code> variant and the depth sheets) &mdash; and fills the width with reduced inline padding (<code>--size-m</code>). Two exceptions: an explicit <code>data-padding</code> keeps its value, and an explicit <code>data-max</code> still caps the width (only <code>prose</code>, 65ch, is narrower than the breakpoint). The element and attribute forms behave the same. This matches <code>data-backdrop</code> mobile behavior.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>A canvas is presentation only.</strong> It adds no role or name. Choose the element by meaning (<code>&lt;article&gt;</code> for standalone content, <code>&lt;aside&gt;</code> for related content, <code>&lt;section&gt;</code> with a heading for a region) and the surface follows; that is the main reason to prefer the attribute form.</li>
+    <li><strong>Forced colours:</strong> Windows High Contrast removes backgrounds and shadows, so the canvas draws its edge in <code>CanvasText</code> and stays visible as a separate region.</li>
+    <li><strong>Contrast:</strong> nested canvases use <code>--color-surface-raised</code>, a theme token designed to carry the theme's text colours. If you set <code>--canvas-bg</code> yourself, check the text contrast against it (4.5:1 for body text, WCAG 1.4.3).</li>
+    <li><strong>Edges are not the only cue:</strong> on a plain page the 1px hairline marks the edge where the shadow is faint (dark mode). Give each canvas a heading as well, so the regions are distinct for screen reader users too.</li>
+  </ul>
 </section>
 
 <section>
   <h2>Related</h2>
   <ul>
+    <li><a href="/docs/attributes/data-canvas/"><code>data-canvas</code></a> &mdash; The attribute form of the canvas surface</li>
+    <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> &mdash; Flow layouts; combine one with <code>data-canvas</code> on the same element</li>
+    <li><a href="/docs/semantic-layouts/">Semantic Layouts</a> &mdash; When to use a layout element and when an attribute</li>
+    <li><a href="/docs/elements/native/body/"><code>data-backdrop</code></a> &mdash; Page-level backdrop that shares the <code>--canvas-*</code> tokens</li>
     <li><a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a> &mdash; Card container with header/body/footer regions</li>
     <li><a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a> &mdash; Vertical spacing layout</li>
     <li><a href="/docs/elements/custom-elements/center/"><code>&lt;layout-center&gt;</code></a> &mdash; Centering layout</li>

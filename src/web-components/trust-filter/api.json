@@ -2,29 +2,33 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "trust-filter",
   "type": "web-component",
-  "description": "Provenance-based filter lens (vb:provenance, vb:review, vb:status, signed)",
+  "description": "Provenance lens: filter pages.json by vb:provenance, vb:review, vb:status and whether a signature is declared (not verified). OR within a dimension, AND across. Only the count is a live region.",
   "attributes": [
-    {
-      "name": "data-lens-src",
-      "kind": "data",
-      "purpose": "config",
-      "type": "string",
-      "description": "URL to pages.json (or compatible source)"
-    },
-    {
-      "name": "src",
-      "kind": "native",
-      "purpose": "config",
-      "type": "string",
-      "description": "Alias for data-lens-src"
-    }
+    { "name": "data-lens-src", "kind": "data", "purpose": "config", "type": "string", "description": "URL to pages.json (or compatible source). Read at setup; forwarded by content-lens." },
+    { "name": "src", "kind": "native", "purpose": "config", "type": "string", "description": "Alias for data-lens-src." },
+    { "name": "data-label-form", "kind": "data", "purpose": "config", "type": "string", "default": "Filter pages", "description": "Accessible name of the controls form." },
+    { "name": "data-label-provenance", "kind": "data", "purpose": "config", "type": "string", "default": "How was it made", "description": "Legend of the provenance group." },
+    { "name": "data-label-review", "kind": "data", "purpose": "config", "type": "string", "default": "Review", "description": "Legend of the review group." },
+    { "name": "data-label-status", "kind": "data", "purpose": "config", "type": "string", "default": "Status", "description": "Legend of the status group." },
+    { "name": "data-label-signed", "kind": "data", "purpose": "config", "type": "string", "default": "Has signature", "description": "Legend of the signature group. pages.json signed means a vb:signature meta is present, not that it verified." },
+    { "name": "data-label-yes", "kind": "data", "purpose": "config", "type": "string", "default": "Yes", "description": "Signature group \"yes\" option text." },
+    { "name": "data-label-no", "kind": "data", "purpose": "config", "type": "string", "default": "No", "description": "Signature group \"no\" option text." },
+    { "name": "data-label-clear", "kind": "data", "purpose": "config", "type": "string", "default": "Clear all", "description": "Reset button text." },
+    { "name": "data-label-page", "kind": "data", "purpose": "config", "type": "string", "default": "{count} of {total} page", "description": "Count template when Intl.PluralRules selects \"one\" for {total}." },
+    { "name": "data-label-pages", "kind": "data", "purpose": "config", "type": "string", "default": "{count} of {total} pages", "description": "Count template for every other plural category." },
+    { "name": "data-label-has-signature", "kind": "data", "purpose": "config", "type": "string", "default": "has signature", "description": "Result-row note for pages that declare a signature." },
+    { "name": "data-label-error", "kind": "data", "purpose": "config", "type": "string", "default": "Pages could not be loaded.", "description": "Message when the source fails (detail goes to console.warn, never rendered)." },
+    { "name": "data-label-no-source", "kind": "data", "purpose": "config", "type": "string", "default": "No data source set.", "description": "Message when neither data-lens-src nor src is set." }
   ],
   "events": [
-    {
-      "name": "trust-filter:change",
-      "detail": "{ selected, count }",
-      "description": "Fires when the reader changes any filter chip"
-    }
+    { "name": "trust-filter:change", "detail": "{ selected, count }", "description": "Fires when the reader ticks, unticks or clears a filter. selected is a per-dimension array of values. Not fired on the initial render or on reconnect." }
+  ],
+  "structure": [
+    { "element": "form[data-trust-filter-controls]", "required": false, "description": "Generated. One fieldset[data-dim] per dimension with nested label > input[type=checkbox][data-dim] (no ids), plus a reset button. Rebuilt unchecked on every setup, and the selection is cleared with it." },
+    { "element": "output[data-trust-filter-count]", "required": false, "description": "Generated polite live region holding only \"N of M pages\"; filled on first render without an announcement." },
+    { "element": "ul[data-trust-filter-results]", "required": false, "description": "Generated results list, a sibling of the count (not a live region); hidden when empty. Links that are not http(s) or relative render as plain text." },
+    { "element": "span.trust-filter-prov[data-provenance]", "required": false, "description": "Generated provenance chip; coloured per token (~=) with theme tokens." },
+    { "element": "p[data-trust-filter-error]", "required": false, "description": "Rendered when there is no source or the source fails to load." }
   ],
   "htmlvalidate": {
     "flow": true,

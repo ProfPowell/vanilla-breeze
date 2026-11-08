@@ -82,23 +82,26 @@ async function main() {
  * Format: [shortcode, emoji, name, group]
  * Compact array format for minimal file size.
  *
- * This file is a standalone module — load it via <script> tag to supplement
- * the core emoji set. Load order does not matter.
+ * This file is a standalone side-effect module that supplements the core
+ * emoji set for both data-emoji and <emoji-picker>. Load order does not
+ * matter (before or after the Vanilla Breeze bundle, autoload included).
  *
- * @example
+ * @example CDN
  * <script type="module" src="/cdn/emoji-extended.js"><\/script>
+ *
+ * @example npm
+ * import 'vanilla-breeze/emoji-extended';
  */
 
 const EXTENDED = [
 ${lines}
 ];
 
-// Register with VB core if already loaded, otherwise store for pickup
-if (globalThis.__vbEmojiRegister) {
-  globalThis.__vbEmojiRegister(EXTENDED);
-} else {
-  globalThis.__vbEmojiExtended = EXTENDED;
-}
+// Push into the shared registry every bundled copy of emoji-data.js reads
+// (see EXTENDED_REGISTRY there). Copies merge it lazily, so load order does
+// not matter; the event lets already-rendered consumers refresh.
+(globalThis[Symbol.for('vanilla-breeze.emoji-extended')] ??= []).push(EXTENDED);
+globalThis.document?.dispatchEvent(new CustomEvent('vb:emoji-extended'));
 `;
 
   const outPath = join(ROOT, 'src/data/emoji-data-extended.js');

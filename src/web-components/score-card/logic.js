@@ -13,12 +13,16 @@
  *   trend       — up | down | flat   (drives :state(trend-*) and change color)
  *   tone        — default | success | warning | error | info  (accent color)
  *   layout      — stack | cluster | compact  (grid template variant)
- *   loading     — boolean (skeleton state via :state(loading))
+ *   loading     — boolean (skeleton state via :state(loading); mirrors
+ *                 aria-busy="true" so assistive tech knows data is pending)
  *
  * Internal :state() hooks:
  *   trend-up, trend-down, trend-flat  (mirrors `trend` attribute)
  *   loading                            (mirrors `loading` attribute)
  *   interactive                        (set when wrapped in an <a>)
+ *
+ * Slotted children must be DIRECT children of the host (shadow slots only
+ * assign direct children). Unslotted children land in the value slot.
  *
  * Drill-down: wrap in <a href="..."> — the anchor receives focus and click.
  * Score-card detects the ancestor anchor and sets :state(interactive) so CSS
@@ -91,7 +95,11 @@ class ScoreCard extends VBElement {
   }
 
   #syncLoading() {
-    this.setState('loading', this.hasAttribute('loading'));
+    const loading = this.hasAttribute('loading');
+    this.setState('loading', loading);
+    // Hidden skeleton regions need a non-visual cue too.
+    if (loading) this.setAttribute('aria-busy', 'true');
+    else if (this.getAttribute('aria-busy') === 'true') this.removeAttribute('aria-busy');
   }
 
   #syncInteractive() {

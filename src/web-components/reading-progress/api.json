@@ -2,25 +2,54 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "reading-progress",
   "type": "web-component",
-  "description": "Fixed-position scroll progress indicator bar",
+  "description": "Decorative fixed-position scroll progress bar (CSS scroll-timeline for the document, JS for data-for targets).",
   "attributes": [
     {
       "name": "data-for",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "ID of the target element to bound progress against. Without it, tracks document scroll."
+      "description": "ID of the element whose bounds define the progress range. Observed. If the element does not exist the bar tracks document scroll until it appears."
     },
     {
       "name": "data-position",
       "kind": "data",
       "purpose": "visual-variant",
-      "type": "string",
-      "description": "Where to anchor the bar: 'top' (default) or 'bottom'"
+      "type": "enum",
+      "values": [
+        "top",
+        "bottom"
+      ],
+      "default": "top",
+      "description": "Viewport edge the bar is anchored to."
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--reading-progress-color",
+      "description": "Fill colour (default var(--color-accent)); Highlight in forced-colors mode."
+    },
+    {
+      "name": "--reading-progress-height",
+      "description": "Bar thickness (default 3px)."
+    },
+    {
+      "name": "--reading-progress-offset",
+      "description": "Distance from the anchored edge, e.g. a sticky header's height (default 0)."
+    },
+    {
+      "name": "--reading-progress-z",
+      "description": "z-index (default var(--z-sticky-header))."
     }
   ],
   "childAttributes": [],
-  "structure": [],
+  "structure": [
+    {
+      "element": "progress",
+      "required": false,
+      "description": "Optional SSR child; created when absent. Always aria-hidden: the bar is decorative."
+    }
+  ],
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [

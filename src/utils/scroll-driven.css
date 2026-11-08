@@ -92,6 +92,8 @@
   }
 }
 
+/* Reduced motion: the OS setting and VB's own switch (the settings panel
+   sets :root[data-motion-reduced]) both land on the final, visible state. */
 @media (prefers-reduced-motion: reduce) {
   [data-animate] {
     animation: none !important;
@@ -100,17 +102,46 @@
   }
 }
 
+:root[data-motion-reduced] [data-animate] {
+  animation: none !important;
+  opacity: 1;
+  transform: none;
+}
+
 
 /* ==========================================================================
    PARALLAX
-   Opt-in via data-parallax. Section-local, transform-only depth motion
-   driven by view-progress timeline. Tune with custom properties:
+   Opt-in via data-parallax on ONE media layer inside a section. Section-local,
+   transform-only depth motion driven by a view-progress timeline. Tune with
+   the value presets (subtle | medium | strong) or the custom properties:
      --vb-parallax-from   (default: 0%)
      --vb-parallax-to     (default: -12%)
      --vb-parallax-scale  (default: 1)
-   Use `data-parallax-group` as an authoring marker on the section that
-   contains a parallax layer; it has no CSS attached this pass.
+   data-parallax-group on the containing section clips the moving layer
+   (overflow: clip) and isolates its stacking context, so the layer never
+   paints over the neighbouring sections.
+
+   Without motion (reduced motion, or no animation-timeline support) the
+   layer sits at its resting transform: translateY(--vb-parallax-from)
+   scale(--vb-parallax-scale). The scale is kept so a layer sized to hide
+   its edges while moving still hides them when still.
    ========================================================================== */
+
+[data-parallax-group] {
+  overflow: clip;
+  isolation: isolate;
+}
+
+[data-parallax="subtle"] { --vb-parallax-to: -6%;  --vb-parallax-scale: 1.04; }
+[data-parallax="medium"] { --vb-parallax-to: -12%; --vb-parallax-scale: 1.08; }
+[data-parallax="strong"] { --vb-parallax-to: -20%; --vb-parallax-scale: 1.12; }
+
+/* Resting state: what unsupported browsers and reduced motion show. */
+[data-parallax] {
+  transform:
+    translateY(var(--vb-parallax-from, 0%))
+    scale(var(--vb-parallax-scale, 1));
+}
 
 @supports (animation-timeline: view()) {
   @keyframes vb-parallax {
@@ -126,19 +157,13 @@
     }
   }
 
-  [data-parallax] {
-    animation: vb-parallax linear both;
-    animation-timeline: view();
-    animation-range: cover 0% cover 100%;
-    will-change: transform;
+  /* will-change only while the animation can actually run. */
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion-reduced]) [data-parallax] {
+      animation: vb-parallax linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+      will-change: transform;
+    }
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  [data-parallax] {
-    animation: none !important;
-    transform: none;
-  }
-}
-
-

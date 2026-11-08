@@ -1,0 +1,74 @@
+---
+layout: attribute
+title: "data-toc-ignore"
+description: "Leave a heading, or every heading in a container, out of the page-toc table of contents and the heading-links anchor links."
+attributeName: data-toc-ignore
+category: infrastructure
+attributeType: data
+currentPath: /docs/attributes/data-toc-ignore/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>data-toc-ignore</code> keeps headings out of the generated table of contents. Put it on a heading to skip that heading, or on any ancestor to skip every heading inside it. Both <a href="/docs/elements/web-components/page-toc/"><code>&lt;page-toc&gt;</code></a> (no ToC entry) and <a href="/docs/elements/web-components/heading-links/"><code>&lt;heading-links&gt;</code></a> (no id, no anchor link) honour it.</p>
+
+  <browser-window
+    src="/docs/snippets/demos/data-toc-ignore-basic.html"
+    url="https://vanilla-breeze.com/data-toc-ignore"
+    title="Ignored section and heading"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>Usage</h2>
+  <code-block language="html" show-lines label="On a container, or on one heading" data-escape><section data-toc-ignore>
+  <h2 id="example-output">Example output</h2>
+  <h3 id="example-detail">Example detail</h3>
+</section>
+
+<h2 id="deploy">Deploy</h2>
+<h3 id="deploy-cache" data-toc-ignore>Cache headers</h3></code-block>
+</section>
+
+<section>
+  <h2>Options</h2>
+  <p>Boolean; the value is ignored.</p>
+  <h3>Ignoring one heading re-parents its children</h3>
+  <p>The ToC is built from the flat list of headings, so ignoring a single <code>h2</code> does not ignore the <code>h3</code>s after it: they are listed under the previous <code>h2</code>. To leave a whole section out, put the attribute on the <code>&lt;section&gt;</code>.</p>
+
+  <h3>Skipped without the attribute</h3>
+  <p>Both components also skip headings inside a <code>&lt;dialog&gt;</code> or a <code>&lt;browser-window&gt;</code> (demo frames). <code>&lt;page-toc&gt;</code> additionally skips headings that are not rendered (<code>hidden</code>, or a <code>data-visible</code> variant hidden at this width, checked when the ToC is built) and headings without an <code>id</code>; <code>&lt;heading-links&gt;</code> is what gives headings ids. Headings inside a closed <code>&lt;details&gt;</code> are kept, because following the link opens it.</p>
+
+  <h3>Live updates</h3>
+  <p>Adding, removing or moving <code>data-toc-ignore</code> takes effect immediately: <code>&lt;heading-links&gt;</code> adds or removes the anchor, and an auto-generated <code>&lt;page-toc&gt;</code> rebuilds when its heading list changes (it watches its <code>scope</code> for added and removed headings and for <code>data-toc-ignore</code>, <code>id</code> and <code>hidden</code> changes). A <code>&lt;page-toc&gt;</code> with hand-written links is not rebuilt; call <code>refresh()</code> after changing it.</p>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <p>None.</p>
+</section>
+
+<section>
+  <h2>Styling</h2>
+  <p>None: the attribute changes which headings are listed, not how anything looks.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Ignored headings stay real headings: screen-reader heading navigation still finds them. Use the attribute for headings that belong to an example or an aside, not to hide structure.</li>
+    <li>Ignored headings get no anchor link from <code>&lt;heading-links&gt;</code>, so they cannot be shared as a deep link unless you give them an <code>id</code> yourself.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/page-toc/#excluding-headings"><code>&lt;page-toc&gt;</code></a> &mdash; the table of contents and its <code>levels</code> / <code>scope</code> attributes (use <code>scope</code> to limit the ToC to one region instead of ignoring everything else).</li>
+    <li><a href="/docs/elements/web-components/heading-links/"><code>&lt;heading-links&gt;</code></a> &mdash; ids and anchor links for headings.</li>
+  </ul>
+</section>

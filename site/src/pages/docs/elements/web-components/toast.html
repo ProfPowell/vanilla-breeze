@@ -42,7 +42,14 @@ crumbLabel: Web Components
 
   <section>
     <h2>Variants</h2>
-    <p>Toasts support four variants for different types of messages.</p>
+    <p>Toasts support four variants for different types of messages. The variant is not carried by colour and glyph alone: each toast starts with a visually hidden prefix ("Error: …") that screen readers speak.</p>
+
+    <browser-window
+      src="/docs/examples/demos/toast-variants.html"
+      url="https://vanilla-breeze.com/toast-variants"
+      title="Variants, actions, queueing and positions"
+      shadow>
+    </browser-window>
 
     <code-block language="javascript" show-lines label="Toast variants" data-escape>// Info variant (default)
 toast.show({ message: 'Informational message', variant: 'info' });
@@ -86,7 +93,7 @@ toast.show({ message: 'Something went wrong', variant: 'error' });</code-block>
 
   <section>
     <h2>Positions</h2>
-    <p>Use <code>position</code> to control where toasts appear on the screen.</p>
+    <p>Use <code>position</code> to control where toasts appear on the screen. Positions are logical: <code>start</code>/<code>end</code> mirror in right-to-left pages, and the centred positions stay centred. The variants demo above has a position picker.</p>
 
     <code-block language="html" show-lines label="Toast position options" data-escape><toast-msg id="toast-top-start" position="top-start"></toast-msg>
 <toast-msg id="toast-top-center" position="top-center"></toast-msg>
@@ -98,7 +105,7 @@ toast.show({ message: 'Something went wrong', variant: 'error' });</code-block>
 
   <section>
     <h2>Action Buttons</h2>
-    <p>Toasts can include an action button for user interaction.</p>
+    <p>Toasts can include an action button for user interaction. The auto-dismiss timer pauses while the pointer is over the stack or focus is inside it, so there is always time to reach the action.</p>
 
     <code-block language="javascript" show-lines label="Toast with action button" data-escape>toast.show({
   message: 'File moved to trash.',
@@ -113,7 +120,7 @@ toast.show({ message: 'Something went wrong', variant: 'error' });</code-block>
 
   <section>
     <h2>Duration Control</h2>
-    <p>Control how long toasts remain visible before auto-dismissing.</p>
+    <p>Control how long toasts remain visible before auto-dismissing. The timer pauses while a toast is hovered, while focus is inside the stack, and while the page is hidden, then resumes with the time that was left (WCAG 2.2.1 Timing Adjustable).</p>
 
     <code-block language="javascript" show-lines label="Toast duration options" data-escape>// Quick notification (2 seconds)
 toast.show({ message: 'Quick!', duration: 2000 });
@@ -130,7 +137,7 @@ toast.show({ message: 'Manual dismiss only', duration: 0 });</code-block>
 
   <section>
     <h2>Dismissible Control</h2>
-    <p>By default, toasts include a dismiss button. Set <code>dismissible: false</code> to remove it.</p>
+    <p>By default, toasts include a dismiss button. Set <code>dismissible: false</code> to remove it. Such a toast still closes when its timer runs out, from <kbd>Escape</kbd> while it has focus, or from <code>dismiss(toast)</code>.</p>
 
     <code-block language="javascript" show-lines label="Dismissible control" data-escape>// With dismiss button (default)
 toast.show({ message: 'Can be dismissed', dismissible: true });
@@ -191,6 +198,12 @@ toast.show({ message: 'Auto-dismiss only', dismissible: false });</code-block>
           <td>-</td>
           <td>Callback when action button is clicked.</td>
         </tr>
+        <tr>
+          <td><code>source</code></td>
+          <td>string</td>
+          <td><code>"api"</code></td>
+          <td>Origin tag passed on <code>toast-msg:enqueued</code> (for example <code>"autosave"</code>).</td>
+        </tr>
       </tbody>
     </table>
 
@@ -210,6 +223,12 @@ const toastElement = toast.show({
 
 // Returns the toast DOM element
 console.log(toastElement);</code-block>
+
+    <h3>dismiss(toast)</h3>
+    <p>Dismiss one toast (the element <code>show()</code> returned), including non-dismissible ones. A toast still waiting in the queue is dropped from it.</p>
+
+    <h3>queue</h3>
+    <p>Read-only array of <code>{ message, variant, state }</code> records, visible toasts first, then queued ones (<code>state: "queued"</code>). Toasts beyond <code>max</code> wait in the queue and appear as others close.</p>
 
     <h3>dismissAll()</h3>
     <p>Dismiss all visible toasts and clear the queue.</p>
@@ -231,6 +250,11 @@ toast.dismissAll();</code-block>
         </tr>
       </thead>
       <tbody>
+        <tr>
+          <td><code>toast-msg:enqueued</code></td>
+          <td><code>{ message, variant, duration, source, toast, queued }</code></td>
+          <td>Fired on every <code>show()</code> call; <code>queued</code> is true when the toast waits behind <code>max</code>.</td>
+        </tr>
         <tr>
           <td><code>toast-msg:show</code></td>
           <td><code>{ toast: HTMLElement }</code></td>
@@ -258,21 +282,39 @@ toastContainer.addEventListener('toast-msg:hide', (event) => {
   <section>
     <h2>Accessibility</h2>
 
-    <h3>ARIA Attributes</h3>
+    <h3>One live region</h3>
     <ul>
-      <li>The toast container has <code>role="region"</code> and <code>aria-label="Notifications"</code></li>
-      <li>The container has <code>aria-live="polite"</code> so new toasts are announced</li>
-      <li>Each toast has <code>role="alert"</code></li>
+      <li>The container is the only live region: <code>role="log"</code> (implicitly polite), <code>aria-live="polite"</code> and <code>aria-relevant="additions"</code>. Toasts are plain children with no role of their own, so nothing is announced twice.</li>
+      <li>The container is named <code>"Notifications"</code> (<code>data-label-region</code>). An authored <code>aria-label</code> or <code>aria-live</code> is never overwritten, so <code>aria-live="assertive"</code> on a dedicated error stack is an option.</li>
+      <li>Every message starts with a visually hidden variant prefix ("Info", "Success", "Warning", "Error"), set by <code>data-label-info</code> and the like.</li>
     </ul>
 
+    <h3>Timing and focus</h3>
+    <ul>
+      <li>Auto-dismiss pauses on hover, while focus is inside the stack, and while the page is hidden, then resumes with the remaining time.</li>
+      <li><kbd>Escape</kbd> closes the focused toast.</li>
+      <li>When the focused toast closes, focus moves to the next toast, or back to the element that had focus before the toast appeared.</li>
+      <li>The close button is named by <code>data-label-dismiss</code> (default "Dismiss"), and its target is 24px (WCAG 2.5.8).</li>
+      <li>In forced-colors mode every toast gets a system-colour border.</li>
+    </ul>
+
+    <h3>Localised labels</h3>
+    <code-block language="html" show-lines label="Localised toast labels" data-escape><toast-msg lang="de"
+  data-label-region="Benachrichtigungen"
+  data-label-dismiss="Schließen"
+  data-label-info="Hinweis"
+  data-label-success="Erfolg"
+  data-label-warning="Warnung"
+  data-label-error="Fehler"></toast-msg></code-block>
+
     <h3>Screen Reader Behavior</h3>
-    <p>When a toast appears, screen readers announce its content. The <code>aria-live="polite"</code> setting ensures announcements don't interrupt the user.</p>
+    <p>When a toast appears, screen readers announce its prefix and message politely, without interrupting. For a message that must interrupt, use an inline alert near the cause instead of a toast.</p>
 
     <h3>Best Practices</h3>
     <ul>
       <li>Keep toast messages brief and actionable</li>
       <li>Don't use toasts for critical information that requires action</li>
-      <li>Provide sufficient time for users to read the message</li>
+      <li>Keep critical actions available elsewhere too: a toast is transient</li>
       <li>Use appropriate variants to convey message type</li>
       <li>Ensure dismiss buttons are accessible via keyboard</li>
     </ul>

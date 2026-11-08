@@ -20,7 +20,7 @@ crumbLabel: Native Elements
       <li>Major sections of a homepage (hero, features, testimonials)</li>
       <li>Numbered or labeled sections in documentation</li>
     </ul>
-    <p>A section should have a heading that identifies its content. If you cannot provide a meaningful heading, consider whether <code>&lt;div&gt;</code> would be more appropriate.</p>
+    <p>A section should have a heading that identifies its content. If it has no heading, it is not a section: in VB, group the content with a layout element (<a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a>, <a href="/docs/elements/custom-elements/cluster/"><code>&lt;layout-cluster&gt;</code></a>, …) or put <code>data-layout</code> on the parent, rather than reaching for a <code>&lt;div&gt;</code>.</p>
   </section>
 
   <section>
@@ -39,15 +39,15 @@ crumbLabel: Native Elements
     <p>Alternate background for visual rhythm between stacked sections.</p>
     <browser-window src="/docs/snippets/demos/section-alt.html" url="https://vanilla-breeze.com/section/alt" title="Alternating sections" shadow></browser-window>
     <code-block language="html" label="Alternating sections" data-escape><section class="padded">
-  <h3>Regular Section</h3>
+  <h2>Regular Section</h2>
   <p>Default background section.</p>
 </section>
 <section class="alt padded">
-  <h3>Alternate Section</h3>
+  <h2>Alternate Section</h2>
   <p>Raised background creates visual separation.</p>
 </section>
 <section class="padded">
-  <h3>Regular Section</h3>
+  <h2>Regular Section</h2>
   <p>Default background section.</p>
 </section></code-block>
 
@@ -55,11 +55,11 @@ crumbLabel: Native Elements
     <p>Top border for visual separation.</p>
     <browser-window src="/docs/snippets/demos/section-bordered.html" url="https://vanilla-breeze.com/section/bordered" title="Bordered section" shadow></browser-window>
     <code-block language="html" label="Bordered section" data-escape><section>
-  <h3>Previous Section</h3>
+  <h2>Previous Section</h2>
   <p>Content above the border.</p>
 </section>
 <section class="bordered">
-  <h3>Bordered Section</h3>
+  <h2>Bordered Section</h2>
   <p>This section has a top border to separate it
   from above content.</p>
 </section></code-block>
@@ -81,21 +81,22 @@ crumbLabel: Native Elements
     <browser-window src="/docs/snippets/demos/section-grid.html" url="https://vanilla-breeze.com/section/grid" title="Grid section" shadow></browser-window>
     <code-block language="html" label="Grid section" data-escape><section class="grid">
   <article class="card">
-    <h3>Feature One</h3>
+    <h2>Feature One</h2>
     <p>Description of the first feature.</p>
   </article>
   <article class="card">
-    <h3>Feature Two</h3>
+    <h2>Feature Two</h2>
     <p>Description of the second feature.</p>
   </article>
   <article class="card">
-    <h3>Feature Three</h3>
+    <h2>Feature Three</h2>
     <p>Description of the third feature.</p>
   </article>
 </section></code-block>
 
     <h3>.padded</h3>
     <p>Vertical padding for spacing between sections.</p>
+    <browser-window src="/docs/snippets/demos/section-padded.html" url="https://vanilla-breeze.com/section/padded" title="Padded section" shadow></browser-window>
     <code-block language="html" label="Padded section" data-escape><section class="padded">
   <h2>Padded Section</h2>
   <p>Extra vertical padding creates visual separation
@@ -103,15 +104,17 @@ crumbLabel: Native Elements
 </section></code-block>
 
     <h3>.full</h3>
-    <p>Full-width section with padding, ideal for page-level sections.</p>
-    <code-block language="html" label="Full-width section" data-escape><section class="full">
-  <h2>Full Width Section</h2>
-  <p>Spans the entire width with generous padding
-  on all sides.</p>
+    <p>Generous block and inline padding for page-level bands. Despite the name it does not break out to the viewport: the section stays as wide as its container.</p>
+    <browser-window src="/docs/snippets/demos/section-full.html" url="https://vanilla-breeze.com/section/full" title="Spacious section" shadow></browser-window>
+    <code-block language="html" label="Spacious section" data-escape><section class="full">
+  <h2>Spacious Section</h2>
+  <p>Generous padding on all sides; as wide
+  as its container.</p>
 </section></code-block>
 
     <h3>.contained</h3>
     <p>Max-width container for centered content.</p>
+    <browser-window src="/docs/snippets/demos/section-contained.html" url="https://vanilla-breeze.com/section/contained" title="Contained section" shadow></browser-window>
     <code-block language="html" label="Contained section" data-escape><section class="contained">
   <h2>Contained Section</h2>
   <p>Content is centered with a comfortable
@@ -142,6 +145,66 @@ crumbLabel: Native Elements
   </section>
 
   <section>
+    <h2>Page-Band Attributes</h2>
+    <p>For landing pages built from stacked full-width bands, sections also take a few data attributes.</p>
+
+    <h3>data-padding</h3>
+    <p>Fluid block padding that scales with the viewport. Bare <code>data-padding</code> is the normal step; <code>small</code>, <code>xsmall</code> and <code>none</code> step down. <code>data-padding-start="none"</code> and <code>data-padding-end="none"</code> drop one side so neighbouring bands butt together.</p>
+    <browser-window src="/docs/snippets/demos/section-padding.html" url="https://vanilla-breeze.com/section/padding" title="Fluid section padding" shadow></browser-window>
+    <code-block language="html" label="data-padding" data-escape><section data-padding>…</section>
+<section data-padding="small">…</section>
+<section data-padding="xsmall">…</section>
+<section data-padding data-padding-end="none">…</section></code-block>
+
+    <h3>section.hero[data-bleed]</h3>
+    <p>The hero's background extends up behind the site header (<code>body &gt; header</code>), and that header turns transparent. Set <code>data-scrolled</code> on <code>&lt;html&gt;</code> from your own script, for example an IntersectionObserver on the hero, to give the header its surface back once the hero scrolls away. The overlap height comes from <code>--site-header-height</code> (default 4rem).</p>
+    <browser-window src="/docs/snippets/demos/section-bleed.html" url="https://vanilla-breeze.com/section/bleed" title="Hero bleeding behind the header" shadow></browser-window>
+    <code-block language="html" label="Hero bleed" data-escape><body>
+  <header>…site nav…</header>
+  <main>
+    <section class="hero" data-bleed>
+      <h1>Hero behind the header</h1>
+    </section>
+  </main>
+  <script>
+    const hero = document.querySelector('section.hero[data-bleed]');
+    new IntersectionObserver(([entry]) => {
+      document.documentElement.toggleAttribute('data-scrolled', !entry.isIntersecting);
+    }).observe(hero);
+  </script>
+</body></code-block>
+    <p>Check text contrast on the header while it sits over the hero background.</p>
+
+    <h3>data-angle</h3>
+    <p>Skews the section's background along one edge for an angled transition: <code>down</code> and <code>down-strong</code> slope the top edge, <code>up</code> and <code>up-strong</code> the bottom edge. Extra block padding keeps content clear of the slope. The slope mirrors under <code>dir="rtl"</code>. Give the section a background, otherwise there is nothing to skew.</p>
+    <browser-window src="/docs/snippets/demos/section-angle.html" url="https://vanilla-breeze.com/section/angle" title="Angled section transitions" shadow></browser-window>
+    <code-block language="html" label="data-angle" data-escape><section data-angle="down" data-padding>…</section>
+<section data-angle="up-strong" data-padding>…</section></code-block>
+
+    <h3>Hairline rules: section &gt; hr[data-position]</h3>
+    <p>A direct-child <code>&lt;hr data-position="top"&gt;</code> or <code>data-position="bottom"</code> becomes an edge-to-edge rule pinned to that edge of the section, taken out of the content flow.</p>
+    <browser-window src="/docs/snippets/demos/section-hairline.html" url="https://vanilla-breeze.com/section/hairline" title="Section hairline rules" shadow></browser-window>
+    <code-block language="html" label="Hairline rules" data-escape><section data-padding>
+  <hr data-position="top" />
+  <h2>Top hairline</h2>
+</section></code-block>
+  </section>
+
+  <section>
+    <h2>Container Behavior</h2>
+    <p>Every <code>&lt;section&gt;</code> (like <code>main</code>, <code>article</code> and most <code>aside</code>s) is a size query container: VB gives it <code>container-type: inline-size</code>. Two consequences:</p>
+    <ul>
+      <li><strong>Container units and queries resolve against the section.</strong> <code>cqi</code> units and <code>@container</code> queries inside it measure the section, not the viewport.</li>
+      <li><strong>A content-sized section can collapse.</strong> Size containment ignores the section's content when working out its width. As a flex or grid item that is sized by its content (a <code>display: flex</code> row, an <code>align-items: center</code> column, an <code>auto</code> track), the section shrinks to zero width. VB already undoes this inside <code>layout-cluster</code>, <code>layout-reel</code>, centred <code>layout-cover</code> and aligned <code>layout-stack</code>.</li>
+    </ul>
+    <p>Elsewhere, opt out by setting <code>container-type: normal</code> on the section in your own CSS, or give it an explicit size. Inside the layouts above, add <code>data-container</code> to a section to keep it as a container on purpose.</p>
+    <code-block language="css" label="Opting a section out of containment" data-escape>/* a section sized by its content in your own flex row */
+.toolbar > section {
+  container-type: normal;
+}</code-block>
+  </section>
+
+  <section>
     <h2>Variants</h2>
     <table class="props-table">
       <thead>
@@ -157,7 +220,7 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>.full</code></td>
-          <td>Full width with generous block and inline padding</td>
+          <td>Generous block (2xl) and inline (l) padding; no breakout</td>
         </tr>
         <tr>
           <td><code>.contained</code></td>
@@ -165,7 +228,7 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>.alt</code></td>
-          <td>Raised background color for visual alternation</td>
+          <td>Raised background color for visual alternation (block borders in forced-colors mode)</td>
         </tr>
         <tr>
           <td><code>.bordered</code></td>
@@ -181,18 +244,70 @@ crumbLabel: Native Elements
         </tr>
       </tbody>
     </table>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-padding</code></td>
+          <td>(bare), <code>small</code>, <code>xsmall</code>, <code>none</code></td>
+          <td>Fluid block padding</td>
+        </tr>
+        <tr>
+          <td><code>data-padding-start</code> / <code>data-padding-end</code></td>
+          <td><code>none</code></td>
+          <td>Remove block-start or block-end padding</td>
+        </tr>
+        <tr>
+          <td><code>data-bleed</code></td>
+          <td>boolean, on <code>section.hero</code></td>
+          <td>Background extends behind <code>body &gt; header</code>, which turns transparent until <code>&lt;html data-scrolled&gt;</code></td>
+        </tr>
+        <tr>
+          <td><code>data-angle</code></td>
+          <td><code>down</code>, <code>up</code>, <code>down-strong</code>, <code>up-strong</code></td>
+          <td>Skewed background edge with padding compensation; mirrors in RTL</td>
+        </tr>
+        <tr>
+          <td><code>data-container</code></td>
+          <td>boolean</td>
+          <td>Keep the section a query container inside content-sized layouts</td>
+        </tr>
+        <tr>
+          <td><code>hr[data-position]</code> (child)</td>
+          <td><code>top</code>, <code>bottom</code></td>
+          <td>Edge-to-edge hairline pinned to that edge</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Sections with headings create region landmarks that screen readers can navigate to</li>
-      <li>Always include a heading (h2-h6) to label the section content</li>
+      <li>A <code>&lt;section&gt;</code> is a <code>region</code> landmark only when it has an accessible name, e.g. <code>aria-labelledby</code> pointing at its heading (or <code>aria-label</code>). A heading alone does not make it a landmark.</li>
+      <li>Name only the few sections a user would want to jump to. Naming every section floods the landmark list and makes it less useful.</li>
+      <li>Always include a heading (h2-h6) so the section shows up in heading navigation</li>
       <li>Use appropriate heading levels - don't skip levels for visual styling</li>
-      <li>If a section has no meaningful heading, consider using <code>&lt;div&gt;</code> instead</li>
+      <li>If a section has no meaningful heading, it is not a section: use a VB layout element or <code>data-layout</code> on the parent</li>
       <li>Hero sections should still have a proper h1 for the page title</li>
       <li>Grid sections should use semantic elements (like <code>&lt;article&gt;</code>) for grid items when appropriate</li>
+      <li>In forced-colors mode backgrounds are flattened, so <code>.alt</code> sections gain a system-colour border to stay distinct</li>
     </ul>
+  </section>
+
+  <section>
+    <h2>Named Region Example</h2>
+    <code-block language="html" label="Section as a named region" data-escape><section aria-labelledby="pricing-title">
+  <h2 id="pricing-title">Pricing</h2>
+  …
+</section></code-block>
   </section>
 
   <section>

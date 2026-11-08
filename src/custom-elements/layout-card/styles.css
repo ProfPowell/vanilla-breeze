@@ -1,10 +1,25 @@
+/* layout-card: card surface.
+   Block mode (default): a padded block.
+   Structured mode: any header / section / footer child, or a
+   slot="header|content|footer" child, turns the card into a column with the
+   header pinned on top, the footer pinned at the bottom and every other child
+   stacked between them in source order.
+
+   Private properties are declared on every card host (never read through a
+   var() fallback), so a nested card never inherits its parent's padding. */
+
 layout-card {
+  --_card-padding: var(--size-m);
+  /* Structured-mode child padding: one step up from the block padding */
+  --_card-edge-y: var(--size-m);
+  --_card-edge-x: var(--size-l);
+  --_card-body: var(--size-l);
+
   display: block;
-  padding: var(--_padding, var(--size-m));
+  padding: var(--_card-padding);
   background: var(--color-surface);
   border-radius: var(--radius-l);
   box-shadow: var(--shadow-s);
-  container-type: inline-size;
 
   &[data-variant="elevated"] {
     box-shadow: var(--shadow-m);
@@ -20,53 +35,59 @@ layout-card {
     background: transparent;
   }
 
-  &[data-padding="none"] { --_padding: 0; }
-  &[data-padding="s"]    { --_padding: var(--size-s); }
-  &[data-padding="m"]    { --_padding: var(--size-m); }
-  &[data-padding="l"]    { --_padding: var(--size-l); }
-  &[data-padding="xl"]   { --_padding: var(--size-xl); }
+  /* Padding scale. Block mode uses --_card-padding; structured mode uses the
+     edge (header/footer) and body (content) values, one step larger. */
+  &[data-padding="none"] { --_card-padding: 0;            --_card-edge-y: 0;              --_card-edge-x: 0;              --_card-body: 0; }
+  &[data-padding="s"]    { --_card-padding: var(--size-s);  --_card-edge-y: var(--size-xs); --_card-edge-x: var(--size-s);  --_card-body: var(--size-s); }
+  &[data-padding="m"]    { --_card-padding: var(--size-m);  --_card-edge-y: var(--size-m);  --_card-edge-x: var(--size-l);  --_card-body: var(--size-l); }
+  &[data-padding="l"]    { --_card-padding: var(--size-l);  --_card-edge-y: var(--size-l);  --_card-edge-x: var(--size-xl); --_card-body: var(--size-xl); }
+  &[data-padding="xl"]   { --_card-padding: var(--size-xl); --_card-edge-y: var(--size-xl); --_card-edge-x: var(--size-2xl); --_card-body: var(--size-2xl); }
 
-  /* Max-width variants for centered card patterns */
-  /* Same keyword set as layout-center / canvas: narrow | normal | wide | prose.
-     `content` (which read a --content-width token that never existed) is gone. */
-  &[data-max="narrow"] { max-inline-size: var(--content-narrow, 45rem); inline-size: 100%; align-self: center; }
-  &[data-max="normal"] { max-inline-size: var(--content-normal, 60rem); inline-size: 100%; align-self: center; }
-  &[data-max="wide"]   { max-inline-size: var(--content-wide, 80rem); inline-size: 100%; align-self: center; }
-  &[data-max="prose"]  { max-inline-size: 65ch; inline-size: 100%; align-self: center; }
+  /* Max-width variants: centered in block flow (margin-inline) and in
+     flex/grid parents (align-self). Same keyword set as layout-center /
+     canvas: narrow | normal | wide | prose. */
+  &[data-max="narrow"] { max-inline-size: var(--content-narrow, 45rem); inline-size: 100%; margin-inline: auto; align-self: center; }
+  &[data-max="normal"] { max-inline-size: var(--content-normal, 60rem); inline-size: 100%; margin-inline: auto; align-self: center; }
+  &[data-max="wide"]   { max-inline-size: var(--content-wide, 80rem); inline-size: 100%; margin-inline: auto; align-self: center; }
+  &[data-max="prose"]  { max-inline-size: 65ch; inline-size: 100%; margin-inline: auto; align-self: center; }
 
   layout-card {
     background: var(--color-surface-raised);
   }
-
-  /* Smart grid mode: activates when semantic children detected */
-  &:has(> :is(header, section, footer)) {
-    display: grid;
-    grid-template:
-      "header" auto
-      "content" 1fr
-      "footer" auto / 1fr;
-    overflow: hidden;
-    padding: 0; /* Children own their padding in grid mode */
-  }
 }
 
-/* --- Grid-mode child styles --- */
+/* --- Structured mode --- */
 
-layout-card:has(> :is(header, section, footer)) {
+layout-card:has(> :is(header, section, footer, [slot="header"], [slot="content"], [slot="footer"])) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0; /* Children own their padding in structured mode */
+  /* Only structured cards are query containers (for the compact rule below).
+     A block-mode card stays container-type: normal so it never collapses
+     as a content-sized flex/grid item. */
+  container-type: inline-size;
+
   > :is(header, [slot="header"]) {
-    grid-area: header;
-    padding: var(--size-m) var(--size-l);
+    order: -1;
+    padding: var(--_card-edge-y) var(--_card-edge-x);
     border-block-end: var(--border-width-thin) solid var(--color-border);
   }
 
-  > :is(section, [slot="content"]) {
-    grid-area: content;
-    padding: var(--size-l);
+  /* Content: every child that is not the header or footer, in source order */
+  > :not(header, footer, [slot="header"], [slot="footer"]) {
+    padding: var(--_card-body);
+  }
+
+  /* Consecutive content children: the shared edge carries one padding, not two */
+  > :not(header, footer, [slot="header"], [slot="footer"]) + :not(header, footer, [slot="header"], [slot="footer"]) {
+    padding-block-start: 0;
   }
 
   > :is(footer, [slot="footer"]) {
-    grid-area: footer;
-    padding: var(--size-m) var(--size-l);
+    order: 1;
+    margin-block-start: auto; /* pinned to the bottom of a stretched card */
+    padding: var(--_card-edge-y) var(--_card-edge-x);
     border-block-start: var(--border-width-thin) solid var(--color-border);
     display: flex;
     flex-wrap: wrap;
@@ -74,69 +95,55 @@ layout-card:has(> :is(header, section, footer)) {
     justify-content: flex-end;
   }
 
-  > :not(:is(header, section, footer, [slot])) {
-    grid-area: content;
-    padding: var(--size-l);
-  }
-
   /* Header heading reset */
   > :is(header, [slot="header"]) > :is(h1, h2, h3, h4, h5, h6) {
     margin: 0;
     font-size: var(--font-size-l);
   }
-}
 
-/* --- Grid-mode padding variants --- */
-
-layout-card:has(> :is(header, section, footer)) {
-  &[data-padding="none"] {
-    > :is(header, [slot="header"]) { padding: 0; border: none; }
-    > :is(section, [slot="content"]) { padding: 0; }
-    > :is(footer, [slot="footer"]) { padding: 0; border: none; }
-    > :not(:is(header, section, footer, [slot])) { padding: 0; }
+  &[data-padding="none"] > :is(header, footer, [slot="header"], [slot="footer"]) {
+    border: none;
   }
 
-  &[data-padding="s"] {
-    > :is(header, [slot="header"]) { padding: var(--size-xs) var(--size-s); }
-    > :is(section, [slot="content"]) { padding: var(--size-s); }
-    > :is(footer, [slot="footer"]) { padding: var(--size-xs) var(--size-s); }
-    > :not(:is(header, section, footer, [slot])) { padding: var(--size-s); }
-  }
-
-  &[data-padding="l"] {
-    > :is(header, [slot="header"]) { padding: var(--size-l) var(--size-xl); }
-    > :is(section, [slot="content"]) { padding: var(--size-xl); }
-    > :is(footer, [slot="footer"]) { padding: var(--size-l) var(--size-xl); }
-    > :not(:is(header, section, footer, [slot])) { padding: var(--size-xl); }
-  }
-
-  &[data-padding="xl"] {
-    > :is(header, [slot="header"]) { padding: var(--size-xl) var(--size-2xl); }
-    > :is(section, [slot="content"]) { padding: var(--size-2xl); }
-    > :is(footer, [slot="footer"]) { padding: var(--size-xl) var(--size-2xl); }
-    > :not(:is(header, section, footer, [slot])) { padding: var(--size-2xl); }
-  }
-}
-
-/* --- Subgrid: align header/content/footer across sibling cards --- */
-
-[data-layout-subgrid] > layout-card:has(> :is(header, section, footer)) {
-  grid-template-rows: subgrid;
-}
-
-/* --- Container query: compact mode for narrow grid cards --- */
-
-layout-card:has(> :is(header, section, footer)) {
+  /* Compact mode for narrow structured cards: cap every child's padding */
   @container (max-width: 300px) {
-    > :is(header, [slot="header"]) { padding: var(--size-s); }
-    > :is(section, [slot="content"]),
-    > :not(:is(header, section, footer, [slot])) { padding: var(--size-s); }
+    > :is(header, [slot="header"], footer, [slot="footer"]) {
+      padding: min(var(--_card-edge-y), var(--size-s)) min(var(--_card-edge-x), var(--size-s));
+    }
+    > :not(header, footer, [slot="header"], [slot="footer"]) {
+      padding: min(var(--_card-body), var(--size-s));
+    }
     > :is(footer, [slot="footer"]) {
-      padding: var(--size-s);
       flex-direction: column;
     }
     > :is(header, [slot="header"]) > :is(h1, h2, h3, h4, h5, h6) {
       font-size: var(--font-size-m);
     }
+  }
+}
+
+/* --- Subgrid: align header / content / footer rows across sibling cards ---
+   layout-grid[data-layout-subgrid] makes each child a grid spanning 3 rows
+   (2 or 4 with a value). Header takes the first row, footer the last, and
+   content children fill the rows between (one content child per spare row). */
+
+[data-layout-subgrid] > layout-card:has(> :is(header, section, footer, [slot="header"], [slot="content"], [slot="footer"])) {
+  display: grid;
+  grid-template-columns: 100%;
+  grid-template-rows: subgrid;
+  /* container-type implies layout containment, which makes the card an
+     independent grid and silently disables subgrid. */
+  container-type: normal;
+  row-gap: 0; /* a subgrid inherits the parent's row gap; card rows abut */
+
+  > :is(header, [slot="header"]) { grid-row: 1; }
+  > :is(footer, [slot="footer"]) { grid-row: -2 / -1; }
+}
+
+/* Forced colors removes box-shadow and repaints backgrounds as Canvas, so a
+   shadow-only card would merge into the page. Draw a system-colour edge. */
+@media (forced-colors: active) {
+  layout-card:not([data-variant="ghost"]) {
+    border: var(--border-width-thin, 1px) solid CanvasText;
   }
 }

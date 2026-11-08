@@ -2,31 +2,66 @@
 
 /* ============================================================
    1. SCRIPT-SPECIFIC TYPOGRAPHY
-   Uses :lang() so rules inherit through the subtree.
+   Uses :lang() so rules reach every element in the subtree, but wrapped
+   in :where() (zero specificity) so element and component rules win —
+   headings keep their tight line-height, header.centered / hgroup.centered
+   keep their centring, code keeps its monospace font. Body copy (which only
+   gets reset.css's line-height, a lower layer) picks these up.
    ============================================================ */
 
 /* CJK: Chinese, Japanese, Korean */
-:lang(zh),
-:lang(ja),
-:lang(ko) {
+:where(:lang(zh), :lang(ja), :lang(ko)) {
   font-family: var(--font-cjk);
   line-height: 1.8;
   letter-spacing: 0;
-  word-break: break-all;
-  overflow-wrap: normal;
+  /* Ideographs and kana already break between characters with normal
+     word-break; break-all would also split embedded Latin words and URLs
+     mid-word. line-break: strict applies the stricter kinsoku rules (no
+     small kana or closing punctuation at a line start). */
+  word-break: normal;
+  line-break: strict;
+  overflow-wrap: break-word;
+}
+
+/* Korean separates words with spaces — break-all would split words (eojeol)
+   mid-syllable-cluster. keep-all wraps at spaces like Latin text. */
+:where(:lang(ko)) {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* CJK headings: a little more room than Latin's tight leading, far less
+   than body copy's 1.8. */
+:is(h1, h2, h3, h4, h5, h6):where(:lang(zh), :lang(ja), :lang(ko)) {
+  line-height: var(--line-height-snug);
+}
+
+/* CJK lead paragraphs: p.lead's relaxed leading (1.625) outranks the
+   zero-specificity body leading above, which left lead text tighter than
+   the body copy under it. Restore the CJK 1.8. */
+p.lead:is(:lang(zh), :lang(ja), :lang(ko)) {
+  line-height: 1.8;
 }
 
 /* CJK italics: most CJK fonts have no italic, so browsers synthesise an
-   oblique that distorts the glyphs. <dfn> and <cite> drop the slant and
-   use a script-friendly cue instead: a heavier weight for a defined
-   term, and a wavy underline beneath a work title (the traditional
-   book-title mark). cite[data-variant="quoted"] keeps its brackets. */
-dfn:is(:lang(zh), :lang(ja), :lang(ko)) {
+   oblique that distorts the glyphs (and with font-synthesis: none the
+   slant simply disappears). Each italic element drops the slant and uses a
+   script-friendly cue instead, a different one per element so they stay
+   distinguishable:
+   - <dfn>: a heavier weight for a defined term
+   - <cite>: a wavy underline beneath a work title (the traditional
+     book-title mark); cite[data-variant="quoted"] keeps its brackets
+   - <em>: emphasis marks (stress)
+   - <i>: a calligraphic (kai / mincho) face plus a dotted underline — an
+     alternate voice, deliberately not text-emphasis, which is em's stress
+   Romanised tags (zh-Latn, ja-Latn, ko-Latn) are Latin text and keep the
+   real italic: :lang(ja) also matches ja-Latn, so each rule excludes them. */
+dfn:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
   font-style: normal;
   font-weight: var(--font-weight-semibold, 600);
 }
 
-cite:is(:lang(zh), :lang(ja), :lang(ko)) {
+cite:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
   font-style: normal;
 
   &:not([data-variant~="quoted"]) {
@@ -36,33 +71,74 @@ cite:is(:lang(zh), :lang(ja), :lang(ko)) {
   }
 }
 
+/* CJK emphasis: emphasis marks instead of the missing italic — sesame over
+   the text (Japanese, Korean), and a filled dot under the text for
+   Chinese. */
+em:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
+  font-style: normal;
+  text-emphasis: filled sesame;
+  text-emphasis-position: over right;
+}
+
+em:lang(zh):not(:lang(zh-Latn)) {
+  text-emphasis: filled dot;
+  text-emphasis-position: under right;
+}
+
+/* CJK <i> (alternate voice: terms from another language, thoughts, ship
+   names): override the face with --font-cjk-alternate. */
+i:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
+  font-style: normal;
+  font-family: var(--font-cjk-alternate);
+  text-decoration: underline dotted var(--color-text-muted);
+  text-underline-position: under;
+  text-decoration-thickness: from-font;
+}
+
+/* CJK <u>: the proper-name mark (專名號 / 专名号), a solid underline in the
+   text colour under the line. VB's default <u> is a red wavy spell-check
+   line, which here would make every personal or place name look like a
+   typo, and would collide with <cite>'s wavy book-title mark above. */
+u:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
+  text-decoration: underline solid currentColor;
+  text-underline-position: under;
+  text-decoration-thickness: from-font;
+}
+
+/* CJK <var>: no synthesised oblique. A dashed underline marks the
+   placeholder instead, distinct from the solid (u), dotted (i) and wavy
+   (cite) lines. */
+var:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
+  font-style: normal;
+  text-decoration: underline dashed var(--color-text-muted);
+  text-underline-position: under;
+  text-decoration-thickness: from-font;
+}
+
 /* Japanese: proportional alternates for punctuation */
-:lang(ja) {
+:where(:lang(ja)) {
   font-feature-settings: "palt" 1;
 }
 
 /* Arabic script: Arabic, Persian, Urdu, Pashto */
-:lang(ar),
-:lang(fa),
-:lang(ur),
-:lang(ps) {
+/* No text-align here: start is already the initial value, and setting it on
+   every element beat inherited centring (header.centered, hgroup.centered). */
+:where(:lang(ar), :lang(fa), :lang(ur), :lang(ps)) {
   font-family: var(--font-arabic);
   line-height: 1.9;
   letter-spacing: normal;
   word-spacing: 0.05em;
-  text-align: start;
 }
 
 /* Hebrew */
-:lang(he),
-:lang(yi) {
+:where(:lang(he), :lang(yi)) {
   font-family: var(--font-hebrew);
   line-height: 1.75;
   letter-spacing: normal;
 }
 
 /* Thai: no word breaks, needs larger line height */
-:lang(th) {
+:where(:lang(th)) {
   font-family: var(--font-thai);
   line-height: 2;
   word-break: normal;
@@ -70,94 +146,109 @@ cite:is(:lang(zh), :lang(ja), :lang(ko)) {
 }
 
 /* Devanagari: Hindi, Marathi, Sanskrit, Nepali */
-:lang(hi),
-:lang(mr),
-:lang(sa),
-:lang(ne) {
+:where(:lang(hi), :lang(mr), :lang(sa), :lang(ne)) {
   font-family: var(--font-devanagari);
   line-height: 1.75;
 }
 
 /* ============================================================
-   2. RUBY ANNOTATION VISIBILITY
-   Controlled by data-ruby on <html>:
-     show — always visible
-     hide — hidden from view, kept in DOM (accessible + copyable)
-     auto — show only for CJK languages
-     (attribute absent) — same as "auto"
-   The no-attribute case is treated as "auto" so that removing the
-   attribute at runtime leaves a sensible default rather than reverting
-   to the UA's "always visible" default. See spec in i18n/api.json.
+   2. RUBY ANNOTATIONS
+   Annotations are visible by default (the browser default) on every
+   page, whatever its language. data-ruby on any element (<html>, a
+   section, or the <ruby> itself) changes that for its subtree; the
+   nearest data-ruby wins, so a "show" island inside a "hide" page works:
+     show — visible (same as no attribute; use it to undo an outer hide)
+     hide — visually hidden, still in the accessibility tree
+     auto — visible only when the annotation's own language is CJK
+            (ja, zh, ko, yue, wuu — the RUBY_LANGUAGES list in
+            src/lib/i18n.js); other annotations are visually hidden
+   Hidden annotations collapse (font-size/line-height 0, so the base line
+   gets no extra room) and are clipped, but are NOT visibility:hidden or
+   display:none — screen readers still read the reading. They stay in the
+   ruby layout (no position:absolute), so un-hiding needs no relayout
+   tricks. <rp> stays display:none in every mode: the reading is still
+   exposed to assistive tech, and showing "(" ")" around nothing would
+   only add noise.
    ============================================================ */
 
-/* Ruby text inherits script font for CJK */
-:lang(ja) rt, :lang(zh) rt, :lang(ko) rt {
+/* CJK readings (kana, hangul, bopomofo) use the script face; romanised
+   readings (pinyin zh-Latn, Jyutping yue-Latn, romaji ja-Latn) are Latin
+   text and keep the Latin face. :lang(zh) also matches zh-Latn, so they
+   are excluded explicitly (as the italic rules above do). */
+rt:is(:lang(ja), :lang(zh), :lang(ko), :lang(yue), :lang(wuu)):not(:lang(ja-Latn), :lang(zh-Latn), :lang(ko-Latn), :lang(yue-Latn), :lang(wuu-Latn)) {
   font-family: var(--font-cjk);
 }
 
-/* show: always display rt */
-:root[data-ruby="show"] rt {
-  visibility: visible;
-  font-size: 0.5em;
-  line-height: 1;
+/* The script block above gives every :lang(zh) element (zh-Latn
+   included) the CJK face; put romanised readings back on the body face. */
+rt:is(:lang(ja-Latn), :lang(zh-Latn), :lang(ko-Latn), :lang(yue-Latn), :lang(wuu-Latn)) {
+  font-family: var(--font-sans);
 }
 
-/* hide: invisible but stays in ruby layout flow (no position: absolute
-   which breaks the parent <ruby> layout context on re-show) */
-:root[data-ruby="hide"] rt {
-  visibility: hidden;
-  font-size: 0;
-  line-height: 0;
+/* Bopomofo (zhuyin) is set to the right of each character in Taiwan.
+   Progressive: Firefox and Safari honour inter-character; Chromium
+   ignores the value and keeps the annotation over the base. */
+ruby:has(> rt:lang(zh-Bopo)) {
+  ruby-position: inter-character;
 }
 
-/* auto (and no data-ruby attribute at all): start hidden */
-:root[data-ruby="auto"] rt,
-:root:not([data-ruby]) rt {
-  visibility: hidden;
-  font-size: 0;
-  line-height: 0;
+/* hide: visually hidden, kept in the accessibility tree. Scoped from the
+   nearest [data-ruby] down to the next one, so the nearest wins. */
+@scope ([data-ruby="hide"]) to ([data-ruby]) {
+  :scope:is(rt),
+  rt {
+    font-size: 0;
+    line-height: 0;
+    clip-path: inset(50%);
+  }
 }
 
-/* auto (and no data-ruby): re-show for CJK languages */
-:root[data-ruby="auto"]:lang(ja) rt,
-:root[data-ruby="auto"]:lang(zh) rt,
-:root[data-ruby="auto"]:lang(ko) rt,
-:root[data-ruby="auto"] :lang(ja) rt,
-:root[data-ruby="auto"] :lang(zh) rt,
-:root[data-ruby="auto"] :lang(ko) rt,
-:root:not([data-ruby]):lang(ja) rt,
-:root:not([data-ruby]):lang(zh) rt,
-:root:not([data-ruby]):lang(ko) rt,
-:root:not([data-ruby]) :lang(ja) rt,
-:root:not([data-ruby]) :lang(zh) rt,
-:root:not([data-ruby]) :lang(ko) rt {
-  visibility: visible;
-  font-size: 0.5em;
-  line-height: 1;
+/* auto: hide annotations whose own language is not CJK. Keyed on the
+   rt's :lang() (inherited from the ruby/paragraph), not the root's. */
+@scope ([data-ruby="auto"]) to ([data-ruby]) {
+  :scope:is(rt):not(:lang(ja), :lang(zh), :lang(ko), :lang(yue), :lang(wuu)),
+  rt:not(:lang(ja), :lang(zh), :lang(ko), :lang(yue), :lang(wuu)) {
+    font-size: 0;
+    line-height: 0;
+    clip-path: inset(50%);
+  }
 }
 
 /* ============================================================
    3. LOCALE-AWARE QUOTATION MARKS
-   CSS quotes property adapts to language convention.
+   The base is quotes: auto, so the browser picks the marks for the
+   element's own language (Dutch, Swedish, Czech, Hebrew … all work with
+   no rule here). The table below only pins the languages where VB wants
+   specific marks or where browsers disagree. Rules are written as
+   q:lang(x), not :lang(x) q — :lang() already matches inherited
+   language, and the compound form also honours lang on the <q> itself
+   (and a <q lang="en"> nested inside Japanese text).
+   cite[data-variant="quoted"] (inline-semantics) uses open-quote/
+   close-quote too, so it shares the table.
    ============================================================ */
 
-/* cite[data-variant="quoted"] (inline-semantics) uses open-quote/close-quote too, so it
-   shares the locale table. */
-:is(q, cite[data-variant="quoted"]) { quotes: "\201C" "\201D" "\2018" "\2019"; }                   /* English "..." */
-:lang(en-GB) :is(q, cite[data-variant="quoted"]), :lang(en-AU) :is(q, cite[data-variant="quoted"]), :lang(en-NZ) :is(q, cite[data-variant="quoted"]) {
-  quotes: "\2018" "\2019" "\201C" "\201D";                       /* 'single' "double" */
+:is(q, cite[data-variant="quoted"]) { quotes: auto; }
+
+:is(q, cite[data-variant="quoted"]):lang(en) { quotes: "\201C" "\201D" "\2018" "\2019"; }          /* “…” ‘…’ */
+:is(q, cite[data-variant="quoted"]):is(:lang(en-GB), :lang(en-AU), :lang(en-NZ)) {
+  quotes: "\2018" "\2019" "\201C" "\201D";                                                       /* ‘…’ “…” */
 }
-:lang(de) :is(q, cite[data-variant="quoted"]) { quotes: "\201E" "\201C" "\201A" "\2018"; }         /* German  „..." */
-:lang(fr) :is(q, cite[data-variant="quoted"]) { quotes: "\00AB\202F" "\202F\00BB" "\2039\202F" "\202F\203A"; } /* French «...» (narrow NBSP) */
-:lang(it) :is(q, cite[data-variant="quoted"]), :lang(es) :is(q, cite[data-variant="quoted"]), :lang(pt) :is(q, cite[data-variant="quoted"]) {
-  quotes: "\00AB" "\00BB" "\201C" "\201D";
+:is(q, cite[data-variant="quoted"]):lang(de) { quotes: "\201E" "\201C" "\201A" "\2018"; }          /* „…“ ‚…‘ */
+:is(q, cite[data-variant="quoted"]):lang(de-CH) { quotes: "\00AB" "\00BB" "\2039" "\203A"; }       /* Swiss «…» ‹…› */
+:is(q, cite[data-variant="quoted"]):lang(fr) { quotes: "\00AB\202F" "\202F\00BB" "\2039\202F" "\202F\203A"; } /* « … » (narrow NBSP) */
+:is(q, cite[data-variant="quoted"]):is(:lang(it), :lang(es), :lang(pt-PT)) {
+  quotes: "\00AB" "\00BB" "\201C" "\201D";                                                       /* «…» “…” */
 }
-:lang(pl) :is(q, cite[data-variant="quoted"]) { quotes: "\00AB" "\00BB" "\201E" "\201C"; }
-:lang(ja) :is(q, cite[data-variant="quoted"]) { quotes: "\300C" "\300D" "\300E" "\300F"; }         /* Japanese「...」*/
-:lang(zh) :is(q, cite[data-variant="quoted"]) { quotes: "\300C" "\300D" "\300E" "\300F"; }         /* Chinese 「...」*/
-:lang(ko) :is(q, cite[data-variant="quoted"]) { quotes: "\201C" "\201D" "\2018" "\2019"; }         /* Korean */
-:lang(ru) :is(q, cite[data-variant="quoted"]) { quotes: "\00AB" "\00BB" "\201E" "\201C"; }         /* Russian «...» */
-:lang(ar) :is(q, cite[data-variant="quoted"]) { quotes: "\00AB" "\00BB" "\2018" "\2019"; }         /* Arabic */
+:is(q, cite[data-variant="quoted"]):lang(pt):not(:lang(pt-PT)) { quotes: "\201C" "\201D" "\2018" "\2019"; } /* Brazil “…” ‘…’ */
+:is(q, cite[data-variant="quoted"]):lang(pl) { quotes: "\201E" "\201D" "\00AB" "\00BB"; }          /* „…” «…» */
+:is(q, cite[data-variant="quoted"]):lang(ja) { quotes: "\300C" "\300D" "\300E" "\300F"; }          /* 「…」『…』 */
+:is(q, cite[data-variant="quoted"]):lang(zh) { quotes: "\201C" "\201D" "\2018" "\2019"; }          /* Simplified “…” ‘…’ */
+:is(q, cite[data-variant="quoted"]):is(:lang(zh-Hant), :lang(zh-TW), :lang(zh-HK), :lang(zh-MO)) {
+  quotes: "\300C" "\300D" "\300E" "\300F";                                                       /* Traditional 「…」『…』 */
+}
+:is(q, cite[data-variant="quoted"]):lang(ko) { quotes: "\201C" "\201D" "\2018" "\2019"; }          /* “…” ‘…’ */
+:is(q, cite[data-variant="quoted"]):lang(ru) { quotes: "\00AB" "\00BB" "\201E" "\201C"; }          /* «…» „…“ */
+:is(q, cite[data-variant="quoted"]):lang(ar) { quotes: "\00AB" "\00BB" "\2018" "\2019"; }          /* «…» ‘…’ */
 
 q::before { content: open-quote; }
 q::after  { content: close-quote; }

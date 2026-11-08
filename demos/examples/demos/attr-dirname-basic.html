@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>dirname attribute: submit text direction with the value</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <form class="stacked" id="dn-form">
+      <form-field>
+        <label for="dn-title">Review title</label>
+        <input type="text" id="dn-title" name="title" dir="auto" dirname="title.dir" value="ممتاز وسريع" />
+        <output class="hint" for="dn-title">dir="auto": the direction comes from the text, so this submits rtl.</output>
+      </form-field>
+
+      <form-field>
+        <label for="dn-body">Review</label>
+        <textarea id="dn-body" name="body" rows="3" dir="auto" dirname="body.dir">Arrived a day early and works as described.</textarea>
+      </form-field>
+
+      <form-field>
+        <label for="dn-plain">Nickname (no dir="auto")</label>
+        <input type="text" id="dn-plain" name="nick" dirname="nick.dir" value="سارة" />
+        <output class="hint" for="dn-plain">Without dir="auto" the field inherits the page direction, so this submits ltr even for Arabic text.</output>
+      </form-field>
+
+      <button type="submit">Post review</button>
+      <pre><output id="dn-result">Submitted data appears here.</output></pre>
+    </form>
+  </layout-center>
+
+  <script type="module">
+    const form = document.querySelector('#dn-form');
+    const result = document.querySelector('#dn-result');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      result.textContent = [...new FormData(form)].map(([name, value]) => `${name} = ${value}`).join('\n');
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,11 +1,25 @@
+/*
+ * status-message — inline message banner.
+ *
+ * Two colour roles per variant:
+ *   --_accent  border + filled background (base status colour)
+ *   --_color   title / compact text on the subtle background (the *-text
+ *              tokens, tuned for AA small text on -subtle surfaces)
+ */
 status-message {
   display: flex;
   gap: var(--size-s);
   padding: var(--size-m);
   border-radius: var(--radius-m);
   background: var(--_bg, var(--color-info-subtle));
-  color: var(--_color, var(--color-info));
-  border-inline-start: var(--border-width-thick) solid currentColor;
+  color: var(--_color, var(--color-info-text));
+  border-inline-start: var(--border-width-thick) solid var(--_accent, var(--color-info));
+
+  /* Author display rules beat the UA [hidden] rule; re-assert it so the
+     dismiss behaviour (and authors) can hide a message with `hidden`. */
+  &[hidden] {
+    display: none;
+  }
 
   /* Icon slot */
   & > [data-icon] {
@@ -18,23 +32,27 @@ status-message {
   & > [data-content] {
     flex: 1;
     min-width: 0;
+    margin: 0;
   }
 
   /* Title */
   & [data-title] {
+    display: block;
     font-weight: var(--font-weight-semibold);
-    margin-block-end: var(--size-2xs);
+    margin-block: 0 var(--size-2xs);
   }
 
   /* Description */
   & [data-description] {
     color: var(--color-text);
     font-size: var(--font-size-s);
+    margin: 0;
   }
 
-  /* Dismiss button */
+  /* Dismiss button (behaviour: status-message/logic.js) */
   & > [data-dismiss] {
     flex-shrink: 0;
+    align-self: flex-start;
     margin-inline-start: auto;
     padding: var(--size-2xs);
     background: transparent;
@@ -43,7 +61,8 @@ status-message {
     color: currentColor;
     opacity: 0.7;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
       opacity: 1;
     }
   }
@@ -51,32 +70,37 @@ status-message {
   /* Variants */
   &[data-variant="success"] {
     --_bg: var(--color-success-subtle);
-    --_color: var(--color-success);
+    --_accent: var(--color-success);
+    --_color: var(--color-success-text);
   }
 
   &[data-variant="warning"] {
     --_bg: var(--color-warning-subtle);
+    --_accent: var(--color-warning);
     --_color: var(--color-warning-text);
   }
 
   &[data-variant="error"] {
     --_bg: var(--color-error-subtle);
-    --_color: var(--color-error);
+    --_accent: var(--color-error);
+    --_color: var(--color-error-text);
   }
 
   &[data-variant="info"] {
     --_bg: var(--color-info-subtle);
-    --_color: var(--color-info);
+    --_accent: var(--color-info);
+    --_color: var(--color-info-text);
   }
 
   &[data-variant="neutral"] {
     --_bg: var(--color-surface-alt);
+    --_accent: var(--color-text-muted);
     --_color: var(--color-text-muted);
   }
 
-  /* Filled variant */
+  /* Filled variant: solid accent background */
   &[data-filled] {
-    background: var(--_color);
+    background: var(--_accent, var(--color-info));
     color: white;
     border-inline-start: none;
 
@@ -85,8 +109,10 @@ status-message {
       opacity: 0.9;
     }
 
+    /* Amber is light in both modes: without contrast-color() support fall
+       back to a fixed dark ink, not --color-text (light in dark mode). */
     &[data-variant="warning"] {
-      color: var(--color-text-on-warning-auto, var(--color-text));
+      color: var(--color-text-on-warning-auto, oklch(20% 0 0));
     }
 
     &[data-variant="success"] {
@@ -104,14 +130,14 @@ status-message {
 
   @supports (color: contrast-color(red)) {
     &[data-filled] {
-      color: contrast-color(var(--_color, var(--color-info)));
+      color: contrast-color(var(--_accent, var(--color-info)));
     }
 
     &[data-filled][data-variant="warning"],
     &[data-filled][data-variant="success"],
     &[data-filled][data-variant="error"],
     &[data-filled][data-variant="info"] {
-      color: contrast-color(var(--_color));
+      color: contrast-color(var(--_accent));
     }
   }
 
@@ -119,5 +145,18 @@ status-message {
   &[data-compact] {
     padding: var(--size-s);
     gap: var(--size-xs);
+  }
+
+  /* Forced colours: backgrounds collapse to Canvas, so filled messages
+     (which drop the inline-start border) need a boundary of their own,
+     and the dismiss button must not rely on opacity. */
+  @media (forced-colors: active) {
+    &[data-filled] {
+      border: 1px solid CanvasText;
+    }
+
+    & > [data-dismiss] {
+      opacity: 1;
+    }
   }
 }

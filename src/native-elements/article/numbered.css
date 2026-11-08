@@ -1,4 +1,14 @@
-/* article[data-numbered]: Academic-style auto-numbering for headings, figures, tables, and subfigures */
+/* article[data-numbered]: Academic-style auto-numbering for headings, figures, tables, and subfigures
+
+   Counters span the whole article, sections included. Sections and asides
+   are container-query containers (layout-attributes.css), and a container's
+   style containment scopes counters — the antidote that sets them back to
+   container-type: normal inside a numbered article lives next to that rule
+   in layout-attributes.css (it has to: that file is in a higher layer).
+
+   Headings inside a nested <aside> or <article> (sidebars, comments) are
+   not part of the outline and are not numbered. Only captioned figures,
+   tables and listings consume a number, so every number is shown. */
 
 /* Counter initialization */
 article[data-numbered] {
@@ -10,81 +20,92 @@ article[data-numbered] {
   --label-listing: "Listing";
 }
 
-/* --- Heading Numbering --- */
+/* --- Heading Numbering ---
+   --numbered-style is the counter style for every number (headings,
+   figures, tables, listings; default decimal), e.g. arabic-indic,
+   cjk-decimal, devanagari, or an author @counter-style name.
+   --numbered-sub-style letters the subfigures (default lower-alpha). */
 
-article[data-numbered] h2 {
+article[data-numbered] h2:not(article[data-numbered] :is(aside, article) h2) {
   counter-increment: vb-h2;
   counter-reset: vb-h3 vb-h4;
 }
 
-article[data-numbered] h2::before {
-  content: counter(vb-h2) ".\00a0";
+article[data-numbered] h2:not(article[data-numbered] :is(aside, article) h2)::before {
+  content: counter(vb-h2, var(--numbered-style, decimal)) ".\00a0";
   color: var(--color-text-muted);
 }
 
-article[data-numbered] h3 {
+article[data-numbered] h3:not(article[data-numbered] :is(aside, article) h3) {
   counter-increment: vb-h3;
   counter-reset: vb-h4;
 }
 
-article[data-numbered] h3::before {
-  content: counter(vb-h2) "." counter(vb-h3) ".\00a0";
+article[data-numbered] h3:not(article[data-numbered] :is(aside, article) h3)::before {
+  content: counter(vb-h2, var(--numbered-style, decimal)) "." counter(vb-h3, var(--numbered-style, decimal)) ".\00a0";
   color: var(--color-text-muted);
 }
 
-article[data-numbered] h4 {
+article[data-numbered] h4:not(article[data-numbered] :is(aside, article) h4) {
   counter-increment: vb-h4;
 }
 
-article[data-numbered] h4::before {
-  content: counter(vb-h2) "." counter(vb-h3) "." counter(vb-h4) ".\00a0";
+article[data-numbered] h4:not(article[data-numbered] :is(aside, article) h4)::before {
+  content: counter(vb-h2, var(--numbered-style, decimal)) "." counter(vb-h3, var(--numbered-style, decimal)) "." counter(vb-h4, var(--numbered-style, decimal)) ".\00a0";
   color: var(--color-text-muted);
 }
 
-/* --- Figure Numbering --- */
+/* --- Figure Numbering ---
+   Quote figures keep their attribution dash and code figures are numbered
+   as Listings (below), so neither counts as a Figure. A figure without a
+   figcaption has nowhere to show its number, so it is not counted.
+   :where() keeps the specificity low enough for the subfigure rules to win. */
 
-article[data-numbered] figure {
+article[data-numbered] figure:where(:not(.quote, .code):has(> figcaption)) {
   counter-increment: vb-fig;
   counter-reset: vb-subfig;
 }
 
-article[data-numbered] figure > figcaption::before {
-  content: var(--label-figure) "\00a0" counter(vb-fig) ":\00a0";
+article[data-numbered] figure:where(:not(.quote, .code)) > figcaption::before {
+  content: var(--label-figure) "\00a0" counter(vb-fig, var(--numbered-style, decimal)) ":\00a0";
   font-weight: 600;
 }
 
-/* --- Table Numbering --- */
+/* --- Table Numbering (captioned tables only) --- */
 
-article[data-numbered] table {
+article[data-numbered] table:where(:has(> caption)) {
   counter-increment: vb-tab;
 }
 
 article[data-numbered] table caption::before {
-  content: var(--label-table) "\00a0" counter(vb-tab) ":\00a0";
+  content: var(--label-table) "\00a0" counter(vb-tab, var(--numbered-style, decimal)) ":\00a0";
   font-weight: 600;
 }
 
-/* --- Listing Numbering (code figures) --- */
+/* --- Listing Numbering (captioned code figures) --- */
 
-article[data-numbered] figure.code {
+article[data-numbered] figure.code:where(:has(> figcaption)) {
   counter-increment: vb-lst;
 }
 
 article[data-numbered] figure.code > figcaption::before {
-  content: var(--label-listing) "\00a0" counter(vb-lst) ":\00a0";
+  content: var(--label-listing) "\00a0" counter(vb-lst, var(--numbered-style, decimal)) ":\00a0";
   font-weight: 600;
 }
 
-/* --- Subfigure Support --- */
+/* --- Subfigure Support ---
+   counter-reset: none stops each subfigure (which also matches the figure
+   rule above) from resetting vb-subfig, which lettered every one "(a)". */
 
 article[data-numbered] figure > figure {
   counter-increment: vb-subfig;
+  counter-reset: none;
   display: inline-block;
   vertical-align: top;
   margin: var(--size-s);
 }
 
 article[data-numbered] figure > figure > figcaption::before {
-  content: "(" counter(vb-subfig, lower-alpha) ")\00a0";
+  content: "(" counter(vb-subfig, var(--numbered-sub-style, lower-alpha)) ")\00a0";
   font-weight: 500;
 }

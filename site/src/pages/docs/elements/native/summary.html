@@ -24,11 +24,21 @@ crumbLabel: Native Elements
       <li><strong>Inside details:</strong> Always pair with <code>&lt;details&gt;</code> as its first child</li>
       <li><strong>Descriptive labels:</strong> Clear, concise text that describes what will be revealed</li>
       <li><strong>Question text:</strong> FAQ patterns with questions as summary content</li>
-      <li><strong>Section headings:</strong> Collapsible content sections</li>
+      <li><strong>Collapsible sections:</strong> Content sections that start closed (see the heading note below)</li>
     </ul>
 
     <h3>Important</h3>
     <p>The <code>&lt;summary&gt;</code> element is only valid as the first child of a <code>&lt;details&gt;</code> element. Using it elsewhere has no special behavior or semantics.</p>
+
+    <h3>Headings Inside Summary</h3>
+    <p>A summary is exposed as a button-like disclosure control, and its children are presentational. A heading placed inside it (<code>&lt;summary&gt;&lt;h3&gt;…&lt;/h3&gt;&lt;/summary&gt;</code>) loses its heading role: the text becomes the control's name, and heading navigation in a screen reader will not find it. If the section needs to appear in the heading outline, put the heading before the <code>&lt;details&gt;</code> (or around it, in a <code>&lt;section&gt;</code>) and keep the summary as a short label. Otherwise accept that the summary is a control, not a heading.</p>
+    <code-block language="html" label="Heading outside the summary" data-escape><section>
+  <h3>Shipping</h3>
+  <details>
+    <summary>Delivery times and costs</summary>
+    <p>…</p>
+  </details>
+</section></code-block>
   </section>
 
   <section>
@@ -48,7 +58,7 @@ crumbLabel: Native Elements
     <code-block language="html" show-lines label="Summary with icon" data-escape><details>
   <summary>
     <layout-cluster data-layout-gap="xs">
-      <icon-wc name="info" size="s"></icon-wc>
+      <icon-wc name="info" size="sm"></icon-wc>
       Help and Information
     </layout-cluster>
   </summary>
@@ -156,18 +166,23 @@ details[open] > summary::after {
       <tbody>
         <tr>
           <td><code>nav.tree</code></td>
-          <td>+/&minus; text indicator via <code>::before</code></td>
-          <td>Smaller padding, no border. Hover highlights.</td>
+          <td>+/&minus; text indicator via <code>::before</code>, with empty alt text (<code>content: "+" / ""</code>) so the glyph is not read as part of the name</td>
+          <td>Smaller padding, no border. Hover highlights. Drops the 44px minimum (<code>min-block-size: auto</code>), about 37px tall: still above the 24px WCAG 2.2 AA target size, but below the 44px enhanced target.</td>
         </tr>
         <tr>
           <td><code>accordion-wc</code></td>
           <td>Own chevron (same shape), plus <code>indicator</code> variants</td>
-          <td>ARIA <code>aria-controls</code> added. Keyboard arrow navigation between summaries.</td>
+          <td>ARIA <code>aria-controls</code> added. Keyboard arrow navigation between summaries. Exclusive mode via the <code>single</code> attribute.</td>
         </tr>
         <tr>
           <td><code>tab-set</code></td>
           <td>Chevron hidden (<code>::after { display: none }</code>)</td>
           <td>Summary becomes tab button. Active tab gets an accent bottom border.</td>
+        </tr>
+        <tr>
+          <td>NES and Windows 9x themes</td>
+          <td>Theme glyph via <code>::before</code> (&#9654; or +/&minus;) replaces the chevron; the core <code>::after</code> is removed</td>
+          <td>Label starts at the inline start. The glyph has empty alt text, and the NES triangle mirrors under <code>dir="rtl"</code>.</td>
         </tr>
         <tr>
           <td><code>@media print</code></td>
@@ -195,6 +210,7 @@ details[open] > summary::after {
       <li><strong>Avoid interactive children:</strong> Don't nest buttons, links, or other interactive elements inside summary</li>
       <li><strong>Single summary:</strong> Only one summary per details element</li>
       <li><strong>First child:</strong> Summary must be the first child of details</li>
+      <li><strong>Decorative indicators:</strong> If you add a text glyph with <code>::before</code> or <code>::after</code>, give it empty alt text (<code>content: "&#9654;" / ""</code>). Otherwise it is read as part of the summary's name</li>
     </ul>
 
     <h3>What to Avoid</h3>
@@ -248,6 +264,8 @@ details[open] > summary::after {
       <li><a href="/docs/elements/web-components/tabs/"><code>&lt;tab-set&gt;</code></a> &mdash; Tab interface where summary becomes the tab button</li>
       <li><a href="/docs/elements/native/nav/"><code>&lt;nav&gt;</code></a> &mdash; Tree navigation uses summary as collapsible section headers</li>
       <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> &mdash; For modal overlays rather than inline disclosure</li>
+      <li><a href="/docs/attributes/open/"><code>open</code></a> &mdash; The expanded state of the parent details</li>
+      <li><a href="/docs/attributes/hidden/"><code>hidden</code></a> &mdash; <code>hidden="until-found"</code> for collapsed content that find-in-page can reveal</li>
     </ul>
   </section>
 

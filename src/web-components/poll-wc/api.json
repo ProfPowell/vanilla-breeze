@@ -2,14 +2,14 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "poll-wc",
   "type": "web-component",
-  "description": "Voting + live results. Per-option counts and own-vote flag, single or multi-choice, optional closed (results-only) state. Mirrors the reaction-bar author-owned-state pattern: presentational; emits poll-wc:vote; author calls setCount after the server confirms.",
+  "description": "Voting + live results. Per-option counts, visible percentages and own-vote flag, single or multi-choice, optional closed (results-only) state. Presentational (reaction-bar pattern): emits poll-wc:vote, marks the option data-pending until the author calls setCount after the server confirms. Can enhance a native <form><fieldset> of radios/checkboxes as a no-JS fallback.",
   "attributes": [
     {
       "name": "aria-label",
       "kind": "aria",
       "purpose": "config",
       "type": "string",
-      "description": "Group label (defaults to question text if a slot is provided, else \"Poll\")"
+      "description": "Group label when there is no question slot; moved onto the option group (the host has no role)"
     },
     {
       "name": "data-multi",
@@ -23,20 +23,61 @@
       "kind": "data",
       "purpose": "config",
       "type": "boolean",
-      "description": "Read-only \u2014 show results, no voting"
+      "description": "Read-only — show results, no voting"
     },
     {
       "name": "data-hide-counts",
       "kind": "data",
       "purpose": "config",
       "type": "boolean",
-      "description": "Suppress the numeric count beside each bar"
+      "description": "Hide per-option counts, percentages and bars, visually and from assistive tech"
     },
     {
       "name": "disabled",
-      "kind": "native",
+      "kind": "host-api",
       "purpose": "config",
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Disable voting; observed, so toggling it updates aria-disabled immediately"
+    },
+    {
+      "name": "data-label-vote",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "vote",
+      "description": "Singular count noun (Intl.PluralRules \"one\")"
+    },
+    {
+      "name": "data-label-votes",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "votes",
+      "description": "Count noun for other plural categories"
+    },
+    {
+      "name": "data-label-your-choice",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "your choice",
+      "description": "Appended to the accessible name of the user's own option"
+    },
+    {
+      "name": "data-label-closed",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "closed",
+      "description": "Appended to the total when data-closed is set"
+    },
+    {
+      "name": "data-label-poll",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Poll",
+      "description": "Fallback group name with no question and no aria-label"
     }
   ],
   "events": [
@@ -55,12 +96,12 @@
     {
       "name": "setCount",
       "type": "(option, count, opts?) => void",
-      "description": "Update a single option after the server confirms"
+      "description": "Update a single option after the server confirms (or roll back on failure); clears data-pending"
     },
     {
       "name": "setCounts",
       "type": "(counts, opts?) => void",
-      "description": "Bulk-update counts; opts.mine accepts a string or string[]"
+      "description": "Bulk-update counts; opts.mine accepts a string or string[]; clears every data-pending"
     },
     {
       "name": "open",
@@ -98,6 +139,12 @@
       "on": "button",
       "type": "boolean",
       "description": "Current user voted for this option"
+    },
+    {
+      "name": "data-pending",
+      "on": "button",
+      "type": "boolean",
+      "description": "Output: a vote for this option is in flight; further clicks are ignored until setCount/setCounts"
     }
   ],
   "structure": [],

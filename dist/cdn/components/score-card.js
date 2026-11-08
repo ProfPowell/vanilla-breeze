@@ -13,8 +13,8 @@ var c=`
     --_text:            var(--score-card-text, var(--color-text, #1a1a1a));
     --_muted:           var(--score-card-muted, var(--color-text-muted, #6b7280));
     --_accent:          var(--score-card-tone-accent, var(--color-interactive, var(--color-primary, #6366f1)));
-    --_trend-up:        var(--score-card-trend-up, var(--color-success, #16a34a));
-    --_trend-down:      var(--score-card-trend-down, var(--color-error, #dc2626));
+    --_trend-up:        var(--score-card-trend-up, var(--color-success-text, var(--color-success, #15803d)));
+    --_trend-down:      var(--score-card-trend-down, var(--color-error-text, var(--color-error, #b91c1c)));
     --_trend-flat:      var(--score-card-trend-flat, var(--color-text-muted, #6b7280));
     --_focus:           var(--color-focus-ring, var(--color-interactive, currentColor));
     --_duration:        var(--score-card-duration, var(--duration-fast, 150ms));
@@ -27,7 +27,6 @@ var c=`
     border: var(--_border);
     border-radius: var(--_radius);
     padding: var(--_padding);
-    container-type: inline-size;
   }
 
   *, *::before, *::after { box-sizing: border-box; }
@@ -76,6 +75,12 @@ var c=`
   .sparkline   { grid-area: sparkline; }
   .description { grid-area: description; }
   .icon        { grid-area: icon; }
+
+  /* Slotted children are often block elements (<p>) so the no-JS form
+     stacks; outer-scope margins beat ::slotted() unless important. */
+  ::slotted(*) {
+    margin-block: 0 !important;
+  }
 
   .title ::slotted(*) {
     margin: 0;
@@ -171,6 +176,17 @@ var c=`
   :host(:state(loading)) .value { min-block-size: var(--_value-size); }
   :host(:state(loading)) .change { min-block-size: 1.4em; }
 
+  /* Forced colours drop the shimmer gradient; keep a visible skeleton edge
+     so hidden regions don't read as empty gaps. */
+  @media (forced-colors: active) {
+    :host(:state(loading)) .value,
+    :host(:state(loading)) .sparkline,
+    :host(:state(loading)) .change {
+      outline: 1px solid GrayText;
+      outline-offset: -1px;
+    }
+  }
+
   @keyframes score-card-shimmer {
     from { background-position: 200% 0; }
     to   { background-position: -200% 0; }
@@ -183,7 +199,7 @@ var c=`
       background: color-mix(in oklch, var(--_muted) 18%, transparent);
     }
   }
-`;var n=class extends HTMLElement{#e=[];#t;connectedCallback(){this.hasAttribute("data-upgraded")||this.setup()!==!1&&(this.setAttribute("data-upgraded",""),queueMicrotask(()=>{this.dispatchEvent(new CustomEvent(`${this.localName}:upgraded`,{bubbles:!0}))}))}disconnectedCallback(){for(let e of this.#e)e();this.#e=[],this.removeAttribute("data-upgraded"),this.teardown()}listen(e,t,r,o){e.addEventListener(t,r,o),this.#e.push(()=>e.removeEventListener(t,r,o))}_reinit(){for(let e of this.#e)e();this.#e=[],this.teardown(),this.removeAttribute("data-upgraded"),this.isConnected&&this.setup()!==!1&&this.setAttribute("data-upgraded","")}setup(){}teardown(){}setState(e,t){this.#t||(this.#t=this.attachInternals());let r=this.#t.states;try{t?r.add(e):r.delete(e)}catch{let o=`--${e}`;t?r.add(o):r.delete(o)}}_adoptInternals(e){this.#t||(this.#t=e)}};var m=window.matchMedia("(prefers-reduced-motion: reduce)");var l=new Map;function d(s,e,t={}){let r=t.priority??10,o={impl:e,bundle:t.bundle,contract:t.contract,priority:r},a=l.get(s);if(customElements.get(s)){if(!a||a.priority>=r){a&&a.priority===r&&a.impl!==e&&console.warn(`[VB Bundle] Tag <${s}> already registered by "${a.bundle}" (priority ${a.priority}). Skipping "${t.bundle}".`);return}console.warn(`[VB Bundle] Tag <${s}> defined by "${a.bundle}" cannot be replaced (customElements.define is permanent). "${t.bundle}" has higher priority but arrived late.`);return}if(a&&a.priority>=r){a.priority===r&&console.warn(`[VB Bundle] Tag <${s}> already registered by "${a.bundle}". Skipping "${t.bundle}" (first wins at equal priority).`);return}l.set(s,o),customElements.define(s,e)}var u=new Set(["up","down","flat"]),h=["change","sparkline","description","icon"],p=`
+`;var i=class extends HTMLElement{#t=[];#e;constructor(){super(),this.hasAttribute("data-upgraded")&&this.removeAttribute("data-upgraded")}connectedCallback(){this.hasAttribute("data-upgraded")||this.setup()!==!1&&(this.setAttribute("data-upgraded",""),queueMicrotask(()=>{this.dispatchEvent(new CustomEvent(`${this.localName}:upgraded`,{bubbles:!0}))}))}disconnectedCallback(){for(let e of this.#t)e();this.#t=[],this.removeAttribute("data-upgraded"),this.teardown()}listen(e,t,r,o){e.addEventListener(t,r,o),this.#t.push(()=>e.removeEventListener(t,r,o))}_reinit(){for(let e of this.#t)e();this.#t=[],this.teardown(),this.removeAttribute("data-upgraded"),this.isConnected&&this.setup()!==!1&&this.setAttribute("data-upgraded","")}setup(){}teardown(){}setState(e,t){this.#e||(this.#e=this.attachInternals());let r=this.#e.states;try{t?r.add(e):r.delete(e)}catch{let o=`--${e}`;t?r.add(o):r.delete(o)}}_adoptInternals(e){this.#e||(this.#e=e)}#r(){return this.constructor.formAssociated&&this.#e?this.#e:null}get validity(){return this.#r()?.validity}get validationMessage(){return this.#r()?.validationMessage??""}get willValidate(){return this.#r()?.willValidate??!1}get form(){return this.#r()?.form??null}checkValidity(){return this.#r()?.checkValidity()??!0}reportValidity(){return this.#r()?.reportValidity()??!0}};var g=window.matchMedia("(prefers-reduced-motion: reduce)");var l=new Map;function d(s,e,t={}){let r=t.priority??10,o={impl:e,bundle:t.bundle,contract:t.contract,priority:r},a=l.get(s);if(customElements.get(s)){if(!a||a.priority>=r){a&&a.priority===r&&a.impl!==e&&console.warn(`[VB Bundle] Tag <${s}> already registered by "${a.bundle}" (priority ${a.priority}). Skipping "${t.bundle}".`);return}console.warn(`[VB Bundle] Tag <${s}> defined by "${a.bundle}" cannot be replaced (customElements.define is permanent). "${t.bundle}" has higher priority but arrived late.`);return}if(a&&a.priority>=r){a.priority===r&&console.warn(`[VB Bundle] Tag <${s}> already registered by "${a.bundle}". Skipping "${t.bundle}" (first wins at equal priority).`);return}l.set(s,o),customElements.define(s,e)}var h=new Set(["up","down","flat"]),u=["change","sparkline","description","icon"],p=`
   <style>${c}</style>
   <div class="card" part="card">
     <span class="title"       part="title"><slot name="title"></slot></span>
@@ -193,5 +209,5 @@ var c=`
     <span class="description" part="description"><slot name="description" data-slot="description"></slot></span>
     <span class="icon"        part="icon"><slot name="icon"        data-slot="icon"></slot></span>
   </div>
-`,i=class extends n{static get observedAttributes(){return["trend","loading"]}setup(){if(this.shadowRoot)for(let e of h){let t=this.shadowRoot.querySelector(`slot[name="${e}"]`);this.#e(e,t)}else{let e=this.attachShadow({mode:"open"});e.innerHTML=p;for(let t of h){let r=e.querySelector(`slot[name="${t}"]`);r?.addEventListener("slotchange",()=>this.#e(t,r)),this.#e(t,r)}}this.#t(),this.#r(),this.#a()}attributeChangedCallback(e){this.isConnected&&(e==="trend"?this.#t():e==="loading"&&this.#r())}#e(e,t){let r=!!t&&t.assignedNodes({flatten:!0}).some(o=>o.nodeType===Node.ELEMENT_NODE||o.nodeType===Node.TEXT_NODE&&o.textContent.trim().length>0);this.setState(`has-${e}`,r)}#t(){let e=(this.getAttribute("trend")||"").toLowerCase();for(let t of u)this.setState(`trend-${t}`,t===e)}#r(){this.setState("loading",this.hasAttribute("loading"))}#a(){let e=this.closest("a[href]");this.setState("interactive",!!e)}};d("score-card",i);export{i as ScoreCard};
+`,n=class extends i{static get observedAttributes(){return["trend","loading"]}setup(){if(this.shadowRoot)for(let e of u){let t=this.shadowRoot.querySelector(`slot[name="${e}"]`);this.#t(e,t)}else{let e=this.attachShadow({mode:"open"});e.innerHTML=p;for(let t of u){let r=e.querySelector(`slot[name="${t}"]`);r?.addEventListener("slotchange",()=>this.#t(t,r)),this.#t(t,r)}}this.#e(),this.#r(),this.#a()}attributeChangedCallback(e){this.isConnected&&(e==="trend"?this.#e():e==="loading"&&this.#r())}#t(e,t){let r=!!t&&t.assignedNodes({flatten:!0}).some(o=>o.nodeType===Node.ELEMENT_NODE||o.nodeType===Node.TEXT_NODE&&o.textContent.trim().length>0);this.setState(`has-${e}`,r)}#e(){let e=(this.getAttribute("trend")||"").toLowerCase();for(let t of h)this.setState(`trend-${t}`,t===e)}#r(){let e=this.hasAttribute("loading");this.setState("loading",e),e?this.setAttribute("aria-busy","true"):this.getAttribute("aria-busy")==="true"&&this.removeAttribute("aria-busy")}#a(){let e=this.closest("a[href]");this.setState("interactive",!!e)}};d("score-card",n);export{n as ScoreCard};
 //# sourceMappingURL=score-card.js.map

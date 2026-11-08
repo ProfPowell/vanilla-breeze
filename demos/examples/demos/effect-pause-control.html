@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pausing Looping Effects</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="xl">
+  <p>Anything that moves for more than five seconds next to other content needs a way to pause it (WCAG 2.2.2). <code>data-paused</code> on an effect, or on any ancestor, holds every looping effect inside where it is.</p>
+
+  <button type="button" id="pause-motion" aria-pressed="false" aria-controls="looping">Pause animations</button>
+
+  <section id="looping" data-layout="stack" data-layout-gap="l" aria-label="Looping effects">
+    <section data-effect="marquee"><span>Breaking News</span><span>Latest Headlines</span><span>Stay Tuned</span><span>More Updates</span></section>
+    <p><span data-effect="pulse">Pulsing badge</span> <span data-effect="float">Floating label</span></p>
+    <p data-effect="neon" class="cyan">Neon sign</p>
+    <p data-effect="typewriter" class="loop">Typing, erasing and typing again.</p>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const button = document.getElementById('pause-motion');
+    const region = document.getElementById('looping');
+    button.addEventListener('click', () => {
+      const paused = region.toggleAttribute('data-paused');
+      // A toggle button keeps its label; aria-pressed carries the state.
+      button.setAttribute('aria-pressed', String(paused));
+    });
+  </script>
+</body>
+</html>

@@ -13,8 +13,13 @@
  * setting it disables popstate auto-sync. Call `.releaseCurrent()` to
  * return to auto mode.
  *
+ * Landmark: the host gets role="navigation" unless it already contains a
+ * `<nav>` (then the inner nav is the landmark — label that one instead).
+ *
  * @attr {string} data-match - "exact" to require exact pathname match
  *   (default: exact wins, longest prefix breaks ties).
+ * @attr {string} data-label-new-tab - Screen-reader suffix for external
+ *   `.items` links (default "(opens in new tab)").
  *
  * @example HTML-first
  * <nav-bar aria-label="Main">
@@ -41,9 +46,20 @@ class NavBar extends VBElement {
   #current = null;        // Current value (only meaningful when #explicit)
 
   setup() {
-    if (!this.hasAttribute('role')) this.setAttribute('role', 'navigation');
+    // A wrapped <nav> is already the landmark; a second role="navigation"
+    // on the host would nest two navigation landmarks.
+    if (!this.hasAttribute('role') && !this.querySelector('nav')) {
+      this.setAttribute('role', 'navigation');
+    }
     this.#syncActive('pathname');
     this.listen(window, 'popstate', this.#onPopstate);
+    // Navigation API: catches pushState/replaceState routers that never
+    // fire popstate. Coalesced to a microtask so a popstate dispatched in
+    // the same task (back/forward) reports source 'popstate'.
+    const nav = /** @type {any} */ (window).navigation;
+    if (nav && typeof nav.addEventListener === 'function') {
+      this.listen(nav, 'currententrychange', this.#onEntryChange);
+    }
   }
 
   // ── Data API ─────────────────────────────────────────────────────────
@@ -75,7 +91,10 @@ class NavBar extends VBElement {
 
     this.#items = next;
     this.#renderItems(next);
-    this.#syncActive(this.#explicit ? 'property' : 'pathname');
+    // Explicit ownership survives a re-render: re-apply the owned value
+    // without matching or emitting (the value did not change).
+    if (this.#explicit) this.#applyCurrent(this.#current);
+    else this.#syncActive('pathname');
 
     this.dispatchEvent(new CustomEvent('nav-bar:items-changed', {
       detail: { items: this.items, source: 'property' },
@@ -165,6 +184,13 @@ class NavBar extends VBElement {
     this.#syncActive('popstate');
   };
 
+  #onEntryChange = () => {
+    queueMicrotask(() => {
+      if (this.#explicit || !this.isConnected) return;
+      this.#syncActive('navigation');
+    });
+  };
+
   #syncActive(source) {
     const previous = this.current;
     const next = this.#matchPathname();
@@ -178,12 +204,17 @@ class NavBar extends VBElement {
   }
 
   /**
-   * Find the link whose href best matches `location.pathname`.
+   * Find the link whose URL best matches the current location.
+   * Links are resolved against the document base URL (so relative hrefs
+   * and `<base>` work) and compared by origin + normalised pathname
+   * (trailing slash ignored, query/hash ignored). Other-origin and
+   * non-http(s) links and bare `#fragment` links never match.
    * Exact wins; otherwise longest prefix wins; ties broken by
    * first-in-DOM-order. Returns the link's data-route or href, or null.
    */
   #matchPathname() {
-    const path = window.location.pathname;
+    const path = normalizePath(window.location.pathname);
+    const origin = window.location.origin;
     const links = Array.from(this.#linkChildren());
     if (links.length === 0) return null;
 
@@ -194,20 +225,21 @@ class NavBar extends VBElement {
     let bestPrefixLen = -1;
 
     for (const link of links) {
-      const href = link.getAttribute('href');
-      // Skip absolute external URLs and protocol-relative links
-      if (!href || /^[a-z]+:/i.test(href) || href.startsWith('//')) continue;
+      const raw = link.getAttribute('href');
+      if (!raw || raw.startsWith('#')) continue;
 
-      // Normalize: strip query/hash for matching purposes
-      const linkPath = href.split('?')[0].split('#')[0];
+      let url;
+      try { url = new URL(raw, document.baseURI); } catch { continue; }
+      if (!/^https?:$/.test(url.protocol) || url.origin !== origin) continue;
 
-      if (linkPath === path && exact == null) {
-        exact = link;
+      const linkPath = normalizePath(url.pathname);
+
+      if (linkPath === path) {
+        if (exact == null) exact = link;
         continue;
       }
 
-      if (!exactOnly && linkPath !== '/' &&
-          (path === linkPath || path.startsWith(linkPath.replace(/\/$/, '') + '/'))) {
+      if (!exactOnly && linkPath !== '/' && path.startsWith(linkPath + '/')) {
         if (linkPath.length > bestPrefixLen) {
           bestPrefix = link;
           bestPrefixLen = linkPath.length;
@@ -233,20 +265,28 @@ class NavBar extends VBElement {
   }
 
   #renderItems(items) {
-    // Replace direct <a> children only; preserve other slotted content.
-    const existing = this.#linkChildren();
-    existing.forEach(el => el.remove());
+    // Replace direct <a> children only; preserve other content, including
+    // nested data-nav-link anchors inside <li>/<drop-down> shells.
+    this.querySelectorAll(':scope > a').forEach(el => el.remove());
+    // In nested mode the candidate set is data-nav-link descendants, so tag
+    // the rendered links to keep them in it.
+    const nested = this.querySelector('a[data-nav-link]') != null;
 
     const frag = document.createDocumentFragment();
     for (const item of items) {
-      frag.appendChild(this.#renderItem(item));
+      const a = this.#renderItem(item);
+      if (nested) a.setAttribute('data-nav-link', '');
+      frag.appendChild(a);
     }
     this.appendChild(frag);
   }
 
   #renderItem(item) {
     const a = document.createElement('a');
-    a.href = item.href || '#';
+    // Only http(s) and relative URLs become links; javascript:, data:, etc.
+    // from JSON data render as an inert (href-less) anchor.
+    const href = safeHref(item.href);
+    if (href != null) a.setAttribute('href', href);
     if (item.route) a.setAttribute('data-route', item.route);
 
     if (item.external) {
@@ -266,7 +306,7 @@ class NavBar extends VBElement {
     if (item.external) {
       const sr = document.createElement('span');
       sr.className = 'sr-only';
-      sr.textContent = ' (opens in new tab)';
+      sr.textContent = ` ${this.getAttribute('data-label-new-tab') ?? '(opens in new tab)'}`;
       a.appendChild(sr);
     }
 
@@ -293,6 +333,29 @@ class NavBar extends VBElement {
     }
     return true;
   }
+}
+
+/**
+ * Pathname for comparison: trailing slashes dropped (except root).
+ * @param {string} p
+ */
+function normalizePath(p) {
+  const out = p.replace(/\/+$/, '');
+  return out === '' ? '/' : out;
+}
+
+/**
+ * The href to render for an item, or null when it is unsafe.
+ * Missing href keeps the historical '#' placeholder.
+ * @param {unknown} raw
+ * @returns {string | null}
+ */
+function safeHref(raw) {
+  if (raw == null || raw === '') return '#';
+  const href = String(raw);
+  let url;
+  try { url = new URL(href, document.baseURI); } catch { return null; }
+  return /^https?:$/.test(url.protocol) ? href : null;
 }
 
 registerComponent('nav-bar', NavBar);

@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "download"
-description: "Triggers a file download instead of navigating to the URL. Optionally suggests a filename for the saved file."
+description: "Makes a link save its target as a file instead of navigating to it, optionally suggesting a file name. Works for same-origin, blob: and data: URLs."
 attributeName: download
 attributeType: native
 nativeGroup: Links & Security
@@ -12,107 +12,117 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>download</code> attribute on <a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> and <code>&lt;area&gt;</code> elements tells the browser to download the linked resource as a file instead of navigating to it. Without this attribute, the browser decides based on the MIME type — PDFs might open in a viewer, images display inline, and HTML navigates.</p>
-<p>When a value is provided, it serves as the suggested filename for the download. The user can still change the name in the save dialog.</p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>download</code> attribute tells the browser to save the linked resource rather than display it. Without it, the browser decides by content type: PDFs open in a viewer, images display, HTML navigates. With a value, it also suggests the file name; the user can still change it in the save dialog.</p>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> and <a href="/docs/elements/native/area/"><code>&lt;area&gt;</code></a> with an <code>href</code>.</p>
 
-<h2>Values</h2>
-<table>
-  <thead><tr><th>Usage</th><th>Behavior</th></tr></thead>
-  <tbody>
-    <tr><td><code>download</code> (no value)</td><td>Download the file using the filename from the URL</td></tr>
-    <tr><td><code>download="name.ext"</code></td><td>Suggest a custom filename for the download</td></tr>
-  </tbody>
-</table>
+  <browser-window
+    src="/docs/examples/demos/attr-download-export.html"
+    url="https://vanilla-breeze.com/demos/download"
+    title="Exporting table data"
+    shadow>
+  </browser-window>
 
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a>, <code>&lt;area&gt;</code></p>
-
-<code-block language="html" label="Basic download links" data-escape><!-- Download instead of navigating (uses the URL's filename) -->
-<a href="/files/annual-report.pdf" download>Download Report</a>
-
-<!-- Suggest a custom filename -->
-<a href="/files/report-2024-q4-final-v3.pdf" download="annual-report.pdf">
-  Download Report
-</a>
-
-<!-- Works on <area> elements too -->
-<map name="downloads">
-  <area shape="rect" coords="0,0,100,50"
-    href="/files/brochure.pdf" download="brochure.pdf" alt="Download brochure" />
-</map></code-block>
-
-<h2>Cross-Origin Limitation</h2>
-<p>For security reasons, the <code>download</code> attribute is <strong>ignored on cross-origin URLs</strong>. If the link points to a different origin, the browser navigates to the URL instead of downloading. This prevents a malicious page from silently downloading files from other domains onto the user's device.</p>
-
-<code-block language="html" label="Cross-origin behavior" data-escape><!-- Same-origin: download works as expected -->
-<a href="/files/data.csv" download="export.csv">Export CSV</a>
-
-<!-- Cross-origin: browser IGNORES the download attribute and navigates instead -->
-<a href="https://other-site.com/files/data.csv" download="export.csv">
-  This will navigate, not download
-</a></code-block>
-
-<p>To enable cross-origin downloads, the server must set the <code>Content-Disposition: attachment</code> HTTP header. This is a server-side solution that works regardless of the <code>download</code> attribute.</p>
-
-<h2>Generated Content with Blob URLs</h2>
-<p>The most powerful use of <code>download</code> is with Blob URLs for client-generated content. Create the data in JavaScript, wrap it in a Blob, generate a temporary URL, and trigger a download — no server round-trip required.</p>
-
-<code-block language="html" label="Download generated JSON" data-escape><button id="export-btn">Export Data as JSON</button>
-
-<script>
-document.getElementById('export-btn').addEventListener('click', () => {
-  const data = { users: 142, active: 98, date: new Date().toISOString() };
-  const json = JSON.stringify(data, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'export.json';
-  link.click();
-
-  URL.revokeObjectURL(url);
-});
-</script></code-block>
-
-<h3>Canvas to Image Download</h3>
-<p>Combine <code>download</code> with <code>canvas.toDataURL()</code> to let users save canvas drawings as image files.</p>
-
-<code-block language="html" label="Save canvas as PNG" data-escape><canvas id="chart" width="400" height="300"></canvas>
-<a id="save-chart" download="chart.png">Save Chart as PNG</a>
-
-<script>
-const canvas = document.getElementById('chart');
-const link = document.getElementById('save-chart');
-// After drawing on the canvas...
-link.href = canvas.toDataURL('image/png');
-</script></code-block>
-
-<h2>Filename Behavior</h2>
-<ul>
-  <li>If <code>download</code> has no value, the browser derives the filename from the URL path (e.g. <code>/files/report.pdf</code> saves as <code>report.pdf</code>).</li>
-  <li>If a value is provided, it overrides the URL-derived name but the server's <code>Content-Disposition</code> header takes priority over both.</li>
-  <li>The browser may sanitize the suggested filename, stripping path separators and other unsafe characters.</li>
-  <li>For Blob URLs, there is no URL-derived name, so providing a <code>download</code> value is essential.</li>
-</ul>
-
-<h2>Security Considerations</h2>
-<p>The cross-origin restriction exists to prevent drive-by downloads from untrusted origins. Even for same-origin resources, browsers may prompt the user before downloading executable file types (<code>.exe</code>, <code>.bat</code>, <code>.sh</code>). Some browsers block downloads entirely from sandboxed iframes unless <code>allow-downloads</code> is present.</p>
-
-<h2>Limitations</h2>
-<ul>
-  <li><strong>Cross-origin URLs ignored:</strong> The attribute has no effect when the href points to a different origin. Use server-side <code>Content-Disposition</code> headers instead.</li>
-  <li><strong>No progress feedback:</strong> There is no built-in way to show download progress for <code>download</code>-triggered downloads. Large files start downloading silently.</li>
-  <li><strong>Content-Disposition wins:</strong> If the server sends a <code>Content-Disposition</code> header, its filename takes priority over the <code>download</code> attribute value.</li>
-  <li><strong>Data URL size limits:</strong> Very large data URLs may fail in some browsers. Prefer Blob URLs for generated content over a few megabytes.</li>
-  <li><strong>Mobile behavior varies:</strong> Some mobile browsers open files in a viewer app rather than saving to the filesystem, even with the <code>download</code> attribute.</li>
-</ul>
+  <p>"Download CSV" is a <code>data:</code> URL with <code>download="team-contacts.csv"</code>. "Export as JSON" builds a Blob from the table and downloads it through a temporary link. VB adds the &darr; after links that have <code>download</code>.</p>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Value</th><th>Behaviour</th></tr></thead>
+    <tbody>
+      <tr><td><code>download</code> or <code>download=""</code></td><td>Save the file; the name comes from the <code>Content-Disposition</code> header, the URL path or the content type.</td></tr>
+      <tr><td><code>download="name.ext"</code></td><td>Save the file and suggest this name. Path separators and characters the OS forbids are replaced.</td></tr>
+    </tbody>
+  </table>
+  <p>A <code>filename</code> in the server's <code>Content-Disposition</code> header takes precedence over the attribute's value.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Static files</h3>
+  <code-block language="html" show-lines label="Download links" data-escape><a href="/files/annual-report-2026.pdf" download>Annual report (PDF, 2.4 MB)</a>
+
+<!-- Suggest a friendlier name than the stored one -->
+<a href="/files/rpt_2026_q3_final_v3.pdf" download="acme-q3-report.pdf">Q3 report (PDF)</a></code-block>
+
+  <h3>Generated data</h3>
+  <p>Wrap the data in a Blob, link to an object URL and click it. Revoke the URL a little later: revoking it straight after <code>click()</code> can cancel the download in some browsers.</p>
+  <code-block language="html" show-lines label="Blob export" data-escape><button type="button" id="export-json">Export as JSON</button>
+
+<script type="module">
+  document.getElementById('export-json').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(rows, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'team-contacts.json';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+</script></code-block>
+
+  <h3>Small fixed data as a data: URL</h3>
+  <code-block language="html" show-lines label="data: URL" data-escape><a href="data:text/csv;charset=utf-8,Name%2CEmail%0AAmara%2Camara%40example.com%0A"
+   download="contacts.csv">Download CSV</a></code-block>
+
+  <h3>Image map area</h3>
+  <code-block language="html" show-lines label="area download" data-escape><img src="/img/brand-sheet.png" alt="Brand assets" usemap="#assets" width="640" height="320">
+<map name="assets">
+  <area shape="rect" coords="0,0,320,320" href="/brand/logo.svg" download="acme-logo.svg" alt="Download the logo (SVG)">
+</map></code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/attributes/target/"><code>target</code></a> &mdash; where links open (download overrides navigation)</li>
-    <li><a href="/docs/attributes/rel/"><code>rel</code></a> &mdash; link relationship types</li>
-    <li><a href="/docs/attributes/crossorigin/"><code>crossorigin</code></a> &mdash; CORS mode for cross-origin resources</li>
+    <li><strong>Download glyph.</strong> <code>a[download]</code> gets a trailing &darr; (<code>src/native-elements/anchor/styles.css</code>), with empty alt text so screen readers skip it. It is suppressed in <code>nav</code>, <code>header</code> and <code>footer</code>, on <code>a.button</code>, when the link contains an <code>&lt;icon-wc&gt;</code>, and with <code>data-no-icon</code>. A download link to a PDF keeps the arrow instead of the "PDF" badge.</li>
+    <li><strong>File rows.</strong> <code>[data-file]</code> (<code>src/utils/file-display.css</code>) lays out an icon, name, size and download link; see the <a href="/docs/patterns/data/files/">files pattern</a>.</li>
+    <li><strong>Components that download.</strong> <code>&lt;theme-picker&gt;</code> adds per-theme design-token download links, and the chart service behind <code>&lt;chart-wc&gt;</code> has a <code>download()</code> export that uses the Blob technique above.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Say what the user gets: format and size in the link text ("Annual report (PDF, 2.4 MB)"). The &darr; glyph is decorative.</li>
+    <li>A download gives no in-page feedback. For generated files, confirm in the page (a status message) as well.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Security</h2>
+  <ul>
+    <li><strong>Cross-origin URLs ignore <code>download</code></strong> and navigate instead (Chrome since 65, Firefox and Safari likewise), so a page cannot rename and save another site's file. Same-origin, <code>blob:</code> and <code>data:</code> URLs are honoured. To force a download from another origin, that server must send <code>Content-Disposition: attachment</code>.</li>
+    <li>Browsers may warn about or block executable file types regardless of the attribute.</li>
+    <li>Sandboxed iframes cannot download without <code>allow-downloads</code>. See <a href="/docs/attributes/sandbox/"><code>sandbox</code></a>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Mobile.</strong> Some mobile browsers open the file in a viewer even with <code>download</code>.</li>
+    <li><strong>No progress events.</strong> The page cannot tell when or whether the download finished.</li>
+    <li><strong>Large data: URLs</strong> are slow and size-limited; use a Blob for anything beyond a few kilobytes.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/target/"><code>target</code></a> &mdash; where a navigation opens; <code>download</code> replaces the navigation.</li>
+    <li><a href="/docs/attributes/sandbox/"><code>sandbox</code></a> &mdash; <code>allow-downloads</code>.</li>
+    <li><a href="/docs/attributes/ping/"><code>ping</code></a> &mdash; notify a server when a link is followed.</li>
+    <li><a href="/docs/attributes/data-upload/"><code>data-upload</code></a> &mdash; the other direction: file uploads.</li>
+    <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> and <a href="/docs/elements/native/area/"><code>&lt;area&gt;</code></a> &mdash; the elements.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong>A file on your site</strong> &mdash; <code>&lt;a download&gt;</code>, inside a <code>[data-file]</code> row for lists.</li>
+    <li><strong>Data built in the page</strong> &mdash; a Blob and a temporary <code>download</code> link.</li>
+    <li><strong>A file on another origin</strong> &mdash; <code>Content-Disposition: attachment</code> on that server; the attribute will not help.</li>
   </ul>
 </section>

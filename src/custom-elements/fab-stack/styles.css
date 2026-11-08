@@ -6,9 +6,18 @@
  * Children keep `position: static` so their own layout rules don't fight
  * the stack.
  *
- * Default position is `bottom-right` for back-compat with existing pages
- * that wrote `<fab-stack>` without a position attribute. Set
- * `data-float="..."` on the host to change it.
+ * Default position is `bottom-right` when the host has no `data-float`.
+ * Set `data-float="..."` on the host to change it.
+ *
+ * Order: the FIRST child is the primary action. It sits nearest the
+ * anchored edge (bottom of the stack for bottom-* and center-*, top of
+ * the stack for top-*) and is focused first. For bottom/center positions
+ * that is `column-reverse`, so visual top-to-bottom order is the reverse
+ * of DOM order — tab order runs from the edge inward, which is the
+ * intended reading of a corner stack.
+ *
+ * Top-layer children (`<dialog>`, `[popover]`) are left alone so they
+ * still centre / anchor normally when opened.
  *
  * Usage:
  *   <fab-stack data-float="bottom-right">
@@ -29,26 +38,40 @@ fab-stack {
   pointer-events: none;
 }
 
+/* Top positions: primary (first child) sits nearest the top edge. */
+fab-stack[data-float^="top-"] {
+  flex-direction: column;
+}
+
 /* All children receive pointer events */
 fab-stack > * {
   pointer-events: auto;
 }
 
-/* Children stay in flow — don't let their own fixed positioning escape */
-fab-stack > *,
-fab-stack [data-back-to-top],
-fab-stack [data-float] {
+/* Children stay in flow — don't let their own fixed positioning escape.
+ * !important because [data-float] / [data-back-to-top] live in the later
+ * utils layer. Top-layer children are excluded: a static, margin-0 modal
+ * dialog would render pinned to the corner instead of centred. */
+fab-stack > :not(dialog, [popover]),
+fab-stack :is([data-back-to-top], [data-float]):not(dialog, [popover]) {
   position: static !important;
   inset: unset !important;
+  translate: none !important;
   margin: 0 !important;
 }
 
-/* Back-compat: bare fab-stack without data-float pins to bottom-right.
- * Same logic as data-float="bottom-right" but inlined so the host
- * doesn't need the attribute. */
+/* Bare fab-stack without data-float pins to bottom-right — same logic as
+ * data-float="bottom-right", inlined so the host doesn't need the
+ * attribute. Inline-end is the physical left edge in RTL, so it takes
+ * the left safe-area inset there. */
 fab-stack:not([data-float]) {
+  --_fab-safe-end: var(--safe-right, 0px);
   position: fixed;
   inset-block-end: calc(var(--float-offset, var(--size-l)) + var(--safe-bottom, 0px) + var(--nav-bottom-height, 0px));
-  inset-inline-end: calc(var(--float-offset, var(--size-l)) + var(--safe-right, 0px));
+  inset-inline-end: calc(var(--float-offset, var(--size-l)) + var(--_fab-safe-end));
   z-index: var(--z-float, 200);
+}
+
+fab-stack:not([data-float]):dir(rtl) {
+  --_fab-safe-end: var(--safe-left, 0px);
 }

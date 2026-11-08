@@ -15,6 +15,17 @@
  *     <button data-watch-page>Watch for updates</button>
  *   </page-tools>
  *
+ * Labels: a plain button's text node and title come from data-label-watch,
+ * data-label-watching, data-label-action and data-label-stop on the button
+ * (English defaults). Buttons marked data-watch-label-locked (watch-wc's
+ * own button) keep their text and title; the owner repaints them from
+ * aria-pressed.
+ *
+ * The module runs its side effects (initial enhancement, change check,
+ * MutationObserver, document listeners) once per document even when two
+ * copies are loaded (the autoload bundle and watch-wc's per-component chunk
+ * both carry it): a global sentinel makes the second copy inert.
+ *
  * Spec: admin/plans/april13-plan/page-watch.md
  */
 
@@ -78,9 +89,49 @@ function findContentRoot() {
   );
 }
 
-/** Return the page identity used as VBStore key. */
+/**
+ * Normalise a path so `/x`, `/x/` and `/x/index.html` share one key:
+ * strip a trailing index.html/index.htm, then a trailing slash (root stays `/`).
+ * @param {string} path
+ * @returns {string}
+ */
+function normalisePath(path) {
+  let p = (path || '/').replace(/\/index\.html?$/i, '/');
+  if (p.length > 1) p = p.replace(/\/+$/, '');
+  return p || '/';
+}
+
+/**
+ * Return the page identity used as VBStore key.
+ * @returns {string}
+ */
 function pageKey() {
-  return location.pathname || '/';
+  return normalisePath(location.pathname);
+}
+
+/**
+ * Move an entry stored under a pre-normalisation key (raw pathname,
+ * with or without the trailing slash or index.html) to the normalised key.
+ * Only the current page's variants are checked, so this costs at most
+ * three store reads per page load.
+ */
+async function migrateLegacyKey() {
+  const key = pageKey();
+  const raw = location.pathname || '/';
+  const base = key === '/' ? '' : key;
+  const variants = new Set([raw, `${base}/`, `${base}/index.html`]);
+  variants.delete(key);
+  if (await VBStore.get(NS, key)) {
+    for (const v of variants) await VBStore.remove(NS, v);
+    return;
+  }
+  for (const v of variants) {
+    const legacy = await VBStore.get(NS, v);
+    if (!legacy) continue;
+    await VBStore.set(NS, key, legacy);
+    await VBStore.remove(NS, v);
+    return;
+  }
 }
 
 /**
@@ -108,8 +159,13 @@ function pageTitle() {
  * @property {string|null} subscriptionId  Server-side subscription ID, if any
  */
 
+/** @type {Promise<void>|null} */
+let migration = null;
+
 /** @returns {Promise<WatchEntry|null>} */
 async function readWatch() {
+  migration ??= migrateLegacyKey().catch(() => {});
+  await migration;
   return /** @type {WatchEntry|null} */ (await VBStore.get(NS, pageKey()));
 }
 
@@ -120,6 +176,16 @@ async function writeWatch(entry) {
 
 async function removeWatch() {
   await VBStore.remove(NS, pageKey());
+}
+
+/**
+ * Read a label override from the button, falling back to English.
+ * @param {HTMLElement} btn
+ * @param {string} key
+ * @param {string} fallback
+ */
+function label(btn, key, fallback) {
+  return btn.getAttribute(`data-label-${key}`) ?? fallback;
 }
 
 /** Update a button's visual + accessible state to match watched/unwatched. */
@@ -136,11 +202,25 @@ function syncButton(btn, watched) {
   if (icon) icon.setAttribute('name', watched ? 'bookmark-check' : 'bookmark');
 
   // If the button's text content is just a label (no element children), update it
+  // Locked buttons (watch-wc's own) repaint text and title themselves from aria-pressed.
+  if (btn.hasAttribute('data-watch-label-locked')) return;
   const textNode = [...btn.childNodes].find(n => n.nodeType === Node.TEXT_NODE && (n.textContent || '').trim());
-  if (textNode && !btn.hasAttribute('data-watch-label-locked')) {
-    textNode.textContent = watched ? 'Watching' : 'Watch for updates';
+  if (textNode) {
+    textNode.textContent = watched
+      ? label(btn, 'watching', 'Watching')
+      : label(btn, 'watch', 'Watch for updates');
   }
-  btn.setAttribute('title', watched ? 'Stop watching this page' : 'Watch this page for content updates');
+  btn.setAttribute('title', watched
+    ? label(btn, 'stop', 'Stop watching this page')
+    : label(btn, 'action', 'Watch this page for content updates'));
+}
+
+/** Repaint every enhanced watch button from the store (sibling sync). */
+async function resyncAll() {
+  const watched = !!(await readWatch());
+  for (const btn of document.querySelectorAll(`${SELECTOR}[data-watch-page-init]`)) {
+    syncButton(/** @type {HTMLElement} */ (btn), watched);
+  }
 }
 
 async function enhanceButton(btn) {
@@ -164,7 +244,7 @@ async function enhanceButton(btn) {
       serverUnsubscribe(current.subscriptionId);
     } else {
       const entry = {
-        url: pageKey(),
+        url: location.pathname || '/',
         title: pageTitle(),
         contentHash: currentHash(),
         watchedAt: new Date().toISOString(),
@@ -217,6 +297,12 @@ async function checkForChange() {
       dismissed: false,
       priority: 'normal',
     };
+    // notification-wc ingests this on document. Wait for it to be defined
+    // (its panel listener is attached synchronously during upgrade) so a
+    // fast change check on page load is not dropped before the bell exists.
+    if (document.querySelector('notification-wc') && !customElements.get('notification-wc')) {
+      await customElements.whenDefined('notification-wc');
+    }
     document.dispatchEvent(new CustomEvent('notification-wc:new', {
       bubbles: true, composed: true, detail: { notification },
     }));
@@ -233,24 +319,51 @@ function initPageWatch(root = document) {
   checkForChange();
 }
 
-// Auto-init on DOM ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => initPageWatch());
-} else {
-  initPageWatch();
+/**
+ * A page-watch:add/remove from anywhere (a button or the notification
+ * panel's Watching tab) repaints every button. A remove that did not come
+ * from a watch button (the bell's unwatch) also mirrors the unsubscribe to
+ * the server — buttons already do that themselves.
+ * @param {Event} e
+ */
+function onWatchChanged(e) {
+  resyncAll();
+  if (e.type !== 'page-watch:remove') return;
+  const fromButton = e.target instanceof Element && e.target.matches(SELECTOR);
+  if (!fromButton) {
+    const detail = /** @type {CustomEvent} */ (e).detail;
+    serverUnsubscribe(detail?.subscriptionId ?? null);
+  }
 }
 
-// Watch for dynamically added watch buttons
-const observer = new MutationObserver((mutations) => {
-  for (const m of mutations) {
-    for (const node of m.addedNodes) {
-      if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      const el = /** @type {Element} */ (node);
-      if (el.matches?.(SELECTOR)) enhanceButton(/** @type {HTMLElement} */ (el));
-      el.querySelectorAll?.(SELECTOR).forEach(b => enhanceButton(/** @type {HTMLElement} */ (b)));
-    }
-  }
-});
-observer.observe(document.documentElement, { childList: true, subtree: true });
+const SENTINEL = Symbol.for('vb.page-watch-init');
+const g = /** @type {Record<symbol, boolean>} */ (/** @type {unknown} */ (globalThis));
 
-export { initPageWatch, readWatch, writeWatch, removeWatch, currentHash };
+if (!g[SENTINEL]) {
+  g[SENTINEL] = true;
+
+  // Auto-init on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => initPageWatch());
+  } else {
+    initPageWatch();
+  }
+
+  document.addEventListener('page-watch:add', onWatchChanged);
+  document.addEventListener('page-watch:remove', onWatchChanged);
+
+  // Watch for dynamically added watch buttons
+  const observer = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      for (const node of m.addedNodes) {
+        if (node.nodeType !== Node.ELEMENT_NODE) continue;
+        const el = /** @type {Element} */ (node);
+        if (el.matches?.(SELECTOR)) enhanceButton(/** @type {HTMLElement} */ (el));
+        el.querySelectorAll?.(SELECTOR).forEach(b => enhanceButton(/** @type {HTMLElement} */ (b)));
+      }
+    }
+  });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+}
+
+export { initPageWatch, readWatch, writeWatch, removeWatch, currentHash, normalisePath, pageKey };

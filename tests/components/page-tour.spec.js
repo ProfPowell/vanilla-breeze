@@ -6,6 +6,19 @@
  */
 
 import { test, expect } from 'playwright/test';
+import { join } from 'node:path';
+
+const REPO = join(import.meta.dirname, '..', '..');
+
+// Test the working tree: serve /src and the page-tour demos from disk
+test.beforeEach(async ({ page }) => {
+  const fromDisk = (prefix, dir) => (route) => {
+    const path = decodeURIComponent(new URL(route.request().url()).pathname);
+    return route.fulfill({ path: join(REPO, dir, path.slice(prefix.length)) });
+  };
+  await page.route('**/src/**', fromDisk('/src/', 'src'));
+  await page.route('**/docs/examples/demos/page-tour-*', fromDisk('/docs/examples/demos/', 'demos/examples/demos'));
+});
 
 const basicPage = '/docs/examples/demos/page-tour-basic.html';
 const activePage = '/docs/examples/demos/page-tour-active.html';
@@ -213,7 +226,7 @@ test.describe('page-tour — keyboard', () => {
 
 test.describe('page-tour — action gating', () => {
 
-  test('next button disabled until action completes', async ({ page }) => {
+  test('next button aria-disabled until action completes', async ({ page }) => {
     await page.goto(activePage);
     // The demo uses data-trigger="button" — start via its trigger button
     await page.locator('[data-tour="settings-tour"]').click();
@@ -221,10 +234,15 @@ test.describe('page-tour — action gating', () => {
 
     const nextBtn = page.locator('[data-action="next"]');
     await expect(nextBtn).toHaveAttribute('data-waiting', '');
+    await expect(nextBtn).toHaveAttribute('aria-disabled', 'true');
+    await expect(page.locator('.page-tour-card')).not.toHaveAttribute('aria-modal', /.*/);
 
     // Perform the required action (input into the name field)
     await page.locator('#profile-name').fill('Test');
     await expect(nextBtn).not.toHaveAttribute('data-waiting');
+    await expect(nextBtn).not.toHaveAttribute('aria-disabled');
+    // Completing the action does not move focus off the field
+    await expect(page.locator('#profile-name')).toBeFocused();
   });
 
   test('action hint is visible while waiting', async ({ page }) => {
@@ -337,7 +355,7 @@ test.describe('page-tour — persistence', () => {
 
 test.describe('page-tour — accessibility', () => {
 
-  test('card has dialog role and aria-modal', async ({ page }) => {
+  test('card has dialog role and aria-modal on an ungated step', async ({ page }) => {
     await page.goto(basicPage);
     await startTour(page);
 

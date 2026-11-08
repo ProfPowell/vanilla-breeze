@@ -13,7 +13,7 @@ crumbLabel: Web Components
 <section>
     <h2>Overview</h2>
     <p>A thumbnail grid that opens a fullscreen lightbox viewer on click. Progressive enhancement at every layer: without JS, thumbnails are plain links to full images. With JS, a native <code>&lt;dialog&gt;</code> lightbox adds navigation, swipe, keyboard control, and View Transitions.</p>
-    <p>Uses the Invokers API (<code>commandfor</code>/<code>command</code>) for declarative close, and the Popover API (<code>popovertarget</code>) for caption details.</p>
+    <p>The lightbox is a native <code>&lt;dialog&gt;</code> built on first open, appended inside the gallery. An empty gallery still upgrades, so thumbnails added later (markup or the <code>.images</code> property) open the lightbox too.</p>
 
     <browser-window
       src="/docs/examples/demos/image-gallery-basic.html"
@@ -39,7 +39,7 @@ crumbLabel: Web Components
 </image-gallery></code-block>
 
     <h3>With Captions</h3>
-    <p>Wrap each item in a <code>&lt;figure&gt;</code> with a <code>&lt;figcaption&gt;</code>. Captions support HTML including links, and display in the lightbox via a popover panel.</p>
+    <p>Wrap each item in a <code>&lt;figure&gt;</code> with a <code>&lt;figcaption&gt;</code>. Captions support HTML including links; in the lightbox they sit in a footer behind an info button (see <a href="#caption-modes">Caption Modes</a>).</p>
 
     <browser-window
       src="/docs/examples/demos/image-gallery-captions.html"
@@ -70,7 +70,6 @@ crumbLabel: Web Components
       <tbody>
         <tr><td>HTML only</td><td>Grid of linked images; click navigates to full image</td></tr>
         <tr><td>HTML + CSS</td><td>Responsive auto-fit grid, aspect-ratio thumbnails, hover zoom</td></tr>
-        <tr><td>+ Invokers</td><td>Dialog close button works declaratively</td></tr>
         <tr><td>+ JS</td><td>Lightbox opens, navigation, keyboard, swipe, counter</td></tr>
         <tr><td>+ View Transitions</td><td>Thumbnail morphs into full image</td></tr>
       </tbody>
@@ -90,36 +89,112 @@ crumbLabel: Web Components
   <section>
     <h2>Lightbox Navigation</h2>
     <ul>
-      <li><strong>Prev/Next buttons</strong> in the lightbox header</li>
-      <li><strong>Keyboard</strong>: ArrowLeft/Right, Home/End, Escape to close</li>
-      <li><strong>Swipe</strong>: Left/right touch gestures on the image area</li>
+      <li><strong>Prev/Next buttons</strong> on either side of the image (<code>controls="edge"</code>) or in the top bar (<code>controls="bar"</code>)</li>
+      <li><strong>Keyboard</strong>: ArrowLeft/Right (previous/next, swapped in right-to-left documents), Home/End, Escape to close</li>
+      <li><strong>Swipe</strong>: Left/right touch gestures on the image area, also direction-aware</li>
       <li><strong>Loop</strong>: Add <code>loop</code> attribute to wrap at ends</li>
     </ul>
-    <p>Counter displays "X of Y" and is announced to screen readers via <code>aria-live</code>.</p>
+    <p>The header shows a counter ("Image 3 of 8" by default) that is announced politely on navigation, plus the close button. Focus returns to the thumbnail when the lightbox closes.</p>
   </section>
 
   <section>
-    <h2>Caption Modes</h2>
+    <h2>Lightbox Controls and Transitions</h2>
+    <table>
+      <thead>
+        <tr><th>Attribute</th><th>Values</th><th>Behavior</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>controls</code></td><td><code>edge</code> (default), <code>bar</code>, <code>minimal</code></td><td><code>edge</code>: prev/next on the sides, header floats over the image. <code>bar</code>: prev/next move into the top bar. <code>minimal</code>: close only; navigate by keyboard or swipe.</td></tr>
+        <tr><td><code>transition</code></td><td><code>morph</code> (default), <code>fade</code>, <code>none</code></td><td><code>morph</code>: the thumbnail morphs into the full image (View Transitions). <code>fade</code>: cross-fade between images only. <code>none</code>: no transitions.</td></tr>
+      </tbody>
+    </table>
+    <p>Changing <code>controls</code> or <code>captions</code> closes an open lightbox; it is rebuilt on the next open.</p>
+  </section>
+
+  <section>
+    <h2 id="caption-modes">Caption Modes</h2>
     <p>The <code>captions</code> attribute controls how <code>&lt;figcaption&gt;</code> content appears in the lightbox.</p>
     <table>
       <thead>
         <tr><th>Value</th><th>Behavior</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>auto</code> (default)</td><td>Info button in header; toggles a popover panel via <code>popovertarget</code></td></tr>
-        <tr><td><code>overlay</code></td><td>Persistent caption bar below the image</td></tr>
+        <tr><td><code>auto</code> (default)</td><td>Footer with an info button that shows/hides the caption text (<code>aria-expanded</code> + <code>hidden</code>); the footer only appears for images with a caption</td></tr>
+        <tr><td><code>overlay</code></td><td>Caption shown below the image inside the frame</td></tr>
         <tr><td><code>hidden</code></td><td>Captions suppressed in lightbox (still visible in grid)</td></tr>
       </tbody>
     </table>
   </section>
 
   <section>
+    <h2>JavaScript API</h2>
+    <p>The <code>images</code> property reads or replaces the image set. Each entry is <code>{ href, thumbSrc, alt, caption }</code>. A string <code>caption</code> is rendered as plain text, never parsed as HTML; pass a Node, <code>DocumentFragment</code>, or <code>&lt;template&gt;</code> for rich captions. Reading returns a string for text-only captions and a cloned <code>DocumentFragment</code> when the caption has markup.</p>
+
+    <code-block language="javascript" show-lines label="images property and methods" data-escape>const gallery = document.querySelector('image-gallery');
+
+gallery.addEventListener('image-gallery:images-changed', (e) => {
+  console.log(e.detail.images.length, e.detail.source); // 2 'property'
+});
+
+gallery.images = [
+  { href: '/photos/1.jpg', thumbSrc: '/photos/1-thumb.jpg', alt: 'Harbour at dawn' },
+  { href: '/photos/2.jpg', thumbSrc: '/photos/2-thumb.jpg', alt: 'Old town', caption: 'Lisbon, 2024' },
+];
+
+gallery.open(1);   // open the lightbox at index 1
+gallery.next();    // also: prev(), close()</code-block>
+
+    <p>Assigning <code>images</code> closes an open lightbox. Generated thumbnails load lazily. Entries without <code>alt</code> log a single console warning and name the link from the caption text or the counter template instead.</p>
+
+    <table>
+      <thead>
+        <tr><th>Member</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>images</code></td><td>Get or set the image set</td></tr>
+        <tr><td><code>open(index)</code></td><td>Open the lightbox at a zero-based index</td></tr>
+        <tr><td><code>close()</code></td><td>Close the lightbox</td></tr>
+        <tr><td><code>next()</code> / <code>prev()</code></td><td>Navigate (wrapping with <code>loop</code>)</td></tr>
+        <tr><td><code>image-gallery:images-changed</code></td><td>Event; <code>detail: { images, source: 'property' }</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Labels</h2>
+    <p>Override the lightbox strings with <code>data-label-*</code> attributes on the gallery.</p>
+    <table>
+      <thead>
+        <tr><th>Attribute</th><th>Default</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-label-dialog</code></td><td>Image viewer</td></tr>
+        <tr><td><code>data-label-close</code></td><td>Close gallery</td></tr>
+        <tr><td><code>data-label-prev</code></td><td>Previous image</td></tr>
+        <tr><td><code>data-label-next</code></td><td>Next image</td></tr>
+        <tr><td><code>data-label-show-details</code></td><td>Show image details</td></tr>
+        <tr><td><code>data-label-hide-details</code></td><td>Hide image details</td></tr>
+        <tr><td><code>data-label-counter</code></td><td>Image {n} of {total}</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="Localized labels" data-escape><image-gallery lang="fr"
+  data-label-dialog="Visionneuse"
+  data-label-close="Fermer"
+  data-label-counter="Image {n} sur {total}">
+  ...
+</image-gallery></code-block>
+  </section>
+
+  <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Native <code>&lt;dialog&gt;</code> provides focus trapping, Escape-to-close, and <code>::backdrop</code></li>
-      <li>Close button uses <code>commandfor</code>/<code>command="close"</code> (Invokers API)</li>
-      <li>Counter uses <code>aria-live="polite"</code> for screen reader announcements</li>
-      <li>Prev/Next buttons have <code>aria-label</code> and <code>disabled</code> state at boundaries</li>
-      <li>All animations respect <code>prefers-reduced-motion</code></li>
+      <li>Native <code>&lt;dialog&gt;</code> provides focus trapping, Escape-to-close, and <code>::backdrop</code>; it is named "Image viewer" by default</li>
+      <li>Focus returns to the thumbnail that opened the lightbox</li>
+      <li>Counter uses <code>aria-live="polite"</code> and reads "Image 3 of 8" rather than a bare "3 of 8"</li>
+      <li>Prev/Next buttons have <code>aria-label</code> and a <code>disabled</code> state at boundaries</li>
+      <li>In right-to-left documents the arrow keys, swipe direction, and chevron icons follow the reading direction</li>
+      <li>The info button exposes <code>aria-expanded</code> and <code>aria-controls</code></li>
+      <li>Animations respect <code>prefers-reduced-motion</code> and the <code>data-motion-reduced</code> preference</li>
     </ul>
   </section>

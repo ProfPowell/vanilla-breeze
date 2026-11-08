@@ -2,43 +2,24 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "popularity-index",
   "type": "web-component",
-  "description": "Aggregated most-visited lens (degrades gracefully when endpoint is unavailable)",
+  "description": "Aggregated most-visited lens. Reads /api/analytics/popular (or any { pages: [{ url, title?, views }] } endpoint), enriches titles/provenance from pages.json, and reflects loading/ready/empty/unavailable state.",
   "attributes": [
-    {
-      "name": "analytics-src",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Popularity endpoint URL (default \"/api/analytics/popular\")"
-    },
-    {
-      "name": "data-meta-src",
-      "kind": "data",
-      "purpose": "config",
-      "type": "string",
-      "description": "Optional pages.json URL for metadata enrichment"
-    },
-    {
-      "name": "data-lens-src",
-      "kind": "data",
-      "purpose": "config",
-      "type": "string",
-      "description": "Shared lens pages.json URL (forwarded by content-lens); metadata fallback when data-meta-src is unset"
-    },
-    {
-      "name": "limit",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "number",
-      "description": "Max entries shown (default 10)"
-    },
-    {
-      "name": "window",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Time-window query forwarded to endpoint (e.g. \"24h\", \"7d\", \"30d\")"
-    }
+    { "name": "analytics-src", "kind": "host-api", "purpose": "config", "type": "string", "default": "/api/analytics/popular", "description": "Popularity endpoint URL. Re-fetches when changed." },
+    { "name": "data-meta-src", "kind": "data", "purpose": "config", "type": "string", "description": "Optional pages.json URL; fills missing titles and adds the provenance chip. Fetched in parallel with the endpoint." },
+    { "name": "data-lens-src", "kind": "data", "purpose": "config", "type": "string", "description": "Shared lens pages.json URL (forwarded by content-lens); metadata fallback when data-meta-src is unset. Never used as the endpoint." },
+    { "name": "limit", "kind": "host-api", "purpose": "config", "type": "number", "default": 10, "description": "Max entries shown (clamped to at least 1)." },
+    { "name": "window", "kind": "host-api", "purpose": "config", "type": "string", "description": "Time window forwarded as ?window=. The VB endpoint accepts 24h, 7d (default) and 30d." },
+    { "name": "data-heading-level", "kind": "data", "purpose": "config", "type": "number", "default": 2, "description": "Heading level 1-6 for the panel heading; 0 renders no heading (e.g. inside content-lens, which already labels the lens)." },
+    { "name": "data-label-heading", "kind": "data", "purpose": "config", "type": "string", "default": "Most visited", "description": "Heading text." },
+    { "name": "data-label-view", "kind": "data", "purpose": "config", "type": "string", "default": "view", "description": "Count noun used when Intl.PluralRules selects \"one\"." },
+    { "name": "data-label-views", "kind": "data", "purpose": "config", "type": "string", "default": "views", "description": "Count noun for every other plural category." },
+    { "name": "data-label-unavailable", "kind": "data", "purpose": "config", "type": "string", "default": "Popularity data is unavailable right now.", "description": "Message when the endpoint fails (internal error detail is never shown)." },
+    { "name": "data-label-empty", "kind": "data", "purpose": "config", "type": "string", "default": "Not enough data yet to surface most-visited pages.", "description": "Message when the endpoint returns no usable pages." },
+    { "name": "data-state", "kind": "data", "purpose": "output-state", "type": "enum", "values": ["loading", "ready", "empty", "unavailable"], "direction": "output", "description": "Reflected load state; aria-busy=\"true\" accompanies loading. Hide the panel with popularity-index[data-state=\"unavailable\"] { display: none }." },
+    { "name": "data-error", "kind": "data", "purpose": "output-state", "type": "string", "direction": "output", "public": false, "description": "Internal error detail for debugging when data-state=\"unavailable\" (never rendered)." }
+  ],
+  "events": [
+    { "name": "popularity-index:state", "detail": "{ state }", "description": "Fires when a load settles (ready, empty or unavailable)." }
   ],
   "htmlvalidate": {
     "flow": true,

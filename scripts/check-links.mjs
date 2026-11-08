@@ -29,14 +29,39 @@ import { parseHTML } from 'linkedom';
 
 const SITE_ORIGIN = 'https://vanilla-breeze.com';
 
-/** Same rule as heading-links #generateId (src/web-components/heading-links/logic.js). */
+/*
+ * heading-links id rules — MIRROR of src/web-components/heading-links/logic.js
+ * (headingSlug, uniqueSlug, parseLevels and the skipped contexts). Change both
+ * together; tests/unit/check-links.test.js asserts parity on a fixture list.
+ */
+
+/** Heading text → id slug (Unicode-aware; empty → "section"). */
 export function headingSlug(text) {
-  return String(text).toLowerCase().trim()
-    .replace(/[^\w\s-]/g, '')
+  const slug = String(text).normalize('NFC').toLowerCase().trim()
+    .replace(/[^\p{L}\p{M}\p{N}\s_-]/gu, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
-    .substring(0, 50);
+    .replace(/^-|-$/g, '');
+  const cut = Array.from(slug).slice(0, 50).join('').replace(/-$/, '');
+  return cut || 'section';
 }
+
+/** First free id: base, base-1, base-2… */
+export function uniqueSlug(base, taken) {
+  let id = base;
+  let counter = 1;
+  while (taken(id)) id = `${base}-${counter++}`;
+  return id;
+}
+
+/** levels attribute → validated h1–h6 list (default h2,h3). */
+export function parseLevels(value) {
+  const tokens = (value ?? '').split(',').map((t) => t.trim().toLowerCase()).filter((t) => /^h[1-6]$/.test(t));
+  return tokens.length ? [...new Set(tokens)] : ['h2', 'h3'];
+}
+
+// Mirrors SKIP_CONTEXT in src/web-components/_shared/toc-skip.js (heading-links + page-toc).
+const HEADING_LINKS_SKIP = 'dialog, [data-toc-ignore], browser-window';
 
 /** Demo-ish pages: only their asset references are checked. */
 export function isDemoPage(urlPath) {
@@ -73,12 +98,19 @@ export function fragmentTargets(html) {
   const { document } = parseHTML(html);
   const ids = new Set();
   for (const el of document.querySelectorAll('[id]')) ids.add(el.getAttribute('id'));
+  // Runtime dedupe uses getElementById, which ignores a[name]: snapshot ids first.
+  const domIds = new Set(ids);
   for (const el of document.querySelectorAll('a[name]')) ids.add(el.getAttribute('name'));
+  // Hosts upgrade in document order; each generates ids in heading order,
+  // deduping against every id already in the document (static + generated).
   for (const host of document.querySelectorAll('heading-links')) {
-    const levels = (host.getAttribute('levels') || 'h2,h3').split(',').map((l) => l.trim()).join(',');
-    for (const h of host.querySelectorAll(levels)) {
-      if (h.closest('dialog, [data-toc-ignore]') || h.hasAttribute('data-toc-ignore')) continue;
-      if (!h.getAttribute('id')) ids.add(headingSlug(h.textContent));
+    for (const h of host.querySelectorAll(parseLevels(host.getAttribute('levels')).join(','))) {
+      if (h.closest('heading-links') !== host || h.closest(HEADING_LINKS_SKIP)) continue;
+      if (h.getAttribute('id')) continue;
+      const id = uniqueSlug(headingSlug(h.textContent), (x) => domIds.has(x));
+      h.setAttribute('id', id);
+      domIds.add(id);
+      ids.add(id);
     }
   }
   return ids;

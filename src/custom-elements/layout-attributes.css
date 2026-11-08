@@ -15,9 +15,15 @@
    flex-collapse guard on center, cluster gap stopping at xl, a position-only
    sidebar). Do not add [data-layout="x"] rules here for a layout that has an
    element file. What stays here: the attribute-only layouts (page-stack,
-   split, holy-grail, dashboard, data-page-layout, regions, media), the
+   split, regions, media, main sidebar-left/right), data-page-layout, the
    grid-identity system, the staged presentation pattern, and the
    container-query plumbing shared across layouts.
+
+   data-page-layout is the ONLY page-template system. The old
+   data-layout="holy-grail" and data-layout="dashboard" were a second,
+   drifted copy of data-page-layout="holy-grail|dashboard" (different area
+   names, column widths and breakpoints) and are gone — use
+   data-page-layout="…", which works on any element, not just <body>.
 
    NOT here (tfcw): density modes → src/utils/density.css; scroll-driven
    header shrink, data-animate reveals and data-parallax →
@@ -50,6 +56,11 @@
    Split: Two-column ratio grid
    -------------------------------------------------------------------------- */
 [data-layout="split"] {
+  /* Reset variant-only private props so an outer layout's values don't
+     inherit in (see layout-grid/styles.css). */
+  --_ratio: initial;
+  --_gap: initial;
+
   display: grid;
   grid-template-columns: var(--_ratio, 1fr 1fr);
   gap: var(--_gap, var(--size-xl));
@@ -93,166 +104,6 @@
 }
 
 /* ==========================================================================
-   PHASE 3: COMPLEX GRID
-   Holy Grail, Dashboard - named grid areas targeting semantic elements
-   ========================================================================== */
-
-/* --------------------------------------------------------------------------
-   Holy Grail: Classic 3-column layout with header/footer
-   -------------------------------------------------------------------------- */
-[data-layout="holy-grail"] {
-  display: grid;
-  grid-template-areas:
-    "header header header"
-    "nav    main   aside"
-    "footer footer footer";
-  grid-template-columns: minmax(10rem, 15rem) 1fr minmax(10rem, 20rem);
-  grid-template-rows: auto 1fr auto;
-  min-height: 100dvh;
-}
-
-[data-layout="holy-grail"] > header { grid-area: header; }
-[data-layout="holy-grail"] > nav    { grid-area: nav; }
-[data-layout="holy-grail"] > main   { grid-area: main; }
-[data-layout="holy-grail"] > aside  { grid-area: aside; }
-[data-layout="holy-grail"] > footer { grid-area: footer; }
-
-/* Holy grail without aside becomes two-column */
-[data-layout="holy-grail"]:not(:has(> aside)) {
-  grid-template-areas:
-    "header header"
-    "nav    main"
-    "footer footer";
-  grid-template-columns: minmax(10rem, 15rem) 1fr;
-}
-
-/* Holy grail without nav becomes two-column (aside on right) */
-[data-layout="holy-grail"]:not(:has(> nav)) {
-  grid-template-areas:
-    "header header"
-    "main   aside"
-    "footer footer";
-  grid-template-columns: 1fr minmax(10rem, 20rem);
-}
-
-/* Holy grail without nav or aside becomes single column */
-[data-layout="holy-grail"]:not(:has(> nav)):not(:has(> aside)) {
-  grid-template-areas:
-    "header"
-    "main"
-    "footer";
-  grid-template-columns: 1fr;
-}
-
-@media (width < 60rem) { /* --content-normal */
-  [data-layout="holy-grail"] {
-    grid-template-areas:
-      "header"
-      "nav"
-      "main"
-      "aside"
-      "footer";
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto 1fr auto auto;
-  }
-
-  [data-layout="holy-grail"]:not(:has(> aside)) {
-    grid-template-areas:
-      "header"
-      "nav"
-      "main"
-      "footer";
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto 1fr auto;
-  }
-
-  [data-layout="holy-grail"]:not(:has(> nav)) {
-    grid-template-areas:
-      "header"
-      "main"
-      "aside"
-      "footer";
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto auto;
-  }
-
-  [data-layout="holy-grail"]:not(:has(> nav)):not(:has(> aside)) {
-    grid-template-areas:
-      "header"
-      "main"
-      "footer";
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   Dashboard: App shell with sticky header and sidebar
-   -------------------------------------------------------------------------- */
-[data-layout="dashboard"] {
-  display: grid;
-  grid-template-areas:
-    "header header"
-    "nav    main";
-  grid-template-columns: var(--_sidebar-width, 16rem) 1fr;
-  grid-template-rows: auto 1fr;
-  min-height: 100dvh;
-}
-
-[data-layout="dashboard"] > header {
-  grid-area: header;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-[data-layout="dashboard"] > nav {
-  grid-area: nav;
-  align-self: start;
-  position: sticky;
-  top: 0;
-  max-height: 100dvh;
-  overflow-y: auto;
-}
-
-[data-layout="dashboard"] > main {
-  grid-area: main;
-}
-
-[data-layout="dashboard"][data-layout-sidebar-width="narrow"] { --_sidebar-width: 12rem; }
-[data-layout="dashboard"][data-layout-sidebar-width="normal"] { --_sidebar-width: 16rem; }
-[data-layout="dashboard"][data-layout-sidebar-width="wide"]   { --_sidebar-width: 20rem; }
-
-[data-layout="dashboard"][data-header-height="3rem"]   { --_header-height: 3rem; }
-[data-layout="dashboard"][data-header-height="3.5rem"] { --_header-height: 3.5rem; }
-[data-layout="dashboard"][data-header-height="4rem"]   { --_header-height: 4rem; }
-
-@media (width < 48rem) { /* --bp-m */
-  [data-layout="dashboard"] {
-    grid-template-areas:
-      "header"
-      "main";
-    grid-template-columns: 1fr;
-  }
-
-  [data-layout="dashboard"] > nav {
-    position: fixed;
-    inset-block-start: var(--_header-height, 3.5rem);
-    inset-block-end: 0;
-    inset-inline-start: 0;
-    width: var(--_sidebar-width, 16rem);
-    transform: translateX(-100%);
-    transition: transform 0.2s ease-out;
-    background: var(--color-surface);
-    z-index: 20;
-  }
-
-  [data-layout="dashboard"][data-nav-open] > nav {
-    transform: translateX(0);
-  }
-}
-
-/* ==========================================================================
    PHASE 5: GRID IDENTITY SYSTEM (Zen Garden Patterns)
    Semantic elements auto-register grid areas based on DOM position.
    HTML declares structure, CSS assigns layout - proper separation of concerns.
@@ -262,14 +113,22 @@
    Layout Template Tokens
    Grid templates stored as CSS custom properties for easy reuse
    -------------------------------------------------------------------------- */
-/* @property registration for --sidebar-width is in src/main.css (top-level) */
+/* @property registration for --sidebar-width is in src/properties.css.
 
-:root {
+   The templates are declared on the page-layout HOST, not on :root. A
+   custom property's var() references resolve where the property is
+   declared, so templates stored on :root froze --_sidebar-width at its :root
+   value and data-layout-sidebar-width / data-sidebar="collapsed" (which set
+   --_sidebar-width on the host) never reached the grid. :where() keeps the
+   block at zero specificity, so an author rule on the host — body
+   { --tpl-sidebar-left: …; --_sidebar-width: 18rem } — still wins. Overriding
+   a template on :root no longer reaches the grid; override it on the host. */
+:where([data-page-layout]) {
   /* Sidebar width token — 16rem is THE sidebar default everywhere
-     (layout-sidebar, page-layout, dashboard, grid identity); narrow/normal/
-     wide are 12/16/20rem in every context. */
+     (layout-sidebar, page-layout, main sidebar-*, grid identity);
+     narrow/normal/wide are 12/16/20rem in every context. */
   --_sidebar-width: var(--sidebar-width, 16rem);
-  --_sidebar-collapsed: var(--sidebar-collapsed, 64px);
+  --_sidebar-collapsed: var(--sidebar-collapsed, 4rem);
 
   /* Stack: Single column (mobile-first) */
   /* Includes body-aside: the mobile collapse of sidebar-right and
@@ -341,12 +200,6 @@
    Semantic elements auto-register their grid areas (see PAGE LAYOUTS).
    -------------------------------------------------------------------------- */
 
-/* Named containers for targeted @container queries on the page regions.
-   (data-page-layout's grid-area assignments live in the PAGE LAYOUTS section.) */
-[data-page-layout] > main  { container-name: region-main; }
-[data-page-layout] > nav   { container-name: region-nav; }
-[data-page-layout] > aside { container-name: region-aside; }
-
 /* Main-level structure — only the main[data-layout="sidebar-*"] templates
    below define main-* areas, so only they assign them. The old
    main[data-layout] > * and article[data-layout] > * rules fired for EVERY
@@ -356,24 +209,24 @@ main[data-layout^="sidebar-"] > nav     { grid-area: main-nav; }
 main[data-layout^="sidebar-"] > article { grid-area: main-article; }
 main[data-layout^="sidebar-"] > aside   { grid-area: main-aside; }
 
-/* Explicit grid area overrides via data attribute */
+/* Explicit grid area overrides via data attribute — only the areas a VB
+   template defines (data-page-layout="landing"). Authors with their own
+   grid-template-areas set grid-area directly. */
 [data-layout-area="hero"] { grid-area: hero; }
-[data-layout-area="sidebar"] { grid-area: sidebar; }
-[data-layout-area="content"] { grid-area: content; }
 [data-layout-area="feature"] { grid-area: feature; }
 [data-layout-area="cta"] { grid-area: cta; }
-[data-layout-area="banner"] { grid-area: banner; }
-[data-layout-area="toc"] { grid-area: toc; }
 
 /* ==========================================================================
    PAGE LAYOUTS: data-page-layout
 
    Use on <body> for full-page layouts with semantic element identity.
    Semantic children (header, nav, main, aside, footer) are auto-assigned
-   to grid areas based on their element type - no classes needed.
+   to grid areas based on their element type - no classes needed. Nothing
+   here is body-scoped (except the 87.5rem cap), so the same templates work
+   on a <section> — that is how the docs preview them.
 
    Hierarchy:
-   - data-page-layout  → Page structure (body level)
+   - data-page-layout  → Page structure (body level); bare = stack
    - data-layout       → Component layouts (any element)
 
    Example:
@@ -403,13 +256,30 @@ main[data-layout^="sidebar-"] > aside   { grid-area: main-aside; }
 [data-page-layout] > nav:nth-of-type(2) { grid-area: body-nav-secondary; }
 [data-page-layout] > nav.bottom { grid-area: auto; }
 
-/* Named containers for targeted @container queries */
+/* Named containers for targeted @container queries. main and aside are
+   already inline-size containers (the semantic-sections rule below); nav is
+   not, so a bare container-name never matched @container region-nav (…).
+   nav becomes a size container only where its column has a definite width
+   — size containment zeroes an item's intrinsic width, so in an `auto`
+   column (app-shell, default dashboard) it would collapse the nav. */
 [data-page-layout] > main  { container-name: region-main; }
 [data-page-layout] > nav   { container-name: region-nav; }
 [data-page-layout] > aside { container-name: region-aside; }
 
-/* Page layout templates */
-[data-page-layout="stack"] { grid-template: var(--tpl-stack); }
+:is(
+  [data-page-layout=""],
+  [data-page-layout="stack"],
+  [data-page-layout="sidebar-left"],
+  [data-page-layout="holy-grail"],
+  [data-page-layout="landing"],
+  [data-page-layout="dashboard"]:is([data-layout-sidebar-width="narrow"], [data-layout-sidebar-width="normal"], [data-layout-sidebar-width="wide"], [data-sidebar="collapsed"])
+) > nav:not(.bottom) {
+  container-type: inline-size;
+}
+
+/* Page layout templates. A bare data-page-layout (no value) is a stack —
+   without a template every child landed in the same implicit cell. */
+:is([data-page-layout=""], [data-page-layout="stack"]) { grid-template: var(--tpl-stack); }
 [data-page-layout="sidebar-left"] { grid-template: var(--tpl-sidebar-left); }
 [data-page-layout="sidebar-right"] { grid-template: var(--tpl-sidebar-right); }
 [data-page-layout="holy-grail"] { grid-template: var(--tpl-holy-grail); }
@@ -435,9 +305,23 @@ main[data-layout^="sidebar-"] > aside   { grid-area: main-aside; }
 [data-page-layout][data-layout-sidebar-width="normal"] { --_sidebar-width: 16rem; }
 [data-page-layout][data-layout-sidebar-width="wide"]   { --_sidebar-width: 20rem; }
 
-/* Content-aware adaptations (:has() powered) */
-[data-page-layout="sidebar-left"]:not(:has(> nav)) { grid-template-columns: 1fr; }
-[data-page-layout="sidebar-right"]:not(:has(> aside)) { grid-template-columns: 1fr; }
+/* Content-aware adaptations (:has() powered). A missing sidebar — or a
+   data-sidebar="hidden" nav — drops its column from the TEMPLATE. Setting
+   only grid-template-columns: 1fr left the two-column areas in place, so
+   main landed in an implicit auto column where its container-type made it
+   0px wide (sidebar-left without a nav rendered no main at all), and a
+   hidden nav left an empty sidebar-width column. */
+:is(
+  [data-page-layout="sidebar-left"]:not(:has(> nav)),
+  [data-page-layout="sidebar-left"][data-sidebar="hidden"],
+  [data-page-layout="sidebar-right"]:not(:has(> aside))
+) {
+  grid-template:
+    "body-header" auto
+    "body-main"   1fr
+    "body-footer" auto
+    / 1fr;
+}
 
 [data-page-layout="holy-grail"]:not(:has(> aside)) {
   grid-template:
@@ -447,7 +331,7 @@ main[data-layout^="sidebar-"] > aside   { grid-area: main-aside; }
     / var(--_sidebar-width) 1fr;
 }
 
-[data-page-layout="holy-grail"]:not(:has(> nav)) {
+[data-page-layout="holy-grail"]:is(:not(:has(> nav)), [data-sidebar="hidden"]) {
   grid-template:
     "body-header body-header" auto
     "body-main   body-aside"  1fr
@@ -455,8 +339,12 @@ main[data-layout^="sidebar-"] > aside   { grid-area: main-aside; }
     / 1fr var(--_sidebar-width);
 }
 
-[data-page-layout="holy-grail"]:not(:has(> nav)):not(:has(> aside)) {
-  grid-template: var(--tpl-stack);
+[data-page-layout="holy-grail"]:is(:not(:has(> nav)), [data-sidebar="hidden"]):not(:has(> aside)) {
+  grid-template:
+    "body-header" auto
+    "body-main"   1fr
+    "body-footer" auto
+    / 1fr;
 }
 
 /* Utilities for page layouts */
@@ -481,13 +369,78 @@ main[data-layout^="sidebar-"] > aside   { grid-area: main-aside; }
 [data-page-layout][data-sidebar="collapsed"] { --_sidebar-width: var(--_sidebar-collapsed); }
 [data-page-layout][data-sidebar="hidden"] > nav { display: none; }
 
+/* app-shell and dashboard size their nav column to its content (auto).
+   An explicit width or the collapsed state switches the column to
+   --_sidebar-width so those modifiers apply there too. (The mobile rules
+   below come later and win.) */
+:is([data-page-layout="app-shell"], [data-page-layout="dashboard"]):is(
+  [data-layout-sidebar-width="narrow"],
+  [data-layout-sidebar-width="normal"],
+  [data-layout-sidebar-width="wide"],
+  [data-sidebar="collapsed"]
+) {
+  grid-template-columns: var(--_sidebar-width) 1fr;
+}
+
 /* Responsive: collapse to stack on mobile */
 @media (width < 48rem) { /* --bp-m */
   [data-page-layout="sidebar-left"]:not([data-layout-nowrap]),
   [data-page-layout="sidebar-right"]:not([data-layout-nowrap]),
-  [data-page-layout="holy-grail"]:not([data-layout-nowrap]),
-  [data-page-layout="dashboard"]:not([data-layout-nowrap]) {
+  [data-page-layout="holy-grail"]:not([data-layout-nowrap]) {
     grid-template: var(--tpl-stack);
+  }
+
+  /* Dashboard: the nav becomes an off-canvas drawer. Closed, it is
+     visibility:hidden — out of the tab order and the accessibility tree,
+     not merely translated off-screen. It opens with data-nav-open on the
+     layout host (a button toggling it, aria-expanded on the button) or,
+     with no script, as a native popover: <nav id="…" popover> opened by
+     <button popovertarget="…"> (light dismiss and Escape come free).
+     data-nav-toggle marks that button; it is hidden while the nav is a
+     column. */
+  [data-page-layout="dashboard"]:not([data-layout-nowrap]) {
+    grid-template:
+      "body-header" auto
+      "body-main"   1fr
+      / 1fr;
+  }
+
+  [data-page-layout="dashboard"]:not([data-layout-nowrap]) > nav {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inset-inline-end: auto;
+    margin: 0;
+    inline-size: min(var(--_sidebar-width), 85vw);
+    block-size: auto;
+    max-block-size: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-l, none);
+    z-index: var(--z-overlay, 9000);
+    visibility: hidden;
+    translate: -100% 0;
+  }
+
+  [data-page-layout="dashboard"]:not([data-layout-nowrap]) > nav:dir(rtl) {
+    translate: 100% 0;
+  }
+
+  [data-page-layout="dashboard"][data-nav-open]:not([data-layout-nowrap]) > nav,
+  [data-page-layout="dashboard"]:not([data-layout-nowrap]) > nav:popover-open {
+    visibility: visible;
+    translate: 0 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    [data-page-layout="dashboard"]:not([data-layout-nowrap]) > nav {
+      transition: translate 0.2s ease-out, visibility 0s linear 0.2s;
+    }
+
+    [data-page-layout="dashboard"][data-nav-open]:not([data-layout-nowrap]) > nav {
+      transition: translate 0.2s ease-out, visibility 0s;
+    }
   }
 
   [data-page-layout="app-shell"]:not([data-layout-nowrap]) {
@@ -502,6 +455,47 @@ main[data-layout^="sidebar-"] > aside   { grid-area: main-aside; }
   [data-page-layout="app-shell"]:not([data-layout-nowrap]) > nav {
     padding-block-end: var(--safe-bottom, 0px);
   }
+}
+
+/* Dashboard nav as a popover: drop the UA popover border and colour at
+   every width; while it is a grid column (48rem and up, or
+   data-layout-nowrap) it must also render in flow, so undo the UA
+   display:none / fixed / centred box. */
+[data-page-layout="dashboard"] > nav[popover] {
+  border: 0;
+  color: inherit;
+}
+
+@media (width >= 48rem) { /* --bp-m */
+  [data-page-layout="dashboard"] > nav[popover] {
+    display: block;
+    position: static;
+    inset: auto;
+    margin: 0;
+    inline-size: auto;
+    block-size: auto;
+    overflow: visible;
+    background-color: transparent;
+  }
+
+  [data-page-layout="dashboard"] [data-nav-toggle] {
+    display: none;
+  }
+}
+
+[data-page-layout="dashboard"][data-layout-nowrap] > nav[popover] {
+  display: block;
+  position: static;
+  inset: auto;
+  margin: 0;
+  inline-size: auto;
+  block-size: auto;
+  overflow: visible;
+  background-color: transparent;
+}
+
+[data-page-layout="dashboard"][data-layout-nowrap] [data-nav-toggle] {
+  display: none;
 }
 
 /* Wide screens: constrain max width */
@@ -531,23 +525,31 @@ main[data-layout^="sidebar-"] > aside   { grid-area: main-aside; }
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   Regions: Generalized header / content / footer grid
+   Regions: Generalized header / content / footer
    Pure structure, no visual chrome. Works on any element.
+
+   A column: the header region first, the footer region last and pinned to
+   the bottom, and EVERY other child in between in DOM order. It used to be
+   a three-area grid that sent every non-header/section/footer child to the
+   one "content" cell, so <header><h3><p><footer> stacked the h3 and the p
+   on top of each other. The section (or [slot="content"]) grows like the
+   old 1fr row; with no section, the footer's auto margin keeps it at the
+   bottom of an equal-height card (only then — a footer.article margin is
+   left alone when a section takes the free space).
    -------------------------------------------------------------------------- */
 [data-layout="regions"] {
-  display: grid;
-  grid-template:
-    "header"  auto
-    "content" 1fr
-    "footer"  auto
-    / 1fr;
+  --_gap: initial;
+  display: flex;
+  flex-direction: column;
   gap: var(--_gap, 0);
 }
 
-[data-layout="regions"] > :is(header, [slot="header"])  { grid-area: header; }
-[data-layout="regions"] > :is(section, [slot="content"]) { grid-area: content; }
-[data-layout="regions"] > :is(footer, [slot="footer"])  { grid-area: footer; }
-[data-layout="regions"] > :not(:is(header, section, footer, [slot])) { grid-area: content; }
+[data-layout="regions"] > :is(header, [slot="header"])   { order: -1; }
+[data-layout="regions"] > :is(section, [slot="content"]) { flex-grow: 1; }
+[data-layout="regions"] > :is(footer, [slot="footer"]) { order: 1; }
+[data-layout="regions"]:not(:has(> :is(section, [slot="content"]))) > :is(footer, [slot="footer"]) {
+  margin-block-start: auto;
+}
 
 [data-layout="regions"][data-layout-gap="none"] { --_gap: 0; }
 [data-layout="regions"][data-layout-gap="3xs"]  { --_gap: var(--size-3xs); }
@@ -563,15 +565,34 @@ main[data-layout^="sidebar-"] > aside   { grid-area: main-aside; }
 /* --------------------------------------------------------------------------
    Media: Figure + content side by side (media object pattern)
    -------------------------------------------------------------------------- */
+/* The figure takes the first column and spans every explicit row; every
+   other child takes the second column, one row each, in DOM order. It used
+   to send all non-figure children to one "content" cell, so <img><h3><p>
+   stacked the h3 and the p on top of each other. With several content
+   children the last explicit row is 1fr: it absorbs a figure taller than
+   the text, so the text rows stay packed at the top. The row count is set
+   for up to five content children; beyond that extra rows are implicit
+   (no overlap, the figure just stops spanning). One content child — or a
+   <section> wrapping several — remains the idiomatic form. */
 [data-layout="media"] {
+  --_gap: initial;
   display: grid;
-  grid-template: "figure content" auto / auto 1fr;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto;
   gap: var(--_gap, var(--size-m));
   align-items: start;
 }
 
-[data-layout="media"] > :is(figure, img, picture, video, [slot="figure"]) { grid-area: figure; }
-[data-layout="media"] > :not(:is(figure, img, picture, video, [slot="figure"])) { grid-area: content; }
+[data-layout="media"] > :is(figure, img, picture, video, [slot="figure"]) {
+  grid-column: 1;
+  grid-row: 1 / -1;
+}
+[data-layout="media"] > :not(:is(figure, img, picture, video, [slot="figure"])) { grid-column: 2; }
+
+[data-layout="media"]:has(> :nth-child(3)) { grid-template-rows: auto 1fr; }
+[data-layout="media"]:has(> :nth-child(4)) { grid-template-rows: repeat(2, auto) 1fr; }
+[data-layout="media"]:has(> :nth-child(5)) { grid-template-rows: repeat(3, auto) 1fr; }
+[data-layout="media"]:has(> :nth-child(6)) { grid-template-rows: repeat(4, auto) 1fr; }
 
 [data-layout="media"][data-layout-gap="none"]  { --_gap: 0; }
 [data-layout="media"][data-layout-gap="3xs"]   { --_gap: var(--size-3xs); }
@@ -584,9 +605,9 @@ main[data-layout^="sidebar-"] > aside   { grid-area: main-aside; }
 [data-layout="media"][data-layout-gap="2xl"]   { --_gap: var(--size-2xl); }
 [data-layout="media"][data-layout-gap="3xl"]   { --_gap: var(--size-3xl); }
 
-[data-layout="media"][data-layout-reverse] {
-  grid-template: "content figure" auto / 1fr auto;
-}
+[data-layout="media"][data-layout-reverse] { grid-template-columns: 1fr auto; }
+[data-layout="media"][data-layout-reverse] > :is(figure, img, picture, video, [slot="figure"]) { grid-column: 2; }
+[data-layout="media"][data-layout-reverse] > :not(:is(figure, img, picture, video, [slot="figure"])) { grid-column: 1; }
 
 [data-layout="media"][data-layout-align="start"]   { align-items: start; }
 [data-layout="media"][data-layout-align="center"]  { align-items: center; }
@@ -594,12 +615,21 @@ main[data-layout^="sidebar-"] > aside   { grid-area: main-aside; }
 [data-layout="media"][data-layout-align="stretch"] { align-items: stretch; }
 
 /* Responsive stacking via container query */
+/* Stacked: one column, figure on top (also when reversed), the rest below
+   in DOM order. */
 @container (width < 25rem) {
-  [data-layout="media"] {
-    grid-template: "figure" auto "content" auto / 1fr;
-  }
+  [data-layout="media"],
   [data-layout="media"][data-layout-reverse] {
-    grid-template: "figure" auto "content" auto / 1fr;
+    grid-template-columns: 1fr;
+  }
+  [data-layout="media"] > :is(figure, img, picture, video, [slot="figure"]),
+  [data-layout="media"][data-layout-reverse] > :is(figure, img, picture, video, [slot="figure"]) {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  [data-layout="media"] > :not(:is(figure, img, picture, video, [slot="figure"])),
+  [data-layout="media"][data-layout-reverse] > :not(:is(figure, img, picture, video, [slot="figure"])) {
+    grid-column: 1;
   }
 }
 
@@ -607,25 +637,50 @@ main[data-layout^="sidebar-"] > aside   { grid-area: main-aside; }
    Main-Level Templates
    Activate the dormant main-level identity rules for nested layouts.
    -------------------------------------------------------------------------- */
+/* Host defaults are re-declared on every main sidebar-* so an outer
+   layout's private --_gap (a stack's, a grid's) or a page-layout's
+   --_sidebar-width does not inherit in; data-layout-gap and
+   data-layout-sidebar-width then work like everywhere else. */
+main:is([data-layout="sidebar-left"], [data-layout="sidebar-right"]) {
+  --_gap: initial;
+  --_sidebar-width: var(--sidebar-width, 16rem);
+}
+
 main[data-layout="sidebar-left"] {
   display: grid;
-  grid-template: "main-nav main-article" 1fr / var(--_sidebar-width, 16rem) 1fr;
+  grid-template: "main-nav main-article" 1fr / var(--_sidebar-width) 1fr;
   gap: var(--_gap, var(--size-m));
 }
 
 main[data-layout="sidebar-right"] {
   display: grid;
-  grid-template: "main-article main-aside" 1fr / 1fr var(--_sidebar-width, 16rem);
+  grid-template: "main-article main-aside" 1fr / 1fr var(--_sidebar-width);
   gap: var(--_gap, var(--size-m));
 }
 
-/* :has() adaptation when nav/aside is absent */
-main[data-layout="sidebar-left"]:not(:has(> nav)) {
-  grid-template-columns: 1fr;
+main:is([data-layout="sidebar-left"], [data-layout="sidebar-right"]) {
+  &[data-layout-gap="none"] { --_gap: 0; }
+  &[data-layout-gap="3xs"]  { --_gap: var(--size-3xs); }
+  &[data-layout-gap="2xs"]  { --_gap: var(--size-2xs); }
+  &[data-layout-gap="xs"]   { --_gap: var(--size-xs); }
+  &[data-layout-gap="s"]    { --_gap: var(--size-s); }
+  &[data-layout-gap="m"]    { --_gap: var(--size-m); }
+  &[data-layout-gap="l"]    { --_gap: var(--size-l); }
+  &[data-layout-gap="xl"]   { --_gap: var(--size-xl); }
+  &[data-layout-gap="2xl"]  { --_gap: var(--size-2xl); }
+  &[data-layout-gap="3xl"]  { --_gap: var(--size-3xl); }
+
+  &[data-layout-sidebar-width="narrow"] { --_sidebar-width: 12rem; }
+  &[data-layout-sidebar-width="normal"] { --_sidebar-width: 16rem; }
+  &[data-layout-sidebar-width="wide"]   { --_sidebar-width: 20rem; }
 }
 
+/* :has() adaptation when nav/aside is absent — drop the column from the
+   template (columns: 1fr alone left the article in an implicit auto
+   column, 0px wide under its container-type). */
+main[data-layout="sidebar-left"]:not(:has(> nav)),
 main[data-layout="sidebar-right"]:not(:has(> aside)) {
-  grid-template-columns: 1fr;
+  grid-template: "main-article" auto / 1fr;
 }
 
 /* Named containers for main-level regions */
@@ -659,8 +714,15 @@ main[data-layout="sidebar-right"] > aside  { container-name: region-main-aside; 
 
 /* Enable container queries on semantic sections
    Exclude floated aside variants — container-type: inline-size
-   breaks float shrink-to-fit width calculation */
-main, article, section, aside:not(.float):not(.sidenote) {
+   breaks float shrink-to-fit width calculation — and popovers: a popover
+   is shrink-to-fit too, and size containment collapsed an open
+   <section popover> to its padding (~20px wide). The :where() keeps each
+   selector's specificity unchanged, so the container-type: normal
+   antidotes below still win where they did. */
+main:not(:where([popover])),
+article:not(:where([popover])),
+section:not(:where([popover])),
+aside:not(.float):not(.sidenote):not(:where([popover])) {
   container-type: inline-size;
 }
 
@@ -686,6 +748,12 @@ main, article, section, aside:not(.float):not(.sidenote) {
    principal section collapsing to a one-word column being fixed
    (vanilla-breeze-vwez).
 
+   Stack joins the list when it is aligned start/center/end: the cross axis
+   no longer stretches, so its items are content-sized too (a <section> in
+   <layout-stack data-layout-align="center"> measured 0px wide). It is a
+   separate rule so its align values are not attributed to cluster, reel
+   and cover by the vocabulary reader.
+
    The `:not([data-container])` is the escape hatch: an author who deliberately
    wants container queries on such a child adds `data-container` and is simply
    excluded from this rule, so the `[data-container]` rule below establishes the
@@ -694,9 +762,45 @@ main, article, section, aside:not(.float):not(.sidenote) {
    which would otherwise tie/beat `[data-container]`.) */
 :is(
   layout-cluster, [data-layout="cluster"],
-  layout-reel,
+  layout-reel, [data-layout="reel"],
   :is(layout-cover, [data-layout="cover"])[data-layout-centered]
 ) > :is(main, article, section, aside):not([data-container]) {
+  container-type: normal;
+}
+
+:is(layout-stack, [data-layout="stack"]):is([data-layout-align="start"], [data-layout-align="center"], [data-layout-align="end"]) > :is(main, article, section, aside):not([data-container]) {
+  container-type: normal;
+}
+
+/* Subgrid children: `container-type: inline-size` adds layout containment,
+   which makes the child an independent formatting context, so
+   `grid-template-rows: subgrid` falls back to its own rows and <article>
+   cards stop aligning across the row. Same escape hatch: a child with
+   data-container keeps its container (and gives up subgrid alignment). */
+:is(layout-grid, [data-layout="grid"])[data-layout-subgrid] > :is(main, article, section, aside):not([data-container]) {
+  container-type: normal;
+}
+
+/* Numbered articles: container-type applies style containment, which scopes
+   CSS counters, so headings, figures and tables restarted at 1 in every
+   <section> ("1." in each section). That happens when either the article
+   (where the counters are reset) or the section is a container, so neither
+   is one: a numbered article and the sections/asides inside it are plain
+   boxes, and container queries inside them resolve against the next
+   container out (usually <main>). The counter rules live in
+   native-elements/article/{numbered,section-numbering}.css. Same
+   data-container escape hatch, at the cost of numbering inside that box. */
+:is(article[data-numbered], article[data-section-numbers]):not([data-container]),
+:is(article[data-numbered], article[data-section-numbers]) :is(section, aside):not([data-container]) {
+  container-type: normal;
+}
+
+/* Numbered equations (native-elements/math: .equation, reset on article and
+   body) hit the same counter scoping: every <section> restarted at (1).
+   Only an article that contains an equation drops its containers. Outside
+   an article, equations are numbered per container (main, section). */
+article:has(.equation):not([data-container]),
+article:has(.equation) :is(section, aside):not([data-container]) {
   container-type: normal;
 }
 
@@ -753,17 +857,11 @@ main, article, section, aside:not(.float):not(.sidenote) {
    Additional container-based adaptations for page regions.
    ========================================================================== */
 
-/* Sidebar nav stacks at narrow widths */
-@container region-main (width < 40rem) {
-  [data-layout="sidebar"] {
-    flex-direction: column;
-  }
-}
+/* (The narrow region-main sidebar rule moved to layout-sidebar/styles.css,
+   where it applies to <layout-sidebar> and data-layout="sidebar" alike and
+   respects data-layout-nowrap.) */
 
-/* Micro-card mode for very narrow card containers */
-@container card (width < 200px) {
-  [data-layout="grid"] {
-    grid-template-columns: 1fr;
-  }
-}
+/* (The old `@container card (width < 200px)` micro-card grid rule lived
+   here. It lost the cascade to the layout-grid file and only covered the
+   attribute form; the grid's min(…, 100%) track clamp covers the case.) */
 

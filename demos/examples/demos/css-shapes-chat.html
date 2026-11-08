@@ -14,7 +14,7 @@
     h1 { margin-block-end: var(--size-s); }
     h2 { margin-block: var(--size-xl) var(--size-m); }
 
-    .chat-window {
+    .conversation {
       display: flex;
       flex-direction: column;
       gap: var(--size-s);
@@ -29,46 +29,56 @@
 <body>
   <header>
     <h1>CSS Shapes: Chat Bubbles</h1>
-    <p>Full bubble taxonomy for messaging UIs using <code>data-bubble</code>. Tail shapes are pure CSS <code>shape()</code> paths.</p>
+    <p>Full bubble taxonomy for messaging UIs using <code>data-bubble</code>. Tails are CSS <code>shape()</code> paths painted behind the content, and they mirror in right-to-left text.</p>
   </header>
 
   <h2>Full Conversation</h2>
 
-  <section class="chat-window">
+  <section class="conversation" role="log" aria-label="Conversation with Alice">
     <p data-bubble="system">Today, 2:34 PM</p>
 
-    <p data-bubble="incoming">Hey, have you seen the new CSS shapes spec?</p>
+    <p data-bubble="incoming"><span class="visually-hidden">Alice:</span> Hey, have you seen the new CSS shapes spec?</p>
 
-    <p data-bubble="outgoing">Yes! The shape() function is amazing. Works in all browsers now.</p>
+    <p data-bubble="outgoing"><span class="visually-hidden">You:</span> Yes! The shape() function is amazing. Works in all browsers now.</p>
 
-    <p data-bubble="incoming">Can you show me how the chat bubbles work?</p>
+    <p data-bubble="incoming"><span class="visually-hidden">Alice:</span> Can you show me how the chat bubbles work?</p>
 
-    <p data-bubble="outgoing">Sure, each bubble variant uses clip-path with shape() for the tail.</p>
+    <p data-bubble="outgoing"><span class="visually-hidden">You:</span> Sure, each bubble paints its tail with shape() on a background layer.</p>
 
-    <p data-bubble="typing">
+    <p data-bubble="typing" role="status">
+      <span class="visually-hidden">Alice is typing</span>
       <span></span>
       <span></span>
       <span></span>
     </p>
 
-    <p data-bubble="assistant">I can help explain the implementation details. Each bubble shape uses percentage-based coordinates mixed with calc() for the tail positioning.</p>
+    <p data-bubble="assistant"><span class="visually-hidden">Assistant:</span> I can help explain the implementation details. Each tail uses fixed lengths mixed with percentages, so it keeps its size at any bubble width.</p>
 
-    <p data-bubble="thought">Hmm, I wonder if we could animate between shapes&hellip;</p>
+    <p data-bubble="thought"><span class="visually-hidden">Alice thinks:</span> Hmm, I wonder if we could animate between shapes&hellip;</p>
 
-    <p data-bubble="error">Failed to send message. Check your connection.</p>
+    <p data-bubble="error" role="alert">Failed to send message. Check your connection.</p>
 
     <p data-bubble="system">Alice left the conversation</p>
   </section>
 
   <h2>Individual Variants</h2>
 
-  <section class="chat-window">
-    <p data-bubble="incoming"><strong>Incoming:</strong> Bottom-left tail, surface background.</p>
-    <p data-bubble="outgoing"><strong>Outgoing:</strong> Bottom-right tail, primary background.</p>
-    <p data-bubble="assistant"><strong>Assistant:</strong> Top-left tail, tinted background.</p>
-    <p data-bubble="thought"><strong>Thought:</strong> Cloud shape, centered text.</p>
-    <p data-bubble="error"><strong>Error:</strong> Left accent border, danger tint.</p>
+  <section class="conversation" aria-label="Bubble variants">
+    <p data-bubble="incoming"><strong>Incoming:</strong> Tail at the bottom start corner, surface background.</p>
+    <p data-bubble="outgoing"><strong>Outgoing:</strong> Tail at the bottom end corner, primary background.</p>
+    <p data-bubble="assistant"><strong>Assistant:</strong> Tail at the top start corner, tinted background.</p>
+    <p data-bubble="thought"><strong>Thought:</strong> Cloud shape, centred text.</p>
+    <p data-bubble="error"><strong>Error:</strong> Accent border on the start edge, error tint.</p>
     <p data-bubble="system">System: pill-shaped status message</p>
+  </section>
+
+  <h2>Right-to-left</h2>
+
+  <section class="conversation" dir="rtl" lang="ar" aria-label="محادثة">
+    <p data-bubble="incoming">مرحبا! هل رأيت الأشكال الجديدة؟</p>
+    <p data-bubble="outgoing">نعم، الذيل ينعكس تلقائيا.</p>
+    <p data-bubble="assistant">يمكنني المساعدة في ذلك.</p>
+    <p data-bubble="error">تعذر إرسال الرسالة.</p>
   </section>
 
   <script type="module" src="/src/main.js"></script>

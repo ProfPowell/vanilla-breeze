@@ -50,11 +50,48 @@ crumbLabel: Web Components
         <tr><td><code>voice</code></td><td>string</td><td>&mdash;</td><td><code>voiceURI</code> to pre-select on load</td></tr>
         <tr><td><code>highlight</code></td><td>string</td><td>&mdash;</td><td>Set to <code>"false"</code> to disable word highlighting</td></tr>
         <tr><td><code>scroll</code></td><td>string</td><td>&mdash;</td><td>Set to <code>"false"</code> to disable auto-scroll to active word</td></tr>
-        <tr><td><code>label-play</code></td><td>string</td><td><code>Play</code></td><td>Accessible label for the play button</td></tr>
-        <tr><td><code>label-pause</code></td><td>string</td><td><code>Pause</code></td><td>Accessible label for the pause button</td></tr>
-        <tr><td><code>label-stop</code></td><td>string</td><td><code>Stop</code></td><td>Accessible label for the stop button</td></tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>Labels and Language</h2>
+    <p>Every generated string can be overridden with a <code>data-label-*</code> attribute. English is the fallback.</p>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Default</th><th>Used for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-label-play</code></td><td>Play</td><td>Play button</td></tr>
+        <tr><td><code>data-label-pause</code></td><td>Pause</td><td>Pause button</td></tr>
+        <tr><td><code>data-label-stop</code></td><td>Stop</td><td>Stop button</td></tr>
+        <tr><td><code>data-label-reader</code></td><td>Article reader</td><td>Control-bar group and icon trigger</td></tr>
+        <tr><td><code>data-label-controls</code></td><td>Reader controls</td><td>Icon-variant toolbar group</td></tr>
+        <tr><td><code>data-label-voice</code></td><td>Voice</td><td>Voice select</td></tr>
+        <tr><td><code>data-label-loading-voices</code></td><td>Loading voices…</td><td>Voice select placeholder</td></tr>
+        <tr><td><code>data-label-speed</code></td><td>Speed</td><td>Speed slider</td></tr>
+        <tr><td><code>data-label-slower</code> / <code>data-label-faster</code></td><td>Slower / Faster</td><td>Icon-toolbar speed buttons</td></tr>
+      </tbody>
+    </table>
+    <p>The reading language comes from the nearest <code>lang</code> attribute on the target (falling back to <code>&lt;html lang&gt;</code>). It is set on the utterance, and voices for that language are listed and selected first, so a French article in an English page is read with a French voice.</p>
+    <code-block language="html" show-lines label="Localised reader for French content" data-escape><text-reader for="article-fr"
+  data-label-play="Lire" data-label-pause="Pause" data-label-stop="Arrêter"
+  data-label-reader="Lecteur d'article" data-label-voice="Voix" data-label-speed="Vitesse"></text-reader>
+
+<article id="article-fr" lang="fr">
+  <p>Le Web est fondé sur l'amélioration progressive.</p>
+</article></code-block>
+  </section>
+
+  <section>
+    <h2>What Gets Read</h2>
+    <ul>
+      <li>Elements matching <code>selectors</code> (default <code>p,li</code>) inside the target, in document order.</li>
+      <li>Matches inside <code>&lt;pre&gt;</code>, <code>&lt;code&gt;</code> or an <code>aria-hidden="true"</code> / <code>hidden</code> subtree are skipped entirely.</li>
+      <li>Inside a matched paragraph, text in <code>aria-hidden="true"</code>, <code>hidden</code>, <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code> and <code>&lt;template&gt;</code> descendants is skipped, so decorative icons are not spoken.</li>
+      <li>The text is re-extracted every time playback starts, so content added after load is included.</li>
+      <li>Literal <code>&lt;</code> and <code>&gt;</code> are replaced with spaces before speaking; speech engines otherwise treat them as SSML and stop silently.</li>
+    </ul>
   </section>
 
   <section>
@@ -195,6 +232,7 @@ reader.addEventListener('text-reader:end', e => {
 </article></code-block>
 
     <p>The floating toolbar provides play/pause, stop, and speed controls. It appears above the trigger icon and auto-dismisses when reading ends. Click outside the toolbar to hide it without stopping playback; click the trigger again to re-show it.</p>
+    <p>The toolbar follows the trigger in the DOM, so <kbd>Tab</kbd> from the trigger moves straight into it. It is shown in the top layer (a manual popover), so transformed or contained ancestors can't clip it. <kbd>Escape</kbd> hides it and returns focus to the trigger.</p>
 
     <p>Customize the trigger icon with <code>slot="icon-trigger"</code>:</p>
     <code-block language="html" show-lines label="Custom trigger icon" data-escape><text-reader for="my-article" variant="icon">
@@ -206,8 +244,11 @@ reader.addEventListener('text-reader:end', e => {
     <h2>Accessibility</h2>
     <ul>
       <li>Controls are wrapped in a <code>role="group"</code> with <code>aria-label="Article reader"</code></li>
-      <li>Each button has an <code>aria-label</code> (customizable via <code>label-*</code> attributes)</li>
-      <li>All controls are keyboard-focusable and operable</li>
+      <li>Each button has an <code>aria-label</code> (customizable via <code>data-label-*</code> attributes)</li>
+      <li>All controls are keyboard-focusable and operable. When Play and Pause swap, focus moves to the button that replaces the one you pressed, and to Play when Stop becomes disabled.</li>
+      <li>Auto-scroll to the spoken word is instant (no smooth scrolling) under <code>prefers-reduced-motion: reduce</code></li>
+      <li>Transport buttons keep a visible border in forced-colours mode</li>
+      <li>Only one reader speaks at a time. Starting one cancels the other, which resets and fires <code>text-reader:stop</code>; a reader that isn't speaking never cancels another's speech</li>
       <li>Voice select and speed slider have accessible labels</li>
       <li>Highlighting uses system colors (<code>Mark</code> / <code>MarkText</code>) by default, respecting user contrast preferences</li>
       <li>Speech is cancelled on page unload to prevent orphaned audio</li>

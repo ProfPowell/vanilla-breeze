@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "preload"
-description: "Media loading strategy for audio and video elements. Balance bandwidth savings against playback responsiveness with none, metadata, or auto."
+description: "Hint how much of an audio or video file to download before play: none, metadata or auto. Trades bandwidth against how fast playback starts."
 attributeName: preload
 attributeType: native
 nativeGroup: Media
@@ -12,122 +12,116 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>preload</code> attribute hints to the browser how much of a media file to download before the user presses play. It controls the tradeoff between bandwidth usage and playback responsiveness.</p>
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a>, <a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a></p>
-
-<h2>Values</h2>
-<table>
-  <thead><tr><th>Value</th><th>What Loads</th><th>Tradeoff</th></tr></thead>
-  <tbody>
-    <tr><td><code>none</code></td><td>Nothing until play is triggered</td><td>Maximum bandwidth savings; playback starts with a delay</td></tr>
-    <tr><td><code>metadata</code></td><td>Duration, dimensions, first frame (small download)</td><td>Good balance; UI shows duration and timeline immediately</td></tr>
-    <tr><td><code>auto</code></td><td>Browser decides, often buffers the entire file</td><td>Fastest playback start; highest bandwidth cost</td></tr>
-    <tr><td><code>""</code> (empty string)</td><td>Same as <code>auto</code></td><td>Equivalent to <code>auto</code> per the spec</td></tr>
-  </tbody>
-</table>
-<p>The default when the attribute is absent varies by browser, but most treat it as <code>metadata</code>.</p>
-
-<code-block language="html" label="Preload values" data-escape><!-- Don't preload anything: saves bandwidth, delays playback -->
-<video src="interview.mp4" preload="none" controls
-  poster="interview-poster.jpg"
-  width="640" height="360">
-</video>
-
-<!-- Load metadata only: duration, dimensions, first frame -->
-<audio src="podcast-ep12.mp3" preload="metadata" controls></audio>
-
-<!-- Let the browser decide (usually buffers the whole file) -->
-<video src="tutorial.mp4" preload="auto" controls
-  width="640" height="360">
-</video></code-block>
-
-<h2>Choosing a Strategy</h2>
-<h3>preload="none" + poster</h3>
-<p>Best for pages with multiple videos or hero sections. The browser downloads zero video data, showing only the poster image. Pair with <a href="/docs/attributes/poster/"><code>poster</code></a> to avoid a blank rectangle.</p>
-
-<code-block language="html" label="Hero video pattern" data-escape><!-- Hero video: poster + no preload = optimal for above-the-fold -->
-<video
-  src="hero-background.mp4"
-  poster="hero-poster.jpg"
-  preload="none"
-  controls
-  width="1280"
-  height="720"
-  style="max-width: 100%; height: auto;">
-</video></code-block>
-
-<h3>preload="metadata"</h3>
-<p>Best for audio players and single-video pages. The browser fetches just enough data to display the duration, timeline scrubber, and first video frame. This is typically a few hundred kilobytes.</p>
-
-<code-block language="html" label="Audio preload patterns" data-escape><!-- Podcast player: metadata preload shows duration immediately -->
-<audio src="episode-42.mp3" preload="metadata" controls></audio>
-
-<!-- Sound effect that must play instantly on interaction -->
-<audio src="notification.mp3" preload="auto"></audio></code-block>
-
-<h3>preload="auto"</h3>
-<p>Best when instant playback is critical (e.g., a short sound effect, a video that users are very likely to play). The browser may buffer the entire file, so use sparingly on pages with multiple media elements.</p>
-
-<h2>Interaction with autoplay</h2>
-<p>The <code>autoplay</code> attribute overrides <code>preload</code>. The browser must download the media to begin playback, regardless of the preload value. Setting <code>preload="none"</code> alongside <code>autoplay</code> has no practical effect.</p>
-
-<code-block language="html" label="Autoplay overrides preload" data-escape><!-- autoplay overrides preload: the browser must load to play -->
-<video
-  src="background-loop.mp4"
-  autoplay
-  muted
-  loop
-  playsinline
-  preload="auto"
-  width="1280"
-  height="720">
-</video></code-block>
-
-<h2>Multiple Media on One Page</h2>
-<p>On pages with several videos, set <code>preload="none"</code> on all but the primary video. This prevents the browser from downloading gigabytes of data the user may never watch.</p>
-
-<code-block language="html" label="Multiple videos" data-escape><!-- Page with several videos: preload none on all but the first -->
 <section>
+  <h2>Overview</h2>
+  <p>The <code>preload</code> attribute hints how much of a media file the browser should download before the user presses play. It is a trade-off between bandwidth and how quickly playback starts. It is only a hint: the browser may load more or less.</p>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a>, <a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a>. Not <code>&lt;source&gt;</code>: set it on the media element.</p>
+
+  <browser-window
+    src="/docs/examples/demos/attr-preload-basic.html"
+    url="https://vanilla-breeze.com/preload"
+    title="preload none, metadata and auto"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="The three values" data-escape><audio controls preload="none" src="episode-42.mp3"></audio>
+<audio controls preload="metadata" src="episode-42.mp3"></audio>
+<audio controls preload="auto" src="episode-42.mp3"></audio></code-block>
+</section>
+
+<section>
+  <h2>Values</h2>
+  <table class="props-table">
+    <thead><tr><th>Value</th><th>What loads before play</th><th>Trade-off</th></tr></thead>
+    <tbody>
+      <tr><td><code>none</code></td><td>Nothing.</td><td>Saves the most data. No duration or first frame until play, and playback starts later.</td></tr>
+      <tr><td><code>metadata</code></td><td>Duration, dimensions, the first frame (video), and possibly a little more.</td><td>A good balance. The controls can show the length straight away.</td></tr>
+      <tr><td><code>auto</code></td><td>Whatever the browser thinks is useful, up to the whole file.</td><td>Fastest start, highest data cost.</td></tr>
+      <tr><td><code>""</code> (empty)</td><td>Same as <code>auto</code>.</td><td>&nbsp;</td></tr>
+      <tr><td>Absent or invalid</td><td>Browser-defined. The spec suggests <code>metadata</code>.</td><td>&nbsp;</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>preload="none" with a poster</h3>
+  <p>For pages with several videos, or a video many visitors will not play. Without a <a href="/docs/attributes/poster/"><code>poster</code></a> the box stays empty, so always set one.</p>
+  <code-block language="html" show-lines label="No preload, with a poster" data-escape><video controls preload="none" width="1280" height="720" poster="interview-poster.jpg">
+  <source src="interview.mp4" type="video/mp4">
+  <p><a href="interview.mp4" download>Download the interview</a></p>
+</video></code-block>
+
+  <h3>preload="metadata" for audio</h3>
+  <p>Podcast and music players. The controls can show the length before play, which helps people decide whether to listen.</p>
+  <code-block language="html" show-lines label="Podcast episode" data-escape><audio controls preload="metadata">
+  <source src="episode-42.mp3" type="audio/mpeg">
+  <p><a href="episode-42.mp3" download>Download episode 42</a></p>
+</audio></code-block>
+
+  <h3>preload="auto" for instant playback</h3>
+  <p>Short clips that must play the moment someone asks, such as a pronunciation sample. Use it sparingly: on a page with many media elements it can download a lot.</p>
+  <code-block language="html" show-lines label="Short clip" data-escape><audio controls preload="auto" src="pronunciation-croissant.mp3"></audio></code-block>
+
+  <h3>Many videos on one page</h3>
+  <code-block language="html" show-lines label="Metadata for the main video, none for the rest" data-escape><section>
   <h2>Featured</h2>
-  <video src="featured.mp4" preload="metadata" controls
-    poster="featured-poster.jpg" width="640" height="360">
+  <video controls preload="metadata" width="640" height="360" poster="featured.jpg">
+    <source src="featured.mp4" type="video/mp4">
   </video>
 </section>
 
 <section>
-  <h2>More Videos</h2>
-  <video src="extra-1.mp4" preload="none" controls
-    poster="extra-1-poster.jpg" width="640" height="360">
+  <h2>More videos</h2>
+  <video controls preload="none" width="640" height="360" poster="extra-1.jpg">
+    <source src="extra-1.mp4" type="video/mp4">
   </video>
-  <video src="extra-2.mp4" preload="none" controls
-    poster="extra-2-poster.jpg" width="640" height="360">
+  <video controls preload="none" width="640" height="360" poster="extra-2.jpg">
+    <source src="extra-2.mp4" type="video/mp4">
   </video>
 </section></code-block>
-
-<h2>Accessibility</h2>
-<ul>
-  <li><code>preload="none"</code> with no <code>poster</code> renders a blank box, which gives sighted users no indication a video exists. Always pair with a poster or surrounding descriptive text.</li>
-  <li>When <code>preload="metadata"</code> loads the duration, screen readers can announce the media length, improving the user's ability to decide whether to play.</li>
-  <li>Preload does not affect whether <a href="/docs/attributes/controls/"><code>controls</code></a> are shown. Ensure controls are present (or a custom UI is provided) regardless of preload strategy.</li>
-</ul>
-
-<h2>Limitations</h2>
-<ul>
-  <li><strong>It is a hint, not a command.</strong> Browsers may ignore <code>preload</code> based on network conditions, data saver mode, or internal heuristics. Chrome on Android with Data Saver forces <code>preload="none"</code>.</li>
-  <li>There is no event to confirm which preload strategy the browser actually used.</li>
-  <li><code>preload</code> does not apply to <code>&lt;source&gt;</code> elements. It goes on the parent <code>&lt;video&gt;</code> or <code>&lt;audio&gt;</code> element.</li>
-  <li>Changing <code>preload</code> via JavaScript after the media element is in the DOM may have no effect if the browser has already started loading.</li>
-  <li>On iOS Safari, video preloading behavior is heavily restricted. The browser often treats all values as <code>none</code> until a user gesture triggers playback.</li>
-</ul>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/attributes/poster/"><code>poster</code></a> &mdash; placeholder image before video playback</li>
-    <li><a href="/docs/attributes/controls/"><code>controls</code></a> &mdash; show native media playback controls</li>
-    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy loading for images and iframes</li>
-    <li><a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> element reference</li>
-    <li><a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> element reference</li>
+    <li>VB does not set or style <code>preload</code>; it reaches the browser exactly as written. VB's video defaults (<code>max-inline-size: 100%; block-size: auto</code> in <code>src/native-elements/video/styles.css</code>) mean the samples on this page need no inline <code>style</code>.</li>
+    <li><a href="/docs/elements/web-components/video-player/"><code>&lt;video-player&gt;</code></a> and <a href="/docs/elements/web-components/audio-player/"><code>&lt;audio-player&gt;</code></a> read the duration from the inner media element's <code>loadedmetadata</code> event. With <code>preload="none"</code> their time display shows <code>0:00</code> until playback starts; use <code>preload="metadata"</code> when the length should show up front. VB's own player demos use <code>metadata</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><code>preload="none"</code> without a poster gives sighted users an empty box. Pair it with a poster, a heading or a caption.</li>
+    <li>With <code>preload="metadata"</code> the controls can show the length, which lets everyone judge whether to play.</li>
+    <li><code>preload</code> does not decide whether controls are shown. See <a href="/docs/attributes/controls/"><code>controls</code></a>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li>It is a hint. Browsers can ignore it based on network conditions, data-saving settings or their own heuristics, and mobile browsers often load less than you asked for.</li>
+    <li><code>autoplay</code> needs data to play, so it overrides <code>preload</code>. <code>preload="none"</code> with <code>autoplay</code> has no effect.</li>
+    <li>There is no event that tells you which strategy the browser used. Watch <code>loadedmetadata</code>, <code>progress</code> and <code>buffered</code> instead, as the demo does.</li>
+    <li>Changing <code>preload</code> from script after loading has started may do nothing.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/poster/"><code>poster</code></a> &mdash; the image shown while nothing has loaded.</li>
+    <li><a href="/docs/attributes/controls/"><code>controls</code></a> &mdash; native controls versus VB players.</li>
+    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy loading for images and iframes, and experimentally for media.</li>
+    <li><a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> and <a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> &mdash; element references.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>none</code></strong> &mdash; several videos on a page, or video few people will play. Always with a poster.</li>
+    <li><strong><code>metadata</code></strong> &mdash; the default choice for a single video and for audio players, including VB's.</li>
+    <li><strong><code>auto</code></strong> &mdash; short clips that must start instantly.</li>
   </ul>
 </section>

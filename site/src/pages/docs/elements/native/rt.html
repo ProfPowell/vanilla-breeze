@@ -14,7 +14,7 @@ crumbLabel: Native Elements
 <section>
     <h2>Description</h2>
     <p>The <code>&lt;rt&gt;</code> element specifies the ruby text &mdash; the small annotation that appears above (or beside) base text. It must be contained within a <a href="/docs/elements/native/ruby/"><code>&lt;ruby&gt;</code></a> element.</p>
-    <p>VB styles <code>&lt;rt&gt;</code> at <code>0.5em</code> font size with centered alignment, and applies CJK script fonts when inside a CJK language context. The <a href="/docs/i18n/">i18n system</a> can control <code>&lt;rt&gt;</code> visibility via <code>data-ruby</code> on <code>&lt;html&gt;</code>.</p>
+    <p>VB styles <code>&lt;rt&gt;</code> at <code>0.5em</code> with centered alignment. Annotations are visible by default on every page. CJK readings get the CJK script face; romanised readings tagged <code>-Latn</code> (pinyin, romaji, Jyutping) keep the body face. <code>data-ruby</code> on any ancestor can hide them &mdash; see <a href="#visibility-control">Visibility Control</a>.</p>
   </section>
 
   <section>
@@ -22,7 +22,7 @@ crumbLabel: Native Elements
     <ul>
       <li>Inside <a href="/docs/elements/native/ruby/"><code>&lt;ruby&gt;</code></a> to provide pronunciation guides</li>
       <li>Japanese furigana (hiragana readings for kanji)</li>
-      <li>Chinese pinyin (romanized pronunciation)</li>
+      <li>Chinese pinyin (romanized pronunciation) or bopomofo</li>
       <li>Pronunciation guides for words in any language</li>
     </ul>
   </section>
@@ -32,18 +32,21 @@ crumbLabel: Native Elements
 
     <browser-window src="/docs/snippets/demos/ruby-annotations.html" url="ruby-annotations.html" title="Ruby text examples" shadow></browser-window>
 
-    <code-block language="html" show-lines label="Basic rt" data-escape><ruby>
+    <code-block language="html" show-lines label="Basic rt" data-escape><ruby lang="ja">
   漢字 <rt>かんじ</rt>
 </ruby></code-block>
-    <code-block language="html" show-lines label="With fallback parentheses" data-escape><ruby>
+    <code-block language="html" show-lines label="With fallback parentheses" data-escape><ruby lang="ja">
   東京 <rp>(</rp><rt>とうきょう</rt><rp>)</rp>
 </ruby></code-block>
-    <code-block language="html" show-lines label="Per-character annotations" data-escape><ruby>
+    <code-block language="html" show-lines label="Per-character (mono) annotations" data-escape><ruby lang="ja">
   漢 <rt>かん</rt>
   字 <rt>じ</rt>
 </ruby></code-block>
-    <code-block language="html" show-lines label="Pinyin annotation" data-escape><ruby>
-  中文 <rt>zhōngwén</rt>
+    <code-block language="html" show-lines label="Pinyin annotation" data-escape><ruby lang="zh">
+  中文 <rt lang="zh-Latn">zhōngwén</rt>
+</ruby></code-block>
+    <code-block language="html" show-lines label="Bopomofo annotation" data-escape><ruby lang="zh-Hant-TW">
+  中 <rt lang="zh-Bopo">ㄓㄨㄥ</rt>
 </ruby></code-block>
   </section>
 
@@ -55,23 +58,28 @@ crumbLabel: Native Elements
   ruby-align: center;
 }
 
-/* CJK script font for ruby text */
-:lang(ja) rt, :lang(zh) rt, :lang(ko) rt {
+/* CJK readings: CJK script face */
+rt:is(:lang(ja), :lang(zh), :lang(ko), :lang(yue), :lang(wuu)):not(:lang(ja-Latn), :lang(zh-Latn), :lang(ko-Latn), :lang(yue-Latn), :lang(wuu-Latn)) {
   font-family: var(--font-cjk);
+}
+
+/* Romanised readings (pinyin, romaji, Jyutping): body face */
+rt:is(:lang(ja-Latn), :lang(zh-Latn), :lang(ko-Latn), :lang(yue-Latn), :lang(wuu-Latn)) {
+  font-family: var(--font-sans);
 }</code-block>
   </section>
 
   <section>
-    <h2>Visibility Control</h2>
-    <p>The <a href="/docs/i18n/">i18n system</a> provides <code>data-ruby</code> on <code>&lt;html&gt;</code> to control when <code>&lt;rt&gt;</code> annotations display: <code>show</code> (always), <code>hide</code> (visually hidden but accessible), or <code>auto</code> (CJK languages only). See the <a href="/docs/elements/native/ruby/">ruby element page</a> for details.</p>
+    <h2 id="visibility-control">Visibility Control</h2>
+    <p><code>&lt;rt&gt;</code> is visible unless a <code>data-ruby</code> attribute on an ancestor (or on the <code>&lt;ruby&gt;</code>) says otherwise; the nearest one wins. <code>hide</code> hides every annotation visually, <code>auto</code> hides those whose language is not CJK, and <code>show</code> undoes an outer setting. See the <a href="/docs/elements/native/ruby/">ruby element page</a> for details.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Screen readers may read base text followed by ruby text, or offer options to hear annotations</li>
+      <li>Screen readers handle ruby differently: some read the base text then the annotation, some read only one, and some let the user choose</li>
       <li>Ruby text is valuable for language learners and those with reading difficulties</li>
-      <li>When <code>data-ruby="hide"</code> is used, <code>&lt;rt&gt;</code> is visually hidden but remains in the DOM for screen readers</li>
+      <li>When <code>data-ruby="hide"</code> (or <code>auto</code>) hides an <code>&lt;rt&gt;</code>, it collapses to zero size and is clipped, but stays in the accessibility tree &mdash; it is not <code>visibility: hidden</code> or <code>display: none</code></li>
     </ul>
   </section>
 

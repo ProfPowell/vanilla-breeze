@@ -28,12 +28,12 @@ crumbLabel: Data Attributes
   <section>
     <h2>How It Works</h2>
     <ol>
-      <li>Reads the <code>value</code> attribute from the <code>&lt;data&gt;</code> element and parses it as a number</li>
-      <li>Stores the original text content as a <code>title</code> attribute (visible on hover)</li>
+      <li>Reads the <code>value</code> attribute from the <code>&lt;data&gt;</code> element and parses it as a number. A missing, empty or non-numeric value leaves the text as written.</li>
       <li>Formats the number using <code>Intl.NumberFormat</code> with the specified style</li>
-      <li>Replaces the text content with the formatted string</li>
+      <li>Replaces the text content with the formatted string (no <code>title</code> is added: the visible text is the value)</li>
+      <li>Formats again whenever <code>value</code>, <code>data-format-number</code>, <code>data-currency</code>, <code>data-fraction-digits</code>, <code>data-locale</code> or a <code>lang</code> attribute changes</li>
     </ol>
-    <p>The formatting uses the user's browser locale by default, so numbers display with the correct separators automatically.</p>
+    <p>The locale is resolved in this order: <code>data-locale</code> on the element, the nearest ancestor with a <a href="/docs/attributes/lang/"><code>lang</code></a> attribute, <code>&lt;html lang&gt;</code>, then the browser language.</p>
   </section>
 
   <section>
@@ -60,17 +60,22 @@ crumbLabel: Data Attributes
         <tr>
           <td><code>data-currency</code></td>
           <td>string</td>
-          <td>ISO 4217 currency code (e.g., <code>"USD"</code>, <code>"EUR"</code>). Required when style is <code>"currency"</code>.</td>
+          <td>ISO 4217 currency code (e.g., <code>"USD"</code>, <code>"EUR"</code>) for the <code>"currency"</code> style. Default <code>"USD"</code>. An unknown code leaves the text as written.</td>
+        </tr>
+        <tr>
+          <td><code>data-fraction-digits</code></td>
+          <td>number</td>
+          <td>Optional fixed number of decimal places, <code>0</code>&ndash;<code>20</code>. Default: <code>Intl</code>'s default for the style &mdash; up to 3 decimals for decimal, whole numbers for <code>percent</code>, the currency's minor units for <code>currency</code>, two significant digits for small <code>compact</code> values (<code>46K</code>, <code>1.5M</code>).</td>
         </tr>
         <tr>
           <td><code>data-locale</code></td>
           <td>string</td>
-          <td>Optional locale override (e.g., <code>"de-DE"</code>). Defaults to browser locale.</td>
+          <td>Optional locale override (e.g., <code>"de-DE"</code>). Defaults to the nearest <code>[lang]</code>, then <code>&lt;html lang&gt;</code>, then the browser locale.</td>
         </tr>
         <tr>
           <td><code>data-format-number-init</code></td>
           <td>boolean</td>
-          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+          <td>State hook, set once the element is enhanced. Read it for styling or tests; do not set it. Enhancement is tracked internally, so a cloned element is still formatted when it is inserted.</td>
         </tr>
       </tbody>
     </table>
@@ -78,68 +83,53 @@ crumbLabel: Data Attributes
 
   <section>
     <h2>Format Styles</h2>
+    <p>All four styles side by side:</p>
+
+    <browser-window
+      src="/docs/examples/demos/format-number-styles.html"
+      url="https://vanilla-breeze.com/format-number/styles"
+      title="Number Format Styles"
+      shadow>
+    </browser-window>
 
     <h3>Decimal (default)</h3>
     <p>Standard number formatting with locale-aware grouping separators:</p>
 
-    <div class="example">
-      <data value="1234567" data-format-number>1,234,567</data>
-    </div>
-
     <code-block language="html" show-lines label="Decimal formatting" data-escape><data value="1234567" data-format-number>1,234,567</data></code-block>
 
     <h3>Currency</h3>
-    <p>Formats with currency symbol and locale-appropriate placement. Requires <code>data-currency</code>:</p>
+    <p>Formats with currency symbol and locale-appropriate placement, using <code>data-currency</code> (default <code>USD</code>). Currency values keep the currency's minor units, so write the fallback text the same way:</p>
 
-    <div class="example">
-      <layout-stack data-layout-gap="s">
-        <p>USD: <data value="48200" data-format-number="currency" data-currency="USD">$48,200</data></p>
-        <p>EUR: <data value="48200" data-format-number="currency" data-currency="EUR">48.200,00 EUR</data></p>
-        <p>GBP: <data value="48200" data-format-number="currency" data-currency="GBP">48,200 GBP</data></p>
-      </layout-stack>
-    </div>
+    <code-block language="html" show-lines label="Currency formatting" data-escape><data value="48200" data-format-number="currency" data-currency="USD">$48,200.00</data>
+<data value="48200" data-format-number="currency" data-currency="EUR">€48,200.00</data>
+<data value="48200" data-format-number="currency" data-currency="GBP">£48,200.00</data></code-block>
 
-    <code-block language="html" show-lines label="Currency formatting" data-escape><data value="48200" data-format-number="currency" data-currency="USD">$48,200</data>
-<data value="48200" data-format-number="currency" data-currency="EUR">48.200,00 EUR</data>
-<data value="48200" data-format-number="currency" data-currency="GBP">48,200 GBP</data></code-block>
+    <p>Want whole amounts? Add <code>data-fraction-digits="0"</code>: <code>&lt;data value="48200" data-format-number="currency" data-fraction-digits="0"&gt;$48,200&lt;/data&gt;</code>.</p>
 
     <h3>Percent</h3>
-    <p>Multiplies by 100 and adds percent sign. Pass the decimal value (e.g., <code>0.85</code> for 85%):</p>
-
-    <div class="example">
-      <layout-cluster data-layout-gap="l">
-        <data value="0.85" data-format-number="percent">85%</data>
-        <data value="0.024" data-format-number="percent">2.4%</data>
-      </layout-cluster>
-    </div>
+    <p>Multiplies by 100 and adds the percent sign. Pass the decimal value (e.g., <code>0.85</code> for 85%). Percentages round to whole numbers unless you set <code>data-fraction-digits</code>:</p>
 
     <code-block language="html" show-lines label="Percent formatting" data-escape><data value="0.85" data-format-number="percent">85%</data>
-<data value="0.024" data-format-number="percent">2.4%</data></code-block>
+<data value="0.024" data-format-number="percent" data-fraction-digits="1">2.4%</data></code-block>
 
     <h3>Compact</h3>
-    <p>Abbreviated notation for large numbers (e.g., 1.5M, 45.6K):</p>
-
-    <div class="example">
-      <layout-cluster data-layout-gap="l">
-        <data value="1500000" data-format-number="compact">1.5M</data>
-        <data value="45600" data-format-number="compact">45.6K</data>
-      </layout-cluster>
-    </div>
+    <p>Abbreviated notation for large numbers (e.g., 1.5M, 46K). Add <code>data-fraction-digits="1"</code> to keep a decimal (45.6K):</p>
 
     <code-block language="html" show-lines label="Compact notation" data-escape><data value="1500000" data-format-number="compact">1.5M</data>
-<data value="45600" data-format-number="compact">45.6K</data></code-block>
+<data value="45600" data-format-number="compact">46K</data>
+<data value="45600" data-format-number="compact" data-fraction-digits="1">45.6K</data></code-block>
   </section>
 
   <section>
     <h2>Locale Override</h2>
     <p>Use <code>data-locale</code> to force a specific locale for formatting:</p>
 
-    <div class="example">
-      <layout-stack data-layout-gap="s">
-        <p>German: <data value="1234567.89" data-format-number data-locale="de-DE">1.234.567,89</data></p>
-        <p>Japanese: <data value="1234567.89" data-format-number data-locale="ja-JP">1,234,567.89</data></p>
-      </layout-stack>
-    </div>
+    <browser-window
+      src="/docs/examples/demos/format-number-locale.html"
+      url="https://vanilla-breeze.com/format-number/locale"
+      title="Locale Override"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Locale override" data-escape><data value="1234567.89" data-format-number data-locale="de-DE">1.234.567,89</data>
 <data value="1234567.89" data-format-number data-locale="ja-JP">1,234,567.89</data></code-block>
@@ -151,36 +141,25 @@ crumbLabel: Data Attributes
     <h3>Revenue Table</h3>
     <p>Format currency values in a data table. The <code>font-variant-numeric: tabular-nums</code> CSS ensures columns align:</p>
 
-    <div class="example">
-      <table>
-        <thead>
-          <tr><th>Product</th><th>Revenue</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Widget A</td>
-            <td><data value="142500" data-format-number="currency" data-currency="USD">$142,500</data></td>
-          </tr>
-          <tr>
-            <td>Widget B</td>
-            <td><data value="89300" data-format-number="currency" data-currency="USD">$89,300</data></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <browser-window
+      src="/docs/examples/demos/format-number-table.html"
+      url="https://vanilla-breeze.com/format-number/table"
+      title="Revenue Table"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Revenue table" data-escape><table>
   <thead>
-    <tr><th>Product</th><th>Revenue</th></tr>
+    <tr><th scope="col">Product</th><th scope="col">Revenue</th></tr>
   </thead>
   <tbody>
     <tr>
       <td>Widget A</td>
-      <td><data value="142500" data-format-number="currency" data-currency="USD">$142,500</data></td>
+      <td><data value="142500" data-format-number="currency" data-currency="USD">$142,500.00</data></td>
     </tr>
     <tr>
       <td>Widget B</td>
-      <td><data value="89300" data-format-number="currency" data-currency="USD">$89,300</data></td>
+      <td><data value="89300" data-format-number="currency" data-currency="USD">$89,300.00</data></td>
     </tr>
   </tbody>
 </table></code-block>
@@ -188,15 +167,19 @@ crumbLabel: Data Attributes
 
   <section>
     <h2>Dynamic Elements</h2>
-    <p>Elements added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+    <p>Elements added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed. Changing <code>value</code> (or any formatting attribute) re-formats the element, and a cloned element is formatted like a new one.</p>
 
     <code-block language="javascript" show-lines label="Dynamically added format-number elements" data-escape>// Dynamically added elements are auto-enhanced via MutationObserver
 const el = document.createElement('data');
-el.value = '99.5';
+el.value = '0.995';
 el.dataset.formatNumber = 'percent';
+el.dataset.fractionDigits = '1';
 el.textContent = '99.5%';
 document.body.appendChild(el);
-// el is enhanced automatically — no manual init needed</code-block>
+// el is enhanced automatically — no manual init needed
+
+// Changing the value re-formats it
+el.value = '0.42'; // → "42.0%"</code-block>
   </section>
 
   <section>
@@ -209,9 +192,25 @@ document.body.appendChild(el);
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>The original text is preserved as a <code>title</code> attribute, accessible on hover</li>
       <li>The semantic <code>&lt;data&gt;</code> element with <code>value</code> attribute provides machine-readable data</li>
       <li>Falls back to the original text content when JavaScript is unavailable</li>
       <li>No wrapper element &mdash; the <code>&lt;data&gt;</code> <em>is</em> the enhanced element, keeping the accessibility tree clean</li>
+      <li>Re-formatting is silent. If a changing number must be announced, put it in your own live region (or a <code>&lt;output&gt;</code>).</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Not Supported</h2>
+    <p>Only the options above are exposed. For <code>Intl</code> options such as <code>signDisplay</code>, <code>currencyDisplay</code>, <code>compactDisplay: "long"</code> or unit formatting, format in your own script with <code>Intl.NumberFormat</code> and leave <code>data-format-number</code> off. For file sizes use <a href="/docs/attributes/data-format-bytes/"><code>data-format-bytes</code></a>.</p>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/data/"><code>&lt;data&gt;</code></a> &mdash; the element this attribute enhances.</li>
+      <li><a href="/docs/attributes/data-format-bytes/"><code>data-format-bytes</code></a> &mdash; file sizes with localised units.</li>
+      <li><a href="/docs/attributes/data-effect/#ticker"><code>data-effect="ticker"</code></a> &mdash; counts up to the value. It uses the same options as <code>data-format-number</code>, so the last frame is exactly the static output. Use the ticker for a hero statistic, plain <code>data-format-number</code> everywhere else.</li>
+      <li><a href="/docs/attributes/data-format-date/"><code>data-format-date</code></a> &mdash; the same locale-aware formatting for dates.</li>
+      <li><a href="/docs/attributes/lang/"><code>lang</code></a> &mdash; the attribute the formatter reads for its locale when <code>data-locale</code> is not set.</li>
     </ul>
   </section>

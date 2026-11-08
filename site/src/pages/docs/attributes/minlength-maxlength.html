@@ -1,0 +1,133 @@
+---
+layout: attribute
+title: "minlength / maxlength"
+description: "Length limits for text fields and textareas: maxlength stops typing at the limit, minlength makes a too-short value invalid. Vanilla Breeze adds a live counter and custom messages."
+attributeName: "minlength / maxlength"
+attributeType: native
+nativeGroup: Forms
+category: native
+currentPath: /docs/attributes/minlength-maxlength/
+
+crumbHref: /docs/attributes/native/
+crumbLabel: Native Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>maxlength</code> sets the most characters a user can enter: the browser stops accepting input at the limit and truncates pastes. <code>minlength</code> sets the fewest: a shorter, non-empty value is invalid (<code>validity.tooShort</code>) and blocks submission. Both count UTF-16 code units, and both are checked against what the user typed, not what a script wrote.</p>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a> and <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> of type <code>text</code>, <code>search</code>, <code>url</code>, <code>tel</code>, <code>email</code> and <code>password</code>. Not number, date or other types; use <a href="/docs/attributes/min-max-step/"><code>min</code> and <code>max</code></a> there.</p>
+
+  <browser-window
+    src="/docs/examples/demos/attr-minlength-maxlength-basic.html"
+    url="https://vanilla-breeze.com/attributes/minlength-maxlength"
+    title="minlength and maxlength"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Limits, a counter and custom messages" data-escape><form data-validate>
+  <form-field>
+    <label for="handle">Display name</label>
+    <input type="text" id="handle" name="handle" required minlength="3" maxlength="24"
+           data-message-tooshort="Use at least 3 characters." />
+    <output class="hint" for="handle">3 to 24 characters.</output>
+    <output class="error" for="handle" aria-live="polite"></output>
+  </form-field>
+
+  <form-field>
+    <label for="bio">Bio</label>
+    <textarea id="bio" name="bio" rows="3" maxlength="160" data-count></textarea>
+    <output class="hint" for="bio">Shown on your public profile.</output>
+  </form-field>
+
+  <button type="submit">Save profile</button>
+</form></code-block>
+</section>
+
+<section>
+  <h2>Values</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Value</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>maxlength</code></td><td>Integer &ge; 0</td><td>The user can't enter more. A value over the limit (set by script or the server) is accepted but becomes <code>tooLong</code> once the user edits it.</td></tr>
+      <tr><td><code>minlength</code></td><td>Integer &ge; 0, not above <code>maxlength</code></td><td>A user-edited, non-empty value shorter than this is <code>tooShort</code>.</td></tr>
+      <tr><td>Either</td><td>Absent, negative or not an integer</td><td>No limit (the default). The DOM properties <code>maxLength</code> and <code>minLength</code> return <code>-1</code>.</td></tr>
+    </tbody>
+  </table>
+  <p>An empty field passes <code>minlength</code>. Add <a href="/docs/attributes/required/"><code>required</code></a> when it must be filled.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Exact length</h3>
+  <p>Set both to the same number for a fixed-length code, and add <a href="/docs/attributes/pattern/"><code>pattern</code></a> if the characters matter.</p>
+  <code-block language="html" label="Six-character invite code" data-escape><form-field>
+  <label for="invite">Invite code</label>
+  <input type="text" id="invite" name="invite" required minlength="6" maxlength="6"
+         pattern="[A-Z0-9]{6}" autocomplete="off"
+         data-message-patternmismatch="Use the 6 letters and digits from your invitation." />
+  <output class="hint" for="invite">6 letters and digits, from your invitation email.</output>
+  <output class="error" for="invite" aria-live="polite"></output>
+</form-field></code-block>
+
+  <h3>Password length</h3>
+  <p>Set a minimum and leave the maximum generous (or absent). A low <code>maxlength</code> on a password silently truncates pasted passphrases from a password manager.</p>
+  <code-block language="html" label="New password" data-escape><form-field>
+  <label for="password">New password</label>
+  <input type="password" id="password" name="password" autocomplete="new-password" required minlength="12"
+         data-message-tooshort="Use at least 12 characters." />
+  <output class="hint" for="password">At least 12 characters. A long passphrase beats symbols.</output>
+  <output class="error" for="password" aria-live="polite"></output>
+</form-field></code-block>
+
+  <h3>Word limits</h3>
+  <p>There is no native word limit. <code>data-count="words"</code> with <code>data-maxwords</code> shows a word count and warns, but does not make the field invalid; keep a <code>maxlength</code> for a hard cap.</p>
+  <code-block language="html" label="Advisory word count" data-escape><textarea name="abstract" rows="6" maxlength="2000" data-count="words" data-maxwords="250"></textarea></code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
+  <ul>
+    <li><strong><a href="/docs/attributes/data-count/"><code>data-count</code></a></strong> on a <code>&lt;textarea&gt;</code> adds a counter below it that reads its limit from <code>maxlength</code> ("40 of 160 characters"). The counter turns to a warning colour at 80% and to bold error colour at the limit, is linked with <code>aria-describedby</code>, and announces the count through a polite live region near the limit (<code>src/utils/textarea-count-init.js</code>). Inside <code>&lt;form-field&gt;</code>, the field keeps the counter in the control's <code>aria-describedby</code> list next to the hint.</li>
+    <li><strong>Messages.</strong> <code>data-message-tooshort</code> and <code>data-message-toolong</code> on the control set the text in <code>output.error</code> (<code>src/web-components/form-field/logic.js</code>).</li>
+    <li><strong><a href="/docs/attributes/data-mask/"><code>data-mask</code></a></strong> sets <code>maxlength</code> to the mask's length when you haven't.</li>
+    <li><strong>OTP fields.</strong> <code>input[data-type="otp"]</code> in a <code>&lt;form-field&gt;</code> sets <code>maxlength</code> to its <code>data-length</code> (default 6).</li>
+    <li><strong>Components.</strong> <a href="/docs/elements/web-components/chat-input/"><code>&lt;chat-input&gt;</code></a> takes a <code>maxlength</code> (default 4000) and refuses to send a longer message. <a href="/docs/elements/web-components/markdown-editor/"><code>&lt;markdown-editor&gt;</code></a> adopts your authored <code>&lt;textarea&gt;</code> with its <code>minlength</code> and <code>maxlength</code>, so the native limits apply.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>State the limit in visible text before the user hits it. A field that silently stops accepting characters is confusing, especially for screen-reader users who don't see the text stop growing. The <code>data-count</code> counter and an <code>output.hint</code> both do this.</li>
+    <li>Make the <code>tooShort</code> message say how many characters are needed.</li>
+    <li>Don't truncate data the user can't see: a <code>maxlength</code> lower than real names, addresses or passwords causes silent data loss.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Code units, not characters.</strong> An emoji such as 👍 counts as 2, and a flag or family emoji as more. Allow headroom on fields where people type emoji.</li>
+    <li><strong>Only user edits are checked.</strong> A value set by script or rendered by the server can be longer or shorter than the limits without being invalid, until the user edits it. Validate on the server.</li>
+    <li>Before Safari 17, a line break in a textarea counted as two characters toward <code>maxlength</code>.</li>
+    <li>The browser enforces <code>maxlength</code> while typing even with <code>novalidate</code>; that attribute only affects submit-time checks.</li>
+    <li><code>minlength</code> greater than <code>maxlength</code> is an authoring error; the field can never be valid.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-count/"><code>data-count</code></a> &mdash; the live counter</li>
+    <li><a href="/docs/attributes/pattern/"><code>pattern</code></a>, <a href="/docs/attributes/required/"><code>required</code></a>, <a href="/docs/attributes/min-max-step/"><code>min</code> / <code>max</code> / <code>step</code></a> &mdash; the other constraints</li>
+    <li><a href="/docs/elements/web-components/form-field/"><code>&lt;form-field&gt;</code></a>, <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a>, <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a></li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>maxlength</code></strong> &mdash; a hard cap the backend relies on.</li>
+    <li><strong><code>minlength</code></strong> &mdash; a minimum that makes the value meaningful (passwords, descriptions).</li>
+    <li><strong><code>data-count</code></strong> &mdash; whenever a textarea has a limit, so users see it coming.</li>
+    <li><strong><code>pattern</code></strong> &mdash; the characters matter, not just how many.</li>
+  </ul>
+</section>

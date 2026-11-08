@@ -111,14 +111,14 @@
     --ease-out: cubic-bezier(0, 0, 0.2, 1);
 
     /* ===== FORM CONTROLS ===== */
-    --control-border: oklch(80% 0.006 250);
+    --control-border: color-mix(in oklab, oklch(80% 0.006 250), var(--color-text) 45%); /* 3:1 non-text contrast */
     --control-checked-bg: oklch(48% 0.18 250);
     --control-checked-border: oklch(48% 0.18 250);
     --control-radius-check: var(--radius-s);
     --input-bg: oklch(87% 0.008 250);
-    --input-border: oklch(82% 0.006 250);
+    --input-border: color-mix(in oklab, oklch(82% 0.006 250), var(--color-text) 45%); /* 3:1 non-text contrast */
     --input-border-focus: oklch(48% 0.18 250);
-    --range-track-bg: oklch(80% 0.008 250);
+    --range-track-bg: color-mix(in oklab, oklch(80% 0.008 250), var(--color-text) 45%); /* 3:1 non-text contrast */
     --range-track-fill: oklch(48% 0.18 250);
     --range-thumb-bg: oklch(89% 0.008 250);
     --range-thumb-border: oklch(80% 0.006 250);
@@ -131,7 +131,7 @@
   [data-theme~="neumorphism"] {
     & :is(main, article) {
       /* Neumorphic groove HR */
-      & hr:not([data-ornament]) {
+      & hr:not([data-ornament], [class]) {
         border: none;
         height: 4px;
         border-radius: var(--radius-full);
@@ -252,7 +252,8 @@
       & textarea,
       & select {
         background: var(--color-surface-sunken);
-        border: 1px solid var(--color-border);
+        /* Insets are soft depth cues; the 1px edge is the 3:1 boundary (WCAG 1.4.11). */
+        border: 1px solid var(--input-border);
         box-shadow:
           inset 4px 4px 8px var(--_neu-dark),
           inset -4px -4px 8px var(--_neu-light);
@@ -317,8 +318,9 @@
         }
       }
 
-      /* Output — sunken display */
-      & output {
+      /* Output — sunken display (result chips only: not form-field
+         messages, feedback states or the tinted variants) */
+      & output:not(.hint, .error-summary, form-field .error, [data-empty], [data-loading], [data-error], .inline, .highlight, .success, .warning, .error) {
         background: var(--color-surface-sunken);
         box-shadow:
           inset 2px 2px 4px var(--_neu-dark),
@@ -337,13 +339,31 @@
         border-radius: var(--radius-s);
       }
 
-      /* Fieldset — raised group, inner items softer */
-      & fieldset {
+      /* Fieldset — raised group, inner items softer. Minimal fieldsets
+         stay flat; state borders survive the border reset. */
+      & fieldset:not([data-variant="minimal"]) {
         border: none;
         background: var(--color-background);
         box-shadow: var(--shadow-s);
         border-radius: var(--radius-l);
       }
+
+      & fieldset:is([data-status], [data-invalid], :disabled):not([data-variant="minimal"]) {
+        border: var(--border-width-medium) solid var(--color-border-strong);
+      }
+
+      & fieldset[data-status] {
+        border-color: var(--fieldset-status-color, var(--color-border-strong));
+      }
+
+      & fieldset[data-invalid] {
+        border-color: var(--color-error);
+      }
+
+      & fieldset:disabled:not([data-variant="minimal"]) {
+        border-style: dashed;
+      }
+
 
       /* Mark highlight with soft shadow */
       & mark {
@@ -402,6 +422,11 @@
           box-shadow:
             2px 2px 4px var(--_neu-dark),
             -2px -2px 4px var(--_neu-light);
+
+          /* Forced colors drops the shadow — keep a visible selected cue */
+          @media (forced-colors: active) {
+            border-block-end: var(--border-width-medium) solid Highlight;
+          }
         }
 
         /* Tab panel content — no extra border */
@@ -544,7 +569,7 @@
       & .number-wrapper {
         box-shadow: var(--shadow-xs);
         border-radius: var(--radius-full);
-        border: none;
+        border: 1px solid var(--input-border); /* 3:1 non-text contrast */
         background: var(--color-background);
 
         & button {
@@ -579,7 +604,7 @@
           box-shadow:
             var(--shadow-xs),
             0 0 0 3px oklch(48% 0.18 250 / 0.15);
-          border-color: transparent;
+          border-color: var(--input-border-focus);
         }
       }
 
@@ -923,12 +948,12 @@
 
     /* Form controls */
     --input-bg: oklch(20% 0.008 250);
-    --input-border: oklch(30% 0.006 250);
+    --input-border: color-mix(in oklab, oklch(30% 0.006 250), var(--color-text) 45%); /* 3:1 non-text contrast */
     --input-border-focus: oklch(70% 0.15 250);
-    --control-border: oklch(30% 0.006 250);
+    --control-border: color-mix(in oklab, oklch(30% 0.006 250), var(--color-text) 45%); /* 3:1 non-text contrast */
     --control-checked-bg: oklch(70% 0.15 250);
     --control-checked-border: oklch(70% 0.15 250);
-    --range-track-bg: oklch(18% 0.008 250);
+    --range-track-bg: color-mix(in oklab, oklch(18% 0.008 250), var(--color-text) 55%); /* 3:1 non-text contrast */
     --range-track-fill: oklch(70% 0.15 250);
     --range-thumb-bg: oklch(22% 0.008 250);
     --range-thumb-border: oklch(30% 0.006 250);
@@ -979,7 +1004,7 @@
       & textarea,
       & select {
         background: var(--color-surface-sunken);
-        border: 1px solid var(--color-border);
+        border: 1px solid var(--input-border);
       }
     }
 

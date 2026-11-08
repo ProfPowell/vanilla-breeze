@@ -1,4 +1,11 @@
-/* search: Search form styling */
+/* search: Search form styling
+
+   Variants work with both markups:
+     <search class="inline"><input …><button …></search>
+     <search class="inline"><form action method="get"><input …><button …></form></search>
+   The second is the functional pattern (the submit button needs a form),
+   so every variant styles the controls as children of the search element
+   or of its direct <form> child. */
 
 search {
   display: block;
@@ -7,10 +14,18 @@ search {
 
   /* Inline search */
   &.inline {
-    display: flex;
-    gap: var(--size-xs);
+    &,
+    & > form {
+      display: flex;
+      gap: var(--size-xs);
+    }
 
-    & > input {
+    & > form {
+      flex: 1;
+    }
+
+    & > input,
+    & > form > input {
       flex: 1;
     }
   }
@@ -19,22 +34,32 @@ search {
   &.expanded {
     inline-size: 100%;
 
-    & > input {
+    & > input,
+    & > form > input {
       inline-size: 100%;
     }
   }
 
   /* Compact search */
   &.compact {
-    display: flex;
-    gap: var(--size-2xs);
+    &,
+    & > form {
+      display: flex;
+      gap: var(--size-2xs);
+    }
 
-    & > input {
+    & > form {
+      flex: 1;
+    }
+
+    & > input,
+    & > form > input {
       padding-block: var(--size-xs);
       font-size: var(--font-size-s);
     }
 
-    & > button {
+    & > button,
+    & > form > button {
       padding-block: var(--size-xs);
       padding-inline: var(--size-s);
       font-size: var(--font-size-s);
@@ -45,13 +70,17 @@ search {
   &.with-icon {
     position: relative;
 
-    & > input {
+    & > form {
+      position: relative;
+    }
+
+    & > input,
+    & > form > input {
       padding-inline-start: var(--size-xl);
     }
 
-    & > svg,
-    & > .icon,
-    & > icon-wc {
+    & > :is(svg, .icon, icon-wc),
+    & > form > :is(svg, .icon, icon-wc) {
       position: absolute;
       inset-inline-start: var(--size-s);
       inset-block-start: 50%;
@@ -63,12 +92,14 @@ search {
 
   /* Rounded search */
   &.rounded {
-    & > input {
+    & > input,
+    & > form > input {
       border-radius: var(--radius-full);
       padding-inline-end: var(--size-m);
     }
 
-    &:not(.with-icon) > input {
+    &:not(.with-icon) > input,
+    &:not(.with-icon) > form > input {
       padding-inline-start: var(--size-m);
     }
   }

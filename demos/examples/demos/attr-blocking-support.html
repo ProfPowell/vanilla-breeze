@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocking attribute: feature detection</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="m">
+  <h1>Does this browser support blocking="render"?</h1>
+  <dl>
+    <dt><code>&lt;link blocking&gt;</code></dt>
+    <dd><output data-blocking-check="link">Checking…</output></dd>
+    <dt><code>&lt;script blocking&gt;</code></dt>
+    <dd><output data-blocking-check="script">Checking…</output></dd>
+    <dt><code>&lt;style blocking&gt;</code></dt>
+    <dd><output data-blocking-check="style">Checking…</output></dd>
+  </dl>
+  <p>Browsers without support ignore the attribute, so the resource keeps its default behaviour. Test with <code>element.blocking?.supports('render')</code>.</p>
+
+  <script type="module">
+    for (const out of document.querySelectorAll('[data-blocking-check]')) {
+      const el = document.createElement(out.dataset.blockingCheck);
+      const ok = Boolean(el.blocking?.supports?.('render'));
+      out.textContent = ok ? 'Supported' : 'Not supported (attribute ignored)';
+    }
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "integrity"
-description: "Subresource Integrity (SRI) lets the browser verify that files fetched from CDNs haven't been tampered with."
+description: "Subresource Integrity: give a script or stylesheet the hash of the exact file you expect, and the browser refuses to use anything else."
 attributeName: integrity
 attributeType: native
 nativeGroup: Links & Security
@@ -12,146 +12,132 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>Subresource Integrity (SRI) lets the browser verify that files fetched from CDNs or other third-party servers have not been tampered with. You provide a cryptographic hash of the expected file contents, and the browser checks the downloaded file against that hash before executing or applying it.</p>
-<p>If a CDN is compromised and serves a modified file, the browser will refuse to use it rather than running potentially malicious code. SRI is a critical defense-in-depth measure for any site that loads resources from third-party origins.</p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>integrity</code> attribute carries a cryptographic hash of the file you expect. The browser hashes what it downloads, and if the two do not match it refuses to run the script or apply the stylesheet, and fires an <code>error</code> event. This is Subresource Integrity (SRI). It protects you when a CDN or other third-party host is compromised or changes a file under a URL you already use.</p>
+  <p>SRI fails <strong>closed</strong>. A wrong hash blocks the file. So does a cross-origin file loaded <em>without</em> <a href="/docs/attributes/crossorigin/"><code>crossorigin</code></a>: the browser cannot check a no-cors response, so it refuses it rather than running it unchecked.</p>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/script/"><code>&lt;script src&gt;</code></a> (classic and module) and <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> with <code>rel="stylesheet"</code>, <code>rel="preload"</code> or <code>rel="modulepreload"</code>. Import maps also have an <code>integrity</code> section for modules (see below).</p>
 
-<h2>How It Works</h2>
-<ol>
-  <li>You generate a cryptographic hash of the resource file.</li>
-  <li>You add the hash to the <code>integrity</code> attribute, prefixed with the algorithm name.</li>
-  <li>You add <code>crossorigin="anonymous"</code> (required for cross-origin resources).</li>
-  <li>When the browser downloads the file, it computes the hash and compares it to your value.</li>
-  <li>If the hashes match, the resource loads normally. If they do not match, the browser <strong>refuses to execute or apply the resource</strong> and reports a network error.</li>
-</ol>
+  <browser-window
+    src="/docs/examples/demos/attr-integrity-check.html"
+    url="https://vanilla-breeze.com/demos/integrity"
+    title="Subresource Integrity"
+    shadow>
+  </browser-window>
 
-<h2>Hash Format</h2>
-<p>The integrity value is an algorithm prefix followed by a base64-encoded hash, separated by a hyphen:</p>
-<table>
-  <thead><tr><th>Algorithm</th><th>Prefix</th><th>Strength</th><th>Recommendation</th></tr></thead>
-  <tbody>
-    <tr><td>SHA-256</td><td><code>sha256-</code></td><td>Good</td><td>Minimum acceptable</td></tr>
-    <tr><td>SHA-384</td><td><code>sha384-</code></td><td>Better</td><td><strong>Recommended default</strong></td></tr>
-    <tr><td>SHA-512</td><td><code>sha512-</code></td><td>Strongest</td><td>Maximum security</td></tr>
-  </tbody>
-</table>
-<p>SHA-384 is the most common choice. It offers strong security with reasonable hash length.</p>
-
-<h2>Applies To</h2>
-<p>The <code>integrity</code> attribute is supported on two elements:</p>
-<ul>
-  <li><a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> &mdash; verify JavaScript files</li>
-  <li><a href="/docs/elements/native/link/"><code>&lt;link rel="stylesheet"&gt;</code></a> &mdash; verify CSS files</li>
-</ul>
-
-<h2>Examples</h2>
-<h3>Script with SRI</h3>
-<code-block language="html" label="Script integrity check" data-escape><!-- Load a script from a CDN with integrity verification -->
-<script
-  src="https://cdn.example.com/lib@3.2.1/lib.min.js"
-  integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxAh6VgnSY2E3t0BvIQIYh4mC/b2Dj"
-  crossorigin="anonymous"></script></code-block>
-
-<h3>Stylesheet with SRI</h3>
-<code-block language="html" label="Stylesheet integrity check" data-escape><!-- Load a stylesheet from a CDN with integrity verification -->
-<link
-  rel="stylesheet"
-  href="https://cdn.example.com/framework@2.0/styles.min.css"
-  integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
-  crossorigin="anonymous" /></code-block>
-
-<h3>Multiple Hashes</h3>
-<p>You can provide multiple hashes separated by spaces. The browser will accept the resource if <strong>any</strong> of the hashes match. This is useful when migrating between hash algorithms or when a resource may be served in different valid forms.</p>
-
-<code-block language="html" label="Multiple integrity hashes" data-escape><!-- Provide multiple hashes for stronger verification -->
-<script
-  src="https://cdn.example.com/app.js"
-  integrity="sha256-BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE= sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxAh6VgnSY2E3t0BvIQIYh4mC/b2Dj"
-  crossorigin="anonymous"></script></code-block>
-
-<p>When multiple hashes with different algorithms are provided, the browser uses the strongest algorithm it supports for verification.</p>
-
-<h2>The crossorigin Attribute</h2>
-<p>For cross-origin resources, <code>integrity</code> <strong>must</strong> be paired with the <code>crossorigin</code> attribute. Without it, the browser cannot read the response to verify the hash (due to CORS restrictions) and will skip the integrity check.</p>
-
-<table>
-  <thead><tr><th>Value</th><th>Behavior</th><th>Use When</th></tr></thead>
-  <tbody>
-    <tr><td><code>anonymous</code></td><td>Sends request without credentials (cookies, auth headers)</td><td>Public CDN resources (most common)</td></tr>
-    <tr><td><code>use-credentials</code></td><td>Sends credentials with the request</td><td>Authenticated/private CDN resources (rare)</td></tr>
-  </tbody>
-</table>
-
-<code-block language="html" label="crossorigin values" data-escape><!-- anonymous: no credentials sent (most common for CDN resources) -->
-<script
-  src="https://cdn.example.com/lib.js"
-  integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxAh6VgnSY2E3t0BvIQIYh4mC/b2Dj"
-  crossorigin="anonymous"></script>
-
-<!-- use-credentials: sends cookies/auth (rare, for authenticated CDNs) -->
-<script
-  src="https://private-cdn.example.com/internal.js"
-  integrity="sha384-abc123..."
-  crossorigin="use-credentials"></script></code-block>
-
-<h3>Same-Origin Resources</h3>
-<p>For resources served from the same origin, <code>crossorigin</code> is not required. SRI still works, but since you control both the page and the resource, it is less commonly needed.</p>
-
-<code-block language="html" label="Same-origin vs cross-origin" data-escape><!-- Same-origin resources do NOT need integrity or crossorigin -->
-<script src="/js/app.js"></script>
-<link rel="stylesheet" href="/css/styles.css" />
-
-<!-- Cross-origin resources NEED both integrity and crossorigin -->
-<script
-  src="https://cdn.example.com/lib.js"
-  integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxAh6VgnSY2E3t0BvIQIYh4mC/b2Dj"
-  crossorigin="anonymous"></script></code-block>
-
-<h2>Generating Integrity Hashes</h2>
-<p>You can generate hashes from the command line or use the online tool at <strong>srihash.org</strong>.</p>
-
-<code-block language="bash" label="Generating hashes from the command line" data-escape># Generate a SHA-384 hash (most common for SRI)
-openssl dgst -sha384 -binary script.js | openssl base64 -A
-
-# Using shasum (macOS / Linux)
-shasum -b -a 384 script.js | awk '{ print $1 }' | xxd -r -p | base64
-
-# Using curl to hash a remote file
-curl -s https://cdn.example.com/lib.min.js | openssl dgst -sha384 -binary | openssl base64 -A
-
-# Full integrity attribute value (prefix the hash with the algorithm)
-# sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxAh6VgnSY2E3t0BvIQIYh4mC/b2Dj</code-block>
-
-<h3>Workflow Tips</h3>
-<ul>
-  <li><strong>Pin to exact versions:</strong> SRI hashes are tied to exact file contents. Always use versioned URLs (e.g. <code>lib@3.2.1</code>) rather than <code>latest</code> or unversioned paths.</li>
-  <li><strong>Regenerate on update:</strong> When you update a dependency version, regenerate the hash.</li>
-  <li><strong>Build tools:</strong> Bundlers like Webpack, Vite, and Parcel can generate integrity hashes automatically.</li>
-</ul>
-
-<h2>What Happens on Mismatch</h2>
-<p>When the downloaded file does not match the expected hash:</p>
-<ul>
-  <li>The browser <strong>refuses to execute</strong> the script or <strong>refuses to apply</strong> the stylesheet.</li>
-  <li>A network error is reported (visible in DevTools console).</li>
-  <li>The element fires an <code>error</code> event, which you can handle to show a fallback or alert the user.</li>
-  <li>No partial execution occurs &mdash; the resource is completely blocked.</li>
-</ul>
-<p>This is intentional. A mismatched hash means the file has been modified, and it is safer to break functionality than to run potentially malicious code.</p>
-
-<h2>Common Mistakes</h2>
-<ul>
-  <li><strong>Forgetting <code>crossorigin</code></strong> on cross-origin resources. Without it, the integrity check is silently skipped.</li>
-  <li><strong>Using unversioned CDN URLs</strong> (e.g. <code>lib/latest/lib.js</code>). When the CDN updates the file, the hash breaks. Always pin to a specific version.</li>
-  <li><strong>Whitespace or encoding differences:</strong> The hash must match the exact bytes served. If a CDN minifies or re-encodes a file differently, the hash will fail.</li>
-  <li><strong>Copying hashes from untrusted sources:</strong> Generate hashes yourself from a known-good copy of the file, not from the same CDN you are verifying.</li>
-</ul>
+  <p>Both tags load the same file. The first has its current hash and runs. The second has the hash of an earlier version, so the browser blocks it and logs an integrity error.</p>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <p>One or more space-separated hashes, each written <code>algorithm-base64digest</code>. An empty value means no check. A value with no valid hash in it also means no check, so a typo in the prefix silently turns SRI off.</p>
+  <table>
+    <thead><tr><th>Prefix</th><th>Digest length (base64)</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>sha256-</code></td><td>44 characters</td><td>Minimum allowed.</td></tr>
+      <tr><td><code>sha384-</code></td><td>64 characters</td><td>The usual choice.</td></tr>
+      <tr><td><code>sha512-</code></td><td>88 characters</td><td>Strongest.</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Several hashes:</strong> the browser keeps only the hashes that use the <em>strongest</em> algorithm present, then accepts the file if any of those match. Mixing <code>sha256</code> and <code>sha384</code> adds no strength (the <code>sha256</code> one is ignored). Several hashes of the <em>same</em> algorithm are useful when a URL may legitimately serve one of a few known files, for example during a rollout.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Generating a hash</h3>
+  <p>Hash the exact bytes that will be served, from a copy you trust:</p>
+  <code-block language="bash" show-lines label="Generate a SHA-384 hash" data-escape># A local file
+openssl dgst -sha384 -binary vanilla-breeze.js | openssl base64 -A
+
+# A published file (check you are hashing the file you reviewed)
+curl -sL https://unpkg.com/vanilla-breeze@0.5.0/dist/cdn/vanilla-breeze.js \
+  | openssl dgst -sha384 -binary | openssl base64 -A
+
+# Prefix the output with the algorithm: sha384-BASE64OUTPUT</code-block>
+
+  <h3>Loading Vanilla Breeze from a CDN with SRI</h3>
+  <p>The <a href="/docs/quick-start/">Quick Start</a> uses a floating version range (<code>vanilla-breeze@0.4</code>), which the CDN redirects to the newest patch. That is convenient, but it cannot be combined with SRI: the next patch release changes the bytes and the hash stops matching. Pin an exact version and add the hashes. These are the real hashes of the 0.5.0 entry files:</p>
+  <code-block language="html" show-lines label="Pinned VB 0.5.0 with SRI" data-escape><link rel="stylesheet"
+  href="https://unpkg.com/vanilla-breeze@0.5.0/dist/cdn/vanilla-breeze.css"
+  integrity="sha384-gQwnTZMGbiu+eGWq8Z8Hwj4Ds6/b/baYpNiLzZupXkRzh7JZKSp8aqD2Ndc4qkgN"
+  crossorigin="anonymous">
+<script type="module"
+  src="https://unpkg.com/vanilla-breeze@0.5.0/dist/cdn/vanilla-breeze.js"
+  integrity="sha384-uZ2nKtKxACqlcJEEjavnf+D7QdWK23BYOIzSpbqD5Ej6Qh6ZmfNsuI/BV/fbDWRG"
+  crossorigin="anonymous"></script></code-block>
+  <p>Module scripts are always fetched with CORS, so <code>crossorigin</code> is technically optional on the script tag; keep it for clarity. Recompute the hashes whenever you change the version.</p>
+
+  <h3>Preloads and modulepreload</h3>
+  <p>A preload must carry the same <code>integrity</code> (and <code>crossorigin</code>) as the tag that uses the file, or the preloaded response cannot be reused.</p>
+  <code-block language="html" show-lines label="Preload with integrity" data-escape><link rel="modulepreload"
+  href="https://unpkg.com/vanilla-breeze@0.5.0/dist/cdn/vanilla-breeze.js"
+  integrity="sha384-uZ2nKtKxACqlcJEEjavnf+D7QdWK23BYOIzSpbqD5Ej6Qh6ZmfNsuI/BV/fbDWRG"
+  crossorigin="anonymous"></code-block>
+
+  <h3>Import map integrity</h3>
+  <p>The <code>integrity</code> attribute covers one file. Modules that file imports, statically or with <code>import()</code>, are separate requests with no hash. An import map's <code>integrity</code> section maps module URLs to hashes, and the browser checks them whenever those URLs load as modules.</p>
+  <code-block language="html" show-lines label="Hashes for imported modules" data-escape><script type="importmap">
+{
+  "integrity": {
+    "https://cdn.example.com/charts@3.1.0/charts.js": "sha384-...",
+    "https://cdn.example.com/charts@3.1.0/axis.js": "sha384-..."
+  }
+}
+</script></code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
+  <p>SRI on the VB entry tags covers those two files only. The full bundle loads more on demand, and none of it is covered:</p>
   <ul>
-    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> &mdash; control referrer information sent with requests</li>
-    <li><a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> element reference</li>
-    <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> element reference</li>
+    <li><strong>Packs</strong> (<code>dist/cdn/packs/&lt;name&gt;.full.js</code> and <code>.full.css</code>), loaded with <code>import()</code> and a created <code>&lt;link&gt;</code> when a pack is activated (<code>activateBundle()</code> in <code>src/lib/bundle-registry.js</code>).</li>
+    <li><strong>Themes</strong> that are not built in, added as <code>&lt;link&gt;</code> elements by <code>src/lib/theme-loader.js</code>.</li>
+    <li><strong>The autoload build</strong> (<code>vanilla-breeze-autoload.js</code>), which fetches each component's chunk listed in <code>components/manifest.json</code>.</li>
+    <li><strong>Third-party modules</strong>: <a href="/docs/elements/web-components/diagram-wc/"><code>&lt;diagram-wc&gt;</code></a> imports Mermaid from <code>cdn.jsdelivr.net</code> at a pinned version (override with <code>window.VB_MERMAID_URL</code>).</li>
+    <li>Fonts and other <code>url()</code> requests made by the stylesheet.</li>
+  </ul>
+  <p>For full coverage, either <strong>self-host</strong> <code>dist/cdn/</code> (then you control every byte and the question goes away), or add <strong>import map integrity</strong> entries for the module chunks you use. Import maps do not cover stylesheets added with <code>&lt;link&gt;</code>.</p>
+</section>
+
+<section>
+  <h2>Security</h2>
+  <ul>
+    <li><strong>SRI protects third-party hosting.</strong> For files on your own origin it only guards against tampering in caches or on the CDN in front of you.</li>
+    <li><strong>Generate hashes yourself</strong> from a reviewed copy, not from the host you are trying to protect against.</li>
+    <li><strong>Pair it with a CSP.</strong> SRI checks the files you list; a Content Security Policy (<a href="/docs/attributes/nonce/"><code>nonce</code></a>) stops injected tags from loading anything else.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <p><code>integrity</code> on <code>&lt;script&gt;</code> and <code>&lt;link&gt;</code>: all browsers (Chrome 45, Firefox 43, Safari 11.1). Import map <code>integrity</code>: Chrome 127, Firefox 138, Safari 18 (MDN browser-compat-data, November 2026).</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Forgetting <code>crossorigin</code></strong> on a cross-origin classic script or stylesheet blocks it, even with the right hash. The server must also send <code>Access-Control-Allow-Origin</code>.</li>
+    <li><strong>Floating versions</strong> (<code>@latest</code>, <code>@0.4</code>) break as soon as the file changes.</li>
+    <li><strong>Byte-exact.</strong> A CDN that re-minifies or re-compresses content differently changes the hash. (Transfer encoding such as gzip does not; the hash is of the decoded body.)</li>
+    <li><strong>Hash tools:</strong> <code>openssl ... | openssl base64 -A</code> prints one line. Wrapped output or a hex digest is not valid in the attribute.</li>
+    <li><strong>Bundlers</strong> do not add SRI by default; Vite, webpack and others need a plugin.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/crossorigin/"><code>crossorigin</code></a> &mdash; required for cross-origin SRI.</li>
+    <li><a href="/docs/attributes/nonce/"><code>nonce</code></a> &mdash; Content Security Policy for scripts and styles.</li>
+    <li><a href="/docs/attributes/rel/"><code>rel</code></a> &mdash; <code>preload</code> and <code>modulepreload</code>.</li>
+    <li><a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> and <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> &mdash; the elements.</li>
+    <li><a href="/docs/quick-start/">Quick Start</a> &mdash; CDN install snippet.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong>A pinned file from a public CDN</strong> &mdash; <code>integrity</code> plus <code>crossorigin="anonymous"</code>.</li>
+    <li><strong>A module graph from a CDN</strong> &mdash; <code>integrity</code> on the entry plus import map integrity for the rest, or self-host.</li>
+    <li><strong>Your own files</strong> &mdash; self-host with a CSP; SRI is optional.</li>
   </ul>
 </section>

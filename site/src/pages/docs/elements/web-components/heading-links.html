@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
     <h2>Overview</h2>
-    <p>Wraps a content area and adds anchor link icons to headings. Hover a heading to reveal the link icon; click it to scroll, update the URL hash, and copy the link to clipboard.</p>
+    <p>Wraps a content area and adds a permalink anchor to each heading. Hover or focus a heading to reveal the link icon (on touch devices it is always shown); activating it jumps to the section, updates the URL hash, and copies the section URL to the clipboard.</p>
 
     <browser-window
       src="/docs/examples/demos/heading-links-basic.html"
@@ -41,7 +41,10 @@ crumbLabel: Web Components
         <tr><th>Attribute</th><th>Values</th><th>Default</th><th>Description</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>levels</code></td><td>Comma-separated heading selectors</td><td><code>h2,h3</code></td><td>Which heading levels to process</td></tr>
+        <tr><td><code>levels</code></td><td>Comma-separated <code>h1</code>&ndash;<code>h6</code></td><td><code>h2,h3</code></td><td>Which heading levels to process. Other tokens are ignored (an all-invalid value falls back to the default). Changes are observed: headings that drop out of scope lose their anchor.</td></tr>
+        <tr><td><code>data-label-anchor</code></td><td>Text</td><td><code>Copy link to</code></td><td>Prefix of each anchor's accessible name; the anchor is named <q>prefix + heading text</q>. Localise here.</td></tr>
+        <tr><td><code>data-label-copied</code></td><td>Text</td><td><code>Link copied to clipboard</code></td><td>Screen-reader announcement after a copy</td></tr>
+        <tr><td><code>data-toc-ignore</code></td><td>Boolean, on a heading or ancestor</td><td>&mdash;</td><td>Skip the heading(s): no anchor, no generated ID. Shared with <code>&lt;page-toc&gt;</code>.</td></tr>
       </tbody>
     </table>
 
@@ -61,7 +64,8 @@ crumbLabel: Web Components
 
   <section>
     <h2>Auto-generated IDs</h2>
-    <p>Headings without an <code>id</code> attribute get one generated from their text content. Existing IDs are preserved. Generated IDs are limited to 50 characters and de-duplicated automatically.</p>
+    <p>Headings without an <code>id</code> attribute get one generated from their text content. Existing IDs are preserved. The slug is Unicode-aware: letters in any script keep their accents (<q>Café crème</q> &rarr; <code>café-crème</code>, <q>日本語の見出し</q> stays as is), punctuation and emoji are dropped, whitespace becomes a hyphen, and the result is capped at 50 characters. A heading with no letters or numbers (emoji only) gets <code>section</code>. Duplicates get <code>-1</code>, <code>-2</code>&hellip; suffixes.</p>
+    <p>The site link checker (<code>scripts/check-links.mjs</code>) mirrors this rule, including the suffixes, so links to generated IDs are validated at build time.</p>
 
     <code-block language="html" show-lines label="ID handling" data-escape><!-- Existing IDs are preserved -->
 <heading-links>
@@ -77,7 +81,7 @@ crumbLabel: Web Components
         <tr><th>Event</th><th>Detail</th><th>Description</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>heading-links:navigate</code></td><td><code>{ id: string, url: string }</code></td><td>Fired when an anchor link is clicked</td></tr>
+        <tr><td><code>heading-links:navigate</code></td><td><code>{ id: string, url: string, heading: HTMLElement }</code></td><td>Fired when an anchor is activated, after the fragment navigation and before the clipboard write</td></tr>
       </tbody>
     </table>
 
@@ -86,17 +90,19 @@ crumbLabel: Web Components
 el.addEventListener('heading-links:navigate', (e) => {
   console.log('Navigated to:', e.detail.id);
   console.log('URL:', e.detail.url);
+  console.log('Heading:', e.detail.heading);
 });</code-block>
   </section>
 
   <section>
     <h2>Behavior</h2>
     <ul>
-      <li>Anchor icons appear on heading hover or focus</li>
-      <li>Clicking an anchor scrolls smoothly to the heading, updates the URL hash, and copies the full URL to clipboard</li>
-      <li>A brief checkmark icon confirms the copy succeeded</li>
-      <li>A screen-reader announcement is made on successful copy</li>
-      <li>Headings inside <code>&lt;dialog&gt;</code> elements are skipped</li>
+      <li>Anchor icons appear on heading hover, on keyboard focus, and always on touch (no-hover) devices</li>
+      <li>Activating an anchor follows the fragment like a native link: <code>:target</code> updates, a history entry is added, the heading is focused, and the scroll is smooth (instant under <code>prefers-reduced-motion</code>). It stays on the page under <code>&lt;base href&gt;</code>.</li>
+      <li><strong>Every activation writes to the clipboard</strong>: the absolute page URL plus the section hash</li>
+      <li>Ctrl/Cmd/Shift/Alt-clicks and middle clicks are left to the browser (open in new tab, etc.) and do not copy</li>
+      <li>A brief checkmark icon (<code>data-state="copied"</code> on the anchor) confirms the copy succeeded</li>
+      <li>Headings are skipped inside <code>&lt;dialog&gt;</code>, <code>[data-toc-ignore]</code>, <code>&lt;browser-window&gt;</code> (demo content, not page sections) and a nested <code>&lt;heading-links&gt;</code> (which owns its own headings)</li>
       <li>A <code>MutationObserver</code> watches for dynamically added headings</li>
     </ul>
   </section>
@@ -104,16 +110,17 @@ el.addEventListener('heading-links:navigate', (e) => {
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Each anchor has <code>aria-label="Link to [heading text]"</code></li>
+      <li>The heading keeps its own text as its accessible name: the text is wrapped in a <code>.heading-text</code> span the heading is labelled by, so the anchor does not add to it</li>
+      <li>Each anchor is named <q>Copy link to [heading text]</q> via <code>aria-labelledby</code> (prefix from <code>data-label-anchor</code>), so it follows text changes</li>
       <li>Headings are made focusable with <code>tabindex="-1"</code> for keyboard navigation to anchored sections</li>
-      <li>Copy confirmation uses <code>role="status"</code> with <code>aria-live="polite"</code></li>
+      <li>Copy confirmation is announced through a <code>role="status"</code> live region outside the link</li>
       <li>Focus-visible styles on anchor links</li>
     </ul>
   </section>
 
   <section>
     <h2>Styling</h2>
-    <p>The anchor uses the <code>.heading-anchor</code> class. It is hidden by default (<code>opacity: 0</code>) and revealed on hover/focus.</p>
+    <p>The anchor uses the <code>.heading-anchor</code> class. It is hidden by default (<code>opacity: 0</code>) and revealed on hover, focus, <code>:target</code>, and on no-hover devices. Headings get <code>scroll-margin-block-start: calc(var(--site-header-height) + var(--size-m))</code> so a jump clears a sticky header.</p>
 
     <code-block language="css" show-lines label="Custom styling" data-escape>/* Custom anchor icon color */
 heading-links .heading-anchor {

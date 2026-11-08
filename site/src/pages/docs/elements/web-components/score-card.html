@@ -154,12 +154,12 @@ a:has(score-card):focus-visible {
   outline-offset: 2px;
 }</code-block>
 
-  <p><strong>Note:</strong> the <code>:state(interactive)</code> hook is set once on upgrade. If you move a score-card into or out of an anchor at runtime, the state won't re-sync — wrap or unwrap before the element connects.</p>
+  <p><strong>Note:</strong> the <code>:state(interactive)</code> hook is computed when the element connects. Moving a score-card (removing and re-inserting it) re-syncs it, but adding or removing a wrapping anchor around an element that stays in place does not.</p>
 </section>
 
 <section>
   <h2>Loading skeleton</h2>
-  <p>Set the <code>loading</code> attribute while data is in flight. Slotted content stays in the DOM so it doesn't reflow on completion; the value, change, and sparkline regions are visually replaced by a shimmer. The animation respects <code>prefers-reduced-motion</code> and falls back to a flat muted background.</p>
+  <p>Set the <code>loading</code> attribute while data is in flight. Slotted content stays in the DOM so it doesn't reflow on completion; the value, change, and sparkline regions are visually replaced by a shimmer. The component mirrors the state to <code>aria-busy="true"</code> so assistive technology knows the value is pending. The animation respects <code>prefers-reduced-motion</code> and falls back to a flat muted background; in forced-colours mode the skeleton regions keep a <code>GrayText</code> outline.</p>
 
   <code-block language="html" label="Loading skeleton" data-escape><score-card loading tone="success">
   <span slot="title">Revenue</span>
@@ -257,6 +257,8 @@ card.toggleAttribute('loading', false);</code-block>
       <tr><td><code>--score-card-sparkline-height</code></td> <td><code>40px</code></td>                   <td>Reserved height for sparkline slot</td></tr>
       <tr><td><code>--score-card-surface</code></td>          <td><code>var(--color-surface)</code></td>   <td>Tile background</td></tr>
       <tr><td><code>--score-card-border</code></td>           <td><code>1px solid var(--color-border-subtle)</code></td><td>Tile border</td></tr>
+      <tr><td><code>--score-card-trend-up</code></td>        <td><code>var(--color-success-text)</code></td><td>Change colour when <code>trend="up"</code></td></tr>
+      <tr><td><code>--score-card-trend-down</code></td>      <td><code>var(--color-error-text)</code></td><td>Change colour when <code>trend="down"</code></td></tr>
       <tr><td><code>--score-card-tone-accent</code></td>      <td>resolved from <code>tone</code></td>     <td>Accent color (icon, optional border)</td></tr>
     </tbody>
   </table>
@@ -264,23 +266,23 @@ card.toggleAttribute('loading', false);</code-block>
 
 <section>
   <h2>Static fallback</h2>
-  <p>Before upgrade — and when JS is unavailable — score-card renders its slotted children inline. The recommended fallback structure is the same semantic figure pattern documented at <a href="/docs/patterns/data/stats/">/docs/patterns/data/stats/</a>, so consumers get a fully readable metric without the tile chrome:</p>
+  <p>Before upgrade — and when JS is unavailable — score-card renders its children in normal flow. Shadow-DOM slots only accept <strong>direct children</strong> of the host, so put each slotted element straight under <code>&lt;score-card&gt;</code>. Wrapping them in a <code>&lt;figure&gt;</code> (as in the <a href="/docs/patterns/data/stats/">stats pattern</a>) does not work: the figure lands in the default slot and the whole thing renders as the headline value.</p>
+  <p>Use block-level children such as <code>&lt;p&gt;</code> so the no-JS form reads as a short stacked list. Once upgraded, the component resets their margins.</p>
 
   <code-block language="html" label="No-JS fallback" data-escape><score-card trend="up">
-  <figure>
-    <figcaption slot="title">Total Users</figcaption>
-    <data slot="value" value="24521">24,521</data>
-    <small slot="change" data-trend="up">
-      <data value="0.125">+12.5%</data> vs last month
-    </small>
-  </figure>
+  <p slot="title">Total Users</p>
+  <p slot="value"><data value="24521">24,521</data></p>
+  <p slot="change"><data value="0.125">+12.5%</data> vs last month</p>
+  <p slot="description">Active in last 30 days</p>
 </score-card></code-block>
 </section>
 
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li><strong>Semantic native elements throughout.</strong> Score-card adds no ARIA roles — meaning comes from the slotted <code>&lt;figure&gt;</code>, <code>&lt;figcaption&gt;</code>, <code>&lt;data&gt;</code>, and <code>&lt;small&gt;</code> structure.</li>
+    <li><strong>Semantic native elements throughout.</strong> Score-card adds no ARIA roles — meaning comes from the slotted <code>&lt;data&gt;</code>, <code>&lt;small&gt;</code>, and paragraph content.</li>
+    <li><strong>Loading is announced as busy.</strong> The <code>loading</code> attribute sets <code>aria-busy="true"</code> on the host.</li>
+    <li><strong>Trend text meets AA.</strong> Up and down changes use the <code>--color-success-text</code> / <code>--color-error-text</code> tokens, which are tuned for small text on surfaces.</li>
     <li><strong>Trend is never carried by color alone.</strong> Change indicators include the <code>+</code> or <code>−</code> sign and a direction word in the copy.</li>
     <li><strong>Drill-down uses a real anchor.</strong> Focus, click activation, right-click menus, and middle-click "open in new tab" all work natively.</li>
     <li><strong>Reduced motion respected.</strong> The loading skeleton's shimmer animation falls back to a static muted background under <code>prefers-reduced-motion</code>.</li>
@@ -292,7 +294,7 @@ card.toggleAttribute('loading', false);</code-block>
   <layout-grid data-layout-min="m" data-layout-gap="m">
     <a href="/docs/patterns/data/stats/" class="section-card">
       <h3>Stats Pattern</h3>
-      <p>Semantic figure recipe — score-card's no-JS fallback</p>
+      <p>Semantic figure recipe for metrics without the component</p>
     </a>
     <a href="/docs/elements/web-components/chart-wc/" class="section-card">
       <h3>chart-wc</h3>

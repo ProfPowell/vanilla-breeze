@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "u"
-description: "Represents an unarticulated annotation — typically spelling errors or Chinese proper names. Styled with a wavy red underline in Vanilla Breeze."
+description: "Represents an unarticulated annotation — typically spelling errors or Chinese proper names. Vanilla Breeze draws a wavy error-coloured underline, and a plain solid underline in Chinese, Japanese and Korean text."
 elementName: u
 category: native
 nativeGroup: Text Semantics
@@ -13,8 +13,9 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;u&gt;</code> element represents an "unarticulated annotation" &mdash; a non-textual annotation that is rendered visually but not spoken. In HTML5, it was redefined from the old "underline" element to serve specific semantic use cases.</p>
-    <p>VB styles it with a <strong>wavy red underline</strong> using <code>oklch(55% 0.2 25)</code>, matching the familiar spell-check convention. This distinguishes it clearly from the five other underline styles in VB's text system.</p>
+    <p>The <code>&lt;u&gt;</code> element represents an "unarticulated annotation": a non-textual annotation that is rendered visually but not spoken. HTML5 redefined it from the old "underline" element to serve two specific use cases named in the spec: marking misspelled words, and the proper-name mark in Chinese text.</p>
+    <p>VB styles it with a <strong>wavy underline</strong> in <code>var(--color-error)</code>, the familiar spell-check convention. The colour comes from the theme, so it follows light, dark and custom themes.</p>
+    <p>In Chinese, Japanese and Korean text (<code>lang="zh"</code>, <code>ja</code>, <code>ko</code>) the same element draws a <strong>solid underline in the text colour</strong>, placed under the line. This is the proper-name mark (專名號). A red wavy line there would make every personal or place name look like a typo, and would clash with VB's CJK <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a>, which uses a wavy line as the book-title mark. Romanised tags (<code>zh-Latn</code>, <code>ja-Latn</code>, <code>ko-Latn</code>) are Latin text and keep the spell-check style.</p>
   </section>
 
   <section>
@@ -22,14 +23,13 @@ crumbLabel: Native Elements
     <ul>
       <li><strong>Spelling errors:</strong> Mark misspelled words in educational content</li>
       <li><strong>Spell-check demonstrations:</strong> Show how spell-checking works</li>
-      <li><strong>Chinese proper names:</strong> Traditional convention for proper nouns</li>
+      <li><strong>Chinese proper names:</strong> The proper-name mark for people, places and dynasties</li>
       <li><strong>Grammar examples:</strong> Highlight errors for teaching purposes</li>
     </ul>
     <h3>When NOT to Use</h3>
     <ul>
       <li>For emphasis &mdash; use <a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a> or <a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a></li>
-      <li>For links &mdash; underlines on links can confuse with <code>&lt;u&gt;</code></li>
-      <li>For decorative underlines &mdash; use CSS <code>text-decoration</code></li>
+      <li>For plain underlining &mdash; readers take an underline for a link. Use CSS <code>text-decoration</code> only where the context makes it clear</li>
       <li>For book titles &mdash; use <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a></li>
       <li>For inserted text &mdash; use <a href="/docs/elements/native/ins/"><code>&lt;ins&gt;</code></a></li>
     </ul>
@@ -45,12 +45,12 @@ crumbLabel: Native Elements
   <u>seperate</u> (separate),
   <u>occured</u> (occurred).
 </p></code-block>
-    <code-block language="html" show-lines label="Chinese proper names" data-escape><p lang="zh"><u>Li Bai</u> shi Tang dai zhu ming shi ren.</p></code-block>
+    <code-block language="html" show-lines label="Chinese proper names" data-escape><p lang="zh-Hans"><u>李白</u>是<u>唐</u>代著名诗人。</p></code-block>
   </section>
 
   <section>
-    <h2>VB Underline Styles</h2>
-    <p>VB uses six distinct underline styles across its text elements. Each has a unique visual treatment so users can distinguish their meaning at a glance:</p>
+    <h2>VB Text Decorations</h2>
+    <p>VB gives each decorated text element its own treatment, so readers can tell their meaning apart at a glance. Underlines and line-throughs are listed together:</p>
 
     <table class="props-table">
       <thead>
@@ -64,26 +64,32 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>&lt;u&gt;</code></td>
-          <td>Wavy</td>
-          <td>Red (<code>oklch(55% 0.2 25)</code>)</td>
+          <td>Wavy underline</td>
+          <td><code>var(--color-error)</code></td>
           <td>Spelling errors, annotations</td>
         </tr>
         <tr>
+          <td><code>&lt;u&gt;</code> in CJK</td>
+          <td>Solid underline, under the line</td>
+          <td><code>currentColor</code></td>
+          <td>Proper-name mark</td>
+        </tr>
+        <tr>
           <td><code>&lt;a&gt;</code></td>
-          <td>Solid (1px&rarr;2px on hover)</td>
+          <td>Solid underline (1px&rarr;2px on hover)</td>
           <td><code>var(--color-interactive)</code></td>
           <td>Hyperlinks</td>
         </tr>
         <tr>
           <td><code>&lt;abbr&gt;</code></td>
-          <td>Dotted</td>
+          <td>Dotted underline</td>
           <td><code>var(--color-text-muted)</code></td>
           <td>Abbreviations with tooltip</td>
         </tr>
         <tr>
           <td><code>&lt;ins&gt;</code></td>
           <td>Solid bottom border</td>
-          <td>Green (<code>oklch(60% 0.18 145)</code>)</td>
+          <td><code>var(--color-success)</code></td>
           <td>Inserted text (editorial)</td>
         </tr>
         <tr>
@@ -95,7 +101,7 @@ crumbLabel: Native Elements
         <tr>
           <td><code>&lt;del&gt;</code></td>
           <td>Line-through + background</td>
-          <td>Red (<code>oklch(55% 0.2 25)</code>)</td>
+          <td><code>var(--color-error)</code></td>
           <td>Deleted text (editorial)</td>
         </tr>
       </tbody>
@@ -107,9 +113,17 @@ crumbLabel: Native Elements
     <code-block language="css" label="u CSS" data-escape>u {
   text-decoration: underline;
   text-decoration-style: wavy;
-  text-decoration-color: oklch(55% 0.2 25);  /* red */
+  text-decoration-color: var(--color-error);
+}
+
+/* Chinese, Japanese, Korean: proper-name mark */
+u:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
+  text-decoration: underline solid currentColor;
+  text-underline-position: under;
+  text-decoration-thickness: from-font;
 }</code-block>
-    <p>The wavy style with red color matches the universal spell-check convention used by browsers, word processors, and IDEs.</p>
+    <p>The wavy style matches the spell-check convention used by browsers, word processors and IDEs. To change the colour, set <code>--color-error</code> in your theme.</p>
+    <p><strong>Forced colours:</strong> in Windows High Contrast and other forced-colour modes the colour is replaced with <code>CanvasText</code>, but the wavy shape stays. It still differs from a link, which is a solid underline in <code>LinkText</code>.</p>
   </section>
 
   <section>
@@ -129,11 +143,12 @@ crumbLabel: Native Elements
   <section>
     <h2>Related</h2>
     <ul>
-      <li><a href="/docs/elements/native/ins/"><code>&lt;ins&gt;</code></a> &mdash; Inserted text (green border underline)</li>
-      <li><a href="/docs/elements/native/del/"><code>&lt;del&gt;</code></a> &mdash; Deleted text (red strikethrough + background)</li>
+      <li><a href="/docs/elements/native/ins/"><code>&lt;ins&gt;</code></a> &mdash; Inserted text (success-coloured border underline)</li>
+      <li><a href="/docs/elements/native/del/"><code>&lt;del&gt;</code></a> &mdash; Deleted text (error-coloured strikethrough + background)</li>
       <li><a href="/docs/elements/native/s/"><code>&lt;s&gt;</code></a> &mdash; No longer relevant (muted strikethrough)</li>
-      <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> &mdash; Hyperlinks (blue solid underline)</li>
+      <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> &mdash; Hyperlinks (solid underline in the link colour)</li>
       <li><a href="/docs/elements/native/abbr/"><code>&lt;abbr&gt;</code></a> &mdash; Abbreviations (dotted muted underline)</li>
+      <li><a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a> &mdash; Work titles (wavy book-title mark in CJK text)</li>
       <li><a href="/docs/elements/native/mark/"><code>&lt;mark&gt;</code></a> &mdash; Highlighted text (background, not underline)</li>
     </ul>
   </section>

@@ -46,9 +46,15 @@ export function setThemeBase(url) {
 }
 
 /**
- * Detect the base URL for theme files
+ * Detect the base URL for theme files — the VB CDN directory that holds
+ * themes/, packs/ and fonts/. Exported as getCdnBase() for other lazily
+ * injected VB assets (e.g. math-init's fonts/math-fonts.css).
  * @returns {string}
  */
+export function getCdnBase() {
+  return detectBase();
+}
+
 function detectBase() {
   // 1. Explicit global
   if (typeof window !== 'undefined' && window.__VB_THEME_BASE) {
@@ -97,7 +103,8 @@ export async function getThemeManifest() {
 /**
  * Core themes that are always in the core CSS bundle.
  * Includes default, personality themes, and accessibility themes.
- * Color accents are NOT here — they use ThemeManager.setAccent() inline styles.
+ * Color accents are NOT here — they are a separate axis: ThemeManager.setAccent()
+ * sets data-accent on <html>, matched by src/tokens/themes/_accents.css (in core).
  * These never need loading — they switch instantly with zero network requests.
  */
 const CORE_THEMES = new Set([
@@ -116,6 +123,25 @@ const PACK_THEMES = new Set([
   'kawaii',
   'memphis',
 ]);
+
+/**
+ * Quote-safe attribute value for selectors: theme names come from markup and
+ * user config, so a quote or bracket must not make querySelector throw.
+ * @param {string} value
+ * @returns {string}
+ */
+function esc(value) {
+  return typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(value) : String(value).replace(/["\\]/g, '\\$&');
+}
+
+/**
+ * Remove every preload hint for a theme (repeated preloadTheme() calls from
+ * older code or authored markup can leave more than one).
+ * @param {string} themeName
+ */
+function removePreloads(themeName) {
+  document.querySelectorAll(`link[data-vb-theme-preload="${esc(themeName)}"]`).forEach((l) => l.remove());
+}
 
 function isPackTheme(themeName) {
   return PACK_THEMES.has(themeName);
@@ -200,7 +226,7 @@ export async function ensureThemeLoaded(themeName) {
   // Check if a <link data-vb-theme> for this theme already exists in DOM
   // (user may have pre-loaded it manually)
   if (typeof document !== 'undefined') {
-    const existing = document.querySelector(`link[data-vb-theme="${themeName}"]`);
+    const existing = document.querySelector(`link[data-vb-theme="${esc(themeName)}"]`);
     if (existing) {
       const promise = waitForExistingThemeLink(existing, themeName);
       loadCache.set(themeName, promise);
@@ -230,8 +256,10 @@ export function preloadTheme(themeName) {
   if (loadCache.has(themeName)) return;
   if (typeof document === 'undefined') return;
 
-  // Check if already preloaded or loaded
-  const existing = document.querySelector(`link[data-vb-theme="${themeName}"]`);
+  // Check if already loaded or preloaded — theme-picker calls this on every
+  // swatch pointerenter/focus, so each hover must not append another hint.
+  const name = esc(themeName);
+  const existing = document.querySelector(`link[data-vb-theme="${name}"], link[data-vb-theme-preload="${name}"]`);
   if (existing) return;
 
   const base = detectBase();
@@ -272,9 +300,8 @@ async function getPackManifest() {
 async function loadThemeCSS(themeName, base) {
   const href = getThemeHref(themeName, base);
   return new Promise((resolve, reject) => {
-    // Remove any preload hint for this theme
-    const preload = document.querySelector(`link[data-vb-theme-preload="${themeName}"]`);
-    if (preload) preload.remove();
+    // Remove any preload hints for this theme
+    removePreloads(themeName);
 
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -309,8 +336,7 @@ function loadPackCSS(packName, base) {
   const effectsHref = `${base}/packs/${packName}.effects.css`;
 
   return new Promise((resolve, reject) => {
-    const preload = document.querySelector(`link[data-vb-theme-preload="${packName}"]`);
-    if (preload) preload.remove();
+    removePreloads(packName);
 
     const link = document.createElement('link');
     link.rel = 'stylesheet';

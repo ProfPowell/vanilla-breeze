@@ -29,19 +29,55 @@
     This static HTML IS the baseline that <form-field> enhances.
 
     When JavaScript loads and the <form-field> custom element is
-    defined, the markup is progressively enhanced with additional
-    interactivity, ARIA attributes, and keyboard navigation.
+    defined, validation moves to blur-then-eager timing with custom
+    messages, aria-describedby / aria-invalid are wired, and the
+    password toggle, OTP boxes and counters are added.
 
     Without JS the core content remains accessible and functional.
   -->
 
   <h1>Form Field</h1>
 
-  <noscript>
-    <p>This component works best with JavaScript enabled.</p>
-  </noscript>
+  <!--
+    Without JS <form-field> is an unknown inline-level element; the
+    stylesheet (form-field/styles.css) gives it display:block and drives
+    :user-valid / :user-invalid states. Author aria-describedby yourself
+    on the no-JS page; the component re-wires it on upgrade.
+  -->
+  <form action="/signup" method="post">
+    <form-field>
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required
+             autocomplete="email"
+             aria-describedby="email-hint email-error">
+      <output id="email-hint" class="hint" for="email">We'll only use it to send your receipt.</output>
+      <output id="email-error" class="error" for="email">Please enter a valid email address.</output>
+    </form-field>
 
-  <!-- TODO: Add meaningful static fallback markup for <form-field> -->
+    <form-field>
+      <label for="plan">Plan</label>
+      <select id="plan" name="plan" required>
+        <option value="">Choose a plan…</option>
+        <option value="basic">Basic</option>
+        <option value="pro">Pro</option>
+      </select>
+    </form-field>
+
+    <form-field>
+      <label for="code">Verification code</label>
+      <!-- Enhances to one box per digit; without JS it is a plain input -->
+      <input type="text" id="code" name="code" data-type="otp" data-length="6"
+             inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code"
+             required aria-describedby="code-hint">
+      <output id="code-hint" class="hint" for="code">6 digits from the SMS we sent.</output>
+    </form-field>
+
+    <form-field data-type="checkbox">
+      <label><input type="checkbox" name="terms" required> I agree to the terms</label>
+    </form-field>
+
+    <button type="submit">Sign up</button>
+  </form>
 
 </body>
 </html>

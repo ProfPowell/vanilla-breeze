@@ -12,10 +12,44 @@
  * @attr {string} variant - Set to "icon" for compact trigger with floating toolbar
  * @attr {string} highlight - Set to "false" to disable word highlighting
  * @attr {string} scroll - Set to "false" to disable auto-scroll
+ * @attr {string} data-label-play - Play button label (default "Play")
+ * @attr {string} data-label-pause - Pause button label (default "Pause")
+ * @attr {string} data-label-stop - Stop button label (default "Stop")
+ * @attr {string} data-label-reader - Control bar / icon trigger label (default "Article reader")
+ * @attr {string} data-label-controls - Icon-variant toolbar label (default "Reader controls")
+ * @attr {string} data-label-voice - Voice select label (default "Voice")
+ * @attr {string} data-label-loading-voices - Voice select placeholder (default "Loading voices…")
+ * @attr {string} data-label-speed - Speed slider label (default "Speed")
+ * @attr {string} data-label-slower - Icon toolbar slower button (default "Slower")
+ * @attr {string} data-label-faster - Icon toolbar faster button (default "Faster")
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+
+const LABELS = {
+  play: 'Play',
+  pause: 'Pause',
+  stop: 'Stop',
+  reader: 'Article reader',
+  controls: 'Reader controls',
+  voice: 'Voice',
+  'loading-voices': 'Loading voices\u2026',
+  speed: 'Speed',
+  slower: 'Slower',
+  faster: 'Faster',
+};
+
+/** Subtrees whose text is never spoken. */
+const SKIP_SELECTOR = '[aria-hidden="true"], [hidden], script, style, template, text-reader';
+
+const supportsPopover = () => typeof HTMLElement !== 'undefined'
+  && Object.prototype.hasOwnProperty.call(HTMLElement.prototype, 'popover');
+
+const hasSpeech = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
+
+/** Primary language subtag, lowercased ("en-GB" -> "en"). */
+const primaryLang = (tag) => (tag || '').toLowerCase().split(/[-_]/)[0];
 
 class TextReader extends VBElement {
 
@@ -25,6 +59,7 @@ class TextReader extends VBElement {
   #target = null;
   /** @type {SpeechSynthesisUtterance | null} */
   #utterance = null;
+  /** @type {Array<{ element: Element, text: string, speechStart: number, speechEnd: number, segments: Array<{ node: Text, start: number, end: number }> }>} */
   #paragraphs = [];
   #fullText = '';
   #currentCharIndex = 0;
@@ -61,6 +96,11 @@ class TextReader extends VBElement {
   #triggerBtn = null;
   /** @type {HTMLDivElement | null} */
   #toolbar = null;
+  /** Slotted icons moved into generated buttons, restored on teardown. */
+  /** @type {Array<{ icon: Element, slot: string }>} */
+  #movedIcons = [];
+  /** @type {SpeechSynthesisVoice[]} */
+  #voiceList = [];
 
   // ---------- observed attributes ----------
 
@@ -71,9 +111,12 @@ class TextReader extends VBElement {
   attributeChangedCallback(name, oldVal, newVal) {
     if (oldVal === newVal) return;
 
-    if (name === 'for') {
-      this.stop();
+    // Before setup (initial parse/upgrade) there is nothing to stop or
+    // resolve; setup() resolves the target itself.
+    if (name === 'for' && oldVal !== null && this.hasAttribute('data-upgraded')) {
+      if (this.#isSpeaking) this.stop();
       this.#resolveTarget();
+      this.#populateVoiceSelect(this.#voiceList);
     }
 
     if ((name === 'speed' || name === 'voice') && this.#isSpeaking) {
@@ -90,7 +133,7 @@ class TextReader extends VBElement {
   // ---------- lifecycle ----------
 
   setup() {
-    if (!('speechSynthesis' in window)) {
+    if (!hasSpeech()) {
       this.style.display = 'none';
       return false;
     }
@@ -104,33 +147,50 @@ class TextReader extends VBElement {
     this.#resolveTarget();
     this.#injectHighlightSheet();
     this.#voicesPromise = this.#loadVoices();
-    this.#voicesPromise.then(voices => this.#populateVoiceSelect(voices));
+    this.#voicesPromise.then(voices => {
+      this.#voiceList = voices;
+      this.#populateVoiceSelect(voices);
+    });
 
     this.listen(window, 'beforeunload', this.#handleBeforeUnload);
     return true;
   }
 
   teardown() {
-    this.stop();
+    // Only cancel the page-global speech queue if this instance owns it.
+    if (this.#isSpeaking) this.stop();
     this.#removeHighlightSheet();
-    if (this.#toolbar) {
-      this.#toolbar.remove();
-      this.#toolbar = null;
+    // Remove every generated node so a reconnect rebuilds exactly one set.
+    this.#controls?.remove();
+    this.#toolbar?.remove();
+    this.#triggerBtn?.remove();
+    this.#controls = null;
+    this.#toolbar = null;
+    this.#triggerBtn = null;
+    this.#playBtn = this.#pauseBtn = this.#stopBtn = null;
+    this.#voiceSelect = null;
+    this.#speedInput = null;
+    this.#speedValue = null;
+    this.#isIconMode = false;
+    // Hand slotted icons back to the host so the next setup() can reuse them.
+    for (const { icon, slot } of this.#movedIcons) {
+      icon.setAttribute('slot', slot);
+      this.append(icon);
     }
-    if (this.#triggerBtn) {
-      this.#triggerBtn.remove();
-      this.#triggerBtn = null;
-    }
+    this.#movedIcons = [];
   }
 
   // ---------- public API ----------
 
   play() {
+    if (!hasSpeech()) return;
     if (this.#isPaused) {
       this.resume();
       return;
     }
     if (this.#isSpeaking) return;
+    // Re-extract so content injected after setup is picked up.
+    this.#buildParagraphMap();
     this.#speak(0);
   }
 
@@ -151,6 +211,8 @@ class TextReader extends VBElement {
   }
 
   stop() {
+    if (!hasSpeech() || !this.#isSpeaking) return;
+    this.#utterance = null;
     speechSynthesis.cancel();
     this.#cleanup();
     this.#emit('text-reader:stop');
@@ -174,27 +236,27 @@ class TextReader extends VBElement {
     const controls = document.createElement('div');
     controls.setAttribute('part', 'controls');
     controls.setAttribute('role', 'group');
-    controls.setAttribute('aria-label', 'Article reader');
+    controls.setAttribute('aria-label', this.#label('reader'));
 
     // Play
-    const playBtn = this.#makeButton('play', this.getAttribute('label-play') || 'Play', '\u25b6');
+    const playBtn = this.#makeButton('play', this.#label('play'), '\u25b6');
     playBtn.addEventListener('click', () => this.play());
 
     // Pause
-    const pauseBtn = this.#makeButton('pause', this.getAttribute('label-pause') || 'Pause', '\u23f8');
+    const pauseBtn = this.#makeButton('pause', this.#label('pause'), '\u23f8');
     pauseBtn.hidden = true;
     pauseBtn.addEventListener('click', () => this.pause());
 
     // Stop
-    const stopBtn = this.#makeButton('stop', this.getAttribute('label-stop') || 'Stop', '\u23f9');
+    const stopBtn = this.#makeButton('stop', this.#label('stop'), '\u23f9');
     stopBtn.disabled = true;
     stopBtn.addEventListener('click', () => this.stop());
 
     // Voice select
     const voiceSelect = document.createElement('select');
-    voiceSelect.setAttribute('aria-label', 'Voice');
+    voiceSelect.setAttribute('aria-label', this.#label('voice'));
     const placeholder = document.createElement('option');
-    placeholder.textContent = 'Loading voices\u2026';
+    placeholder.textContent = this.#label('loading-voices');
     voiceSelect.append(placeholder);
     voiceSelect.addEventListener('change', () => {
       if (this.#isSpeaking) this.#restartFromPosition();
@@ -215,7 +277,7 @@ class TextReader extends VBElement {
     speedInput.max = '2';
     speedInput.step = '0.1';
     speedInput.value = String(initSpeed);
-    speedInput.setAttribute('aria-label', 'Speed');
+    speedInput.setAttribute('aria-label', this.#label('speed'));
     speedInput.addEventListener('input', () => {
       const val = parseFloat(speedInput.value);
       speedVal.textContent = `${val}\u00d7`;
@@ -250,12 +312,17 @@ class TextReader extends VBElement {
     return btn;
   }
 
+  #label(key) {
+    return this.getAttribute(`data-label-${key}`) || LABELS[key];
+  }
+
   #moveSlotIcon(slotName, button) {
-    const icon = this.querySelector(`[slot="${slotName}"]`);
+    const icon = this.querySelector(`:scope > [slot="${slotName}"]`);
     if (icon) {
       icon.removeAttribute('slot');
       button.textContent = '';
       button.append(icon);
+      this.#movedIcons.push({ icon, slot: slotName });
     }
   }
 
@@ -274,13 +341,14 @@ class TextReader extends VBElement {
     const trigger = document.createElement('button');
     trigger.type = 'button';
     trigger.setAttribute('part', 'trigger');
-    trigger.setAttribute('aria-label', 'Article reader');
+    trigger.setAttribute('aria-label', this.#label('reader'));
     trigger.setAttribute('aria-pressed', 'false');
 
-    const slotIcon = this.querySelector('[slot="icon-trigger"]');
+    const slotIcon = this.querySelector(':scope > [slot="icon-trigger"]');
     if (slotIcon) {
       slotIcon.removeAttribute('slot');
       trigger.append(slotIcon);
+      this.#movedIcons.push({ icon: slotIcon, slot: 'icon-trigger' });
     } else {
       const icon = document.createElement('icon-wc');
       icon.setAttribute('name', 'volume-2');
@@ -299,20 +367,24 @@ class TextReader extends VBElement {
     const toolbar = document.createElement('div');
     toolbar.setAttribute('data-text-reader-toolbar', '');
     toolbar.setAttribute('role', 'group');
-    toolbar.setAttribute('aria-label', 'Reader controls');
+    toolbar.setAttribute('aria-label', this.#label('controls'));
     toolbar.hidden = true;
+    // Top layer (popover) so ancestors with transforms or containment can't
+    // trap the fixed-position toolbar. The DOM position stays right after
+    // the trigger, so the tab order goes trigger -> toolbar.
+    if (supportsPopover()) toolbar.popover = 'manual';
 
-    const playBtn = this.#makeButton('play', this.getAttribute('label-play') || 'Play', '\u25b6');
+    const playBtn = this.#makeButton('play', this.#label('play'), '\u25b6');
     playBtn.addEventListener('click', () => this.play());
 
-    const pauseBtn = this.#makeButton('pause', this.getAttribute('label-pause') || 'Pause', '\u23f8');
+    const pauseBtn = this.#makeButton('pause', this.#label('pause'), '\u23f8');
     pauseBtn.hidden = true;
     pauseBtn.addEventListener('click', () => this.pause());
 
-    const stopBtn = this.#makeButton('stop', this.getAttribute('label-stop') || 'Stop', '\u23f9');
+    const stopBtn = this.#makeButton('stop', this.#label('stop'), '\u23f9');
     stopBtn.addEventListener('click', () => this.stop());
 
-    const speedDown = this.#makeButton('speed-down', 'Slower', '\u2212');
+    const speedDown = this.#makeButton('speed-down', this.#label('slower'), '\u2212');
     speedDown.addEventListener('click', () => this.#adjustSpeed(-0.1));
 
     const speedVal = document.createElement('span');
@@ -320,7 +392,7 @@ class TextReader extends VBElement {
     const initSpeed = this.#clampSpeed(parseFloat(this.getAttribute('speed') ?? '1') || 1);
     speedVal.textContent = `${initSpeed}\u00d7`;
 
-    const speedUp = this.#makeButton('speed-up', 'Faster', '+');
+    const speedUp = this.#makeButton('speed-up', this.#label('faster'), '+');
     speedUp.addEventListener('click', () => this.#adjustSpeed(0.1));
 
     this.#moveSlotIcon('icon-play', playBtn);
@@ -328,7 +400,7 @@ class TextReader extends VBElement {
     this.#moveSlotIcon('icon-stop', stopBtn);
 
     toolbar.append(playBtn, pauseBtn, stopBtn, speedDown, speedVal, speedUp);
-    document.body.append(toolbar);
+    this.append(toolbar);
 
     this.#playBtn = playBtn;
     this.#pauseBtn = pauseBtn;
@@ -360,6 +432,7 @@ class TextReader extends VBElement {
     if (!this.#toolbar || !this.#triggerBtn) return;
     const toolbar = this.#toolbar;
     toolbar.hidden = false;
+    if (toolbar.popover && !toolbar.matches(':popover-open')) toolbar.showPopover();
     toolbar.style.visibility = 'hidden';
     requestAnimationFrame(() => {
       this.#positionToolbar();
@@ -368,7 +441,13 @@ class TextReader extends VBElement {
   }
 
   #hideToolbar() {
-    if (this.#toolbar) this.#toolbar.hidden = true;
+    const toolbar = this.#toolbar;
+    if (!toolbar || toolbar.hidden) return;
+    // Never strand keyboard focus inside a toolbar that is going away.
+    const hadFocus = toolbar.contains(document.activeElement);
+    if (toolbar.popover && toolbar.matches(':popover-open')) toolbar.hidePopover();
+    toolbar.hidden = true;
+    if (hadFocus) this.#triggerBtn?.focus();
   }
 
   #positionToolbar() {
@@ -410,7 +489,10 @@ class TextReader extends VBElement {
 
   #onToolbarKeyDown = (e) => {
     if (e.key === 'Escape' && this.#toolbar && !this.#toolbar.hidden) {
+      const focusInside = this.#toolbar.contains(document.activeElement)
+        || this.#triggerBtn === document.activeElement;
       this.#hideToolbar();
+      if (focusInside) this.#triggerBtn?.focus();
     }
   };
 
@@ -451,28 +533,53 @@ class TextReader extends VBElement {
     const selectors = this.getAttribute('selectors') || 'p,li';
     const candidates = [...target.querySelectorAll(selectors)];
 
-    // Filter out elements inside pre, code, aria-hidden
+    // Filter out whole candidates inside pre, code, or hidden subtrees
     const excluded = el =>
-      el.closest('pre') || el.closest('code') || el.closest('[aria-hidden="true"]');
+      el.closest('pre') || el.closest('code') || el.closest(SKIP_SELECTOR);
 
     this.#paragraphs = [];
     let offset = 0;
 
     for (const el of candidates) {
       if (excluded(el)) continue;
-      const text = el.textContent.trim();
-      if (!text) continue;
+      // One text walk defines both the spoken text and the highlight
+      // offsets, so they can never drift apart.
+      const segments = [];
+      let text = '';
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+        // The candidate itself is already known not to be inside a skipped
+        // subtree, so any match here is a hidden descendant (aria-hidden
+        // icon, [hidden] note, nested reader...).
+        acceptNode: node => node.parentElement?.closest(SKIP_SELECTOR)
+          ? NodeFilter.FILTER_REJECT
+          : NodeFilter.FILTER_ACCEPT,
+      });
+      while (walker.nextNode()) {
+        const node = /** @type {Text} */ (walker.currentNode);
+        const value = node.data;
+        if (!value) continue;
+        segments.push({ node, start: text.length, end: text.length + value.length });
+        text += value;
+      }
+      if (!text.trim()) continue;
 
       this.#paragraphs.push({
         element: el,
         text,
         speechStart: offset,
         speechEnd: offset + text.length,
+        segments,
       });
       offset += text.length + 1; // +1 for space separator
     }
 
     this.#fullText = this.#paragraphs.map(p => p.text).join(' ');
+  }
+
+  /** Language of the content being read: nearest [lang] on the target. */
+  #contentLang() {
+    const el = this.#target?.closest('[lang]');
+    return el?.getAttribute('lang') || document.documentElement.lang || '';
   }
 
   // ---------- speech ----------
@@ -493,6 +600,8 @@ class TextReader extends VBElement {
     const text = rawText.replace(/[<>]/g, ' ');
 
     const utterance = new SpeechSynthesisUtterance(text);
+    const lang = this.#contentLang();
+    if (lang) utterance.lang = lang;
     utterance.rate = this.#clampSpeed(parseFloat(this.#speedInput?.value ?? this.getAttribute('speed') ?? '1') || 1);
 
     // Apply selected voice
@@ -502,9 +611,18 @@ class TextReader extends VBElement {
         v => v.voiceURI === selectedOption.dataset.voiceUri
       );
       if (voice) utterance.voice = voice;
+    } else if (lang) {
+      // No picker (icon variant): prefer a voice for the content language
+      const want = primaryLang(lang);
+      const voices = speechSynthesis.getVoices();
+      const voice = voices.find(v => v.lang.toLowerCase() === lang.toLowerCase())
+        || voices.find(v => primaryLang(v.lang) === want && v.default)
+        || voices.find(v => primaryLang(v.lang) === want);
+      if (voice) utterance.voice = voice;
     }
 
     utterance.onboundary = (e) => {
+      if (this.#utterance !== utterance) return;
       if (e.name !== 'word') return;
       const charIndex = fromIndex + e.charIndex;
       this.#currentCharIndex = charIndex;
@@ -527,14 +645,23 @@ class TextReader extends VBElement {
     };
 
     utterance.onend = () => {
+      // A stale utterance (replaced by a restart, or stopped) is ignored.
+      if (this.#utterance !== utterance) return;
       const duration = Date.now() - this.#startTime;
       this.#cleanup();
       this.#emit('text-reader:end', { duration });
     };
 
     utterance.onerror = (e) => {
-      // "interrupted" fires on cancel — not a real error
-      if (e.error === 'interrupted' || e.error === 'canceled') return;
+      if (this.#utterance !== utterance) return;
+      // Our own utterance was cancelled from elsewhere (another reader took
+      // over the global speech queue): reset to idle instead of looking
+      // stuck in the speaking state.
+      if (e.error === 'interrupted' || e.error === 'canceled') {
+        this.#cleanup();
+        this.#emit('text-reader:stop');
+        return;
+      }
       // Surface real errors to the console so silent-halt regressions
       // (e.g. unescaped angle brackets, engine-rejected characters) are
       // visible during development instead of appearing as mysterious
@@ -563,6 +690,7 @@ class TextReader extends VBElement {
 
   #restartFromPosition() {
     const idx = this.#currentCharIndex;
+    this.#utterance = null; // the cancelled utterance's events are now stale
     speechSynthesis.cancel();
     this.#stopKeepAlive();
     // Small delay to let cancel settle
@@ -622,7 +750,7 @@ class TextReader extends VBElement {
     if (!para) return;
 
     const localOffset = charIndex - para.speechStart;
-    const range = this.#findTextRange(para.element, localOffset, charLength);
+    const range = this.#findTextRange(para, localOffset, charLength);
     if (!range) return;
 
     const highlight = new Highlight(range);
@@ -634,7 +762,8 @@ class TextReader extends VBElement {
       const rect = range.getBoundingClientRect();
       const viewH = window.innerHeight;
       if (rect.top < 0 || rect.bottom > viewH) {
-        para.element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        para.element.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
       }
     }
   }
@@ -667,37 +796,27 @@ class TextReader extends VBElement {
     return null;
   }
 
-  // ---------- text range finder (TreeWalker) ----------
+  // ---------- text range finder ----------
 
-  #findTextRange(element, localOffset, length) {
-    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-    let accumulated = 0;
-
-    while (walker.nextNode()) {
-      const node = walker.currentNode;
-      const nodeText = node.textContent ?? '';
-      // Skip whitespace-only text nodes
-      if (!nodeText.trim()) continue;
-
-      const nodeLen = nodeText.length;
-
-      if (accumulated + nodeLen > localOffset) {
-        const startInNode = localOffset - accumulated;
-        const range = document.createRange();
-        range.setStart(node, Math.min(startInNode, nodeLen));
-
-        const endInNode = startInNode + length;
-        if (endInNode <= nodeLen) {
-          range.setEnd(node, endInNode);
-        } else {
-          // Word spans multiple text nodes — extend to end of current
-          range.setEnd(node, nodeLen);
-        }
-        return range;
-      }
-      accumulated += nodeLen;
+  /**
+   * Map a paragraph-local [offset, offset+length) onto the text nodes
+   * recorded by #buildParagraphMap. Words that span inline elements
+   * (e.g. "re<em>use</em>") get a range across both nodes.
+   */
+  #findTextRange(para, localOffset, length) {
+    const segs = para.segments;
+    const end = localOffset + length;
+    const startSeg = segs.find(sg => localOffset >= sg.start && localOffset < sg.end);
+    if (!startSeg || !startSeg.node.isConnected) return null;
+    const endSeg = segs.find(sg => end > sg.start && end <= sg.end) || startSeg;
+    const range = document.createRange();
+    range.setStart(startSeg.node, localOffset - startSeg.start);
+    if (endSeg.node.isConnected && endSeg.start >= startSeg.start) {
+      range.setEnd(endSeg.node, Math.min(end - endSeg.start, endSeg.node.length));
+    } else {
+      range.setEnd(startSeg.node, startSeg.node.length);
     }
-    return null;
+    return range;
   }
 
   // ---------- voice loading ----------
@@ -726,10 +845,12 @@ class TextReader extends VBElement {
     const select = this.#voiceSelect;
     select.innerHTML = '';
 
-    // Prefer voices matching page lang
-    const lang = document.documentElement.lang || 'en';
-    const langVoices = voices.filter(v => v.lang.startsWith(lang));
-    const otherVoices = voices.filter(v => !v.lang.startsWith(lang));
+    // Prefer voices matching the content language (nearest [lang] on the
+    // target, falling back to <html lang>)
+    const lang = primaryLang(this.#contentLang() || 'en');
+    const matches = v => primaryLang(v.lang) === lang;
+    const langVoices = voices.filter(matches);
+    const otherVoices = voices.filter(v => !matches(v));
     const sorted = [...langVoices, ...otherVoices];
 
     const preferredURI = this.getAttribute('voice');
@@ -756,17 +877,36 @@ class TextReader extends VBElement {
 
   // ---------- UI state ----------
 
+  /**
+   * Swap transport-button visibility. Play/Pause are separate buttons, so
+   * if the button that is being hidden (or disabled) had focus, focus moves
+   * to the button that replaced it and keyboard users don't fall back to
+   * <body>. Focus is read before the DOM change: hiding a focused element
+   * can blur it during the next style update.
+   * @param {() => void} change
+   * @param {Array<[HTMLElement | null, HTMLElement | null]>} handoffs - [from, to]
+   */
+  #swapButtons(change, handoffs) {
+    const active = document.activeElement;
+    change();
+    for (const [from, to] of handoffs) {
+      if (from && to && active === from && !to.hidden && !(/** @type {HTMLButtonElement} */ (to).disabled)) {
+        to.focus();
+        return;
+      }
+    }
+  }
+
   #showSpeakingState(speaking) {
     if (!this.#playBtn || !this.#pauseBtn || !this.#stopBtn) return;
-    if (speaking) {
-      this.#playBtn.hidden = true;
-      this.#pauseBtn.hidden = false;
-      this.#stopBtn.disabled = false;
-    } else {
-      this.#playBtn.hidden = false;
-      this.#pauseBtn.hidden = true;
-      this.#stopBtn.disabled = true;
-    }
+    const play = this.#playBtn;
+    const pause = this.#pauseBtn;
+    const stop = this.#stopBtn;
+    this.#swapButtons(() => {
+      play.hidden = speaking;
+      pause.hidden = !speaking;
+      stop.disabled = !speaking;
+    }, speaking ? [[play, pause]] : [[pause, play], [stop, play]]);
     if (this.#isIconMode) {
       if (this.#triggerBtn) this.#triggerBtn.setAttribute('aria-pressed', String(speaking));
       if (speaking) this.#showToolbar(); else this.#hideToolbar();
@@ -775,8 +915,12 @@ class TextReader extends VBElement {
 
   #showPauseState(paused) {
     if (!this.#playBtn || !this.#pauseBtn) return;
-    this.#playBtn.hidden = !paused;
-    this.#pauseBtn.hidden = paused;
+    const play = this.#playBtn;
+    const pause = this.#pauseBtn;
+    this.#swapButtons(() => {
+      play.hidden = !paused;
+      pause.hidden = paused;
+    }, paused ? [[pause, play]] : [[play, pause]]);
   }
 
   #cleanup() {
@@ -800,7 +944,7 @@ class TextReader extends VBElement {
   }
 
   #handleBeforeUnload = () => {
-    speechSynthesis.cancel();
+    if (this.#isSpeaking) speechSynthesis.cancel();
   };
 }
 

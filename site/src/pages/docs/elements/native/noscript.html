@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "noscript"
-description: "Defines content to show when JavaScript is disabled."
+description: "Content that is used only when scripting is disabled. In VB, a supplement to progressive enhancement alongside data-requires-js and the (scripting: none) media query."
 elementName: noscript
 category: native
 nativeGroup: Scripting
@@ -11,32 +11,102 @@ crumbHref: /docs/elements/native/
 crumbLabel: Native Elements
 ---
 
-<section>
+  <section>
     <h2>Description</h2>
-    <p>The <code>&lt;noscript&gt;</code> element is part of the Scripting category in HTML.</p>
+    <p>The <code>&lt;noscript&gt;</code> element holds content that the browser uses only when scripting is <strong>disabled</strong>. When scripting is on, the parser treats its contents as raw text: nothing inside is rendered, run or exposed to assistive technology.</p>
+    <p>In Vanilla Breeze, <code>&lt;noscript&gt;</code> is a supplement, not the main fallback. Pages are written as working HTML first and JavaScript upgrades them (see <a href="/docs/principles/#progressive-enhancement">Progressive Enhancement</a>). Use <code>&lt;noscript&gt;</code> for the small extra message or resource that only makes sense when scripting is off.</p>
   </section>
 
   <section>
     <h2>Basic Example</h2>
-    <div class="example">
-      <p>Noscript content is shown when JavaScript is disabled.</p>
-    </div>
-    <code-block language="html" label="Basic noscript example" data-escape><noscript>...</noscript></code-block>
+    <p>The link works for everyone. The copy button needs JavaScript, so <code>data-requires-js</code> hides it when scripting is off, and the <code>&lt;noscript&gt;</code> note tells those users what to do instead. Disable JavaScript in your browser to see the fallback.</p>
+    <browser-window src="/docs/snippets/demos/noscript-fallback.html" url="https://vanilla-breeze.com/noscript/fallback" title="Noscript fallback" shadow></browser-window>
+    <code-block language="html" label="Static link, JS-only button, noscript note" data-escape><p>Link: <a href="https://example.com/article/">example.com/article/</a></p>
+<p>
+  <button type="button" data-requires-js>Copy link</button>
+  <output aria-live="polite"></output>
+</p>
+<noscript>
+  <p>Copy the link above to share this page.</p>
+</noscript></code-block>
+  </section>
+
+  <section>
+    <h2>In the head</h2>
+    <p>Inside <code>&lt;head&gt;</code>, a <code>&lt;noscript&gt;</code> may contain only <code>&lt;link&gt;</code>, <code>&lt;style&gt;</code> and <code>&lt;meta&gt;</code>. It is useful for a no-JS stylesheet, or for undoing a style that assumes JavaScript will run.</p>
+    <code-block language="html" label="Noscript in the head" data-escape><head>
+  <link rel="stylesheet" href="/css/site.css">
+  <noscript>
+    <link rel="stylesheet" href="/css/no-js.css">
+  </noscript>
+</head></code-block>
+    <p>For a single rule, the <code>(scripting: none)</code> media query in your normal stylesheet does the same job without an extra element.</p>
+  </section>
+
+  <section>
+    <h2 id="vb-mechanisms">noscript, data-requires-js and (scripting: none)</h2>
+    <p>VB&rsquo;s reset ships two attribute hooks, both scoped to <code>@media (scripting: none)</code>:</p>
+    <code-block language="css" label="From src/base/reset.css" data-escape>@media (scripting: none) {
+  [data-requires-js] { display: none !important; }
+  [data-js-enhanced] { display: none; }
+}</code-block>
+    <table class="props-table">
+      <thead>
+        <tr><th>Tool</th><th>Use it for</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-requires-js</code></td>
+          <td>A control that has no meaningful static equivalent, such as a copy button or a live filter. Hidden with <code>!important</code> when scripting is off, so nothing can show it again.</td>
+        </tr>
+        <tr>
+          <td><code>data-js-enhanced</code></td>
+          <td>JS-driven internals of a component that has a static fallback, such as toggle buttons around content that is readable without them. Hidden without <code>!important</code>, so a component can override it.</td>
+        </tr>
+        <tr>
+          <td><code>@media (scripting: none)</code></td>
+          <td>Your own CSS changes for the no-JS case, such as showing a hint or expanding collapsed content.</td>
+        </tr>
+        <tr>
+          <td><code>&lt;noscript&gt;</code></td>
+          <td>Extra content that only no-JS users need: a message, an alternative link, a no-JS stylesheet in the head.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Prefer static HTML that works on its own over hiding things. A list of links that a component turns into tabs needs none of these tools.</p>
+    <p>VB components that cannot render without JavaScript keep a <code>static.html</code> fallback beside their source, and many of those use <code>&lt;noscript&gt;</code> to explain what is missing.</p>
+  </section>
+
+  <section>
+    <h2>Caveats</h2>
+    <ul>
+      <li><strong>JavaScript on, but broken.</strong> <code>&lt;noscript&gt;</code>, <code>data-requires-js</code> and <code>(scripting: none)</code> react only to scripting being <em>disabled</em>. If scripting is on but the bundle fails to load, is blocked or throws, none of them apply: the noscript content stays hidden and <code>data-requires-js</code> controls stay visible but dead. Only real HTML that JavaScript upgrades survives that case.</li>
+      <li><strong>Not exposed when JS is on.</strong> With scripting enabled, noscript content is inert text. Screen readers don&rsquo;t announce it, and you cannot style or query its children.</li>
+      <li><strong>Not signed.</strong> VB&rsquo;s canonical document for content signing skips <code>&lt;noscript&gt;</code>, like <code>&lt;script&gt;</code> and <code>&lt;template&gt;</code>. Don&rsquo;t put content there that the page&rsquo;s signature is meant to cover.</li>
+      <li><strong>Fallback text is authored.</strong> Text inside <code>&lt;noscript&gt;</code> is plain HTML, so translate it with the rest of the page; no component localises it for you.</li>
+    </ul>
   </section>
 
   <section>
     <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/attributes/">global attributes</a>.</p>
+    <p>This element has no attributes of its own. It supports <a href="/docs/attributes/">global attributes</a>.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;noscript&gt;</code> element will be documented here.</p>
+    <ul>
+      <li>When scripting is off, noscript content is ordinary page content: give it the same headings, link text and structure as anything else.</li>
+      <li>Don&rsquo;t use <code>&lt;noscript&gt;</code> to tell users to &ldquo;enable JavaScript&rdquo; when the page could work without it. Users who run without scripts, often for security or assistive-technology reasons, are better served by a working fallback.</li>
+      <li>A control hidden with <code>data-requires-js</code> should leave a working alternative, such as a link, form or plain text, so the task stays possible.</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related</h2>
     <ul>
       <li><a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> - Execute JavaScript code</li>
+      <li><a href="/docs/elements/native/template/"><code>&lt;template&gt;</code></a> - Inert markup that scripts clone; also hidden from users</li>
+      <li><a href="/docs/elements/native/head/"><code>&lt;head&gt;</code></a> - Where a head noscript may add a no-JS stylesheet</li>
+      <li><a href="/docs/principles/#progressive-enhancement">Progressive Enhancement</a> - Why VB pages work before JavaScript runs</li>
     </ul>
   </section>

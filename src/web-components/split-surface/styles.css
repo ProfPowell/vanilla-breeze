@@ -65,9 +65,13 @@ split-surface:defined > :not(.split-divider) {
 .split-divider::after {
   content: '';
   position: absolute;
+  /* Centre on the inline axis with logical insets + auto margins, so the
+     grip stays centred in RTL (a physical translateX(-50%) would push it a
+     full grip-width off when inset-inline-start resolves to right). */
   inset-block-start: 50%;
-  inset-inline-start: 50%;
-  transform: translate(-50%, -50%);
+  inset-inline: 0;
+  margin-inline: auto;
+  transform: translateY(-50%);
   inline-size: 4px;
   block-size: 24px;
   border-radius: 2px;
@@ -89,7 +93,7 @@ split-surface:defined > :not(.split-divider) {
 
 /* Focus visible */
 .split-divider:focus-visible {
-  outline: 3px solid var(--color-focus, oklch(60% 0.2 260));
+  outline: 3px solid var(--color-focus-ring);
   outline-offset: -1px;
 }
 
@@ -100,13 +104,48 @@ split-surface:defined > :not(.split-divider) {
   }
 }
 
+/* Forced colors: the divider and grip are background-only, so draw them in
+   system colours; hover / drag / focus switch to Highlight. Shared by
+   split-surface and [data-splitter]. */
+@media (forced-colors: active) {
+  .split-divider {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  .split-divider::after {
+    background: Canvas;
+    opacity: 1;
+  }
+
+  .split-divider:hover,
+  .split-divider:active,
+  split-surface:state(divider-dragging) > .split-divider {
+    background: Highlight;
+  }
+
+  .split-divider:focus-visible {
+    outline-color: Highlight;
+  }
+}
+
 /* --- Fix: Override sidebar layout wrapping when splitter is active --- */
 [data-splitter-init] {
   flex-wrap: nowrap;
 }
 
-[data-splitter-init] > main,
-[data-splitter-init] > article,
-[data-splitter-init] > section:not([data-layout]) {
+/* Drop every panel's content floor, not just main/article/section: the
+   sidebar layout gives any content child (a section[data-layout], a nested
+   sidebar, …) a 50–60% min-inline-size, which overflowed beside the
+   splitter's flex-shrink: 0 first panel under nowrap. */
+[data-splitter-init] > :not(.split-divider) {
   min-inline-size: 0;
+}
+
+[data-splitter="vertical"][data-splitter-init] {
+  flex-direction: column;
+}
+
+[data-splitter="vertical"][data-splitter-init] > :not(.split-divider) {
+  min-block-size: 0;
 }

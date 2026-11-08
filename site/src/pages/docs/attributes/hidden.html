@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "hidden"
-description: "Control element visibility and interactivity. Covers hidden, hidden='until-found', and inert — three levels of removing content from the user experience."
+description: "Mark content as not relevant right now so it is not rendered, focusable or announced, or use hidden=\"until-found\" to collapse it while find-in-page can still reveal it."
 attributeName: hidden
 attributeType: native
 nativeGroup: Interactivity
@@ -12,128 +12,161 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>Three native attributes control whether and how users can see and interact with content. They represent three levels of removal from the user experience:</p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>hidden</code> attribute says an element is not relevant to the page's current state. The browser doesn't render it, so it can't be seen, focused or clicked, screen readers don't announce it, and find-in-page doesn't search it. Show it again by removing the attribute.</p>
+  <p>The <code>until-found</code> value is a softer hide: the content is collapsed, but find-in-page and fragment links can still match it, and the browser reveals it when they do.</p>
+  <p><strong>Applies to:</strong> any HTML element (it is a global attribute).</p>
 
-<table>
-  <thead><tr><th>Attribute</th><th>Visible</th><th>Interactive</th><th>In Accessibility Tree</th><th>Find-in-Page</th></tr></thead>
-  <tbody>
-    <tr><td><code>hidden</code></td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
-    <tr><td><code>hidden="until-found"</code></td><td>No</td><td>No</td><td>Yes</td><td>Yes (reveals on find)</td></tr>
-    <tr><td><code>inert</code></td><td>Yes</td><td>No</td><td>No</td><td>Yes</td></tr>
-    <tr><td>(none)</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
-  </tbody>
-</table>
+  <browser-window
+    src="/docs/examples/demos/attr-hidden-toggle.html"
+    url="https://vanilla-breeze.com/hidden"
+    title="hidden"
+    shadow>
+  </browser-window>
 
-<h2>hidden</h2>
-<p>The <code>hidden</code> attribute removes an element from rendering entirely. It behaves like <code>display: none</code> but is semantic — it declares that the content is not relevant to the current state of the page.</p>
-
-<code-block language="html" label="Hidden elements" data-escape><!-- Completely hidden: removed from rendering and accessibility tree -->
-<div hidden>
-  This content is invisible, unfocusable, and ignored by screen readers.
-</div>
-
-<!-- Conditionally show/hide with JavaScript -->
-<div id="details" hidden>
-  <p>Additional details appear here.</p>
-</div>
-<button onclick="document.getElementById('details').hidden = !document.getElementById('details').hidden">
-  Toggle Details
-</button></code-block>
-
-<h3>When to Use hidden</h3>
-<ul>
-  <li><strong>Conditional UI:</strong> Content that should appear only in certain states (logged in, feature enabled, etc.)</li>
-  <li><strong>Template content:</strong> Fragments cloned by JavaScript</li>
-  <li><strong>Deferred content:</strong> Content loaded after user interaction</li>
-</ul>
-
-<h2>hidden="until-found"</h2>
-<p>A newer value that collapses content visually but allows the browser to reveal it during find-in-page (<kbd>Ctrl+F</kbd>) searches. When a match is found inside, the browser fires a <code>beforematch</code> event and removes the <code>hidden</code> attribute.</p>
-<p>This is useful for long FAQ pages, accordions, or collapsed sections where users should be able to search for content without expanding every section manually.</p>
-
-<code-block language="html" label="Hidden until found" data-escape><!-- Hidden until browser find-in-page reveals it -->
-<details>
-  <summary>FAQ: How do I reset my password?</summary>
-  <div hidden="until-found">
-    <p>Go to Settings, then Security, then click "Reset Password".</p>
-  </div>
-</details></code-block>
-
-<h2>inert</h2>
-<p>The <code>inert</code> attribute keeps content visible but makes it completely non-interactive. Inert elements cannot be clicked, focused, selected, or found by assistive technology. The browser applies a visual dimming effect.</p>
-
-<code-block language="html" label="Inert elements" data-escape><!-- Visible but completely non-interactive -->
-<form inert>
-  <label for="name">Name</label>
-  <input type="text" id="name" value="Read-only form" />
-  <button type="submit">Submit</button>
-</form></code-block>
-
-<div class="example">
-  <form inert style="opacity: 0.5;">
-    <label for="demo-name">Name</label>
-    <input type="text" id="demo-name" value="Cannot interact" />
-    <button type="submit">Submit</button>
-  </form>
-  <p><small>The form above is inert — try clicking or tabbing into it.</small></p>
-</div>
-
-<h3>When to Use inert</h3>
-<ul>
-  <li><strong>Behind modals:</strong> Prevent interaction with page content while a dialog is open. Note: <code>&lt;dialog&gt;</code> with <code>showModal()</code> applies inert automatically.</li>
-  <li><strong>Loading states:</strong> Disable a form section while a submission is in progress</li>
-  <li><strong>Preview mode:</strong> Show content that shouldn't be interacted with yet</li>
-  <li><strong>Step-by-step flows:</strong> Disable future steps until the current step is complete</li>
-</ul>
-
-<code-block language="html" label="Inert behind modal" data-escape><!-- Disable page content while a modal is open -->
-<main id="page-content">
-  <h1>Page Content</h1>
-  <p>This becomes inert when the modal opens.</p>
-</main>
-
-<dialog id="my-dialog">
-  <p>Modal content here. The page behind is inert.</p>
-  <button onclick="this.closest('dialog').close()">Close</button>
-</dialog></code-block>
-
-<h2>JavaScript API</h2>
-<p>Both <code>hidden</code> and <code>inert</code> are reflected as boolean properties on the element.</p>
-
-<code-block language="js" label="JavaScript control" data-escape>// Toggle hidden
-element.hidden = true;   // hide
-element.hidden = false;  // show
-
-// Toggle inert
-element.inert = true;    // disable interaction
-element.inert = false;   // re-enable
-
-// Check state
-if (element.hidden) { /* ... */ }
-if (element.inert) { /* ... */ }</code-block>
-
-<h2>Comparison with CSS</h2>
-<table>
-  <thead><tr><th>Approach</th><th>Visual</th><th>Accessibility</th><th>Semantic</th></tr></thead>
-  <tbody>
-    <tr><td><code>hidden</code></td><td>Removed from layout</td><td>Removed from tree</td><td>Yes — declares irrelevance</td></tr>
-    <tr><td><code>display: none</code></td><td>Removed from layout</td><td>Removed from tree</td><td>No — only visual</td></tr>
-    <tr><td><code>visibility: hidden</code></td><td>Invisible but occupies space</td><td>Removed from tree</td><td>No</td></tr>
-    <tr><td><code>.visually-hidden</code></td><td>Invisible, no space</td><td>Still in tree</td><td>No — screen reader only</td></tr>
-    <tr><td><code>inert</code></td><td>Visible (dimmed)</td><td>Removed from tree</td><td>Yes — declares non-interactivity</td></tr>
-  </tbody>
-</table>
-
-<p>Prefer <code>hidden</code> over <code>display: none</code> when the content is semantically irrelevant. Prefer <code>inert</code> when content should remain visible but non-interactive.</p>
-<p>Vanilla Breeze's reset makes <code>hidden</code> authoritative: <code>[hidden]:not([hidden="until-found"]) { display: none !important; }</code> sits in the lowest cascade layer, so no class, component or theme rule that sets <code>display</code> can accidentally reveal a hidden element. To show it, remove the attribute. <code>hidden="until-found"</code> is left alone so the browser's find-in-page can still reveal it.</p>
+  <code-block language="html" show-lines label="Hidden until the button shows it" data-escape><button type="button" data-toggle="hidden" data-toggle-target="#tracking">Show tracking history</button>
+<section id="tracking" hidden>
+  <h3>Tracking history</h3>
+  <ol>
+    <li>3 Nov, 09:14: Left the warehouse in Leeds</li>
+    <li>4 Nov, 06:02: Arrived at the regional hub</li>
+    <li>5 Nov, 07:45: Out for delivery</li>
+  </ol>
+</section></code-block>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Value</th><th>State</th></tr></thead>
+    <tbody>
+      <tr><td><code>hidden</code>, <code>hidden=""</code> or <code>hidden="hidden"</code></td><td>Hidden: not rendered (<code>display: none</code>).</td></tr>
+      <tr><td><code>hidden="until-found"</code></td><td>Hidden until found: rendered with <code>content-visibility: hidden</code>, so it takes no space and its content is skipped, but find-in-page can match it.</td></tr>
+      <tr><td>Any other value</td><td>Hidden (the invalid-value default).</td></tr>
+      <tr><td>Attribute absent</td><td>Shown.</td></tr>
+    </tbody>
+  </table>
+  <p>Keywords are case-insensitive. The attribute isn't inherited, but nothing inside a hidden element is rendered either. In script, <code>el.hidden</code> returns <code>true</code>, <code>false</code> or the string <code>"until-found"</code>, and accepts the same.</p>
+
+  <h3>Compared with inert</h3>
+  <table>
+    <thead><tr><th>Attribute</th><th>Visible</th><th>Usable</th><th>Accessibility tree</th><th>Find-in-page</th></tr></thead>
+    <tbody>
+      <tr><td><code>hidden</code></td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
+      <tr><td><code>hidden="until-found"</code></td><td>No</td><td>No</td><td>No, until revealed</td><td>Yes, and reveals it</td></tr>
+      <tr><td><a href="/docs/attributes/inert/"><code>inert</code></a></td><td>Yes, unstyled</td><td>No</td><td>No</td><td>Skipped in Chrome and Firefox; found in Safari</td></tr>
+      <tr><td>(none)</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Searchable collapsed content</h3>
+  <p>Search the demo for "passkey". The browser fires <code>beforematch</code> on the hidden element, removes <code>hidden</code>, and scrolls to the match. Use the event to update anything that tracks the open state, such as a button label.</p>
+  <browser-window
+    src="/docs/examples/demos/attr-hidden-until-found.html"
+    url="https://vanilla-breeze.com/hidden-until-found"
+    title="hidden=until-found"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="hidden=until-found with beforematch" data-escape><h2 id="q-sign-in">How do I sign in without a password?</h2>
+<section id="a-sign-in" hidden="until-found" aria-labelledby="q-sign-in">
+  <p>Open Settings, then Security, and choose "Add a passkey".</p>
+</section>
+
+<script type="module">
+  const answer = document.getElementById('a-sign-in');
+  answer.addEventListener('beforematch', () => {
+    // runs before the browser removes the hidden attribute
+  });
+</script></code-block>
+  <p>A closed <code>&lt;details&gt;</code> already does this for its content: find-in-page opens it. Don't nest a <code>hidden="until-found"</code> element inside one; use <code>until-found</code> for collapsed regions that aren't <code>&lt;details&gt;</code>, such as tab panels or "read more" sections. See <a href="/docs/attributes/open/"><code>open</code></a>.</p>
+
+  <h3>From script</h3>
+  <code-block language="javascript" show-lines label="The hidden property" data-escape>panel.hidden = true;            // hide
+panel.hidden = false;           // show
+panel.hidden = 'until-found';   // collapse but keep searchable
+
+if (panel.hidden === 'until-found') { /* … */ }</code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
+
+  <h3><code>[hidden]</code> always wins</h3>
+  <p>The browser hides elements with a plain <code>display: none</code>, which any author rule that sets <code>display</code> overrides: a <code>section { display: block }</code>, a layout's <code>display: grid</code>, a theme. VB's reset makes the attribute authoritative:</p>
+  <code-block language="css" label="src/base/reset.css" data-escape>[hidden]:not([hidden="until-found"]) {
+  display: none !important;
+}</code-block>
+  <p>It sits in the <code>reset</code> layer, the lowest one. An <code>!important</code> declaration in an earlier layer beats <code>!important</code> declarations in later layers and every normal declaration, so no VB component, layout, utility, theme or unlayered author rule can show a hidden element by accident. To show it, remove the attribute. <code>until-found</code> is left out so the browser's own <code>content-visibility</code> rule can do its work.</p>
+
+  <h3>VB's other visibility gates</h3>
+  <p>Two VB attributes use the same mechanism and are imported into the reset layer by <code>src/main.css</code>:</p>
   <ul>
-    <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> — automatically manages inert on the rest of the page</li>
-    <li><a href="/docs/elements/native/details/"><code>&lt;details&gt;</code></a> — native collapsible content</li>
-    <li><a href="/docs/attributes/data-show-when/"><code>data-show-when</code></a> — conditional visibility based on form field values</li>
-    <li><a href="/docs/attributes/class/">class: <code>.visually-hidden</code></a> — hide visually but keep accessible</li>
+    <li><a href="/docs/attributes/data-visible/"><code>data-visible="mobile|desktop"</code></a> (<code>src/utils/responsive.css</code>) hides content above or below the 48rem breakpoint.</li>
+    <li><a href="/docs/attributes/hide-until-ready/"><code>hide-until-ready</code> / <code>show-until-ready</code></a> (<code>src/utils/readiness.css</code>) hide a custom element until it is defined, or a placeholder after it is. Never without JavaScript, and never for more than 3 seconds.</li>
+  </ul>
+
+  <h3>Features that set hidden</h3>
+  <ul>
+    <li><a href="/docs/attributes/data-toggle/"><code>data-toggle="hidden"</code></a> flips it from a button and sets <code>aria-controls</code>, as in the demo.</li>
+    <li><a href="/docs/attributes/data-show-when/"><code>data-show-when</code> / <code>data-hide-when</code></a> set <code>hidden</code> and <code>inert</code> on a form section and disable its controls.</li>
+    <li>Many components hide their own parts with the attribute, which is why the reset rule matters.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Hidden content is removed from the accessibility tree, so screen readers don't announce it. Use <code>hidden</code> only when nobody should get the content.</li>
+    <li>To hide text visually but keep it for screen readers, use the <a href="/docs/accessibility-utilities/"><code>.visually-hidden</code></a> utility instead.</li>
+    <li><code>aria-labelledby</code> and <code>aria-describedby</code> can still point at a hidden element: its text is used for the name or description.</li>
+    <li><code>hidden="until-found"</code> content is not in the accessibility tree until it is revealed, so screen reader users can't reach it by reading or by their screen reader's own search. Give them a visible control that reveals it as well.</li>
+    <li>Hiding the element that has focus drops focus to the document. Move focus first, for example to the button that hid it.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <ul>
+    <li><code>hidden</code>: supported in every browser.</li>
+    <li><code>hidden="until-found"</code>: Chrome 102, Firefox 148, Safari 26.2. Safari doesn't yet scroll to the match correctly, and Firefox 139&ndash;147 had the same problem (as of November 2026). Browsers without support don't reveal the content on search.</li>
+    <li><code>beforematch</code> event: Chrome 102, Firefox 139, Safari 26.2.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Outside VB, CSS can undo <code>hidden</code>.</strong> Any <code>display</code> rule beats the browser's default. VB's reset prevents that; in your own projects add the same rule.</li>
+    <li><strong><code>until-found</code> needs a box.</strong> It works through <code>content-visibility</code>, which doesn't apply to inline elements or to <code>display: contents</code>. Use a block element such as <code>&lt;section&gt;</code> or <code>&lt;p&gt;</code>.</li>
+    <li><strong>Revealing removes the attribute.</strong> After a match the element is plainly shown. Re-collapse it yourself if your UI expects that.</li>
+    <li><strong><code>data-toggle="hidden"</code> on an <code>until-found</code> element</strong> turns it into plain <code>hidden</code> on the second click, because it toggles presence. Set <code>el.hidden = 'until-found'</code> from script instead.</li>
+    <li><strong>Hidden form controls are still submitted and validated</strong> (except <code>type="hidden"</code> inputs, which are never validated). A hidden <code>required</code> field blocks submit; disable it too, as <code>data-show-when</code> does.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/inert/"><code>inert</code></a> &mdash; keep content visible but unusable.</li>
+    <li><a href="/docs/attributes/open/"><code>open</code></a> &mdash; <code>&lt;details&gt;</code>, which is searchable when closed.</li>
+    <li><a href="/docs/attributes/popover/"><code>popover</code></a> &mdash; content that is hidden until a button opens it.</li>
+    <li><a href="/docs/elements/native/details/"><code>&lt;details&gt;</code></a> &mdash; the native disclosure widget.</li>
+  </ul>
+
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>hidden</code></strong> &mdash; content that isn't relevant right now, for everyone.</li>
+    <li><strong><code>hidden="until-found"</code></strong> &mdash; long collapsed content people may search for.</li>
+    <li><strong><code>&lt;details&gt;</code></strong> &mdash; a disclosure with its own button, searchable when closed.</li>
+    <li><strong><a href="/docs/attributes/inert/"><code>inert</code></a></strong> &mdash; visible for context but not usable.</li>
+    <li><strong><a href="/docs/accessibility-utilities/"><code>.visually-hidden</code></a></strong> &mdash; for screen readers only.</li>
+    <li><strong><a href="/docs/attributes/data-visible/"><code>data-visible</code></a></strong> &mdash; one version for small screens and another for large.</li>
+    <li><strong><a href="/docs/attributes/hide-until-ready/"><code>hide-until-ready</code></a></strong> &mdash; avoid a flash of an un-upgraded component.</li>
+    <li><strong><a href="/docs/attributes/data-show-when/"><code>data-show-when</code></a></strong> &mdash; form sections that depend on other answers.</li>
   </ul>
 </section>

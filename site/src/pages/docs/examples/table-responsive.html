@@ -11,21 +11,22 @@ currentSection: explore
 <!-- Responsive Card Demo -->
 <section class="demo-section">
   <h2>Responsive Card Layout</h2>
-  <p>When the table container is narrower than 500px, each row transforms into a card with labeled fields. Uses <code>data-responsive="card"</code> on the table and <code>data-label</code> on each cell.</p>
+  <p>When the table container is narrower than 500px, each row transforms into a card with labeled fields. Uses <code>data-responsive="card"</code> on the table; each cell's label comes from <code>data-label</code> or, when that is missing, from its column header.</p>
 
-  <div class="resize-hint">
+  <p class="resize-hint">
     <icon-wc name="move-horizontal" size="sm"></icon-wc>
     <span>Resize your browser window to see the table transform into cards at narrow widths.</span>
-  </div>
+  </p>
 
   <data-table>
     <table data-responsive="card">
+      <caption>Team directory</caption>
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Role</th>
-          <th>Status</th>
+          <th scope="col">Name</th>
+          <th scope="col">Email</th>
+          <th scope="col">Role</th>
+          <th scope="col">Status</th>
         </tr>
       </thead>
       <tbody>
@@ -69,42 +70,43 @@ currentSection: explore
   <h2>Card Layout Preview</h2>
   <p>This container is constrained to 400px width to demonstrate the card layout without resizing.</p>
 
-  <div class="narrow-container">
-    <p class="container-label">Container width: 400px</p>
+  <section class="narrow-container" aria-labelledby="narrow-label">
+    <p class="container-label" id="narrow-label">Container width: 400px</p>
     <data-table>
       <table data-responsive="card">
+        <caption>Accessories in stock (labels derived from the headers)</caption>
         <thead>
           <tr>
-            <th>Product</th>
-            <th>Price</th>
-            <th>Stock</th>
+            <th scope="col">Product</th>
+            <th scope="col">Price</th>
+            <th scope="col">Stock</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td data-label="Product">Wireless Keyboard</td>
-            <td data-label="Price">$79.99</td>
-            <td data-label="Stock">42 units</td>
+            <td>Wireless Keyboard</td>
+            <td>$79.99</td>
+            <td>42 units</td>
           </tr>
           <tr>
-            <td data-label="Product">USB-C Hub</td>
-            <td data-label="Price">$49.99</td>
-            <td data-label="Stock">128 units</td>
+            <td>USB-C Hub</td>
+            <td>$49.99</td>
+            <td>128 units</td>
           </tr>
           <tr>
-            <td data-label="Product">Monitor Stand</td>
-            <td data-label="Price">$119.99</td>
-            <td data-label="Stock">15 units</td>
+            <td>Monitor Stand</td>
+            <td>$119.99</td>
+            <td>15 units</td>
           </tr>
           <tr>
-            <td data-label="Product">Webcam HD</td>
-            <td data-label="Price">$89.99</td>
-            <td data-label="Stock">67 units</td>
+            <td>Webcam HD</td>
+            <td>$89.99</td>
+            <td>67 units</td>
           </tr>
         </tbody>
       </table>
     </data-table>
-  </div>
+  </section>
 </section>
 
 <!-- How It Works -->
@@ -112,42 +114,44 @@ currentSection: explore
   <h2>How It Works</h2>
 
   <h3>HTML Structure</h3>
-  <p>Add <code>data-responsive="card"</code> to the table and <code>data-label</code> to each <code>&lt;td&gt;</code>:</p>
+  <p>Add <code>data-responsive="card"</code> to the table. Card labels come from the column headers; add <code>data-label</code> to a <code>&lt;td&gt;</code> only to override one:</p>
   <pre><code>&lt;data-table&gt;
   &lt;table data-responsive="card"&gt;
+    &lt;caption&gt;Team directory&lt;/caption&gt;
     &lt;thead&gt;
       &lt;tr&gt;
-        &lt;th&gt;Name&lt;/th&gt;
-        &lt;th&gt;Email&lt;/th&gt;
+        &lt;th scope="col"&gt;Name&lt;/th&gt;
+        &lt;th scope="col"&gt;Email&lt;/th&gt;
       &lt;/tr&gt;
     &lt;/thead&gt;
     &lt;tbody&gt;
       &lt;tr&gt;
-        &lt;td data-label="Name"&gt;Alice Chen&lt;/td&gt;
-        &lt;td data-label="Email"&gt;alice@example.com&lt;/td&gt;
+        &lt;td&gt;Alice Chen&lt;/td&gt;
+        &lt;td data-label="Contact"&gt;alice@example.com&lt;/td&gt;
       &lt;/tr&gt;
     &lt;/tbody&gt;
   &lt;/table&gt;
 &lt;/data-table&gt;</code></pre>
 
   <h3>Container Query Behavior</h3>
-  <p>The <code>data-table</code> element uses <code>container-type: inline-size</code> to enable container queries. When the container is narrower than 500px:</p>
+  <p>The <code>data-table</code> element uses <code>container-type: inline-size</code> to enable container queries (VB sections and articles do too, so a plain table works the same way). When the container is narrower than 500px:</p>
   <ul>
-    <li>The table header is hidden</li>
-    <li>Each row becomes a bordered card</li>
-    <li>Each cell displays as a grid with the <code>data-label</code> value on the left</li>
+    <li>The header row is hidden visually but stays in the accessibility tree</li>
+    <li>Each body and footer row becomes a bordered card</li>
+    <li>Each cell displays as a grid with its label at the inline start</li>
+    <li>A small script restores explicit table roles (changing the display of rows and cells drops them in some browsers) and fills missing <code>data-label</code> values from the column headers</li>
   </ul>
 
   <h3>Benefits</h3>
   <dl>
     <dt>Progressive Enhancement</dt>
-    <dd>Tables remain fully functional without JavaScript. The responsive behavior is pure CSS.</dd>
+    <dd>The card layout is pure CSS and works without JavaScript; the script only adds roles and missing labels.</dd>
 
     <dt>Container-Based</dt>
     <dd>Responds to the container width, not viewport. Works in sidebars, modals, and constrained layouts.</dd>
 
     <dt>Accessible</dt>
-    <dd>Screen readers still receive the full table semantics. Labels provide context for each value.</dd>
+    <dd>Column headers stay available to screen readers and the table, row and cell roles are restored explicitly, so table navigation still works in card mode. Without JavaScript, browsers that drop table roles on re-displayed rows (notably Safari) will read the cards as plain text.</dd>
   </dl>
 </section>
 

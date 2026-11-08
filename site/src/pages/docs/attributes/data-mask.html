@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-mask"
-description: "Format input values as the user types with preset masks for phone, credit card, date, and more. Supports custom patterns with digit, letter, and wildcard tokens."
+description: "Format a text input as the user types, from a preset (US phone, card, US date, SSN, ZIP) or your own pattern. Incomplete values are invalid, so required works."
 attributeName: data-mask
 category: form-controls
 attributeType: data
@@ -12,259 +12,219 @@ crumbLabel: Data Attributes
 ---
 
 <section>
-    <h2>Overview</h2>
-    <p>The <code>data-mask</code> attribute formats input values in real time as the user types. Choose from preset masks for common formats or define custom patterns with digit, letter, and wildcard tokens.</p>
+  <h2>Overview</h2>
+  <p><code>data-mask</code> formats a text input while the user types: it keeps only the characters the pattern allows, inserts the separators, and keeps the caret where the user is working. Use it when a value has exactly one shape. When any order of allowed characters is fine, use <a href="/docs/attributes/data-accept/"><code>data-accept</code></a> instead.</p>
 
-    <browser-window
-      src="/docs/examples/demos/mask-basic.html"
-      url="https://vanilla-breeze.com/mask"
-      title="Input Mask"
+  <browser-window
+    src="/docs/examples/demos/mask-basic.html"
+    url="https://vanilla-breeze.com/mask"
+    title="Input Mask"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>Usage</h2>
+  <code-block language="html" show-lines label="Phone number mask" data-escape><label for="phone">Phone number</label>
+<input type="tel" id="phone" name="phone" data-mask="phone" placeholder="(555) 123-4567"></code-block>
+  <p>Masks apply to <code>type="text"</code>, <code>tel</code> and <code>search</code> inputs (and inputs with no type). Other types, such as <code>email</code> and <code>number</code>, are left alone. Without JavaScript the input accepts free text.</p>
+</section>
+
+<section>
+  <h2>Options</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Default</th><th>Effect</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-mask</code></td>
+        <td><code>phone</code>, <code>credit-card</code>, <code>date</code>, <code>ssn</code>, <code>zip</code>, <code>custom</code></td>
+        <td>&mdash;</td>
+        <td>The preset, or <code>custom</code> with <code>data-pattern</code>. An unknown value does nothing until it is corrected; the input is then picked up.</td>
+      </tr>
+      <tr>
+        <td><code>data-pattern</code></td>
+        <td>pattern string</td>
+        <td>&mdash;</td>
+        <td>Required for <code>custom</code>. Tokens: <code>#</code> digit, <code>A</code> letter, <code>*</code> letter or digit. Every other character is a literal that is inserted for the user.</td>
+      </tr>
+      <tr>
+        <td><code>data-mask-message</code></td>
+        <td>string</td>
+        <td>"Enter the complete value, like <var>placeholder</var>."</td>
+        <td>Validation message while the value is started but not complete.</td>
+      </tr>
+      <tr>
+        <td><code>data-raw-value</code></td>
+        <td>string</td>
+        <td>&mdash;</td>
+        <td>Set by the script: the characters the user typed, without separators (<code>5551234567</code>). For scripts only; it is <strong>not submitted</strong>.</td>
+      </tr>
+      <tr>
+        <td><code>inputmode</code>, <code>maxlength</code></td>
+        <td>native</td>
+        <td>set if absent</td>
+        <td><code>inputmode="numeric"</code> for digit-only patterns; <code>maxlength</code> = pattern length. Values you author are kept.</td>
+      </tr>
+      <tr>
+        <td><code>data-mask-init</code></td>
+        <td>boolean</td>
+        <td>&mdash;</td>
+        <td>Set by the script once a valid mask is wired. Turns on tabular numerals.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Presets</h3>
+  <p>The presets are <strong>US formats</strong>. For other countries, write a <code>custom</code> pattern or use <code>data-accept</code>.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th>Value</th><th>Pattern</th><th>Example</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>phone</code></td><td><code>(###) ###-####</code></td><td>(555) 123-4567 &mdash; US national number</td></tr>
+      <tr><td><code>credit-card</code></td><td><code>#### #### #### ####</code></td><td>1234 5678 9012 3456 &mdash; 16 digits (not 15-digit Amex)</td></tr>
+      <tr><td><code>date</code></td><td><code>##/##/####</code></td><td>01/15/2026 &mdash; US month/day/year order; digits are not checked as a real date</td></tr>
+      <tr><td><code>ssn</code></td><td><code>###-##-####</code></td><td>123-45-6789</td></tr>
+      <tr><td><code>zip</code></td><td><code>#####</code></td><td>90210 &mdash; five-digit ZIP</td></tr>
+    </tbody>
+  </table>
+  <p>Letters keep the case the user typed; the mask does not change case. Add <code>text-transform: uppercase</code> in CSS if you want them to look upper-case (the submitted value is unchanged).</p>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <p>No custom events. The input fires its native <code>input</code> and <code>change</code> events with the formatted value; read <code>data-raw-value</code> in the handler when you need the bare characters.</p>
+
+  <code-block language="javascript" show-lines label="Formatted and raw values" data-escape>const phone = document.getElementById('phone');
+
+phone.addEventListener('input', () => {
+  console.log(phone.value);            // (555) 123-4567 (submitted)
+  console.log(phone.dataset.rawValue); // 5551234567 (scripts only)
+});</code-block>
+  <p>The form submits the formatted value. If your server needs the bare value, strip the separators there, or copy <code>data-raw-value</code> into a hidden input on <code>submit</code>.</p>
+</section>
+
+<section>
+  <h2>Validation</h2>
+  <p>A value the user has started but not finished (for example <code>(555) 12</code>) is invalid: the mask calls <code>setCustomValidity()</code>, so the form will not submit and <code>&lt;form-field&gt;</code> shows its error. An empty value is valid unless the input is <code>required</code>. The mask clears only its own message, so other validators on the same input keep working. It checks the shape only; it does not check that a date is real or a card number passes its checksum.</p>
+</section>
+
+<section>
+  <h2>Styling</h2>
+  <p>No public hooks. A wired mask input gets <code>font-variant-numeric: tabular-nums</code> so digits line up while the value grows. Otherwise it is styled as any text input.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Give the expected shape in visible text (the label or a hint), not only in <code>placeholder</code>, which disappears once the user types.</li>
+    <li>Digit-only masks set <code>inputmode="numeric"</code>, so phones show a number keypad.</li>
+    <li>Typing in the middle keeps the caret after the typed character. <kbd>Backspace</kbd> or <kbd>Delete</kbd> next to a separator removes the neighbouring character instead of stalling on the separator.</li>
+    <li>An incomplete value is reported as invalid with a readable message (override it with <code>data-mask-message</code>).</li>
+    <li>IME composition is left alone until it ends, so multi-key input methods are not interrupted.</li>
+    <li><code>form.reset()</code> restores the authored value, formatted, and refreshes <code>data-raw-value</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Presets</h3>
+  <browser-window
+      src="/docs/snippets/demos/data-mask-presets.html"
+      url="data-mask-presets"
+      title="Mask presets"
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Phone number mask" data-escape><label for="phone">Phone number</label>
-<input type="tel" id="phone" data-mask="phone" placeholder="(555) 123-4567"></code-block>
-  </section>
+    <code-block language="html" show-lines label="Mask presets" data-escape><layout-stack data-layout-gap="m">
+  <form-field>
+    <label for="phone">Phone (US)</label>
+    <input type="tel" id="phone" name="phone" data-mask="phone" placeholder="(555) 123-4567" autocomplete="tel" />
+  </form-field>
+  <form-field>
+    <label for="card">Card number</label>
+    <input type="text" id="card" name="card" data-mask="credit-card" placeholder="1234 5678 9012 3456" autocomplete="cc-number" />
+  </form-field>
+  <form-field>
+    <label for="date">Date (MM/DD/YYYY)</label>
+    <input type="text" id="date" name="date" data-mask="date" placeholder="MM/DD/YYYY" />
+  </form-field>
+  <form-field>
+    <label for="ssn">SSN</label>
+    <input type="text" id="ssn" name="ssn" data-mask="ssn" placeholder="123-45-6789" />
+  </form-field>
+  <form-field>
+    <label for="zip">ZIP code</label>
+    <input type="text" id="zip" name="zip" data-mask="zip" placeholder="12345" autocomplete="postal-code" />
+  </form-field>
+</layout-stack></code-block>
 
-  <section>
-    <h2>How It Works</h2>
-    <p>Add <code>data-mask</code> with a preset name or <code>"custom"</code> to any text input. The init script:</p>
-    <ol>
-      <li>Resolves the mask pattern from the preset name or <code>data-pattern</code> attribute</li>
-      <li>Intercepts <code>input</code> events and reformats the value to match the pattern</li>
-      <li>Manages cursor position so the caret stays in the correct place after reformatting</li>
-      <li>Handles IME composition events (<code>compositionstart</code> / <code>compositionend</code>) to avoid interfering with multi-byte input</li>
-      <li>Sets <code>inputmode</code> automatically (<code>"numeric"</code> for digit-only masks)</li>
-      <li>Sets <code>maxlength</code> from the pattern length</li>
-      <li>Stores the raw unformatted value in <code>data-raw-value</code></li>
-    </ol>
-    <p>The underlying input remains a real form control. The displayed value includes formatting characters, while <code>data-raw-value</code> provides the clean value for submission or processing.</p>
-  </section>
+  <h3>Custom patterns</h3>
+  <p>Literals can include digits: the <code>1</code> in <code>+1 ###-###-####</code> is inserted, never read as typed input.</p>
+  <browser-window
+      src="/docs/snippets/demos/data-mask-custom.html"
+      url="data-mask-custom"
+      title="Custom mask patterns"
+      shadow>
+    </browser-window>
 
-  <section>
-    <h2>Attributes</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>data-mask</code></td>
-          <td>string</td>
-          <td>Preset name (<code>phone</code>, <code>credit-card</code>, <code>date</code>, <code>ssn</code>, <code>zip</code>) or <code>custom</code>.</td>
-        </tr>
-        <tr>
-          <td><code>data-pattern</code></td>
-          <td>string</td>
-          <td>Custom mask pattern. Required when <code>data-mask="custom"</code>. Uses token characters for placeholders.</td>
-        </tr>
-        <tr>
-          <td><code>data-raw-value</code></td>
-          <td>string</td>
-          <td>Set automatically. Contains the unformatted input value (digits/letters only, no separators).</td>
-        </tr>
-        <tr>
-          <td><code>data-mask-init</code></td>
-          <td>boolean</td>
-          <td>Set automatically to prevent double-binding. Do not set manually.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+    <code-block language="html" show-lines label="Custom mask patterns" data-escape><layout-stack data-layout-gap="m">
+  <form-field>
+    <label for="plate">License plate</label>
+    <input type="text" id="plate" name="plate" data-mask="custom" data-pattern="AAA-####" placeholder="ABC-1234" />
+  </form-field>
+  <form-field>
+    <label for="product-key">Product key</label>
+    <input type="text" id="product-key" name="key" data-mask="custom" data-pattern="****-****-****" placeholder="A1B2-C3D4-E5F6" />
+  </form-field>
+  <form-field>
+    <label for="intl">Phone with country code</label>
+    <input type="tel" id="intl" name="intl" data-mask="custom" data-pattern="+1 ###-###-####" placeholder="+1 555-123-4567" />
+  </form-field>
+</layout-stack></code-block>
 
-  <section>
-    <h2>Preset Masks</h2>
-    <p>The following presets are available out of the box:</p>
+  <h3>Required, with form-field</h3>
+  <p>Type a few digits and submit: the incomplete number is rejected.</p>
+  <browser-window
+      src="/docs/snippets/demos/data-mask-required.html"
+      url="data-mask-required"
+      title="Required masked input"
+      shadow>
+    </browser-window>
 
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Value</th>
-          <th>Pattern</th>
-          <th>Example output</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>phone</code></td>
-          <td><code>(###) ###-####</code></td>
-          <td>(555) 123-4567</td>
-        </tr>
-        <tr>
-          <td><code>credit-card</code></td>
-          <td><code>#### #### #### ####</code></td>
-          <td>1234 5678 9012 3456</td>
-        </tr>
-        <tr>
-          <td><code>date</code></td>
-          <td><code>##/##/####</code></td>
-          <td>01/15/2025</td>
-        </tr>
-        <tr>
-          <td><code>ssn</code></td>
-          <td><code>###-##-####</code></td>
-          <td>123-45-6789</td>
-        </tr>
-        <tr>
-          <td><code>zip</code></td>
-          <td><code>#####</code></td>
-          <td>90210</td>
-        </tr>
-      </tbody>
-    </table>
+    <code-block language="html" show-lines label="Required masked input" data-escape><form>
+  <layout-stack data-layout-gap="m">
+    <form-field>
+      <label for="phone-req">Phone number</label>
+      <input type="tel" id="phone-req" name="phone" data-mask="phone" required placeholder="(555) 123-4567" />
+      <output class="hint" for="phone-req">US numbers only.</output>
+      <output class="error" for="phone-req" aria-live="polite">Enter all ten digits.</output>
+    </form-field>
+    <layout-cluster data-layout-gap="s">
+      <button type="submit">Save</button>
+      <button type="reset" class="secondary">Reset</button>
+    </layout-cluster>
+  </layout-stack>
+</form></code-block>
+</section>
 
-    <div class="example">
-      <layout-stack data-layout-gap="m">
-        <div>
-          <label for="phone-ex">Phone</label>
-          <input type="tel" id="phone-ex" data-mask="phone" placeholder="(555) 123-4567">
-        </div>
-        <div>
-          <label for="card-ex">Credit card</label>
-          <input type="text" id="card-ex" data-mask="credit-card" placeholder="1234 5678 9012 3456">
-        </div>
-        <div>
-          <label for="date-ex">Date</label>
-          <input type="text" id="date-ex" data-mask="date" placeholder="MM/DD/YYYY">
-        </div>
-      </layout-stack>
-    </div>
-
-    <code-block language="html" show-lines label="All preset masks" data-escape><label for="phone-demo">Phone</label>
-<input type="tel" id="phone-demo" data-mask="phone" placeholder="(555) 123-4567">
-
-<label for="card-demo">Credit card</label>
-<input type="text" id="card-demo" data-mask="credit-card" placeholder="1234 5678 9012 3456">
-
-<label for="date-demo">Date</label>
-<input type="text" id="date-demo" data-mask="date" placeholder="MM/DD/YYYY">
-
-<label for="ssn-demo">SSN</label>
-<input type="text" id="ssn-demo" data-mask="ssn" placeholder="123-45-6789">
-
-<label for="zip-demo">ZIP</label>
-<input type="text" id="zip-demo" data-mask="zip" placeholder="12345"></code-block>
-  </section>
-
-  <section>
-    <h2>Custom Patterns</h2>
-    <p>Set <code>data-mask="custom"</code> and provide a <code>data-pattern</code> attribute with your own mask. Three token characters are supported:</p>
-
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Token</th>
-          <th>Accepts</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>#</code></td>
-          <td>Digit (0&ndash;9)</td>
-          <td>Matches any single digit.</td>
-        </tr>
-        <tr>
-          <td><code>A</code></td>
-          <td>Letter (a&ndash;z, A&ndash;Z)</td>
-          <td>Matches any single letter. Output is uppercased.</td>
-        </tr>
-        <tr>
-          <td><code>*</code></td>
-          <td>Any character</td>
-          <td>Matches any single letter or digit. Output is uppercased.</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p>Any other character in the pattern is treated as a literal separator and inserted automatically.</p>
-
-    <div class="example">
-      <layout-stack data-layout-gap="m">
-        <div>
-          <label for="plate-ex">License plate</label>
-          <input type="text" id="plate-ex" data-mask="custom" data-pattern="AAA-####" placeholder="ABC-1234">
-        </div>
-        <div>
-          <label for="key-ex">Product key</label>
-          <input type="text" id="key-ex" data-mask="custom" data-pattern="****-****-****" placeholder="A1B2-C3D4-E5F6">
-        </div>
-      </layout-stack>
-    </div>
-
-    <code-block language="html" show-lines label="Custom mask patterns" data-escape><!-- License plate: ABC-1234 -->
-<label for="plate">License plate</label>
-<input type="text" id="plate" data-mask="custom" data-pattern="AAA-####"
-  placeholder="ABC-1234">
-
-<!-- Product key: A1B2-C3D4-E5F6 -->
-<label for="product-key">Product key</label>
-<input type="text" id="product-key" data-mask="custom" data-pattern="****-****-****"
-  placeholder="A1B2-C3D4-E5F6"></code-block>
-  </section>
-
-  <section>
-    <h2>With Form Field</h2>
-    <p>Wrap in <code>&lt;form-field&gt;</code> for validation feedback, helper text, and required indicators.</p>
-
-    <code-block language="html" show-lines label="Masked input inside form-field" data-escape><form-field>
-  <label for="phone-field">Phone number</label>
-  <input type="tel" id="phone-field" data-mask="phone" required
-    placeholder="(555) 123-4567">
-  <small slot="help">US phone numbers only.</small>
-</form-field></code-block>
-  </section>
-
-  <section>
-    <h2>Raw Value</h2>
-    <p>The <code>data-raw-value</code> attribute is updated on every input event and contains the unformatted value &mdash; digits and letters only, with no separators. Use it when submitting or processing the value.</p>
-
-    <code-block language="javascript" show-lines label="Accessing the raw value" data-escape>const input = document.querySelector('[data-mask="phone"]');
-
-// Display value: (555) 123-4567
-console.log(input.value);
-
-// Raw unformatted value: 5551234567
-console.log(input.dataset.rawValue);</code-block>
-  </section>
-
-  <section>
-    <h2>Events</h2>
-    <p>The masked input fires native <code>input</code> and <code>change</code> events. Access the raw value from <code>data-raw-value</code> in your event handler.</p>
-
-    <code-block language="javascript" show-lines label="Listening for input events" data-escape>const input = document.querySelector('[data-mask]');
-
-input.addEventListener('input', () => {
-  console.log('Formatted:', input.value);
-  console.log('Raw:', input.dataset.rawValue);
-});</code-block>
-  </section>
-
-  <section>
-    <h2>Dynamic Elements</h2>
-    <p>Masked inputs added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
-
-    <code-block language="javascript" show-lines label="Dynamically added masked inputs" data-escape>// Dynamically added masked inputs are auto-enhanced via MutationObserver
-const input = document.createElement('input');
-input.type = 'tel';
-input.dataset.mask = 'phone';
-document.body.appendChild(input);
-// input is ready to use — no manual init needed</code-block>
-  </section>
-
-  <section>
-    <h2>Accessibility</h2>
-    <ul>
-      <li><code>inputmode="numeric"</code> is set automatically for digit-only masks, showing a numeric keyboard on mobile devices</li>
-      <li><code>maxlength</code> is derived from the pattern length, giving screen readers the expected input length</li>
-      <li>IME composition is handled correctly &mdash; masking pauses during <code>compositionstart</code> and resumes after <code>compositionend</code></li>
-      <li>Cursor position is managed so the caret never jumps unexpectedly during typing or deletion</li>
-      <li>A visible <code>&lt;label&gt;</code> is required for the input</li>
-      <li>The <code>placeholder</code> attribute should show the expected format as a hint</li>
-      <li>Without JavaScript, the input accepts freeform text &mdash; progressive enhancement</li>
-    </ul>
-  </section>
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-accept/"><code>data-accept</code></a> &mdash; a character filter with no fixed shape. If both are on one input, <code>data-mask</code> wins.</li>
+    <li><a href="/docs/elements/native/input/#input-masking-data-mask"><code>&lt;input&gt;</code>: input masking</a> &mdash; the native element and the other input enhancements.</li>
+    <li><a href="/docs/elements/web-components/form-field/"><code>&lt;form-field&gt;</code></a> &mdash; hint and error outputs.</li>
+    <li><a href="/docs/attributes/required/"><code>required</code></a> &mdash; works with the mask's incomplete-value check.</li>
+    <li><a href="/docs/attributes/inputmode/"><code>inputmode</code></a> &mdash; pair a numeric mask with a numeric keyboard.</li>
+    <li><a href="/docs/attributes/pattern/"><code>pattern</code></a> &mdash; native validation of the final value.</li>
+    <li><a href="/docs/attributes/is/"><code>is</code></a> &mdash; customized built-ins, and why VB uses <code>data-*</code> enhancers like this one instead.</li>
+  </ul>
+  <h3>data-mask or data-accept</h3>
+  <ul>
+    <li><strong><code>data-mask</code></strong> &mdash; exactly one valid shape, with separators inserted: a US phone number, a product key.</li>
+    <li><strong><code>data-accept</code></strong> &mdash; only the characters are restricted, and the user types any separators: international phone numbers, postcodes of varying shape.</li>
+  </ul>
+</section>

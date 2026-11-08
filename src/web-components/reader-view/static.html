@@ -1,47 +1,39 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Reader View (Static Fallback)</title>
-  <style>
-    /*
-      Minimal baseline styling for the no-JS fallback.
-      A production page would load the project stylesheet instead;
-      these rules exist only so the file is self-contained.
-    */
-    *, *::before, *::after { box-sizing: border-box; }
-
-    body {
-      font-family: system-ui, sans-serif;
-      line-height: 1.5;
-      max-inline-size: 40rem;
-      margin-inline: auto;
-      padding: 2rem 1rem;
-    }
-  </style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Reader View — Static Fallback</title>
+  <link rel="stylesheet" href="/src/main.css"/>
 </head>
 <body>
-
   <!--
-    Upgrade relationship
-    ====================
-    This static HTML IS the baseline that <reader-view> enhances.
+    Static fallback for <reader-view>.
 
-    When JavaScript loads and the <reader-view> custom element is
-    defined, the markup is progressively enhanced with additional
-    interactivity, ARIA attributes, and keyboard navigation.
-
-    Without JS the core content remains accessible and functional.
+    Upgrade relationship:
+    - Without JS: <reader-view> is a plain block element. Its children
+      render in document order as a normal scrolling article; wrapping
+      them in <layout-columns> gives the same measure and rhythm the
+      upgraded component uses.
+    - With JS: the children are moved (not cloned) into a scroll
+      container, a chrome bar (mode, font size, columns) is added, and
+      pages mode turns the same <layout-columns> into a paged,
+      full-viewport reader.
+    - Print: always a single static flow of the article.
   -->
-
-  <h1>Reader View</h1>
-
-  <noscript>
-    <p>This component works best with JavaScript enabled.</p>
-  </noscript>
-
-  <!-- TODO: Add meaningful static fallback markup for <reader-view> -->
-
+  <main>
+    <reader-view reader-title="On the Nature of Slow Reading">
+      <layout-columns>
+        <article data-prose>
+          <h1>On the Nature of Slow Reading</h1>
+          <p>There is a particular quality of attention that long-form reading demands, a patience the eye must relearn each time we return to it.</p>
+          <h2>The Measure</h2>
+          <p>Typographers call the optimal line length the measure. Ideal prose sits at roughly 45 to 75 characters per line; beyond that the eye loses its place on the return sweep.</p>
+          <h2>Pagination and Flow</h2>
+          <p>The page, unlike the scroll, imposes a contract: a small act of completion at each turn, a breath between clauses.</p>
+        </article>
+      </layout-columns>
+    </reader-view>
+  </main>
 </body>
 </html>

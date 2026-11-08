@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>draggable with VB's drag state hooks</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    #todo, #done {
+      min-block-size: 6rem;
+      padding: var(--size-s);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+      list-style: none;
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="m">
+    <h1 class="visually-hidden">Drag to complete</h1>
+    <p>Drag a task into Done, or use its button. Both do the same thing.</p>
+    <layout-grid data-layout-min="s" data-layout-gap="m">
+      <section aria-labelledby="todo-title">
+        <h2 id="todo-title">To do</h2>
+        <ul id="todo" data-layout="stack" data-layout-gap="xs">
+          <li draggable="true" id="task-1">Write release notes <button type="button" class="ghost" data-done="task-1">Mark done</button></li>
+          <li draggable="true" id="task-2">Update screenshots <button type="button" class="ghost" data-done="task-2">Mark done</button></li>
+          <li draggable="true" id="task-3">Email beta testers <button type="button" class="ghost" data-done="task-3">Mark done</button></li>
+        </ul>
+      </section>
+      <section aria-labelledby="done-title">
+        <h2 id="done-title">Done</h2>
+        <ul id="done" data-layout="stack" data-layout-gap="xs"></ul>
+      </section>
+    </layout-grid>
+    <p aria-live="polite" id="status"></p>
+  </layout-stack>
+
+  <script type="module">
+    const done = document.getElementById('done');
+    const status = document.getElementById('status');
+
+    function complete(item) {
+      item.removeAttribute('draggable');
+      item.querySelector('button')?.remove();
+      done.append(item);
+      status.textContent = `${item.textContent.trim()} moved to Done.`;
+    }
+
+    document.addEventListener('dragstart', (e) => {
+      const item = e.target.closest?.('[draggable="true"]');
+      if (!item) return;
+      e.dataTransfer.setData('text/plain', item.id);
+      e.dataTransfer.effectAllowed = 'move';
+      item.toggleAttribute('data-dragging', true);
+    });
+
+    document.addEventListener('dragend', (e) => {
+      e.target.removeAttribute?.('data-dragging');
+    });
+
+    done.addEventListener('dragover', (e) => {
+      e.preventDefault(); // allow the drop
+      e.dataTransfer.dropEffect = 'move';
+      done.toggleAttribute('data-drag-over', true);
+    });
+
+    done.addEventListener('dragleave', () => done.removeAttribute('data-drag-over'));
+
+    done.addEventListener('drop', (e) => {
+      e.preventDefault();
+      done.removeAttribute('data-drag-over');
+      const item = document.getElementById(e.dataTransfer.getData('text/plain'));
+      if (item) complete(item);
+    });
+
+    document.addEventListener('click', (e) => {
+      const button = e.target.closest('[data-done]');
+      if (button) complete(document.getElementById(button.dataset.done));
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

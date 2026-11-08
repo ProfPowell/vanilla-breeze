@@ -64,6 +64,13 @@ crumbLabel: Web Components
 
 <section>
   <h2>Sizes</h2>
+  <browser-window
+    src="/docs/snippets/demos/status-wc-sizes.html"
+    url="https://vanilla-breeze.com/status-wc/sizes"
+    title="status-wc sizes"
+    shadow>
+  </browser-window>
+
   <code-block language="html" show-lines label="data-size" data-escape><status-wc data-variant="online" data-size="xs">xs</status-wc>
 <status-wc data-variant="online" data-size="sm">sm</status-wc>
 <status-wc data-variant="online" data-size="md">md (default)</status-wc>
@@ -73,10 +80,17 @@ crumbLabel: Web Components
 <section>
   <h2>Position</h2>
   <p><code>data-position</code> controls where the dot sits relative to the label.</p>
+  <browser-window
+    src="/docs/snippets/demos/status-wc-position.html"
+    url="https://vanilla-breeze.com/status-wc/position"
+    title="status-wc position and pulse"
+    shadow>
+  </browser-window>
+
   <code-block language="html" show-lines label="Position variants" data-escape><status-wc data-variant="live" data-position="before">Live</status-wc>
 <status-wc data-variant="live" data-position="after">Live</status-wc>
-<status-wc data-variant="online" data-position="only" aria-label="Online"></status-wc></code-block>
-  <p><strong>Bare dot:</strong> <code>data-position="only"</code> visually hides the label but keeps it for screen readers. Required: <code>aria-label</code> or slot text content.</p>
+<status-wc data-variant="online" data-position="only"></status-wc></code-block>
+  <p><strong>Bare dot:</strong> <code>data-position="only"</code> visually hides the label but keeps it for screen readers. With no slot text, the component renders the variant's default label (see <a href="#accessibility">Accessibility</a>), so a bare dot is never colour-only.</p>
 </section>
 
 <section>
@@ -88,7 +102,14 @@ crumbLabel: Web Components
 
 <section>
   <h2>Custom variants (CSS-only)</h2>
-  <p>Add a CSS rule. No JS change needed &mdash; the component reflects <code>data-variant</code> to CSS and any matching rule wins.</p>
+  <p>Add a CSS rule. No JS change needed &mdash; the component reflects <code>data-variant</code> to CSS and any matching rule wins. Give a bare custom variant a hidden label with <code>data-label-&lt;variant&gt;</code> (it otherwise falls back to the variant name).</p>
+  <browser-window
+    src="/docs/snippets/demos/status-wc-custom.html"
+    url="https://vanilla-breeze.com/status-wc/custom"
+    title="status-wc custom variant"
+    shadow>
+  </browser-window>
+
   <code-block language="css" show-lines label="Custom variant" data-escape>status-wc[data-variant="deploying"] {
   --status-dot-color: var(--color-info);
   --status-animation: status-pulse var(--status-pulse-duration) ease-in-out infinite;
@@ -109,7 +130,7 @@ crumbLabel: Web Components
   <code-block language="html" show-lines label="User row" data-escape><layout-cluster>
   <user-avatar src="/ada.jpg" name="Ada Lovelace"></user-avatar>
   <strong>Ada Lovelace</strong>
-  <status-wc data-variant="online" data-position="only" aria-label="Online"></status-wc>
+  <status-wc data-variant="online" data-position="only"></status-wc>
 </layout-cluster></code-block>
 
   <code-block language="html" show-lines label="Service health" data-escape><dl>
@@ -121,12 +142,24 @@ crumbLabel: Web Components
 
 <section>
   <h2>Accessibility</h2>
+  <browser-window
+    src="/docs/snippets/demos/status-wc-live.html"
+    url="https://vanilla-breeze.com/status-wc/live"
+    title="status-wc announcements"
+    shadow>
+  </browser-window>
+
   <ul>
-    <li>Default <code>role="status"</code> with <code>aria-live="polite"</code> &mdash; screen readers announce variant changes.</li>
-    <li>Set <code>data-live="off"</code> for decorative use (e.g., dashboards with many static indicators) &mdash; this removes the role and live-region.</li>
-    <li><code>prefers-reduced-motion: reduce</code> collapses pulse to a steady dot; color still conveys state.</li>
-    <li>Never color-only: every variant ships with a default text label. Use <code>data-position="only"</code> with <code>aria-label</code> for bare-dot situations.</li>
+    <li><strong>Never colour-only.</strong> When the element has no slot text, it renders a visually hidden default label for the variant (<q>Online</q>, <q>Busy</q>, <q>Recording</q>&hellip;). Override it per variant with <code>data-label-&lt;variant&gt;</code> (for example <code>data-label-online="En ligne"</code>) or give an explicit <code>aria-label</code>.</li>
+    <li><strong>Live region by default.</strong> The element gets <code>role="status"</code> and <code>aria-live="polite"</code> unless you set your own <code>role</code>/<code>aria-live</code> or <code>data-live="off"</code>.</li>
+    <li><strong>What is announced.</strong> Live regions announce <em>text</em> changes, not attribute or colour changes. With the generated default label, changing <code>data-variant</code> changes that text, so the new state is announced. With your own slot text, a variant change alone is silent &mdash; update the text too. Content present at page load is not announced.</li>
+    <li>Set <code>data-live="off"</code> for decorative use (e.g. dashboards with many static indicators) &mdash; this removes the role and live region.</li>
+    <li>In light mode the dot has a darker 1px ring so light fills (amber <code>streaming</code>/<code>away</code>/<code>paused</code>) keep 3:1 against the surface. In forced-colours mode the dot is painted with system colours (solid, hollow for <code>offline</code>/<code>stopped</code>).</li>
+    <li><code>prefers-reduced-motion: reduce</code> collapses pulse to a steady dot.</li>
   </ul>
+
+  <code-block language="html" show-lines label="Localized default labels" data-escape><status-wc data-variant="online" data-position="only"
+           data-label-online="En ligne" data-label-away="Absent"></status-wc></code-block>
 
   <code-block language="html" show-lines label="Decorative (no announcement)" data-escape><status-wc data-variant="online" data-live="off">Online</status-wc></code-block>
 </section>
@@ -142,8 +175,19 @@ crumbLabel: Web Components
       <tr><td><code>data-size</code></td><td>string</td><td><code>md</code></td><td><code>xs</code> | <code>sm</code> | <code>md</code> | <code>lg</code></td></tr>
       <tr><td><code>data-position</code></td><td>string</td><td><code>before</code></td><td><code>before</code> | <code>after</code> | <code>only</code></td></tr>
       <tr><td><code>data-pulse</code></td><td>string</td><td>variant default</td><td><code>on</code> | <code>off</code></td></tr>
-      <tr><td><code>data-live</code></td><td>string</td><td>polite</td><td>Set to <code>off</code> to suppress announcements.</td></tr>
-      <tr><td><code>aria-label</code></td><td>string</td><td>&mdash;</td><td>Required when slot has no text.</td></tr>
+      <tr><td><code>data-live</code></td><td>string</td><td>polite</td><td>Set to <code>off</code> to drop <code>role="status"</code>/<code>aria-live</code>.</td></tr>
+      <tr><td><code>data-label-&lt;variant&gt;</code></td><td>string</td><td>English variant name</td><td>Hidden default label used when there is no slot text, e.g. <code>data-label-busy</code>.</td></tr>
+      <tr><td><code>aria-label</code></td><td>string</td><td>&mdash;</td><td>Explicit name; also used as the hidden label text when there is no slot text.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Properties</h2>
+  <table class="props-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>variant</code></td><td>string | null</td><td>Reads and writes <code>data-variant</code>.</td></tr>
     </tbody>
   </table>
 </section>
@@ -157,6 +201,7 @@ crumbLabel: Web Components
       <tr><td><code>--status-dot-color</code></td><td>variant-default</td><td>Dot color (overrides variant default).</td></tr>
       <tr><td><code>--status-pulse-duration</code></td><td>2s</td><td>Pulse cycle duration.</td></tr>
       <tr><td><code>--status-animation</code></td><td>variant-default</td><td>Direct animation shorthand override.</td></tr>
+      <tr><td><code>--status-dot-ring</code></td><td>darker dot colour (light mode)</td><td>Dot ring colour.</td></tr>
       <tr><td><code>--status-gap</code></td><td><code>--size-2xs</code></td><td>Gap between dot and label.</td></tr>
     </tbody>
   </table>
@@ -167,7 +212,7 @@ crumbLabel: Web Components
   <table class="props-table">
     <thead><tr><th>Event</th><th>Bubbles</th><th>When</th></tr></thead>
     <tbody>
-      <tr><td><code>status-wc:change</code></td><td>yes</td><td><code>data-variant</code> mutates. <code>detail: { variant, previousVariant }</code>.</td></tr>
+      <tr><td><code>status-wc:change</code></td><td>yes</td><td><code>data-variant</code> mutates after upgrade (not on the initial upgrade). <code>detail: { variant, previousVariant }</code>.</td></tr>
     </tbody>
   </table>
 </section>

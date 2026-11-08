@@ -13,6 +13,8 @@
 @layer bundle-theme {
   :root[data-theme~="win9x"],
   [data-theme~="win9x"] {
+    color-scheme: light;
+
     /* ===== COLORS ===== */
     /* Windows 95/98 system colors */
     --_win9x-bg: oklch(78% 0 0); /* Classic gray - ButtonFace */
@@ -92,6 +94,16 @@
       inset -1px -1px 0 var(--_win9x-light),
       inset -2px -2px 0 var(--_win9x-highlight);
 
+    /* Form-control bevel: the outer light edge is its own token so dark mode
+       can lift it to 3:1 against the window (WCAG 1.4.11) without
+       brightening every other sunken panel. */
+    --_win9x-field-edge: var(--_win9x-highlight);
+    --_win9x-field-sunken:
+      inset 1px 1px 0 var(--_win9x-shadow),
+      inset 2px 2px 0 var(--_win9x-dark-shadow),
+      inset -1px -1px 0 var(--_win9x-light),
+      inset -2px -2px 0 var(--_win9x-field-edge);
+
     /* Window border */
     --_win9x-window:
       inset 1px 1px 0 var(--_win9x-light),
@@ -138,15 +150,15 @@
 
     /* ===== FORM CONTROLS ===== */
     --control-size: 0.8125rem;
-    --control-border: var(--_win9x-shadow);
+    --control-border: color-mix(in oklab, var(--_win9x-shadow), var(--color-text) 10%); /* 3:1 non-text contrast */
     --control-checked-bg: var(--_win9x-window-bg);
     --control-checked-border: var(--_win9x-shadow);
     --control-radius-check: 0;
     --control-radius-radio: var(--radius-full);
     --input-bg: var(--_win9x-window-bg);
-    --input-border: var(--_win9x-shadow);
+    --input-border: color-mix(in oklab, var(--_win9x-shadow), var(--color-text) 10%); /* 3:1 non-text contrast */
     --input-border-focus: var(--color-primary);
-    --range-track-bg: var(--_win9x-shadow);
+    --range-track-bg: color-mix(in oklab, var(--_win9x-shadow), var(--color-text) 10%); /* 3:1 non-text contrast */
     --range-track-fill: var(--color-primary);
     --range-thumb-bg: var(--_win9x-bg);
     --range-thumb-border: var(--_win9x-shadow);
@@ -348,15 +360,16 @@
       }
     }
 
-    /* Dropdown menus */
-    & menu,
+    /* Dropdown menus: only pop-up menus get the raised panel chrome.
+       Default, .toolbar and .pills menus keep their own layout. */
+    & :is(menu.context, drop-down menu, .menu-bar menu, .win9x-menubar menu),
     & .win9x-menu {
       background: var(--_win9x-bg);
       box-shadow: var(--_win9x-raised);
       padding: 2px;
       margin: 0;
       list-style: none;
-      min-width: 150px;
+      min-inline-size: 150px;
 
       & li {
         margin: 0;
@@ -367,9 +380,9 @@
         display: flex;
         align-items: center;
         gap: 1rem;
-        width: 100%;
+        inline-size: 100%;
         padding: 2px 1.5rem 2px 1.5rem;
-        text-align: left;
+        text-align: start;
         background: transparent;
         border: none;
         box-shadow: none;
@@ -393,11 +406,11 @@
 
       /* Menu item shortcut */
       & .shortcut {
-        margin-left: auto;
+        margin-inline-start: auto;
         color: var(--color-text-muted);
       }
 
-      & hr:not([data-ornament]) {
+      & hr:not([data-ornament], [class]) {
         border: none;
         height: 2px;
         background: var(--_win9x-shadow);
@@ -423,11 +436,18 @@
       align-items: center;
       gap: 0.5rem;
 
-      /* summary is display: flex with the marker hidden in core */
+      justify-content: flex-start;
 
-      /* Expand/collapse indicator */
+      /* summary is display: flex with the marker hidden in core.
+         The +/- box replaces the core chevron, so drop ::after. */
+      &::after {
+        content: none;
+      }
+
+      /* Expand/collapse indicator. Empty alt text keeps the glyph out
+         of the summary's accessible name. */
       &::before {
-        content: "+";
+        content: "+" / "";
         font-family: var(--font-mono);
         width: 1em;
         text-align: center;
@@ -435,7 +455,7 @@
     }
 
     & details[open] > summary::before {
-      content: "-";
+      content: "-" / "";
     }
 
     & details > :not(summary) {
@@ -457,7 +477,7 @@
     & textarea {
       background: var(--_win9x-window-bg);
       border: none;
-      box-shadow: var(--_win9x-sunken);
+      box-shadow: var(--_win9x-field-sunken);
       padding: 2px 4px;
       font-family: var(--font-sans);
       font-size: 0.6875rem;
@@ -483,7 +503,7 @@
       appearance: none;
       background: var(--_win9x-window-bg);
       border: none;
-      box-shadow: var(--_win9x-sunken);
+      box-shadow: var(--_win9x-field-sunken);
       padding: 2px 20px 2px 4px;
       font-family: var(--font-sans);
       font-size: 0.6875rem;
@@ -505,7 +525,7 @@
       width: 13px;
       height: 13px;
       background: var(--_win9x-window-bg);
-      box-shadow: var(--_win9x-sunken);
+      box-shadow: var(--_win9x-field-sunken);
       cursor: pointer;
       position: relative;
 
@@ -532,7 +552,7 @@
       height: 12px;
       border-radius: 50%;
       background: var(--_win9x-window-bg);
-      box-shadow: var(--_win9x-sunken);
+      box-shadow: var(--_win9x-field-sunken);
       cursor: pointer;
       position: relative;
 
@@ -575,37 +595,26 @@
       }
     }
 
-    /* Progress bar */
-    & progress {
+    /* Progress bar — chunky blocks in --progress-fill (variants apply);
+       enhanced rings keep their own geometry */
+    & progress:not([data-type="ring"][data-enhanced]) {
       appearance: none;
       height: 16px;
       background: var(--_win9x-bg);
       box-shadow: var(--_win9x-sunken);
       border: none;
 
-      &::-webkit-progress-bar {
+      &:not(:indeterminate)::-webkit-progress-bar {
         background: transparent;
       }
 
       &::-webkit-progress-value {
         /* Chunky segmented blocks */
-        background: repeating-linear-gradient(
-          90deg,
-          var(--color-primary) 0,
-          var(--color-primary) 8px,
-          var(--_win9x-bg) 8px,
-          var(--_win9x-bg) 10px
-        );
+        background: repeating-linear-gradient(90deg, var(--progress-fill) 0 8px, var(--_win9x-bg) 8px 10px);
       }
 
-      &::-moz-progress-bar {
-        background: repeating-linear-gradient(
-          90deg,
-          var(--color-primary) 0,
-          var(--color-primary) 8px,
-          var(--_win9x-bg) 8px,
-          var(--_win9x-bg) 10px
-        );
+      &:not(:indeterminate)::-moz-progress-bar {
+        background: repeating-linear-gradient(90deg, var(--progress-fill) 0 8px, var(--_win9x-bg) 8px 10px);
       }
     }
 
@@ -658,8 +667,8 @@
       position: relative;
     }
 
-    /* Fieldset / Group box */
-    & fieldset,
+    /* Fieldset / Group box (minimal fieldsets keep no box) */
+    & fieldset:not([data-variant="minimal"]),
     & .win9x-groupbox {
       background: var(--_win9x-bg);
       border: 1px solid var(--_win9x-shadow);
@@ -668,6 +677,23 @@
         0 0 0 1px var(--_win9x-highlight);
       padding: 1rem;
       margin: 0.5rem 0;
+    }
+
+    /* State borders survive the group-box border shorthand */
+    & fieldset[data-status] {
+      border-color: var(--fieldset-status-color, var(--_win9x-shadow));
+    }
+
+    & fieldset[data-invalid] {
+      border-color: var(--color-error);
+    }
+
+    & fieldset:is([data-status], [data-invalid]):not([data-variant="minimal"]) {
+      border-width: 2px;
+    }
+
+    & fieldset:disabled:not([data-variant="minimal"]) {
+      border-style: dashed;
     }
 
     & legend {
@@ -733,7 +759,7 @@
 
     & :is(main, article) {
     /* Horizontal rule */
-    & hr:not([data-ornament]) {
+    & hr:not([data-ornament], [class]) {
       border: none;
       height: 2px;
       background: var(--_win9x-shadow);
@@ -814,12 +840,19 @@
 
     & :is(main, article) browser-window {
       --browser-window-bg: var(--_win9x-bg);
-      --browser-window-header-bg: linear-gradient(90deg, var(--_win9x-title-active), oklch(50% 0.1 250));
+      /* Title-bar gradient ends at 40% so the dots and focus ring hold 3:1 across it */
+      --browser-window-header-bg: linear-gradient(90deg, var(--_win9x-title-active), oklch(40% 0.1 250));
       --browser-window-content-bg: var(--_win9x-window-bg);
       --browser-window-border-color: var(--_win9x-dark-shadow);
       --browser-window-text-color: var(--_win9x-title-text);
       --browser-window-url-bg: var(--_win9x-window-bg);
-      --browser-window-hover-bg: var(--color-surface-alt);
+      /* Menu-highlight style: white glyph on title navy */
+      --browser-window-hover-bg: var(--_win9x-title-active);
+      --browser-window-active-bg: var(--_win9x-title-active);
+      --browser-window-accent-color: var(--_win9x-title-text);
+      --browser-window-close-color: oklch(72% 0.18 25);
+      --browser-window-minimize-color: oklch(85% 0.15 90);
+      --browser-window-maximize-color: oklch(72% 0.15 145);
     }
 
     /* Tables */
@@ -976,13 +1009,14 @@
 
     /* Form controls: match dark Win9x palette */
     --control-size: 0.8125rem;
-    --control-border: var(--_win9x-highlight);
+    --_win9x-field-edge: color-mix(in oklab, var(--_win9x-highlight), var(--color-text) 30%); /* 3:1 non-text contrast */
+    --control-border: color-mix(in oklab, var(--_win9x-highlight), var(--color-text) 25%); /* 3:1 non-text contrast */
     --control-checked-bg: var(--_win9x-window-bg);
     --control-checked-border: var(--_win9x-highlight);
     --input-bg: var(--_win9x-window-bg);
-    --input-border: var(--_win9x-highlight);
+    --input-border: color-mix(in oklab, var(--_win9x-highlight), var(--color-text) 25%); /* 3:1 non-text contrast */
     --input-border-focus: var(--color-primary);
-    --range-track-bg: var(--_win9x-shadow);
+    --range-track-bg: color-mix(in oklab, var(--_win9x-shadow), var(--color-text) 65%); /* 3:1 non-text contrast */
     --range-track-fill: var(--color-primary);
     --range-thumb-bg: var(--_win9x-bg);
     --range-thumb-border: var(--_win9x-highlight);
@@ -1017,7 +1051,129 @@
     }
 
     & :is(main, article) browser-window {
-      --browser-window-header-bg: linear-gradient(90deg, oklch(30% 0.15 250), oklch(45% 0.08 250));
+      --browser-window-header-bg: linear-gradient(90deg, oklch(30% 0.15 250), oklch(38% 0.08 250));
+      --browser-window-close-color: oklch(72% 0.18 25);
+      --browser-window-minimize-color: oklch(85% 0.15 90);
+      --browser-window-maximize-color: oklch(72% 0.15 145);
+    }
+  }
+
+  /* System dark with no data-mode (CSS-only consumers): mirror the dark block. */
+  @media (prefers-color-scheme: dark) {
+    :root[data-theme~="win9x"]:not([data-mode="light"]),
+    [data-theme~="win9x"]:not([data-mode="light"]) {
+      color-scheme: dark;
+
+      --_win9x-bg: oklch(30% 0 0);
+      --_win9x-highlight: oklch(50% 0 0);
+      --_win9x-light: oklch(40% 0 0);
+      --_win9x-shadow: oklch(15% 0 0);
+      --_win9x-dark-shadow: oklch(0% 0 0);
+      --_win9x-window-bg: oklch(25% 0 0);
+
+      --color-surface: var(--_win9x-bg);
+      --color-surface-alt: oklch(26% 0 0);
+      --color-surface-raised: oklch(38% 0 0);
+      --color-surface-sunken: oklch(22% 0 0);
+      --color-surface-overlay: oklch(33% 0 0);
+      --color-background: oklch(15% 0.05 195);
+
+      --color-text: oklch(90% 0 0);
+      --color-text-muted: oklch(80% 0 0); /* 70% was 3.8:1 on raised panels (pl21) */
+
+      /* Interactive states */
+      --color-hover-bg: oklch(38% 0 0);
+      --color-hover-text: var(--color-interactive);
+      --color-active-text: var(--color-interactive);
+
+      /* Colors: lighten for dark surfaces */
+      --color-primary: oklch(60% 0.15 250);
+      /* Text-on-window blue: primary is 4.0:1 on the dark window grey (pl21). */
+      --color-interactive: oklch(74% 0.13 250);
+      --color-primary-hover: oklch(65% 0.18 250);
+      --color-primary-subtle: oklch(25% 0.06 250);
+      --color-accent: oklch(65% 0.15 250);
+      --color-accent-hover: oklch(70% 0.17 250);
+      --color-text-subtle: oklch(55% 0 0);
+
+      /* Semantic colors - brighter for dark backgrounds */
+      --color-success: oklch(60% 0.15 145);
+      --color-success-subtle: oklch(22% 0.05 145);
+      --color-success-text: oklch(75% 0.12 145);
+
+      --color-warning: oklch(80% 0.15 90);
+      --color-warning-subtle: oklch(25% 0.06 90);
+      --color-warning-text: oklch(82% 0.12 90);
+
+      --color-error: oklch(62% 0.2 25);
+      --color-error-subtle: oklch(22% 0.05 25);
+      --color-error-text: oklch(75% 0.15 25);
+
+      /* Info - classic Windows blue */
+      --color-info: oklch(62% 0.15 250);
+      --color-info-subtle: oklch(22% 0.05 250);
+      --color-info-text: oklch(75% 0.12 250);
+
+      --color-border: oklch(40% 0 0);
+      --color-border-strong: oklch(60% 0 0);
+
+      /* Shadows - higher opacity for dark surfaces */
+      --shadow-xs: 2px 2px 0 oklch(0% 0 0 / 0.5);
+      --shadow-s: 2px 2px 0 oklch(0% 0 0 / 0.5);
+      --shadow-m: 4px 4px 0 oklch(0% 0 0 / 0.5);
+      --shadow-l: 4px 4px 0 oklch(0% 0 0 / 0.5);
+      --shadow-xl: 6px 6px 0 oklch(0% 0 0 / 0.5);
+      --shadow-2xl: 8px 8px 0 oklch(0% 0 0 / 0.5);
+
+      /* Form controls: match dark Win9x palette */
+      --control-size: 0.8125rem;
+      --_win9x-field-edge: color-mix(in oklab, var(--_win9x-highlight), var(--color-text) 30%); /* 3:1 non-text contrast */
+      --control-border: color-mix(in oklab, var(--_win9x-highlight), var(--color-text) 25%); /* 3:1 non-text contrast */
+      --control-checked-bg: var(--_win9x-window-bg);
+      --control-checked-border: var(--_win9x-highlight);
+      --input-bg: var(--_win9x-window-bg);
+      --input-border: color-mix(in oklab, var(--_win9x-highlight), var(--color-text) 25%); /* 3:1 non-text contrast */
+      --input-border-focus: var(--color-primary);
+      --range-track-bg: color-mix(in oklab, var(--_win9x-shadow), var(--color-text) 65%); /* 3:1 non-text contrast */
+      --range-track-fill: var(--color-primary);
+      --range-thumb-bg: var(--_win9x-bg);
+      --range-thumb-border: var(--_win9x-highlight);
+      --progress-track-bg: var(--_win9x-light);
+      --progress-fill: var(--color-primary);
+
+      & :is(main, article) a:not([class]) {
+        color: oklch(76% 0.13 250); /* 65% was 4.2:1 on the dark window */
+      }
+
+      & :is(main, article) code {
+        background: oklch(20% 0 0);
+        color: oklch(90% 0 0);
+      }
+
+      & :is(main, article) code-block {
+        --cb-bg: var(--_win9x-window-bg);
+        --cb-code-bg: var(--_win9x-window-bg);
+        --cb-header-bg: var(--_win9x-bg);
+        --cb-text-color: oklch(90% 0 0);
+        --cb-border-color: oklch(40% 0 0);
+        --cb-comment: oklch(55% 0 0);
+        --cb-keyword: oklch(70% 0.18 250);
+        --cb-string: oklch(72% 0.12 145);
+        --cb-function: oklch(70% 0.12 320);
+        --cb-number: oklch(75% 0.12 25);
+        --cb-tag: oklch(75% 0.08 145);
+        --cb-button-bg: var(--_win9x-bg);
+        --cb-button-color: oklch(90% 0 0);
+        --cb-scrollbar-track: var(--_win9x-bg);
+        --cb-scrollbar-thumb: oklch(50% 0 0);
+      }
+
+      & :is(main, article) browser-window {
+        --browser-window-header-bg: linear-gradient(90deg, oklch(30% 0.15 250), oklch(38% 0.08 250));
+        --browser-window-close-color: oklch(72% 0.18 25);
+        --browser-window-minimize-color: oklch(85% 0.15 90);
+        --browser-window-maximize-color: oklch(72% 0.15 145);
+      }
     }
   }
 }

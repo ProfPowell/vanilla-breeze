@@ -1,23 +1,36 @@
 /**
  * emoji-init: Shortcode-to-Unicode text replacement via data attributes
  *
- * Scans text nodes inside [data-emoji] containers for :shortcode: patterns
- * and replaces them with Unicode emoji characters. Pure text replacement —
- * no <span> wrapping.
+ * Scans text nodes inside [data-emoji] containers for :shortcode: tokens and
+ * replaces them with Unicode emoji characters. Pure text replacement — no
+ * <span> wrapping, no innerHTML. The `alt`, `title` and `aria-label`
+ * attributes inside the container are converted too, so the accessible name
+ * matches the visible text.
  *
- * On <input> and <textarea> elements, listens to the `input` event and
- * replaces completed :shortcode: tokens live as the user types, with
- * cursor position preserved.
+ * A token only counts when its opening colon is not glued to a letter,
+ * digit or underscore, so times and ratios ("10:30:45", "a:b:c") are never
+ * touched. Text inside code, pre, kbd, samp, var, script, style, textarea,
+ * <code-block>, contenteditable or [data-emoji-skip] is skipped at any depth.
+ *
+ * On <input> and <textarea>, a token is replaced when the user types its
+ * closing colon (pasted text: every token). While the field has focus the replacement goes through
+ * execCommand('insertText'), which keeps it on the undo stack (Ctrl+Z brings
+ * the shortcode back); where that is unavailable it falls back to
+ * setRangeText(), which does not.
+ *
+ * Enhanced elements are tracked in a WeakMap, not an attribute, so clones
+ * are enhanced on their own and removing data-emoji stops the work.
  *
  * @attr {string} data-emoji - Enables emoji enhancement on container or input
  * @attr {string} data-emoji-scan - "once" (default) or "observe" for live replacement
- * @attr {string} data-emoji-unknown - "keep" (default) or "strip" to remove unresolved markers
+ * @attr {string} data-emoji-unknown - "keep" (default) or "strip" to remove whole unresolved tokens
+ * @attr {boolean} data-emoji-skip - On a descendant: leave its text alone
  *
  * @example
  * <p data-emoji>Hello :wave: welcome :rocket:</p>
  *
  * @example Observe mode for dynamic content
- * <div data-emoji data-emoji-scan="observe">...</div>
+ * <article data-emoji data-emoji-scan="observe">...</article>
  *
  * @example Live replacement in inputs
  * <textarea data-emoji>Type :smile: and it becomes 😄</textarea>
@@ -25,20 +38,50 @@
 
 import { registerInit } from './_init-registry.js';
 
-// Lazy-loaded: emoji data (~31 KB) is only imported when [data-emoji] elements exist
+// Deferred evaluation, not a separate download: esbuild inlines this
+// import() into every CDN bundle (no code splitting), so the data ships with
+// the bundle and is only *evaluated* once a [data-emoji] element exists. On
+// the unbundled /src graph it is a real lazy fetch.
+/** @type {((code: string) => ({ emoji: string } | null)) | null} */
 let resolveEmoji = null;
 
 async function loadEmojiData() {
   if (resolveEmoji) return;
   const mod = await import('../data/emoji-data.js');
-  resolveEmoji = mod.resolveEmoji;
+  resolveEmoji = /** @type {any} */ (mod.resolveEmoji);
 }
 
 const SELECTOR = '[data-emoji]';
-const SHORTCODE_RE = /:([a-z0-9_+-]+):/g;
-const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'CODE', 'PRE', 'TEXTAREA']);
+/** Opening colon must not follow a letter, digit or underscore. */
+const SHORTCODE_RE = /(?<![\p{L}\p{N}_]):([a-z0-9_+-]+):/gu;
+/** Only tokens that contain a letter are shortcode-shaped enough to strip. */
+const STRIPPABLE_RE = /[a-z]/;
+const SKIP_SELECTOR = 'script,style,code,pre,kbd,samp,var,textarea,code-block,[data-emoji-skip]';
+const NAME_ATTRS = ['alt', 'title', 'aria-label'];
 const INPUT_TAGS = new Set(['INPUT', 'TEXTAREA']);
 const DEBOUNCE_MS = 100;
+/** Input types that bring in a block of text: replace every token in it. */
+const WHOLE_VALUE_INPUTS = new Set(['insertFromPaste', 'insertFromDrop', 'insertReplacementText', 'insertFromYank']);
+
+/** @type {WeakMap<Element, () => void>} enhanced element → teardown */
+const enhanced = new WeakMap();
+
+/**
+ * Replace the shortcodes in a string.
+ * @param {string} text
+ * @param {'keep'|'strip'} unknownMode
+ * @returns {string} the new text (same string when nothing changed)
+ */
+export function replaceShortcodeText(text, unknownMode = 'keep') {
+  if (!resolveEmoji || !text.includes(':')) return text;
+  const resolve = resolveEmoji;
+  return text.replace(SHORTCODE_RE, (token, code) => {
+    const entry = resolve(code);
+    if (entry) return entry.emoji;
+    if (unknownMode === 'strip' && STRIPPABLE_RE.test(code)) return '';
+    return token;
+  });
+}
 
 /**
  * Initialize emoji enhancement within a root element
@@ -52,207 +95,231 @@ async function initEmoji(root = document) {
 }
 
 /**
+ * @param {Element} el
+ * @returns {'keep'|'strip'}
+ */
+function unknownModeOf(el) {
+  return el.getAttribute('data-emoji-unknown') === 'strip' ? 'strip' : 'keep';
+}
+
+/**
  * Enhance a single element with emoji replacement.
  * Branches to input-specific handling for <input>/<textarea>.
  * @param {Element} el - The container or input element
  */
 function enhanceEmoji(el) {
-  if (el.hasAttribute('data-emoji-init')) return;
-  el.setAttribute('data-emoji-init', '');
+  if (enhanced.has(el) || !el.hasAttribute('data-emoji')) return;
+  // Pre-WeakMap markup or a clone of it may still carry the old flag.
+  el.removeAttribute('data-emoji-init');
 
   if (INPUT_TAGS.has(el.tagName)) {
-    enhanceInput(/** @type {HTMLInputElement|HTMLTextAreaElement} */ (el));
+    enhanced.set(el, enhanceInput(/** @type {HTMLInputElement|HTMLTextAreaElement} */ (el)));
     return;
   }
 
-  const unknownMode = el.getAttribute('data-emoji-unknown') || 'keep';
+  processContainer(el);
 
-  processTextNodes(el, unknownMode);
-
-  // Observe mode: watch for dynamic content changes
-  if (el.getAttribute('data-emoji-scan') === 'observe') {
-    let timer = null;
-
-    const contentObserver = new MutationObserver(() => {
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(() => {
-        processTextNodes(el, unknownMode);
-        timer = null;
-      }, DEBOUNCE_MS);
-    });
-
-    contentObserver.observe(el, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-    });
+  if (el.getAttribute('data-emoji-scan') !== 'observe') {
+    enhanced.set(el, () => {});
+    return;
   }
+
+  /** @type {ReturnType<typeof setTimeout> | null} */
+  let timer = null;
+  const contentObserver = new MutationObserver(() => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => {
+      timer = null;
+      processContainer(el);
+    }, DEBOUNCE_MS);
+  });
+  contentObserver.observe(el, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: NAME_ATTRS,
+  });
+  enhanced.set(el, () => {
+    contentObserver.disconnect();
+    if (timer) clearTimeout(timer);
+  });
+}
+
+/**
+ * Stop enhancing an element whose data-emoji was removed.
+ * Text already replaced stays replaced.
+ * @param {Element} el
+ */
+function unenhance(el) {
+  const teardown = enhanced.get(el);
+  if (!teardown) return;
+  teardown();
+  enhanced.delete(el);
 }
 
 /**
  * Enhance an <input> or <textarea> with live emoji replacement.
- * Listens to `input` events and replaces completed :shortcode: tokens
- * in the element's value, preserving cursor position.
  * @param {HTMLInputElement|HTMLTextAreaElement} el
+ * @returns {() => void} teardown
  */
 function enhanceInput(el) {
   let composing = false;
+  let replacing = false;
 
-  el.addEventListener('compositionstart', () => { composing = true; });
-  el.addEventListener('compositionend', () => {
+  const onStart = () => { composing = true; };
+  const onEnd = () => {
     composing = false;
-    replaceInValue(el);
-  });
+    run(true);
+  };
+  const onInput = (/** @type {Event} */ event) => {
+    const { isComposing, inputType } = /** @type {InputEvent} */ (event);
+    // Undo/redo must be allowed to bring a shortcode back.
+    if (composing || isComposing || inputType === 'historyUndo' || inputType === 'historyRedo') return;
+    // Typing replaces only the token the caret just closed, so a shortcode
+    // brought back by undo (or typed earlier and kept) is not re-replaced on
+    // the next keystroke. Pasted or dropped text is replaced throughout.
+    // A synthetic `new Event('input')` (no inputType) also rescans everything.
+    run(Boolean(inputType) && !WHOLE_VALUE_INPUTS.has(inputType));
+  };
+  function run(atCaretOnly = false) {
+    if (replacing) return;
+    replacing = true;
+    try {
+      replaceInValue(el, atCaretOnly);
+    } finally {
+      replacing = false;
+    }
+  }
 
-  el.addEventListener('input', () => {
-    if (composing) return;
-    replaceInValue(el);
-  });
+  el.addEventListener('compositionstart', onStart);
+  el.addEventListener('compositionend', onEnd);
+  el.addEventListener('input', onInput);
 
   // Process any initial value
-  if (el.value && SHORTCODE_RE.test(el.value)) {
-    SHORTCODE_RE.lastIndex = 0;
-    replaceInValue(el);
-  }
+  if (el.value) run();
+
+  return () => {
+    el.removeEventListener('compositionstart', onStart);
+    el.removeEventListener('compositionend', onEnd);
+    el.removeEventListener('input', onInput);
+  };
 }
 
 /**
- * Scan an input's value for completed :shortcode: patterns and replace them.
- * Adjusts cursor position to account for the length difference.
+ * Scan an input's value for completed :shortcode: tokens and replace them,
+ * last to first so earlier offsets stay valid. Unknown tokens are always
+ * kept in inputs (stripping text while typing would be jarring).
  * @param {HTMLInputElement|HTMLTextAreaElement} el
+ * @param {boolean} [atCaretOnly] - only the token that ends at the caret
  */
-function replaceInValue(el) {
+function replaceInValue(el, atCaretOnly = false) {
+  if (!resolveEmoji) return;
   const value = el.value;
-  SHORTCODE_RE.lastIndex = 0;
+  const caret = el.selectionStart;
+  /** @type {{ start: number, end: number, emoji: string }[]} */
+  const hits = [];
+  for (const match of value.matchAll(SHORTCODE_RE)) {
+    const start = match.index ?? 0;
+    const end = start + match[0].length;
+    if (atCaretOnly && caret !== null && end !== caret) continue;
+    const entry = resolveEmoji(match[1]);
+    if (entry) hits.push({ start, end, emoji: entry.emoji });
+  }
+  if (hits.length === 0) return;
 
-  let match;
-  let result = '';
-  let lastIndex = 0;
-  let cursorOffset = 0;
-  const cursor = el.selectionStart ?? value.length;
-  let hasReplacement = false;
-
-  while ((match = SHORTCODE_RE.exec(value)) !== null) {
-    const fullMatch = match[0];
-    const shortcode = match[1];
-    const entry = resolveEmoji(shortcode);
-
-    // Add text before this match
-    result += value.slice(lastIndex, match.index);
-
-    if (entry) {
-      result += entry.emoji;
-      hasReplacement = true;
-
-      // Adjust cursor if it was at or after the end of this shortcode
-      const matchEnd = match.index + fullMatch.length;
-      if (cursor >= matchEnd) {
-        cursorOffset += fullMatch.length - entry.emoji.length;
-      } else if (cursor > match.index) {
-        // Cursor was inside the shortcode — place it after the emoji
-        cursorOffset += cursor - match.index - entry.emoji.length;
-      }
-    } else {
-      // Unknown shortcode — keep as-is in inputs (never strip while typing)
-      result += fullMatch;
-    }
-
-    lastIndex = match.index + fullMatch.length;
+  // Types without a text selection (email, number…) can only be rewritten.
+  if (el.selectionStart === null) {
+    el.value = replaceShortcodeText(value, 'keep');
+    return;
   }
 
-  if (!hasReplacement) return;
+  let cursor = el.selectionStart ?? value.length;
+  const useUndo = document.activeElement === el && typeof document.execCommand === 'function';
 
-  result += value.slice(lastIndex);
-  el.value = result;
+  for (let i = hits.length - 1; i >= 0; i--) {
+    const { start, end, emoji } = hits[i];
+    if (cursor >= end) cursor -= (end - start) - emoji.length;
+    else if (cursor > start) cursor = start + emoji.length;
 
-  const newCursor = Math.max(0, cursor - cursorOffset);
-  el.setSelectionRange(newCursor, newCursor);
+    let done = false;
+    if (useUndo) {
+      el.setSelectionRange(start, end);
+      try {
+        done = document.execCommand('insertText', false, emoji) && el.value.slice(start, start + emoji.length) === emoji;
+      } catch {
+        done = false;
+      }
+    }
+    if (!done) el.setRangeText(emoji, start, end);
+  }
+
+  el.setSelectionRange(cursor, cursor);
 }
 
 /**
- * Walk text nodes and replace :shortcode: with emoji
+ * Should this node be left alone? Searches only between the node and the
+ * container, so a container placed inside <pre> on purpose still works.
+ * @param {Element} parent
  * @param {Element} container
- * @param {string} unknownMode - "keep" or "strip"
  */
-function processTextNodes(container, unknownMode) {
-  const walker = document.createTreeWalker(
-    container,
-    NodeFilter.SHOW_TEXT,
-    {
-      acceptNode(node) {
-        // Skip nodes inside elements that shouldn't be processed
-        const parent = node.parentElement;
-        if (!parent) return NodeFilter.FILTER_REJECT;
-        if (SKIP_TAGS.has(parent.tagName)) return NodeFilter.FILTER_REJECT;
-        if (parent.isContentEditable) return NodeFilter.FILTER_REJECT;
-        // Skip already-processed text (nodes we've just created)
-        if (parent.hasAttribute('data-emoji-processed')) return NodeFilter.FILTER_REJECT;
-        return NodeFilter.FILTER_ACCEPT;
-      }
-    }
-  );
+function isSkipped(parent, container) {
+  if (/** @type {HTMLElement} */ (parent).isContentEditable) return true;
+  const skip = parent.closest(SKIP_SELECTOR);
+  return Boolean(skip && skip !== container && container.contains(skip));
+}
 
-  // Collect nodes first (modifying DOM during walk is unsafe)
+/**
+ * Replace shortcodes in the container's text nodes and name attributes.
+ * @param {Element} container
+ */
+function processContainer(container) {
+  if (!resolveEmoji) return;
+  const mode = unknownModeOf(container);
+
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const parent = node.parentElement;
+      if (!parent || isSkipped(parent, container)) return NodeFilter.FILTER_REJECT;
+      return (node.textContent ?? '').includes(':') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+    },
+  });
+
+  // Collect first: modifying the DOM during the walk is unsafe.
+  /** @type {Text[]} */
   const textNodes = [];
-  while (walker.nextNode()) {
-    if (SHORTCODE_RE.test(walker.currentNode.textContent ?? '')) {
-      textNodes.push(walker.currentNode);
-    }
-    SHORTCODE_RE.lastIndex = 0;
-  }
+  while (walker.nextNode()) textNodes.push(/** @type {Text} */ (walker.currentNode));
 
   for (const node of textNodes) {
-    replaceShortcodes(/** @type {Text} */ (node), unknownMode);
+    const text = node.textContent ?? '';
+    const next = replaceShortcodeText(text, mode);
+    if (next !== text) node.textContent = next;
+  }
+
+  const selector = NAME_ATTRS.map((a) => `[${a}*=":"]`).join(',');
+  const named = [container, ...container.querySelectorAll(selector)];
+  for (const el of named) {
+    if (el !== container && isSkipped(el, container)) continue;
+    for (const attr of NAME_ATTRS) {
+      const value = el.getAttribute(attr);
+      if (!value) continue;
+      const next = replaceShortcodeText(value, mode);
+      if (next !== value) el.setAttribute(attr, next);
+    }
   }
 }
 
-/**
- * Replace :shortcode: patterns in a single text node
- * @param {Text} textNode
- * @param {string} unknownMode
- */
-function replaceShortcodes(textNode, unknownMode) {
-  const text = textNode.textContent;
-  SHORTCODE_RE.lastIndex = 0;
-
-  let match;
-  let lastIndex = 0;
-  const parts = [];
-  let hasReplacement = false;
-
-  while ((match = SHORTCODE_RE.exec(text)) !== null) {
-    const shortcode = match[1];
-    const entry = resolveEmoji(shortcode);
-
-    // Add text before this match
-    if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
-    }
-
-    if (entry) {
-      parts.push(entry.emoji);
-      hasReplacement = true;
-    } else if (unknownMode === 'strip') {
-      // Remove the markers entirely
-      hasReplacement = true;
-    } else {
-      // Keep the original :shortcode: text
-      parts.push(match[0]);
-    }
-
-    lastIndex = match.index + match[0].length;
+// The extended set can arrive after containers were already scanned (it is a
+// separate opt-in module and load order is free). resolveEmoji() merges it
+// lazily from the shared registry, so a rescan of enhanced containers is all
+// that is needed. Inputs resolve on their next input event.
+document.addEventListener('vb:emoji-extended', () => {
+  if (!resolveEmoji) return;
+  for (const el of document.querySelectorAll(SELECTOR)) {
+    if (!enhanced.has(el) || INPUT_TAGS.has(el.tagName)) continue;
+    processContainer(el);
   }
-
-  if (!hasReplacement) return;
-
-  // Add remaining text after last match
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
-  }
-
-  // Replace the text node content
-  textNode.textContent = parts.join('');
-}
+});
 
 /**
  * Async wrapper for the registry — loads emoji data before enhancing.
@@ -263,5 +330,19 @@ function enhanceAsync(el) {
 }
 
 registerInit(SELECTOR, enhanceAsync);
+
+// The shared registry only sees inserted nodes. Watch the attribute itself
+// so data-emoji added to (or removed from) an existing element takes effect.
+new MutationObserver((mutations) => {
+  for (const { target } of mutations) {
+    const el = /** @type {Element} */ (target);
+    if (el.hasAttribute('data-emoji')) enhanceAsync(el);
+    else unenhance(el);
+  }
+}).observe(document.documentElement, {
+  attributes: true,
+  attributeFilter: ['data-emoji'],
+  subtree: true,
+});
 
 export { initEmoji };

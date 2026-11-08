@@ -98,10 +98,10 @@
 
     /* ===== FORM CONTROLS ===== */
     --control-border: oklch(60% 0 0);
-    --input-border: oklch(75% 0 0);
+    --input-border: color-mix(in oklab, oklch(75% 0 0), var(--color-text) 25%); /* 3:1 non-text contrast */
     --input-bg: oklch(100% 0 0);
     --range-track-h: 2px;
-    --range-track-bg: oklch(80% 0 0);
+    --range-track-bg: color-mix(in oklab, oklch(80% 0 0), var(--color-text) 30%); /* 3:1 non-text contrast */
     --range-thumb-size: 1rem;
     --range-thumb-border: oklch(40% 0 0);
     --progress-h: var(--size-2xs);
@@ -113,7 +113,7 @@
   [data-theme~="editorial"] {
     & :is(main, article) {
     /* Elegant dividers */
-    & hr:not([data-ornament]) {
+    & hr:not([data-ornament], [class]) {
       border: none;
       height: 1px;
       background: var(--color-border-strong);
@@ -121,7 +121,7 @@
       position: relative;
 
       &::before {
-        content: "§";
+        content: "§" / "";
         position: absolute;
         left: 50%;
         top: 50%;
@@ -160,6 +160,12 @@
       font-style: italic;
     }
 
+    /* Italic headings are italic contexts: emphasis inside toggles upright,
+       the same toggle core applies inside blockquote/cite/dfn/var. */
+    & :is(h1, h3) :is(em, i) {
+      font-style: normal;
+    }
+
     /* Links - subtle underline */
     & a:not([class]) {
       color: inherit;
@@ -173,26 +179,24 @@
       }
     }
 
-    /* Article with drop cap (exclude cards and layout-sidebar children) */
+    /* Article measure (exclude cards and layout-sidebar children) */
     & article:not(.card):not(layout-sidebar > *) {
       max-width: 65ch;
       margin-inline: auto;
-
-      & > p:first-of-type::first-letter {
-        font-family: var(--font-heading);
-        font-size: 5.5rem;
-        float: left;
-        line-height: 0.8;
-        margin-inline-end: 0.75rem;
-        margin-block-start: 0.1em;
-        color: var(--color-primary);
-        font-weight: 400;
-      }
 
       & > p:first-of-type {
         font-size: 1.25rem;
         line-height: 1.6;
       }
+    }
+
+    /* Drop cap — opt-in via data-drop-cap only (the base rule draws it,
+       initial-letter with a logical float fallback); editorial sets a
+       light display-face cap in the accent colour. */
+    & :is(article[data-drop-cap], p[data-drop-cap]) {
+      --drop-cap-font: var(--font-heading);
+      --drop-cap-weight: 400;
+      --drop-cap-color: var(--color-primary);
     }
 
     /* Pull quote styling */
@@ -337,12 +341,12 @@
 
     /* Form controls: match dark surface */
     --input-bg: oklch(8% 0 0);
-    --input-border: oklch(25% 0 0);
+    --input-border: color-mix(in oklab, oklch(25% 0 0), var(--color-text) 40%); /* 3:1 non-text contrast */
     --input-border-focus: var(--color-primary);
-    --control-border: oklch(45% 0 0);
+    --control-border: color-mix(in oklab, oklch(45% 0 0), var(--color-text) 15%); /* 3:1 non-text contrast */
     --control-checked-bg: oklch(65% 0.2 25);
     --control-checked-border: oklch(65% 0.2 25);
-    --range-track-bg: oklch(20% 0 0);
+    --range-track-bg: color-mix(in oklab, oklch(20% 0 0), var(--color-text) 45%); /* 3:1 non-text contrast */
     --range-track-fill: oklch(65% 0.2 25);
     --range-thumb-bg: oklch(8% 0 0);
     --range-thumb-border: oklch(45% 0 0);
@@ -354,7 +358,7 @@
       border-block-end-color: var(--color-border-strong);
     }
 
-    & :is(main, article) hr:not([data-ornament]) {
+    & :is(main, article) hr:not([data-ornament], [class]) {
       background: var(--color-border-strong);
 
       &::before {

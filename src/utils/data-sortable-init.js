@@ -4,10 +4,16 @@
  * Two API shapes share one engine:
  *
  *  - **Table mode** — `<table data-sortable>`. Each clickable column header
- *    declares `<th data-sort="key">`. Clicking cycles asc → desc → none → asc.
+ *    declares `<th data-sort="key">`. Each header's content is wrapped in a
+ *    `<button data-sort-button>` (the th keeps its columnheader role and
+ *    `aria-sort`). Activating it cycles asc → desc → none → asc.
  *    Row sort-value comes from the corresponding `<td>` in the same column,
- *    via `data-value` if set, then `<time datetime>` for date types,
- *    otherwise `textContent`.
+ *    via `data-sort-value` (same as `<data-table>`) or `data-value` if set,
+ *    then `<time datetime>` for date types, otherwise `textContent`.
+ *
+ *    Note: `data-sort` here is the column KEY. On `<data-table>` the same
+ *    attribute is the sort TYPE ("string"|"number"|"date"); data-sortable
+ *    takes the type from `data-sort-type`.
  *
  *  - **List mode** — `<ul data-sortable>` (or any non-table container).
  *    External controls (`<select>` / `<button>`) declare
@@ -25,6 +31,15 @@
  * @attr {string}  data-sort                on <th>: column key (table mode)
  * @attr {string}  data-sort-type          on container or <th>: "text"|"number"|"date"
  * @attr {string}  data-sort-target        on external controls: CSS selector
+ * @attr {string}  data-sort-value         on <td>: sort value override (alias: data-value)
+ * @attr {string}  data-label-sorted       list mode: announcement after a control sorts,
+ *                                         {sort} = control text, {count} = items
+ *                                         (default "Sorted: {sort}. {count} items")
+ *
+ * List-mode button controls get aria-pressed="true" while their sort is
+ * active. Text sorts collate in the container's closest [lang]; number
+ * sorts read formatted text ("1,234", "$5", "12 %") — use data-sort-value
+ * for anything ambiguous.
  *
  * @fires sort:change                       { key, direction, total }
  *
@@ -51,6 +66,8 @@
 
 import { registerInit } from './_init-registry.js';
 import { parseKey, sortIndices, cycleDirection } from '../lib/data-sortable.js';
+import { getLocale } from '../lib/i18n.js';
+import { announce, readLabel } from '../lib/announce.js';
 
 const SELECTOR = '[data-sortable]';
 const ENHANCED = new WeakSet();
@@ -69,6 +86,16 @@ function enhance(host) {
     const parsed = parseKey(initial);
     if (parsed) applySort(host, parsed.key, parsed.direction);
   }
+
+  // A <select> wired before this host existed: apply its initial value now.
+  if (!host.dataset.sortBy) {
+    for (const ctrl of findExternalControls()) {
+      if (ctrl.tagName !== 'SELECT' || resolveTarget(ctrl) !== host) continue;
+      const parsed = parseKey(/** @type {HTMLSelectElement} */ (ctrl).value);
+      if (parsed) { applySort(host, parsed.key, parsed.direction); break; }
+    }
+  }
+  syncControls(host);
 }
 
 /* ---------- table mode ---------- */
@@ -76,11 +103,21 @@ function enhance(host) {
 function wireTableHeaders(table) {
   const headers = table.querySelectorAll(':scope > thead th[data-sort]');
   headers.forEach((th) => {
-    th.setAttribute('role', 'button');
-    th.setAttribute('tabindex', '0');
-    th.style.cursor = 'pointer';
+    // APG sortable table: the th stays a columnheader (aria-sort lives
+    // there) and a native <button> inside it is the interactive target, so
+    // focus, Enter/Space activation and the accessible name come from the
+    // platform. Same contract as <data-table>; styling is in the native
+    // table CSS (th[data-sort] > button[data-sort-button]).
+    if (!th.hasAttribute('aria-sort')) th.setAttribute('aria-sort', 'none');
+    ensureSortButton(th);
 
-    const onActivate = () => {
+    // Click anywhere in the th (padding included) or on its button sorts;
+    // Enter/Space on the button fire a native click. Other interactive
+    // content an author put in the header keeps its own behaviour.
+    th.addEventListener('click', (e) => {
+      const target = /** @type {Element} */ (e.target);
+      const other = target.closest?.('a, input, select, textarea, button:not([data-sort-button])');
+      if (other && th.contains(other)) return;
       const key = th.dataset.sort;
       if (!key) return;
       const current = (table.dataset.sortBy === key) ? table.dataset.sortDirection : 'none';
@@ -90,15 +127,24 @@ function wireTableHeaders(table) {
       } else {
         applySort(table, key, next, th.dataset.sortType);
       }
-    };
-    th.addEventListener('click', onActivate);
-    th.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        onActivate();
-      }
     });
   });
+}
+
+/**
+ * Wrap the header's content in a <button data-sort-button> once.
+ * @param {Element} th
+ * @returns {HTMLButtonElement}
+ */
+function ensureSortButton(th) {
+  const existing = /** @type {HTMLButtonElement | null} */ (th.querySelector(':scope > button[data-sort-button]'));
+  if (existing) return existing;
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.setAttribute('data-sort-button', '');
+  button.append(...th.childNodes);
+  th.appendChild(button);
+  return button;
 }
 
 /* ---------- list mode (external controls) ---------- */
@@ -107,37 +153,76 @@ function findExternalControls() {
   return document.querySelectorAll('[data-sort-target]');
 }
 
+/**
+ * The [data-sortable] container a control points at, resolved when needed
+ * (the container may be rendered after the control).
+ * @param {Element} ctrl
+ * @returns {HTMLElement | null}
+ */
+function resolveTarget(ctrl) {
+  const selector = ctrl.getAttribute('data-sort-target');
+  if (!selector) return null;
+  let target = null;
+  try { target = document.querySelector(selector); } catch { return null; }
+  return target?.matches('[data-sortable]') ? /** @type {HTMLElement} */ (target) : null;
+}
+
+/**
+ * Sort from a control and tell screen-reader users what happened (list
+ * mode has no aria-sort to read).
+ * @param {Element} ctrl
+ * @param {string} value
+ */
+function sortFromControl(ctrl, value) {
+  const target = resolveTarget(ctrl);
+  if (!target) return;
+  const parsed = parseKey(value);
+  if (!parsed) { applySort(target, '', 'none'); return; }
+  applySort(target, parsed.key, parsed.direction);
+  if (target.tagName === 'TABLE') return;
+  const sel = /** @type {HTMLSelectElement} */ (ctrl);
+  const name = ctrl.tagName === 'SELECT'
+    ? (sel.selectedOptions[0]?.textContent || value)
+    : (ctrl.getAttribute('aria-label') || ctrl.textContent || value);
+  const count = new Intl.NumberFormat(getLocale(target)).format(getItems(target).length);
+  announce(readLabel(target, 'sorted', 'Sorted: {sort}. {count} items', { sort: name.trim(), count }));
+}
+
+/**
+ * Reflect the active sort on button-style controls (aria-pressed).
+ * @param {HTMLElement} host
+ */
+function syncControls(host) {
+  const active = host.dataset.sortBy
+    ? (host.dataset.sortDirection === 'desc' ? '-' : '') + host.dataset.sortBy
+    : '';
+  for (const ctrl of findExternalControls()) {
+    if (ctrl.tagName !== 'BUTTON' || resolveTarget(ctrl) !== host) continue;
+    const parsed = parseKey(ctrl.getAttribute('data-sort-by') || '');
+    const value = parsed ? (parsed.direction === 'desc' ? '-' : '') + parsed.key : '';
+    ctrl.setAttribute('aria-pressed', String(!!value && value === active));
+  }
+}
+
 function wireExternalControls() {
   for (const ctrl of findExternalControls()) {
+    // Listeners resolve the target at event time, so a control rendered
+    // before its container is wired once and works when the container arrives.
     if (ENHANCED.has(ctrl)) continue;
+    if (!ctrl.getAttribute('data-sort-target')) continue;
     ENHANCED.add(ctrl);
 
-    const selector = ctrl.getAttribute('data-sort-target');
-    if (!selector) continue;
-    const target = /** @type {HTMLElement | null} */ (document.querySelector(selector));
-    if (!target || !target.matches('[data-sortable]')) continue;
-
     if (ctrl.tagName === 'SELECT') {
-      ctrl.addEventListener('change', () => {
-        const v = /** @type {HTMLSelectElement} */ (ctrl).value;
-        const parsed = parseKey(v);
-        if (!parsed) { applySort(target, '', 'none'); return; }
-        applySort(target, parsed.key, parsed.direction);
-      });
-      // Apply initial value if select has one selected.
-      const initial = /** @type {HTMLSelectElement} */ (ctrl).value;
-      if (initial) {
-        const parsed = parseKey(initial);
-        if (parsed) applySort(target, parsed.key, parsed.direction);
-      }
+      ctrl.addEventListener('change', () => sortFromControl(ctrl, /** @type {HTMLSelectElement} */ (ctrl).value));
+      // Apply the initial value now if the target exists (else enhance() does).
+      const target = resolveTarget(ctrl);
+      const parsed = parseKey(/** @type {HTMLSelectElement} */ (ctrl).value);
+      if (target && parsed && !target.dataset.sortBy) applySort(target, parsed.key, parsed.direction);
     } else {
       // Button-style control: data-sort-by gives the key (with optional - prefix).
-      ctrl.addEventListener('click', () => {
-        const v = ctrl.getAttribute('data-sort-by') || '';
-        const parsed = parseKey(v);
-        if (!parsed) return;
-        applySort(target, parsed.key, parsed.direction);
-      });
+      ctrl.addEventListener('click', () => sortFromControl(ctrl, ctrl.getAttribute('data-sort-by') || ''));
+      const target = resolveTarget(ctrl);
+      if (target) syncControls(target);
     }
   }
 }
@@ -147,7 +232,7 @@ function wireExternalControls() {
 /**
  * Project a sort-value out of a row / item for the named key.
  *
- * Table cells: prefer data-value, then <time datetime> when type=date,
+ * Table cells: prefer data-sort-value / data-value, then <time datetime> when type=date,
  * otherwise textContent.
  *
  * List items: prefer data-sort-{key}, then a child element matching
@@ -162,7 +247,8 @@ function projectValue(item, key, type, opts = {}) {
     const colIndex = opts.colIndex;
     const cell = item.children[colIndex];
     if (!cell) return '';
-    if (cell.dataset.value != null) return cell.dataset.value;
+    const override = cell.dataset.sortValue ?? cell.dataset.value;
+    if (override != null) return override;
     if (type === 'date') {
       const t = cell.querySelector('time[datetime]');
       if (t) return t.getAttribute('datetime') || '';
@@ -211,6 +297,7 @@ function applySort(host, key, direction, typeHint) {
     host.removeAttribute('data-sort-by');
     host.dataset.sortDirection = 'none';
     if (isTable) updateAriaSort(host, '', 'none');
+    else syncControls(host);
     host.dispatchEvent(new CustomEvent('sort:change', {
       bubbles: true,
       detail: { key: '', direction: 'none', total: items.length },
@@ -226,6 +313,7 @@ function applySort(host, key, direction, typeHint) {
     (it) => projectValue(it, key, type, { isTable, colIndex }),
     type,
     /** @type {'asc' | 'desc'} */ (direction),
+    getLocale(host),
   );
 
   const parent = isTable ? host.querySelector(':scope > tbody') : host;
@@ -237,6 +325,7 @@ function applySort(host, key, direction, typeHint) {
   host.dataset.sortDirection = direction;
 
   if (isTable) updateAriaSort(host, key, direction);
+  else syncControls(host);
 
   // If the host is also data-paged, reset to page 1 — the sort changed
   // the item order, so the user's previous "page 2" no longer means

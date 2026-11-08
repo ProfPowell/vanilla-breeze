@@ -48,7 +48,29 @@ crumbLabel: Web Components
   <button data-option="never"    data-count="2">Never</button>
 </poll-wc></code-block>
 
-  <p>Each option carries a stable <code>data-option</code> id (sent in events), the current vote <code>data-count</code>, and an optional <code>data-mine</code> flag for the current user's vote. The button text is the visible label.</p>
+  <p>Each option carries a stable <code>data-option</code> id (sent in events), the current vote <code>data-count</code>, and an optional <code>data-mine</code> flag for the current user's vote. The button content is the visible label; inline markup inside it (<code>&lt;strong&gt;</code>, an icon) is kept. Each option shows its count and its share of the total, for example <q>33 · 60%</q>.</p>
+</section>
+
+<section>
+  <h2>Without JavaScript: enhance a native form</h2>
+  <p>Bare buttons do nothing without JavaScript. For a poll that still works then, author an ordinary form inside <code>&lt;poll-wc&gt;</code>. It submits to your server as is; when the component upgrades it replaces the form with the button form:</p>
+  <ul>
+    <li><code>&lt;legend&gt;</code> becomes the question.</li>
+    <li>Each <code>&lt;input type="radio"&gt;</code> or <code>type="checkbox"</code> becomes an option: <code>value</code> → <code>data-option</code>, <code>data-count</code> is copied, <code>checked</code> → <code>data-mine</code>, and the <code>&lt;label&gt;</code> content (wrapping, or linked with <code>for</code>) becomes the option label.</li>
+    <li>Any checkbox makes the poll <code>data-multi</code>; <code>&lt;fieldset disabled&gt;</code> makes it <code>data-closed</code>.</li>
+    <li>Everything else in the form (submit button, an <code>&lt;output&gt;</code> with server-rendered totals) is dropped, so it can carry no-JS-only content.</li>
+  </ul>
+  <code-block language="html" show-lines label="Form fallback" data-escape><poll-wc>
+  <form action="/polls/theme" method="post">
+    <fieldset>
+      <legend>Default theme for new sites?</legend>
+      <label><input type="radio" name="vote" value="light" data-count="18"> Light</label>
+      <label><input type="radio" name="vote" value="dark" data-count="27"> Dark</label>
+      <label><input type="radio" name="vote" value="system" data-count="41" checked> Follow the system</label>
+      <button type="submit">Vote</button>
+    </fieldset>
+  </form>
+</poll-wc></code-block>
 </section>
 
 <section>
@@ -78,18 +100,28 @@ crumbLabel: Web Components
 
 <section>
   <h2>Wiring the backend</h2>
-  <code-block language="javascript" show-lines label="Single-choice with optimistic update" data-escape>const poll = document.querySelector('poll-wc');
+  <p><code>&lt;poll-wc&gt;</code> never talks to a server and stores nothing. <strong>De-duplicating votes and remembering who voted are your server's job</strong> (a session, account or signed cookie) &mdash; render <code>data-mine</code> from that on page load. The component only guards against double submits on the client:</p>
+  <ul>
+    <li>When a vote is emitted, the option gets <code>data-pending</code> and the option group <code>aria-busy="true"</code>. Further clicks are ignored &mdash; for the whole poll in single-choice mode, for that option in multi-choice mode.</li>
+    <li><code>setCount()</code> or <code>setCounts()</code> clears the flag. Call it when the request fails too, with the old values, to roll back. In single-choice mode any <code>setCount()</code> releases the poll.</li>
+  </ul>
+  <code-block language="javascript" show-lines label="Single-choice with confirmation and rollback" data-escape>const poll = document.querySelector('poll-wc');
 
 poll.addEventListener('poll-wc:vote', async (e) => {
   const { option, action, count, mine } = e.detail;
-  // Single-choice: switching to a new option emits a `remove` for the
-  // previously-selected option BEFORE the `add`. Both events route through
-  // here in order, so authors can apply both updates idempotently.
-  const res = await fetch(`/polls/123/votes/${option}`, {
-    method: action === 'add' ? 'POST' : 'DELETE',
-  });
-  const { count: newCount } = await res.json();
-  poll.setCount(option, newCount, { mine: action === 'add' });
+  // Switching options emits a `remove` for the old choice, then an `add`.
+  // The two handlers run concurrently, so each request must be independent
+  // (or switch to one PUT /vote request on the `add` and ignore `remove`).
+  try {
+    const res = await fetch(`/polls/123/votes/${encodeURIComponent(option)}`, {
+      method: action === 'add' ? 'POST' : 'DELETE',
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { count: newCount } = await res.json();
+    poll.setCount(option, newCount, { mine: action === 'add' });
+  } catch {
+    poll.setCount(option, count, { mine }); // roll back, clears data-pending
+  }
 });</code-block>
 </section>
 
@@ -111,11 +143,14 @@ poll.addEventListener('poll-wc:vote', async (e) => {
   <ul>
     <li><strong>Single-choice:</strong> options live in a <code>role="radiogroup"</code> with <code>role="radio"</code> + <code>aria-checked</code> on each option.</li>
     <li><strong>Multi-choice:</strong> options live in a <code>role="group"</code> with <code>role="checkbox"</code> + <code>aria-checked</code> on each option.</li>
-    <li><strong>Question:</strong> when present, the rendered question element is <code>aria-labelledby</code> to the option group.</li>
+    <li><strong>Group name:</strong> the option group is named by the question (<code>aria-labelledby</code>). Without a question, an <code>aria-label</code> on the host moves onto the group (the host itself has no role and cannot be named); with neither, the group is labelled <q>Poll</q> (<code>data-label-poll</code>).</li>
     <li><strong>Total readout:</strong> the total-vote count lives in an <code>&lt;output&gt;</code> with <code>aria-live="polite"</code>, so screen readers announce it on changes.</li>
-    <li><strong>Per-option label:</strong> derived <code>aria-label</code> like <q>Next Monday, 33 votes (60.0%), your choice</q>.</li>
-    <li><strong>Closed:</strong> options get <code>aria-disabled="true"</code>; focus + keyboard nav still work for browsing.</li>
-    <li><strong>Keyboard:</strong> Arrow keys move focus between options (single-choice uses roving tabindex; multi-choice keeps every option tabbable). Home / End jump to first / last. Enter / Space activates.</li>
+    <li><strong>Per-option label:</strong> derived <code>aria-label</code> like <q>Next Monday, 33 votes, 60%, your choice</q>, formatted with <code>Intl.NumberFormat</code> and <code>Intl.PluralRules</code> for the nearest <code>lang</code>.</li>
+    <li><strong>Hidden counts:</strong> <code>data-hide-counts</code> removes counts, percentages <em>and</em> bars, for sighted and screen-reader users alike. The total still shows.</li>
+    <li><strong>Closed / disabled:</strong> options get <code>aria-disabled="true"</code>; focus and arrow keys still work for browsing. The total reads <q>45 votes · closed</q> as real text.</li>
+    <li><strong>Keyboard, single-choice</strong> (APG radio group): one Tab stop (roving tabindex). Arrow keys move focus <em>and</em> vote for the focused option, so each arrow press emits events &mdash; the pending guard drops presses until the server confirms. Left/Right follow reading direction (flipped in RTL). Home / End jump to first / last.</li>
+    <li><strong>Keyboard, multi-choice</strong> (APG checkbox): every option is a Tab stop; Space / Enter toggles it. Arrow keys are not used.</li>
+    <li><strong>Forced colors:</strong> bars become a <code>Highlight</code> strip along the bottom of each option, and your own choice gets a thicker border.</li>
   </ul>
 </section>
 
@@ -124,11 +159,15 @@ poll.addEventListener('poll-wc:vote', async (e) => {
   <table class="props-table">
     <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>aria-label</code></td><td>string</td><td>question text or <code>Poll</code></td><td>Group label.</td></tr>
+      <tr><td><code>aria-label</code></td><td>string</td><td>&mdash;</td><td>Group label when there is no question; moved onto the option group.</td></tr>
       <tr><td><code>data-multi</code></td><td>boolean</td><td><code>false</code></td><td>Allow multiple selections.</td></tr>
       <tr><td><code>data-closed</code></td><td>boolean</td><td><code>false</code></td><td>Read-only — show results, no voting.</td></tr>
-      <tr><td><code>data-hide-counts</code></td><td>boolean</td><td><code>false</code></td><td>Suppress the numeric count beside each bar.</td></tr>
-      <tr><td><code>disabled</code></td><td>boolean</td><td><code>false</code></td><td>Disables the entire poll.</td></tr>
+      <tr><td><code>data-hide-counts</code></td><td>boolean</td><td><code>false</code></td><td>Hide per-option counts, percentages and bars (visually and from assistive tech).</td></tr>
+      <tr><td><code>disabled</code></td><td>boolean</td><td><code>false</code></td><td>Disables voting (dimmed, <code>aria-disabled</code>). Live: toggling it updates immediately.</td></tr>
+      <tr><td><code>data-label-vote</code> / <code>data-label-votes</code></td><td>string</td><td><code>vote</code> / <code>votes</code></td><td>Count noun; <code>Intl.PluralRules</code> picks the singular for the <q>one</q> category.</td></tr>
+      <tr><td><code>data-label-your-choice</code></td><td>string</td><td><code>your choice</code></td><td>Appended to the option's accessible name when <code>data-mine</code> is set.</td></tr>
+      <tr><td><code>data-label-closed</code></td><td>string</td><td><code>closed</code></td><td>Appended to the total when closed.</td></tr>
+      <tr><td><code>data-label-poll</code></td><td>string</td><td><code>Poll</code></td><td>Fallback group name with no question and no <code>aria-label</code>.</td></tr>
     </tbody>
   </table>
 
@@ -139,6 +178,7 @@ poll.addEventListener('poll-wc:vote', async (e) => {
       <tr><td><code>data-option</code></td><td>Stable identifier sent in events (required).</td></tr>
       <tr><td><code>data-count</code></td><td>Current vote count.</td></tr>
       <tr><td><code>data-mine</code></td><td>Current user voted for this option.</td></tr>
+      <tr><td><code>data-pending</code></td><td>Output: a vote for this option is in flight (cleared by <code>setCount</code> / <code>setCounts</code>).</td></tr>
     </tbody>
   </table>
 </section>
@@ -159,8 +199,8 @@ poll.addEventListener('poll-wc:vote', async (e) => {
   <table class="props-table">
     <thead><tr><th>Member</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>setCount(option, count, { mine })</code></td><td>Update a single option after the server confirms.</td></tr>
-      <tr><td><code>setCounts(counts, { mine })</code></td><td>Bulk-update from a server snapshot. <code>mine</code> can be a string (single-choice) or string[] (multi).</td></tr>
+      <tr><td><code>setCount(option, count, { mine })</code></td><td>Update a single option after the server confirms (or roll back on failure). Clears <code>data-pending</code>.</td></tr>
+      <tr><td><code>setCounts(counts, { mine })</code></td><td>Bulk-update from a server snapshot. <code>mine</code> can be a string (single-choice) or string[] (multi). Clears every <code>data-pending</code>.</td></tr>
       <tr><td><code>open() / close()</code></td><td>Toggle <code>data-closed</code> programmatically.</td></tr>
       <tr><td><code>totalVotes</code></td><td>Sum of all option counts.</td></tr>
       <tr><td><code>myVotes</code></td><td>Array of option ids the current user voted for.</td></tr>

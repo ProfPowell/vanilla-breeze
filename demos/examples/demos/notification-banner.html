@@ -39,7 +39,7 @@
   </style>
 </head>
 <body>
-  <notification-wc id="live-banner" mode="banner" variant="info" position="top">
+  <notification-wc id="live-banner" mode="banner" persist="vb-demo-banner" variant="info" position="top">
     <strong>v3.0 is out.</strong> <a href="#changelog">See what&rsquo;s new</a>
     <button type="button" value="dismiss" class="banner-close" aria-label="Dismiss">
       <icon-wc name="x" size="sm"></icon-wc>
@@ -64,7 +64,7 @@
       <button type="button" data-position="bottom" aria-pressed="false">bottom</button>
     </fieldset>
 
-    <p>The close button hides the banner for this session. In production, set <code>persist="some-key"</code> to record dismissal in VBStore so the banner stays hidden across reloads, and <code>expires="N"</code> to re-show after N days.</p>
+    <p>The close button records dismissal in VBStore under <code>persist="vb-demo-banner"</code>, so the banner stays hidden across reloads. Pick a variant or position to bring it back. Add <code>expires="N"</code> to re-show it after N days.</p>
 
     <p class="banner-spacer"></p>
     <p><em>End of demo content.</em></p>
@@ -84,7 +84,6 @@
       btn.addEventListener('click', () => {
         const v = btn.dataset.variant;
         banner.setAttribute('variant', v);
-        banner.dataset.variant = v;
         banner.hidden = false;
         setPressed('variant', v);
       });
@@ -94,7 +93,6 @@
       btn.addEventListener('click', () => {
         const p = btn.dataset.position;
         banner.setAttribute('position', p);
-        banner.dataset.position = p;
         banner.hidden = false;
         setPressed('position', p);
       });

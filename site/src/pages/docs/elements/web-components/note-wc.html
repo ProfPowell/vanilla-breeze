@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "note-wc"
-description: "Private note action for selection-menu. One-click highlight + annotate with localStorage persistence."
+description: "Private reader notes on highlighted text: a selection-menu action, a page-level button, and the note panel itself. Notes persist in localStorage."
 elementName: note-wc
 category: component
 currentPath: /docs/elements/web-components/note-wc/
@@ -12,13 +12,29 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>&lt;note-wc&gt;</code> component provides a one-click "highlight + annotate" action inside <code>&lt;selection-menu&gt;</code>. It creates a highlight on the selected text (if not already highlighted) and immediately opens a private note panel.</p>
-  <p>Notes are the reader's private marginalia — stored in localStorage, not shared with others. For collaborative comments, use <code>&lt;comment-wc&gt;</code> with <code>&lt;review-surface&gt;</code>.</p>
+  <p><code>&lt;note-wc&gt;</code> adds private reader notes to highlighted text. It owns the note panel (quote, textarea, Save and Cancel) and opens it in three ways:</p>
+  <ul>
+    <li><strong>Inside <code>&lt;selection-menu&gt;</code></strong> &mdash; one click highlights the selection (or reuses the highlight it falls inside) and opens the panel.</li>
+    <li><strong>With <code>for="id"</code></strong> (standalone or in <code>&lt;page-tools&gt;</code>) &mdash; a page-level button that opens the panel for the first noted highlight on the target, or the first highlight if none has a note.</li>
+    <li><strong>Margin annotations</strong> &mdash; clicking a highlight&rsquo;s margin label on a <a href="/docs/attributes/data-highlights/"><code>data-highlights</code></a> article dispatches <code>highlights:request-note</code>; the first connected <code>note-wc</code> opens its panel for that highlight. A <code>note-wc</code> with no <code>for</code> outside a selection menu renders no button and only hosts the panel.</li>
+  </ul>
+  <p>Notes are the reader&rsquo;s private marginalia &mdash; stored in localStorage, not shared with others. For collaborative comments, use <code>&lt;comment-wc&gt;</code> with <code>&lt;review-surface&gt;</code>.</p>
+</section>
+
+<section>
+  <h2>Demo</h2>
+  <p>Select some text, then choose the sticky-note action in the toolbar.</p>
+  <browser-window
+    src="/docs/snippets/demos/selection-menu-basic.html"
+    url="https://vanilla-breeze.com/notes"
+    title="Selection menu with note-wc"
+    shadow>
+  </browser-window>
 </section>
 
 <section>
   <h2>Usage</h2>
-  <p>Place inside a <code>&lt;selection-menu&gt;</code> alongside other action components.</p>
+  <h3>Inside selection-menu</h3>
 <code-block language="html" label="Inside selection-menu" data-escape><selection-menu for="my-article">
   <highlight-wc></highlight-wc>
   <note-wc></note-wc>
@@ -27,17 +43,58 @@ crumbLabel: Web Components
 <article id="my-article">
   <p>Select text, click the note icon to highlight and add a note.</p>
 </article></code-block>
+
+  <h3>Page-level button</h3>
+  <p>With <code>for</code>, the button (named &ldquo;View notes&rdquo;) reopens notes on an article that already has highlights. It does nothing until the reader has highlighted something.</p>
+<code-block language="html" label="Page-level with for" data-escape><page-tools>
+  <note-wc for="my-article"></note-wc>
+</page-tools>
+
+<article id="my-article" data-highlights>…</article></code-block>
+
+  <h3>Panel host only</h3>
+  <p>To open notes from margin annotations without a toolbar, place a bare <code>&lt;note-wc&gt;</code> anywhere on the page. It renders nothing until a margin label is clicked.</p>
+<code-block language="html" label="Panel host" data-escape><note-wc></note-wc>
+<article data-highlights>…</article></code-block>
 </section>
 
 <section>
   <h2>How It Works</h2>
   <ol>
-    <li>User selects text and clicks the sticky-note icon in the toolbar.</li>
-    <li>If the selection isn't already highlighted, <code>note-wc</code> creates a yellow highlight.</li>
-    <li>The highlights-init note panel opens with a textarea for the private note.</li>
-    <li>Notes persist in localStorage alongside the highlight data.</li>
-    <li>Notes appear as margin annotations ("* You highlighted") beside the text.</li>
+    <li>The reader selects text and clicks the sticky-note icon in the toolbar.</li>
+    <li><code>note-wc</code> locates the selection by text offset. If it falls inside an existing highlight, that highlight is reused; otherwise a yellow highlight is created.</li>
+    <li><code>note-wc</code> opens its note panel beside the highlight with a textarea for the private note.</li>
+    <li>Notes persist in localStorage alongside the highlight data, and saving fires <code>highlights:note-changed</code> on the article.</li>
+    <li>Notes appear as margin annotations (&ldquo;* You highlighted&rdquo;) beside the text; clicking one reopens the panel.</li>
   </ol>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>for</code></td><td>&mdash;</td><td>ID of the target article (page-level mode)</td></tr>
+      <tr><td><code>data-label-add</code></td><td>Add private note</td><td>Button name inside selection-menu</td></tr>
+      <tr><td><code>data-label-view</code></td><td>View notes</td><td>Button name in page-level mode</td></tr>
+      <tr><td><code>data-label-dialog</code></td><td>Private note</td><td>Panel dialog name</td></tr>
+      <tr><td><code>data-label-heading</code></td><td>Private note</td><td>Visible panel heading (uppercased by CSS)</td></tr>
+      <tr><td><code>data-label-placeholder</code></td><td>Add a note&hellip;</td><td>Textarea placeholder</td></tr>
+      <tr><td><code>data-label-textarea</code></td><td>Note for highlighted text</td><td>Textarea name</td></tr>
+      <tr><td><code>data-label-save</code> / <code>data-label-cancel</code></td><td>Save / Cancel</td><td>Action button text</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <table class="props-table">
+    <thead><tr><th>Member</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>openFor(highlight, controller, opener?)</code></td><td>Open the panel for a highlight record on a highlights controller (from <code>initHighlights(article)</code>). Focus returns to <code>opener</code> &mdash; by default the element focused when the panel opened &mdash; on close.</td></tr>
+      <tr><td><code>highlights:request-note</code> (listened on <code>document</code>)</td><td>Detail <code>{ id, highlight, controller }</code>. Dispatched by margin-annotation clicks; the first connected <code>note-wc</code> calls <code>openFor</code>.</td></tr>
+    </tbody>
+  </table>
 </section>
 
 <section>
@@ -55,9 +112,11 @@ crumbLabel: Web Components
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li>Button has <code>aria-label="Add private note"</code></li>
-    <li>Note panel has <code>role="dialog"</code></li>
-    <li><kbd>Ctrl+Enter</kbd> saves the note, <kbd>Escape</kbd> cancels</li>
+    <li>The button is named &ldquo;Add private note&rdquo; (selection-menu) or &ldquo;View notes&rdquo; (page-level); override with <code>data-label-*</code>.</li>
+    <li>The note panel has <code>role="dialog"</code> and an accessible name; the textarea is focused when it opens.</li>
+    <li><kbd>Ctrl</kbd>+<kbd>Enter</kbd> (<kbd>Cmd</kbd>+<kbd>Enter</kbd> on macOS) saves; <kbd>Escape</kbd> anywhere in the panel cancels.</li>
+    <li>On Save, Cancel, <kbd>Escape</kbd> or an outside click, focus returns to the opener if it is still visible, otherwise to the highlight&rsquo;s <code>&lt;mark&gt;</code> or the article, so it never drops to the page body.</li>
+    <li>Without JavaScript there is no toolbar and nothing renders; the article reads normally.</li>
   </ul>
 </section>
 

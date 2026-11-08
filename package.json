@@ -15,6 +15,7 @@
     "./core-css": "./dist/cdn/vanilla-breeze-core.css",
     "./charts-css": "./dist/cdn/vanilla-breeze-charts.css",
     "./dev-css": "./dist/cdn/vanilla-breeze-dev.css",
+    "./view-transitions-css": "./dist/cdn/view-transitions.css",
     "./js": "./dist/cdn/vanilla-breeze.js",
     "./core-js": "./dist/cdn/vanilla-breeze-core.js",
     "./extras-js": "./dist/cdn/vanilla-breeze-extras.js",
@@ -35,14 +36,14 @@
     "./kawaii-js": "./dist/cdn/packs/kawaii.full.js",
     "./memphis-css": "./dist/cdn/packs/memphis.full.css",
     "./memphis-js": "./dist/cdn/packs/memphis.full.js",
-    "./journal-css": "./dist/cdn/packs/journal.full.css"
+    "./journal-css": "./dist/cdn/packs/journal.full.css",
+    "./emoji-extended": "./dist/cdn/emoji-extended.js"
   },
   "files": [
     "dist/cdn/",
     "!dist/cdn/**/*.map",
     "!dist/cdn/budget-report.json",
     "!dist/cdn/doc-extras.js",
-    "!dist/cdn/emoji-extended.js",
     "!dist/cdn/sw.js",
     "!dist/cdn/packs/icons/fonts/",
     "custom-elements.json",
@@ -51,7 +52,8 @@
   ],
   "sideEffects": [
     "*.css",
-    "./dist/cdn/vanilla-breeze.js"
+    "./dist/cdn/vanilla-breeze.js",
+    "./dist/cdn/emoji-extended.js"
   ],
   "repository": {
     "type": "git",
@@ -81,10 +83,13 @@
     "search:index": "cd site && pagefind",
     "preview": "cd site && npm run preview",
     "lint:html": "html-validate 'demos/**/*.html'",
+    "lint:doc-classes": "node scripts/lint-doc-classes.mjs",
     "vendor:marked": "cp node_modules/marked/lib/marked.esm.js src/vendor/marked/marked.esm.js && cp node_modules/marked/lib/marked.d.ts src/vendor/marked/marked.esm.d.ts",
+    "vendor:qrcodegen": "node scripts/vendor-qrcodegen.mjs",
     "lint:js": "eslint --config .claude/eslint.config.js --ignore-pattern 'src/htmlvalidate/' --ignore-pattern 'src/vendor/' 'src/**/*.js' --max-warnings 0",
-    "lint:theme-tokens": "node scripts/quality/theme-token-coverage.js",
-    "lint": "npm run lint:html",
+    "lint:theme-tokens": "node scripts/quality/theme-token-coverage.js && npm run lint:undefined-tokens",
+    "lint:undefined-tokens": "node scripts/quality/undefined-token-lint.js",
+    "lint": "npm run lint:html && npm run lint:doc-classes",
     "test": "node --test 'tests/unit/**/*.test.js'",
     "health": "node scripts/quality/health-check.js",
     "validate:api": "node scripts/build-api-registry.js --validate-only",
@@ -110,7 +115,9 @@
     "test:all": "npm test && npx playwright test",
     "budget": "node scripts/bundle-budget.js",
     "budget:themes": "node scripts/theme-budget.js",
-    "prepublishOnly": "npm run build:cdn"
+    "prepublishOnly": "npm run build:cdn",
+    "generate:shape-edges": "node scripts/generate-shape-edges.mjs",
+    "check:shape-edges": "node scripts/generate-shape-edges.mjs --check"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.11.0",
@@ -124,6 +131,7 @@
     "html-validate": "^8.24.0",
     "htmlhint": "^1.9.2",
     "interestfor": "^1.0.7",
+    "jsqr": "^1.4.0",
     "link-checker": "^1.4.2",
     "linkedom": "^0.18.12",
     "lucide-static": "^0.562.0",

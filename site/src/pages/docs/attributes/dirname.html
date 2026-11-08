@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "dirname"
-description: "Submit the text directionality (ltr or rtl) of a form field alongside its value. Essential for multilingual applications that need to render user-generated content correctly."
+description: "Submits the text direction of a field (ltr or rtl) as an extra form value, so the server can display user-written text in the direction it was typed."
 attributeName: dirname
 attributeType: native
 nativeGroup: Forms
@@ -12,101 +12,113 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>dirname</code> attribute tells the browser to submit an additional form field containing the text directionality (<code>ltr</code> or <code>rtl</code>) of the input's content. This is one of the least-known HTML attributes, but it solves a real problem: when storing and redisplaying user-generated text, the server needs to know the text direction to render it correctly.</p>
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> (text-like types), <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a></p>
+<section>
+  <h2>Overview</h2>
+  <p><code>dirname</code> adds a second entry to the form submission: its name is the attribute's value and its value is the field's directionality, <code>ltr</code> or <code>rtl</code>. When the server later shows that text, it can set <code>dir</code> from the stored value instead of guessing, so Arabic or Hebrew comments display correctly on an English page and the reverse.</p>
+  <p>Pair it with <code>dir="auto"</code> on the field. Without that, the field simply inherits the page's direction and <code>dirname</code> reports it, whatever the user typed.</p>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a> and <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> of type <code>text</code>, <code>search</code>, <code>tel</code>, <code>url</code>, <code>email</code>, <code>password</code>, <code>hidden</code>, <code>submit</code>, <code>reset</code> and <code>button</code>.</p>
 
-<h2>Values</h2>
-<table>
-  <thead><tr><th>Attribute</th><th>Value</th><th>Submitted Field</th></tr></thead>
-  <tbody>
-    <tr><td><code>dirname</code></td><td>Any name (conventionally <code>fieldname.dir</code>)</td><td>Contains <code>ltr</code> or <code>rtl</code></td></tr>
-  </tbody>
-</table>
-<p>The value of <code>dirname</code> becomes the name of the extra form field. The convention is to append <code>.dir</code> to the original field name, but any name works.</p>
+  <browser-window
+    src="/docs/examples/demos/attr-dirname-basic.html"
+    url="https://vanilla-breeze.com/attributes/dirname"
+    title="dirname"
+    shadow>
+  </browser-window>
 
-<h2>Basic Usage</h2>
-<p>Add <code>dirname</code> to an input and the browser automatically submits the text direction alongside the value.</p>
-
-<code-block language="html" label="dirname on input" data-escape><!-- Submits both "comment=Hello" and "comment.dir=ltr" -->
-<form method="post" action="/submit" class="stacked">
-  <label for="comment">Comment</label>
-  <input type="text" id="comment" name="comment" dirname="comment.dir" />
-  <button type="submit">Submit</button>
-</form></code-block>
-
-<code-block language="html" label="dirname on textarea" data-escape><!-- Also works on textarea -->
-<form method="post" action="/submit" class="stacked">
-  <label for="review">Write your review</label>
-  <textarea id="review" name="review" dirname="review.dir" rows="4"></textarea>
-  <button type="submit">Submit</button>
-</form></code-block>
-
-<h2>Automatic Direction Detection</h2>
-<p>Combine <code>dirname</code> with <code>dir="auto"</code> to let the browser detect the text direction from the content the user types. This is the most powerful combination for multilingual forms.</p>
-
-<code-block language="html" label="Auto direction detection" data-escape><!-- Combine with dir="auto" for automatic direction detection -->
-<form method="post" action="/submit" class="stacked">
-  <label for="message">Message (type in any language)</label>
-  <input type="text" id="message" name="message" dirname="message.dir"
-    dir="auto" placeholder="English or Arabic..." />
-  <button type="submit">Submit</button>
+  <code-block language="html" show-lines label="Direction submitted with the value" data-escape><form action="/reviews" method="post">
+  <form-field>
+    <label for="title">Review title</label>
+    <input type="text" id="title" name="title" dir="auto" dirname="title.dir" />
+  </form-field>
+  <form-field>
+    <label for="body">Review</label>
+    <textarea id="body" name="body" rows="4" dir="auto" dirname="body.dir"></textarea>
+  </form-field>
+  <button type="submit">Post review</button>
 </form>
-
-<!-- If user types "مرحبا", submits: message=مرحبا&message.dir=rtl -->
-<!-- If user types "Hello", submits: message=Hello&message.dir=ltr --></code-block>
-
-<h2>Server-Side Usage</h2>
-<p>The server receives the direction value and can use it when rendering the stored content back to users. This ensures that RTL text is displayed correctly even on LTR pages.</p>
-
-<code-block language="html" label="Server-side rendering" data-escape><!-- The server receives two fields per input -->
-<!-- For a POST request, the body might be: -->
-<!-- comment=مرحبا+بالعالم&comment.dir=rtl -->
-
-<!-- Server-side rendering (pseudocode): -->
-<p dir="${comment_dir}">${comment}</p>
-
-<!-- Without dirname, you'd have to guess the direction or detect
-     it server-side — both are unreliable --></code-block>
-
-<h2>Multiple Fields</h2>
-<p>Each field with <code>dirname</code> submits its own direction value. A form with three dirname fields submits up to six name/value pairs.</p>
-
-<code-block language="html" label="Multiple dirname fields" data-escape><form method="post" action="/submit" class="stacked">
-  <label for="title">Title</label>
-  <input type="text" id="title" name="title" dirname="title.dir" dir="auto" />
-
-  <label for="body">Body</label>
-  <textarea id="body" name="body" dirname="body.dir" dir="auto" rows="5"></textarea>
-
-  <label for="author">Author name</label>
-  <input type="text" id="author" name="author" dirname="author.dir" dir="auto" />
-
-  <button type="submit">Publish</button>
-</form>
-
-<!-- Submits up to 6 fields: title, title.dir, body, body.dir, author, author.dir --></code-block>
-
-<h2>Accessibility</h2>
-<ul>
-  <li>The <code>dirname</code> attribute itself has no direct impact on accessibility. It is a data submission mechanism.</li>
-  <li>The real accessibility benefit is downstream: when the server uses the submitted direction to set <code>dir</code> on rendered content, RTL users see their text displayed correctly.</li>
-  <li>Pair <code>dirname</code> with <code>dir="auto"</code> on the input so RTL users see their text flowing correctly as they type.</li>
-</ul>
-
-<h2>Limitations</h2>
-<ul>
-  <li>Only works on <code>&lt;input&gt;</code> and <code>&lt;textarea&gt;</code>. It is not available on <code>&lt;select&gt;</code>, <code>&lt;contenteditable&gt;</code>, or other form-like controls.</li>
-  <li>The direction reported is for the <em>entire</em> field value. If the user types mixed-direction text (e.g., Arabic with embedded English), only the overall direction is submitted.</li>
-  <li>Very few developers know about <code>dirname</code>. Most multilingual applications detect text direction on the server or client with JavaScript instead, even though <code>dirname</code> is simpler.</li>
-  <li>The extra field name must not conflict with other form field names. Using the <code>.dir</code> suffix convention avoids this.</li>
-</ul>
+<!-- Typing "ممتاز وسريع" submits: title=ممتاز وسريع&title.dir=rtl --></code-block>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <table class="props-table">
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Any non-empty name</td><td>The name of the extra entry. The convention is the field's name plus <code>.dir</code>.</td></tr>
+      <tr><td>Absent or empty</td><td>No extra entry (the default).</td></tr>
+    </tbody>
+  </table>
+  <p>The submitted value is the element's directionality at submit time:</p>
+  <table class="props-table">
+    <thead><tr><th>Field's <code>dir</code></th><th>Submitted</th></tr></thead>
+    <tbody>
+      <tr><td><code>auto</code></td><td>From the first strong character of the value: <code>rtl</code> for Arabic or Hebrew, otherwise <code>ltr</code>.</td></tr>
+      <tr><td><code>ltr</code> / <code>rtl</code></td><td>That value.</td></tr>
+      <tr><td>Not set</td><td>Inherited from the nearest ancestor with <code>dir</code>, usually <code>ltr</code> from <code>&lt;html&gt;</code>.</td></tr>
+    </tbody>
+  </table>
+  <p>On an <code>&lt;input type="submit"&gt;</code>, the entry is only sent when that button submits the form, and it reports the button's own directionality. The <code>&lt;button&gt;</code> element does not support <code>dirname</code>.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Showing the text again, safely</h3>
+  <p>Accept only the two expected values and escape the text itself. Never put either submitted value into the page unescaped.</p>
+  <code-block language="js" label="Server-side rendering (Node, any template engine)" data-escape>const dir = body['title.dir'] === 'rtl' ? 'rtl' : 'ltr';
+const html = `<p dir="${dir}">${escapeHtml(body.title)}</p>`;</code-block>
+  <p>If you store text without a direction, render it with <code>dir="auto"</code> or inside <code>&lt;bdi&gt;</code>; the browser then detects the direction on display instead.</p>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/attributes/dir/"><code>dir</code></a> — set text direction on any element</li>
-    <li><a href="/docs/attributes/lang/"><code>lang</code></a> — declare the language of content</li>
-    <li><a href="/docs/attributes/wrap/"><code>wrap</code></a> — control textarea line-wrapping behavior</li>
+    <li>VB adds no behaviour to <code>dirname</code>. It is submitted by the browser in every submit mode, including <code>data-validate</code> with <code>data-submit="fetch"</code> or <code>"event"</code>, because those build their data with <code>new FormData(form, submitter)</code>.</li>
+    <li>VB's form styles are written with logical properties, so a field with <code>dir="auto"</code> mirrors its padding, select chevron, datalist arrow and invalid edge when the user types right-to-left text.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Correct direction is a readability issue: punctuation and numbers in mixed text land in the wrong place when the direction is wrong. Setting <code>dir</code> on redisplayed text fixes that for every reader, including screen readers, which use it to choose reading order.</li>
+    <li><code>dir="auto"</code> on the field also helps the person typing: right-to-left text starts at the correct edge as soon as they type.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Security</h2>
+  <p>Both submitted values are user input. A modified request can send any string as <code>title.dir</code>, so allow-list <code>ltr</code> and <code>rtl</code> before writing it into an attribute, and HTML-escape the text.</p>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <p>Baseline 2023: Chrome 17, Safari 6, Firefox 116 (the last to ship, August 2023).</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li>Without <code>dir="auto"</code> the answer is the page direction, which makes <code>dirname</code> useless for mixed-language input.</li>
+    <li>The direction is for the whole value, decided by its first strong character. "Hello مرحبا" is <code>ltr</code>.</li>
+    <li>It is not available on <code>&lt;select&gt;</code> or on contenteditable elements.</li>
+    <li>Pick a name that can't clash with another field; the <code>.dir</code> suffix avoids that.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/dir/"><code>dir</code></a> &mdash; set or detect direction on any element</li>
+    <li><a href="/docs/attributes/lang/"><code>lang</code></a> &mdash; the language of the content</li>
+    <li><a href="/docs/elements/native/bdi/"><code>&lt;bdi&gt;</code></a> &mdash; isolate user text of unknown direction when displaying it</li>
+    <li><a href="/docs/i18n/">Internationalization guide</a></li>
+    <li><a href="/docs/elements/web-components/form-field/"><code>&lt;form-field&gt;</code></a>, <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a></li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>dirname</code> + <code>dir="auto"</code></strong> &mdash; you store user text and show it again elsewhere.</li>
+    <li><strong><code>dir="auto"</code> or <code>&lt;bdi&gt;</code> on display</strong> &mdash; you didn't store a direction; let the browser detect it.</li>
+    <li><strong><code>lang</code></strong> &mdash; you know the language, not just the direction.</li>
   </ul>
 </section>

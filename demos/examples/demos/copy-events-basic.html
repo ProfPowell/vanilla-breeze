@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Copy Events</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <main data-layout="stack" data-layout-gap="m">
+    <p data-layout="cluster" data-layout-gap="s">
+      <button type="button" id="copy-btn" data-copy="npm install vanilla-breeze">Copy install command</button>
+    </p>
+    <p>Last event: <output id="log" for="copy-btn">none yet</output></p>
+  </main>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const btn = document.getElementById('copy-btn');
+    const log = document.getElementById('log');
+    btn.addEventListener('copy:done', (e) => { log.textContent = `copy:done — "${e.detail.text}"`; });
+    btn.addEventListener('copy:error', () => { log.textContent = 'copy:error — the text was selected instead'; });
+  </script>
+</body>
+</html>

@@ -2,26 +2,28 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "glossary-index",
   "type": "web-component",
-  "description": "Interactive glossary with search and scroll-spy",
+  "description": "Interactive glossary with search filtering, scroll-spy letter tracking and copyable term permalinks",
   "attributes": [
-    {
-      "name": "placeholder",
-      "kind": "native",
-      "purpose": "config",
-      "type": "string",
-      "description": "Placeholder text for the search input"
-    },
-    {
-      "name": "data-glossary-search",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "href",
-      "kind": "native",
-      "purpose": "config"
-    }
+    { "name": "placeholder",              "kind": "host-api", "purpose": "config", "type": "string", "default": "Filter terms…", "description": "Placeholder text for the injected search input (a hint, not its label — see data-label-filter)" },
+    { "name": "data-label-filter",        "kind": "data", "purpose": "config", "type": "string", "default": "Filter glossary terms", "description": "Accessible name of the search input" },
+    { "name": "data-label-matches-one",   "kind": "data", "purpose": "config", "type": "string", "default": "{count} term matches", "description": "Polite match-count announcement for the Intl.PluralRules \"one\" category ({count} is replaced). Any category works: -few, -many, -zero, -two." },
+    { "name": "data-label-matches-other", "kind": "data", "purpose": "config", "type": "string", "default": "{count} terms match", "description": "Match-count announcement for the \"other\" category and the fallback for unset categories" },
+    { "name": "data-label-all-one",       "kind": "data", "purpose": "config", "type": "string", "default": "Showing {count} term", "description": "Announcement when the filter is cleared (\"one\" category)" },
+    { "name": "data-label-all-other",     "kind": "data", "purpose": "config", "type": "string", "default": "Showing all {count} terms", "description": "Announcement when the filter is cleared (\"other\" category and fallback)" },
+    { "name": "data-label-empty",         "kind": "data", "purpose": "config", "type": "string", "default": "No terms match your filter.", "description": "Visible empty-state message when nothing matches" },
+    { "name": "data-label-permalink",     "kind": "data", "purpose": "config", "type": "string", "default": "Copy link to", "description": "Permalink name prefix; the term text is appended" },
+    { "name": "data-label-copied",        "kind": "data", "purpose": "config", "type": "string", "default": "Link copied to clipboard", "description": "Screen-reader announcement after a permalink copies the term URL" }
   ],
-  "childAttributes": [],
-  "structure": []
+  "childAttributes": [
+    { "name": "id", "on": "dt", "type": "string", "description": "Term anchor. Each dt with an id gets a permalink that follows the fragment and copies the term URL." }
+  ],
+  "structure": [
+    { "element": "nav.glossary-jump", "required": false, "description": "Letter jump navigation; its fragment links get aria-current=\"true\" for the section in view and aria-disabled while their section is filtered out" },
+    { "element": "section.glossary-section", "description": "One per letter group, with an id the jump links target (section[id^=\"glossary-\"] also matches)" },
+    { "element": "dl", "description": "Terms inside each section: dt/dd groups (several dt per dd, several dd per dt, or div-wrapped groups)" },
+    { "element": "dfn", "required": false, "description": "The defined term inside dt; used as the filter target when present (otherwise the dt text)" }
+  ],
+  "events": [
+    { "name": "glossary-index:filter", "detail": "{ query, matchCount }", "description": "After the filter is applied" }
+  ]
 }

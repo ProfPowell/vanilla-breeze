@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "autocorrect"
-description: "Controls automatic text correction on mobile devices. Disable it for usernames, product codes, and technical content where correction would alter intended input."
+description: "Turns the browser's or operating system's automatic spelling and punctuation correction on or off for editable text. Baseline 2026; inherited from the form."
 attributeName: autocorrect
 attributeType: native
 nativeGroup: Global
@@ -12,130 +12,141 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>autocorrect</code> attribute controls whether the browser or operating system automatically corrects text as the user types. When enabled, the system silently replaces what it believes are typos with dictionary words — helpful for prose, but destructive for technical content, codes, or identifiers.</p>
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> (text types), <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a>, and any element with <a href="/docs/attributes/contenteditable/"><code>contenteditable</code></a></p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>autocorrect</code> attribute controls whether editable text is corrected automatically as the user types: misspelled words replaced, punctuation adjusted. What gets corrected, and how, depends on the browser and the device's text services (for example the replacements configured in macOS or a phone keyboard). Correction helps in prose and does damage in codes, usernames and identifiers.</p>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> (except <code>password</code>, <code>email</code> and <code>url</code>, which are never corrected), <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a>, elements with <a href="/docs/attributes/contenteditable/"><code>contenteditable</code></a>, and <a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a>, where it sets the default for the form's controls.</p>
 
-<h2>Values</h2>
+  <browser-window
+    src="/docs/examples/demos/attr-autocorrect-basic.html"
+    url="https://vanilla-breeze.com/autocorrect"
+    title="autocorrect"
+    shadow>
+  </browser-window>
 
-<table>
-  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
-  <tbody>
-    <tr><td><code>on</code></td><td>Automatic text correction is enabled (the default)</td></tr>
-    <tr><td><code>off</code></td><td>Automatic text correction is disabled</td></tr>
-  </tbody>
-</table>
+  <code-block language="html" show-lines label="Correction on for prose, off for identifiers" data-escape><form-field>
+  <label for="ac-bio">Short bio</label>
+  <!-- No attribute: correction is on -->
+  <textarea id="ac-bio" name="bio" rows="3"></textarea>
+</form-field>
 
-<code-block language="html" label="Basic usage" data-escape><!-- Disable autocorrect for a username field -->
-<label for="username">Username</label>
-<input type="text" id="username"
-  autocorrect="off"
-  autocapitalize="none"
-  autocomplete="username" />
+<form-field>
+  <label for="ac-handle">Username</label>
+  <input type="text" id="ac-handle" name="username"
+    autocorrect="off" autocapitalize="none" spellcheck="false"
+    autocomplete="username">
+</form-field>
 
-<!-- Leave autocorrect enabled for prose (the default) -->
-<label for="comment">Comment</label>
-<textarea id="comment" autocorrect="on" rows="4"></textarea></code-block>
-
-<h2>When to Disable Autocorrect</h2>
-<p>Autocorrect is designed for natural language. It actively harms input accuracy when the field expects non-dictionary content:</p>
-<ul>
-  <li><strong>Usernames and handles:</strong> <code>xKoder99</code> gets corrected to <code>Coder</code></li>
-  <li><strong>Product codes and SKUs:</strong> <code>WX-4829</code> gets broken by insertion of spaces or corrections</li>
-  <li><strong>Technical terms:</strong> Programming keywords, CSS selectors, shell commands</li>
-  <li><strong>URLs and paths:</strong> File paths and API endpoints contain non-word segments</li>
-  <li><strong>Abbreviations:</strong> Domain-specific abbreviations are not in the system dictionary</li>
-  <li><strong>Invite codes and tokens:</strong> Random alphanumeric strings that must be entered exactly</li>
-</ul>
-
-<code-block language="html" label="Technical input fields" data-escape><!-- Product code: autocorrect would change valid codes to dictionary words -->
-<label for="sku">Product Code</label>
-<input type="text" id="sku"
-  autocorrect="off"
-  spellcheck="false"
-  placeholder="WX-4829-BLK" />
-
-<!-- API endpoint: correction would break URLs -->
-<label for="endpoint">API Endpoint</label>
-<input type="url" id="endpoint"
-  autocorrect="off"
-  placeholder="https://api.example.com/v1" />
-
-<!-- Code snippet input -->
-<label for="selector">CSS Selector</label>
-<input type="text" id="selector"
-  autocorrect="off"
-  spellcheck="false"
-  placeholder=".nav > .item:first-child" /></code-block>
-
-<h2>Complete Text Input Control</h2>
-<p>For full control over mobile text input behavior, combine <code>autocorrect</code> with <a href="/docs/attributes/autocapitalize/"><code>autocapitalize</code></a> and <a href="/docs/attributes/spellcheck/"><code>spellcheck</code></a>. Each controls a different aspect of the text assistance pipeline:</p>
-
-<table>
-  <thead><tr><th>Attribute</th><th>Controls</th><th>Visual Indicator</th></tr></thead>
-  <tbody>
-    <tr><td><code>autocorrect</code></td><td>Silent replacement of "typos" with dictionary words</td><td>None (corrections happen automatically)</td></tr>
-    <tr><td><code>autocapitalize</code></td><td>Automatic uppercase on the first letter of sentences, words, or all characters</td><td>Keyboard Shift state</td></tr>
-    <tr><td><code>spellcheck</code></td><td>Red underlines on words not in the dictionary</td><td>Wavy underlines</td></tr>
-  </tbody>
-</table>
-
-<code-block language="html" label="Complete text input control" data-escape><form class="stacked">
-  <!-- Name: autocorrect on, capitalize words -->
-  <label for="name">Full Name</label>
-  <input type="text" id="name"
-    autocorrect="on"
-    autocapitalize="words"
-    autocomplete="name" />
-
-  <!-- Username: all text assistance off -->
-  <label for="handle">Username</label>
-  <input type="text" id="handle"
-    autocorrect="off"
-    autocapitalize="none"
-    spellcheck="false"
-    autocomplete="username" />
-
-  <!-- Bio: all text assistance on -->
-  <label for="bio">Bio</label>
-  <textarea id="bio"
-    autocorrect="on"
-    autocapitalize="sentences"
-    spellcheck="true"
-    rows="3"></textarea>
-
-  <!-- Invite code: all text assistance off -->
-  <label for="invite">Invite Code</label>
-  <input type="text" id="invite"
-    autocorrect="off"
-    autocapitalize="characters"
-    spellcheck="false" />
-
-  <button type="submit">Save Profile</button>
-</form></code-block>
-
-<h2>Accessibility</h2>
-<ul>
-  <li><strong>Autocorrect helps with typos.</strong> For prose fields, leaving autocorrect enabled helps users — including those with motor impairments or dyslexia — produce accurate text with less effort.</li>
-  <li><strong>Unwanted corrections create frustration.</strong> When autocorrect changes a deliberately entered value, the user must notice the change and undo it. This is especially burdensome for users who cannot easily see the correction happening.</li>
-  <li><strong>No impact on screen readers.</strong> The attribute does not change how assistive technology announces the field.</li>
-</ul>
-
-<h2>Limitations</h2>
-<ul>
-  <li><strong>Browser support is limited:</strong> Safari (iOS and macOS) is the primary browser that implements <code>autocorrect</code>. Chrome and Firefox on Android rely on OS-level autocorrect settings and largely ignore this attribute.</li>
-  <li><strong>OS-level correction may override:</strong> Even with <code>autocorrect="off"</code>, some mobile operating systems apply their own correction at the input method level, which the browser cannot control.</li>
-  <li><strong>No granular control:</strong> You cannot selectively correct some words while leaving others alone. It is all or nothing per field.</li>
-  <li><strong>Not in the HTML spec (historically):</strong> The <code>autocorrect</code> attribute was a non-standard Safari extension for years. It has since been proposed for standardization, but browser support remains uneven.</li>
-  <li><strong>No desktop effect:</strong> Desktop browsers do not perform autocorrection, so the attribute has no visible impact on desktop.</li>
-</ul>
+<form-field>
+  <label for="ac-site">Website</label>
+  <!-- url inputs are never corrected: no attribute needed -->
+  <input type="url" id="ac-site" name="site">
+</form-field></code-block>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>on</code> or <code>""</code> (empty)</td><td>Correction is enabled.</td></tr>
+      <tr><td><code>off</code></td><td>Correction is disabled.</td></tr>
+      <tr><td>Any other value</td><td>Treated as <code>on</code>.</td></tr>
+      <tr><td>Absent</td><td>A control inside a form uses the form's <code>autocorrect</code> if the form sets one. Otherwise correction is on.</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Excluded input types:</strong> <code>password</code>, <code>email</code> and <code>url</code> are always <code>off</code>. Setting the attribute on them changes nothing.</p>
+  <p><strong>Inheritance:</strong> only through the form owner. Controls without their own value (<code>&lt;input&gt;</code>, <code>&lt;textarea&gt;</code>, <code>&lt;select&gt;</code>, <code>&lt;button&gt;</code>, <code>&lt;fieldset&gt;</code>, <code>&lt;output&gt;</code>) take the value set on their <code>&lt;form&gt;</code>.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>When to turn it off</h3>
+  <p>Turn correction off wherever the value is not dictionary language:</p>
   <ul>
-    <li><a href="/docs/attributes/autocapitalize/"><code>autocapitalize</code></a> — control automatic capitalization on mobile keyboards</li>
-    <li><a href="/docs/attributes/spellcheck/"><code>spellcheck</code></a> — enable or disable browser spell-checking</li>
-    <li><a href="/docs/attributes/inputmode/"><code>inputmode</code></a> — control which virtual keyboard layout appears</li>
-    <li><a href="/docs/attributes/autocomplete/"><code>autocomplete</code></a> — browser autofill hints</li>
+    <li>usernames and handles (<code>xKoder99</code>)</li>
+    <li>product codes, invite codes, serial numbers (<code>WX-4829-BLK</code>)</li>
+    <li>CSS selectors, shell commands, file paths typed in a text field</li>
+    <li>domain-specific abbreviations and surnames</li>
+  </ul>
+  <code-block language="html" show-lines label="Technical fields" data-escape><form-field>
+  <label for="sku">Product code</label>
+  <input type="text" id="sku" name="sku" autocorrect="off" spellcheck="false" placeholder="WX-4829-BLK">
+</form-field>
+
+<form-field>
+  <label for="selector">CSS selector</label>
+  <input type="text" id="selector" name="selector" autocorrect="off" autocapitalize="none" spellcheck="false">
+</form-field></code-block>
+
+  <h3>A whole form off, one field on</h3>
+  <code-block language="html" show-lines label="Form-level default with an override" data-escape><form autocorrect="off">
+  <form-field>
+    <label for="api-key">API key</label>
+    <input type="text" id="api-key" name="key">
+  </form-field>
+  <form-field>
+    <label for="note">Note for your team</label>
+    <textarea id="note" name="note" autocorrect="on" rows="3"></textarea>
+  </form-field>
+</form></code-block>
+
+  <h3>The text-assistance trio</h3>
+  <table>
+    <thead><tr><th>Attribute</th><th>Controls</th><th>Visible as</th></tr></thead>
+    <tbody>
+      <tr><td><code>autocorrect</code></td><td>Silent replacement of words and punctuation</td><td>The text changes as you type</td></tr>
+      <tr><td><a href="/docs/attributes/autocapitalize/"><code>autocapitalize</code></a></td><td>Automatic capitals on virtual keyboards and voice input</td><td>The keyboard's Shift state</td></tr>
+      <tr><td><a href="/docs/attributes/spellcheck/"><code>spellcheck</code></a></td><td>Marking misspelled words</td><td>Wavy underlines and suggestions</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
+  <ul>
+    <li><strong>No styles depend on it</strong>, and VB does not add it to authored fields.</li>
+    <li><strong><a href="/docs/elements/web-components/site-search/"><code>&lt;site-search&gt;</code></a></strong> turns correction, capitalization and spellcheck off on the input it builds, so search terms are sent as typed (<code>src/web-components/site-search/logic.js</code>).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Leave it on for prose.</strong> Correction helps people with motor impairments or dyslexia produce accurate text with less effort.</li>
+    <li><strong>Unwanted corrections are hard to notice.</strong> A changed username or code may only surface as a failed login. Turn correction off for exact values.</li>
+    <li><strong>No effect on screen readers.</strong> The field is announced the same way.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <p>Baseline 2026, newly available since September 2026: Chrome 153, Edge 153, Firefox 136, Safari 14.1 (iOS 14.5). It is defined in the WHATWG HTML standard. Older Chrome and Firefox versions ignore the attribute and leave correction to the operating system.</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>The device decides what "correction" means.</strong> With <code>on</code>, nothing may happen if the OS offers no replacements.</li>
+    <li><strong>All or nothing per field.</strong> You cannot protect some words while correcting others.</li>
+    <li><strong>It does not affect spell-check underlines.</strong> Use <code>spellcheck="false"</code> for those.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/autocapitalize/"><code>autocapitalize</code></a> &mdash; automatic capitals.</li>
+    <li><a href="/docs/attributes/spellcheck/"><code>spellcheck</code></a> &mdash; spelling underlines.</li>
+    <li><a href="/docs/attributes/inputmode/"><code>inputmode</code></a> &mdash; which virtual keyboard appears.</li>
+    <li><a href="/docs/attributes/autocomplete/"><code>autocomplete</code></a> &mdash; autofill hints.</li>
+    <li><a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a> &mdash; labels, hints and errors.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>autocorrect="off"</code></strong> &mdash; the value must be kept exactly as typed.</li>
+    <li><strong><code>spellcheck="false"</code></strong> &mdash; the value is not prose and the underlines are noise.</li>
+    <li><strong>Both, plus <code>autocapitalize="none"</code></strong> &mdash; usernames, codes and identifiers.</li>
   </ul>
 </section>

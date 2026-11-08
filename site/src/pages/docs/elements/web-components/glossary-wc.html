@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
     <h2>Overview</h2>
-    <p>A web component that progressively enhances a <code>&lt;dl&gt;</code> definition list into a searchable, categorized glossary with alphabet navigation and cross-linking. Without JavaScript, the definition list renders normally. With JavaScript, terms are grouped by category, searchable, and navigable via an A&ndash;Z jump bar.</p>
+    <p>A web component that progressively enhances a <code>&lt;dl&gt;</code> definition list into a searchable, categorized glossary with alphabet navigation and cross-linking. Without JavaScript, the definition list renders normally. With JavaScript, terms are grouped by category, searchable, and navigable via a letter jump bar.</p>
 
     <browser-window
       src="/docs/examples/demos/glossary-wc-basic.html"
@@ -21,7 +21,7 @@ crumbLabel: Web Components
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Basic usage" data-escape><glossary-wc title="Project Glossary" searchable>
+    <code-block language="html" show-lines label="Basic usage" data-escape><glossary-wc data-title="Project Glossary" searchable>
   <dl>
     <div data-category="Domain" data-term-id="velocity">
       <dt>Velocity</dt>
@@ -48,10 +48,12 @@ crumbLabel: Web Components
         <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>title</code></td><td>string</td><td>&mdash;</td><td>Glossary heading</td></tr>
-        <tr><td><code>src</code></td><td>string (URL)</td><td>&mdash;</td><td>JSON data URL</td></tr>
-        <tr><td><code>searchable</code></td><td>boolean</td><td>&mdash;</td><td>Enables search input that filters terms</td></tr>
+        <tr><td><code>data-title</code></td><td>string</td><td>&mdash;</td><td>Glossary heading, rendered as a real heading. (The <code>title</code> attribute is not used: it would also become a hover tooltip and the element&rsquo;s description.)</td></tr>
+        <tr><td><code>data-heading-level</code></td><td>number</td><td><code>2</code></td><td>Heading level (1&ndash;6) for <code>data-title</code></td></tr>
+        <tr><td><code>src</code></td><td>string (URL)</td><td>&mdash;</td><td>JSON data URL (see <a href="#data-mode">Data mode</a>)</td></tr>
+        <tr><td><code>searchable</code></td><td>boolean</td><td>&mdash;</td><td>Adds a search input that filters terms by name and definition text</td></tr>
         <tr><td><code>compact</code></td><td>boolean</td><td>&mdash;</td><td>Reduced spacing</td></tr>
+        <tr><td><code>data-state</code></td><td>read-only</td><td>&mdash;</td><td>In <code>src</code> mode: <code>loading</code>, <code>ready</code> or <code>error</code></td></tr>
       </tbody>
     </table>
   </section>
@@ -64,26 +66,28 @@ crumbLabel: Web Components
         <tr><th>Attribute</th><th>On</th><th>Description</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>data-category</code></td><td><code>&lt;div&gt;</code></td><td>Category label for grouping (e.g., "Domain", "Technical")</td></tr>
-        <tr><td><code>data-term-id</code></td><td><code>&lt;div&gt;</code></td><td>Unique ID, auto-set as HTML <code>id</code> for fragment anchors</td></tr>
+        <tr><td><code>data-category</code></td><td><code>&lt;div&gt;</code></td><td>Category label for grouping (e.g., "Domain", "Technical"). Terms without one go under &ldquo;Uncategorized&rdquo;.</td></tr>
+        <tr><td><code>data-term-id</code></td><td><code>&lt;div&gt;</code></td><td>Unique ID, set as the div&rsquo;s <code>id</code> for fragment anchors and cross-links</td></tr>
       </tbody>
     </table>
+    <p>The authored <code>&lt;dl&gt;</code> stays in the element (hidden) while it is upgraded, and its term <code>&lt;div&gt;</code>s are moved back into it on teardown &mdash; moving the element or re-rendering it gives the same result every time.</p>
   </section>
 
   <section>
     <h2>Enhanced Features</h2>
     <ul>
-      <li><strong>Search</strong> &mdash; when <code>searchable</code> is set, a search input filters terms by name and definition text</li>
-      <li><strong>Categories</strong> &mdash; terms grouped under collapsible category headers</li>
-      <li><strong>Alphabet jump bar</strong> &mdash; A&ndash;Z navigation for quick scrolling</li>
-      <li><strong>Cross-linking</strong> &mdash; use standard <code>&lt;a href="#term-id"&gt;</code> inside definitions to link between terms</li>
-      <li><strong>Term count</strong> &mdash; badge showing total and filtered counts</li>
+      <li><strong>Search</strong> &mdash; when <code>searchable</code> is set, a search input filters terms by name and definition text. Matches inside collapsed categories are revealed while searching; clearing the search restores the categories you collapsed.</li>
+      <li><strong>Categories</strong> &mdash; terms grouped under collapsible category headers, sorted with the language&rsquo;s collation</li>
+      <li><strong>Letter jump bar</strong> &mdash; one link per first letter actually used, pointing at the first term with that letter. Letters come from the terms via <code>Intl.Collator</code> for the element&rsquo;s <code>lang</code>: accent-insensitive where the language treats accents as variants (&Eacute; files under E in English), non-Latin scripts by their first character (&#1040;, &#12354;&hellip;), and digits or symbols under <code>#</code>. While searching, letters with no visible term are <code>aria-disabled</code>.</li>
+      <li><strong>Cross-linking</strong> &mdash; use standard <code>&lt;a href="#term-id"&gt;</code> inside definitions to link between terms; a link into a collapsed category expands it. Links stay on the page under <code>&lt;base href&gt;</code>.</li>
+      <li><strong>Term count</strong> &mdash; visual badges showing total and filtered counts (the count is announced through the live region, not the heading or button names)</li>
     </ul>
   </section>
 
   <section>
-    <h2>Data Mode</h2>
-    <code-block language="json" show-lines label="JSON schema">{
+    <h2 id="data-mode">Data mode</h2>
+    <p>With <code>src</code>, the JSON is fetched once per URL. An inline <code>&lt;dl&gt;</code> is optional: it renders as the fallback while loading and stays if the fetch fails, when <code>data-state="error"</code> is set and an error message is shown. <code>glossary-wc:ready</code> fires after the loaded terms render.</p>
+    <code-block language="json" show-lines label="JSON format">{
   "title": "Project Glossary",
   "terms": [
     {
@@ -92,9 +96,64 @@ crumbLabel: Web Components
       "definition": "Work completed per sprint in story points.",
       "category": "Domain",
       "seeAlso": ["epic", "sprint"]
+    },
+    {
+      "id": "epic",
+      "term": "Epic",
+      "definitionHtml": "A large body of work, split into &lt;em&gt;stories&lt;/em&gt;.",
+      "category": "Domain"
     }
   ]
 }</code-block>
+    <ul>
+      <li><code>title</code> is used as the heading when <code>data-title</code> is not set.</li>
+      <li><code>definition</code> is rendered as <strong>text</strong> &mdash; markup in it is shown literally, never parsed.</li>
+      <li><code>definitionHtml</code> is an explicit opt-in for formatted definitions. It is passed through VB&rsquo;s HTML sanitizer (scripts, frames, event handlers and <code>javascript:</code> URLs are removed) and used instead of <code>definition</code>. Only use it for content you trust.</li>
+      <li><code>seeAlso</code> lists term ids; each becomes a link labelled with that term&rsquo;s own text.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <p>The <code>terms</code> property reads the parsed glossary as <code>{ id, term, definition, category, seeAlso? }</code> records. Assigning it rebuilds the glossary from records in the JSON format above (written into the source <code>&lt;dl&gt;</code>, so they survive moves) and fires <code>glossary-wc:terms-changed</code>.</p>
+    <code-block language="js" show-lines label="terms property">const glossary = document.querySelector('glossary-wc');
+glossary.terms = [
+  { id: 'sprint', term: 'Sprint', definition: 'A fixed time box.', category: 'Process' },
+  { id: 'velocity', term: 'Velocity', definition: 'Work per sprint.', seeAlso: ['sprint'] },
+];
+console.log(glossary.terms.length); // 2</code-block>
+  </section>
+
+  <section>
+    <h2>Labels and languages</h2>
+    <p>Every UI string can be replaced with a <code>data-label-*</code> attribute. Counts use <code>Intl.PluralRules</code> for the nearest <code>lang</code>, so add any plural category you need (<code>-one</code>, <code>-few</code>, <code>-many</code>, <code>-other</code>&hellip;).</p>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Default</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-label-search</code></td><td>Search glossary terms (input name)</td></tr>
+        <tr><td><code>data-label-search-placeholder</code></td><td>Search terms&hellip;</td></tr>
+        <tr><td><code>data-label-terms</code></td><td>Glossary terms (region name)</td></tr>
+        <tr><td><code>data-label-alphabet</code></td><td>Alphabet navigation (jump-bar name)</td></tr>
+        <tr><td><code>data-label-found-one</code> / <code>-other</code></td><td>{count} term found / {count} terms found</td></tr>
+        <tr><td><code>data-label-all-one</code> / <code>-other</code></td><td>Showing {count} term / Showing all {count} terms (search cleared)</td></tr>
+        <tr><td><code>data-label-uncategorized</code></td><td>Uncategorized</td></tr>
+        <tr><td><code>data-label-see-also</code></td><td>See also:</td></tr>
+        <tr><td><code>data-label-error</code></td><td>Could not load the glossary terms.</td></tr>
+      </tbody>
+    </table>
+    <code-block language="html" show-lines label="Russian glossary" data-escape><glossary-wc lang="ru" data-title="Глоссарий" searchable
+  data-label-search="Поиск терминов"
+  data-label-found-one="Найден {count} термин"
+  data-label-found-few="Найдено {count} термина"
+  data-label-found-many="Найдено {count} терминов"
+  data-label-uncategorized="Без категории">
+  <dl>
+    <div data-term-id="api"><dt>Интерфейс</dt><dd>Описание взаимодействия.</dd></div>
+    <div data-term-id="cache"><dt>Кэш</dt><dd>Временное хранилище.</dd></div>
+  </dl>
+</glossary-wc></code-block>
   </section>
 
   <section>
@@ -104,8 +163,10 @@ crumbLabel: Web Components
         <tr><th>Event</th><th>Detail</th><th>When</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>glossary-wc:ready</code></td><td><code>{ termCount, categories }</code></td><td>After setup</td></tr>
-        <tr><td><code>glossary-wc:search</code></td><td><code>{ query, matchCount }</code></td><td>On search input</td></tr>
+        <tr><td><code>glossary-wc:ready</code></td><td><code>{ termCount, categories }</code></td><td>After every render; not while <code>src</code> is loading</td></tr>
+        <tr><td><code>glossary-wc:search</code></td><td><code>{ query, matchCount }</code></td><td>After the (debounced) search is applied</td></tr>
+        <tr><td><code>glossary-wc:terms-changed</code></td><td><code>{ terms, source: 'property' }</code></td><td>After <code>terms</code> is assigned</td></tr>
+        <tr><td><code>glossary-wc:error</code></td><td><code>{ url, error }</code></td><td>When <code>src</code> fails to load</td></tr>
       </tbody>
     </table>
   </section>
@@ -114,9 +175,12 @@ crumbLabel: Web Components
     <h2>Accessibility</h2>
     <ul>
       <li>The <code>&lt;dl&gt;</code> provides native definition list semantics before and after upgrade</li>
-      <li>Search input has <code>aria-label</code> and <code>role="search"</code></li>
-      <li>Category groups are collapsible with <code>aria-expanded</code></li>
-      <li>Term IDs enable fragment anchor navigation</li>
+      <li>The search input sits in a <code>&lt;search&gt;</code> landmark and has an <code>aria-label</code> (the placeholder is only a hint)</li>
+      <li>One polite live region announces the match count, and the full count when the search is cleared; count badges are hidden from assistive technology so they are not read into the heading or toggle names</li>
+      <li>Category groups are collapsible buttons with <code>aria-expanded</code> and <code>aria-controls</code></li>
+      <li>Jump-bar letters are at least 24&times;24&nbsp;px (WCAG 2.5.8); letters with no visible term are <code>aria-disabled</code> while searching</li>
+      <li>Term IDs enable fragment anchor navigation; the target is focused</li>
+      <li>The collapse chevron follows the writing direction in RTL</li>
     </ul>
   </section>
 

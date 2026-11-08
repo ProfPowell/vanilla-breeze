@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>data-transition: presets</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="l">
+  <h1>data-transition presets</h1>
+  <layout-grid data-layout-min="m" data-layout-gap="l">
+    <layout-card data-variant="outlined">
+      <h2>slide</h2>
+      <p data-transition="slide" data-quote>Ship small, ship often.</p>
+      <button type="button" data-swap-next>Next quote</button>
+    </layout-card>
+
+    <layout-card data-variant="outlined" dir="rtl" lang="ar">
+      <h2>slide (RTL)</h2>
+      <p data-transition="slide" data-quote>انشر قليلاً، وانشر كثيراً.</p>
+      <button type="button" data-swap-next>التالي</button>
+    </layout-card>
+
+    <layout-card data-variant="outlined">
+      <h2>fade</h2>
+      <p data-transition="fade" data-quote>Make it work, then make it fast.</p>
+      <button type="button" data-swap-next>Next quote</button>
+    </layout-card>
+
+    <layout-card data-variant="outlined">
+      <h2>scale</h2>
+      <p data-transition="scale" data-quote>Prefer the platform.</p>
+      <button type="button" data-swap-next>Next quote</button>
+    </layout-card>
+
+    <layout-card data-variant="outlined">
+      <h2>stagger</h2>
+      <ol data-transition="stagger" data-list>
+        <li>Plan</li>
+        <li>Build</li>
+        <li>Test</li>
+        <li>Ship</li>
+      </ol>
+      <button type="button" data-shuffle>Reverse the list</button>
+    </layout-card>
+  </layout-grid>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const quotes = {
+      ltr: ['Ship small, ship often.', 'Make it work, then make it fast.', 'Prefer the platform.', 'Delete code you do not need.'],
+      rtl: ['انشر قليلاً، وانشر كثيراً.', 'اجعله يعمل أولاً.', 'فضّل المنصة.'],
+    };
+    const swap = (update) => (window.VB ? window.VB.swap(update) : update());
+
+    document.addEventListener('click', (event) => {
+      const next = event.target.closest('[data-swap-next]');
+      if (next) {
+        const card = next.closest('layout-card');
+        const quote = card.querySelector('[data-quote]');
+        const list = quotes[card.getAttribute('dir') === 'rtl' ? 'rtl' : 'ltr'];
+        const i = (list.indexOf(quote.textContent) + 1) % list.length;
+        swap(() => { quote.textContent = list[i]; });
+      }
+      const shuffle = event.target.closest('[data-shuffle]');
+      if (shuffle) {
+        const ol = shuffle.closest('layout-card').querySelector('[data-list]');
+        swap(() => { ol.append(...Array.from(ol.children).reverse()); });
+      }
+    });
+  </script>
+</body>
+</html>

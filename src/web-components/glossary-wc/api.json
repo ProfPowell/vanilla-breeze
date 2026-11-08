@@ -5,17 +5,39 @@
   "description": "Searchable, categorized, cross-linked glossary that progressively enhances a definition list",
   "htmlvalidate": { "flow": true, "permittedContent": ["dl", "@flow"] },
   "attributes": [
-    { "name": "title",      "kind": "host-api", "purpose": "config", "type": "string",  "description": "Glossary heading" },
-    { "name": "src",        "kind": "host-api", "purpose": "config", "type": "string",  "description": "URL to JSON term data" },
-    { "name": "searchable", "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Enables search input" },
-    { "name": "compact",    "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Reduced spacing variant" }
+    { "name": "data-title",         "kind": "data",     "purpose": "config", "type": "string",  "description": "Glossary heading, rendered as a real heading (the title attribute is not used). Observed." },
+    { "name": "data-heading-level", "kind": "data",     "purpose": "config", "type": "number",  "default": "2", "description": "Heading level (1-6) for data-title. Observed." },
+    { "name": "src",                "kind": "host-api", "purpose": "config", "type": "string",  "description": "URL to JSON term data: { title?, terms: [{ id, term, definition, category?, seeAlso?, definitionHtml? }] }. Fetched once per URL; an inline <dl> renders as the fallback while loading and if the fetch fails. Observed." },
+    { "name": "searchable",         "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Adds a search input (inside a <search> landmark) that filters terms by name and definition. Observed." },
+    { "name": "compact",            "kind": "host-api", "purpose": "visual-variant", "type": "boolean", "description": "Reduced spacing variant. CSS only." },
+    { "name": "data-state",         "kind": "data",     "purpose": "output-state", "type": "enum", "values": ["loading", "ready", "error"], "description": "Set in src mode: loading while fetching, ready after the data renders, error when the fetch fails (an error message is shown and the fallback <dl> is kept)." },
+    { "name": "data-label-search",             "kind": "data", "purpose": "config", "type": "string", "default": "Search glossary terms", "description": "Accessible name of the search input." },
+    { "name": "data-label-search-placeholder", "kind": "data", "purpose": "config", "type": "string", "default": "Search terms…", "description": "Search input placeholder." },
+    { "name": "data-label-terms",              "kind": "data", "purpose": "config", "type": "string", "default": "Glossary terms", "description": "Accessible name of the terms region." },
+    { "name": "data-label-alphabet",           "kind": "data", "purpose": "config", "type": "string", "default": "Alphabet navigation", "description": "Accessible name of the jump-bar nav." },
+    { "name": "data-label-found-one",          "kind": "data", "purpose": "config", "type": "string", "default": "{count} term found", "description": "Search announcement for the Intl.PluralRules \"one\" category ({count} is replaced). Any category works: data-label-found-few, -many, -zero, -two." },
+    { "name": "data-label-found-other",        "kind": "data", "purpose": "config", "type": "string", "default": "{count} terms found", "description": "Search announcement for the \"other\" category and the fallback for unset categories." },
+    { "name": "data-label-all-one",            "kind": "data", "purpose": "config", "type": "string", "default": "Showing {count} term", "description": "Announcement when the search is cleared (\"one\" category; other categories as for found)." },
+    { "name": "data-label-all-other",          "kind": "data", "purpose": "config", "type": "string", "default": "Showing all {count} terms", "description": "Announcement when the search is cleared (\"other\" category and fallback)." },
+    { "name": "data-label-uncategorized",      "kind": "data", "purpose": "config", "type": "string", "default": "Uncategorized", "description": "Category label for terms without data-category." },
+    { "name": "data-label-see-also",           "kind": "data", "purpose": "config", "type": "string", "default": "See also:", "description": "Prefix for seeAlso links generated from JSON / .terms data." },
+    { "name": "data-label-error",              "kind": "data", "purpose": "config", "type": "string", "default": "Could not load the glossary terms.", "description": "Message shown when src fails to load." }
   ],
   "childAttributes": [
     { "name": "data-category", "on": "div", "type": "string", "description": "Category label for grouping terms" },
-    { "name": "data-term-id",  "on": "div", "type": "string", "description": "Unique term identifier, used as fragment anchor" }
+    { "name": "data-term-id",  "on": "div", "type": "string", "description": "Unique term identifier, set as the div's id (fragment anchor). Jump-bar letters link to the first term of each letter." }
+  ],
+  "structure": [
+    { "element": "dl", "required": false, "description": "Source definition list (optional with src: rendered as the fallback). Kept in place, hidden, while upgraded; restored on teardown." },
+    { "element": "div[data-term-id]", "description": "One per term inside the dl, wrapping its dt and dd" }
+  ],
+  "properties": [
+    { "name": "terms", "type": "Array<{ id, term, definition, category?, seeAlso?, definitionHtml? }>", "description": "Get the parsed terms ({ id, term, definition, category, seeAlso? }; definition is text), or assign to rebuild. Assigned entries are written into the source <dl>, so they survive moves and re-renders. definition is rendered as text; definitionHtml is an explicit opt-in passed through VB's HTML sanitizer." }
   ],
   "events": [
-    { "name": "glossary-wc:ready",  "detail": "{ termCount, categories }",  "description": "After setup completes" },
-    { "name": "glossary-wc:search", "detail": "{ query, matchCount }",      "description": "On search input" }
+    { "name": "glossary-wc:ready",         "detail": "{ termCount, categories }",        "description": "After every render (upgrade, reconnect, observed attribute change, .terms assignment, src load). Not fired while src is loading." },
+    { "name": "glossary-wc:search",        "detail": "{ query, matchCount }",            "description": "After the (debounced) search input is applied" },
+    { "name": "glossary-wc:terms-changed", "detail": "{ terms, source: 'property' }",    "description": "After .terms assignment (fires after the render's ready)" },
+    { "name": "glossary-wc:error",         "detail": "{ url, error }",                   "description": "When src fails to load (HTTP error, invalid JSON, or no terms array)" }
   ]
 }

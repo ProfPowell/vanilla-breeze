@@ -119,6 +119,20 @@ export function layoutColumns(items) {
  * @param {Element} el
  * @returns {string}
  */
+/**
+ * True when two or more in-grid events (no data-duration) share a half-hour
+ * row of an hour cell — the only case that needs side-by-side columns
+ * (hour-view[data-overlap]). A :00 and a :30 event don't overlap.
+ * @param {HTMLElement[]} events
+ * @returns {boolean}
+ */
+export function sharesHalfHour(events) {
+  const halves = events
+    .filter((e) => !e.dataset.duration)
+    .map((e) => { const start = e.dataset.start === '30' ? 30 : 0; return { start, end: start + 30 }; });
+  return layoutColumns(halves).some((c) => c.columns > 1);
+}
+
 export function eventLabel(el) {
   const clone = /** @type {Element} */ (el.cloneNode(true));
   clone.querySelectorAll('details, time[datetime^="PT"]').forEach((n) => n.remove());

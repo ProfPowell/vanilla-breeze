@@ -17,13 +17,14 @@
  * <input type="text" data-accept="[0-9a-fA-F]" placeholder="Hex value">
  */
 
-import { registerInit } from './_init-registry.js';
+import { registerInit, onFormReset } from './_init-registry.js';
 
 const SELECTOR = 'input[data-accept]';
 
 const PRESETS = {
   digits:   { pattern: '[0-9]',         inputmode: 'numeric' },
   alpha:    { pattern: '[a-zA-Z]',      inputmode: 'text' },
+  letters:  { pattern: '[\\p{L}\\p{M}]', inputmode: 'text' },
   alphanum: { pattern: '[a-zA-Z0-9]',   inputmode: 'text' },
   phone:    { pattern: '[0-9+()\\- ]',  inputmode: 'tel' },
   date:     { pattern: '[0-9/\\-.]',    inputmode: 'numeric' },
@@ -40,17 +41,20 @@ const PRESETS = {
 function resolveAccept(value) {
   if (!value) return null;
 
-  const preset = PRESETS[value];
-  if (preset) return { regex: new RegExp(preset.pattern), inputmode: preset.inputmode };
+  const preset = Object.hasOwn(PRESETS, value) ? PRESETS[value] : null;
+  if (preset) return { regex: new RegExp(preset.pattern, 'u'), inputmode: preset.inputmode };
 
-  // Custom character class: must start with [
+  // Custom character class: must start with [. Unicode mode first (so
+  // \p{...} and astral characters work), then legacy mode for classes
+  // with escapes that are only valid outside it.
   if (value.startsWith('[')) {
-    try {
-      return { regex: new RegExp(value), inputmode: 'text' };
-    } catch {
-      console.warn(`[data-accept] Invalid character class: ${value}`);
-      return null;
+    for (const flags of ['u', '']) {
+      try {
+        return { regex: new RegExp(value, flags), inputmode: 'text' };
+      } catch { /* try the next mode */ }
     }
+    console.warn(`[data-accept] Invalid character class: ${value}`);
+    return null;
   }
 
   console.warn(`[data-accept] Unknown preset: ${value}`);
@@ -61,9 +65,21 @@ function resolveAccept(value) {
  * Enhance a single input with character filtering
  * @param {HTMLInputElement} input
  */
+/** Inputs whose listeners are wired (a clone copies attributes, not this). */
+const wired = new WeakSet();
+
+/**
+ * Keep only the characters the regex accepts (code point by code point).
+ * @param {string} value
+ * @param {RegExp} regex
+ */
+function filterChars(value, regex) {
+  return Array.from(value).filter(ch => regex.test(ch)).join('');
+}
+
 function enhance(input) {
-  if (input.hasAttribute('data-accept-init')) return;
-  input.setAttribute('data-accept-init', '');
+  if (wired.has(input)) return;
+  wired.add(input);
 
   // Conflict guard: data-mask wins
   if (input.hasAttribute('data-mask')) {
@@ -104,7 +120,7 @@ function enhance(input) {
 
     // Paste: filter character-by-character
     if (e.inputType === 'insertFromPaste') {
-      const filtered = data.split('').filter(ch => regex.test(ch)).join('');
+      const filtered = filterChars(data, regex);
       if (filtered === data) return; // all valid, let it through
 
       e.preventDefault();
@@ -143,30 +159,29 @@ function enhance(input) {
    */
   function stripInvalid() {
     const value = input.value;
-    const filtered = value.split('').filter(ch => regex.test(ch)).join('');
+    const filtered = filterChars(value, regex);
     if (filtered === value) return;
 
-    // Count valid chars before cursor in original value
+    // Valid text before the cursor (UTF-16 offsets, filtered by code point)
     const cursorBefore = input.selectionStart ?? 0;
-    let validBeforeCursor = 0;
-    for (let i = 0; i < cursorBefore && i < value.length; i++) {
-      if (regex.test(value[i])) validBeforeCursor++;
-    }
+    const keptBefore = filterChars(value.slice(0, cursorBefore), regex);
 
     input.value = filtered;
 
-    // Position cursor after the Nth valid character
-    const newCursor = Math.min(validBeforeCursor, filtered.length);
-    input.setSelectionRange(newCursor, newCursor);
+    // Position the cursor after the kept text
+    const newCursor = Math.min(keptBefore.length, filtered.length);
+    if (document.activeElement === input) input.setSelectionRange(newCursor, newCursor);
   }
 
-  // Filter initial value if present
-  if (input.value) {
-    const filtered = input.value.split('').filter(ch => regex.test(ch)).join('');
-    if (filtered !== input.value) {
-      input.value = filtered;
-    }
+  /** Filter a prefilled or reset-restored value (no cursor to keep). */
+  function filterValue() {
+    if (!input.value) return;
+    const filtered = filterChars(input.value, regex);
+    if (filtered !== input.value) input.value = filtered;
   }
+
+  filterValue();
+  onFormReset(input, filterValue);
 }
 
 /**

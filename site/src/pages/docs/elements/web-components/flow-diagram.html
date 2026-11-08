@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
     <h2>Overview</h2>
-    <p>A web component that progressively enhances an <code>&lt;ol&gt;</code> of steps into a connected node graph with typed shapes. Without JavaScript, the ordered list renders normally. With JavaScript, each step becomes a node with connectors, and decisions branch into parallel paths.</p>
+    <p>A web component that progressively enhances an <code>&lt;ol&gt;</code> of steps into a connected node graph with typed shapes. Without JavaScript, the ordered list renders normally. With JavaScript, each step becomes a node with connectors, and decisions branch into parallel paths. The rendered diagram is itself a nested list inside a labelled <code>&lt;figure&gt;</code>, so screen readers get the same structure sighted users see.</p>
 
     <browser-window
       src="/docs/examples/demos/flow-diagram-basic.html"
@@ -21,7 +21,7 @@ crumbLabel: Web Components
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Basic usage" data-escape><flow-diagram title="Login Flow">
+    <code-block language="html" show-lines label="Basic usage" data-escape><flow-diagram data-title="Login Flow">
   <ol>
     <li data-type="start">User visits login page</li>
     <li data-type="action">Enter credentials</li>
@@ -69,12 +69,75 @@ crumbLabel: Web Components
         <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>title</code></td><td>string</td><td>&mdash;</td><td>Diagram heading</td></tr>
-        <tr><td><code>src</code></td><td>string (URL)</td><td>&mdash;</td><td>JSON data URL</td></tr>
-        <tr><td><code>data-direction</code></td><td>string</td><td><code>"vertical"</code></td><td><code>vertical</code> or <code>horizontal</code></td></tr>
-        <tr><td><code>compact</code></td><td>boolean</td><td>&mdash;</td><td>Reduced spacing and node sizes</td></tr>
+        <tr><td><code>data-title</code></td><td>string</td><td>&mdash;</td><td>Diagram heading. Rendered as a real heading that names the figure (no hover tooltip, unlike the global <code>title</code> attribute).</td></tr>
+        <tr><td><code>data-heading-level</code></td><td>1&ndash;6</td><td><code>2</code></td><td>Heading level for <code>data-title</code>, so the diagram fits the page outline.</td></tr>
+        <tr><td><code>src</code></td><td>string (URL)</td><td>&mdash;</td><td>JSON data URL: <code>{ title?, steps }</code>. Loaded on connect when there is no inline <code>&lt;ol&gt;</code>, and whenever it changes.</td></tr>
+        <tr><td><code>data-direction</code></td><td>string</td><td><code>"vertical"</code></td><td><code>vertical</code> or <code>horizontal</code>. Horizontal follows the writing direction.</td></tr>
+        <tr><td><code>compact</code></td><td>boolean</td><td>&mdash;</td><td>Reduced spacing and node sizes (CSS only, no re-render).</td></tr>
+        <tr><td><code>data-label</code></td><td>string</td><td><code>"Flow diagram"</code></td><td>Accessible name of the figure when there is no <code>data-title</code>.</td></tr>
+        <tr><td><code>data-label-selected</code></td><td>string</td><td><code>"Selected: {text}"</code></td><td>Live-region announcement when a node is selected.</td></tr>
+        <tr><td><code>data-label-steps-one</code>, <code>-other</code>, &hellip;</td><td>string</td><td><code>"{count} step"</code> / <code>"{count} steps"</code></td><td>Step-count summary, chosen with <code>Intl.PluralRules</code> for the element's <code>lang</code>. Any plural category works (<code>-zero</code>, <code>-two</code>, <code>-few</code>, <code>-many</code>).</td></tr>
+        <tr><td><code>data-label-type-&lt;type&gt;</code></td><td>string</td><td><code>Start</code>, <code>Action</code>, &hellip;</td><td>Spoken type prefix for each node type (&ldquo;Decision: Valid credentials?&rdquo;).</td></tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>Direction</h2>
+    <p><code>data-direction="horizontal"</code> lays the flow out along the inline axis, with branches stacked beside the decision. Use it for short flows in wide containers.</p>
+    <browser-window
+      src="/docs/examples/demos/flow-diagram-horizontal.html"
+      url="https://vanilla-breeze.com/flow-diagram/horizontal"
+      title="Horizontal flow"
+      shadow>
+    </browser-window>
+    <code-block language="html" label="Horizontal" data-escape><flow-diagram data-title="Checkout" data-direction="horizontal">
+  <ol>…</ol>
+</flow-diagram></code-block>
+  </section>
+
+  <section>
+    <h2>Compact</h2>
+    <p>The boolean <code>compact</code> attribute tightens node padding, sizes and connectors. It is pure CSS, so toggling it does not rebuild the diagram.</p>
+    <browser-window
+      src="/docs/examples/demos/flow-diagram-compact.html"
+      url="https://vanilla-breeze.com/flow-diagram/compact"
+      title="Compact flow"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Loading from JSON</h2>
+    <p>Point <code>src</code> at a JSON file with the same shape as the <code>.steps</code> property, plus an optional <code>title</code> that becomes <code>data-title</code>. Leave the element empty; the list is built from the data.</p>
+    <browser-window
+      src="/docs/examples/demos/flow-diagram-src.html"
+      url="https://vanilla-breeze.com/flow-diagram/src"
+      title="Flow from JSON"
+      shadow>
+    </browser-window>
+    <code-block language="json" label="flow-diagram-sample.json" data-escape>{
+  "title": "Password reset",
+  "steps": [
+    { "type": "start", "text": "Click \"Forgot password\"" },
+    { "type": "process", "text": "Send reset link", "annotation": "Expires in 1 hour" },
+    { "type": "decision", "text": "Link still valid?", "branches": [
+      { "label": "Yes", "steps": [{ "type": "end", "text": "Signed in" }] },
+      { "label": "No",  "steps": [{ "type": "end", "text": "Request a new link" }] }
+    ] }
+  ]
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Right-to-left and localization</h2>
+    <p>Layout uses logical properties: in a <code>dir="rtl"</code> context a horizontal flow runs right to left, the arrows point left, and the Left/Right arrow keys follow the visual order. Every generated string can be overridden with <code>data-label-*</code>.</p>
+    <browser-window
+      src="/docs/examples/demos/flow-diagram-rtl.html"
+      url="https://vanilla-breeze.com/flow-diagram/rtl"
+      title="RTL flow"
+      shadow>
+    </browser-window>
   </section>
 
   <section>
@@ -130,9 +193,9 @@ crumbLabel: Web Components
       </thead>
       <tbody>
         <tr><td><code>flow-diagram:upgraded</code></td><td>&mdash;</td><td>Once after first connect. Wait for this before assigning <code>.steps</code> from a framework.</td></tr>
-        <tr><td><code>flow-diagram:steps-changed</code></td><td><code>{ steps, source: 'property' }</code></td><td>After <code>.steps</code> assignment.</td></tr>
-        <tr><td><code>flow-diagram:ready</code></td><td><code>{ nodeCount }</code></td><td>After setup (initial render and on every <code>.steps</code> rebuild).</td></tr>
-        <tr><td><code>flow-diagram:select</code></td><td><code>{ type, text }</code></td><td>Node clicked.</td></tr>
+        <tr><td><code>flow-diagram:steps-changed</code></td><td><code>{ steps, source: 'property' }</code></td><td>After <code>.steps</code> assignment, following that render's <code>ready</code>.</td></tr>
+        <tr><td><code>flow-diagram:ready</code></td><td><code>{ nodeCount }</code></td><td>After every render: initial upgrade, an observed attribute change, a <code>src</code> load, and each <code>.steps</code> assignment.</td></tr>
+        <tr><td><code>flow-diagram:select</code></td><td><code>{ type, text }</code></td><td>Node activated by click, <kbd>Enter</kbd> or <kbd>Space</kbd>.</td></tr>
       </tbody>
     </table>
   </section>
@@ -152,10 +215,13 @@ crumbLabel: Web Components
           <td><code>.steps</code></td>
           <td><code>Step[]</code></td>
           <td>
-            Replace the flow with an array of step records:
-            <code>{ type, text, branch?, target? }</code>.
-            Whole-tree rebuild on assignment; round-trips through the
-            getter.
+            Get or replace the flow. Each step is
+            <code>{ type, text, annotation?, branches?: [{ label, steps }] }</code>.
+            Input is normalized (<code>branches</code> defaults to
+            <code>[]</code>, strings become action steps, malformed entries
+            are dropped) and written into the source <code>&lt;ol&gt;</code>,
+            so it survives later attribute changes and moves. The getter
+            returns the normalized records.
           </td>
         </tr>
       </tbody>
@@ -165,19 +231,28 @@ await new Promise(r =&gt; flow.addEventListener('flow-diagram:upgraded', r, { on
 flow.steps = [
   { type: 'start',    text: 'Visitor lands' },
   { type: 'process',  text: 'Browses catalog' },
-  { type: 'decision', text: 'Logged in?', branch: ['yes', 'no'] },
-  { type: 'end',      text: 'Conversion' },
+  { type: 'decision', text: 'Logged in?', annotation: 'Session cookie', branches: [
+    { label: 'Yes', steps: [{ type: 'end', text: 'Checkout' }] },
+    { label: 'No',  steps: [{ type: 'action', text: 'Sign in' }, { type: 'end', text: 'Checkout' }] },
+  ] },
 ];</code-block>
+    <browser-window
+      src="/docs/examples/demos/flow-diagram-steps.html"
+      url="https://vanilla-breeze.com/flow-diagram/steps"
+      title=".steps and events"
+      shadow>
+    </browser-window>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>The original <code>&lt;ol&gt;</code> stays in the DOM (hidden) for screen reader access</li>
-      <li>Each node has <code>role="img"</code> and descriptive <code>aria-label</code></li>
-      <li>Nodes are focusable via <code>tabindex="0"</code></li>
-      <li>Connectors are <code>aria-hidden="true"</code></li>
-      <li>An <code>aria-live="polite"</code> region announces node selection</li>
+      <li>The diagram is a <code>&lt;figure&gt;</code> named by the <code>data-title</code> heading (or <code>data-label</code>), containing a nested list: each step is a list item, each decision holds a sublist of labelled branches, annotations are plain text. The source <code>&lt;ol&gt;</code> is hidden after upgrade so nothing is read twice.</li>
+      <li>Each node is a <code>&lt;button&gt;</code> whose name includes its type (&ldquo;Decision: Valid credentials?&rdquo;); the annotation is its description.</li>
+      <li>The whole diagram is one tab stop. Arrow keys move between nodes in reading order (Left/Right follow the writing direction), <kbd>Home</kbd>/<kbd>End</kbd> jump to the first/last node, <kbd>Enter</kbd>/<kbd>Space</kbd> select.</li>
+      <li>Connectors are decorative (<code>aria-hidden</code>) and repaint in <code>CanvasText</code> under forced colors.</li>
+      <li>Node colours come from theme status tokens and keep AA text contrast in light and dark schemes; shape and the spoken type prefix carry the type, not colour alone.</li>
+      <li>A polite live region announces the selected node.</li>
     </ul>
   </section>
 

@@ -97,9 +97,10 @@ test('banner still opens and fires change when localStorage is blocked', async (
   await load(page, '<consent-banner persist="blocked">' + DIALOG() + '</consent-banner>', { blockStorage: true });
   const dialog = page.locator('consent-banner dialog');
   await expect(dialog).toBeVisible();
-  const detail = page.evaluate(() => new Promise((res) => {
+  await page.evaluate(() => { /** @type {any} */ (window).__armed = new Promise((res) => {
     document.addEventListener('consent-banner:change', (e) => res(e.detail), { once: true });
-  }));
+  }); });
+  const detail = page.evaluate(() => /** @type {any} */ (window).__armed);
   await page.click('button[value="reject"]');
   expect(await detail).toEqual({ preferences: {}, action: 'reject' });
   await expect(page.locator('consent-banner')).toHaveCount(0);

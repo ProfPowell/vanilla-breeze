@@ -163,7 +163,7 @@
     --input-bg: oklch(100% 0 0);
     --input-border-focus: oklch(52% 0.27 18);
     --range-track-h: 0.5rem;
-    --range-track-bg: oklch(85% 0.01 80);
+    --range-track-bg: color-mix(in oklab, oklch(85% 0.01 80), var(--color-text) 40%); /* 3:1 non-text contrast */
     --range-track-fill: oklch(52% 0.27 18);
     --range-thumb-bg: oklch(100% 0 0);
     --range-thumb-border: var(--_sg2-ink);
@@ -253,12 +253,12 @@
 
     /* Form controls: match dark surfaces */
     --input-bg: oklch(15% 0.007 240);
-    --input-border: oklch(35% 0.010 240);
+    --input-border: color-mix(in oklab, oklch(35% 0.010 240), var(--color-text) 30%); /* 3:1 non-text contrast */
     --input-border-focus: oklch(62% 0.28 18);
     --control-border: oklch(60% 0.010 240);
     --control-checked-bg: oklch(62% 0.28 18);
     --control-checked-border: oklch(60% 0.010 240);
-    --range-track-bg: oklch(25% 0.008 240);
+    --range-track-bg: color-mix(in oklab, oklch(25% 0.008 240), var(--color-text) 40%); /* 3:1 non-text contrast */
     --range-track-fill: oklch(62% 0.28 18);
     --range-thumb-bg: oklch(15% 0.007 240);
     --range-thumb-border: oklch(60% 0.010 240);
@@ -277,6 +277,13 @@
   /* ===== COMPONENT OVERRIDES ===== */
   :root[data-theme~="super2026"],
   [data-theme~="super2026"] {
+    /* Outline buttons: the base interactive tone sits just under 4.5:1 on
+       this theme's gridded paper (ink lines). The hover tone (darker in light mode, lighter in
+       dark) clears it in both modes; an author --btn-color still wins (4vhi). */
+    & :is(button, .button).secondary {
+      --color-interactive: var(--color-interactive-hover);
+    }
+
     & :is(main, article) {
       /* Headings: display font, uppercase, bold colors by level */
       & :is(h1, h2, h3, h4, h5, h6) {
@@ -315,19 +322,19 @@
       }
 
       /* Section dividers: heavy architectural rules, cycling color bands */
-      & hr:not([data-ornament]) {
+      & hr:not([data-ornament], [class]) {
         border: none;
         height: 6px;
         background: var(--_sg2-ink);
         margin-block: 2.5rem;
       }
 
-      & hr:not([data-ornament]):nth-of-type(3n+2) {
+      & hr:not([data-ornament], [class]):nth-of-type(3n+2) {
         background: var(--_sg2-red);
         height: 8px;
       }
 
-      & hr:not([data-ornament]):nth-of-type(3n+3) {
+      & hr:not([data-ornament], [class]):nth-of-type(3n+3) {
         background: var(--_sg2-blue);
       }
 
@@ -456,6 +463,13 @@
         padding-inline-start: 1.5rem;
         font-style: normal;
 
+        /* Core toggles emphasis to upright inside a blockquote because it
+           assumes the quote is italic; this quote is upright, so emphasis
+           re-asserts italic (unless it sits in another italic context). */
+        & :is(em, i):not(:where(em, i, cite:not([data-variant~="quoted"]), dfn, var) *) {
+          font-style: italic;
+        }
+
         /* Decorative glyph: empty alt text keeps it out of the a11y tree */
         &::before {
           content: "\0022" / "";
@@ -531,7 +545,7 @@
       & input:not([type="checkbox"]):not([type="radio"]),
       & textarea,
       & select {
-        border: var(--_sg2-rule-sm);
+        border: 2px solid var(--input-border); /* 3:1 non-text contrast */
 
         &:focus {
           border-color: var(--_sg2-red);
@@ -782,9 +796,12 @@
     }
 
     & :is(main, article) browser-window {
+      /* --_sg2-ink inverts to a mid grey in dark mode: pin the header to the
+         light-mode ink so it stays dark under the status dots and focus ring */
+      --browser-window-header-bg: oklch(12% 0.008 240);
       --browser-window-border-color: oklch(28% 0.010 240);
-      --browser-window-text-muted: oklch(54% 0.005 80);
-      --browser-window-url-bg: oklch(12% 0.008 240);
+      --browser-window-text-muted: var(--color-text-muted);
+      --browser-window-url-bg: oklch(18% 0.010 240);
     }
 
     /* Calendar dark mode — darker ink palette */

@@ -7,15 +7,55 @@ qr-code:not(:defined) {
 
 qr-code {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: var(--size-2xs, 0.25rem);
+  /* Children become the caption; keep the box content-sized in flex/grid rows. */
+  container-type: normal;
 }
 
+/* The code is always dark-on-light pixels the runtime paints (black on
+   white by default): scanners need that, so neither the theme, dark mode
+   nor forced colours may recolour it. */
 qr-code canvas {
   display: block;
   image-rendering: pixelated;
   max-inline-size: 100%;
   block-size: auto;
+  aspect-ratio: 1;
+  forced-color-adjust: none;
 }
 
-/* Fallback text uses class="visually-hidden" — see src/utils/visually-hidden.css. */
+qr-code canvas[hidden] {
+  display: none;
+}
+
+@media (forced-colors: active) {
+  /* Forced colours keep the white quiet zone; outline the box so it reads
+     as an image edge against a dark system background. */
+  qr-code canvas {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* Caption: the author's children (text or an <a href> fallback). Visually
+   hidden by default so the value is read once, after the short canvas name;
+   shown with data-caption="visible", while it holds focus (a link inside),
+   and whenever no code could be drawn. */
+qr-code > [data-qr-caption] {
+  text-align: center;
+  overflow-wrap: anywhere;
+  max-inline-size: 100%;
+}
+
+qr-code:not([data-caption="visible"], [data-error]) > [data-qr-caption]:not(:focus-within) {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

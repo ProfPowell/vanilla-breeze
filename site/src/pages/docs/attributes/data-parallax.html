@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-parallax"
-description: "Section-local, transform-only depth motion driven by a CSS view-progress timeline. CSS-only, no JavaScript."
+description: "Section-local, transform-only depth motion driven by a CSS view-progress timeline. CSS-only, clipped by its group, and off under either reduced-motion switch."
 attributeName: data-parallax
 category: visual-effects
 attributeType: data
@@ -12,61 +12,140 @@ crumbLabel: Data Attributes
 ---
 
 <section id="overview">
-  <h2>Subtle scroll-driven depth</h2>
-  <p>The <code>data-parallax</code> attribute applies a transform-only depth animation to a single media layer inside a section. The motion is driven by the CSS <code>view()</code> progress timeline, so it tracks the element's own travel through the viewport without scroll listeners and without JavaScript.</p>
+  <h2>Overview</h2>
+  <p><code>data-parallax</code> moves one media layer inside a section at a different rate from the page while that section scrolls through the viewport. It is CSS only: a <code>view()</code> progress timeline drives a <code>transform</code>, with no scroll listeners and no JavaScript. <code>data-parallax-group</code> on the section clips the moving layer so it never paints over neighbouring content.</p>
+</section>
 
-  <browser-window src="/docs/examples/demos/parallax-hero.html" url="https://vanilla-breeze.com/parallax" title="Parallax Hero" shadow></browser-window>
+<section id="usage">
+  <h2>Usage</h2>
 
-  <code-block language="html" label="Hero with parallax media layer" data-escape><section data-parallax-group>
-  <figure data-parallax style="--vb-parallax-to: -18%; --vb-parallax-scale: 1.08">
-    <img src="/images/hero.jpg" alt="" />
+  <browser-window src="/docs/examples/demos/parallax-hero.html" url="https://vanilla-breeze.com/parallax" title="Parallax hero" shadow></browser-window>
+
+  <code-block language="html" show-lines label="Hero with a parallax media layer" data-escape><section data-parallax-group class="hero">
+  <figure data-parallax="medium">
+    <img src="/images/hero.jpg" alt="">
   </figure>
   <header>
     <h1>Built on motion that respects readers.</h1>
     <p>Foreground copy stays still while the figure drifts behind it.</p>
   </header>
 </section></code-block>
+
+  <code-block language="css" show-lines label="Your layout CSS (position the layer behind the copy)" data-escape>.hero {
+  position: relative;
+  min-block-size: 70vh;
+  display: grid;
+  place-items: end start;
+}
+
+.hero > [data-parallax] {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  z-index: -1;
+}
+
+.hero > [data-parallax] img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}</code-block>
+
+  <p>What the CSS does:</p>
+  <ol>
+    <li><code>[data-parallax-group]</code> gets <code>overflow: clip</code> and <code>isolation: isolate</code>, so the translated layer stays inside the section and a negative <code>z-index</code> stays behind the section's own copy.</li>
+    <li><code>[data-parallax]</code> animates from <code>translateY(--vb-parallax-from)</code> to <code>translateY(--vb-parallax-to)</code>, both with <code>scale(--vb-parallax-scale)</code>, over the element's <code>cover</code> range. <code>will-change: transform</code> is set only while that animation can run.</li>
+    <li>Without motion it rests at <code>translateY(--vb-parallax-from) scale(--vb-parallax-scale)</code>. See <a href="#accessibility">Accessibility</a> and <a href="#browser-support">Browser support</a>.</li>
+  </ol>
 </section>
 
-<section id="api">
-  <h2>Attributes and properties</h2>
-
+<section id="options">
+  <h2>Options</h2>
   <table class="props-table">
-    <thead><tr><th>Attribute</th><th>Role</th></tr></thead>
+    <thead><tr><th>Attribute</th><th>Values</th><th>Default</th><th>Effect</th></tr></thead>
     <tbody>
-      <tr><td><code>data-parallax</code></td><td>Applies the parallax animation to the element. Use on the media layer (a <code>&lt;figure&gt;</code>, <code>&lt;img&gt;</code>, or wrapper) — not on the section that contains it.</td></tr>
-      <tr><td><code>data-parallax-group</code></td><td>Authoring marker for the section that owns a parallax layer. Has no CSS attached this pass; reserved for future composition rules.</td></tr>
+      <tr><td><code>data-parallax</code></td><td><code>""</code>, <code>subtle</code>, <code>medium</code>, <code>strong</code></td><td><code>""</code></td><td>Animates the element. Put it on the media layer (a <code>&lt;figure&gt;</code>, <code>&lt;img&gt;</code> or <code>&lt;picture&gt;</code>), not on the section. The presets set the custom properties below; empty uses their defaults.</td></tr>
+      <tr><td><code>data-parallax-group</code></td><td>boolean</td><td>&mdash;</td><td>On the section that holds the layer: clips overflow and isolates stacking.</td></tr>
     </tbody>
   </table>
 
   <table class="props-table">
-    <thead><tr><th>CSS Property</th><th>Default</th><th>Description</th></tr></thead>
+    <caption>Presets</caption>
+    <thead><tr><th>Value</th><th><code>--vb-parallax-to</code></th><th><code>--vb-parallax-scale</code></th></tr></thead>
     <tbody>
-      <tr><td><code>--vb-parallax-from</code></td><td><code>0%</code></td><td>Starting <code>translateY</code> value when the element enters the viewport.</td></tr>
-      <tr><td><code>--vb-parallax-to</code></td><td><code>-12%</code></td><td>Ending <code>translateY</code> value when the element exits.</td></tr>
-      <tr><td><code>--vb-parallax-scale</code></td><td><code>1</code></td><td>Constant scale applied to the layer. A small scale (1.05–1.1) lets the layer drift without revealing its edges.</td></tr>
+      <tr><td>(empty)</td><td><code>-12%</code></td><td><code>1</code></td></tr>
+      <tr><td><code>subtle</code></td><td><code>-6%</code></td><td><code>1.04</code></td></tr>
+      <tr><td><code>medium</code></td><td><code>-12%</code></td><td><code>1.08</code></td></tr>
+      <tr><td><code>strong</code></td><td><code>-20%</code></td><td><code>1.12</code></td></tr>
     </tbody>
   </table>
+</section>
+
+<section id="events">
+  <h2>Events</h2>
+  <p>None. It is CSS only.</p>
+</section>
+
+<section id="styling">
+  <h2>Styling</h2>
+  <table class="props-table">
+    <thead><tr><th>Custom property</th><th>Default</th><th>Controls</th></tr></thead>
+    <tbody>
+      <tr><td><code>--vb-parallax-from</code></td><td><code>0%</code></td><td><code>translateY</code> when the element enters the viewport, and at rest.</td></tr>
+      <tr><td><code>--vb-parallax-to</code></td><td><code>-12%</code></td><td><code>translateY</code> when it leaves.</td></tr>
+      <tr><td><code>--vb-parallax-scale</code></td><td><code>1</code></td><td>Constant scale. Make it large enough that the layer's edges never show over the travel (about 1 + 1.5 &times; the travel, so 1.08 for 12%). It applies at rest too.</td></tr>
+    </tbody>
+  </table>
+  <p>Set them in a stylesheet rather than a <code>style</code> attribute (the <code>vb/no-inline-style</code> conformance rule flags inline styles), or use a preset.</p>
+  <code-block language="css" show-lines label="Custom travel" data-escape>.hero > [data-parallax] {
+  --vb-parallax-from: 4%;
+  --vb-parallax-to: -16%;
+  --vb-parallax-scale: 1.12;
+}</code-block>
+  <p>Only <code>transform</code> is animated, so the browser can composite the layer. Do not extend the keyframes to <code>top</code>, <code>background-position</code> or other layout properties.</p>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Vestibular safety.</strong> Parallax (content moving at different speeds while you scroll) is a common trigger for dizziness and nausea in people with vestibular disorders (<a href="https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html">WCAG 2.3.3 Animation from Interactions</a>). VB turns it off under <code>prefers-reduced-motion: reduce</code> <em>and</em> under VB's own setting, <code>data-motion-reduced</code> on the root (the settings panel's reduced-motion switch). The layer then rests at its <code>from</code> position and scale: same composition, no motion.</li>
+    <li><strong>Only while scrolling.</strong> The motion is tied to scroll position and stops when the reader stops, so there is no auto-playing animation to pause (WCAG 2.2.2 does not apply).</li>
+    <li><strong>Keep it small.</strong> Travel past about 25% feels disruptive. Use one layer per section; stacks of layers moving at different rates are hard to read and worse on small screens.</li>
+    <li><strong>Decorative layer, readable copy.</strong> Text stays on a static layer above the image. Keep its contrast against every part of the image (a scrim helps), and give a decorative image <code>alt=""</code>.</li>
+    <li><strong>The static layout must work.</strong> If the page only makes sense with motion, the design is too aggressive.</li>
+  </ul>
 </section>
 
 <section id="browser-support">
-  <h2>Browser support and fallback</h2>
-  <p>The animation requires <code>animation-timeline: view()</code>. In supporting browsers (Chrome 115+, Safari 18+, Firefox behind a flag) the layer animates. Elsewhere the layer renders at its starting transform — the static composition is the fallback, and the demo above is designed to look correct without motion.</p>
-
-  <p>The rule is wrapped in an <code>@supports</code> block, so unsupported browsers see no animation declarations at all — no flash, no JS shim, no layout shift.</p>
+  <h2>Browser support</h2>
+  <p>The animation needs <code>animation-timeline: view()</code>: Chrome and Edge 115+, Safari 26+. In Firefox scroll-driven animations are still a preview behind a flag (<code>layout.css.scroll-driven-animations.enabled</code>). The animation is wrapped in <code>@supports</code>, so other browsers get no animation declarations at all, with no JavaScript shim and no layout shift: the layer rests at <code>translateY(--vb-parallax-from) scale(--vb-parallax-scale)</code>, exactly as under reduced motion.</p>
 </section>
 
-<section id="reduced-motion">
-  <h2>Reduced motion</h2>
-  <p>When the user has <code>prefers-reduced-motion: reduce</code> set, the animation is removed and the layer is reset to its starting transform. The motion is suppressed at the CSS level — there is no JS to bypass.</p>
+<section id="examples">
+  <h2>Examples</h2>
+
+  <h3>Presets</h3>
+  <code-block language="html" show-lines label="Three strengths" data-escape><figure data-parallax="subtle">…</figure>
+<figure data-parallax="medium">…</figure>
+<figure data-parallax="strong">…</figure></code-block>
+
+  <h3>Full-bleed hero</h3>
+  <p>The demo above: a gradient figure behind a heading, the <code>medium</code> preset, and a scrim behind the copy for contrast.</p>
+  <code-block language="html" show-lines label="Parallax hero markup" data-escape><section data-parallax-group>
+  <figure data-parallax="medium"></figure>
+  <header>
+    <h1>Built on motion that respects readers.</h1>
+    <p>The background drifts at a different rate than this copy as you scroll.</p>
+  </header>
+</section></code-block>
 </section>
 
-<section id="guidance">
-  <h2>Guidance</h2>
+<section id="related">
+  <h2>Related</h2>
   <ul>
-    <li><strong>One layer per section.</strong> Stack-of-parallax patterns are hard to read and degrade on mobile. Reach for <a href="/docs/attributes/data-stage/"><code>data-stage</code></a> if you need richer scroll-linked storytelling.</li>
-    <li><strong>Keep the range conservative.</strong> Values past 25% start to feel disruptive and reveal layout edges. The defaults are intentionally small.</li>
-    <li><strong>Animate only <code>transform</code>.</strong> The shipped rule uses <code>transform</code> exclusively so the browser can composite the layer on the GPU. Do not extend the keyframes to animate <code>top</code>, <code>background-position</code>, or layout properties.</li>
-    <li><strong>The static layout must work.</strong> If the page only makes sense with motion, the design is too aggressive — soften it.</li>
+    <li><a href="/docs/attributes/data-stage/"><code>data-stage</code></a> &mdash; pinned, step-by-step scroll storytelling.</li>
+    <li><a href="/docs/attributes/data-effect/"><code>data-effect</code></a> with <code>data-trigger="scroll"</code> &mdash; one-off entrance effects.</li>
+    <li><a href="/docs/attributes/data-transition/"><code>data-transition</code></a> &mdash; animated state changes.</li>
+    <li><a href="/docs/accessibility/">Accessibility</a> &mdash; reduced motion and the other user preferences VB honours.</li>
   </ul>
 </section>

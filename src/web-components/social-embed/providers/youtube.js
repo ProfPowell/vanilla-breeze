@@ -1,43 +1,77 @@
 /**
- * YouTube provider — delegates to <youtube-player>
+ * YouTube provider — delegates to <youtube-player>.
  *
- * Sets delegatesActivation: true so social-embed skips its own click gate.
- * youtube-player handles its own facade (thumbnail + click-to-play).
+ * delegatesActivation: social-embed skips its own button and renders the
+ * player at once; youtube-player shows its own facade (thumbnail + play
+ * button). The thumbnail is fetched from i.ytimg.com up front unless the
+ * <social-embed> carries a `poster` (a local image), which is passed through.
  */
 
-import { SocialEmbed } from '../logic.js';
+import '../../youtube-player/logic.js';
+import { parseHttpsUrl } from '../shared.js';
+
+const HOSTS = new Set([
+  'youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com',
+  'youtube-nocookie.com', 'www.youtube-nocookie.com', 'youtu.be',
+]);
+const ID = /^[A-Za-z0-9_-]{11}$/;
 
 /**
- * Extract a video ID from a YouTube URL.
- * Handles youtube.com/watch?v=, youtu.be/, youtube.com/shorts/
- * @param {string} url
- * @returns {string | null}
+ * @param {string | null} t - t= / start= value: 90, 90s or 1h2m3s
+ * @returns {number | null}
  */
-function extractVideoId(url) {
-  const match = url.match(
-    /(?:youtube\.com\/(?:watch\?.*v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
-  );
-  return match?.[1] ?? null;
+function parseStart(t) {
+  if (!t) return null;
+  if (/^\d+s?$/.test(t)) return parseInt(t, 10);
+  const m = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/.exec(t);
+  if (!m || !m[0]) return null;
+  return (+(m[1] || 0)) * 3600 + (+(m[2] || 0)) * 60 + (+(m[3] || 0));
 }
 
-const YouTubeProvider = {
-  delegatesActivation: true,
-
-  canHandle(url) {
-    return /(?:youtube\.com\/(?:watch|shorts\/)|youtu\.be\/)/.test(url);
-  },
-
-  async render(host, url) {
-    const id = extractVideoId(url);
-    if (!id) throw new Error('Could not parse YouTube video ID');
-
-    const yt = document.createElement('youtube-player');
-    yt.dataset.id = id;
-    yt.dataset.title = host.dataset.title || 'YouTube video';
-    host.innerHTML = '';
-    host.appendChild(yt);
+/**
+ * Extract a video id (and start time) from a YouTube URL:
+ * youtube.com/watch?v=, youtu.be/, /shorts/, /embed/, /live/.
+ * @param {string} url
+ * @returns {{ id: string, start: number | null } | null}
+ */
+export function parseYouTubeUrl(url) {
+  const u = parseHttpsUrl(url, HOSTS);
+  if (!u) return null;
+  let id = null;
+  if (u.hostname === 'youtu.be') {
+    id = u.pathname.slice(1).replace(/\/$/, '');
+  } else if (u.pathname === '/watch') {
+    id = u.searchParams.get('v');
+  } else {
+    id = /^\/(?:shorts|embed|live)\/([^/]+)\/?$/.exec(u.pathname)?.[1] ?? null;
   }
-};
+  if (!id || !ID.test(id)) return null;
+  return { id, start: parseStart(u.searchParams.get('t') ?? u.searchParams.get('start')) };
+}
 
-SocialEmbed.register('youtube', YouTubeProvider);
-export { YouTubeProvider };
+export const YouTubeProvider = {
+  label: 'YouTube',
+  noun: 'video',
+  delegatesActivation: true,
+  canHandle: (/** @type {string} */ url) => !!parseYouTubeUrl(url),
+  frameHost: () => 'www.youtube-nocookie.com',
+
+  /**
+   * @param {HTMLElement} host
+   * @param {string} url
+   * @param {{ title: string }} opts
+   */
+  async render(host, url, { title }) {
+    const video = parseYouTubeUrl(url);
+    if (!video) throw new Error('Could not parse YouTube video ID');
+    const yt = document.createElement('youtube-player');
+    yt.setAttribute('video-id', video.id);
+    // youtube-player interpolates its title into attribute markup: keep
+    // quotes and angle brackets out of it.
+    yt.setAttribute('title', title.replace(/["<>]/g, ''));
+    if (video.start) yt.setAttribute('start', String(video.start));
+    const poster = host.getAttribute('poster');
+    if (poster) yt.setAttribute('poster', poster);
+    return yt;
+  },
+};

@@ -6,6 +6,8 @@
  * The animation is CSS-driven via :focus-within and :placeholder-shown.
  * JS only provides the minimal glue: ensures a transparent placeholder
  * exists so the CSS selector works, and marks the field as enhanced.
+ * An author placeholder is kept, and the label then stays floated (CSS:
+ * any placeholder other than the injected " ") so the two never overlap.
  *
  * @attr {boolean} data-floating-label - Enable floating label on a form-field
  *
@@ -30,7 +32,8 @@ function enhance(field) {
   if (!input) return;
 
   // Ensure a placeholder exists so :placeholder-shown works in CSS.
-  // Use a single space — invisible but activates the pseudo-class.
+  // Use a single space — invisible but activates the pseudo-class. A real
+  // placeholder is left alone; CSS keeps the label floated above it.
   if (!input.hasAttribute('placeholder')) {
     input.setAttribute('placeholder', ' ');
   }

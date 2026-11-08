@@ -1,0 +1,154 @@
+---
+layout: attribute
+title: "commandfor"
+description: "Declarative invoker buttons: commandfor names a target and command says what to do to it, opening dialogs and popovers or firing your own commands without click handlers."
+attributeName: commandfor
+attributeType: native
+nativeGroup: Interactivity
+category: native
+currentPath: /docs/attributes/commandfor/
+
+crumbHref: /docs/attributes/native/
+crumbLabel: Native Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>Invoker commands let a button act on another element with no script. <code>commandfor</code> holds the <code>id</code> of the target, and <code>command</code> names the action: open a modal dialog, close it, toggle a popover, or send a custom command that your own code handles. They replace the <code>onclick="dialog.showModal()"</code> pattern and cover everything <code>popovertarget</code> does.</p>
+  <p><strong>Applies to:</strong> <code>&lt;button&gt;</code> only. Both attributes are needed; the target can be any element with an <code>id</code> in the same document or shadow root.</p>
+
+  <browser-window
+    src="/docs/examples/demos/attr-commandfor-basic.html"
+    url="https://vanilla-breeze.com/commandfor"
+    title="Invoker commands"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Dialog commands" data-escape><button type="button" commandfor="delete-dialog" command="show-modal">Delete project</button>
+
+<dialog id="delete-dialog" closedby="any" aria-labelledby="delete-title">
+  <header>
+    <h3 id="delete-title">Delete "Spring launch"?</h3>
+  </header>
+  <section>
+    <p>The project and its 12 tasks are removed for everyone.</p>
+  </section>
+  <footer>
+    <button type="button" class="secondary" commandfor="delete-dialog" command="request-close">Keep project</button>
+    <button type="button" commandfor="delete-dialog" command="close" value="delete">Delete</button>
+  </footer>
+</dialog></code-block>
+</section>
+
+<section>
+  <h2>Values</h2>
+  <p><code>commandfor</code> takes one <code>id</code>. <code>command</code> takes one of these keywords:</p>
+  <table>
+    <thead><tr><th><code>command</code></th><th>Target</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>show-modal</code></td><td><code>&lt;dialog&gt;</code></td><td>Opens it as a modal, like <code>showModal()</code>: top layer, backdrop, rest of the page inert.</td></tr>
+      <tr><td><code>close</code></td><td><code>&lt;dialog&gt;</code></td><td>Closes it, like <code>close()</code>. The button's <code>value</code> becomes the dialog's <code>returnValue</code>.</td></tr>
+      <tr><td><code>request-close</code></td><td><code>&lt;dialog&gt;</code></td><td>Asks it to close, like <code>requestClose()</code>: a <code>cancel</code> event fires first and script can prevent the close.</td></tr>
+      <tr><td><code>toggle-popover</code></td><td><code>[popover]</code></td><td>Opens or closes it, like <code>popovertarget</code>.</td></tr>
+      <tr><td><code>show-popover</code></td><td><code>[popover]</code></td><td>Opens it if closed.</td></tr>
+      <tr><td><code>hide-popover</code></td><td><code>[popover]</code></td><td>Closes it if open.</td></tr>
+      <tr><td><code>--anything</code></td><td>any element</td><td>A custom command. The browser does nothing itself; it fires a <code>command</code> event on the target for your script. The name must start with two dashes.</td></tr>
+      <tr><td>missing or unknown</td><td>&mdash;</td><td>Nothing happens.</td></tr>
+    </tbody>
+  </table>
+  <p>There is no command for a non-modal dialog (<code>show()</code>) or for <code>&lt;details&gt;</code>. A built-in command sent to the wrong kind of element (for example <code>show-modal</code> to a popover) does nothing.</p>
+
+  <h3>The command event</h3>
+  <p>Before any action runs, the target receives a <code>command</code> event (a <code>CommandEvent</code>). <code>event.command</code> is the keyword and <code>event.source</code> is the button. Calling <code>preventDefault()</code> stops a built-in action.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Popover commands</h3>
+  <code-block language="html" show-lines label="toggle-popover" data-escape><button type="button" commandfor="shortcuts" command="toggle-popover">Keyboard shortcuts</button>
+<p id="shortcuts" popover><kbd>Ctrl</kbd> + <kbd>K</kbd> opens search. <kbd>?</kbd> shows this list.</p></code-block>
+  <p>As with <code>popovertarget</code>, the button becomes the popover's implicit anchor, so <code>position-area</code> places the popover next to it. See <a href="/docs/attributes/popover/"><code>popover</code></a> for the styling a bare popover needs in VB.</p>
+
+  <h3>Custom commands</h3>
+  <p>The third part of the demo sends <code>--add</code> and <code>--reset</code> to an <code>&lt;output&gt;</code>. One listener on the target handles every button that points at it.</p>
+  <code-block language="html" show-lines label="Custom commands" data-escape><p>Guests: <output id="guests">2</output></p>
+<button type="button" commandfor="guests" command="--add">Add guest</button>
+<button type="button" class="secondary" commandfor="guests" command="--reset">Reset</button>
+
+<script type="module">
+  const guests = document.getElementById('guests');
+  guests.addEventListener('command', (event) => {
+    if (event.command === '--add') guests.value = String(Number(guests.value) + 1);
+    if (event.command === '--reset') guests.value = '2';
+  });
+</script></code-block>
+
+  <h3>Reading the result of a dialog</h3>
+  <code-block language="javascript" show-lines label="returnValue from a close command" data-escape>const dialog = document.getElementById('delete-dialog');
+
+dialog.addEventListener('close', () => {
+  if (dialog.returnValue === 'delete') deleteProject();
+});</code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
+  <ul>
+    <li><strong>No polyfill.</strong> VB relies on the browser for invoker commands. In a browser without them the button does nothing (see Browser support).</li>
+    <li><strong>Command palette discovery.</strong> <code>src/utils/command-init.js</code> loads when the page has a <code>[commandfor]</code> or <code>[data-command]</code> element. It registers each <code>[commandfor]</code> button so a <a href="/docs/elements/web-components/command-palette/"><code>&lt;command-palette discover&gt;</code></a> lists it, using the button's text as the label. Choosing the item clicks the button, so the native command runs. Override the label with <code>data-command</code>, set the group with <code>data-command-group</code> (default "Page Actions") and an icon with <code>data-command-icon</code>. Hidden buttons are left out of the list.</li>
+    <li><strong>Keyboard shortcuts.</strong> <code>data-shortcut</code> on a registered button binds the shortcut and shows it in the palette. <a href="/docs/attributes/data-hotkey/"><code>data-hotkey</code></a> binds a shortcut that clicks any button, including invoker buttons.</li>
+    <li><strong>Dialog styles</strong> (<code>src/native-elements/dialog/styles.css</code>): <code>dialog[open]</code> becomes a flex column with a fixed header and footer and a scrolling body, opens and closes with a fade and scale, and gets a blurred <code>::backdrop</code> (<code>--color-backdrop</code>, <code>--backdrop-blur</code>). <code>data-size</code> and <code>data-position</code> give size variants and drawers; see <a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a>.</li>
+    <li><strong>Popover styles</strong>: VB styles only <code>[role="tooltip"][popover]</code> and <code>[popover="hint"]</code>; see <a href="/docs/attributes/popover/"><code>popover</code></a>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>An invoker is a real <code>&lt;button&gt;</code>, so it is focusable and works with <kbd>Enter</kbd> and <kbd>Space</kbd>. Label it with the action ("Delete project"), not the mechanism ("Open dialog").</li>
+    <li><code>show-modal</code> gives the full modal behaviour: focus moves into the dialog, the rest of the page becomes <a href="/docs/attributes/inert/">inert</a>, and focus returns to the button when the dialog closes.</li>
+    <li>Give every dialog a name with <code>aria-labelledby</code> pointing at its heading.</li>
+    <li>Custom commands have no built-in feedback. If the result isn't visible where focus is, announce it; an <code>&lt;output&gt;</code> is a polite live region.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <ul>
+    <li><code>commandfor</code>, <code>command</code> and the <code>command</code> event: Baseline 2025 (Chrome 135, Firefox 144, Safari 26.2).</li>
+    <li><code>command="request-close"</code>: Chrome 139, Firefox 144, Safari 26.2.</li>
+    <li><code>closedby</code> on <code>&lt;dialog&gt;</code>: Chrome 134, Firefox 141; not yet in a released Safari (as of November 2026).</li>
+  </ul>
+  <p>For older browsers, <code>popovertarget</code> (Baseline 2024) covers popovers. For dialogs, open them from a click handler that calls <code>showModal()</code>.</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Buttons only.</strong> <code>commandfor</code> does nothing on <code>&lt;a&gt;</code>, <code>&lt;input&gt;</code> or other elements.</li>
+    <li><strong>Custom names need <code>--</code>.</strong> <code>command="add"</code> is an unknown keyword and does nothing; <code>command="--add"</code> fires the event.</li>
+    <li><strong>Inside a form, add <code>type="button"</code></strong> so the button can never submit the form.</li>
+    <li><strong>Listen on the target</strong>, not the button. The <code>command</code> event is dispatched to the element named by <code>commandfor</code>.</li>
+    <li><strong>Use one mechanism per button.</strong> Don't put <code>popovertarget</code> and <code>commandfor</code> on the same button.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/popover/"><code>popover</code></a> &mdash; the popover attribute, its values and VB's styling.</li>
+    <li><a href="/docs/attributes/open/"><code>open</code></a> &mdash; the state a dialog command sets.</li>
+    <li><a href="/docs/attributes/interestfor/"><code>interestfor</code></a> &mdash; invoke a popover on hover and focus instead of on click.</li>
+    <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> and <a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> &mdash; element references, including <code>closedby</code>.</li>
+    <li><a href="/docs/elements/web-components/command-palette/"><code>&lt;command-palette&gt;</code></a> &mdash; lists invoker buttons for keyboard users.</li>
+  </ul>
+
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>commandfor</code> + <code>command</code></strong> &mdash; dialogs, popovers and custom actions on one element, all with the same pattern.</li>
+    <li><strong><code>popovertarget</code></strong> &mdash; popovers only, with longer browser support.</li>
+    <li><strong><a href="/docs/attributes/data-toggle/"><code>data-toggle</code></a></strong> &mdash; flip an attribute that no command covers, such as <code>hidden</code>, <code>open</code> on <code>&lt;details&gt;</code>, or <code>data-state</code>.</li>
+    <li><strong>A click handler</strong> &mdash; non-modal dialogs (<code>show()</code>) and browsers without invoker commands.</li>
+  </ul>
+</section>

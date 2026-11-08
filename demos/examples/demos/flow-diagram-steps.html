@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flow Diagram — .steps and events</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <main data-layout="stack">
+    <h1>Flow data from JavaScript</h1>
+    <nav data-layout="cluster" aria-label="Flow data">
+      <button type="button" id="fd-signup">Load sign-up flow</button>
+      <button type="button" id="fd-support">Load support flow</button>
+    </nav>
+    <flow-diagram id="fd-live" data-title="Sign-up">
+      <ol>
+        <li data-type="start">Visitor lands</li>
+        <li data-type="end">Account created</li>
+      </ol>
+    </flow-diagram>
+    <section aria-labelledby="fd-log-h">
+      <h2 id="fd-log-h">Event log</h2>
+      <output id="fd-log" for="fd-live" aria-live="polite"></output>
+    </section>
+  </main>
+  <script type="module">
+    const fd = document.getElementById('fd-live');
+    const log = document.getElementById('fd-log');
+    const note = (msg) => {
+      const line = document.createElement('p');
+      line.textContent = msg;
+      log.prepend(line);
+    };
+
+    const flows = {
+      signup: { title: 'Sign-up', steps: [
+        { type: 'start', text: 'Visitor lands' },
+        { type: 'action', text: 'Fill in form' },
+        { type: 'decision', text: 'Email unique?', annotation: 'Checked on blur', branches: [
+          { label: 'Yes', steps: [{ type: 'process', text: 'Send welcome email' }, { type: 'end', text: 'Account created' }] },
+          { label: 'No', steps: [{ type: 'end', text: 'Offer sign-in' }] },
+        ] },
+      ] },
+      support: { title: 'Support ticket', steps: [
+        { type: 'start', text: 'Open help' },
+        { type: 'action', text: 'Describe problem' },
+        { type: 'wait', text: 'Agent assigned' },
+        { type: 'end', text: 'Resolved' },
+      ] },
+    };
+
+    const load = (key) => {
+      fd.dataset.title = flows[key].title;
+      fd.steps = flows[key].steps;
+    };
+
+    fd.addEventListener('flow-diagram:ready', (e) => note(`ready — ${e.detail.nodeCount} nodes`));
+    fd.addEventListener('flow-diagram:steps-changed', (e) => note(`steps-changed — ${e.detail.steps.length} top-level steps (${e.detail.source})`));
+    fd.addEventListener('flow-diagram:select', (e) => note(`select — ${e.detail.type}: ${e.detail.text}`));
+    document.getElementById('fd-signup').addEventListener('click', () => load('signup'));
+    document.getElementById('fd-support').addEventListener('click', () => load('support'));
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

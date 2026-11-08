@@ -1,137 +1,138 @@
 {
-  "$schema": "../../../schemas/api.schema.json",
+  "$schema": "../../../.claude/schemas/api.schema.json",
   "element": "image-map",
   "type": "web-component",
-  "description": "map + map-area: Modern responsive image map with percentage coordinates",
-  "attributes": [
-    {
-      "name": "x",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "y",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "width",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "height",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "cx",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "cy",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "r",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "points",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "shape",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "coords",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "label",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "href",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "target",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "tooltip",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "disabled",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "src",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "alt",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "viewBox",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "preserveAspectRatio",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "data-disabled",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-hover",
-      "kind": "data",
-      "purpose": "config"
-    }
-  ],
-  "events": [
-    {
-      "name": "image-map:area-enter"
-    },
-    {
-      "name": "image-map:area-leave"
-    },
-    {
-      "name": "image-map:area-activate"
-    }
-  ],
-  "childAttributes": [],
-  "structure": [],
+  "description": "Responsive image map: <map-area> children define percentage-coordinate hotspots (rect, circle, poly) over a child <img>, with an SVG hit-testing overlay, keyboard-focusable anchors, and rich HTML tooltips. Without JS the image renders and each map-area shows as a labeled list item.",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
       "@flow"
     ]
-  }
+  },
+  "attributes": [
+    {
+      "name": "src",
+      "kind": "host-api",
+      "direction": "input",
+      "purpose": "config",
+      "type": "string",
+      "description": "Image URL used to create the <img> when no child <img> is authored."
+    },
+    {
+      "name": "alt",
+      "kind": "host-api",
+      "direction": "input",
+      "purpose": "config",
+      "type": "string",
+      "description": "Alt text for the generated <img>."
+    },
+    {
+      "name": "data-label-map",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Image map",
+      "description": "Group name fallback when there is no aria-label/aria-labelledby and the image has no alt."
+    }
+  ],
+  "events": [
+    {
+      "name": "image-map:area-enter",
+      "detail": "{ area }",
+      "description": "Pointer entered or focus moved onto an area; area is the <map-area> element."
+    },
+    {
+      "name": "image-map:area-leave",
+      "detail": "{ area }",
+      "description": "Pointer left or focus moved off an area."
+    },
+    {
+      "name": "image-map:area-activate",
+      "detail": "{ area }",
+      "description": "Area clicked, tapped, or activated with Enter/Space. Cancelable: preventDefault() stops link navigation."
+    },
+    {
+      "name": "image-map:regions-changed",
+      "detail": "{ regions, source: 'property' }",
+      "description": "Fired after the regions setter rebuilds the map."
+    }
+  ],
+  "properties": [
+    {
+      "name": "regions",
+      "type": "Array<{ shape, coords, label?, href?, target?, tooltip?, disabled?, content? }>",
+      "description": "Get the regions from the <map-area> children (content is a string for text-only areas or a cloned DocumentFragment for markup) or assign to rebuild them. String content renders as text, never HTML; pass a Node, DocumentFragment or <template> for rich tooltips. Fires image-map:regions-changed with source 'property'."
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "shape",
+      "on": "map-area",
+      "type": "enum",
+      "values": [
+        "rect",
+        "circle",
+        "poly"
+      ],
+      "required": false,
+      "description": "Hotspot shape (default rect)."
+    },
+    {
+      "name": "coords",
+      "on": "map-area",
+      "type": "string",
+      "required": true,
+      "description": "Percentage coordinates (0-100), space or comma separated: rect x1 y1 x2 y2, circle cx cy r, poly x1 y1 x2 y2 ..."
+    },
+    {
+      "name": "label",
+      "on": "map-area",
+      "type": "string",
+      "required": false,
+      "description": "Accessible name of the hotspot; falls back to the area's text content. Shown as the list label without JS."
+    },
+    {
+      "name": "href",
+      "on": "map-area",
+      "type": "string",
+      "required": false,
+      "description": "Navigation target; the hotspot becomes an <a> focus anchor. Not a link without JS: also author an <a href> in the content for no-JS reachability."
+    },
+    {
+      "name": "target",
+      "on": "map-area",
+      "type": "string",
+      "required": false,
+      "description": "Link target for href (e.g. _blank)."
+    },
+    {
+      "name": "tooltip",
+      "on": "map-area",
+      "type": "enum",
+      "values": [
+        "hover",
+        "click",
+        "none"
+      ],
+      "required": false,
+      "description": "Tooltip mode: hover (default; on hover/focus, hoverable), click (toggle on click/Enter/Space, focus moves into interactive content, Escape returns), none."
+    },
+    {
+      "name": "disabled",
+      "on": "map-area",
+      "type": "boolean",
+      "required": false,
+      "description": "Removes the hotspot from interaction and the tab order."
+    }
+  ],
+  "structure": [
+    {
+      "element": "<img>",
+      "description": "Direct child image the overlay is laid over (or use src/alt on the host)."
+    },
+    {
+      "element": "<map-area>",
+      "description": "Hotspot definition; its child content becomes the tooltip (and the no-JS list item body)."
+    }
+  ]
 }

@@ -19,6 +19,13 @@ crumbLabel: Custom Elements
 <section>
     <h2>Basic Usage</h2>
 
+    <browser-window
+      src="/docs/snippets/demos/site-tools-header.html"
+      url="https://vanilla-breeze.com/site-tools"
+      title="Site tools in a header"
+      shadow>
+    </browser-window>
+
 <code-block language="html" label="Site tools in header">
 <header class="site">
   <a href="/"><brand-mark>Acme Inc</brand-mark></a>
@@ -41,8 +48,38 @@ crumbLabel: Custom Elements
 </section>
 
 <section>
+    <h2>Mobile Menus</h2>
+    <p>A sibling <a href="/docs/elements/custom-elements/mobile-menu/"><code>&lt;mobile-menu&gt;</code></a> hides <code>&lt;site-tools&gt;</code> completely (<code>display: none !important</code>) at and below its breakpoint, along with the header's <code>&lt;nav&gt;</code> and <code>&lt;nav-bar&gt;</code>. Anything inside <code>&lt;site-tools&gt;</code> is then unreachable unless you also provide it another way:</p>
+    <ul>
+        <li><strong>Repeat it in the mobile panel.</strong> This suits search and the theme picker, which work inside the panel. The demo above does this.</li>
+        <li><strong>Keep it outside <code>&lt;site-tools&gt;</code>.</strong> Place it directly in the header, after <code>&lt;mobile-menu&gt;</code>, and it stays visible at every width, next to the menu button on narrow screens. Use this for tools whose own popup doesn't fit in the narrow mobile panel, such as the <code>&lt;notification-wc&gt;</code> bell. This site's header does this.</li>
+    </ul>
+
+<code-block language="html" label="A tool that stays visible on mobile">
+<header class="site">
+  <a href="/"><brand-mark>Acme Inc</brand-mark></a>
+  <nav-bar aria-label="Main navigation">…</nav-bar>
+  <site-tools>
+    <site-search>…</site-search>
+    <theme-picker compact>…</theme-picker>
+  </site-tools>
+  <mobile-menu>…</mobile-menu>
+  <notification-wc src="/api/notifications"></notification-wc>
+</header>
+</code-block>
+</section>
+
+<section>
     <h2>In a Footer</h2>
     <p>Use <code>&lt;site-tools&gt;</code> in footers to wrap settings or utility panels.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/site-tools-footer.html"
+      url="https://vanilla-breeze.com/site-tools/footer"
+      title="Site tools in a footer"
+      style="min-height: 34rem;"
+      shadow>
+    </browser-window>
 
 <code-block language="html" label="Site tools in footer">
 <footer>
@@ -60,12 +97,26 @@ crumbLabel: Custom Elements
 
 <section>
     <h2>CSS Tokens</h2>
-    <p>The element uses standard VB spacing tokens. Override gap with <code>--size-s</code> on the element or a parent.</p>
+    <table class="props-table">
+      <thead>
+        <tr><th>Token</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--site-tools-gap</code></td><td><code>var(--size-s)</code></td><td>Space between the tools. Set this instead of overriding <code>--size-s</code>, which would also re-scale the padding inside the nested components.</td></tr>
+      </tbody>
+    </table>
 </section>
 
 <section>
     <h2>Accessibility</h2>
-    <p>No special ARIA requirements. The element is a generic flex container. Individual tools within it (search, theme picker) handle their own accessibility.</p>
+    <p>The element is a generic flex container with no implicit role. Each tool inside it (search, theme picker, settings) handles its own accessibility, including its touch-target size.</p>
+    <p>Optionally, give the cluster a group role and a name, so screen-reader users hear the tools announced as a set:</p>
+
+<code-block language="html" label="Optional grouping">
+<site-tools role="group" aria-label="Site tools">
+  …
+</site-tools>
+</code-block>
 </section>
 
 <section>

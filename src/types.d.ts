@@ -208,8 +208,31 @@ interface VBMathGlobal {
 // Theme
 // ---------------------------------------------------------------------------
 
-/** Theme preferences stored in localStorage */
+/**
+ * Theme preferences stored in localStorage. The root-attribute keys
+ * (accent … backdropChrome) are null when the visitor never chose a value:
+ * the page's authored <html data-*> attribute is then the default.
+ */
 interface VBThemePrefs {
+  mode: string;
+  brand: string;
+  accent: string | null;
+  borderStyle: string | null;
+  iconSet: string | null;
+  fluid: string | null;
+  backdrop: string | null;
+  backdropChrome: string | null;
+  pageBgType: string;
+  pageBgColor: string;
+  pageBgGradStart: string;
+  pageBgGradEnd: string;
+  pageBgGradDir: string;
+  /** Storage schema version (2 = null means "page default"). */
+  v?: number;
+}
+
+/** Theme state as applied: root-attribute keys resolved (pref → authored). */
+interface VBThemeState {
   mode: string;
   brand: string;
   accent: string;
@@ -223,9 +246,5 @@ interface VBThemePrefs {
   pageBgGradStart: string;
   pageBgGradEnd: string;
   pageBgGradDir: string;
-}
-
-/** Theme state including computed effective mode */
-interface VBThemeState extends VBThemePrefs {
   effectiveMode: string;
 }

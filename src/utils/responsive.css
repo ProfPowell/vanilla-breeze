@@ -1,7 +1,47 @@
-@media (width >= 48rem) {
-  [data-visible="mobile"] { display: none; }
+/* data-visible: viewport visibility, and the data-responsive debug badge.
+
+   Imported into the RESET layer (src/main.css), not utils: !important in the
+   lowest layer beats the structural display:… !important rules components
+   lock in later layers (content-swap, carousel-wc…) and any unlayered author
+   display rule. An !important in utils would lose to those.
+
+   Breakpoint: --bp-m (48rem). Custom properties cannot be used in media
+   queries, so the value is written out; keep it in step with
+   src/tokens/breakpoints.css.
+
+   The queries are screen-only. On paper the page box (~42rem on A4/Letter)
+   would otherwise pick the mobile variant, so print shows the desktop
+   variant and hides the mobile one. */
+
+@media screen and (width >= 48rem), print {
+  [data-visible="mobile"] {
+    display: none !important;
+  }
 }
 
-@media (width < 48rem) {
-  [data-visible="desktop"] { display: none; }
+@media screen and (width < 48rem) {
+  [data-visible="desktop"] {
+    display: none !important;
+  }
+}
+
+/* img[data-responsive-debug]: dev overlay naming the chosen source.
+   Inserted by responsive-init.js beside the image (never inside <picture>). */
+[data-responsive-badge] {
+  position: absolute;
+  inset-block-start: var(--size-3xs, 0.25rem);
+  inset-inline-start: var(--size-3xs, 0.25rem);
+  z-index: 1;
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-s, 0.1875rem);
+  background: oklch(from var(--color-text, #000) l c h / 0.85);
+  color: var(--color-surface, #fff);
+  font-family: var(--font-mono, monospace);
+  font-size: var(--font-size-xs, 0.6875rem);
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+:has(> [data-responsive-badge]) {
+  position: relative;
 }

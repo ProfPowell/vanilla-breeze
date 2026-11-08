@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "class"
-description: "CSS class variants available across VB elements — buttons, navigation, forms, tables, lists, headers, and footers."
+description: "VB uses classes for named, element-scoped variants (button.secondary, nav.pills, header.site). State and configuration live in data-* attributes instead."
 attributeName: class
 attributeType: native
 nativeGroup: Global
@@ -12,65 +12,111 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>class</code> attribute is how you opt in to VB's element-scoped style variants. Rather than utility classes that describe appearance (<code>.text-center</code>, <code>.mt-4</code>), VB classes describe <em>what the element is</em> or <em>how it behaves</em> within its context.</p>
-<p>Each class is scoped to the element it applies to. <code>.striped</code> only works on <code>&lt;table&gt;</code>, <code>.pills</code> only works on <code>&lt;nav&gt;</code>. This keeps the API small and predictable.</p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>class</code> attribute is a space-separated list of names that CSS and scripts can select on. In Vanilla Breeze a class picks a <strong>named variant of one element</strong>: <code>&lt;button class="secondary"&gt;</code>, <code>&lt;nav class="pills"&gt;</code>, <code>&lt;header class="site"&gt;</code>. VB does not ship appearance utilities such as <code>.text-center</code> or <code>.mt-4</code>.</p>
+  <p>Every variant is scoped to its element. <code>.pills</code> does something on <code>&lt;nav&gt;</code> and <code>&lt;menu&gt;</code> and nothing elsewhere; <code>.compact</code> means one thing on <code>&lt;header&gt;</code> and another on <code>&lt;article&gt;</code>.</p>
+  <p><strong>Applies to:</strong> every element (it is a global attribute).</p>
 
-<h2>Button</h2>
-<p>Style variants for <a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> and button-like <code>&lt;a&gt;</code> elements.</p>
+  <browser-window
+    src="/docs/examples/demos/attr-class-variants.html"
+    url="https://vanilla-breeze.com/class"
+    title="Element-scoped classes"
+    shadow>
+  </browser-window>
 
-<table>
-  <thead><tr><th>Class</th><th>Effect</th></tr></thead>
-  <tbody>
-    <tr><td><code>.secondary</code></td><td>Bordered outline style with transparent background</td></tr>
-    <tr><td><code>.ghost</code></td><td>Text-only, background appears on hover</td></tr>
-    <tr><td><code>.small</code></td><td>Smaller padding and font size</td></tr>
-    <tr><td><code>.large</code></td><td>Larger padding and font size</td></tr>
-    <tr><td><code>.full-width</code></td><td>100% width, block-level button</td></tr>
-  </tbody>
-</table>
+  <code-block language="html" show-lines label="Variants on several elements" data-escape><header class="page compact">
+  <h1>Order history</h1>
+</header>
 
-<code-block language="html" label="Button variants" data-escape><button>Default</button>
-<button class="secondary">Secondary</button>
-<button class="ghost">Ghost</button>
-<button class="small">Small</button>
-<button class="large">Large</button>
-<button class="full-width">Full Width</button></code-block>
-
-<h2>Navigation</h2>
-<p>Style variants for <a href="/docs/elements/native/nav/"><code>&lt;nav&gt;</code></a> elements.</p>
-
-<table>
-  <thead><tr><th>Class</th><th>Effect</th></tr></thead>
-  <tbody>
-    <tr><td><code>.horizontal</code></td><td>Flex layout with wrapping for inline link lists</td></tr>
-    <tr><td><code>.vertical</code></td><td>Flex column layout for sidebar-style navigation</td></tr>
-    <tr><td><code>.pills</code></td><td>Rounded background highlighting on active items</td></tr>
-    <tr><td><code>.tabs</code></td><td>Border-bottom indicator, tab-bar style</td></tr>
-    <tr><td><code>.breadcrumb</code></td><td>Horizontal chain with separator characters</td></tr>
-    <tr><td><code>.minimal</code></td><td>Text-only links, no background or border</td></tr>
-    <tr><td><code>.pagination</code></td><td>Centered numbered page buttons</td></tr>
-    <tr><td><code>.tree</code></td><td>Hierarchical disclosure tree with indentation</td></tr>
-    <tr><td><code>.steps</code></td><td>Multi-step progress indicator with numbered circles</td></tr>
-  </tbody>
-</table>
-
-<code-block language="html" label="Navigation variants" data-escape><nav class="horizontal">
-  <a href="/">Home</a>
-  <a href="/about">About</a>
-  <a href="/contact">Contact</a>
+<nav class="horizontal pills" aria-label="Order filters">
+  <ul>
+    <li><a href="#all" aria-current="page">All</a></li>
+    <li><a href="#open">Open</a></li>
+    <li><a href="#shipped">Shipped</a></li>
+  </ul>
 </nav>
 
-<nav class="pills">
-  <a href="/all" aria-current="page">All</a>
-  <a href="/active">Active</a>
-  <a href="/archived">Archived</a>
-</nav>
+<p class="lead">Classes name a variant of one element.</p>
 
-<nav class="tabs">
-  <a href="#overview" aria-current="page">Overview</a>
-  <a href="#details">Details</a>
-  <a href="#reviews">Reviews</a>
+<button type="button">Track parcel</button>
+<button type="button" class="secondary">Download invoice</button>
+<button type="button" class="ghost small">Report a problem</button></code-block>
+</section>
+
+<section>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Space-separated names, e.g. <code>"site sticky"</code></td><td>Each name is a class. Order and duplicates do not matter. Names are case-sensitive.</td></tr>
+      <tr><td><code>""</code> or absent</td><td>No classes. The element gets VB's default styling for its tag.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Classes or data attributes?</h2>
+  <p>VB splits the work (see <a href="/docs/principles/#data-attributes">Principles: data attributes for configuration</a>):</p>
+  <ul>
+    <li><strong>Class</strong> &mdash; a named variant that is either on or off: <code>button.secondary</code>, <code>nav.tabs</code>, <code>footer.columns</code>.</li>
+    <li><strong><code>data-*</code> attribute</strong> &mdash; configuration with a value, or state: <code>data-layout="stack"</code>, <code>data-density="compact"</code>, <code>data-sticky</code>, <code>data-state</code>.</li>
+    <li><strong>ARIA or native attribute</strong> &mdash; state the browser or assistive technology must also know about: <code>aria-current</code>, <code>aria-pressed</code>, <code>disabled</code>, <code>open</code>. VB styles these directly. See <a href="/docs/attributes/aria-states/">ARIA states VB styles</a>.</li>
+  </ul>
+  <p>If you are looking for a class and cannot find it, look for a <code>data-*</code> attribute. These are attributes, not classes:</p>
+  <table>
+    <thead><tr><th>You want</th><th>Write</th></tr></thead>
+    <tbody>
+      <tr><td>A sticky header or footer</td><td><code>&lt;header data-sticky&gt;</code>, <code>&lt;footer data-sticky&gt;</code> (<a href="/docs/attributes/data-sticky/"><code>data-sticky</code></a>)</td></tr>
+      <tr><td>Striped, bordered or compact tables</td><td><code>&lt;table data-striped data-bordered data-density="compact"&gt;</code> (<a href="/docs/elements/native/table/#variants">table variants</a>)</td></tr>
+      <tr><td>Pagination styles</td><td><code>&lt;nav class="pagination" data-variant="compact"&gt;</code></td></tr>
+      <tr><td>Horizontal description lists</td><td><code>&lt;dl data-variant="horizontal"&gt;</code></td></tr>
+      <tr><td>List markers</td><td><code>&lt;ul data-marker="arrow"&gt;</code></td></tr>
+      <tr><td>Layout (stack, cluster, grid, sidebar…)</td><td><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> on any element</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Button</h3>
+  <p>Variants for <a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a>. <code>a.button</code> makes a link look like a button.</p>
+  <table>
+    <thead><tr><th>Class</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>.secondary</code></td><td>Outlined, transparent background</td></tr>
+      <tr><td><code>.ghost</code></td><td>Text only; a background appears on hover</td></tr>
+      <tr><td><code>.small</code>, <code>.large</code></td><td>Smaller or larger padding and type</td></tr>
+      <tr><td><code>.full-width</code></td><td>Fills the available width</td></tr>
+    </tbody>
+  </table>
+  <code-block language="html" show-lines label="Button variants" data-escape><button type="button">Save</button>
+<button type="button" class="secondary">Cancel</button>
+<button type="button" class="ghost small">Skip</button>
+<a href="/signup" class="button large">Create an account</a></code-block>
+
+  <h3>Navigation</h3>
+  <p>Variants for <a href="/docs/elements/native/nav/"><code>&lt;nav&gt;</code></a>. Put the links in a list; the current link is marked with <code>aria-current</code>, not a class.</p>
+  <table>
+    <thead><tr><th>Class</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>.horizontal</code>, <code>.vertical</code></td><td>Lay the list out in a row (wrapping) or a column</td></tr>
+      <tr><td><code>.pills</code></td><td>Rounded filled background on the current item</td></tr>
+      <tr><td><code>.tabs</code></td><td>Tab bar with an underline on the current item</td></tr>
+      <tr><td><code>.minimal</code></td><td>Plain text links</td></tr>
+      <tr><td><code>.breadcrumb</code></td><td>Trail with separators (<code>data-separator</code> picks the glyph)</td></tr>
+      <tr><td><code>.pagination</code></td><td>Numbered page links</td></tr>
+      <tr><td><code>.tree</code></td><td>Nested <code>&lt;details&gt;</code> tree</td></tr>
+      <tr><td><code>.steps</code></td><td>Numbered progress steps (current step: <code>aria-current="step"</code>)</td></tr>
+    </tbody>
+  </table>
+  <code-block language="html" show-lines label="Navigation variants" data-escape><nav class="horizontal tabs" aria-label="Product">
+  <ul>
+    <li><a href="#overview" aria-current="page">Overview</a></li>
+    <li><a href="#specs">Specifications</a></li>
+    <li><a href="#reviews">Reviews</a></li>
+  </ul>
 </nav>
 
 <nav class="breadcrumb" aria-label="Breadcrumb">
@@ -79,190 +125,162 @@ crumbLabel: Native Attributes
     <li><a href="/docs/">Docs</a></li>
     <li><span aria-current="page">Attributes</span></li>
   </ol>
-</nav>
-
-<nav class="tree" aria-label="File browser">
-  <details>
-    <summary>src</summary>
-    <ul>
-      <li><a href="#">index.js</a></li>
-      <li><a href="#">styles.css</a></li>
-    </ul>
-  </details>
 </nav></code-block>
 
-<h2>Form</h2>
-<p>Layout variants for <a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> and form-related elements.</p>
-
-<table>
-  <thead><tr><th>Class</th><th>Element</th><th>Effect</th></tr></thead>
-  <tbody>
-    <tr><td><code>.stacked</code></td><td><code>form</code></td><td>Vertical layout with labels above inputs</td></tr>
-    <tr><td><code>.inline</code></td><td><code>form</code></td><td>Horizontal layout with wrapping</td></tr>
-    <tr><td><code>.grid</code></td><td><code>form</code></td><td>Two-column grid layout</td></tr>
-    <tr><td><code>.actions</code></td><td><code>footer</code></td><td>Button row container inside a form</td></tr>
-    <tr><td><code>.actions.end</code></td><td><code>footer</code></td><td>Right-aligned button row</td></tr>
-    <tr><td><code>.actions.between</code></td><td><code>footer</code></td><td>Space-between button row</td></tr>
-    <tr><td><code>.group</code></td><td><code>fieldset</code></td><td>Field grouping with visual container</td></tr>
-    <tr><td><code>.minimal</code></td><td><code>fieldset</code></td><td>Fieldset with no border</td></tr>
-    <tr><td><code>.help</code></td><td><code>small</code></td><td>Helper text styling beneath inputs</td></tr>
-    <tr><td><code>.error</code></td><td><code>small</code></td><td>Error message styling</td></tr>
-  </tbody>
-</table>
-
-<code-block language="html" label="Form variants" data-escape><form class="stacked">
-  <label for="name">Name</label>
-  <input type="text" id="name" />
-
-  <label for="email">Email</label>
-  <input type="email" id="email" />
-
+  <h3>Forms</h3>
+  <table>
+    <thead><tr><th>Class</th><th>On</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>.stacked</code>, <code>.inline</code>, <code>.grid</code></td><td><code>form</code></td><td>Labels above fields, a wrapping row, or a two-column grid</td></tr>
+      <tr><td><code>.actions</code> (+ <code>.end</code>, <code>.between</code>)</td><td><code>footer</code>, or any element in a form or dialog</td><td>Button row, optionally aligned to the end or spread out</td></tr>
+      <tr><td><code>.group</code></td><td><code>fieldset</code>, or any element in a form</td><td>Column of related controls</td></tr>
+      <tr><td><code>.help</code></td><td><code>p</code>, <code>span</code>, <code>small</code></td><td>Helper text under a field</td></tr>
+      <tr><td><code>.hint</code>, <code>.error</code></td><td><code>output</code> in <code>&lt;form-field&gt;</code></td><td>Hint and error messages, wired to <code>aria-describedby</code></td></tr>
+    </tbody>
+  </table>
+  <code-block language="html" show-lines label="Form classes" data-escape><form class="stacked">
+  <form-field>
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required>
+    <output class="hint" for="email">We only use it for receipts.</output>
+  </form-field>
   <footer class="actions end">
-    <button type="submit">Submit</button>
+    <button type="submit">Subscribe</button>
   </footer>
-</form>
-
-<form class="inline">
-  <label for="search">Search</label>
-  <input type="search" id="search" />
-  <button type="submit">Go</button>
 </form></code-block>
 
-<h2>Table</h2>
-<p>Style variants for <a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a> elements. Classes can be combined.</p>
-
-<table>
-  <thead><tr><th>Class</th><th>Effect</th></tr></thead>
-  <tbody>
-    <tr><td><code>.striped</code></td><td>Alternating row background colors</td></tr>
-    <tr><td><code>.compact</code></td><td>Reduced cell padding for dense data</td></tr>
-    <tr><td><code>.bordered</code></td><td>Borders on all cells</td></tr>
-  </tbody>
-</table>
-
-<code-block language="html" label="Table variants" data-escape><table class="striped">
-  <thead>
-    <tr><th>Name</th><th>Role</th></tr>
-  </thead>
-  <tbody>
-    <tr><td>Alice</td><td>Engineer</td></tr>
-    <tr><td>Bob</td><td>Designer</td></tr>
-    <tr><td>Carol</td><td>Manager</td></tr>
-  </tbody>
-</table>
-
-<table class="compact bordered">
-  <thead>
-    <tr><th>Key</th><th>Value</th></tr>
-  </thead>
-  <tbody>
-    <tr><td>Version</td><td>2.1.0</td></tr>
-    <tr><td>License</td><td>MIT</td></tr>
-  </tbody>
-</table></code-block>
-
-<h2>Lists</h2>
-<p>Style variants for <a href="/docs/elements/native/ul/"><code>&lt;ul&gt;</code></a> and <a href="/docs/elements/native/ol/"><code>&lt;ol&gt;</code></a> elements.</p>
-
-<table>
-  <thead><tr><th>Class</th><th>Effect</th></tr></thead>
-  <tbody>
-    <tr><td><code>.inline</code></td><td>Flex layout with wrapping, no bullets</td></tr>
-    <tr><td><code>.unstyled</code></td><td>No bullets, no padding</td></tr>
-  </tbody>
-</table>
-
-<code-block language="html" label="List variants" data-escape><ul class="inline">
-  <li>HTML</li>
-  <li>CSS</li>
-  <li>JavaScript</li>
-</ul>
-
-<ul class="unstyled">
-  <li>No bullets here</li>
-  <li>Clean and simple</li>
-</ul></code-block>
-
-<h2>Header &amp; Footer</h2>
-<p>Style variants for <a href="/docs/elements/native/header/"><code>&lt;header&gt;</code></a> and <a href="/docs/elements/native/footer/"><code>&lt;footer&gt;</code></a> elements.</p>
-
-<h3>Header</h3>
-<table>
-  <thead><tr><th>Class</th><th>Effect</th></tr></thead>
-  <tbody>
-    <tr><td><code>.site</code></td><td>Full-width header with flex layout and bottom border</td></tr>
-    <tr><td><code>.page</code></td><td>Page-level header with bottom border</td></tr>
-    <tr><td><code>.card</code></td><td>Card header with bottom border</td></tr>
-    <tr><td><code>.sticky</code></td><td>Sticks to top on scroll</td></tr>
-    <tr><td><code>.transparent</code></td><td>Positioned over content (hero overlays)</td></tr>
-    <tr><td><code>.centered</code></td><td>Text-centered with auto margins</td></tr>
-    <tr><td><code>.compact</code></td><td>Reduced padding and font size</td></tr>
-  </tbody>
-</table>
-
-<h3>Footer</h3>
-<table>
-  <thead><tr><th>Class</th><th>Effect</th></tr></thead>
-  <tbody>
-    <tr><td><code>.site</code></td><td>Full-width site footer with top border</td></tr>
-    <tr><td><code>.article</code></td><td>Article footer with top border</td></tr>
-    <tr><td><code>.card</code></td><td>Card footer with top border</td></tr>
-    <tr><td><code>.minimal</code></td><td>Centered, small text</td></tr>
-    <tr><td><code>.columns</code></td><td>Multi-column grid layout</td></tr>
-    <tr><td><code>.sticky</code></td><td>Sticks to bottom</td></tr>
-  </tbody>
-</table>
-
-<code-block language="html" label="Header and footer variants" data-escape><header class="site sticky">
-  <a href="/">Logo</a>
-  <nav class="horizontal">
-    <a href="/docs">Docs</a>
-    <a href="/about">About</a>
+  <h3>Header and footer</h3>
+  <table>
+    <thead><tr><th>Element</th><th>Classes</th></tr></thead>
+    <tbody>
+      <tr><td><a href="/docs/elements/native/header/"><code>&lt;header&gt;</code></a></td><td><code>.site</code>, <code>.page</code>, <code>.card</code>, <code>.transparent</code>, <code>.centered</code>, <code>.compact</code></td></tr>
+      <tr><td><a href="/docs/elements/native/footer/"><code>&lt;footer&gt;</code></a></td><td><code>.site</code>, <code>.article</code>, <code>.card</code>, <code>.minimal</code>, <code>.columns</code></td></tr>
+    </tbody>
+  </table>
+  <code-block language="html" show-lines label="Site header and column footer" data-escape><header class="site" data-sticky>
+  <a href="/">Northwind</a>
+  <nav class="horizontal" aria-label="Main">
+    <ul>
+      <li><a href="/docs/">Docs</a></li>
+      <li><a href="/about/">About</a></li>
+    </ul>
   </nav>
 </header>
 
-<header class="page">
-  <h1>Page Title</h1>
-</header>
-
 <footer class="site columns">
-  <div>
-    <h3>Product</h3>
-    <ul><li><a href="#">Features</a></li></ul>
-  </div>
-  <div>
-    <h3>Company</h3>
-    <ul><li><a href="#">About</a></li></ul>
-  </div>
+  <nav aria-labelledby="footer-product">
+    <h2 id="footer-product">Product</h2>
+    <ul><li><a href="/features/">Features</a></li></ul>
+  </nav>
+  <nav aria-labelledby="footer-company">
+    <h2 id="footer-company">Company</h2>
+    <ul><li><a href="/about/">About</a></li></ul>
+  </nav>
 </footer></code-block>
 
-<h2>Utility Classes</h2>
-<p>A small set of global helpers available on any element.</p>
+  <h3>Lists</h3>
+  <table>
+    <thead><tr><th>Class</th><th>On</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>.inline</code></td><td><code>ul</code>, <code>ol</code></td><td>Items in a wrapping row, no markers</td></tr>
+      <tr><td><code>.unstyled</code></td><td><code>ul</code>, <code>ol</code></td><td>No markers, no indent</td></tr>
+      <tr><td><code>.meta</code></td><td><code>ul</code>, <code>ol</code></td><td>Inline metadata row (author, date, reading time)</td></tr>
+    </tbody>
+  </table>
 
-<table>
-  <thead><tr><th>Class</th><th>Effect</th></tr></thead>
-  <tbody>
-    <tr><td><code>.visually-hidden</code></td><td>Hidden visually but accessible to screen readers</td></tr>
-    <tr><td><code>.flow</code></td><td>Vertical rhythm spacing between child elements</td></tr>
-    <tr><td><code>.lead</code></td><td>Larger introductory paragraph text</td></tr>
-  </tbody>
-</table>
+  <h3>Other element classes</h3>
+  <p>The remaining element-scoped classes, from <code>src/native-elements/*/styles.css</code>. Each element page describes what they do.</p>
+  <table>
+    <thead><tr><th>Element</th><th>Classes</th></tr></thead>
+    <tbody>
+      <tr><td><a href="/docs/elements/native/a/"><code>a</code></a></td><td><code>.button</code></td></tr>
+      <tr><td><a href="/docs/elements/native/address/"><code>address</code></a></td><td><code>.card</code>, <code>.compact</code>, <code>.contact</code>, <code>.footer</code>, <code>.inline</code></td></tr>
+      <tr><td><a href="/docs/elements/native/article/"><code>article</code></a></td><td><code>.blog</code>, <code>.card</code>, <code>.compact</code>, <code>.feature</code>, <code>.nested</code></td></tr>
+      <tr><td><a href="/docs/elements/native/aside/"><code>aside</code></a></td><td><code>.float</code>, <code>.note</code>, <code>.sidebar</code>, <code>.sidenote</code></td></tr>
+      <tr><td><a href="/docs/elements/native/audio/"><code>audio</code></a></td><td><code>.compact</code>, <code>.minimal</code></td></tr>
+      <tr><td><a href="/docs/elements/native/canvas/"><code>canvas</code></a></td><td><code>.bordered</code>, <code>.drawing</code>, <code>.fixed</code>, <code>.full</code>, <code>.interactive</code>, <code>.loading</code></td></tr>
+      <tr><td><a href="/docs/elements/native/datalist/"><code>input[list]</code></a></td><td><code>.no-arrow</code>, <code>.search</code></td></tr>
+      <tr><td><a href="/docs/elements/native/figure/"><code>figure</code></a></td><td><code>.bordered</code>, <code>.centered</code>, <code>.code</code>, <code>.float-start</code>, <code>.float-end</code>, <code>.full</code>, <code>.quote</code>; <code>figcaption</code>: <code>.centered</code>, <code>.end</code>, <code>.hidden</code></td></tr>
+      <tr><td><a href="/docs/elements/native/hgroup/"><code>hgroup</code></a></td><td><code>.byline</code>, <code>.centered</code>, <code>.display</code>, <code>.divided</code>, <code>.eyebrow</code>, <code>.section-header</code>, <code>.spaced</code>, <code>.tight</code></td></tr>
+      <tr><td><a href="/docs/elements/native/hr/"><code>hr</code></a></td><td><code>.decorative</code></td></tr>
+      <tr><td><a href="/docs/elements/native/iframe/"><code>iframe</code></a></td><td><code>.bordered</code>, <code>.fixed</code>, <code>.full</code>, <code>.rounded</code></td></tr>
+      <tr><td><a href="/docs/elements/native/img/"><code>img</code></a></td><td><code>.circle</code>, <code>.contain</code>, <code>.cover</code>, <code>.full</code>, <code>.ratio-landscape</code>, <code>.ratio-portrait</code>, <code>.ratio-square</code>, <code>.ratio-video</code>, <code>.rounded</code>, <code>.thumbnail</code>; <code>picture.full</code></td></tr>
+      <tr><td><a href="/docs/elements/native/main/"><code>main</code></a></td><td><code>.contained</code>, <code>.flex</code>, <code>.full</code>, <code>.narrow</code>, <code>.padded</code>, <code>.wide</code>, <code>.with-sidebar</code></td></tr>
+      <tr><td><a href="/docs/elements/native/mark/"><code>mark</code></a></td><td><code>.error</code>, <code>.success</code>, <code>.warning</code></td></tr>
+      <tr><td><a href="/docs/elements/native/menu/"><code>menu</code></a></td><td><code>.compact</code>, <code>.context</code>, <code>.icons</code>, <code>.pills</code>, <code>.toolbar</code>, <code>.vertical</code></td></tr>
+      <tr><td><a href="/docs/elements/native/meter/"><code>meter</code></a></td><td><code>.xs</code>, <code>.s</code>, <code>.m</code>, <code>.l</code>, <code>.segmented</code></td></tr>
+      <tr><td><a href="/docs/elements/native/output/"><code>output</code></a></td><td><code>.block</code>, <code>.inline</code>, <code>.large</code>, <code>.highlight</code>, <code>.success</code>, <code>.warning</code>, <code>.error</code>, <code>.hint</code>, <code>.error-summary</code></td></tr>
+      <tr><td><a href="/docs/elements/native/p/"><code>p</code></a></td><td><code>.lead</code>, <code>.balance</code>, <code>.indent</code>, <code>.justify</code></td></tr>
+      <tr><td><a href="/docs/elements/native/progress/"><code>progress</code></a></td><td><code>.xs</code>, <code>.s</code>, <code>.m</code>, <code>.l</code>, <code>.success</code>, <code>.warning</code>, <code>.error</code></td></tr>
+      <tr><td><a href="/docs/elements/native/search/"><code>search</code></a></td><td><code>.compact</code>, <code>.expanded</code>, <code>.header</code>, <code>.inline</code>, <code>.rounded</code>, <code>.with-icon</code></td></tr>
+      <tr><td><a href="/docs/elements/native/section/"><code>section</code></a></td><td><code>.alt</code>, <code>.bordered</code>, <code>.contained</code>, <code>.full</code>, <code>.grid</code>, <code>.hero</code>, <code>.padded</code></td></tr>
+      <tr><td><a href="/docs/elements/native/svg/"><code>svg</code></a></td><td><code>.xs</code>&ndash;<code>.xxl</code>, <code>.currentcolor</code>, <code>.full</code>, <code>.interactive</code>, <code>.muted</code>, <code>.pulse</code>, <code>.spin</code></td></tr>
+      <tr><td><a href="/docs/elements/native/time/"><code>time</code></a></td><td><code>.datetime</code>, <code>.relative</code></td></tr>
+      <tr><td><a href="/docs/elements/native/video/"><code>video</code></a></td><td><code>.cover</code>, <code>.full</code>, <code>.rounded</code>, <code>.square</code>, <code>.standard</code>, <code>.ultrawide</code>, <code>.widescreen</code></td></tr>
+    </tbody>
+  </table>
 
-<code-block language="html" label="Utility classes" data-escape><!-- Screen-reader-only text -->
-<button>
+  <h3>Global helpers</h3>
+  <p>Two classes work on any element:</p>
+  <table>
+    <thead><tr><th>Class</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>.visually-hidden</code></td><td>Hidden on screen, still read by screen readers (<a href="/docs/accessibility-utilities/#visually-hidden">accessibility utilities</a>)</td></tr>
+      <tr><td><code>.flow</code></td><td>Vertical rhythm: space between direct children</td></tr>
+    </tbody>
+  </table>
+  <code-block language="html" show-lines label="Global helpers" data-escape><button type="button">
   <icon-wc name="x"></icon-wc>
   <span class="visually-hidden">Close dialog</span>
 </button>
 
-<!-- Vertical rhythm between children -->
 <article class="flow">
-  <h2>Article Title</h2>
-  <p>Paragraph one.</p>
-  <p>Paragraph two.</p>
+  <h2>Release notes</h2>
+  <p>Faster builds.</p>
+  <p>New themes.</p>
 </article></code-block>
+</section>
 
 <section>
-  <h2>Design Philosophy</h2>
-  <p>VB classes are <strong>element-scoped</strong>, not generic utilities. <code>.compact</code> on a <code>&lt;table&gt;</code> reduces cell padding. <code>.compact</code> on a <code>&lt;header&gt;</code> reduces header padding. Same word, appropriate behavior for each context.</p>
-  <p>This means you can read the HTML and understand the intent: <code>&lt;nav class="pills"&gt;</code> is a pill navigation. No need to decode a chain of utility classes.</p>
+  <h2>In Vanilla Breeze</h2>
+  <ul>
+    <li><strong>Element-scoped selectors.</strong> Variants are written as <code>element.class</code> (or nested <code>&amp;.class</code> inside the element's rule) in <code>src/native-elements/&lt;element&gt;/styles.css</code>. A class on the wrong element does nothing.</li>
+    <li><strong>Themes can restyle variants.</strong> Most variants set custom properties (for example <code>--_active-bg</code> on <code>nav.pills</code>) that themes override.</li>
+    <li><strong>Build-system classes.</strong> <code>nav a.active</code> is styled like <code>aria-current="page"</code> for site generators that can only add a class. Prefer <code>aria-current</code>: it is also announced.</li>
+    <li><strong>Your own classes are fine.</strong> VB does not reserve class names, so project classes sit alongside VB's.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>A class is invisible to assistive technology.</strong> Never use a class alone to carry state ("current", "selected", "disabled"). Use the native or ARIA attribute, which VB styles anyway.</li>
+    <li><strong><code>.visually-hidden</code> is for text, not controls.</strong> A focusable element hidden this way vanishes when a keyboard user reaches it.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Same word, different element.</strong> <code>.compact</code> on <code>&lt;header&gt;</code> reduces header padding; on <code>&lt;article&gt;</code> it makes a compact list row (flex, small padding, a bottom border). There is no global <code>.compact</code>.</li>
+    <li><strong><code>.lead</code> is <code>p.lead</code>.</strong> It has no effect on other elements.</li>
+    <li><strong>There is no <code>.sticky</code> and no <code>table.compact</code>.</strong> Use <code>data-sticky</code> and <code>data-density="compact"</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/principles/#data-attributes">Principles: data attributes for configuration</a> &mdash; why state is not a class.</li>
+    <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> &mdash; layout on any element.</li>
+    <li><a href="/docs/attributes/aria-states/">ARIA states VB styles</a> &mdash; current, pressed, expanded, disabled and more.</li>
+    <li><a href="/docs/accessibility-utilities/">Accessibility utilities</a> &mdash; <code>.visually-hidden</code> and the skip-link recipe.</li>
+    <li><a href="/docs/elements/native/">Native elements</a> &mdash; each element page lists its variants.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong>Class</strong> &mdash; a named look for one element: <code>button.secondary</code>.</li>
+    <li><strong><code>data-*</code></strong> &mdash; a value or a state: <code>data-density="compact"</code>, <code>data-sticky</code>.</li>
+    <li><strong>Native or ARIA attribute</strong> &mdash; state that users of assistive technology must hear: <code>aria-current</code>, <code>disabled</code>.</li>
+  </ul>
 </section>

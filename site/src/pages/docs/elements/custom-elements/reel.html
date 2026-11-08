@@ -10,7 +10,43 @@ crumbHref: /docs/elements/custom-elements/
 crumbLabel: Custom Elements
 ---
 
-<section>
+<browser-window
+    src="/docs/examples/demos/reel-scroll.html"
+    url="https://vanilla-breeze.com/reel"
+    title="Horizontal Reel"
+    shadow>
+  </browser-window>
+
+  <section>
+    <h2>Overview</h2>
+    <p>A reel lays its children out in one horizontal row that scrolls when it overflows. Items scroll with proximity scroll snap: the reel settles on an item edge when you stop near one, without trapping you mid-item when items are wider than the view. The scrollbar is hidden by default, the edges can fade to hint at more content, and everything is logical, so the reel starts at the right in a right-to-left page.</p>
+    <p>A reel is a scroll container. When its items hold no links or buttons, give it a name and <code>tabindex="0"</code> so keyboard users can reach and scroll it; every example on this page does. See <a href="#accessibility">Accessibility</a>.</p>
+  </section>
+
+  <section>
+    <h2>Element and attribute forms</h2>
+    <p>The same rules apply to <code>&lt;layout-reel&gt;</code> and to <code>data-layout="reel"</code> on any element, with the same <code>data-layout-*</code> modifiers. Both are below with identical settings.</p>
+    <browser-window
+      src="/docs/snippets/demos/reel-forms.html"
+      url="https://vanilla-breeze.com/reel/forms"
+      title="Reel element and attribute forms"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Element form and attribute form" data-escape><!-- Element form: add the region role yourself -->
+<layout-reel data-layout-item-width="s" role="region" aria-label="Featured items" tabindex="0">
+  <layout-card>...</layout-card>
+  <layout-card>...</layout-card>
+</layout-reel>
+
+<!-- Attribute form: a named section is already a region landmark -->
+<section data-layout="reel" data-layout-item-width="s" aria-label="Featured items" tabindex="0">
+  <layout-card>...</layout-card>
+  <layout-card>...</layout-card>
+</section></code-block>
+    <p><strong>Which to choose:</strong> use the attribute form when a semantic element is already the scroller: a <code>&lt;section&gt;</code> (a region landmark once named), a list (<code>&lt;ul data-layout="reel" role="list"&gt;</code>), or a component such as <a href="/docs/elements/web-components/card-list/"><code>&lt;card-list data-layout="reel"&gt;</code></a>. Use <code>&lt;layout-reel&gt;</code> when there is no such element, and add <code>role="region"</code> yourself. In the attribute form, <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code> are also container-query containers, which the element is not. See <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> for the full comparison.</p>
+  </section>
+
+  <section>
     <h2>Attributes</h2>
     <table class="props-table">
       <thead>
@@ -18,210 +54,235 @@ crumbLabel: Custom Elements
           <th>Attribute</th>
           <th>Values</th>
           <th>Default</th>
+          <th>Applies to</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>data-layout-scrollbar</code></td>
-          <td>(boolean)</td>
-          <td>&mdash;</td>
-          <td>Show a thin scrollbar (hidden by default).</td>
+          <td><code>data-layout-item-width</code></td>
+          <td><code>auto</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code>, <code>full</code></td>
+          <td><code>auto</code></td>
+          <td>both</td>
+          <td>Item width: auto (content), s / m / l / xl (15 / 20 / 25 / 30rem), or full (100%, snapping to the centre).</td>
         </tr>
         <tr>
           <td><code>data-layout-gap</code></td>
           <td><code>none</code>, <code>3xs</code>, <code>2xs</code>, <code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code>, <code>2xl</code>, <code>3xl</code></td>
           <td><code>m</code></td>
+          <td>both</td>
           <td>Gap between items, on the shared size scale.</td>
         </tr>
         <tr>
           <td><code>data-layout-padding</code></td>
           <td><code>none</code>, <code>s</code>, <code>m</code>, <code>l</code></td>
           <td><code>s</code></td>
-          <td>Inline padding and scroll padding.</td>
-        </tr>
-        <tr>
-          <td><code>data-layout-item-width</code></td>
-          <td><code>auto</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code>, <code>full</code></td>
-          <td><code>auto</code></td>
-          <td>Item width: auto (content), s / m / l / xl tokens, or full (100%).</td>
+          <td>both</td>
+          <td>Padding on all sides (the block padding leaves room for focus rings and shadows); the same value is the inline scroll padding, so snapped items align with the padded edge.</td>
         </tr>
         <tr>
           <td><code>data-layout-align</code></td>
           <td><code>start</code>, <code>center</code>, <code>end</code>, <code>stretch</code></td>
           <td><code>stretch</code></td>
+          <td>both</td>
           <td>Cross-axis alignment of items.</td>
+        </tr>
+        <tr>
+          <td><code>data-layout-scrollbar</code></td>
+          <td>(boolean)</td>
+          <td>&mdash;</td>
+          <td>both</td>
+          <td>Show a thin scrollbar. Hidden by default, except under forced colours and on touch-only devices (<code>hover: none</code>), where it always shows.</td>
         </tr>
         <tr>
           <td><code>data-scroll-hint</code></td>
           <td>(bare), <code>start</code></td>
           <td>&mdash;</td>
-          <td>Fade both edges to hint at overflow; start fades only the end edge.</td>
-        </tr>
-        <tr>
-          <td><code>data-container</code> <small>(on main, article, section, aside)</small></td>
-          <td>(boolean)</td>
-          <td>&mdash;</td>
-          <td>Opt a semantic child back into container queries (the reel removes container-type from such children so they size to content).</td>
+          <td>both</td>
+          <td>Fade the edges to hint at overflow (logical: mirrored in RTL). <code>start</code>: only the end edge ever fades. Fade size: <code>--scroll-hint-size</code> (2rem).</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section>
-    <h2>Basic Usage</h2>
-    <p>Items scroll horizontally with scroll snap for smooth navigation.</p>
-
-    <browser-window
-      src="/docs/snippets/demos/reel-basic.html"
-      url="https://vanilla-breeze.com/reel"
-      title="Basic reel layout"
-      shadow>
-    </browser-window>
-
-    <browser-window
-      src="/docs/examples/demos/reel-scroll.html"
-      url="https://vanilla-breeze.com/reel"
-      title="Horizontal Reel"
-      shadow>
-    </browser-window>
-
-    <code-block language="html" show-lines label="Basic layout-reel usage" data-escape><layout-reel data-layout-gap="m" data-layout-item-width="m">
-  <layout-card>Item 1</layout-card>
-  <layout-card>Item 2</layout-card>
-  <layout-card>Item 3</layout-card>
-  <layout-card>Item 4</layout-card>
-  <layout-card>Item 5</layout-card>
-</layout-reel></code-block>
+    <h2>Child attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>On</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-container</code></td>
+          <td><code>main</code>, <code>article</code>, <code>section</code>, <code>aside</code></td>
+          <td>Opt a semantic child back into container queries. The reel removes <code>container-type</code> from such children so they size to their content (or to <code>data-layout-item-width</code>).</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
-    <h2>Item Width Variants</h2>
-    <p>The <code>data-layout-item-width</code> attribute sets consistent widths for all items.</p>
+    <h2>Examples</h2>
 
+    <h3>Basic usage</h3>
+    <p>The demo at the top of the page:</p>
+    <code-block language="html" show-lines label="Basic reel" data-escape><section data-layout="reel" data-layout-gap="m" data-layout-item-width="m" aria-label="Example items" tabindex="0">
+  <layout-card data-variant="outlined" data-padding="m">Item 1</layout-card>
+  <layout-card data-variant="outlined" data-padding="m">Item 2</layout-card>
+  <layout-card data-variant="outlined" data-padding="m">Item 3</layout-card>
+  <layout-card data-variant="outlined" data-padding="m">Item 4</layout-card>
+  <layout-card data-variant="outlined" data-padding="m">Item 5</layout-card>
+</section></code-block>
+
+    <h3>Item widths</h3>
+    <p>The <code>data-layout-item-width</code> attribute gives every item the same width.</p>
     <browser-window
       src="/docs/snippets/demos/reel-item-widths.html"
       url="https://vanilla-breeze.com/reel/item-widths"
       title="Item width variants"
       shadow>
     </browser-window>
-
     <code-block language="html" show-lines label="Item width variants" data-escape><!-- Small items (15rem) -->
-<layout-reel data-layout-gap="s" data-layout-item-width="s">...</layout-reel>
+<section data-layout="reel" data-layout-gap="s" data-layout-item-width="s" aria-label="Small items" tabindex="0">...</section>
 
 <!-- Medium items (20rem) -->
-<layout-reel data-layout-gap="m" data-layout-item-width="m">...</layout-reel>
+<section data-layout="reel" data-layout-gap="m" data-layout-item-width="m" aria-label="Medium items" tabindex="0">...</section>
 
 <!-- Large items (25rem) -->
-<layout-reel data-layout-gap="m" data-layout-item-width="l">...</layout-reel>
+<section data-layout="reel" data-layout-gap="m" data-layout-item-width="l" aria-label="Large items" tabindex="0">...</section>
 
-<!-- Full-width (one at a time carousel) -->
-<layout-reel data-layout-gap="m" data-layout-item-width="full">...</layout-reel></code-block>
-  </section>
+<!-- Extra-large items (30rem) -->
+<section data-layout="reel" data-layout-gap="m" data-layout-item-width="xl" aria-label="Extra-large items" tabindex="0">...</section>
 
-  <section>
-    <h2>Scroll Hints</h2>
-    <p>Add <code>data-scroll-hint</code> to fade the edges of the reel, signaling there is more content to scroll. Use <code>data-scroll-hint="start"</code> to only fade the end edge (useful when content starts fully visible). The fade size can be customized with <code>--scroll-hint-size</code>.</p>
+<!-- Full width: one at a time, snapping to the centre -->
+<section data-layout="reel" data-layout-gap="m" data-layout-item-width="full" aria-label="Full-width slides" tabindex="0">...</section></code-block>
 
-    <code-block language="html" show-lines label="Scroll hints" data-escape><!-- Both edges fade -->
-<layout-reel data-scroll-hint>...</layout-reel>
-
-<!-- End edge only (content starts visible) -->
-<layout-reel data-scroll-hint="start">...</layout-reel>
-
-<!-- Custom fade size -->
-<layout-reel data-scroll-hint style="--scroll-hint-size: 3rem;">...</layout-reel></code-block>
-  </section>
-
-  <section>
-    <h2>Scrollbar Visibility</h2>
-    <p>By default the scrollbar is hidden. Add <code>data-layout-scrollbar</code> to show it.</p>
-
-    <browser-window
-      src="/docs/snippets/demos/reel-scrollbar.html"
-      url="https://vanilla-breeze.com/reel/scrollbar"
-      title="Reel with visible scrollbar"
-      shadow>
-    </browser-window>
-
-    <code-block language="html" show-lines label="Reel with visible scrollbar" data-escape><layout-reel data-layout-gap="m" data-layout-item-width="m" data-layout-scrollbar>
-  <!-- Items -->
-</layout-reel></code-block>
-  </section>
-
-  <section>
-    <h2>Gap Variants</h2>
+    <h3>Gap</h3>
     <p>The <code>data-layout-gap</code> attribute controls spacing between items.</p>
-
     <browser-window
       src="/docs/snippets/demos/reel-gap.html"
       url="https://vanilla-breeze.com/reel/gap"
       title="Gap variants"
       shadow>
     </browser-window>
+    <code-block language="html" show-lines label="Gap variants" data-escape><section data-layout="reel" data-layout-gap="xs" data-layout-item-width="s" aria-label="Extra-small gap example" tabindex="0">...</section>
+
+<section data-layout="reel" data-layout-gap="xl" data-layout-item-width="s" aria-label="Extra-large gap example" tabindex="0">...</section></code-block>
+
+    <h3>Padding and alignment</h3>
+    <p><code>data-layout-padding</code> sets the padding on all sides and the inline scroll padding, so snapped items line up with the padded edge. <code>data-layout-align</code> sets the cross-axis alignment; the default <code>stretch</code> makes every item as tall as the tallest.</p>
+    <browser-window
+      src="/docs/snippets/demos/reel-padding-align.html"
+      url="https://vanilla-breeze.com/reel/padding-align"
+      title="Reel padding and alignment"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Padding and alignment" data-escape><section data-layout="reel" data-layout-padding="l" data-layout-item-width="s" aria-label="Large padding" tabindex="0">...</section>
+
+<section data-layout="reel" data-layout-align="start" data-layout-item-width="s" aria-label="Start-aligned items" tabindex="0">...</section></code-block>
+
+    <h3>Scroll hints</h3>
+    <p>Add <code>data-scroll-hint</code> to fade the edges of the reel, signaling there is more content to scroll. Use <code>data-scroll-hint="start"</code> to only fade the end edge (useful when content starts fully visible). The fade size can be customized with <code>--scroll-hint-size</code>.</p>
+    <p>Where scroll-driven animations are supported, each edge fades only while there is more content in that direction: the start edge stays sharp at the start, the end edge clears at the end, and a reel that does not overflow has no fade at all. Other browsers fade both edges all the time.</p>
+    <browser-window
+      src="/docs/snippets/demos/reel-scroll-hints.html"
+      url="https://vanilla-breeze.com/reel/scroll-hints"
+      title="Reel scroll hints"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Scroll hints" data-escape><!-- Each edge fades while there is more content that way -->
+<section data-layout="reel" data-scroll-hint data-layout-item-width="s" aria-label="Both edges hint" tabindex="0">...</section>
+
+<!-- End edge only (content starts visible) -->
+<section data-layout="reel" data-scroll-hint="start" data-layout-item-width="s" aria-label="End edge hint" tabindex="0">...</section>
+
+<!-- Custom fade size -->
+<section data-layout="reel" data-scroll-hint class="wide-hints" aria-label="Wide hints" tabindex="0">...</section>
+
+<style>
+  .wide-hints { --scroll-hint-size: 3rem; }
+</style></code-block>
+
+    <h3>Scrollbar visibility</h3>
+    <p>By default the scrollbar is hidden. Add <code>data-layout-scrollbar</code> to show it. It always shows under forced colours (Windows High Contrast) and on touch-only devices, where a hidden scrollbar removes the only scrolling affordance. Show it whenever mouse users without a horizontal wheel need to reach the overflow.</p>
+    <browser-window
+      src="/docs/snippets/demos/reel-scrollbar.html"
+      url="https://vanilla-breeze.com/reel/scrollbar"
+      title="Reel with visible scrollbar"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Reel with visible scrollbar" data-escape><section data-layout="reel" data-layout-gap="m" data-layout-item-width="m" data-layout-scrollbar aria-label="Items with scrollbar" tabindex="0">
+  ...
+</section></code-block>
+
+    <h3>Right to left</h3>
+    <p>The reel is logical. In <code>dir="rtl"</code> it starts at the right edge, the scroll hints mirror (the start edge is the right-hand side), and snapping aligns items to the right.</p>
+    <browser-window
+      src="/docs/snippets/demos/reel-rtl.html"
+      url="https://vanilla-breeze.com/reel/rtl"
+      title="Reel in a right-to-left page"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Reel in a right-to-left page" data-escape><html lang="ar" dir="rtl">
+  ...
+  <section data-layout="reel" data-scroll-hint data-layout-item-width="s" data-layout-scrollbar aria-label="عناصر" tabindex="0">
+    <layout-card data-variant="outlined" data-padding="m">العنصر ١</layout-card>
+    ...
   </section>
+</html></code-block>
 
-  <section>
-    <h2>Usage Examples</h2>
-
-    <h3>Image Gallery</h3>
-
+    <h3>Image gallery</h3>
     <browser-window
       src="/docs/snippets/demos/reel-image-gallery.html"
       url="https://vanilla-breeze.com/reel/image-gallery"
       title="Image gallery with reel"
       shadow>
     </browser-window>
-
-    <code-block language="html" show-lines label="Image gallery with reel" data-escape><layout-reel data-layout-gap="m" data-layout-item-width="m" data-layout-scrollbar>
-  <div data-media data-ratio="4:3" data-radius="m" style="inline-size: 20rem;">
-    <img src="image1.jpg" alt="Gallery 1" loading="lazy" />
-  </div>
-  <div data-media data-ratio="4:3" data-radius="m" style="inline-size: 20rem;">
-    <img src="image2.jpg" alt="Gallery 2" loading="lazy" />
-  </div>
+    <code-block language="html" show-lines label="Image gallery with reel" data-escape><section data-layout="reel" data-layout-gap="m" data-layout-item-width="m" data-layout-scrollbar aria-label="Gallery" tabindex="0">
+  <figure data-media data-ratio="4:3" data-radius="m">
+    <img src="image1.jpg" alt="Gallery image 1" loading="lazy" />
+  </figure>
+  <figure data-media data-ratio="4:3" data-radius="m">
+    <img src="image2.jpg" alt="Gallery image 2" loading="lazy" />
+  </figure>
   <!-- More images... -->
-</layout-reel></code-block>
+</section></code-block>
 
-    <h3>Product Carousel</h3>
-
+    <h3>Product carousel</h3>
     <browser-window
       src="/docs/snippets/demos/reel-product-carousel.html"
       url="https://vanilla-breeze.com/reel/product-carousel"
       title="Product carousel"
       shadow>
     </browser-window>
-
-    <code-block language="html" show-lines label="Product carousel" data-escape><layout-reel data-layout-gap="m" data-layout-item-width="m">
+    <code-block language="html" show-lines label="Product carousel" data-escape><section data-layout="reel" data-layout-gap="m" data-layout-item-width="m" aria-label="Products" tabindex="0">
   <layout-card data-variant="outlined">
     <layout-stack data-layout-gap="s">
-      <div data-media data-ratio="1:1" data-radius="s">
-        <img src="product.jpg" alt="Product" loading="lazy" />
-      </div>
+      <figure data-media data-ratio="1:1" data-radius="s">
+        <img src="product.jpg" alt="Product 1" loading="lazy" />
+      </figure>
       <strong>Product Name</strong>
       <span>$29.99</span>
     </layout-stack>
   </layout-card>
   <!-- More products... -->
-</layout-reel></code-block>
+</section></code-block>
 
     <h3>Testimonials</h3>
-
     <browser-window
       src="/docs/snippets/demos/reel-testimonials.html"
       url="https://vanilla-breeze.com/reel/testimonials"
       title="Testimonials carousel"
       shadow>
     </browser-window>
-
-    <code-block language="html" show-lines label="Testimonials carousel" data-escape><layout-reel data-layout-gap="l" data-layout-item-width="l">
+    <code-block language="html" show-lines label="Testimonials carousel" data-escape><section data-layout="reel" data-layout-gap="l" data-layout-item-width="l" aria-label="Testimonials" tabindex="0">
   <layout-card data-variant="elevated" data-padding="l">
     <layout-stack data-layout-gap="m">
-      <p style="font-style: italic;">"Great product!"</p>
+      <p>"This product has completely transformed how we work."</p>
       <layout-cluster data-layout-gap="s">
-        <user-avatar>
-          <img src="avatar.jpg" alt="Avatar" />
-        </user-avatar>
+        <figure data-media data-ratio="1:1" data-radius="full">
+          <img src="avatar.jpg" alt="Avatar" loading="lazy" />
+        </figure>
         <layout-stack data-layout-gap="xs">
           <strong>Jane Smith</strong>
           <small>CEO, TechCorp</small>
@@ -230,23 +291,50 @@ crumbLabel: Custom Elements
     </layout-stack>
   </layout-card>
   <!-- More testimonials... -->
-</layout-reel></code-block>
+</section></code-block>
 
-    <h3>Team Members</h3>
-
+    <h3>Team members</h3>
     <browser-window
       src="/docs/snippets/demos/reel-team-members.html"
       url="https://vanilla-breeze.com/reel/team-members"
       title="Team members reel"
       shadow>
     </browser-window>
+    <code-block language="html" show-lines label="Team members reel" data-escape><section data-layout="reel" data-layout-gap="m" data-layout-item-width="s" data-layout-scrollbar aria-label="Team members" tabindex="0">
+  <layout-card data-variant="outlined" data-padding="m">
+    <layout-stack data-layout-gap="s" data-layout-align="center">
+      <figure data-media data-ratio="1:1" data-radius="full">
+        <img src="alice.jpg" alt="Team member 1" loading="lazy" />
+      </figure>
+      <strong>Alice Williams</strong>
+      <small>Engineering Lead</small>
+    </layout-stack>
+  </layout-card>
+  <!-- More team members... -->
+</section></code-block>
   </section>
 
   <section>
-    <h2>Accessibility</h2>
-    <p>The reel component respects <code>prefers-reduced-motion</code> by disabling scroll snap for users who prefer reduced motion.</p>
+    <h2 id="accessibility">Accessibility</h2>
+    <h3>Keyboard access and a name</h3>
+    <p>A scroll container is only reachable from the keyboard when something inside it, or the container itself, can take focus. Chrome and Firefox make a scroller with no focusable content focusable automatically; Safari does not, and nobody gives the region a name. When the items hold no links or buttons, make the reel a named, focusable region. The simplest way is the attribute form on a <code>&lt;section&gt;</code>, which is a region landmark once it has a name (the demos on this page use this form):</p>
+    <code-block language="html" show-lines label="Focusable, named reel" data-escape><section data-layout="reel" aria-label="Customer testimonials" tabindex="0">
+  ...
+</section>
+
+<!-- Element form: add the role yourself -->
+<layout-reel role="region" aria-label="Customer testimonials" tabindex="0">
+  ...
+</layout-reel></code-block>
+    <p>Arrow keys then scroll it, and screen readers announce the region by name. When every item contains a link or button, the region attributes are optional: tabbing to an item scrolls it into view.</p>
+
+    <h3>Scrollbar</h3>
+    <p>The scrollbar is hidden by default but always shown under forced colours and on touch-only devices. Add <code>data-layout-scrollbar</code> where mouse users need it.</p>
+
+    <h3>Reduced motion</h3>
+    <p>The reel respects <code>prefers-reduced-motion</code> by disabling scroll snap for users who prefer reduced motion.</p>
     <code-block language="css" show-lines label="Reduced motion accessibility styles" data-escape>@media (prefers-reduced-motion: reduce) {
-  layout-reel {
+  :is(layout-reel, [data-layout="reel"]) {
     scroll-snap-type: none;
   }
 }</code-block>
@@ -255,6 +343,9 @@ crumbLabel: Custom Elements
   <section>
     <h2>Related</h2>
     <ul>
+      <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> — The attribute form (<code>data-layout="reel"</code>) and every layout modifier</li>
+      <li><a href="/docs/semantic-layouts/">Semantic Layouts</a> — When to use a layout element and when an attribute</li>
+      <li><a href="/docs/elements/web-components/card-list/"><code>&lt;card-list&gt;</code></a> — Card collections; <code>data-layout="reel"</code> turns one into a reel</li>
       <li><a href="/docs/elements/custom-elements/grid/"><code>&lt;layout-grid&gt;</code></a> — Auto-fit grid layout</li>
       <li><a href="/docs/elements/custom-elements/cluster/"><code>&lt;layout-cluster&gt;</code></a> — Horizontal grouping with wrapping</li>
       <li><a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a> — Card container</li>

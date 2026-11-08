@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emoji Picker Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+</head>
+<body>
+  <h1>Emoji Picker Demo</h1>
+  <layout-stack data-layout-gap="xl">
+    <section>
+      <h2>Insert into a textarea</h2>
+      <p>Place the caret, open the picker, and choose an emoji. It goes in at the caret and <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Z</kbd> undoes it.</p>
+      <label for="msg">Message</label>
+      <layout-cluster data-layout-gap="s" data-layout-align="start">
+        <textarea id="msg" rows="3" placeholder="Type a message..."></textarea>
+        <emoji-picker for="msg">
+          <button data-trigger type="button" aria-label="Insert emoji">😀</button>
+        </emoji-picker>
+      </layout-cluster>
+    </section>
+
+    <section>
+      <h2>Insert into contenteditable</h2>
+      <p id="notes-label">Notes</p>
+      <layout-cluster data-layout-gap="s" data-layout-align="start">
+        <p id="notes" contenteditable="true" aria-labelledby="notes-label">Click here, then pick an emoji.</p>
+        <emoji-picker for="notes">
+          <button data-trigger type="button">Add emoji</button>
+        </emoji-picker>
+      </layout-cluster>
+    </section>
+
+    <section>
+      <h2>Event only (no target)</h2>
+      <layout-cluster data-layout-gap="s" data-layout-align="center">
+        <emoji-picker id="event-picker">
+          <button data-trigger type="button" aria-label="Choose an emoji">😀</button>
+        </emoji-picker>
+        <output id="picked" for="event-picker">Nothing picked yet</output>
+      </layout-cluster>
+    </section>
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    document.getElementById('event-picker').addEventListener('emoji-picker:select', (e) => {
+      document.getElementById('picked').textContent = `${e.detail.emoji} :${e.detail.shortcode}: (${e.detail.name})`;
+    });
+  </script>
+</body>
+</html>

@@ -33,7 +33,16 @@ import { VBElement } from '../../lib/vb-element.js';
 
 let idCounter = 0;
 
+/** Controls that take part in the toolbar's roving tabindex. */
+const ITEM_SELECTOR = 'button, a[href], input, select, textarea, [tabindex]';
+/** Controls that need the arrow keys for themselves. */
+const OWNS_ARROWS = 'input:not([type="checkbox"]):not([type="radio"]):not([type="button"]), select, textarea, [contenteditable]';
+
 class PageTools extends VBElement {
+
+  static get observedAttributes() {
+    return ['data-orientation', 'data-position'];
+  }
 
   /** @type {HTMLButtonElement | null} */
   #fab = null;
@@ -44,6 +53,11 @@ class PageTools extends VBElement {
   #collapsed = false;
   /** @type {MutationObserver | null} */
   #observer = null;
+  /** Focus was inside the popover when it started to close. */
+  #focusWasInside = false;
+  #rovingRaf = 0;
+  /** @type {Element | null} */
+  #current = null;
 
   setup() {
     /* Toolbar semantics */
@@ -62,35 +76,49 @@ class PageTools extends VBElement {
     this.#handleBreakpoint(this.#mql);
     this.listen(this.#mql, 'change', (e) => this.#handleBreakpoint(e));
 
-    /* Watch for child mutations */
+    /* Toolbar keyboard pattern (roving tabindex) */
+    this.listen(this, 'keydown', this.#onKeydown);
+    this.listen(this, 'focusin', this.#onFocusin);
+
+    /* Watch for child mutations (tools added, or tools rendering their controls) */
     this.#observer = new MutationObserver((mutations) => {
       for (const m of mutations) {
-        if (m.type === 'childList') {
-          if (this.#collapsed) this.#syncPopover();
-        }
+        if (m.type === 'childList' && m.target === this && this.#collapsed) this.#syncPopover();
       }
+      this.#scheduleRoving();
     });
-    this.#observer.observe(this, { childList: true });
+    this.#observer.observe(this, { childList: true, subtree: true });
+    this.#scheduleRoving();
   }
 
   teardown() {
     this.#observer?.disconnect();
     this.#observer = null;
+    cancelAnimationFrame(this.#rovingRaf);
+    this.#rovingRaf = 0;
     /* Restore tools from popover if collapsed */
     if (this.#collapsed) this.#expand();
     this.#fab?.remove();
     this.#popover?.remove();
     this.#fab = null;
     this.#popover = null;
+    this.#current = null;
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue || !this.hasAttribute('data-upgraded')) return;
+    this.#resolveOrientation();
   }
 
   /**
    * Tools = direct children that are not internal infrastructure
+   * (when collapsed, the tools live inside the popover panel).
    *
    * @returns {Element[]} The tool child elements.
    */
   get tools() {
-    return Array.from(this.children).filter(
+    const host = this.#collapsed && this.#popover ? this.#popover : this;
+    return Array.from(host.children).filter(
       el => !el.hasAttribute('data-page-tools-internal')
     );
   }
@@ -99,12 +127,84 @@ class PageTools extends VBElement {
 
   #resolveOrientation() {
     const orientation = this.dataset.orientation || 'auto';
-    if (orientation !== 'auto') return;
-
     const position = this.dataset.position || 'sticky';
-    const resolved = position === 'inline' ? 'horizontal' : 'vertical';
-    this.dataset.resolvedOrientation = resolved;
+    const resolved = orientation === 'horizontal' || orientation === 'vertical'
+      ? orientation
+      : (position === 'inline' ? 'horizontal' : 'vertical');
+    this.setAttribute('data-resolved-orientation', resolved);
+    this.#syncAriaOrientation();
   }
+
+  /** The direction arrow keys move in: the popover panel is always a column. */
+  #keyOrientation() {
+    return this.#collapsed ? 'vertical' : (this.dataset.resolvedOrientation || 'vertical');
+  }
+
+  #syncAriaOrientation() {
+    this.setAttribute('aria-orientation', this.#keyOrientation());
+  }
+
+  /* ── Roving tabindex ── */
+
+  /** @returns {HTMLElement[]} Visible, enabled tool controls in DOM order. */
+  #items() {
+    return /** @type {HTMLElement[]} */ (Array.from(this.querySelectorAll(ITEM_SELECTOR))).filter(el =>
+      !el.closest('[data-page-tools-internal]:not(.page-tools-popover)') &&
+      !el.matches(':disabled') &&
+      !el.closest('[inert]') &&
+      el.checkVisibility()
+    );
+  }
+
+  #scheduleRoving() {
+    if (this.#rovingRaf) return;
+    this.#rovingRaf = requestAnimationFrame(() => {
+      this.#rovingRaf = 0;
+      this.#applyRoving();
+    });
+  }
+
+  /** @param {Element | null} [preferred] */
+  #applyRoving(preferred = null) {
+    const items = this.#items();
+    if (!items.length) return;
+    const current = [preferred, this.#current].find(el => el && items.includes(/** @type {HTMLElement} */ (el))) || items[0];
+    this.#current = current;
+    for (const item of items) item.tabIndex = item === current ? 0 : -1;
+  }
+
+  /** @param {FocusEvent} e */
+  #onFocusin = (e) => {
+    const target = /** @type {Element} */ (e.target);
+    if (target === this.#fab) return;
+    if (this.#items().includes(/** @type {HTMLElement} */ (target))) this.#applyRoving(target);
+  };
+
+  /** @param {KeyboardEvent} e */
+  #onKeydown = (e) => {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    const target = /** @type {HTMLElement} */ (e.target);
+    if (target === this.#fab || target.matches(OWNS_ARROWS)) return;
+    const items = this.#items();
+    const index = items.indexOf(target);
+    if (index === -1) return;
+
+    const horizontal = this.#keyOrientation() === 'horizontal';
+    const rtl = getComputedStyle(this).direction === 'rtl';
+    const prevKey = horizontal ? (rtl ? 'ArrowRight' : 'ArrowLeft') : 'ArrowUp';
+    const nextKey = horizontal ? (rtl ? 'ArrowLeft' : 'ArrowRight') : 'ArrowDown';
+
+    let next = -1;
+    if (e.key === nextKey) next = (index + 1) % items.length;
+    else if (e.key === prevKey) next = (index - 1 + items.length) % items.length;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = items.length - 1;
+    if (next === -1) return;
+
+    e.preventDefault();
+    this.#applyRoving(items[next]);
+    items[next].focus();
+  };
 
   /* ── FAB + Popover ── */
 
@@ -115,28 +215,48 @@ class PageTools extends VBElement {
 
     /* FAB trigger */
     this.#fab = document.createElement('button');
+    this.#fab.type = 'button';
     this.#fab.className = 'page-tools-fab';
     this.#fab.setAttribute('data-page-tools-internal', '');
     this.#fab.setAttribute('popovertarget', id);
     this.#fab.setAttribute('aria-label', label);
     this.#fab.hidden = true;
-    this.#fab.innerHTML = `<icon-wc name="${iconName}" size="md"></icon-wc>`;
+    const icon = document.createElement('icon-wc');
+    icon.setAttribute('name', iconName);
+    icon.setAttribute('size', 'md');
+    icon.setAttribute('aria-hidden', 'true');
+    this.#fab.appendChild(icon);
 
-    /* Popover panel */
+    /* Popover panel — hidden by the popover attribute until opened */
     this.#popover = document.createElement('section');
     this.#popover.className = 'page-tools-popover';
     this.#popover.setAttribute('data-page-tools-internal', '');
     this.#popover.id = id;
     this.#popover.setAttribute('popover', '');
     this.#popover.setAttribute('aria-label', label);
-    this.#popover.hidden = true;
 
     this.appendChild(this.#fab);
     this.appendChild(this.#popover);
 
-    /* Return focus to FAB when popover closes */
+    /* Return focus to the FAB only when the close took focus with it
+       (Escape, or a close while a tool was focused) — never on a light
+       dismiss that moved focus elsewhere, nor on the resize-driven hide. */
+    this.listen(this.#popover, 'beforetoggle', (e) => {
+      if (/** @type {ToggleEvent} */ (e).newState === 'closed') {
+        this.#focusWasInside = !!this.#popover?.contains(document.activeElement);
+      }
+    });
     this.listen(this.#popover, 'toggle', (e) => {
-      if (/** @type {ToggleEvent} */ (e).newState === 'closed') this.#fab?.focus();
+      const ev = /** @type {ToggleEvent} */ (e);
+      if (ev.newState === 'open') {
+        this.#applyRoving();
+        return;
+      }
+      const restore = this.#focusWasInside && this.#collapsed;
+      this.#focusWasInside = false;
+      if (!restore) return;
+      const active = document.activeElement;
+      if (!active || active === document.body || this.#popover?.contains(active)) this.#fab?.focus();
     });
   }
 
@@ -152,7 +272,6 @@ class PageTools extends VBElement {
   #collapse() {
     if (this.#collapsed) return;
     if (!this.#fab || !this.#popover) return;
-    this.#collapsed = true;
 
     /* Move tools into popover */
     const tools = this.tools;
@@ -160,9 +279,10 @@ class PageTools extends VBElement {
       this.#popover.appendChild(tool);
     }
 
+    this.#collapsed = true;
     this.#fab.hidden = false;
-    this.#popover.hidden = false;
-    this.dataset.collapsed = '';
+    this.setAttribute('data-collapsed', '');
+    this.#syncAriaOrientation();
   }
 
   #expand() {
@@ -182,14 +302,17 @@ class PageTools extends VBElement {
     }
 
     this.#fab.hidden = true;
-    this.#popover.hidden = true;
-    delete this.dataset.collapsed;
+    this.removeAttribute('data-collapsed');
+    this.#syncAriaOrientation();
+    this.#scheduleRoving();
   }
 
   #syncPopover() {
     /* If collapsed, ensure new non-internal children go into popover */
     if (!this.#popover) return;
-    const stray = this.tools;
+    const stray = Array.from(this.children).filter(
+      el => !el.hasAttribute('data-page-tools-internal')
+    );
     for (const tool of stray) {
       this.#popover.appendChild(tool);
     }

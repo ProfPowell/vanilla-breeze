@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>srcdoc attribute: live preview</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+    iframe {
+      inline-size: 100%;
+      block-size: 10rem;
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="m">
+    <form-field>
+      <label for="preview-source">HTML to preview</label>
+      <textarea id="preview-source" rows="6">&lt;h1&gt;Spring menu&lt;/h1&gt;
+&lt;p&gt;Asparagus, wild garlic and new potatoes.&lt;/p&gt;
+&lt;script&gt;document.body.append(' Script ran!')&lt;/script&gt;</textarea>
+      <output class="hint" for="preview-source">The preview frame has <code>sandbox</code> with no tokens, so the script never runs.</output>
+    </form-field>
+    <iframe id="preview-frame" class="bordered" title="Preview" sandbox></iframe>
+  </layout-stack>
+
+  <script type="module">
+    const source = document.getElementById('preview-source');
+    const frame = document.getElementById('preview-frame');
+    const render = () => { frame.srcdoc = source.value; };
+    source.addEventListener('input', render);
+    render();
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

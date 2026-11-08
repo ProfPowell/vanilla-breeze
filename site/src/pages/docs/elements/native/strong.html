@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "strong"
-description: "Indicates strong importance, seriousness, or urgency. Rendered as bold with font-synthesis protection."
+description: "Indicates strong importance, seriousness, or urgency. Rendered at weight 600, with synthesised bold as a fallback for single-weight fonts."
 elementName: strong
 category: native
 nativeGroup: Text Semantics
@@ -13,7 +13,8 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;strong&gt;</code> element indicates strong importance, seriousness, or urgency. It is exposed with the <code>strong</code> role, but by default major screen readers read it like the surrounding text, without a change in voice. VB styles it with <code>font-weight: 600</code>, <code>font-synthesis: none</code> (prevents faux bold), and <code>font-optical-sizing: auto</code> for variable fonts.</p>
+    <p>The <code>&lt;strong&gt;</code> element indicates strong importance, seriousness, or urgency. It is exposed with the <code>strong</code> role, but by default major screen readers read it like the surrounding text, without a change in voice. VB styles it with <code>font-weight: 600</code>, <code>font-synthesis: weight style</code>, and <code>font-optical-sizing: auto</code> for variable fonts.</p>
+    <p>When the font has a real bold face, the browser uses it. Synthesis only applies when the font has no bold face, as with the single-weight display fonts in some themes. Without it, <code>&lt;strong&gt;</code> would look the same as the text around it. Small-caps and position synthesis stay off.</p>
     <p>Inside <code>&lt;code&gt;</code> and <code>&lt;pre&gt;</code>, strong gets a subtle highlight background instead of relying on weight alone.</p>
   </section>
 
@@ -88,7 +89,7 @@ crumbLabel: Native Elements
     <h2>CSS Reference</h2>
     <code-block language="css" show-lines label="strong CSS" data-escape>strong, b {
   font-weight: 600;
-  font-synthesis: none;     /* prevent faux bold */
+  font-synthesis: weight style; /* real bold face first; synthesise only if the font has none */
   font-optical-sizing: auto;
 }
 
@@ -97,7 +98,7 @@ crumbLabel: Native Elements
 :where(strong em, em strong) {
   font-weight: 600;
   font-style: italic;
-  font-synthesis: none;
+  font-synthesis: weight style;
 }
 
 /* Bold in code — highlight background */
@@ -105,6 +106,16 @@ crumbLabel: Native Elements
   background-color: oklch(from var(--color-interactive) l c h / 0.12);
   border-radius: var(--radius-s);
   padding-inline: var(--size-2xs);
+}
+
+/* Forced colours: the fill is dropped, so bold in inline code
+   uses the system highlight colours (block code does the same) */
+@media (forced-colors: active) {
+  code :where(b, strong) {
+    forced-color-adjust: none;
+    background-color: Mark;
+    color: MarkText;
+  }
 }</code-block>
   </section>
 

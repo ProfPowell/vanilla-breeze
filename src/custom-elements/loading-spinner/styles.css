@@ -1,5 +1,8 @@
 /* loading-spinner: CSS-only loading spinner */
-/* Displays an animated circular spinner for loading states */
+/* Displays an animated circular spinner for loading states.
+   CSS cannot assign ARIA semantics — authors add role="status" + aria-label
+   for a standalone spinner, or aria-hidden="true" when visible text sits
+   next to it (see the element docs). */
 
 loading-spinner {
   --_size: var(--spinner-size, 1.5em);
@@ -20,8 +23,10 @@ loading-spinner {
 loading-spinner::after {
   content: "";
   display: block;
-  inline-size: 100%;
-  block-size: 100%;
+  box-sizing: border-box;
+  inline-size: var(--_size);
+  block-size: var(--_size);
+  flex-shrink: 0;
   border-radius: 50%;
   border: var(--_width) solid var(--_track);
   border-block-start-color: var(--_color);
@@ -43,18 +48,15 @@ loading-spinner[data-variant="success"] {
   --_color: var(--color-success, oklch(55% 0.18 145));
 }
 loading-spinner[data-variant="warning"] {
-  --_color: oklch(60% 0.18 70);
+  --_color: var(--color-warning, oklch(70% 0.18 70));
 }
 loading-spinner[data-variant="error"] {
   --_color: var(--color-error, oklch(55% 0.2 25));
 }
 
-/* Screen reader label */
-loading-spinner:not([aria-label]) {
-  role: status;
-}
-
-/* Centered overlay variant — spinner over parent content */
+/* Overlay variant — covers the nearest positioned ancestor with a translucent
+   backdrop and centers a --_size spinner in it. The ancestor needs a
+   position other than static (e.g. data-loading, or position: relative). */
 loading-spinner[data-overlay] {
   position: absolute;
   inset: 0;
@@ -70,7 +72,7 @@ loading-spinner[data-overlay] {
   }
 }
 
-/* Respect reduced motion */
+/* Respect reduced motion: an essential progress cue, so slow rather than stop */
 @media (prefers-reduced-motion: reduce) {
   loading-spinner::after {
     animation-duration: 1.5s;
@@ -79,4 +81,19 @@ loading-spinner[data-overlay] {
 
 :root[data-motion-reduced] loading-spinner::after {
   animation-duration: 1.5s;
+}
+
+/* Forced colors repaint every border with one system colour, which turns the
+   arc + track into a uniform ring whose rotation is invisible. Keep the arc
+   distinct: transparent track, CanvasText arc. */
+@media (forced-colors: active) {
+  loading-spinner::after {
+    forced-color-adjust: none;
+    border-color: transparent;
+    border-block-start-color: CanvasText;
+  }
+
+  loading-spinner[data-variant]::after {
+    border-block-start-color: Highlight;
+  }
 }

@@ -114,8 +114,57 @@ crumbLabel: Web Components
           <td><code>open</code></td>
           <td>boolean</td>
           <td>-</td>
-          <td>Reflected attribute indicating open state (popover only)</td>
+          <td>Reflected attribute indicating open state (popover only). Set by <code>open()</code> / <code>close()</code> / <code>toggle()</code>; not meant as initial markup.</td>
         </tr>
+        <tr>
+          <td><code>data-label-*</code></td>
+          <td>string</td>
+          <td>English</td>
+          <td>Override any generated string (see <a href="#labels">Labels</a>)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Put <code>data-trigger</code> on your own trigger button (or make it the first child <code>&lt;button&gt;</code>). Without one the picker generates an icon <code>&lt;button type="button"&gt;</code>.</p>
+  </section>
+
+  <section>
+    <h2 id="labels">Labels</h2>
+    <p>Every generated string reads a <code>data-label-*</code> attribute first, with an English fallback:</p>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Default</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-label-panel</code></td><td>Theme settings (panel <code>aria-label</code>)</td></tr>
+        <tr><td><code>data-label-trigger</code></td><td>Theme settings (generated trigger)</td></tr>
+        <tr><td><code>data-label-mode</code></td><td>Color Mode</td></tr>
+        <tr><td><code>data-label-accent</code></td><td>Color Accent</td></tr>
+        <tr><td><code>data-label-style</code></td><td>Style</td></tr>
+        <tr><td><code>data-label-featured</code></td><td>Featured</td></tr>
+        <tr><td><code>data-label-more-themes</code></td><td>More Themes</td></tr>
+        <tr><td><code>data-label-theme</code></td><td>Theme (compact select)</td></tr>
+        <tr><td><code>data-label-a11y</code></td><td>Accessibility</td></tr>
+        <tr><td><code>data-label-sizing</code></td><td>Sizing</td></tr>
+        <tr><td><code>data-label-extensions</code></td><td>Extensions</td></tr>
+        <tr><td><code>data-label-download</code></td><td>Download {name} as DTCG tokens (<code>{name}</code> is replaced)</td></tr>
+      </tbody>
+    </table>
+    <code-block language="html" show-lines label="German labels" data-escape><theme-picker data-label-panel="Darstellung" data-label-mode="Farbmodus"
+  data-label-accent="Akzentfarbe" data-label-a11y="Barrierefreiheit"></theme-picker></code-block>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Member</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>open()</code></td><td>Open the popover and move focus into it (popover variant only)</td></tr>
+        <tr><td><code>close()</code></td><td>Close the popover</td></tr>
+        <tr><td><code>toggle()</code></td><td>Open or close</td></tr>
+        <tr><td><code>isOpen</code></td><td>Read-only boolean</td></tr>
       </tbody>
     </table>
   </section>
@@ -138,7 +187,7 @@ ThemeManager.setMode('dark');
 // Set brand theme (personality themes)
 ThemeManager.setBrand('swiss');
 
-// Set color accent: 'default', 'ocean', 'forest', 'sunset'
+// Set color accent (see the accent table below)
 ThemeManager.setAccent('ocean');
 
 // Toggle between light and dark
@@ -149,7 +198,9 @@ ThemeManager.reset();
 
 // Listen for changes
 window.addEventListener('vb:theme-change', (e) => {
-  console.log(e.detail); // { mode, brand, accent, effectiveMode }
+  // { mode, brand, accent, borderStyle, iconSet, fluid, backdrop,
+  //   backdropChrome, pageBgType, effectiveMode }
+  console.log(e.detail);
 });</code-block>
   </section>
 
@@ -181,7 +232,7 @@ window.addEventListener('vb:theme-change', (e) => {
     </table>
 
     <h3>Color Accents</h3>
-    <p>Color accents are applied via <code>ThemeManager.setAccent()</code>:</p>
+    <p>Color accents are applied via <code>ThemeManager.setAccent()</code> and shown as the dot row in the picker. All eleven:</p>
     <table class="props-table">
       <thead>
         <tr>
@@ -193,23 +244,58 @@ window.addEventListener('vb:theme-change', (e) => {
       <tbody>
         <tr>
           <td><code>default</code></td>
-          <td>260 (purple)</td>
-          <td>Default brand colors</td>
+          <td>—</td>
+          <td>The theme’s own brand colours</td>
         </tr>
         <tr>
           <td><code>ocean</code></td>
-          <td>200 (teal)</td>
-          <td>Cool blue-green palette</td>
+          <td>200</td>
+          <td>Cool blue-green</td>
         </tr>
         <tr>
           <td><code>forest</code></td>
-          <td>145 (green)</td>
-          <td>Natural earthy greens</td>
+          <td>145</td>
+          <td>Natural greens</td>
         </tr>
         <tr>
           <td><code>sunset</code></td>
-          <td>25 (orange)</td>
-          <td>Warm orange-red palette</td>
+          <td>25</td>
+          <td>Warm orange-red</td>
+        </tr>
+        <tr>
+          <td><code>rose</code></td>
+          <td>350</td>
+          <td>Deep pink-red</td>
+        </tr>
+        <tr>
+          <td><code>lavender</code></td>
+          <td>280</td>
+          <td>Soft purple</td>
+        </tr>
+        <tr>
+          <td><code>coral</code></td>
+          <td>15</td>
+          <td>Bright orange-pink</td>
+        </tr>
+        <tr>
+          <td><code>slate</code></td>
+          <td>220</td>
+          <td>Muted blue-grey</td>
+        </tr>
+        <tr>
+          <td><code>emerald</code></td>
+          <td>160</td>
+          <td>Vivid green</td>
+        </tr>
+        <tr>
+          <td><code>amber</code></td>
+          <td>45</td>
+          <td>Golden yellow-orange</td>
+        </tr>
+        <tr>
+          <td><code>indigo</code></td>
+          <td>250</td>
+          <td>Blue-violet</td>
         </tr>
       </tbody>
     </table>
@@ -261,15 +347,26 @@ cp src/tokens/themes/_brand-template.css src/tokens/themes/_brand-coral.css</cod
 
   <section>
     <h2>Preventing FOUC</h2>
-    <p>To prevent a flash of unstyled content, add this inline script to your HTML <code>&lt;head&gt;</code>:</p>
+    <p>To prevent a flash of the wrong theme, restore the stored choice in an inline <code>&lt;head&gt;</code> script before CSS paints. <code>ThemeManager</code> stores it in <code>localStorage</code> under <code>vb:theme:current</code>, wrapped in a <code>{ data, timestamp }</code> envelope; accessibility themes live in <code>vb:settings:a11y</code>. A minimal version:</p>
 
-    <code-block language="html" show-lines label="Inline script for FOUC prevention" data-escape><script>
+    <code-block language="html" show-lines label="Minimal theme restore (mode, brand, a11y)" data-escape><script>
   try {
-    const t = JSON.parse(localStorage.getItem('vb-theme') || '{}');
-    if (t.mode && t.mode !== 'auto') document.documentElement.dataset.mode = t.mode;
-    if (t.brand && t.brand !== 'default') document.documentElement.dataset.theme = t.brand;
+    const read = (key) => {
+      const env = JSON.parse(localStorage.getItem(key));
+      return env && typeof env === 'object' && 'data' in env ? env.data : null;
+    };
+    const root = document.documentElement;
+    const t = read('vb:theme:current') || {};
+    const a11y = read('vb:settings:a11y');
+    if (t.mode === 'light' || t.mode === 'dark') root.dataset.mode = t.mode;
+    const parts = [];
+    if (t.brand && t.brand !== 'default') parts.push(t.brand);
+    if (Array.isArray(a11y)) parts.push(...a11y);
+    if (parts.length) root.dataset.theme = parts.join(' ');
   } catch {}
 </script></code-block>
+
+    <p>The full snippet (accent, fluid sizing, border style, icon set, backdrop, reduced motion, and keeping your authored <code>&lt;html&gt;</code> attributes) is on the <a href="/docs/elements/native/head/">&lt;head&gt; page</a> under Theme Flash Prevention.</p>
   </section>
 
   <section>
@@ -294,9 +391,24 @@ cp src/tokens/themes/_brand-template.css src/tokens/themes/_brand-coral.css</cod
           <td>Fired when popover closes</td>
         </tr>
         <tr>
+          <td><code>theme-picker:dtcg-download</code></td>
+          <td><code>{ themeId, href }</code></td>
+          <td>A per-swatch DTCG download link was clicked (the native download still happens)</td>
+        </tr>
+        <tr>
           <td><code>vb:theme-change</code></td>
-          <td><code>{ mode, brand, effectiveMode }</code></td>
-          <td>Fired on window when theme changes</td>
+          <td><code>{ mode, brand, accent, borderStyle, iconSet, fluid, backdrop, backdropChrome, pageBgType, effectiveMode }</code></td>
+          <td>Fired on <code>window</code> by <code>ThemeManager</code> when the theme changes. The picker listens and re-syncs.</td>
+        </tr>
+        <tr>
+          <td><code>vb:a11y-themes-change</code></td>
+          <td><code>string[]</code> (active <code>a11y-*</code> ids)</td>
+          <td>Fired on <code>window</code> when an accessibility theme is toggled. Every picker and <code>&lt;settings-panel&gt;</code> listens, so all controls on the page stay in step.</td>
+        </tr>
+        <tr>
+          <td><code>vb:extensions-change</code></td>
+          <td><code>{ motionFx, sounds }</code></td>
+          <td>Fired on <code>window</code> when extension preferences are applied (on load and on toggle). Shared with <code>&lt;settings-panel&gt;</code> the same way.</td>
         </tr>
       </tbody>
     </table>
@@ -305,10 +417,11 @@ cp src/tokens/themes/_brand-template.css src/tokens/themes/_brand-coral.css</cod
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Popover uses <code>role="dialog"</code> with <code>aria-label</code></li>
-      <li>Radio groups use proper <code>role="radiogroup"</code></li>
-      <li>Trigger button announces expanded state via <code>aria-expanded</code></li>
-      <li>Escape key closes the popover</li>
-      <li>Focus is trapped within popover when open</li>
+      <li>The popover is a non-modal <code>role="dialog"</code> with an <code>aria-label</code>. Focus is not trapped: opening moves focus to the selected colour mode, <kbd>Escape</kbd> closes and returns focus to the trigger, and tabbing out of the picker or clicking outside closes it.</li>
+      <li>Every radio set (mode, accent, each theme group, sizing) is a <code>role="radiogroup"</code> inside a labelled <code>&lt;fieldset&gt;</code>. Radio names are unique per picker, so a header picker and a mobile-menu picker on the same page don't share groups.</li>
+      <li>Arrow keys move through a radio group and apply each choice, but never close the popover. Only pointer selections auto-dismiss it.</li>
+      <li>The trigger announces its state with <code>aria-expanded</code> and <code>aria-controls</code>.</li>
+      <li>In forced-colours mode the selected mode segment and options use <code>Highlight</code>, and swatches and accent dots keep their real colours with a visible outline.</li>
+      <li>Accessibility themes you author on <code>&lt;html data-theme&gt;</code> (for example <code>a11y-large-text</code>) are kept until the visitor makes their own choice.</li>
     </ul>
   </section>

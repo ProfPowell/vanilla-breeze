@@ -1,24 +1,94 @@
-/* layout-reel: Horizontal scrolling container */
+/* layout-reel: Horizontal scrolling container
+ *
+ * One rule set for <layout-reel> and [data-layout="reel"] (e.g.
+ * <card-list data-layout="reel">).
+ *
+ * Private props are namespaced (--_reel-*) and re-declared on every host,
+ * so a reel nested inside another reel never inherits the outer values.
+ *
+ * Padding applies on all sides: the block padding leaves room for focus
+ * rings and card shadows that overflow-y: hidden would otherwise clip. The
+ * same value is the inline scroll padding, so snapped items line up with
+ * the padded edge.
+ *
+ * Accessibility: a scroller is only keyboard-reachable everywhere (Safari
+ * included) when it is focusable. When the items hold no focusable content,
+ * author it as <layout-reel role="region" aria-label="…" tabindex="0">. */
 
-layout-reel {
+:is(layout-reel, [data-layout="reel"]) {
+  --_reel-gap: var(--size-m);
+  --_reel-padding: var(--size-s);
+
   display: flex;
   overflow-x: auto;
   overflow-y: hidden;
-  gap: var(--_gap, var(--size-m));
-  padding: var(--_padding, var(--size-s));
-  scroll-snap-type: x mandatory;
-  scroll-padding-inline: var(--_padding, var(--size-s));
-  -webkit-overflow-scrolling: touch;
+  gap: var(--_reel-gap);
+  padding: var(--_reel-padding);
+  scroll-padding-inline: var(--_reel-padding);
+  /* proximity, not mandatory: with auto-width items wider than the
+     scrollport, mandatory snapping can make the middle of an item
+     unreachable. */
+  scroll-snap-type: x proximity;
 
-  /* Hide scrollbar by default */
+  /* Scrollbar hidden by default (opt in with data-layout-scrollbar; always
+     shown under forced colours and on touch-only devices, below). */
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
   }
+
+  /* Children */
+  & > * {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+
+  /* Gap variants */
+  &[data-layout-gap="none"]  { --_reel-gap: 0; }
+  &[data-layout-gap="3xs"]   { --_reel-gap: var(--size-3xs); }
+  &[data-layout-gap="2xs"]   { --_reel-gap: var(--size-2xs); }
+  &[data-layout-gap="xs"]    { --_reel-gap: var(--size-xs); }
+  &[data-layout-gap="s"]     { --_reel-gap: var(--size-s); }
+  &[data-layout-gap="m"]     { --_reel-gap: var(--size-m); }
+  &[data-layout-gap="l"]     { --_reel-gap: var(--size-l); }
+  &[data-layout-gap="xl"]    { --_reel-gap: var(--size-xl); }
+  &[data-layout-gap="2xl"]   { --_reel-gap: var(--size-2xl); }
+  &[data-layout-gap="3xl"]   { --_reel-gap: var(--size-3xl); }
+
+  /* Padding variants (all sides; the inline value is also the scroll
+     padding, which reads --_reel-padding above) */
+  &[data-layout-padding="none"] { --_reel-padding: 0; }
+  &[data-layout-padding="s"]    { --_reel-padding: var(--size-s); }
+  &[data-layout-padding="m"]    { --_reel-padding: var(--size-m); }
+  &[data-layout-padding="l"]    { --_reel-padding: var(--size-l); }
+
+  /* The container-type: inline-size antidote for semantic-section children
+     lives centrally in layout-attributes.css. */
+
+  /* Item width variants */
+  &[data-layout-item-width="auto"] > * { inline-size: auto; }
+  &[data-layout-item-width="s"]    > * { inline-size: 15rem; }
+  &[data-layout-item-width="m"]    > * { inline-size: 20rem; }
+  &[data-layout-item-width="l"]    > * { inline-size: 25rem; }
+  &[data-layout-item-width="xl"]   > * { inline-size: 30rem; }
+
+  /* Full-width items (one at a time) */
+  &[data-layout-item-width="full"] > * {
+    inline-size: 100%;
+    scroll-snap-align: center;
+  }
+
+  /* Align variants */
+  &[data-layout-align="start"]   { align-items: flex-start; }
+  &[data-layout-align="center"]  { align-items: center; }
+  &[data-layout-align="end"]     { align-items: flex-end; }
+  &[data-layout-align="stretch"] { align-items: stretch; }
 }
 
-/* Show scrollbar variant */
-layout-reel[data-layout-scrollbar] {
+/* Show scrollbar: opt-in, and forced on where a hidden scrollbar removes
+   the only affordance (forced colours; touch-only pointers, where the
+   overlay scrollbar costs no space). */
+:is(layout-reel, [data-layout="reel"])[data-layout-scrollbar] {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 
@@ -37,90 +107,92 @@ layout-reel[data-layout-scrollbar] {
   }
 }
 
-/* Gap variants */
-layout-reel[data-layout-gap="none"]  { --_gap: 0; }
-layout-reel[data-layout-gap="3xs"]   { --_gap: var(--size-3xs); }
-layout-reel[data-layout-gap="2xs"]   { --_gap: var(--size-2xs); }
-layout-reel[data-layout-gap="xs"]    { --_gap: var(--size-xs); }
-layout-reel[data-layout-gap="s"]     { --_gap: var(--size-s); }
-layout-reel[data-layout-gap="m"]     { --_gap: var(--size-m); }
-layout-reel[data-layout-gap="l"]     { --_gap: var(--size-l); }
-layout-reel[data-layout-gap="xl"]    { --_gap: var(--size-xl); }
-layout-reel[data-layout-gap="2xl"]   { --_gap: var(--size-2xl); }
-layout-reel[data-layout-gap="3xl"]   { --_gap: var(--size-3xl); }
+@media (forced-colors: active), (hover: none) {
+  :is(layout-reel, [data-layout="reel"]) {
+    scrollbar-width: thin;
 
-/* Padding variants */
-layout-reel[data-layout-padding="none"] { --_padding: 0; scroll-padding-inline: 0; }
-layout-reel[data-layout-padding="s"]    { --_padding: var(--size-s); scroll-padding-inline: var(--size-s); }
-layout-reel[data-layout-padding="m"]    { --_padding: var(--size-m); scroll-padding-inline: var(--size-m); }
-layout-reel[data-layout-padding="l"]    { --_padding: var(--size-l); scroll-padding-inline: var(--size-l); }
-
-/* Children in reel */
-layout-reel > * {
-  flex-shrink: 0;
-  scroll-snap-align: start;
+    &::-webkit-scrollbar {
+      display: block;
+      block-size: 8px;
+    }
+  }
 }
 
-/* The container-type: inline-size antidote for semantic-section children now
-   lives centrally in layout-attributes.css, covering every at-risk layout in
-   one rule (it used to be duplicated here). */
+/* --------------------------------------------------------------------------
+   Scroll hints: faded edges indicating overflow.
 
-/* Item width variants */
-layout-reel[data-layout-item-width="auto"] > * { inline-size: auto; }
-layout-reel[data-layout-item-width="s"]    > * { inline-size: 15rem; }
-layout-reel[data-layout-item-width="m"]    > * { inline-size: 20rem; }
-layout-reel[data-layout-item-width="l"]    > * { inline-size: 25rem; }
-layout-reel[data-layout-item-width="xl"]   > * { inline-size: 30rem; }
+   Logical: the start edge is the inline-start side, so the gradient runs
+   `to left` under :dir(rtl). --_reel-hint-start / --_reel-hint-end are the
+   fade lengths at each edge.
 
-/* Full-width items (one at a time) */
-layout-reel[data-layout-item-width="full"] > * {
-  inline-size: 100%;
-  scroll-snap-align: center;
-}
-
-/* Align variants */
-layout-reel[data-layout-align="start"]   { align-items: flex-start; }
-layout-reel[data-layout-align="center"]  { align-items: center; }
-layout-reel[data-layout-align="end"]     { align-items: flex-end; }
-layout-reel[data-layout-align="stretch"] { align-items: stretch; }
-
-/* Scroll hints: faded edge gradients indicating overflow */
-layout-reel[data-scroll-hint] {
-  --_hint-size: var(--scroll-hint-size, 2rem);
+   Where scroll-driven animations are supported the fades track the scroll
+   position: the start edge fades only once scrolled away from the start,
+   the end edge only while more content remains, and nothing fades when the
+   reel does not overflow (an inactive scroll timeline applies no effect, so
+   the 0 base values hold). Elsewhere both edges fade statically.
+   -------------------------------------------------------------------------- */
+:is(layout-reel, [data-layout="reel"])[data-scroll-hint] {
+  --_reel-hint-size: var(--scroll-hint-size, 2rem);
+  --_reel-hint-start: var(--_reel-hint-size);
+  --_reel-hint-end: var(--_reel-hint-size);
 
   mask-image: linear-gradient(
     to right,
     transparent,
-    black var(--_hint-size),
-    black calc(100% - var(--_hint-size)),
+    black var(--_reel-hint-start),
+    black calc(100% - var(--_reel-hint-end)),
     transparent
   );
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent,
-    black var(--_hint-size),
-    black calc(100% - var(--_hint-size)),
-    transparent
-  );
+
+  &:dir(rtl) {
+    mask-image: linear-gradient(
+      to left,
+      transparent,
+      black var(--_reel-hint-start),
+      black calc(100% - var(--_reel-hint-end)),
+      transparent
+    );
+  }
 }
 
-/* Start-only: fade right edge only (content starts visible) */
-layout-reel[data-scroll-hint="start"] {
-  mask-image: linear-gradient(
-    to right,
-    black calc(100% - var(--_hint-size)),
-    transparent
-  );
-  -webkit-mask-image: linear-gradient(
-    to right,
-    black calc(100% - var(--_hint-size)),
-    transparent
-  );
+/* start: content starts visible — only the end edge ever fades */
+:is(layout-reel, [data-layout="reel"])[data-scroll-hint="start"] {
+  --_reel-hint-start: 0px;
+}
+
+@supports (animation-timeline: scroll()) {
+  :is(layout-reel, [data-layout="reel"])[data-scroll-hint] {
+    --_reel-hint-start: 0px;
+    --_reel-hint-end: 0px;
+
+    animation: reel-scroll-hint linear both;
+    animation-timeline: scroll(self inline);
+  }
+
+  :is(layout-reel, [data-layout="reel"])[data-scroll-hint="start"] {
+    animation-name: reel-scroll-hint-end;
+  }
+}
+
+/* Unregistered custom properties animate discretely (they flip halfway
+   between keyframes), so the 0% → 1% and 99% → 100% steps switch each
+   fade on/off right at the scroll extremes. */
+@keyframes reel-scroll-hint {
+  0%   { --_reel-hint-start: 0px; --_reel-hint-end: var(--_reel-hint-size); }
+  1%   { --_reel-hint-start: var(--_reel-hint-size); --_reel-hint-end: var(--_reel-hint-size); }
+  99%  { --_reel-hint-start: var(--_reel-hint-size); --_reel-hint-end: var(--_reel-hint-size); }
+  100% { --_reel-hint-start: var(--_reel-hint-size); --_reel-hint-end: 0px; }
+}
+
+@keyframes reel-scroll-hint-end {
+  0%   { --_reel-hint-end: var(--_reel-hint-size); }
+  99%  { --_reel-hint-end: var(--_reel-hint-size); }
+  100% { --_reel-hint-end: 0px; }
 }
 
 /* Reduced Motion: disable scroll snap */
 @media (prefers-reduced-motion: reduce) {
-  layout-reel {
+  :is(layout-reel, [data-layout="reel"]) {
     scroll-snap-type: none;
   }
 }

@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "menu"
-description: "Semantic container for toolbar buttons and context menu patterns. Provides structure for groups of interactive commands."
+description: "List container for toolbar buttons and context menu patterns. Groups related commands; exposed to assistive technology as a list."
 elementName: menu
 category: native
 nativeGroup: Lists
@@ -13,7 +13,7 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;menu&gt;</code> element represents a group of commands or options. It is semantically equivalent to <code>&lt;ul&gt;</code> but signals to assistive technologies that the items represent commands rather than list content.</p>
+    <p>The <code>&lt;menu&gt;</code> element represents a group of commands or options. Browsers expose it to assistive technology exactly like <code>&lt;ul&gt;</code>: as a list (HTML-AAM maps <code>&lt;menu&gt;</code> to <code>role="list"</code>). Nothing tells a screen reader that the items are commands, and it is <strong>not</strong> an ARIA <code>menu</code> or <code>toolbar</code>. Choose it for readable markup; add roles yourself when the group is a real toolbar (see <a href="#accessibility">Accessibility</a>).</p>
 
     <p>In Vanilla Breeze, <code>&lt;menu&gt;</code> is styled as a flexible container with variants for toolbars, context menus, vertical menus, and icon button groups.</p>
   </section>
@@ -52,19 +52,20 @@ crumbLabel: Native Elements
 </menu></code-block>
 
     <h3><code>.toolbar</code></h3>
-    <p>Horizontal toolbar with background and contained button styling.</p>
+    <p>Horizontal toolbar with a raised background. Use <code>.ghost</code> buttons for the flat toolbar look; other button variants keep their fill, and <code>aria-pressed="true"</code> keeps its pressed state. Add <code>role="toolbar"</code> and an <code>aria-label</code> when the group is a real toolbar.</p>
 
     <browser-window src="/docs/snippets/demos/menu-toolbar.html" url="menu-toolbar.html" title="Toolbar menu" shadow></browser-window>
 
-    <code-block language="html" show-lines label="Toolbar menu" data-escape><menu class="toolbar">
-  <li><button type="button" class="ghost">Bold</button></li>
-  <li><button type="button" class="ghost">Italic</button></li>
-  <li><button type="button" class="ghost">Underline</button></li>
-  <li><button type="button" class="ghost">Link</button></li>
+    <code-block language="html" show-lines label="Toolbar menu" data-escape><menu class="toolbar" role="toolbar" aria-label="Text formatting">
+  <li role="none"><button type="button" class="ghost" aria-pressed="true">Bold</button></li>
+  <li role="none"><button type="button" class="ghost" aria-pressed="false">Italic</button></li>
+  <li role="none"><button type="button" class="ghost" aria-pressed="false">Underline</button></li>
+  <li role="separator"></li>
+  <li role="none"><button type="button" class="ghost">Link</button></li>
 </menu></code-block>
 
     <h3><code>.context</code></h3>
-    <p>Dropdown-style context menu with separators. Works with both buttons and links.</p>
+    <p>Dropdown-style context menu with separators. Works with both buttons and links, and sizes to its content (<code>inline-size: fit-content</code>, at least <code>10rem</code>).</p>
 
     <browser-window src="/docs/snippets/demos/menu-context.html" url="menu-context.html" title="Context menu" shadow></browser-window>
 
@@ -77,7 +78,7 @@ crumbLabel: Native Elements
 </menu></code-block>
 
     <h3><code>.vertical</code></h3>
-    <p>Vertical menu layout for sidebar or dropdown patterns.</p>
+    <p>Vertical menu layout for sidebar or dropdown patterns. It fills its container, so put it in a sized column such as a sidebar.</p>
 
     <browser-window src="/docs/snippets/demos/menu-vertical.html" url="menu-vertical.html" title="Vertical menu" shadow></browser-window>
 
@@ -103,55 +104,19 @@ crumbLabel: Native Elements
 </menu></code-block>
 
     <h3><code>.pills</code></h3>
-    <p>Pill-shaped buttons for filter or toggle patterns.</p>
+    <p>Pill-shaped buttons for filter or toggle patterns. Mark the selected pill with <code>aria-pressed="true"</code> (and the others <code>"false"</code>) so the state is both visible and announced.</p>
 
     <browser-window src="/docs/snippets/demos/menu-pills.html" url="menu-pills.html" title="Pills menu" shadow></browser-window>
 
-    <code-block language="html" show-lines label="Pills menu" data-escape><menu class="toolbar pills">
-  <li><button type="button" class="ghost">All</button></li>
-  <li><button type="button">Active</button></li>
-  <li><button type="button" class="ghost">Completed</button></li>
+    <code-block language="html" show-lines label="Pills menu" data-escape><menu class="toolbar pills" role="toolbar" aria-label="Filter tasks">
+  <li role="none"><button type="button" class="ghost" aria-pressed="false">All</button></li>
+  <li role="none"><button type="button" class="ghost" aria-pressed="true">Active</button></li>
+  <li role="none"><button type="button" class="ghost" aria-pressed="false">Completed</button></li>
 </menu></code-block>
   </section>
 
   <section>
     <h2>Styling</h2>
-
-    <h3>CSS Implementation</h3>
-    <code-block language="css" show-lines label="Menu CSS styles" data-escape>menu {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--size-xs);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-
-  & > li {
-    margin: 0;
-  }
-}
-
-/* Toolbar variant */
-menu.toolbar {
-  display: flex;
-  align-items: center;
-  gap: var(--size-2xs);
-  padding: var(--size-2xs);
-  background: var(--color-surface-raised);
-  border-radius: var(--radius-m);
-}
-
-/* Context menu variant */
-menu.context {
-  flex-direction: column;
-  gap: 0;
-  padding: var(--size-2xs);
-  background: var(--color-surface);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-m);
-  box-shadow: 0 4px 12px oklch(0% 0 0 / 0.15);
-  min-inline-size: 160px;
-}</code-block>
 
     <h3>Variant Classes Summary</h3>
     <table class="props-table">
@@ -164,11 +129,11 @@ menu.context {
       <tbody>
         <tr>
           <td><code>.toolbar</code></td>
-          <td>Horizontal toolbar with background container</td>
+          <td>Horizontal toolbar with a raised background; button variants and <code>aria-pressed</code> state are kept</td>
         </tr>
         <tr>
           <td><code>.context</code></td>
-          <td>Dropdown-style menu with shadow and separators</td>
+          <td>Dropdown-style menu with border, shadow and separators; sizes to its content</td>
         </tr>
         <tr>
           <td><code>.vertical</code></td>
@@ -192,17 +157,23 @@ menu.context {
 
   <section>
     <h2>Menu Separators</h2>
-    <p>Use <code>role="separator"</code> on list items to create visual dividers in context menus.</p>
+    <p>Put <code>role="separator"</code> on an empty list item to divide groups. It draws a vertical rule in row menus (default, <code>.toolbar</code>, <code>.pills</code>) and a horizontal rule in column menus (<code>.context</code>, <code>.vertical</code>). The rule is a border, so it stays visible in forced-colours mode.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
 
     <h3>Semantic Structure</h3>
-    <p>The menu element conveys that its items are commands. Each <code>&lt;li&gt;</code> should contain a <code>&lt;button&gt;</code> or <code>&lt;a&gt;</code> for proper interaction.</p>
+    <p><code>&lt;menu&gt;</code> is announced as a list with a count of items, like <code>&lt;ul&gt;</code>. It does not say the items are commands. Each <code>&lt;li&gt;</code> should contain a <code>&lt;button&gt;</code> or <code>&lt;a&gt;</code>, whose role and name carry the meaning.</p>
+
+    <h3>Toolbars</h3>
+    <p>For a real toolbar (a formatting bar, a filter group) add <code>role="toolbar"</code> and an <code>aria-label</code> that names it, and put <code>role="none"</code> on the item <code>&lt;li&gt;</code>s: once the menu is a toolbar it is no longer a list, so list items would be orphaned. Use <code>aria-pressed</code> on toggle buttons. Vanilla Breeze does <strong>not</strong> provide the arrow-key roving focus that the <a href="https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/">APG toolbar pattern</a> describes: each button stays a separate <kbd>Tab</kbd> stop, which is still operable. Add your own roving <code>tabindex</code> script if you need the full pattern.</p>
+    <p>For pop-up command menus with arrow-key navigation, use <a href="/docs/elements/web-components/dropdown/"><code>&lt;drop-down&gt;</code></a> or <a href="/docs/elements/web-components/context-menu/"><code>&lt;context-menu&gt;</code></a>, which add <code>role="menu"</code> and the keyboard model.</p>
 
     <h3>ARIA Roles</h3>
     <ul>
+      <li><code>role="toolbar"</code> + <code>aria-label</code> &mdash; Names a group of controls as a toolbar</li>
+      <li><code>aria-pressed</code> &mdash; Toggle and filter buttons (styled as pressed when <code>"true"</code>)</li>
       <li><code>role="separator"</code> &mdash; Marks visual dividers between groups of items</li>
       <li><code>aria-label</code> &mdash; Required on icon-only buttons to describe the action</li>
       <li><code>aria-disabled</code> &mdash; For non-functional menu items</li>
@@ -226,7 +197,7 @@ menu.context {
       <tbody>
         <tr>
           <td><kbd>Tab</kbd></td>
-          <td>Move focus between menu buttons</td>
+          <td>Move focus between menu buttons (no arrow-key roving is provided)</td>
         </tr>
         <tr>
           <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
@@ -252,5 +223,5 @@ menu.context {
 
   <section>
     <h2>Browser Support</h2>
-    <p>The <code>&lt;menu&gt;</code> element is supported in all browsers. Its semantic meaning is recognized by screen readers, though the element renders identically to <code>&lt;ul&gt;</code> by default.</p>
+    <p>The <code>&lt;menu&gt;</code> element is supported in all browsers. Browsers and screen readers treat it as a list, identical to <code>&lt;ul&gt;</code>.</p>
   </section>

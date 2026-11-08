@@ -163,19 +163,18 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Using form-field</h2>
-    <p>The <a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a> web component wraps a label, input, and optional help/error text into a single accessible unit. It handles <code>aria-describedby</code> wiring automatically and adds required indicators.</p>
+    <p>The <a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a> web component wraps a label, input, and optional help/error text into a single accessible unit. It wires <code>aria-describedby</code> from the control to its hint and error <code>&lt;output&gt;</code> elements for you (authors no longer need to write it by hand), shows validation state, and adds required indicators. See the <a href="/docs/elements/custom-elements/form-field/">form-field page</a> for its full API.</p>
 
     <aside class="note">
       <strong>Prefer <code>&lt;form-field&gt;</code> over <code>.group</code>.</strong> The older <code>&lt;div class="group"&gt;</code> pattern still works but <code>&lt;form-field&gt;</code> provides built-in accessibility wiring, validation states, and required indicators. Use bare <code>&lt;label&gt;</code> for simple optional checkboxes and radios that need no help text or validation.
     </aside>
 
-    <code-block language="html" show-lines label="form-field with output message" data-escape><form class="stacked">
+    <code-block language="html" show-lines label="form-field with hint and error outputs" data-escape><form class="stacked">
   <form-field>
     <label for="email">Email</label>
-    <input type="email" id="email" required />
-    <output for="email" aria-live="polite">
-      We'll never share your email.
-    </output>
+    <input type="email" id="email" name="email" required />
+    <output class="hint" for="email">We'll never share your email.</output>
+    <output class="error" for="email" aria-live="polite"></output>
   </form-field>
 </form></code-block>
   </section>
@@ -235,19 +234,118 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Help and Error Text</h2>
-    <p>Inside a <code>&lt;form-field&gt;</code>, add a <code>&lt;span class="help"&gt;</code> for hints or a <code>&lt;span class="error"&gt;</code> for validation messages. Mark invalid inputs with <code>aria-invalid="true"</code>.</p>
+    <p>Inside a <code>&lt;form-field&gt;</code>, use <code>&lt;output class="hint"&gt;</code> for persistent help and an empty <code>&lt;output class="error"&gt;</code> for validation messages. <code>&lt;form-field&gt;</code> fills the error output (from <code>data-message-*</code> or the browser message), toggles <code>aria-invalid</code>, and wires both outputs into the control&rsquo;s <code>aria-describedby</code>.</p>
 
-    <code-block language="html" show-lines label="Help and error text patterns" data-escape><form-field>
+    <code-block language="html" show-lines label="Hint and error outputs" data-escape><form-field>
   <label for="password">Password</label>
-  <input type="password" id="password" />
-  <span class="help">At least 8 characters.</span>
-</form-field>
-
-<form-field>
-  <label for="email">Email</label>
-  <input type="email" id="email" aria-invalid="true" />
-  <span class="error">Invalid email address.</span>
+  <input type="password" id="password" name="password" minlength="8" required
+         data-message-tooshort="Use at least 8 characters." />
+  <output class="hint" for="password">At least 8 characters.</output>
+  <output class="error" for="password" aria-live="polite"></output>
 </form-field></code-block>
+
+    <p>Outside <code>&lt;form-field&gt;</code> (small static forms, server-rendered errors), <code>&lt;p class="help"&gt;</code> and <code>&lt;p class="error"&gt;</code> are styled inside a form; connect them yourself with <code>aria-describedby</code> and set <code>aria-invalid="true"</code> on the control.</p>
+  </section>
+
+  <section>
+    <h2>Validation and Submission (data-validate)</h2>
+    <p>Add <code>data-validate</code> to a <code>&lt;form&gt;</code> to let the form coordinator own validation UI. It sets <code>novalidate</code> (no browser bubbles), validates every <code>&lt;form-field&gt;</code> on submit, runs cross-field (<code>data-match</code>) and checkbox-group (<code>data-min-checked</code>/<code>data-max-checked</code>) checks, marks invalid bare controls with <code>aria-invalid="true"</code>, and then either focuses the error summary or the first invalid control. Without JavaScript the form still submits with native validation.</p>
+
+    <browser-window src="/docs/examples/demos/form-validation-pe.html" url="https://vanilla-breeze.com/form/validation" title="Validated form with error summary" shadow></browser-window>
+
+    <h3>Error summary</h3>
+    <p>Author a summary region inside the form. On an invalid submit it is un-hidden, filled with one link per error (radio groups appear once; checkbox groups link their first box; messages match what the field shows) and focused. After that it updates when a field loses focus or changes &mdash; never per keystroke &mdash; and only when the set of errors changes. Once every error is fixed it collapses and gets <code>hidden</code> again, so stale links are neither focusable nor announced.</p>
+    <code-block language="html" show-lines label="Authored error summary" data-escape><form data-validate action="/contact" method="post">
+  <section data-form-summary role="alert" tabindex="-1" hidden>
+    <h2 data-summary-heading>There are problems with your submission</h2>
+    <ul data-summary-list></ul>
+  </section>
+  ...fields...
+  <button type="submit">Send</button>
+</form></code-block>
+    <p>An element with <code>data-summary-heading</code> is rewritten with a count (&ldquo;Please fix 2 errors:&rdquo;); omit the attribute to keep your own heading. The older <code>&lt;output class="error-summary" role="alert" tabindex="-1"&gt;</code> pattern is still filled the same way. <code>data-validate="summary"</code> hides the inline field errors and shows only the summary.</p>
+
+    <h3>Submit modes (data-submit)</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>After validation passes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>absent / <code>native</code></td>
+          <td>Submits natively with <code>requestSubmit(submitter)</code>, so the clicked button&rsquo;s <code>name</code>/<code>value</code>, <code>formaction</code> and <code>formmethod</code> apply.</td>
+        </tr>
+        <tr>
+          <td><code>event</code></td>
+          <td>Dispatches a cancelable, bubbling <code>vb:submit</code> event whose <code>detail</code> is the <code>FormData</code> (including the submitter). Nothing is sent.</td>
+        </tr>
+        <tr>
+          <td><code>fetch</code></td>
+          <td>Sends with <code>fetch()</code>. Method is the submitter&rsquo;s <code>formmethod</code>, else the form&rsquo;s <code>method</code> attribute, else <strong>POST</strong>; <code>GET</code> builds a query string. URL honours <code>formaction</code>. Sets <code>data-submitting</code> while in flight, then <code>data-success</code> or <code>data-error</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Events</h3>
+    <ul>
+      <li><code>vb:beforesubmit</code> &mdash; cancelable, bubbling, fires after validation passes and before any mode runs; <code>detail</code> is <code>{ form, submitter }</code>. Cancel it to stop the submission (bot protection, confirmation).</li>
+      <li><code>vb:submit</code> &mdash; <code>data-submit="event"</code> only; <code>detail</code> is the <code>FormData</code>.</li>
+    </ul>
+
+    <h3>Fetch results</h3>
+    <ul>
+      <li><strong>Success:</strong> <code>data-success</code> on the form hides everything except <code>[data-form-success]</code>, which is shown and focused (it gets <code>tabindex="-1"</code> and <code>role="status"</code> if you did not set them).</li>
+      <li><strong>Server field errors:</strong> a non-OK JSON response with <code>{ "errors": { "fieldName": "message" } }</code> puts each message on its field (via <code>form-field</code>&rsquo;s <code>setError()</code>) and in the summary &mdash; always as text, never HTML.</li>
+      <li><strong>Network error:</strong> <code>data-error="network"</code> on the form and the <code>[data-form-error]</code> element is shown. Author one (with <code>role="alert"</code>) to control the copy and placement; otherwise a <code>&lt;p data-form-error role="alert"&gt;</code> is created at the top of the form.</li>
+      <li>The next submit clears <code>data-success</code>/<code>data-error</code> and re-hides those elements.</li>
+    </ul>
+    <code-block language="html" show-lines label="Fetch form with status elements" data-escape><form data-validate data-submit="fetch" action="/api/contact" method="post">
+  <p data-form-error role="alert" hidden>We could not send your message. Try again.</p>
+  ...fields...
+  <button type="submit" data-loading="Sending...">Send</button>
+  <section data-form-success role="status" tabindex="-1" hidden>
+    <p>Thank you! Your message has been sent.</p>
+  </section>
+</form></code-block>
+
+    <h3>Loading buttons (data-loading)</h3>
+    <p>A submit button with <code>data-loading</code> shows a spinner and <code>aria-busy</code> only once a submission actually proceeds: an invalid submit, a cancelled <code>vb:beforesubmit</code> or any <code>preventDefault()</code> on the native submit leaves it alone. In fetch mode it reverts when <code>data-submitting</code> is cleared; in event mode clear it yourself with <code>delete button.dataset.loadingActive</code> when your handler finishes (or let <code>data-loading-timeout</code>, default 10&nbsp;s, revert it).</p>
+
+    <h3>Translating built-in text</h3>
+    <p>Every string the coordinator writes can be overridden on the <code>&lt;form&gt;</code> (fieldset- and field-level attributes win where noted).</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-label-summary</code>, <code>data-label-summary-one</code>, <code>-other</code>, <code>-few</code>&hellip;</td>
+          <td>&ldquo;Please fix {count} error(s):&rdquo; &mdash; plural form chosen with <code>Intl.PluralRules</code> for the form&rsquo;s <code>lang</code></td>
+        </tr>
+        <tr>
+          <td><code>data-message-min-checked</code> / <code>data-message-max-checked</code></td>
+          <td>&ldquo;Select at least {min}&rdquo; / &ldquo;Select no more than {max}&rdquo; (also on the fieldset)</td>
+        </tr>
+        <tr>
+          <td><code>data-message-match</code></td>
+          <td>&ldquo;Values do not match&rdquo; (also on the field)</td>
+        </tr>
+        <tr>
+          <td><code>data-label-group</code> / <code>data-message-invalid-selection</code></td>
+          <td>&ldquo;Group&rdquo; / &ldquo;Invalid selection&rdquo; &mdash; fallbacks for a fieldset entry without a legend or message</td>
+        </tr>
+        <tr>
+          <td><code>data-message-network</code></td>
+          <td>&ldquo;Something went wrong. Please try again.&rdquo; (generated <code>[data-form-error]</code> only)</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
@@ -259,7 +357,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Conditional Fields (data-show-when)</h2>
-    <p>Use <code>data-show-when</code> or <code>data-hide-when</code> on any element inside a form to conditionally display sections based on another field&rsquo;s value. Hidden elements get <code>hidden</code> and <code>inert</code> attributes, preventing them from blocking validation.</p>
+    <p>Use <code>data-show-when</code> or <code>data-hide-when</code> on any element inside a form to conditionally display sections based on another field&rsquo;s value. Hidden sections get <code>hidden</code> and <code>inert</code>, and their controls are disabled &mdash; so a hidden <code>required</code> field never blocks submit and its value is not sent. Showing the section re-enables only the controls it disabled; anything you marked <code>disabled</code> yourself stays disabled. See <a href="/docs/attributes/data-show-when/"><code>data-show-when</code></a> for the full condition syntax, checkbox groups and reset behaviour.</p>
 
     <browser-window
       src="/docs/examples/demos/conditional-basic.html"
@@ -318,7 +416,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Form Autosave (data-autosave)</h2>
-    <p>Add <code>data-autosave="key"</code> to a <code>&lt;form&gt;</code> to automatically save its data to <code>localStorage</code> as the user types. On page reload, the draft is restored and a &ldquo;Draft restored&rdquo; toast appears. Drafts are cleared on submit or reset and expire after 24 hours.</p>
+    <p>Add <code>data-autosave="key"</code> to a <code>&lt;form&gt;</code> to automatically save its data to <code>localStorage</code> as the user types. On page reload, the draft is restored and a &ldquo;Draft restored&rdquo; toast appears. Drafts are cleared on submit or reset and expire after 24 hours. Passwords, hidden inputs, buttons, card numbers and one-time codes are never stored. Full reference, including what is stored: <a href="/docs/attributes/data-autosave/"><code>data-autosave</code></a>.</p>
 
     <browser-window
       src="/docs/examples/demos/autosave-basic.html"
@@ -353,9 +451,22 @@ crumbLabel: Native Elements
       <li><strong>Save:</strong> Debounced (500ms) on every <code>input</code> and <code>change</code> event</li>
       <li><strong>Restore:</strong> On page load if a non-expired draft exists</li>
       <li><strong>Clear:</strong> On form <code>submit</code> or <code>reset</code></li>
-      <li><strong>Skip:</strong> Password and file inputs are never saved</li>
+      <li><strong>Skip:</strong> Password, hidden and file inputs, buttons, <code>autocomplete="off"</code>, card and one-time-code fields, and anything marked <code>data-autosave-ignore</code> are never saved or restored</li>
       <li><strong>Expire:</strong> Drafts older than 24 hours are discarded</li>
     </ul>
+  </section>
+
+  <section>
+    <h2>Multi-step Forms (data-wizard)</h2>
+    <p><code>form[data-wizard]</code> splits a form into <code>fieldset[data-wizard-step]</code> steps with a <code>&lt;progress data-wizard-progress&gt;</code> bar and a <code>nav[data-wizard-nav]</code> of previous/next/submit buttons. Without JavaScript every step shows and the form submits normally. The <a href="/docs/attributes/data-wizard/"><code>data-wizard</code></a> page documents every option (conditional steps, persistence, history, <code>&lt;progress-tracker&gt;</code>); the <a href="/docs/patterns/forms/wizard/">wizard pattern</a> shows a full flow.</p>
+
+    <browser-window src="/docs/examples/demos/wizard-basic.html" url="https://vanilla-breeze.com/form/wizard" title="Multi-step form" shadow></browser-window>
+
+    <p>The visible &ldquo;Step 2 of 4&rdquo; counter is decorative (step changes are announced through a visually hidden status region). Translate its words with custom properties:</p>
+    <code-block language="css" show-lines label="Localising the wizard step counter" data-escape>form[data-wizard]:lang(fr) {
+  --wizard-label-step: "Étape ";
+  --wizard-label-of: " sur ";
+}</code-block>
   </section>
 
   <section>
@@ -363,11 +474,12 @@ crumbLabel: Native Elements
     <ul>
       <li><strong>Label all inputs</strong>: Every form control needs an associated <a href="/docs/elements/native/label/">label</a></li>
       <li><strong>Use fieldsets</strong>: Group related fields with <a href="/docs/elements/native/fieldset/">fieldset</a> and <a href="/docs/elements/native/legend/">legend</a></li>
-      <li><strong>Error identification</strong>: Use <code>aria-invalid</code> and <code>aria-describedby</code> for errors</li>
+      <li><strong>Error identification</strong>: Invalid controls carry <code>aria-invalid="true"</code> and point at their message with <code>aria-describedby</code> &mdash; <code>&lt;form-field&gt;</code> and <code>data-validate</code> do this for you; wire it by hand only for bare controls in unenhanced forms</li>
+      <li><strong>Error summary</strong>: For long forms, add a <code>[data-form-summary]</code> so keyboard and screen reader users land on a list of links to every error</li>
       <li><strong>Autocomplete</strong>: Add appropriate <code>autocomplete</code> attributes for autofill</li>
       <li><strong>Focus management</strong>: Use <code>autofocus</code> on the first field (one per page)</li>
       <li><strong>Submit button</strong>: Always include a visible submit button, not just Enter key handling</li>
-      <li><strong>Use form-field</strong>: The <code>&lt;form-field&gt;</code> component handles <code>aria-describedby</code> wiring automatically</li>
+      <li><strong>Status changes</strong>: Fetch success moves focus to <code>[data-form-success]</code> (a <code>role="status"</code> region); network failures use a <code>role="alert"</code> <code>[data-form-error]</code> element, not CSS-generated text</li>
     </ul>
   </section>
 
@@ -401,7 +513,7 @@ form.grid {
 }
 
 /* Legacy group wrapper (prefer <form-field>) */
-.group {
+:where(form) .group {
   display: flex;
   flex-direction: column;
   gap: var(--size-2xs);
@@ -414,7 +526,8 @@ form.grid {
 }
 
 /* Form actions */
-.actions {
+:where(form, dialog) .actions,
+:where(footer).actions {
   display: flex;
   gap: var(--size-s);
   margin-block-start: var(--size-m);
@@ -423,15 +536,33 @@ form.grid {
 .actions.end { justify-content: flex-end; }
 .actions.between { justify-content: space-between; }
 
-/* Help and error text */
-.help {
+/* Help and error text (scoped to forms) */
+:where(form) :where(p, span, small).help {
   font-size: var(--font-size-s);
   color: var(--color-text-muted);
 }
 
-.error {
+:where(form) :where(p, span, small).error {
   font-size: var(--font-size-s);
-  color: oklch(55% 0.2 25);
+  color: var(--color-error);
+}
+
+/* Coordinator status elements (data-validate) */
+[data-form-summary][hidden],
+[data-form-success][hidden],
+[data-form-error][hidden] {
+  display: none;
+}
+
+[data-form-error] {
+  color: var(--color-error);
+  padding: var(--size-s);
+  border: var(--border-width-thin) solid var(--color-error);
+  border-radius: var(--radius-s);
+}
+
+form[data-success] > :not([data-form-success]) {
+  display: none;
 }</code-block>
   </section>
 
@@ -446,8 +577,21 @@ form.grid {
       <li><a href="/docs/elements/native/label/">label</a> - Accessible input labels</li>
       <li><a href="/docs/elements/native/legend/">legend</a> - Caption for fieldset groups</li>
       <li><a href="/docs/elements/native/output/">output</a> - Calculation result or action output</li>
-      <li><a href="/docs/elements/custom-elements/form-field/">form-field</a> - Enhanced form field wrapper with validation</li>
+      <li><a href="/docs/elements/custom-elements/form-field/">form-field</a> - Field wrapper: validation timing, messages, <code>aria-describedby</code> wiring</li>
       <li><a href="/docs/elements/native/datalist/">datalist</a> - Autocomplete suggestions for inputs</li>
       <li><a href="/docs/elements/native/dialog/">dialog</a> - Modal forms with <code>method="dialog"</code></li>
+      <li><a href="/docs/attributes/form/"><code>form</code></a> - Controls outside the form element that still belong to it</li>
+      <li><a href="/docs/attributes/novalidate/"><code>novalidate</code></a> - Skip submit-time validation for a form or one button</li>
+      <li><a href="/docs/attributes/formaction/"><code>formaction</code></a> - Per-button overrides: <code>formaction</code>, <code>formmethod</code>, <code>formnovalidate</code> and more</li>
+      <li><a href="/docs/attributes/autocomplete/"><code>autocomplete</code></a> - Autofill tokens for names, addresses, passwords and codes</li>
+    </ul>
+    <h3>Form enhancement attributes</h3>
+    <ul>
+      <li><a href="/docs/attributes/data-autosave/"><code>data-autosave</code></a> - Draft persistence (on the <code>&lt;form&gt;</code>)</li>
+      <li><a href="/docs/attributes/data-wizard/"><code>data-wizard</code></a> - Split the form's fieldsets into validated steps (on the <code>&lt;form&gt;</code>)</li>
+      <li><a href="/docs/attributes/data-show-when/"><code>data-show-when</code></a> - Conditional sections, with <code>data-hide-when</code></li>
+      <li>On inputs: <a href="/docs/attributes/data-switch/"><code>data-switch</code></a>, <a href="/docs/attributes/data-range/"><code>data-range</code></a>, <a href="/docs/attributes/data-stepper/"><code>data-stepper</code></a>, <a href="/docs/attributes/data-color/"><code>data-color</code></a>, <a href="/docs/attributes/data-mask/"><code>data-mask</code></a>, <a href="/docs/attributes/data-accept/"><code>data-accept</code></a>, <a href="/docs/attributes/data-upload/"><code>data-upload</code></a>, <a href="/docs/attributes/data-strength/"><code>data-strength</code></a></li>
+      <li>On textareas: <a href="/docs/attributes/data-count/"><code>data-count</code></a>, <a href="/docs/attributes/data-grow/"><code>data-grow</code></a></li>
+      <li>On fieldsets: <a href="/docs/attributes/data-toggle-tags/"><code>data-toggle-tags</code></a></li>
     </ul>
   </section>

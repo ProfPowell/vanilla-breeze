@@ -2,14 +2,16 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "stepper-wc",
   "type": "web-component",
-  "description": "Stepper for values <input type=\"number\"> + data-stepper cannot reach: formatted units, currency, time, token-snap scales, discrete enums.",
+  "description": "Stepper for values <input type=\"number\"> + data-stepper cannot reach: formatted units, currency, time, token-snap scales, discrete enums. Renders an inner role=\"spinbutton\" that receives the host's label.",
+  "formAssociated": true,
   "attributes": [
     {
       "name": "value",
       "kind": "native",
       "purpose": "config",
       "type": "string",
-      "description": "Current value (string; reflected)"
+      "description": "Current value (string). Authored value is the form-reset target; changes are reflected",
+      "direction": "both"
     },
     {
       "name": "name",
@@ -89,47 +91,48 @@
       "description": "Enable long-press acceleration on the +/- buttons"
     },
     {
+      "name": "data-label-decrease",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Decrease",
+      "description": "Accessible name of the decrease button"
+    },
+    {
+      "name": "data-label-increase",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Increase",
+      "description": "Accessible name of the increase button"
+    },
+    {
+      "name": "aria-label",
+      "kind": "aria",
+      "purpose": "config",
+      "type": "string",
+      "description": "Forwarded to the inner role=\"spinbutton\" (prefer a <label for>)"
+    },
+    {
+      "name": "aria-labelledby",
+      "kind": "aria",
+      "purpose": "config",
+      "type": "string",
+      "description": "Forwarded to the inner role=\"spinbutton\", merged with any <label for> / wrapping <label>"
+    },
+    {
       "name": "disabled",
       "kind": "native",
       "purpose": "config",
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Disables stepping and removes the spinbutton from the tab order. A disabled <fieldset> does the same"
     },
     {
       "name": "readonly",
       "kind": "native",
       "purpose": "config",
-      "type": "boolean"
-    },
-    {
-      "name": "role",
-      "kind": "aria",
-      "purpose": "config",
-      "description": "spinbutton on the inner display element"
-    },
-    {
-      "name": "aria-valuenow",
-      "kind": "aria",
-      "purpose": "config"
-    },
-    {
-      "name": "aria-valuemin",
-      "kind": "aria",
-      "purpose": "config"
-    },
-    {
-      "name": "aria-valuemax",
-      "kind": "aria",
-      "purpose": "config"
-    },
-    {
-      "name": "aria-valuetext",
-      "kind": "aria",
-      "purpose": "config"
-    },
-    {
-      "name": "aria-disabled",
-      "kind": "aria",
-      "purpose": "config"
+      "type": "boolean",
+      "description": "Value cannot change: spinbutton gets aria-readonly, +/- buttons are disabled"
     }
   ],
   "events": [
@@ -140,6 +143,25 @@
     {
       "name": "change",
       "description": "Fires when value changes. Bubbles."
+    }
+  ],
+  "properties": [
+    {
+      "name": "value",
+      "type": "string",
+      "description": "Current canonical value (number as string, token, or enum value). Setting it fires input + change"
+    },
+    {
+      "name": "displayText",
+      "type": "string",
+      "readonly": true,
+      "description": "The user-visible formatted text, e.g. \"$5.00\", \"2.05 KB\", \"Medium\""
+    }
+  ],
+  "methods": [
+    {
+      "name": "recomputeWidth()",
+      "description": "Rebuild the width reserve after changing data-min/-max/-values/-options/-format after upgrade"
     }
   ],
   "childAttributes": [],

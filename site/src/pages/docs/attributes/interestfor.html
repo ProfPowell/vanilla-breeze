@@ -1,0 +1,130 @@
+---
+layout: attribute
+title: "interestfor"
+description: "Open a popover when the user hovers or focuses a button or link. Covers popover=\"hint\" tooltips, delays, events, and the polyfill Vanilla Breeze ships for browsers without it."
+attributeName: interestfor
+attributeType: native
+nativeGroup: Interactivity
+category: native
+currentPath: /docs/attributes/interestfor/
+
+crumbHref: /docs/attributes/native/
+crumbLabel: Native Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>interestfor</code> connects an element to a target that should appear when the user shows <em>interest</em>: the pointer rests on it or keyboard focus lands on it. After a short delay the target opens; when interest moves away it closes again. Pointing it at a <code>popover="hint"</code> element gives a tooltip in plain HTML.</p>
+  <p><strong>Applies to:</strong> <code>&lt;button&gt;</code>, <code>&lt;a&gt;</code> and <code>&lt;area&gt;</code>. The value is the <code>id</code> of the target, usually a popover.</p>
+
+  <browser-window
+    src="/docs/examples/demos/attr-interestfor-hint.html"
+    url="https://vanilla-breeze.com/interestfor"
+    title="interestfor hints"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Hint tooltips" data-escape><button type="button" interestfor="tip-save">Save</button>
+<span id="tip-save" popover="hint">Save your changes (Ctrl+S)</span>
+
+<button type="button" class="ghost" interestfor="tip-archive" aria-label="Archive">
+  <icon-wc name="archive" aria-hidden="true"></icon-wc>
+</button>
+<span id="tip-archive" popover="hint">Moves the post out of your dashboard. You can restore it later.</span></code-block>
+</section>
+
+<section>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>An <code>id</code></td><td>The target. If it is a popover, it opens on interest and closes on loss of interest. Any other element just receives the events.</td></tr>
+      <tr><td>Empty, or no element with that <code>id</code></td><td>Nothing happens.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Delays</h3>
+  <p>Delays are set with CSS on the <strong>invoker</strong>, not on the popover. Browsers with native support read <code>interest-delay-start</code>, <code>interest-delay-end</code> and the shorthand <code>interest-delay</code>. VB's polyfill reads the same names as custom properties with two dashes. VB sets <code>200ms 100ms</code> on every <code>[interestfor]</code> invoker for both (300ms / 200ms for <code>&lt;tool-tip variant="card"&gt;</code>); without VB's CSS the polyfill falls back to 500ms to open and 250ms to close. Override both to get the same timing everywhere:</p>
+  <code-block language="css" show-lines label="Faster hints" data-escape>[interestfor] {
+  interest-delay: 200ms 100ms;   /* native */
+  --interest-delay: 200ms 100ms; /* VB polyfill */
+}</code-block>
+
+  <h3>Events</h3>
+  <p>The target receives <code>interest</code> when it opens and <code>loseinterest</code> when it closes. Natively the event's <code>source</code> property is the invoker; the polyfill fires a <code>CustomEvent</code> with the invoker in <code>detail.source</code>. Read <code>event.source ?? event.detail?.source</code> to handle both.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Definition on a link</h3>
+  <p>A link keeps its normal click behaviour; interest only adds the preview.</p>
+  <code-block language="html" show-lines label="Link with a hint" data-escape><p>
+  Read the <a href="/docs/accessibility/" interestfor="tip-wcag">WCAG</a> checklist before release.
+</p>
+<span id="tip-wcag" popover="hint">Web Content Accessibility Guidelines, version 2.2</span></code-block>
+
+  <h3>Styling the invoker while the target is open</h3>
+  <code-block language="css" show-lines label="Interest state hooks" data-escape>/* Native */
+button:interest-source { background: var(--color-surface-sunken); }
+
+/* VB polyfill adds classes instead */
+button.interest-source { background: var(--color-surface-sunken); }</code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
+  <ul>
+    <li><strong>Polyfill.</strong> <code>src/utils/interest-polyfill.js</code> ships in VB's core bundle. Where the browser has no native <code>interestfor</code>, it adds hover and focus handling with the delays above, closes the target on <kbd>Escape</kbd>, keeps it open while the pointer is over the target, opens it on a 500ms long press of a button on touch screens, and sets <code>data-interest-polyfill</code> on <code>&lt;html&gt;</code>. Where support is native it does nothing except the anchor names below. The polyfill accepts <code>interestfor</code> on any element, but native support covers only buttons, links and areas, so stick to those.</li>
+    <li><strong>ARIA from the polyfill.</strong> A plain-text hint (a <code>popover="hint"</code> with no focusable, structural or roled content) is added to the invoker's <code>aria-describedby</code>. Any other target is linked with <code>aria-details</code>, the invoker gets <code>aria-expanded</code>, and a target with no interactive content and no role gets <code>role="tooltip"</code>. Browsers with native support build this relationship themselves.</li>
+    <li><strong>Positioning.</strong> When CSS anchor positioning is available, the module writes <code>anchor-name: --interest-&lt;id&gt;</code> on each invoker and the matching <code>position-anchor</code> on its target (both as inline styles), with native support too. Without anchor positioning the polyfill places the target above the invoker, flips it below when there is no room, and keeps it inside the viewport.</li>
+    <li><strong>Hint styles.</strong> <code>[popover="hint"]</code> gets VB's tooltip surface, sits above its anchor with a <code>flip-block</code> fallback, and fades in and out (<code>src/native-elements/tooltip/styles.css</code>).</li>
+    <li><strong><a href="/docs/elements/web-components/tooltip/"><code>data-tooltip</code></a></strong> (<code>src/utils/tooltip-init.js</code>) and <strong><a href="/docs/elements/web-components/tooltip/"><code>&lt;tool-tip&gt;</code></a></strong> set <code>interestfor</code> on their triggers when it is available (natively for buttons, links and areas, or anywhere when the polyfill is active) and fall back to their own listeners otherwise. The polyfill leaves ARIA on <code>&lt;tool-tip&gt;</code> targets to the component.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Interest covers hover <em>and</em> keyboard focus, and the hint can be dismissed with <kbd>Escape</kbd> and hovered without closing. Those are the WCAG 1.4.13 requirements for content on hover or focus.</li>
+    <li>A hint is a <strong>description</strong>, not a name. An icon-only button still needs its own <code>aria-label</code>, as the Archive button above has.</li>
+    <li>Keep hint content short and non-interactive. Links or buttons inside a tooltip can't be reached reliably; use a popover opened by a click, or <code>&lt;tool-tip variant="card"&gt;</code>.</li>
+    <li>Touch users may never trigger a hint. Don't put information only in a hint that the user needs to complete a task.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <ul>
+    <li><code>interestfor</code>, the <code>interest</code> / <code>loseinterest</code> events, <code>interest-delay</code> and <code>:interest-source</code> / <code>:interest-target</code>: Chrome and Edge 142; not in Firefox or Safari, and still marked experimental (as of November 2026). VB's polyfill covers the other browsers.</li>
+    <li><code>popover="hint"</code>: Chrome 151, Firefox 153; not yet in a released Safari. In older browsers <code>hint</code> behaves like <code>manual</code>, so the popover still opens and closes on interest.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Delays go on the invoker.</strong> Setting <code>--interest-delay-start</code> on the popover has no effect.</li>
+    <li><strong><code>kbd</code> and <code>code</code> inside a bare hint</strong> keep their page styling, which is hard to read on the inverted surface. VB tints them only inside <code>[role="tooltip"][popover]</code>; add <code>role="tooltip"</code> or write the shortcut as text.</li>
+    <li><strong>Use <code>&lt;span&gt;</code> or <code>&lt;p&gt;</code> for hint targets.</strong> VB gives <code>&lt;section&gt;</code>, <code>&lt;article&gt;</code>, <code>&lt;aside&gt;</code> and <code>&lt;nav&gt;</code> a <code>display</code> value and a size container, so as popovers they collapse or don't hide (see <a href="/docs/attributes/popover/#in-vanilla-breeze"><code>popover</code></a>).</li>
+    <li><strong>Native support ignores other elements.</strong> <code>interestfor</code> on a <code>&lt;span&gt;</code> works with the polyfill but does nothing in Chrome.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/popover/"><code>popover</code></a> &mdash; the target side, including <code>popover="hint"</code>.</li>
+    <li><a href="/docs/attributes/commandfor/"><code>commandfor</code></a> &mdash; open a popover or dialog on click.</li>
+    <li><a href="/docs/elements/web-components/tooltip/">Tooltips</a> &mdash; <code>data-tooltip</code> and <code>&lt;tool-tip&gt;</code>.</li>
+    <li><a href="/docs/elements/web-components/pop-over/"><code>&lt;pop-over&gt;</code></a> &mdash; VB's anchored popover primitive.</li>
+  </ul>
+
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>interestfor</code> + <code>popover="hint"</code></strong> &mdash; a short text tooltip in pure HTML.</li>
+    <li><strong><code>title</code> + <code>data-tooltip</code></strong> &mdash; the same result built from an existing <code>title</code>, with placement options and an arrow.</li>
+    <li><strong><code>&lt;tool-tip&gt;</code></strong> &mdash; rich content, hover cards, or a configurable delay through an attribute.</li>
+    <li><strong><code>popovertarget</code> / <code>commandfor</code></strong> &mdash; content the user opens deliberately, including anything interactive.</li>
+  </ul>
+</section>

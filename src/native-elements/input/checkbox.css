@@ -6,8 +6,8 @@
 input[type="checkbox"]:not([data-switch]),
 input[type="radio"] {
   appearance: none;
-  width: var(--control-size);
-  height: var(--control-size);
+  inline-size: var(--control-size);
+  block-size: var(--control-size);
   border: var(--border-width-medium) solid var(--control-border);
   background: var(--input-bg);
   cursor: var(--cursor-custom-pointer, pointer);
@@ -71,10 +71,9 @@ input[type="checkbox"]:not([data-switch]):indeterminate::after {
   content: "";
   display: block;
   position: absolute;
-  top: 50%;
-  left: 15%;
-  right: 15%;
-  height: 2px;
+  inset-block-start: 50%;
+  inset-inline: 15%;
+  block-size: 2px;
   margin-block-start: -1px;
   background: var(--color-text-on-primary);
   border-radius: 1px;
@@ -92,6 +91,59 @@ input[type="checkbox"]:not([data-switch]):disabled,
 input[type="radio"]:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* --- Forced colors ---
+   appearance: none leaves the box, fill and mark painted by backgrounds,
+   which forced colors flattens to Canvas — checked, unchecked and
+   indeterminate would all look identical. Opt out and repaint with system
+   colours: border CanvasText, checked/indeterminate fill Highlight, mark
+   HighlightText. Indeterminate keeps its bar shape, so it stays distinct
+   from checked. */
+@media (forced-colors: active) {
+  input[type="checkbox"]:not([data-switch]),
+  input[type="radio"] {
+    forced-color-adjust: none;
+    background: Canvas;
+    border-color: CanvasText;
+  }
+
+  input[type="checkbox"]:not([data-switch]):is(:checked, :indeterminate),
+  input[type="radio"]:checked {
+    background: Highlight;
+    border-color: Highlight;
+  }
+
+  input[type="checkbox"]:not([data-switch]):is(:checked, :indeterminate)::after,
+  input[type="radio"]:checked::after {
+    background: HighlightText;
+  }
+
+  input[type="checkbox"]:not([data-switch]):hover,
+  input[type="radio"]:hover {
+    border-color: Highlight;
+  }
+
+  input[type="checkbox"]:not([data-switch]):focus-visible,
+  input[type="radio"]:focus-visible {
+    outline-color: Highlight;
+  }
+
+  input[type="checkbox"]:not([data-switch]):disabled,
+  input[type="radio"]:disabled {
+    opacity: 1;
+    border-color: GrayText;
+  }
+
+  input[type="checkbox"]:not([data-switch]):disabled:is(:checked, :indeterminate),
+  input[type="radio"]:disabled:checked {
+    background: GrayText;
+  }
+
+  input[type="checkbox"]:not([data-switch]):disabled:is(:checked, :indeterminate)::after,
+  input[type="radio"]:disabled:checked::after {
+    background: Canvas;
+  }
 }
 
 /* --- Reduced motion --- */

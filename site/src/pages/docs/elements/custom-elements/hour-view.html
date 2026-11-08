@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "hour-view"
-description: "CSS subgrid container for calendar events within a single hour slot. Provides half-hour positioning and double-booking layout."
+description: "CSS-only container for calendar events within a single hour slot. Provides half-hour positioning, vertical stacking and double-booking columns."
 elementName: hour-view
 category: custom
 currentPath: /docs/elements/custom-elements/hour-view/
@@ -12,7 +12,14 @@ crumbLabel: Custom Elements
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;hour-view&gt;</code> element is a CSS-only container that holds <code>&lt;calendar-event&gt;</code> elements within a single hour slot. It uses CSS subgrid to inherit its parent's two-row half-hour grid, allowing events to be placed at the top (:00) or bottom (:30) of the hour.</p>
+    <p>The <code>&lt;hour-view&gt;</code> element is a CSS-only container that holds <code>&lt;calendar-event&gt;</code> elements within a single hour slot. It is a two-row grid &mdash; the top half of the hour (:00) and the bottom half (:30) &mdash; that fills its slot in a <code>&lt;day-view&gt;</code> or <code>&lt;week-view&gt;</code>.</p>
+
+    <browser-window
+      src="/docs/examples/demos/hour-view-basic.html"
+      url="https://vanilla-breeze.com/hour-view"
+      title="Hour View Slots"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Hour with event" data-escape><li>
   <time datetime="09:00">9 AM</time>
@@ -27,7 +34,7 @@ crumbLabel: Custom Elements
 
   <section>
     <h2>Half-Hour Positioning</h2>
-    <p>Each <code>&lt;hour-view&gt;</code> provides two subgrid rows (top half and bottom half of the hour). Events at :00 go in row 1; events with <code>data-start="30"</code> go in row 2.</p>
+    <p>Each <code>&lt;hour-view&gt;</code> has two rows (top half and bottom half of the hour). Events go in row 1; events with <code>data-start="30"</code> on the <code>&lt;calendar-event&gt;</code> go in row 2. Only <code>"30"</code> has an effect &mdash; there are no quarter-hour rows, so a 9:15 event sits in the top half and a 9:45 event in the bottom half.</p>
 
     <code-block language="html" show-lines label="Event at :30" data-escape><hour-view>
   <calendar-event data-category="personal" data-start="30">
@@ -52,7 +59,12 @@ crumbLabel: Custom Elements
   </calendar-event>
 </hour-view></code-block>
 
-    <p>Without <code>data-overlap</code>, events stack vertically. With it, the grid switches to <code>1fr 1fr</code> columns.</p>
+    <p>Without <code>data-overlap</code>, events stack vertically at full width: extra events take extra rows and the hour grows to fit. With it, every event in the same half-hour row gets an equal-width column &mdash; two, three or more &mdash; and a long title is truncated rather than widening its column. <code>:30</code> events stay in the bottom half.</p>
+  </section>
+
+  <section>
+    <h2>Generated Grids</h2>
+    <p>When <code>&lt;day-view&gt;</code> or <a href="/docs/elements/web-components/week-view/"><code>&lt;week-view&gt;</code></a> builds the grid from loose <code>&lt;calendar-event&gt;</code> children, it creates the <code>&lt;hour-view&gt;</code> elements for you, sets <code>data-start="30"</code> on events starting at :30 or later, and adds <code>data-overlap</code> only when two or more events fall in the same half-hour row (a 9:00 and a 9:30 event stay full width). Events with <code>data-duration</code> are lifted out of the hour grid and positioned across the hours they span by JavaScript, with overlapping spans laid out side by side in columns.</p>
   </section>
 
   <section>
@@ -63,7 +75,7 @@ crumbLabel: Custom Elements
         <tr>
           <td><code>data-overlap</code></td>
           <td>boolean</td>
-          <td>Enable side-by-side layout for double-booked events.</td>
+          <td>Lay events in the same half-hour row out side by side in equal columns. Added automatically by day-view and week-view when events clash.</td>
         </tr>
       </tbody>
     </table>
@@ -84,5 +96,6 @@ crumbLabel: Custom Elements
     <ul>
       <li><a href="/docs/elements/custom-elements/calendar-event/"><code>&lt;calendar-event&gt;</code></a> &mdash; Event block placed inside hour-view</li>
       <li><a href="/docs/elements/web-components/day-view/"><code>&lt;day-view&gt;</code></a> &mdash; Full day schedule containing hour-views</li>
+      <li><a href="/docs/elements/web-components/week-view/"><code>&lt;week-view&gt;</code></a> &mdash; Multi-day schedule with an hour-view per day/hour cell</li>
     </ul>
   </section>

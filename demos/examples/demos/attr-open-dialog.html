@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>open on dialog</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+      min-block-size: 26rem;
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+    <h1 class="visually-hidden">open on dialog</h1>
+    <section>
+      <h2>Modal: <code>command="show-modal"</code></h2>
+      <p>The browser adds <code>open</code>, puts the dialog in the top layer and makes the page behind it inert.</p>
+      <button type="button" commandfor="rename-dialog" command="show-modal">Rename file</button>
+      <dialog id="rename-dialog" closedby="any" aria-labelledby="rename-title">
+        <header>
+          <h3 id="rename-title">Rename file</h3>
+        </header>
+        <section>
+          <form-field>
+            <label for="file-name">File name</label>
+            <input type="text" id="file-name" name="file-name" value="quarterly-report.pdf" />
+          </form-field>
+        </section>
+        <footer>
+          <button type="button" class="secondary" commandfor="rename-dialog" command="close">Cancel</button>
+          <button type="button" commandfor="rename-dialog" command="close" value="save">Save</button>
+        </footer>
+      </dialog>
+    </section>
+
+    <section>
+      <h2>Non-modal: <code>show()</code></h2>
+      <p>There is no built-in command for a non-modal dialog, so this button calls <code>show()</code>. The page stays usable behind it.</p>
+      <button type="button" id="open-help">Show help panel</button>
+      <dialog id="help-panel" aria-labelledby="help-title">
+        <header>
+          <h3 id="help-title">Need a hand?</h3>
+        </header>
+        <section>
+          <p>Drag files onto the page to upload them, or press <kbd>U</kbd>.</p>
+        </section>
+        <footer>
+          <button type="button" commandfor="help-panel" command="close">Close</button>
+        </footer>
+      </dialog>
+    </section>
+  </layout-stack>
+
+  <script type="module">
+    document.getElementById('open-help').addEventListener('click', () => {
+      document.getElementById('help-panel').show();
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

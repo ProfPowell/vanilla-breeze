@@ -26,6 +26,17 @@ class VBElement extends HTMLElement {
   /** @type {ElementInternals | undefined} */
   #internals;
 
+  constructor() {
+    super();
+    // A fresh instance has never run setup(), so a data-upgraded it already
+    // carries is stale: cloneNode()/importNode() copy it from an upgraded
+    // original (the clone is upgraded with the copied attributes in place),
+    // and saved/serialised markup can carry it too. Left in place it would
+    // make connectedCallback skip setup() and leave the copy inert, and let
+    // attributeChangedCallback guards treat an unwired element as live.
+    if (this.hasAttribute('data-upgraded')) this.removeAttribute('data-upgraded');
+  }
+
   connectedCallback() {
     // Suppresses a repeated connect while still connected. It does NOT survive
     // disconnect (see disconnectedCallback), so setup() still re-runs on every
@@ -120,6 +131,38 @@ class VBElement extends HTMLElement {
   _adoptInternals(internals) {
     if (!this.#internals) this.#internals = internals;
   }
+
+  /*
+   * Public constraint-validation surface for form-associated subclasses
+   * (static formAssociated = true), mirroring native controls so
+   * <form-field> and author code can read validity the same way for every
+   * VB form control. Non-form-associated elements return undefined / true.
+   * Subclasses that need custom behaviour override these.
+   */
+
+  /** @returns {ElementInternals | null} */
+  #formInternals() {
+    const ctor = /** @type {any} */ (this.constructor);
+    return ctor.formAssociated && this.#internals ? this.#internals : null;
+  }
+
+  /** @returns {ValidityState | undefined} */
+  get validity() { return this.#formInternals()?.validity; }
+
+  /** @returns {string} */
+  get validationMessage() { return this.#formInternals()?.validationMessage ?? ''; }
+
+  /** @returns {boolean} */
+  get willValidate() { return this.#formInternals()?.willValidate ?? false; }
+
+  /** @returns {HTMLFormElement | null} */
+  get form() { return this.#formInternals()?.form ?? null; }
+
+  /** @returns {boolean} */
+  checkValidity() { return this.#formInternals()?.checkValidity() ?? true; }
+
+  /** @returns {boolean} */
+  reportValidity() { return this.#formInternals()?.reportValidity() ?? true; }
 }
 
 export { VBElement };

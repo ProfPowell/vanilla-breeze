@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>popover attribute: auto and manual</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+      min-block-size: 22rem;
+    }
+
+    /* VB hides closed popovers and centres bare ones, but leaves their
+       surface to the browser. This page gives them a surface and anchors
+       them to the button that opened them (implicit anchor). */
+    #account-menu,
+    #draft-saved {
+      inset: auto;
+      margin: 0;
+      margin-block-start: var(--size-2xs);
+      position-area: block-end span-inline-end;
+      padding: var(--size-s) var(--size-m);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+      background: var(--color-surface-raised);
+      color: var(--color-text);
+      box-shadow: var(--shadow-l);
+    }
+
+    #account-menu ul {
+      list-style: none;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+    <h1 class="visually-hidden">Popover attribute</h1>
+    <section>
+      <h2>Auto: light dismiss</h2>
+      <p>Click outside the menu or press <kbd>Escape</kbd> to close it.</p>
+      <button type="button" popovertarget="account-menu">Account</button>
+      <nav id="account-menu" popover aria-label="Account">
+        <ul>
+          <li><a href="#profile">Profile</a></li>
+          <li><a href="#billing">Billing</a></li>
+          <li><a href="#sign-out">Sign out</a></li>
+        </ul>
+      </nav>
+    </section>
+
+    <section>
+      <h2>Manual: stays open</h2>
+      <p>Outside clicks and <kbd>Escape</kbd> leave it open. Only the buttons close it.</p>
+      <button type="button" popovertarget="draft-saved" popovertargetaction="show">Save draft</button>
+      <p id="draft-saved" popover="manual">
+        Draft saved at 10:42.
+        <button type="button" class="ghost" popovertarget="draft-saved" popovertargetaction="hide">Dismiss</button>
+      </p>
+    </section>
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

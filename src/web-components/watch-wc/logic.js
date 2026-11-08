@@ -1,51 +1,62 @@
 /**
  * watch-wc: drop-in wrapper for the data-watch-page button.
  *
- * Renders a properly-styled, accessible button that toggles whether
- * the current page is in the user's VBStore('watches') list. State
- * lives in src/utils/page-watch-init.js — this component is a
- * one-tag wrapper that authors can use instead of the verbose
+ * Renders a styled, accessible toggle button that adds or removes the
+ * current page from the user's VBStore('watches') list. The state machine
+ * lives in src/utils/page-watch-init.js; this component renders
  *
- *   <button type="button" data-watch-page class="ghost"
- *           aria-label="Watch this page for updates">
- *     <icon-wc name="eye" size="sm"></icon-wc>
+ *   <button type="button" data-watch-page aria-pressed="false">
+ *     <icon-wc name="bookmark"></icon-wc>
  *   </button>
  *
- * markup. The internal button still carries `data-watch-page`, so
- * page-watch-init's MutationObserver picks it up and runs the same
- * state machine.
+ * and repaints its label, icon and title from the button's aria-pressed,
+ * which page-watch-init keeps in sync with the store (on load, on click,
+ * and whenever any watch button or the notification panel changes it).
+ *
+ * Accessible name: the icon variant is named by aria-label
+ * (data-label-action). The compact and button variants are named by their
+ * visible text (no aria-label, so the visible label is the name, WCAG 2.5.3);
+ * aria-pressed carries the state in every variant.
+ *
+ * No-JS fallback: authored children (e.g. a "subscribe by email" link) show
+ * until the component upgrades, then are hidden.
  *
  * @attr {string}  [variant="icon"]  - "icon" | "compact" | "button"
- *                                    Visual preset:
- *                                      icon    → 2.25rem ghost icon button
- *                                      compact → small icon + text label
- *                                      button  → full ghost button with label
- * @attr {string}  [label]           - Override the visible text in `compact`
- *                                    and `button` variants. Defaults to
- *                                    "Watch for updates" / "Watching".
- * @attr {boolean} [server-sync]     - Per-instance opt-in for server-side
- *                                    sync via VBService('notify'). Sets
- *                                    window.vbPageWatch.serverSync = true
- *                                    before the page-watch script runs.
- *
- * Sibling instances stay in sync — the component listens for
- * page-watch:add and page-watch:remove on document and re-syncs
- * its own button.
+ * @attr {string}  [label]           - Constant visible text for compact/button
+ *                                    (overrides data-label-watch/-watching)
+ * @attr {boolean} [server-sync]     - Turns on server-side sync for the whole
+ *                                    page (sets window.vbPageWatch.serverSync)
+ * @attr {string}  [data-label-watch="Watch for updates"]    - Text when not watching
+ * @attr {string}  [data-label-watching="Watching"]          - Text when watching
+ * @attr {string}  [data-label-action="Watch this page for updates"] - Icon variant name + tooltip
+ * @attr {string}  [data-label-stop="Stop watching this page"]       - Icon variant tooltip when watching
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 
-const WATCH_LABEL = 'Watch for updates';
-const WATCHING_LABEL = 'Watching';
+/** Default English strings; each is overridable with data-label-<key>. */
+const LABELS = {
+  watch: 'Watch for updates',
+  watching: 'Watching',
+  action: 'Watch this page for updates',
+  stop: 'Stop watching this page',
+};
 
 class WatchWc extends VBElement {
+  static observedAttributes = [
+    'variant', 'label',
+    'data-label-watch', 'data-label-watching', 'data-label-action', 'data-label-stop',
+  ];
+
   /** @type {HTMLButtonElement|null} */
   #button = null;
+  /** @type {MutationObserver|null} */
+  #observer = null;
 
   setup() {
     if (this.hasAttribute('server-sync')) {
-      // Set the global flag before page-watch-init evaluates it.
+      // Page-global: page-watch-init reads this flag on every (un)subscribe.
       const w = /** @type {*} */ (window);
       w.vbPageWatch = { ...(w.vbPageWatch ?? {}), serverSync: true };
     }
@@ -53,27 +64,38 @@ class WatchWc extends VBElement {
     const variant = this.#variant();
     this.dataset.variant = variant;
 
-    // Defensive: if a prior render is still in the tree (e.g. after a
-    // disconnect/reconnect cycle from print preview reflow), clear it
-    // before appending a fresh button.
-    for (const child of Array.from(this.children)) {
-      if (child.hasAttribute?.('data-watch-page')) child.remove();
-    }
+    // Defensive: drop a stale generated button (never authored fallback).
+    this.querySelectorAll(':scope > [data-watch-wc]').forEach((el) => el.remove());
 
-    this.#button = this.#renderButton(variant);
-    this.appendChild(this.#button);
+    const btn = this.#renderButton(variant);
+    this.#button = btn;
+    this.appendChild(btn);
+    this.#paint();
 
-    // Sibling sync: when ANY watch button changes the page-watch state,
-    // re-read VBStore so this instance's button matches.
-    this.listen(document, 'page-watch:add', this.#syncFromStore);
-    this.listen(document, 'page-watch:remove', this.#syncFromStore);
+    // page-watch-init owns aria-pressed; repaint label/title when it changes.
+    this.#observer = new MutationObserver(() => this.#paint());
+    this.#observer.observe(btn, { attributes: true, attributeFilter: ['aria-pressed'] });
+
+    // Make sure the state machine is running (its guard only fires at boot).
+    // A second copy is inert, see page-watch-init's sentinel.
+    import('../../utils/page-watch-init.js').catch(() => {});
   }
 
   teardown() {
-    if (this.#button) {
-      this.#button.remove();
-      this.#button = null;
-    }
+    this.#observer?.disconnect();
+    this.#observer = null;
+    this.#button?.remove();
+    this.#button = null;
+  }
+
+  attributeChangedCallback(_name, oldValue, newValue) {
+    if (oldValue === newValue || !this.hasAttribute('data-upgraded')) return;
+    this._reinit();
+  }
+
+  /** @param {keyof typeof LABELS} key */
+  #label(key) {
+    return this.getAttribute(`data-label-${key}`) ?? LABELS[key];
   }
 
   #variant() {
@@ -81,63 +103,43 @@ class WatchWc extends VBElement {
     return v === 'compact' || v === 'button' ? v : 'icon';
   }
 
+  /** @param {string} variant */
   #renderButton(variant) {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.setAttribute('data-watch-page', '');
     btn.className = 'ghost';
-    btn.setAttribute('aria-label', 'Watch this page for updates');
+    btn.setAttribute('data-watch-page', '');
+    btn.setAttribute('data-watch-wc', '');
+    // We manage text + title; page-watch-init only sets aria-pressed + icon.
+    btn.setAttribute('data-watch-label-locked', '');
+    btn.setAttribute('aria-pressed', 'false');
 
-    const iconSize = variant === 'icon' ? 'sm' : 'xs';
-    const labelText = this.getAttribute('label') ?? WATCH_LABEL;
+    const icon = document.createElement('icon-wc');
+    icon.setAttribute('name', 'bookmark');
+    icon.setAttribute('size', variant === 'icon' ? 'sm' : 'xs');
+    icon.setAttribute('aria-hidden', 'true');
+    btn.appendChild(icon);
 
     if (variant === 'icon') {
-      btn.innerHTML = `<icon-wc name="bookmark" size="${iconSize}"></icon-wc>`;
+      btn.setAttribute('aria-label', this.#label('action'));
     } else {
-      btn.innerHTML = `<icon-wc name="bookmark" size="${iconSize}"></icon-wc><span>${this.#escape(labelText)}</span>`;
-      // Lock the label so page-watch-init doesn't rewrite it; we manage it here.
-      btn.setAttribute('data-watch-label-locked', '');
+      btn.appendChild(document.createElement('span'));
     }
-
     return btn;
   }
 
-  /**
-   * Re-read VBStore via dynamic import so we don't pull page-watch-init
-   * into the eager bundle. The script is lazy-loaded in main.js once a
-   * [data-watch-page] is on the page — by the time we get here it's
-   * already imported.
-   */
-  #syncFromStore = async () => {
-    if (!this.#button) return;
-    try {
-      const { readWatch } = await import('../../utils/page-watch-init.js');
-      const entry = await readWatch();
-      const watching = !!entry;
-      this.#button.setAttribute('aria-pressed', watching ? 'true' : 'false');
-      const icon = this.#button.querySelector('icon-wc');
-      if (icon) icon.setAttribute('name', watching ? 'bookmark-check' : 'bookmark');
-      const labelSpan = this.#button.querySelector('span');
-      if (labelSpan && this.#variant() !== 'icon') {
-        const customLabel = this.getAttribute('label');
-        labelSpan.textContent = customLabel
-          ? customLabel
-          : (watching ? WATCHING_LABEL : WATCH_LABEL);
-      }
-      this.#button.setAttribute(
-        'title',
-        watching ? 'Stop watching this page' : 'Watch this page for content updates',
-      );
-    } catch {
-      // page-watch-init not yet loaded — fine, it'll set state when it does
+  #paint() {
+    const btn = this.#button;
+    if (!btn) return;
+    const watching = btn.getAttribute('aria-pressed') === 'true';
+    btn.querySelector('icon-wc')?.setAttribute('name', watching ? 'bookmark-check' : 'bookmark');
+    const span = btn.querySelector(':scope > span');
+    if (span) {
+      span.textContent = this.getAttribute('label') ?? this.#label(watching ? 'watching' : 'watch');
+      btn.removeAttribute('title');
+    } else {
+      btn.setAttribute('title', watching ? this.#label('stop') : this.#label('action'));
     }
-  };
-
-  /** @param {string} str */
-  #escape(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
   }
 }
 

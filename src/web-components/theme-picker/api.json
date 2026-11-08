@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "theme-picker",
   "type": "web-component",
-  "description": "Theme selection component",
+  "description": "Theme selection: color mode, brand theme, accent, sizing, accessibility themes and extensions, as a popover or inline panel",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -14,59 +14,182 @@
       "name": "variant",
       "kind": "host-api",
       "purpose": "config",
-      "type": "string",
-      "description": "Display variant: 'popover' (default), 'inline'"
+      "type": "enum",
+      "values": [
+        "popover",
+        "inline"
+      ],
+      "default": "popover",
+      "description": "popover: trigger + floating panel; inline: always-visible panel"
     },
     {
       "name": "compact",
       "kind": "host-api",
-      "purpose": "config",
+      "purpose": "visual-variant",
       "type": "boolean",
-      "description": "Render theme section as grouped select dropdown"
+      "description": "Segmented mode control plus selects instead of swatch grids"
     },
     {
       "name": "open",
-      "kind": "native",
-      "purpose": "config",
+      "kind": "host-api",
+      "purpose": "output-state",
+      "direction": "output",
       "type": "boolean",
-      "description": "Reflected state only — set by open()/close()/toggle() methods, not intended as initial markup (popover variant only)"
+      "description": "Reflected state only — set by open()/close()/toggle(), not intended as initial markup (popover variant only)"
     },
     {
-      "name": "data-trigger",
+      "name": "data-label-panel",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Theme settings",
+      "description": "Panel aria-label (i18n override)"
     },
     {
-      "name": "aria-haspopup",
-      "kind": "aria",
-      "purpose": "config"
+      "name": "data-label-trigger",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Theme settings",
+      "description": "Generated trigger icon label (i18n override)"
     },
     {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
+      "name": "data-label-mode",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Color Mode",
+      "description": "Color mode legend and radiogroup label (i18n override)"
     },
     {
-      "name": "aria-busy",
-      "kind": "aria",
-      "purpose": "config"
+      "name": "data-label-accent",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Color Accent",
+      "description": "Accent legend and label (i18n override)"
+    },
+    {
+      "name": "data-label-style",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Style",
+      "description": "Style swatch group (i18n override)"
+    },
+    {
+      "name": "data-label-featured",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Featured",
+      "description": "Featured themes legend (i18n override)"
+    },
+    {
+      "name": "data-label-more-themes",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "More Themes",
+      "description": "More themes disclosure (i18n override)"
+    },
+    {
+      "name": "data-label-theme",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Theme",
+      "description": "Compact theme select (i18n override)"
+    },
+    {
+      "name": "data-label-a11y",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Accessibility",
+      "description": "Accessibility legend (i18n override)"
+    },
+    {
+      "name": "data-label-sizing",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Sizing",
+      "description": "Sizing legend and label (i18n override)"
+    },
+    {
+      "name": "data-label-extensions",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Extensions",
+      "description": "Extensions legend / disclosure (i18n override)"
+    },
+    {
+      "name": "data-label-download",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Download {name} as DTCG tokens",
+      "description": "DTCG download link label ({name} = theme name) (i18n override)"
     }
   ],
+  "childAttributes": [
+    {
+      "name": "data-trigger",
+      "on": "button",
+      "type": "boolean",
+      "description": "Marks the popover trigger (else the first child <button>; else a generated type=button icon trigger)"
+    }
+  ],
+  "structure": [],
   "events": [
     {
-      "name": "vb:extensions-change"
+      "name": "theme-picker:open",
+      "detail": "null",
+      "description": "Popover opened"
     },
     {
-      "name": "theme-picker:open"
-    },
-    {
-      "name": "theme-picker:close"
+      "name": "theme-picker:close",
+      "detail": "null",
+      "description": "Popover closed"
     },
     {
       "name": "theme-picker:dtcg-download",
-      "description": "Fired when a user clicks the per-swatch DTCG download link. Native <a download> still handles the save; this event is for analytics / consumer hooks. detail: { themeId, href }"
+      "detail": "{ themeId, href }",
+      "description": "Per-swatch DTCG download link clicked (native <a download> still saves the file)"
+    },
+    {
+      "name": "vb:a11y-themes-change",
+      "detail": "string[]",
+      "description": "Dispatched on window when an accessibility theme is toggled; the picker also listens for it from other pickers and settings-panel and re-syncs"
+    },
+    {
+      "name": "vb:extensions-change",
+      "detail": "{ motionFx, sounds }",
+      "description": "Dispatched on window when extension prefs are applied (load and toggle); also listened for from sibling controls"
     }
   ],
-  "childAttributes": [],
-  "structure": []
+  "methods": [
+    {
+      "name": "open()",
+      "description": "Open the popover and move focus into it (popover variant only)"
+    },
+    {
+      "name": "close()",
+      "description": "Close the popover"
+    },
+    {
+      "name": "toggle()",
+      "description": "Open or close the popover"
+    }
+  ],
+  "properties": [
+    {
+      "name": "isOpen",
+      "type": "boolean",
+      "readonly": true,
+      "description": "Whether the popover is open"
+    }
+  ]
 }

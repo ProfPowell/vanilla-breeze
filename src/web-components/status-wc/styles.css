@@ -25,10 +25,16 @@ status-wc {
 }
 
 status-wc .status-dot {
+  box-sizing: border-box;
   inline-size: var(--status-dot-size);
   block-size: var(--status-dot-size);
   border-radius: var(--radius-full, 999px);
   background: var(--status-dot-color);
+  /* Contrast ring: in light mode a darker edge keeps light fills (amber
+     streaming/away/paused) at >= 3:1 against the surface. Dark surfaces
+     already contrast with the fill, so the ring matches it there. */
+  border: 1px solid var(--status-dot-ring,
+    light-dark(oklch(from var(--status-dot-color) calc(l - 0.22) c h), var(--status-dot-color)));
   flex-shrink: 0;
   animation: var(--status-animation);
 }
@@ -99,6 +105,7 @@ status-wc[data-size="lg"] { --status-dot-size: 0.875rem; }
 
 status-wc[data-position="after"] { flex-direction: row-reverse; }
 
+status-wc .status-default-label,
 status-wc[data-position="only"] .status-label {
   position: absolute;
   inline-size: 1px;
@@ -109,6 +116,25 @@ status-wc[data-position="only"] .status-label {
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* -------- Forced colours -------------------------------------------------
+   Backgrounds and box-shadows are dropped in forced colours, which would
+   erase the dot. Paint it with system colours instead: solid for active
+   states, hollow for offline/stopped (the text label still names the state). */
+
+@media (forced-colors: active) {
+  status-wc .status-dot {
+    forced-color-adjust: none;
+    background: CanvasText;
+    border-color: CanvasText;
+    box-shadow: none;
+    animation: none;
+  }
+
+  status-wc:is([data-variant="offline"], [data-variant="stopped"]) .status-dot {
+    background: Canvas;
+  }
 }
 
 /* -------- Reduced motion + print ----------------------------------------- */

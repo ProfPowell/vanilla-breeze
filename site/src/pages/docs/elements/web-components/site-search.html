@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;site-search&gt;</code> component provides a modal search interface with keyboard shortcuts, result highlighting, and keyboard navigation. It uses <a href="https://pagefind.app">Pagefind</a> for indexing and searching your static site content.</p>
+    <p>The <code>&lt;site-search&gt;</code> component opens a native modal <code>&lt;dialog&gt;</code> with a search combobox, keyboard navigation and highlighted excerpts. It uses <a href="https://pagefind.app">Pagefind</a> for indexing and searching your static site content.</p>
 
     <browser-window
       src="/docs/examples/demos/site-search-basic.html"
@@ -43,7 +43,7 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><kbd>Cmd</kbd> + <kbd>K</kbd> / <kbd>Ctrl</kbd> + <kbd>K</kbd></td>
-          <td>Open/close search</td>
+          <td>Open/close search. Bound once for the page: it opens the first <em>visible</em> <code>&lt;site-search&gt;</code>, so a page may hold several (e.g. desktop header and mobile menu)</td>
         </tr>
         <tr>
           <td><kbd>Escape</kbd></td>
@@ -55,7 +55,7 @@ crumbLabel: Web Components
         </tr>
         <tr>
           <td><kbd>Enter</kbd></td>
-          <td>Go to selected result</td>
+          <td>Go to the selected result, or the first result when none is selected</td>
         </tr>
       </tbody>
     </table>
@@ -86,6 +86,31 @@ crumbLabel: Web Components
 </site-search></code-block>
   </section>
 
+  <section>
+    <h2>Configuration</h2>
+
+    <h3>Subpath deploys</h3>
+    <p>The component imports <code>pagefind.js</code> from <code>/pagefind/</code> by default. When the site is served from a subpath, point <code>data-pagefind-path</code> at the index directory. Result URLs get the directory above it as Pagefind&rsquo;s <code>baseUrl</code>; set <code>data-base-url</code> to override that.</p>
+    <code-block language="html" show-lines label="Site served from /docs-site/" data-escape><site-search data-pagefind-path="/docs-site/pagefind/">
+  <button data-trigger>Search</button>
+</site-search></code-block>
+
+    <h3>Labels</h3>
+    <p>Every UI string has a <code>data-label-*</code> override, including the result count (<code>{count}</code> is replaced) and the status shown when the index is missing. Developers get a console hint (&ldquo;run <code>npm run search:index</code>&rdquo;); visitors only see &ldquo;Search unavailable&rdquo;.</p>
+    <code-block language="html" show-lines label="French labels" data-escape><site-search lang="fr"
+  data-label-dialog="Recherche sur le site"
+  data-label-placeholder="Rechercher dans la documentation…"
+  data-label-input="Rechercher"
+  data-label-results="Résultats"
+  data-label-searching="Recherche…"
+  data-label-empty="Aucun résultat"
+  data-label-count="{count} résultats"
+  data-label-count-one="1 résultat"
+  data-label-unavailable="Recherche indisponible">
+  <button data-trigger>Rechercher</button>
+</site-search></code-block>
+  </section>
+
   {% from "partials/attribute-table.njk" import attributeTable, structureTable, childAttributeTable, eventsTable %}
   <section>
     <h2>Attributes</h2>
@@ -101,6 +126,23 @@ crumbLabel: Web Components
   <section>
     <h2>Events</h2>
     {{ eventsTable("site-search", apiRegistry) }}
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Member</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>open()</code></td><td>Open the dialog and focus the input</td></tr>
+        <tr><td><code>close()</code></td><td>Close the dialog, clear the query and return focus to the trigger</td></tr>
+        <tr><td><code>isOpen</code></td><td>Read-only: whether the dialog is open</td></tr>
+        <tr><td><code>value</code></td><td>The current query; setting it runs a search and fires <code>site-search:change</code></td></tr>
+        <tr><td><code>results</code></td><td>Read-only copy of the current Pagefind result records</td></tr>
+        <tr><td><code>:state(input-debounce-pending)</code></td><td>A keystroke is waiting out the 150&nbsp;ms debounce</td></tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
@@ -145,10 +187,11 @@ exclude_selectors:
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Uses <code>role="dialog"</code> for the search modal</li>
-      <li>Focus is trapped within the dialog when open</li>
-      <li>Escape key closes the dialog and returns focus to trigger</li>
-      <li>Results use <code>role="listbox"</code> and <code>role="option"</code></li>
-      <li>Keyboard navigation through results with arrow keys</li>
+      <li>The search panel is a native <code>&lt;dialog&gt;</code> opened with <code>showModal()</code>: it sits in the top layer and the rest of the page is inert, so focus cannot leave it for the page behind</li>
+      <li>Escape closes the dialog and returns focus to the trigger</li>
+      <li>The input is a <code>role="combobox"</code> with <code>aria-controls</code>, <code>aria-expanded</code> and <code>aria-activedescendant</code>; the results are a <code>role="listbox"</code> that holds only <code>role="option"</code> links</li>
+      <li>A separate <code>role="status"</code> region announces &ldquo;Searching&hellip;&rdquo;, the result count, &ldquo;No results found&rdquo; and errors</li>
+      <li>Results are real links: Cmd/Ctrl-click and middle-click open them in a new tab</li>
+      <li>Result titles render as text and excerpts keep only Pagefind&rsquo;s <code>&lt;mark&gt;</code> highlights; result URLs must be same-origin <code>http(s)</code></li>
     </ul>
   </section>

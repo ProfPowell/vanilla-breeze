@@ -30,11 +30,11 @@ crumbLabel: Native Elements
     <p>Basic footer without additional styling.</p>
     <browser-window src="/docs/snippets/demos/footer-default.html" url="https://vanilla-breeze.com/footer/default" title="Default footer" shadow></browser-window>
     <code-block language="html" label="Default footer" data-escape><footer>
-  <p>Copyright 2024 Acme Corp. All rights reserved.</p>
+  <p>Copyright 2026 Acme Corp. All rights reserved.</p>
 </footer></code-block>
 
     <h3>.site</h3>
-    <p>Full-width site footer with raised background.</p>
+    <p>Full-width site footer with raised background. Links inside the footer's <code>&lt;nav&gt;</code> and lists are muted and un-underlined, brightening on hover and keyboard focus; links in running text (a copyright or credits line) keep the default underline so they aren't distinguished by colour alone.</p>
     <browser-window src="/docs/snippets/demos/footer-site.html" url="https://vanilla-breeze.com/footer/site" title="Site footer" shadow></browser-window>
     <code-block language="html" label="Site footer" data-escape><footer class="site">
   <nav aria-label="Footer navigation">
@@ -45,8 +45,8 @@ crumbLabel: Native Elements
       <li><a href="#">Terms</a></li>
     </ul>
   </nav>
-  <p><small>Copyright 2024 Vanilla Breeze.
-  All rights reserved.</small></p>
+  <p><small>Copyright 2026 Vanilla Breeze.
+  Built with <a href="/docs/">Vanilla Breeze</a>.</small></p>
 </footer></code-block>
 
     <h3>.article</h3>
@@ -57,22 +57,27 @@ crumbLabel: Native Elements
   <p>Article content goes here...</p>
   <footer class="article">
     <p>Written by Jane Doe on
-    <time datetime="2024-01-15">January 15, 2024</time></p>
+    <time datetime="2026-01-15">January 15, 2026</time></p>
     <p>Tags: HTML, CSS, Web Development</p>
   </footer>
 </article></code-block>
 
     <h3>.card</h3>
-    <p>Card footer with border and raised background.</p>
+    <p>Card footer with border and raised background, for card-like containers that don't style their own footer (such as <code>article.card</code>). <a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a> already pads and borders a direct-child <code>&lt;footer&gt;</code>, so a plain <code>&lt;footer&gt;</code> is enough there.</p>
     <browser-window src="/docs/snippets/demos/footer-card.html" url="https://vanilla-breeze.com/footer/card" title="Card footer" shadow></browser-window>
-    <code-block language="html" label="Card footer" data-escape><layout-card>
-  <header class="card">
-    <h3>Card Title</h3>
-  </header>
+    <code-block language="html" label="Card footer" data-escape><article class="card">
+  <h3>Card Title</h3>
   <p>Card content with some description text.</p>
   <footer class="card">
     <button type="button">Action</button>
   </footer>
+</article>
+
+<!-- layout-card styles its own footer: no class needed -->
+<layout-card>
+  <header><h3>Card Title</h3></header>
+  <section><p>Card content.</p></section>
+  <footer><button type="button">Action</button></footer>
 </layout-card></code-block>
 
     <h3>.minimal</h3>
@@ -119,6 +124,16 @@ crumbLabel: Native Elements
     </ul>
   </section>
 </footer></code-block>
+
+    <h3 id="sticky">data-sticky</h3>
+    <p>Pins the footer to the bottom of its scroll container &mdash; useful for form actions and persistent calls to action. On mobile it rises above the virtual keyboard via <code>env(keyboard-inset-height)</code>. See <a href="/docs/attributes/data-sticky/"><code>data-sticky</code></a> for coordinating sticky headers and footers page-wide. In print, sticky footers return to normal flow.</p>
+    <browser-window src="/docs/snippets/demos/footer-sticky.html" url="https://vanilla-breeze.com/footer/sticky" title="Sticky footer" shadow></browser-window>
+    <code-block language="html" label="Sticky footer" data-escape><form>
+  <!-- fields… -->
+  <footer data-sticky>
+    <button type="submit">Save</button>
+  </footer>
+</form></code-block>
   </section>
 
   <section>
@@ -126,7 +141,7 @@ crumbLabel: Native Elements
     <table class="props-table">
       <thead>
         <tr>
-          <th>Class</th>
+          <th>Class / attribute</th>
           <th>Description</th>
         </tr>
       </thead>
@@ -141,7 +156,7 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>.card</code></td>
-          <td>Top border with raised background for card actions</td>
+          <td>Top border with raised background for card actions (not needed inside <code>&lt;layout-card&gt;</code>)</td>
         </tr>
         <tr>
           <td><code>.minimal</code></td>
@@ -152,8 +167,8 @@ crumbLabel: Native Elements
           <td>Auto-fit grid layout for multi-column site footers</td>
         </tr>
         <tr>
-          <td><code>.sticky</code></td>
-          <td>Sticks to bottom with background and top border</td>
+          <td><code>[data-sticky]</code></td>
+          <td>Sticks to the bottom (above the virtual keyboard) with background and top border; static in print</td>
         </tr>
       </tbody>
     </table>
@@ -162,8 +177,8 @@ crumbLabel: Native Elements
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>The document's main footer becomes a contentinfo landmark (only when not nested)</li>
-      <li>Include skip links to bypass footer navigation when appropriate</li>
+      <li>A <code>&lt;footer&gt;</code> is exposed as the <code>contentinfo</code> landmark only when it is scoped to <code>&lt;body&gt;</code> &mdash; that is, it has no <code>&lt;article&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;nav&gt;</code> or <code>&lt;section&gt;</code> ancestor. Non-sectioning wrappers, including VB layout custom elements such as <code>&lt;layout-stack&gt;</code> at body level, don't change this. A footer inside one of those elements is a plain section footer with no landmark role.</li>
+      <li>Keep one body-level footer per page so there is a single <code>contentinfo</code> landmark</li>
       <li>Use <code>&lt;nav&gt;</code> with <code>aria-label="Footer navigation"</code> for footer nav sections</li>
       <li>Ensure sufficient color contrast for muted footer text</li>
       <li>Footer links should be keyboard accessible and have visible focus states</li>

@@ -6,7 +6,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/docs/examples/demos/emoji-basic.html';
+const demoPage = '/docs/examples/demos/emoji-picker-basic.html';
 
 test.describe('emoji-picker — baseline', () => {
 
@@ -113,12 +113,13 @@ test.describe('emoji-picker — search', () => {
     await trigger.click();
 
     const searchInput = page.locator('emoji-picker input[type="search"]').first();
-    const gridBefore = await page.locator('emoji-picker .grid button').count();
+    const visible = page.locator('emoji-picker .grid button:not([hidden])');
+    const gridBefore = await visible.count();
 
     await searchInput.fill('heart');
-    await page.waitForTimeout(200);
+    await expect(page.locator('emoji-picker [role="status"]').first()).toHaveText(/emoji found/);
 
-    const gridAfter = await page.locator('emoji-picker .grid button').count();
+    const gridAfter = await visible.count();
     expect(gridAfter).toBeLessThan(gridBefore);
     expect(gridAfter).toBeGreaterThan(0);
   });
@@ -219,11 +220,7 @@ test.describe('emoji-picker — lifecycle', () => {
         parent.removeChild(ep);
         parent.appendChild(ep);
 
-        // Wait for async setup
-        setTimeout(() => {
-          const count = ep.querySelectorAll('.picker').length;
-          resolve(count);
-        }, 500);
+        ep.ready.then(() => resolve(ep.querySelectorAll('.picker').length));
       });
     });
 

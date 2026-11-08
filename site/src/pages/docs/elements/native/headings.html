@@ -73,6 +73,22 @@ crumbLabel: Native Elements
     </table>
 
     <p>h1 and h2 get tighter letter-spacing (tracking) because large text has more apparent whitespace between characters. h6 uses <code>font-weight: 700</code> instead of 600 for visual differentiation at body-text size.</p>
+
+    <h3>Spacing</h3>
+    <p>The heading rules set size, weight and leading only. The reset removes all default margins, so headings have no space of their own. Vertical rhythm comes from the container: <code>&lt;layout-text&gt;</code> (and <code>data-layout="prose"</code> / <code>"columns"</code>) adds extra space before each h2&ndash;h6 and tightens the gap after it. Layout primitives such as <code>&lt;layout-stack&gt;</code> space headings with their gap. Wrap article bodies in one of these rather than adding margins to headings.</p>
+  </section>
+
+  <section>
+    <h2>Display Headings</h2>
+    <p>Add <code>data-display</code> to an <code>&lt;h1&gt;</code> or <code>&lt;h2&gt;</code> for viewport-responsive display type. It scales between <code>--font-size-4xl</code> and <code>--font-size-5xl</code>, with tighter tracking and <code>line-height: 1</code>. <code>data-display="hero"</code> (h1 only) goes larger still, up to 10rem, for single-statement hero sections. Display headings keep their level, so choose the element by hierarchy and the attribute by size.</p>
+    <code-block language="html" label="Display headings" data-escape><h1 data-display="hero">Ship less JavaScript.</h1>
+<h2 data-display>Built on the platform</h2></code-block>
+
+    <h3>Gradient text in centred layouts</h3>
+    <p><code>data-effect="gradient-text"</code> shrink-wraps the heading to its text (<code>width: fit-content</code>) so the gradient spans the glyphs. A shrink-wrapped block no longer fills the line, so <code>text-align: center</code> alone won't centre it. Inside centred containers, add <code>margin-inline: auto</code>. <code>header.centered</code> already does this for its children.</p>
+    <code-block language="css" label="Centring a gradient-text heading" data-escape>.hero h1[data-effect~="gradient-text"] {
+  margin-inline: auto;
+}</code-block>
   </section>
 
   <section>
@@ -101,6 +117,7 @@ crumbLabel: Native Elements
 </article></code-block>
 
     <p><strong>Rule of thumb:</strong> Each page should have exactly one <code>&lt;h1&gt;</code>. Sections use <code>&lt;h2&gt;</code>. Subsections use <code>&lt;h3&gt;</code>. Levels 4&ndash;6 are for fine-grained structure within long documents.</p>
+    <p>To number the outline (1., 1.1., 1.1.1.) add <a href="/docs/elements/native/article/#data-numbered"><code>data-numbered</code></a> to the article; for legal-style <code>§ 1</code> numbering use <a href="/docs/elements/native/article/#data-section-numbers"><code>data-section-numbers</code></a>.</p>
   </section>
 
   <section>
@@ -140,7 +157,8 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Theme Ornament Hooks</h2>
-    <p>Themes can add decorative glyphs before or after headings using CSS custom properties. These tokens are theme-controlled &mdash; the base VB stylesheet sets them to <code>none</code>.</p>
+    <p>Themes can add decorative glyphs before or after headings using CSS custom properties. The base VB stylesheet leaves them unset, so nothing renders. Each level checks its own token first (<code>--h2-ornament-before</code>), then the global token (<code>--heading-ornament-before</code>). The global token applies to every level, h1 to h6.</p>
+    <p>Ornaments are rendered with empty alternative text (<code>content: &hellip; / ""</code>), so they are not part of the heading's accessible name. Screen readers read "Section Title", not "section sign Section Title". Set the tokens to a plain string. Don't include your own <code>/ "alt"</code>, because the stylesheet adds one.</p>
 
     <browser-window src="/docs/snippets/demos/headings-ornaments.html" url="https://vanilla-breeze.com/headings/ornaments" title="Heading ornaments" shadow></browser-window>
     <code-block language="css" label="Theme ornament tokens" data-escape>/* Theme file — add decorative glyphs before headings */
@@ -148,11 +166,15 @@ crumbLabel: Native Elements
   --heading-ornament-before: "§ ";
 }
 
-/* Per-level overrides */
+/* Per-level overrides win over the global token */
 :root {
   --h1-ornament-before: "❧ ";
-  --h2-ornament-before: "§ ";
   --h3-ornament-before: "› ";
+}
+
+/* What the stylesheet does with them (h1 shown) */
+h1::before {
+  content: var(--h1-ornament-before, var(--heading-ornament-before, none)) / "";
 }</code-block>
 
     <table class="props-table">
@@ -182,6 +204,10 @@ crumbLabel: Native Elements
         <tr>
           <td><code>--h3-ornament-before</code> / <code>after</code></td>
           <td>h3 only (overrides global)</td>
+        </tr>
+        <tr>
+          <td><code>--h4-ornament-before</code> &hellip; <code>--h6-ornament-after</code></td>
+          <td>h4, h5, h6 individually (overrides global)</td>
         </tr>
       </tbody>
     </table>
@@ -230,7 +256,7 @@ h6 { font-size: var(--font-size-m); font-weight: 700; }</code-block>
 </hgroup>
 
 <!-- Variants: .eyebrow, .byline, .section-header,
-     .display, .centered, .reversed, .divided --></code-block>
+     .display, .centered, .divided, .tight, .spaced --></code-block>
 
     <p>See the <a href="/docs/elements/native/hgroup/">hgroup documentation</a> for all variants including <code>.eyebrow</code>, <code>.byline</code>, <code>.section-header</code>, and <code>.display</code>.</p>
   </section>
@@ -238,10 +264,11 @@ h6 { font-size: var(--font-size-m); font-weight: 700; }</code-block>
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li><strong>One h1 per page</strong> &mdash; The page title. Screen readers use it as the primary landmark</li>
+      <li><strong>One h1 per page</strong> &mdash; The page title and top-level heading. Screen reader users often jump to it first to find where the main content starts. Headings are not landmarks: use <code>&lt;main&gt;</code>, <code>&lt;nav&gt;</code> and the other landmark elements for regions.</li>
       <li><strong>Sequential levels</strong> &mdash; Never skip levels (h1 &rarr; h3). Screen reader users navigate by heading level</li>
       <li><strong>Descriptive text</strong> &mdash; Headings should summarize the section content. Avoid generic text like "Section 1"</li>
       <li><strong>Don't use for styling</strong> &mdash; Choose heading level by hierarchy, not visual size. Use CSS to adjust appearance</li>
+      <li><strong>Ornaments are silent</strong> &mdash; Theme glyphs before or after headings are excluded from the accessible name</li>
       <li><strong>heading-links</strong> &mdash; The anchor links added by <code>&lt;heading-links&gt;</code> include descriptive <code>aria-label</code> attributes</li>
       <li><strong>Heading count</strong> &mdash; Screen readers can list all headings on a page. Well-structured headings serve as an alternative navigation method</li>
     </ul>

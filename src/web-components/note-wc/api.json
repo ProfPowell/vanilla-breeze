@@ -2,9 +2,32 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "note-wc",
   "type": "web-component",
-  "description": "Private note action button for use inside selection-menu",
+  "description": "Private reader notes on highlights: a note action inside selection-menu, a page-level button with for=\"id\", and the note panel itself. Also opens the panel for margin-annotation clicks (it listens for highlights:request-note on document).",
   "htmlvalidate": { "flow": true, "permittedContent": ["@flow"] },
-  "attributes": [],
+  "attributes": [
+    {
+      "name": "for",
+      "kind": "host-api",
+      "purpose": "config",
+      "type": "string",
+      "description": "ID of the target article (page-level mode). The button opens the panel for the first noted, else first, highlight on it. Without for and outside selection-menu, note-wc renders no button and only hosts the panel."
+    },
+    { "name": "data-label-add", "kind": "data", "purpose": "config", "type": "string", "default": "Add private note", "description": "Accessible name of the button inside selection-menu." },
+    { "name": "data-label-view", "kind": "data", "purpose": "config", "type": "string", "default": "View notes", "description": "Accessible name of the page-level (for=\"id\") button." },
+    { "name": "data-label-dialog", "kind": "data", "purpose": "config", "type": "string", "default": "Private note", "description": "Accessible name of the note panel dialog." },
+    { "name": "data-label-heading", "kind": "data", "purpose": "config", "type": "string", "default": "Private note", "description": "Visible panel heading (uppercased by CSS)." },
+    { "name": "data-label-placeholder", "kind": "data", "purpose": "config", "type": "string", "default": "Add a note…", "description": "Textarea placeholder." },
+    { "name": "data-label-textarea", "kind": "data", "purpose": "config", "type": "string", "default": "Note for highlighted text", "description": "Textarea accessible name." },
+    { "name": "data-label-save", "kind": "data", "purpose": "config", "type": "string", "default": "Save", "description": "Save button text." },
+    { "name": "data-label-cancel", "kind": "data", "purpose": "config", "type": "string", "default": "Cancel", "description": "Cancel button text." }
+  ],
+  "methods": [
+    {
+      "name": "openFor",
+      "returns": "void",
+      "description": "openFor(highlight, controller, opener?) opens the note panel for a highlight record on a highlights controller (from initHighlights). Focus returns to opener (default: the element focused when it opened) on close. The highlights:request-note document event calls this on the first connected note-wc."
+    }
+  ],
   "structure": [],
   "css": { "tokens": [] }
 }

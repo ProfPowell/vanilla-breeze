@@ -7,12 +7,16 @@ import { VBElement } from '../../lib/vb-element.js';
  * A progressive enhancement wrapper around window.print(). Renders a print
  * button and an optional toggle to disable VB's print optimizations.
  *
- * @attr {boolean} raw-toggle - If present, shows a checkbox to disable VB print styles
- * @attr {string} label - Custom button label (default: "Print this page")
- * @attr {string} variant - Visual variant: "icon" (icon only), "label" (text only), "icon-label" (default)
+ * @attr {boolean} raw-toggle    - If present, shows a checkbox to disable VB print styles
+ * @attr {string}  label         - Button label / accessible name (default: authored text, else "Print this page")
+ * @attr {string}  variant       - "icon" (default, icon only — label becomes aria-label), "label" (text only), "icon-label"
+ * @attr {string}  data-label-raw - Text of the raw-toggle checkbox (default: "Print without VB styles")
  *
- * @example
+ * @example Icon-only (default)
  * <print-page>Print this page</print-page>
+ *
+ * @example Icon + visible label
+ * <print-page variant="icon-label">Print this page</print-page>
  *
  * @example
  * <!-- With raw-mode toggle -->
@@ -36,9 +40,13 @@ class PrintPage extends VBElement {
 
     this.innerHTML = '';
 
-    // Only apply role="group" when multiple controls are present
+    // Only apply role="group" when multiple controls are present; name it
+    // after the button so the group is announced meaningfully.
     if (showRawToggle) {
       this.setAttribute('role', 'group');
+      if (!this.hasAttribute('aria-label') && !this.hasAttribute('aria-labelledby')) {
+        this.setAttribute('aria-label', label);
+      }
     }
 
     // Print button
@@ -74,7 +82,7 @@ class PrintPage extends VBElement {
       this.#checkbox = document.createElement('input');
       this.#checkbox.type = 'checkbox';
       const span = document.createElement('span');
-      span.textContent = 'Print without VB styles';
+      span.textContent = this.dataset.labelRaw || 'Print without VB styles';
       toggle.append(this.#checkbox, span);
       this.append(toggle);
     }
@@ -90,24 +98,24 @@ class PrintPage extends VBElement {
 
     if (useRaw) {
       document.documentElement.setAttribute('data-print-raw', '');
-    }
 
-    window.print();
-
-    // Clean up after print dialog closes
-    if (useRaw) {
+      /** @type {ReturnType<typeof setTimeout> | undefined} */
+      let fallbackTimer;
       const cleanup = () => {
         document.documentElement.removeAttribute('data-print-raw');
         window.removeEventListener('afterprint', cleanup);
         clearTimeout(fallbackTimer);
       };
 
-      // afterprint is the primary cleanup path
+      // Register BEFORE print(): Chromium's print() blocks and fires
+      // afterprint before it returns, so a listener added afterwards misses it.
       window.addEventListener('afterprint', cleanup, { once: true });
 
       // Timeout fallback — some browsers don't fire afterprint reliably
-      const fallbackTimer = setTimeout(cleanup, 5000);
+      fallbackTimer = setTimeout(cleanup, 5000);
     }
+
+    window.print();
   };
 }
 

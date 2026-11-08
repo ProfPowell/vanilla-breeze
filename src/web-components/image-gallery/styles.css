@@ -16,6 +16,11 @@ image-gallery:not(:defined) a > img {
 
 /* --- Upgraded state --- */
 image-gallery:defined {
+  /* Private props reset on the host so an outer layout's --_gap / --_min
+     (layout-grid, nav, …) does not leak in; the gap/min attribute rules
+     below are more specific and win. */
+  --_gap: initial;
+  --_min: initial;
   display: grid;
   gap: var(--_gap, var(--size-s));
   grid-template-columns: repeat(auto-fit, minmax(var(--_min, 200px), 1fr));
@@ -49,7 +54,7 @@ image-gallery > figure > a {
 
 image-gallery > a:focus-visible,
 image-gallery > figure > a:focus-visible {
-  outline: 3px solid var(--color-focus);
+  outline: 3px solid var(--color-focus-ring);
 }
 
 image-gallery > a > img,
@@ -93,7 +98,8 @@ image-gallery > dialog:not([open]) {
 
 /* ==========================================================================
    Lightbox dialog
-   DOM: dialog > header[counter, info?, close] + section.gallery-stage[prev, figure, next]
+   DOM: dialog > header[counter, close] + section.gallery-stage[prev, figure, next]
+        + footer.gallery-caption[info, text] (captions="auto")
    Controls mode set via data-controls on the dialog: "edge", "bar", "minimal"
    ========================================================================== */
 
@@ -132,7 +138,7 @@ image-gallery .gallery-lightbox button:hover {
 }
 
 image-gallery .gallery-lightbox button:focus-visible {
-  outline: 3px solid var(--color-focus);
+  outline: 3px solid var(--color-focus-ring);
   outline-offset: 2px;
 }
 
@@ -141,7 +147,13 @@ image-gallery .gallery-lightbox button:disabled {
   cursor: not-allowed;
 }
 
-/* --- Header bar: counter + info + close --- */
+/* Chevrons point toward the reading direction's start/end: mirror under RTL
+   (the stage grid already flips prev/next placement via inline flow). */
+image-gallery .gallery-lightbox:dir(rtl) :is(.gallery-prev, .gallery-next) > icon-wc {
+  scale: -1 1;
+}
+
+/* --- Header bar: counter + close --- */
 
 image-gallery .gallery-lightbox > header {
   display: flex;
@@ -348,5 +360,27 @@ image-gallery .gallery-caption-text a:hover {
   image-gallery > a > img,
   image-gallery > figure > a > img {
     transition: none;
+  }
+
+  image-gallery > a:hover > img,
+  image-gallery > figure > a:hover > img {
+    transform: none;
+  }
+}
+
+:root[data-motion-reduced] image-gallery > a > img,
+:root[data-motion-reduced] image-gallery > figure > a > img {
+  transition: none;
+}
+
+:root[data-motion-reduced] image-gallery > a:hover > img,
+:root[data-motion-reduced] image-gallery > figure > a:hover > img {
+  transform: none;
+}
+
+/* Forced colors: keep lightbox controls visible against the system canvas */
+@media (forced-colors: active) {
+  image-gallery .gallery-lightbox button {
+    border: 1px solid ButtonText;
   }
 }

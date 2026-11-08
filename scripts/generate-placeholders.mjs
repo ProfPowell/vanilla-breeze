@@ -5,7 +5,8 @@
  *
  * Reads src/assets/placeholders/manifest.json — a list of { seed, width,
  * height } — and writes one deterministic SVG per entry as
- * src/assets/placeholders/photo-<seed>-<w>x<h>.svg. The seed drives the hue
+ * src/assets/placeholders/photo-<seed>-<w>x<h>.svg (or the entry's `file`
+ * name, when given). The seed drives the hue
  * and the skyline shape, so a gallery of different seeds looks varied while
  * every run produces byte-identical files (the visual suite depends on that).
  *
@@ -69,7 +70,9 @@ export function placeholderSvg({ seed, width, height }) {
 `;
 }
 
-export const fileName = ({ seed, width, height }) => `photo-${seed}-${width}x${height}.svg`;
+// `file` overrides the name for demos that need a naming scheme of their own
+// (data-responsive's shorthand looks for <name>-<width>.<ext>).
+export const fileName = ({ seed, width, height, file }) => file ?? `photo-${seed}-${width}x${height}.svg`;
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const wanted = new Set(manifest.map(fileName));

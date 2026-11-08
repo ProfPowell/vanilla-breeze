@@ -1,10 +1,10 @@
 ---
 layout: attribute
 title: "allow"
-description: "Iframe permissions policy for camera, microphone, fullscreen, geolocation, and other powerful APIs. Controls which features embedded content can access."
+description: "Sets an iframe's Permissions Policy: which powerful features (camera, microphone, fullscreen, payment, geolocation) the embedded document may use."
 attributeName: allow
 attributeType: native
-nativeGroup: Media
+nativeGroup: Embeds
 category: native
 currentPath: /docs/attributes/allow/
 
@@ -12,148 +12,121 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>allow</code> attribute controls which browser APIs an embedded <code>&lt;iframe&gt;</code> can access. By default, most powerful features (camera, microphone, geolocation, payment) are blocked in iframes. The <code>allow</code> attribute explicitly grants permission for specific capabilities.</p>
-<p>This is part of the Permissions Policy specification (formerly known as Feature Policy). It operates as an allowlist: only the features you name are enabled for the embedded content.</p>
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a></p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>allow</code> attribute sets the Permissions Policy for an <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a>: which powerful browser features the framed document may use. Most of these features (camera, microphone, geolocation, fullscreen, payment) are on by default for your own origin and off for cross-origin frames. <code>allow</code> delegates them to the frame.</p>
+  <p>Granting a feature does not skip the user's consent. A frame allowed to use the camera still triggers the browser's permission prompt; without <code>allow</code>, the request fails without a prompt.</p>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a></p>
 
-<h2>Values</h2>
-<p>The attribute takes a semicolon-separated list of permission directives. Each directive is a feature name, optionally followed by an origin allowlist.</p>
+  <browser-window
+    src="/docs/examples/demos/attr-allow-fullscreen.html"
+    url="https://vanilla-breeze.com/demos/allow"
+    title="Delegating fullscreen"
+    shadow>
+  </browser-window>
 
-<table>
-  <thead><tr><th>Directive</th><th>Grants Access To</th></tr></thead>
-  <tbody>
-    <tr><td><code>camera</code></td><td>Video capture via <code>getUserMedia()</code></td></tr>
-    <tr><td><code>microphone</code></td><td>Audio capture via <code>getUserMedia()</code></td></tr>
-    <tr><td><code>fullscreen</code></td><td>Fullscreen API (<code>requestFullscreen()</code>)</td></tr>
-    <tr><td><code>geolocation</code></td><td>Location access via Geolocation API</td></tr>
-    <tr><td><code>payment</code></td><td>Payment Request API</td></tr>
-    <tr><td><code>autoplay</code></td><td>Media autoplay without user gesture</td></tr>
-    <tr><td><code>picture-in-picture</code></td><td>Picture-in-Picture API</td></tr>
-    <tr><td><code>clipboard-write</code></td><td>Write to the system clipboard</td></tr>
-    <tr><td><code>clipboard-read</code></td><td>Read from the system clipboard</td></tr>
-    <tr><td><code>encrypted-media</code></td><td>Encrypted Media Extensions (DRM playback)</td></tr>
-    <tr><td><code>gyroscope</code></td><td>Gyroscope sensor API</td></tr>
-    <tr><td><code>accelerometer</code></td><td>Accelerometer sensor API</td></tr>
-  </tbody>
-</table>
-
-<code-block language="html" label="Basic allow usage" data-escape><!-- Allow fullscreen for a video embed -->
-<iframe
-  src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-  allow="fullscreen"
-  width="560"
-  height="315"
-  title="Video embed"></iframe>
-
-<!-- Allow camera and microphone for a video call widget -->
-<iframe
-  src="https://meet.example.com/room/abc"
-  allow="camera; microphone"
-  width="800"
-  height="600"
-  title="Video call"></iframe></code-block>
-
-<h2>Origin Restrictions</h2>
-<p>By default, a directive grants the permission to the iframe's own origin. You can restrict it further by specifying an explicit origin after the directive name.</p>
-
-<code-block language="html" label="Origin-restricted permissions" data-escape><!-- Restrict permissions to specific origins -->
-<iframe
-  src="https://maps.example.com/embed"
-  allow="geolocation https://maps.example.com"
-  width="600"
-  height="400"
-  title="Map embed"></iframe>
-
-<!-- Allow autoplay only from the embedded origin -->
-<iframe
-  src="https://player.example.com/video/123"
-  allow="autoplay https://player.example.com; fullscreen"
-  width="640"
-  height="360"
-  title="Video player"></iframe></code-block>
-
-<h3>Syntax Patterns</h3>
-<table>
-  <thead><tr><th>Syntax</th><th>Meaning</th></tr></thead>
-  <tbody>
-    <tr><td><code>allow="camera"</code></td><td>Allow camera for the iframe's origin</td></tr>
-    <tr><td><code>allow="camera *"</code></td><td>Allow camera for any origin (broad)</td></tr>
-    <tr><td><code>allow="camera https://a.com"</code></td><td>Allow camera only for <code>https://a.com</code></td></tr>
-    <tr><td><code>allow="camera 'self'"</code></td><td>Allow camera only for the embedding page's origin</td></tr>
-    <tr><td><code>allow="camera 'none'"</code></td><td>Explicitly deny camera access</td></tr>
-  </tbody>
-</table>
-
-<h2>Common Embed Patterns</h2>
-
-<code-block language="html" label="Common embed patterns" data-escape><!-- YouTube / Vimeo embed -->
-<iframe
-  src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-  width="560"
-  height="315"
-  title="YouTube video"></iframe>
-
-<!-- Payment form in iframe -->
-<iframe
-  src="https://checkout.stripe.com/pay/cs_live_abc123"
-  allow="payment"
-  width="400"
-  height="600"
-  title="Payment form"></iframe></code-block>
-
-<h3>Principle of Least Privilege</h3>
-<p>Only grant the permissions the embed actually needs. Copy-pasting a long allow string from an embed provider without understanding each directive is a security risk. Review each permission and remove those your embed does not require.</p>
-
-<h2>Relationship to sandbox</h2>
-<p>The <a href="/docs/attributes/sandbox/"><code>sandbox</code></a> attribute and <code>allow</code> serve different purposes:</p>
-<ul>
-  <li><strong><code>sandbox</code></strong> restricts broad capabilities: scripts, forms, navigation, popups, same-origin access</li>
-  <li><strong><code>allow</code></strong> controls specific browser APIs: camera, microphone, fullscreen, payment</li>
-</ul>
-<p>They can be used together for defense in depth. The <code>sandbox</code> handles structural restrictions while <code>allow</code> gates individual API access.</p>
-
-<code-block language="html" label="Sandbox with allow" data-escape><!-- sandbox restricts broadly; allow enables specific APIs -->
-<iframe
-  src="https://widget.example.com"
-  sandbox="allow-scripts allow-same-origin"
-  allow="clipboard-write"
-  width="400"
-  height="300"
-  title="Widget"></iframe>
-
-<!-- Strict sandbox + targeted permissions -->
-<iframe
-  src="https://tool.example.com"
-  sandbox="allow-scripts allow-forms"
-  allow="fullscreen"
-  width="600"
-  height="400"
-  title="Interactive tool"></iframe></code-block>
-
-<h2>Accessibility</h2>
-<ul>
-  <li>The <code>allow</code> attribute itself has no direct accessibility impact, but the features it gates do. For example, denying <code>fullscreen</code> on a video embed prevents users who rely on enlarged video from using fullscreen mode.</li>
-  <li>Always include a <code>title</code> attribute on iframes. This is the primary way screen readers identify the iframe's purpose, regardless of permissions.</li>
-  <li>If an embed requires camera or microphone access, ensure the surrounding page explains why before the user encounters the permission prompt.</li>
-</ul>
-
-<h2>Limitations</h2>
-<ul>
-  <li>The <code>allow</code> attribute only works on <code>&lt;iframe&gt;</code> elements. It has no effect on other embedded content like <code>&lt;object&gt;</code> or <code>&lt;embed&gt;</code>.</li>
-  <li>Permissions granted via <code>allow</code> still require the user to approve the browser's permission prompt (for camera, microphone, geolocation, etc.). The attribute enables the prompt; it does not bypass consent.</li>
-  <li>Some directives are not yet supported in all browsers. Check compatibility for newer permissions like <code>clipboard-read</code> and sensor APIs.</li>
-  <li>Permissions cannot be granted at a more permissive level than the parent page. If the top-level page has denied camera via a <code>Permissions-Policy</code> HTTP header, no iframe can enable it.</li>
-  <li>The older <code>allowfullscreen</code> and <code>allowpaymentrequest</code> boolean attributes still work but are superseded by the <code>allow</code> syntax. Prefer <code>allow="fullscreen"</code> over <code>allowfullscreen</code>.</li>
-</ul>
+  <p>Both frames are sandboxed, so like a third-party embed they are not same-origin with the page. Only the first is granted fullscreen: its <code>document.fullscreenEnabled</code> is <code>true</code>, and its button works.</p>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <p>A semicolon-separated list of directives. Each directive is a feature name followed by an optional allowlist of origins. With no attribute, a cross-origin frame gets none of the features whose default is <code>'self'</code>.</p>
+  <table>
+    <thead><tr><th>Syntax</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>allow="camera"</code></td><td>Allow for the origin of the frame's <code>src</code> (the default, written <code>'src'</code>).</td></tr>
+      <tr><td><code>allow="camera https://meet.example.com"</code></td><td>Allow only if the frame's document is from that origin, even after it navigates.</td></tr>
+      <tr><td><code>allow="camera 'self'"</code></td><td>Allow only for your page's origin.</td></tr>
+      <tr><td><code>allow="camera *"</code></td><td>Allow for any origin the frame navigates to.</td></tr>
+      <tr><td><code>allow="camera 'none'"</code></td><td>Deny, even for a same-origin frame.</td></tr>
+      <tr><td><code>allow="camera; microphone"</code></td><td>Several directives, separated by semicolons.</td></tr>
+    </tbody>
+  </table>
+  <p>Frequently used features: <code>camera</code>, <code>microphone</code>, <code>display-capture</code>, <code>fullscreen</code>, <code>geolocation</code>, <code>payment</code>, <code>autoplay</code>, <code>picture-in-picture</code>, <code>encrypted-media</code>, <code>clipboard-write</code>, <code>web-share</code>, <code>screen-wake-lock</code>, <code>accelerometer</code>, <code>gyroscope</code>. Unknown names are ignored with a console warning.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Fullscreen for a video</h3>
+  <p><code>allowfullscreen</code> is the one fullscreen syntax every engine supports. Chrome and Firefox also read <code>allow="fullscreen"</code>, which takes precedence when both are present; Safari does not, so keep <code>allowfullscreen</code>.</p>
+  <code-block language="html" show-lines label="Fullscreen" data-escape><iframe src="https://player.example.com/embed/ocean-swell"
+  title="Ocean swell, 4K timelapse"
+  allow="fullscreen; picture-in-picture"
+  allowfullscreen
+  loading="lazy"
+  data-ratio="16:9"></iframe></code-block>
+
+  <h3>Video call widget</h3>
+  <code-block language="html" show-lines label="Camera and microphone" data-escape><iframe src="https://meet.example.com/room/design-review"
+  title="Design review call"
+  allow="camera; microphone; display-capture"></iframe></code-block>
+
+  <h3>Payment and sandbox together</h3>
+  <p><code>sandbox</code> restricts what the frame's document can do (scripts, forms, navigation); <code>allow</code> grants powerful APIs. They are independent and work well together.</p>
+  <code-block language="html" show-lines label="sandbox + allow" data-escape><iframe src="https://pay.example.net/checkout/7f3a"
+  title="Payment"
+  sandbox="allow-scripts allow-forms allow-same-origin allow-top-navigation-by-user-activation"
+  allow="payment"></iframe></code-block>
+  <p><code>allow-scripts allow-same-origin</code> is safe here only because the frame is on another origin. For same-origin or <code>srcdoc</code> content it lets the frame escape; see <a href="/docs/attributes/sandbox/"><code>sandbox</code></a>.</p>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/attributes/sandbox/"><code>sandbox</code></a> &mdash; iframe security sandbox with granular tokens</li>
-    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> &mdash; control referrer information sent to iframes</li>
-    <li><a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> element reference</li>
-    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy loading for iframes</li>
+    <li><a href="/docs/elements/web-components/youtube-player/"><code>&lt;youtube-player&gt;</code></a> builds its iframe with <code>allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"</code>, <code>allowfullscreen</code>, <code>referrerpolicy="strict-origin-when-cross-origin"</code> and <code>loading="lazy"</code> (<code>src/web-components/youtube-player/logic.js</code>). It loads only after the user clicks the thumbnail.</li>
+    <li><a href="/docs/elements/web-components/social-embed/"><code>&lt;social-embed&gt;</code></a> grants nothing by default; the X provider adds <code>allow="fullscreen"</code>. Frames are built by <code>createEmbedFrame()</code> in <code>src/web-components/social-embed/shared.js</code>, which also sets the sandbox and <code>referrerpolicy="strict-origin"</code>.</li>
+    <li>The <code>&lt;browser-window&gt;</code> used for these docs passes <code>allow</code>, <code>allowfullscreen</code> and <code>referrerpolicy</code> through to its iframe.</li>
+    <li>For sizing, use <code>iframe[data-ratio]</code> (<code>src/native-elements/iframe/styles.css</code>).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Fullscreen and picture-in-picture help people who need larger video. Do not withhold them from video embeds.</li>
+    <li>Explain on your page why an embed asks for the camera, microphone or location before the user meets the browser prompt.</li>
+    <li>Give every iframe a <code>title</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Security</h2>
+  <ul>
+    <li><strong>Grant the least you can.</strong> Provider embed codes often list every feature they might use. Remove the ones your embed does not need.</li>
+    <li><strong>Prefer the default <code>'src'</code> allowlist or a named origin over <code>*</code>.</strong> With <code>*</code>, the permission follows the frame wherever it navigates.</li>
+    <li>A frame cannot get more than your page has. If your page's own policy denies a feature, no <code>allow</code> can re-enable it for a frame.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <p>The attribute: Chrome 60, Firefox 74, Safari 11.1. As of November 2026 (MDN browser-compat-data), Safari honours only <code>camera</code>, <code>microphone</code>, <code>display-capture</code> and <code>screen-wake-lock</code> in <code>allow</code>; it does not support <code>fullscreen</code>, <code>autoplay</code>, <code>geolocation</code>, <code>payment</code> or <code>picture-in-picture</code> there. The <code>Permissions-Policy</code> HTTP header that sets your page's own policy is Chromium-only.</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong><code>allow="fullscreen"</code> alone breaks fullscreen in Safari.</strong> Add <code>allowfullscreen</code>.</li>
+    <li><strong><code>allowpaymentrequest</code> is obsolete.</strong> It was removed from Firefox (83) and never shipped in Safari. Use <code>allow="payment"</code>.</li>
+    <li><strong>Changes apply on the next navigation.</strong> Editing <code>allow</code> on a loaded frame does not change the current document's policy.</li>
+    <li><strong>Same-origin frames already have most features.</strong> <code>allow</code> matters mainly for cross-origin and sandboxed (opaque-origin) frames, and for denying with <code>'none'</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/sandbox/"><code>sandbox</code></a> &mdash; restrict what the frame's document can do.</li>
+    <li><a href="/docs/attributes/srcdoc/"><code>srcdoc</code></a> &mdash; inline frame content.</li>
+    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> &mdash; how much of your URL the frame request reveals.</li>
+    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy-load frames below the fold.</li>
+    <li><a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> &mdash; the element and VB's iframe styles.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong>A YouTube video</strong> &mdash; <code>&lt;youtube-player&gt;</code>: privacy-friendly thumbnail first, permissions already set.</li>
+    <li><strong>A social post</strong> &mdash; <code>&lt;social-embed&gt;</code>.</li>
+    <li><strong>Any other embed</strong> &mdash; a plain iframe with <code>allow</code> for the features it needs, <code>sandbox</code> if you do not fully trust it, and a <code>title</code>.</li>
   </ul>
 </section>

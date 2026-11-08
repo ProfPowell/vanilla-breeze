@@ -143,7 +143,7 @@
 
     & :is(main, article) {
     /* Cute dividers with hearts — exclude shape HR classes */
-    & hr:not([data-ornament]):not(:is(.wave, .zigzag, .scallop, .diamonds, .dots)) {
+    & hr:not([data-ornament], [class]) {
       border: none;
       height: 2rem;
       background: transparent;
@@ -151,7 +151,7 @@
       margin-block: 2rem;
 
       &::before {
-        content: "♡ ✦ ♡ ✦ ♡";
+        content: "♡ ✦ ♡ ✦ ♡" / "";
         position: absolute;
         left: 50%;
         top: 50%;
@@ -174,11 +174,11 @@
       color: var(--color-primary);
 
       &::before {
-        content: "✿ ";
+        content: "✿ " / "";
       }
 
       &::after {
-        content: " ✿";
+        content: " ✿" / "";
       }
     }
 
@@ -186,7 +186,7 @@
       color: var(--_kawaii-color-lavender);
 
       &::before {
-        content: "★ ";
+        content: "★ " / "";
         animation: sparkle 1.5s ease-in-out infinite;
       }
     }
@@ -284,7 +284,7 @@
     & input,
     & textarea {
       border-radius: var(--radius-full);
-      border: 2px solid var(--color-border);
+      border: 2px solid var(--input-border); /* 3:1 non-text contrast */
       background: var(--color-surface-raised);
       padding: 0.75rem 1.25rem;
       transition: all 0.3s var(--ease-default);
@@ -397,33 +397,29 @@
 
     }
 
-    /* Lists with cute markers — scoped to article, excluding nav lists */
-    & article {
-    & :not(nav) > ul:not([class]) {
-      list-style: none;
-
-      & > li::before {
-        content: "♡";
-        color: var(--color-primary);
-        margin-inline-end: 0.5rem;
-      }
+    /* Lists with cute markers — scoped to article, excluding nav lists.
+       Styled through ::marker so the list keeps its list-style (and with it
+       its list semantics in Safari/VoiceOver), and ordered lists count with
+       the native list-item counter, which honours <li value>, start and
+       reversed. An ol with a type attribute keeps its native marker text
+       (only colour/weight change): [type] matches case-insensitively and the
+       `s` flag is not supported everywhere, so a/A and i/I can't be told apart. */
+    & article ul:not([class], [data-marker], nav *) > li::marker {
+      content: "♡\2009";
+      color: var(--color-primary);
     }
 
-    & :not(nav) > ol:not([class]) {
-      list-style: none;
-      counter-reset: kawaii;
-
-      & > li {
-        counter-increment: kawaii;
-
-        &::before {
-          content: counter(kawaii) "♡";
-          color: var(--_kawaii-color-lavender);
-          margin-inline-end: 0.5rem;
-          font-weight: 700;
-        }
-      }
+    & article ol:not([class], nav *) > li::marker {
+      color: var(--_kawaii-color-lavender);
+      font-weight: 700;
     }
+
+    /* counter(list-item) renders decimal, so lists with their own counter
+       style (type attribute, inline list-style-type) keep native markers.
+       A list-style-type set from a stylesheet can't be detected here —
+       add a class to such lists to opt out of the hearts. */
+    & article ol:not([class], [type], [style*="list-style"], nav *) > li::marker {
+      content: counter(list-item) "♡\2009";
     }
 
     /* Soften doc section borders for kawaii */
@@ -452,7 +448,7 @@
 
     /* ===== SHAPE OVERRIDES ===== */
     /* Soft, rounded shapes — scallop defaults */
-    --shape-depth: 8%;
+    --shape-depth: 32px;
     --shape-bevel: 16px;
 
     /* Kawaii HR dividers: pastel gradient */
@@ -468,45 +464,49 @@
       );
     }
 
-    /* Kawaii badges: pastel gradient pill */
-    & [data-badge] {
-      background: linear-gradient(135deg, var(--color-primary), var(--_kawaii-color-lavender));
+    /* Kawaii shaped badges: pastel gradient fill. The shape is painted on
+       the badge's ::before layer, so the shadow is a drop-shadow that
+       follows it (a box-shadow would draw a rectangle). */
+    & layout-badge:is([data-shape="ribbon"], [data-shape="notch"], [data-shape="flag"], [data-shape="double-arrow"], [data-shape="stamp"]) {
+      --badge-shape-fill: linear-gradient(135deg, var(--color-primary), var(--_kawaii-color-lavender));
       color: var(--color-surface-raised);
       font-weight: 700;
-      box-shadow: var(--shadow-s);
+      filter: drop-shadow(0 1px 2px oklch(0% 0 0 / 0.25));
     }
 
-    /* Kawaii callouts: pastel backgrounds */
-    & [data-callout="speech"] {
-      background: linear-gradient(135deg, var(--color-primary-subtle), oklch(95% 0.04 290));
+    /* Kawaii callouts: pastel backgrounds via the --callout-* hooks (shaped
+       callouts paint on ::before, so a plain background would be a rectangle) */
+    & [data-callout~="speech"] {
+      --callout-bg: linear-gradient(135deg, var(--color-primary-subtle), oklch(95% 0.04 290));
     }
 
-    & [data-callout="notched"] {
-      background: var(--color-accent-subtle);
+    & [data-callout~="notched"] {
+      --callout-bg: var(--color-accent-subtle);
     }
 
-    & [data-callout="tip"] {
-      border-inline-start-color: var(--_kawaii-color-lavender);
-      background: oklch(97% 0.02 290);
+    & [data-callout~="tip"] {
+      --callout-accent: var(--_kawaii-color-lavender);
+      --callout-bg: oklch(97% 0.02 290);
     }
 
-    /* Kawaii bubbles: pastel with rounded tails */
+    /* Kawaii bubbles: pastel with rounded tails (via the --bubble-bg hook;
+       the soft shadow is a drop-shadow so it follows the tail) */
     & [data-bubble="outgoing"] {
-      background: linear-gradient(135deg, var(--color-primary), var(--_kawaii-color-lavender));
+      --bubble-bg: linear-gradient(135deg, var(--color-primary), var(--_kawaii-color-lavender));
       color: var(--color-surface-raised);
     }
 
     & [data-bubble="incoming"] {
-      background: var(--color-surface-raised);
-      box-shadow: var(--shadow-s);
+      --bubble-bg: var(--color-surface-raised);
+      filter: drop-shadow(0 1px 2px oklch(0% 0 0 / 0.12));
     }
 
     & [data-bubble="assistant"] {
-      background: linear-gradient(135deg, var(--color-accent-subtle), oklch(95% 0.03 220));
+      --bubble-bg: linear-gradient(135deg, var(--color-accent-subtle), oklch(95% 0.03 220));
     }
 
     & [data-bubble="system"] {
-      background: linear-gradient(135deg, var(--color-primary-subtle), var(--color-accent-subtle));
+      --bubble-bg: linear-gradient(135deg, var(--color-primary-subtle), var(--color-accent-subtle));
       border-color: transparent;
     }
 
@@ -636,12 +636,12 @@
 
     /* Form controls: match dark pastel surface */
     --input-bg: oklch(18% 0.04 290);
-    --input-border: oklch(35% 0.05 290);
+    --input-border: color-mix(in oklab, oklch(35% 0.05 290), var(--color-text) 30%); /* 3:1 non-text contrast */
     --input-border-focus: oklch(75% 0.18 350);
     --control-border: oklch(50% 0.08 290);
     --control-checked-bg: oklch(75% 0.18 350);
     --control-checked-border: oklch(75% 0.18 350);
-    --range-track-bg: oklch(28% 0.04 290);
+    --range-track-bg: color-mix(in oklab, oklch(28% 0.04 290), var(--color-text) 40%); /* 3:1 non-text contrast */
     --range-track-fill: oklch(75% 0.18 350);
     --range-thumb-bg: oklch(25% 0.04 290);
     --range-thumb-border: oklch(75% 0.18 350);

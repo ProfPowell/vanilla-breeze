@@ -32,11 +32,12 @@ export function parseKey(raw) {
  *
  * @param {'text'|'number'|'date'} type
  * @param {'asc'|'desc'} direction
+ * @param {string} [locale] - BCP 47 tag for text collation (default: runtime default)
  * @returns {(a: any, b: any) => number}
  */
-export function compareBy(type, direction) {
+export function compareBy(type, direction, locale) {
   const sign = direction === 'desc' ? -1 : 1;
-  const inner = COMPARATORS[type] || COMPARATORS.text;
+  const inner = type === 'text' || !COMPARATORS[type] ? textComparator(locale) : COMPARATORS[type];
   return (a, b) => {
     // Empty-as-end: empties always trail non-empties.
     const aEmpty = isEmpty(a);
@@ -57,10 +58,11 @@ export function compareBy(type, direction) {
  * @param {(item: T) => any} project
  * @param {'text'|'number'|'date'} type
  * @param {'asc'|'desc'} direction
+ * @param {string} [locale] - BCP 47 tag for text collation
  * @returns {number[]}
  */
-export function sortIndices(items, project, type, direction) {
-  const cmp = compareBy(type, direction);
+export function sortIndices(items, project, type, direction, locale) {
+  const cmp = compareBy(type, direction, locale);
   const indices = Array.from({ length: items.length }, (_, i) => i);
   indices.sort((i, j) => {
     const result = cmp(project(items[i]), project(items[j]));
@@ -84,13 +86,61 @@ export function cycleDirection(current) {
 
 /* ---------- internals ---------- */
 
+/** @type {Map<string, Intl.Collator>} */
+const collators = new Map();
+
+/** @param {string} [locale] */
+function textComparator(locale) {
+  const key = locale || '';
+  let collator = collators.get(key);
+  if (!collator) {
+    try {
+      collator = new Intl.Collator(locale || undefined, { sensitivity: 'base', numeric: true });
+    } catch {
+      collator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true });
+    }
+    collators.set(key, collator);
+  }
+  return (a, b) => collator.compare(String(a), String(b));
+}
+
+/**
+ * Read a number out of formatted text: "1,234", "$5", "12 %", "1.234,5",
+ * "−3". Grouping separators, currency symbols, units and spaces are
+ * ignored; when both "," and "." appear, the last one is the decimal
+ * separator; a lone "," followed by exactly three digits is grouping.
+ * Prefer data-sort-value for anything ambiguous.
+ *
+ * @param {unknown} v
+ * @returns {number}
+ */
+export function parseSortNumber(v) {
+  if (typeof v === 'number') return v;
+  let s = String(v ?? '').trim().replace(/[\u2212\u2012\u2013]/g, '-');
+  const negative = /^\(.*\)$/.test(s) || /^-|-$/.test(s.replace(/[^\d.,-]/g, ''));
+  s = s.replace(/[^\d.,]/g, '');
+  if (!s) return NaN;
+  const lastComma = s.lastIndexOf(',');
+  const lastDot = s.lastIndexOf('.');
+  if (lastComma > -1 && lastDot > -1) {
+    const dec = lastComma > lastDot ? ',' : '.';
+    const group = dec === ',' ? '.' : ',';
+    s = s.split(group).join('').replace(dec, '.');
+  } else if (lastComma > -1) {
+    const parts = s.split(',');
+    const grouping = parts.length > 2 || (parts.length === 2 && parts[1].length === 3);
+    s = grouping ? parts.join('') : parts.join('.');
+  } else if ((s.match(/\./g) || []).length > 1) {
+    s = s.split('.').join('');
+  }
+  const n = Number(s);
+  return negative ? -n : n;
+}
+
 const COMPARATORS = {
-  text(a, b) {
-    return String(a).localeCompare(String(b), undefined, { sensitivity: 'base', numeric: true });
-  },
   number(a, b) {
-    const na = Number(a);
-    const nb = Number(b);
+    const na = parseSortNumber(a);
+    const nb = parseSortNumber(b);
     if (Number.isNaN(na) && Number.isNaN(nb)) return 0;
     if (Number.isNaN(na)) return 1;
     if (Number.isNaN(nb)) return -1;

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>multiple attribute: select listbox, email list and file picker</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <form data-validate data-submit="event" class="stacked" id="mu-form">
+      <form-field>
+        <label for="mu-langs">Languages you speak</label>
+        <select id="mu-langs" name="languages" multiple size="5">
+          <option value="en" selected>English</option>
+          <option value="es">Spanish</option>
+          <option value="fr">French</option>
+          <option value="ja">Japanese</option>
+          <option value="pt">Portuguese</option>
+          <option value="sw">Swahili</option>
+        </select>
+        <output class="hint" for="mu-langs">Ctrl or Cmd + click to add one; Shift + click for a range.</output>
+      </form-field>
+
+      <form-field>
+        <label for="mu-invite">Invite teammates</label>
+        <input id="mu-invite" type="email" name="invite" multiple autocomplete="off"
+               data-message-typemismatch="Separate addresses with commas, and check each one." />
+        <output class="hint" for="mu-invite">Separate addresses with commas.</output>
+        <output class="error" for="mu-invite" aria-live="polite">Check the addresses.</output>
+      </form-field>
+
+      <form-field>
+        <label for="mu-photos">Photos</label>
+        <input id="mu-photos" type="file" name="photos" multiple accept="image/*" data-upload />
+      </form-field>
+
+      <fieldset data-min-checked="1" data-max-checked="2">
+        <legend>Pick one or two delivery days</legend>
+        <label><input type="checkbox" name="days" value="mon" /> Monday</label>
+        <label><input type="checkbox" name="days" value="wed" /> Wednesday</label>
+        <label><input type="checkbox" name="days" value="fri" /> Friday</label>
+        <output class="error" aria-live="polite"></output>
+      </fieldset>
+
+      <button type="submit">Save preferences</button>
+      <pre><output id="mu-result">Submitted data appears here.</output></pre>
+    </form>
+  </layout-center>
+
+  <script type="module">
+    const result = document.querySelector('#mu-result');
+    document.querySelector('#mu-form').addEventListener('vb:submit', (e) => {
+      result.textContent = [...e.detail]
+        .map(([name, value]) => `${name} = ${typeof value === 'string' ? value : value.name || '(no file)'}`)
+        .join('\n');
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

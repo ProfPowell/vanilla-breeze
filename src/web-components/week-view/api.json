@@ -2,14 +2,14 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "week-view",
   "type": "web-component",
-  "description": "7-day time grid composing day-view-style columns in a semantic table",
+  "description": "Week time grid composing day-view-style columns in a semantic table. Defaults to the current week (locale first day); today's header has aria-current=\"date\". Changing data-start-date, data-days, data-start-hour, data-end-hour or a data-label-* after upgrade rebuilds a generated table.",
   "attributes": [
     {
       "name": "data-start-date",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "ISO date for the first day of the week (e.g., 2026-04-06)"
+      "description": "ISO date for the first day of the view (e.g., 2026-04-06). Default: the current week, starting on the locale's first day of week (Intl.Locale weekInfo, closest [lang])."
     },
     {
       "name": "data-days",
@@ -17,7 +17,7 @@
       "purpose": "config",
       "type": "number",
       "default": 7,
-      "description": "Number of day columns (e.g., 5 for workweek)"
+      "description": "Number of day columns, clamped to 1-14 (e.g., 5 for a workweek). Invalid values fall back to 7."
     },
     {
       "name": "data-start-hour",
@@ -42,6 +42,14 @@
       "type": "string",
       "default": "continues after the visible hours",
       "description": "Text appended to the accessible name of a spanning event that runs past the last visible hour (localisation hook)."
+    },
+    {
+      "name": "data-label-time",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Time",
+      "description": "Visually hidden name of the corner header over the hour labels (localisation hook)."
     }
   ],
   "events": [
@@ -60,7 +68,7 @@
     {
       "name": "events",
       "type": "Array<{ date?, time, text, category?, duration? }>",
-      "description": "Get the week's events as data, or assign an array to rebuild the table. time is HH:MM or a full ISO datetime (its date is used when date is omitted). Durations (data-duration): 2h, 1.5h, 45m, 90m, 1h30m, bare minutes (60), ISO-8601 (PT1H30M); unparseable values fall back to 1 hour."
+      "description": "Get the week's events as data (including unplaced ones outside the range), or assign an array to rebuild the table. time is HH:MM or a full ISO datetime (its date is used when date is omitted). Durations (data-duration): 2h, 1.5h, 45m, 90m, 1h30m, bare minutes (60), ISO-8601 (PT1H30M); unparseable values fall back to 1 hour."
     }
   ],
   "methods": [
@@ -74,7 +82,7 @@
       "name": "data-date",
       "on": "calendar-event",
       "type": "string",
-      "description": "ISO date assigning this event to a day column (auto mode)"
+      "description": "ISO date assigning this event to a day column (auto mode). Events outside the range, or without a time, are not placed and are hidden."
     },
     {
       "name": "data-duration",
@@ -96,7 +104,7 @@
     },
     {
       "element": "thead > tr > th",
-      "description": "Day column headers with <time> elements"
+      "description": "Day column headers: <time datetime> with a short visible date (month added when the range crosses one) and a visually hidden full date; today's has aria-current=\"date\""
     },
     {
       "element": "tbody > tr > th",

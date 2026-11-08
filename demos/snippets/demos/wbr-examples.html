@@ -7,35 +7,43 @@
   <link rel="stylesheet" href="/src/main.css" />
   <style>
     body { padding: var(--size-l); background: var(--color-surface); }
+    .wbr-box {
+      max-inline-size: 15rem;
+      border: var(--border-width-thin) solid var(--color-border);
+      padding: var(--size-s);
+      border-radius: var(--radius-s);
+    }
   </style>
 </head>
 <body>
   <h1>Word Break Opportunity</h1>
   <layout-stack data-layout-gap="l">
     <section>
-      <h2>Long URLs</h2>
-      <p style="max-inline-size: 20rem; border: 1px solid var(--color-border); padding: var(--size-s); border-radius: var(--radius-s);">
+      <h2>Long URLs: arbitrary break vs chosen break</h2>
+      <p>VB's <code>overflow-wrap: break-word</code> keeps both URLs inside the box. Without <code>&lt;wbr&gt;</code> the line breaks wherever the edge falls; with it, the line breaks after a slash.</p>
+      <p class="wbr-box">
         Without wbr: https://example.com/very/long/path/to/some/deeply/nested/resource/page.html
       </p>
-      <p style="max-inline-size: 20rem; border: 1px solid var(--color-border); padding: var(--size-s); border-radius: var(--radius-s);">
+      <p class="wbr-box">
         With wbr: https://example.com/<wbr />very/<wbr />long/<wbr />path/<wbr />to/<wbr />some/<wbr />deeply/<wbr />nested/<wbr />resource/<wbr />page.html
       </p>
     </section>
     <section>
       <h2>Long compound words</h2>
-      <p style="max-inline-size: 15rem; border: 1px solid var(--color-border); padding: var(--size-s); border-radius: var(--radius-s);">
+      <p class="wbr-box">
         Super<wbr />cali<wbr />fragilistic<wbr />expiali<wbr />docious
       </p>
     </section>
     <section>
       <h2>Technical identifiers</h2>
-      <p style="max-inline-size: 18rem; border: 1px solid var(--color-border); padding: var(--size-s); border-radius: var(--radius-s);">
+      <p class="wbr-box">
         <code>AbstractSingle<wbr />tonProxy<wbr />FactoryBean</code>
       </p>
     </section>
     <section>
-      <h2>CJK mixed content</h2>
-      <p>In CJK text with embedded Latin: <span lang="ja">日本語テキストに<wbr />LongEnglishWord<wbr />が含まれています。</span></p>
+      <h2>Long URL in Japanese text</h2>
+      <p>Breaks between kana, kanji and Latin words are already allowed. Put <code>&lt;wbr&gt;</code> inside the long Latin token.</p>
+      <p class="wbr-box" lang="ja">詳しくは https://example.com/<wbr />docs/<wbr />guide/<wbr />getting-started.html をご覧ください。</p>
     </section>
   </layout-stack>
   <script type="module" src="/src/main.js"></script>

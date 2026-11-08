@@ -1,29 +1,66 @@
 /* Chat bubble shapes
-   [data-bubble] for messaging UIs.
-   Each variant has a shaped tail or distinctive form. */
+   [data-bubble] for messaging UIs (the attribute form; <chat-bubble> inside
+   <chat-message> is the component form).
+
+   Hooks: --bubble-bg (paint) — themes set this, not background, so shaped
+   variants keep their tail.
+   Tails are painted on ::before, never by clipping the bubble itself, so focus
+   rings of links inside and theme shadows survive; :dir(rtl) mirrors them so
+   the tail always points at the bubble's own side. */
 
 /* :where(:not(input)) keeps specificity at one attribute, so variant rules still win — data-bubble also names the range value bubble
    (input[type=range][data-range][data-bubble]); chat padding and max-width
    must not land on the slider. */
 [data-bubble]:where(:not(input)) {
+  --_bubble-bg: var(--bubble-bg, var(--color-surface-raised));
+
   display: block;
   padding: var(--size-s) var(--size-m);
   max-width: 75%;
   line-height: 1.5;
+  color: var(--color-text);
+  background: var(--_bubble-bg);
+  border-radius: var(--radius-l);
 }
 
-/* ── Error ── left accent border, rectangular (no shape() needed) */
-[data-bubble="error"] {
-  background: color-mix(in oklch, var(--color-error, oklch(60% 0.2 25)) 12%, var(--color-surface));
-  color: var(--color-text);
+/* ── Colours (all browsers; the shapes below need shape()) ── */
+[data-bubble="incoming"],
+[data-bubble="thought"] {
   align-self: flex-start;
-  border-inline-start: 3px solid var(--color-error, oklch(60% 0.2 25));
-  border-radius: 0 var(--radius-m) var(--radius-m) 0;
+}
+
+[data-bubble="outgoing"] {
+  --_bubble-bg: var(--bubble-bg, var(--color-primary));
+  color: var(--color-text-on-primary-auto, var(--color-text-on-primary));
+  align-self: flex-end;
+}
+
+[data-bubble="assistant"] {
+  --_bubble-bg: var(--bubble-bg, color-mix(in oklch, var(--color-secondary) 20%, var(--color-surface)));
+  align-self: flex-start;
+}
+
+[data-bubble="typing"] {
+  color: var(--color-text-muted);
+  align-self: flex-start;
+}
+
+/* ── Error ── accent border on the start edge (no shape() needed) */
+[data-bubble="error"] {
+  --_bubble-bg: var(--bubble-bg, color-mix(in oklch, var(--color-error) 12%, var(--color-surface)));
+  align-self: flex-start;
+  border-inline-start: 3px solid var(--color-error);
+  /* Square on the accent side, rounded on the far side — logical, so RTL
+     keeps the border on the square edge. */
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  border-start-end-radius: var(--radius-m);
+  border-end-end-radius: var(--radius-m);
 }
 
 /* ── System ── pill-shaped timestamp/status (no shape() needed) */
 [data-bubble="system"] {
-  background: var(--color-surface-sunken, var(--color-surface));
+  --_bubble-bg: var(--bubble-bg, var(--color-surface-sunken, var(--color-surface)));
   color: var(--color-text-muted);
   align-self: center;
   border-radius: 2rem;
@@ -34,7 +71,29 @@
   padding: var(--size-2xs) var(--size-m);
 }
 
-/* ── Typing dots animation ── */
+/* ── Typing ── three empty spans are the dots; any text inside (a visually
+   hidden "Alice is typing" label) is what screen readers announce. */
+[data-bubble="typing"] {
+  min-width: 80px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+  & > span:empty {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: typing-bounce 1.4s infinite ease-in-out;
+
+    &:nth-child(2 of :empty) { animation-delay: 0.2s; }
+    &:nth-child(3 of :empty) { animation-delay: 0.4s; }
+  }
+}
+
 @keyframes typing-bounce {
   0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
   30% { transform: translateY(-6px); opacity: 1; }
@@ -42,12 +101,34 @@
 
 @supports (clip-path: shape(from 0% 0%, close)) {
 
-/* ── Incoming ── white bg, bottom-left tail */
-[data-bubble="incoming"] {
-  background: var(--color-surface-raised);
-  color: var(--color-text);
-  align-self: flex-start;
-  clip-path: shape(
+[data-bubble]:is(
+  [data-bubble="incoming"],
+  [data-bubble="outgoing"],
+  [data-bubble="assistant"],
+  [data-bubble="thought"],
+  [data-bubble="typing"]
+) {
+  position: relative;
+  isolation: isolate;
+  background: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--_bubble-bg);
+    clip-path: var(--_bubble-shape);
+    pointer-events: none;
+  }
+
+  &:dir(rtl)::before { scale: -1 1; }
+}
+
+/* ── Incoming / typing ── tail at the bottom start corner */
+[data-bubble="incoming"],
+[data-bubble="typing"] {
+  --_bubble-shape: shape(
     from 12px 0%,
     curve to 0% 12px with 0% 0%,
     line to 0% calc(100% - 20px),
@@ -62,12 +143,9 @@
   padding-block-end: calc(var(--size-s) + 6px);
 }
 
-/* ── Outgoing ── primary bg, bottom-right tail */
+/* ── Outgoing ── tail at the bottom end corner */
 [data-bubble="outgoing"] {
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  align-self: flex-end;
-  clip-path: shape(
+  --_bubble-shape: shape(
     from 12px 0%,
     curve to 0% 12px with 0% 0%,
     line to 0% calc(100% - 18px),
@@ -82,12 +160,9 @@
   padding-block-end: calc(var(--size-s) + 6px);
 }
 
-/* ── Assistant ── tinted bg, top-left tail */
+/* ── Assistant ── tail at the top start corner */
 [data-bubble="assistant"] {
-  background: color-mix(in oklch, var(--color-secondary) 20%, var(--color-surface));
-  color: var(--color-text);
-  align-self: flex-start;
-  clip-path: shape(
+  --_bubble-shape: shape(
     from 0% 20px,
     line to 0% 0%,
     line to 20px 14px,
@@ -104,10 +179,7 @@
 
 /* ── Thought ── cloud shape */
 [data-bubble="thought"] {
-  background: var(--color-surface-raised);
-  color: var(--color-text);
-  align-self: flex-start;
-  clip-path: shape(
+  --_bubble-shape: shape(
     from 20% 0%,
     curve to 50% 0% with 20% -8%,
     curve to 80% 0% with 50% -8%,
@@ -124,49 +196,37 @@
   text-align: center;
 }
 
-/* ── Typing ── incoming shape with animated dot indicators */
-[data-bubble="typing"] {
-  background: var(--color-surface-raised);
-  color: var(--color-text-muted);
-  align-self: flex-start;
-  clip-path: shape(
-    from 12px 0%,
-    curve to 0% 12px with 0% 0%,
-    line to 0% calc(100% - 20px),
-    line to 0% 100%,
-    line to 20px calc(100% - 6px),
-    line to calc(100% - 12px) calc(100% - 6px),
-    curve to 100% calc(100% - 18px) with 100% calc(100% - 6px),
-    line to 100% 12px,
-    curve to calc(100% - 12px) 0% with 100% 0%,
-    close
-  );
-  padding-block-end: calc(var(--size-s) + 6px);
-  min-width: 80px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-
-  & > span {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: currentColor;
-    animation: typing-bounce 1.4s infinite ease-in-out;
-
-    &:nth-child(2) { animation-delay: 0.2s; }
-    &:nth-child(3) { animation-delay: 0.4s; }
-  }
-}
-
 } /* end @supports */
 
 @media (prefers-reduced-motion: reduce) {
-  [data-bubble="typing"] > span {
+  [data-bubble="typing"] > span:empty {
     animation: none;
     opacity: 0.6;
   }
+}
+
+/* Forced colours flatten every bubble to Canvas, and print drops
+   backgrounds: draw a frame, and keep the sender side visible with a thick
+   edge on the side the tail was on. */
+@media (forced-colors: active) {
+  [data-bubble]:where(:not(input)) {
+    border: 1px solid CanvasText;
+  }
+  [data-bubble]:where(:not(input))::before { display: none; }
+  [data-bubble]:is([data-bubble="incoming"], [data-bubble="assistant"], [data-bubble="typing"], [data-bubble="error"]) {
+    border-inline-start-width: var(--border-width-thick);
+  }
+  [data-bubble="outgoing"] { border-inline-end-width: var(--border-width-thick); }
+}
+
+@media print {
+  [data-bubble]:where(:not(input)) {
+    border: 1px solid currentColor;
+    break-inside: avoid;
+  }
+  [data-bubble]:where(:not(input))::before { display: none; }
+  [data-bubble]:is([data-bubble="incoming"], [data-bubble="assistant"], [data-bubble="typing"], [data-bubble="error"]) {
+    border-inline-start-width: var(--border-width-thick);
+  }
+  [data-bubble="outgoing"] { border-inline-end-width: var(--border-width-thick); }
 }

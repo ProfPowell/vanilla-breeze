@@ -13,17 +13,18 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;iframe&gt;</code> element embeds another HTML document within the current page. VB removes default borders, provides variant classes for visual style, and offers responsive wrapper classes for common aspect ratios.</p>
+    <p>The <code>&lt;iframe&gt;</code> element embeds another HTML document within the current page. VB removes the default border, makes the frame block-level and never wider than its container, and offers variant classes, a <code>data-ratio</code> attribute for proportional sizing, and ratio wrappers for common embeds.</p>
   </section>
 
   <section>
     <h2>When to Use</h2>
     <ul>
       <li><strong>Video embeds:</strong> YouTube, Vimeo, and other video platforms</li>
-      <li><strong>Maps:</strong> Google Maps, OpenStreetMap embeds</li>
-      <li><strong>Social widgets:</strong> Twitter timelines, social posts</li>
-      <li><strong>Payment forms:</strong> Stripe, PayPal checkout</li>
+      <li><strong>Maps:</strong> OpenStreetMap and other map embeds (or <a href="/docs/elements/web-components/geo-map/"><code>&lt;geo-map&gt;</code></a> for a tile map you control)</li>
+      <li><strong>Social widgets:</strong> Timelines and posts</li>
+      <li><strong>Payment forms:</strong> Hosted checkout fields</li>
       <li><strong>Third-party tools:</strong> Calendars, forms, surveys</li>
+      <li><strong>Untrusted HTML:</strong> User-supplied markup rendered with <code>sandbox</code> and <code>srcdoc</code></li>
     </ul>
 
     <h3>When to Use Other Elements</h3>
@@ -31,48 +32,74 @@ crumbLabel: Native Elements
       <li>Use <a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> for self-hosted video files</li>
       <li>Use <a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> for self-hosted audio</li>
       <li>Use <a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> for modal content on your own page</li>
+      <li>Use <a href="/docs/elements/native/object/"><code>&lt;object&gt;</code></a> for PDFs that need a download-link fallback</li>
     </ul>
   </section>
 
   <section>
     <h2>Variants</h2>
-    <p>VB removes the default iframe border and provides variant classes for visual style.</p>
+    <p>VB removes the default iframe border and provides variant classes for visual style and width.</p>
 
     <browser-window src="/docs/snippets/demos/iframe-examples.html" url="iframe-examples.html" title="Iframe variants" shadow></browser-window>
 
-    <code-block language="html" show-lines label="Basic iframe" data-escape><iframe src="page.html" title="Descriptive title"></iframe></code-block>
-    <code-block language="html" show-lines label="Bordered iframe" data-escape><iframe class="bordered" src="page.html" title="..."></iframe></code-block>
+    <code-block language="html" show-lines label="Basic iframe" data-escape><iframe src="page.html" title="Descriptive title" width="600" height="400"></iframe></code-block>
+    <code-block language="html" show-lines label="Bordered, full-width iframe" data-escape><iframe class="full bordered" src="page.html" title="..." height="300"></iframe></code-block>
 
     <table class="props-table">
       <thead>
         <tr><th>Class</th><th>Effect</th></tr>
       </thead>
       <tbody>
-        <tr><td>(default)</td><td>No border, block display, max-width 100%</td></tr>
+        <tr><td>(default)</td><td>No border, block display, <code>max-inline-size: 100%</code>. Size comes from the <code>width</code>/<code>height</code> attributes (UA default 300&times;150).</td></tr>
         <tr><td><code>.bordered</code></td><td>Subtle border with rounded corners</td></tr>
         <tr><td><code>.rounded</code></td><td>Medium border radius, overflow hidden</td></tr>
-        <tr><td><code>.full</code></td><td>100% container width</td></tr>
-        <tr><td><code>.fixed</code></td><td>100% width, fixed 400px height</td></tr>
+        <tr><td><code>.full</code></td><td>100% container width; the <code>height</code> attribute is kept</td></tr>
+        <tr><td><code>.fixed</code></td><td>100% width, fixed 400px height (overrides <code>height</code>)</td></tr>
       </tbody>
     </table>
   </section>
 
-  <section>
-    <h2>Responsive Embeds</h2>
-    <p>Wrap an iframe in an <code>.embed-responsive</code> container to maintain aspect ratio while filling available width. The iframe stretches to fill the container via absolute positioning.</p>
+  <section id="data-ratio">
+    <h2>Responsive Sizing with data-ratio</h2>
+    <p>An iframe has no natural aspect ratio, so its <code>width</code> and <code>height</code> attributes don't scale together: on a narrow screen <code>max-inline-size</code> clamps the width and leaves the full height, giving a tall letterbox. Put <code>data-ratio</code> on the iframe itself and the block size follows the used width instead.</p>
 
-    <browser-window src="/docs/snippets/demos/iframe-responsive.html" url="iframe-responsive.html" title="Responsive embed ratios" shadow></browser-window>
+    <browser-window src="/docs/snippets/demos/iframe-responsive.html" url="iframe-responsive.html" title="Responsive iframe sizing" shadow></browser-window>
 
-    <code-block language="html" show-lines label="16:9 responsive embed" data-escape><section class="embed-responsive">
+    <code-block language="html" show-lines label="data-ratio on the iframe" data-escape><!-- Preferred width 560px, shrinks with the container, stays 16:9 -->
+<iframe
+  src="https://www.youtube-nocookie.com/embed/VIDEO_ID"
+  title="Video title"
+  width="560" height="315" data-ratio="16:9"
+  allow="fullscreen; picture-in-picture"
+  loading="lazy">
+</iframe>
+
+<!-- No width attribute: fills the container -->
+<iframe src="/report.html" title="Quarterly report" data-ratio="page"></iframe></code-block>
+
+    <ul>
+      <li>A <code>width</code> attribute stays the preferred (maximum) width; without one the iframe fills its container.</li>
+      <li>Keep integer <code>width</code>/<code>height</code> as the no-CSS fallback.</li>
+      <li>Values: <code>1:1</code>, <code>4:3</code>, <code>3:2</code>, <code>16:9</code> (default), <code>21:9</code>, <code>2:3</code>, <code>3:4</code>, <code>9:16</code>, and <code>page</code> (1&nbsp;:&nbsp;1.414, a portrait document page). The same vocabulary works on <a href="/docs/elements/native/embed/"><code>&lt;embed&gt;</code></a> and <a href="/docs/elements/native/object/"><code>&lt;object&gt;</code></a>.</li>
+    </ul>
+
+    <h3 id="data-media">The data-media wrapper</h3>
+    <p>When an embed needs a caption, rounded corners, or a wrapper you can lay out, use a <code>[data-media]</code> ratio box. Its child iframe fills the box. On a <code>&lt;figure&gt;</code> with a <code>&lt;figcaption&gt;</code>, the ratio moves to the iframe and the caption flows below it (see <a href="/docs/elements/native/figure/#data-media">figure</a>).</p>
+    <code-block language="html" show-lines label="Captioned embed" data-escape><figure data-media data-ratio="16:9" data-radius="m">
   <iframe
     src="https://www.youtube-nocookie.com/embed/VIDEO_ID"
-    title="Video title"
-    allowfullscreen>
+    title="Product walkthrough video"
+    allow="fullscreen; picture-in-picture"
+    loading="lazy">
   </iframe>
-</section></code-block>
-    <code-block language="html" show-lines label="4:3 aspect ratio embed" data-escape><section class="embed-responsive ratio-4x3">
+  <figcaption>Product walkthrough (4 minutes)</figcaption>
+</figure></code-block>
+
+    <h3>Legacy .embed-responsive wrapper</h3>
+    <p>The <code>.embed-responsive</code> class works the same way as <code>[data-media]</code> and accepts ratio modifier classes. Prefer <code>data-ratio</code> for new markup.</p>
+    <code-block language="html" show-lines label="4:3 wrapper" data-escape><figure class="embed-responsive ratio-4x3">
   <iframe src="..." title="..."></iframe>
-</section></code-block>
+</figure></code-block>
 
     <table class="props-table">
       <thead>
@@ -81,7 +108,7 @@ crumbLabel: Native Elements
       <tbody>
         <tr><td><code>.embed-responsive</code></td><td>16:9</td><td>YouTube, Vimeo, most video</td></tr>
         <tr><td><code>.ratio-4x3</code></td><td>4:3</td><td>Classic presentations, some maps</td></tr>
-        <tr><td><code>.ratio-1x1</code></td><td>1:1</td><td>Instagram embeds, square widgets</td></tr>
+        <tr><td><code>.ratio-1x1</code></td><td>1:1</td><td>Square widgets</td></tr>
         <tr><td><code>.ratio-21x9</code></td><td>21:9</td><td>Cinematic video, ultrawide content</td></tr>
       </tbody>
     </table>
@@ -93,72 +120,117 @@ crumbLabel: Native Elements
 
     <browser-window src="/docs/snippets/demos/iframe-live-embeds.html" url="iframe-live-embeds.html" title="Live embed examples" shadow></browser-window>
 
-    <code-block language="html" show-lines label="YouTube video embed" data-escape><section class="embed-responsive">
-  <iframe
-    src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
-    title="YouTube video player"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowfullscreen
-    loading="lazy">
-  </iframe>
-</section></code-block>
-    <code-block language="html" show-lines label="OpenStreetMap embed" data-escape><section class="embed-responsive ratio-4x3">
-  <iframe
-    src="https://www.openstreetmap.org/export/embed.html?bbox=..."
-    title="Map showing office location"
-    loading="lazy">
-  </iframe>
-</section></code-block>
+    <code-block language="html" show-lines label="YouTube video embed" data-escape><iframe
+  src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
+  title="YouTube video player"
+  width="560" height="315" data-ratio="16:9"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+  referrerpolicy="strict-origin-when-cross-origin"
+  loading="lazy">
+</iframe></code-block>
+    <code-block language="html" show-lines label="OpenStreetMap embed" data-escape><iframe
+  src="https://www.openstreetmap.org/export/embed.html?bbox=..."
+  title="Map showing office location"
+  width="500" height="375" data-ratio="4:3"
+  loading="lazy">
+</iframe></code-block>
 
     <p><strong>Privacy note:</strong> Use <code>youtube-nocookie.com</code> instead of <code>youtube.com</code> for privacy-enhanced mode that doesn't set tracking cookies until the user plays the video.</p>
+  </section>
+
+  <section id="attributes">
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>title</code></td><td>Accessible name. Required (see Accessibility).</td></tr>
+        <tr><td><code>src</code></td><td>URL of the embedded document.</td></tr>
+        <tr><td><code>srcdoc</code></td><td>Inline HTML to render instead of <code>src</code> (wins when both are set). Pair with <code>sandbox</code> for untrusted markup.</td></tr>
+        <tr><td><code>width</code>, <code>height</code></td><td>Integer CSS pixels. The fallback size, and the preferred width with <code>data-ratio</code>.</td></tr>
+        <tr><td><code>allow</code></td><td>Permissions Policy for the frame (see below).</td></tr>
+        <tr><td><code>sandbox</code></td><td>Restricts what the framed document can do (see Security).</td></tr>
+        <tr><td><code>loading</code></td><td><code>lazy</code> defers loading until the frame nears the viewport (see Performance).</td></tr>
+        <tr><td><code>referrerpolicy</code></td><td>How much of your URL is sent to the embedded site, e.g. <code>no-referrer</code> or <code>strict-origin-when-cross-origin</code>.</td></tr>
+        <tr><td><code>credentialless</code></td><td>Loads the frame in a fresh, ephemeral context without your cookies or storage, so third-party embeds work on pages with cross-origin isolation (COEP). Chromium only at present; other browsers ignore it.</td></tr>
+        <tr><td><code>name</code></td><td>Browsing-context name, a target for <code>&lt;a target&gt;</code> and <code>&lt;form target&gt;</code>.</td></tr>
+        <tr><td><code>data-ratio</code></td><td>VB: proportional sizing (see above).</td></tr>
+        <tr><td><code>data-mock</code></td><td>VB prototyping: an iframe with no <code>src</code> gets a labelled placeholder via <code>srcdoc</code>. See <a href="/docs/attributes/data-mock/">data-mock</a>.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>The allow attribute (Permissions Policy)</h3>
+    <p><code>allow</code> takes a semicolon-separated list of features the framed document may use. Each feature defaults to the frame's own origin (<code>src</code>); add an origin list or <code>*</code> to widen it.</p>
+    <code-block language="html" show-lines label="Permissions Policy" data-escape><iframe
+  src="https://player.example.com/embed/42"
+  title="Conference keynote video"
+  allow="fullscreen; picture-in-picture; autoplay 'src'; geolocation 'none'">
+</iframe></code-block>
+    <p>Use <code>allow="fullscreen"</code> rather than the legacy <code>allowfullscreen</code> attribute. Both work today; <code>allowfullscreen</code> is the older boolean form (equivalent to <code>allow="fullscreen *"</code>), and when <code>allow</code> also names <code>fullscreen</code> the <code>allow</code> value takes precedence. Keep to one vocabulary.</p>
   </section>
 
   <section>
     <h2>Security</h2>
 
     <h3>The sandbox Attribute</h3>
-    <p>Restricts iframe capabilities. Start with an empty value (most restrictive) and add permissions as needed.</p>
-    <code-block language="html" show-lines label="Sandbox attribute examples" data-escape><!-- Most restrictive: no scripts, forms, or same-origin access -->
+    <p>Restricts iframe capabilities. Start with an empty value (most restrictive) and add tokens only as needed.</p>
+
+    <status-message data-variant="warning">
+      <strong>Never combine <code>allow-scripts</code> and <code>allow-same-origin</code> for content from your own origin.</strong> A same-origin document that may run scripts can reach into its parent, remove the <code>sandbox</code> attribute from its own iframe and reload itself unsandboxed: the sandbox is no protection at all. The pair is only meaningful for a <em>cross-origin</em> <code>src</code>, where the same-origin policy still separates the frame from your page. For untrusted HTML, use <code>srcdoc</code> or a separate origin with <code>sandbox="allow-scripts"</code> alone.
+    </status-message>
+
+    <code-block language="html" show-lines label="Sandbox attribute examples" data-escape><!-- Most restrictive: no scripts, forms, popups, or same-origin access -->
 <iframe sandbox src="..." title="..."></iframe>
 
-<!-- Allow scripts only -->
-<iframe sandbox="allow-scripts" src="..." title="..."></iframe>
+<!-- Untrusted HTML that needs scripts: opaque origin, cannot touch the parent -->
+<iframe sandbox="allow-scripts" srcdoc="..." title="..."></iframe>
 
-<!-- Common for video embeds -->
+<!-- Cross-origin widget that needs its own cookies (never for same-origin src) -->
 <iframe
-  sandbox="allow-scripts allow-same-origin"
-  src="..."
+  sandbox="allow-scripts allow-same-origin allow-popups"
+  src="https://widgets.example.com/embed"
   title="...">
 </iframe>
 
-<!-- For forms -->
+<!-- Cross-origin hosted form -->
 <iframe
   sandbox="allow-forms allow-scripts allow-same-origin"
-  src="..."
+  src="https://forms.example.com/survey"
   title="...">
 </iframe></code-block>
 
     <table class="props-table">
       <thead>
-        <tr><th>Sandbox Value</th><th>Allows</th></tr>
+        <tr><th>Sandbox Token</th><th>Allows</th></tr>
       </thead>
       <tbody>
         <tr><td><code>allow-scripts</code></td><td>JavaScript execution</td></tr>
-        <tr><td><code>allow-same-origin</code></td><td>Treat content as same origin</td></tr>
+        <tr><td><code>allow-same-origin</code></td><td>Keep the document's real origin (cookies, storage, same-origin DOM access). Without it the frame gets an opaque origin.</td></tr>
         <tr><td><code>allow-forms</code></td><td>Form submission</td></tr>
-        <tr><td><code>allow-popups</code></td><td>Open new windows/tabs</td></tr>
-        <tr><td><code>allow-modals</code></td><td>Modal dialogs (alert, confirm)</td></tr>
+        <tr><td><code>allow-popups</code></td><td>Open new windows/tabs (<code>window.open</code>, <code>target="_blank"</code>)</td></tr>
+        <tr><td><code>allow-popups-to-escape-sandbox</code></td><td>Popups open without inheriting the sandbox (needed for links out to normal sites)</td></tr>
+        <tr><td><code>allow-modals</code></td><td><code>alert()</code>, <code>confirm()</code>, <code>prompt()</code>, <code>print()</code></td></tr>
         <tr><td><code>allow-downloads</code></td><td>Downloading files</td></tr>
+        <tr><td><code>allow-top-navigation</code></td><td>Navigate the top-level page at any time</td></tr>
+        <tr><td><code>allow-top-navigation-by-user-activation</code></td><td>Navigate the top-level page only after a user click (prefer this to <code>allow-top-navigation</code>)</td></tr>
+        <tr><td><code>allow-top-navigation-to-custom-protocols</code></td><td>Open <code>mailto:</code>, <code>tel:</code> and other non-HTTP links in the top-level page</td></tr>
+        <tr><td><code>allow-presentation</code></td><td>Start a Presentation API session (casting)</td></tr>
+        <tr><td><code>allow-orientation-lock</code></td><td>Lock screen orientation</td></tr>
+        <tr><td><code>allow-pointer-lock</code></td><td>Pointer Lock API (games, 3D viewers)</td></tr>
+        <tr><td><code>allow-storage-access-by-user-activation</code></td><td>Request unpartitioned storage via the Storage Access API</td></tr>
       </tbody>
     </table>
 
     <h3>Content Security Policy</h3>
+    <p>List exactly the origins you embed. The privacy-enhanced YouTube host is <code>www.youtube-nocookie.com</code>, not <code>www.youtube.com</code>.</p>
     <code-block language="html" show-lines label="Content Security Policy" data-escape><!-- HTTP header -->
-Content-Security-Policy: frame-src 'self' https://www.youtube.com https://player.vimeo.com;
+Content-Security-Policy: frame-src 'self' https://www.youtube-nocookie.com https://player.vimeo.com;
 
 <!-- Meta tag -->
 <meta http-equiv="Content-Security-Policy"
-      content="frame-src 'self' https://www.youtube.com;"></code-block>
+      content="frame-src 'self' https://www.youtube-nocookie.com;"></code-block>
+    <p>To control who may frame <em>your</em> pages, send <code>Content-Security-Policy: frame-ancestors</code> from the embedded site; it can't be set from a meta tag.</p>
 
     <h3>Referrer Policy</h3>
     <code-block language="html" show-lines label="Referrer policy" data-escape><iframe
@@ -169,13 +241,40 @@ Content-Security-Policy: frame-src 'self' https://www.youtube.com https://player
   </section>
 
   <section>
+    <h2>Performance</h2>
+
+    <h3>Lazy Loading</h3>
+    <p>Defer loading of below-the-fold iframes. Third-party embeds often pull in megabytes of script, so this is one of the cheapest wins on a page. Don't lazy-load an embed that is visible on first paint.</p>
+    <code-block language="html" show-lines label="Lazy loading iframe" data-escape><iframe
+  src="..."
+  title="..."
+  width="560" height="315" data-ratio="16:9"
+  loading="lazy">
+</iframe></code-block>
+    <p>Give lazy iframes a size (<code>width</code>/<code>height</code> or <code>data-ratio</code>) so the space is reserved and nothing shifts when they load.</p>
+  </section>
+
+  <section>
+    <h2>Printing</h2>
+    <p>Browsers print only the visible part of an iframe, cropped to its box; scrolled-away content and video are lost. If the embedded content matters on paper, follow the frame with a link or summary that prints instead.</p>
+    <code-block language="html" show-lines label="Print fallback" data-escape><figure data-media data-ratio="16:9">
+  <iframe src="https://www.youtube-nocookie.com/embed/VIDEO_ID" title="Setup walkthrough video" loading="lazy"></iframe>
+  <figcaption>
+    Setup walkthrough &mdash;
+    <a href="https://www.youtube.com/watch?v=VIDEO_ID">watch on YouTube</a>
+  </figcaption>
+</figure></code-block>
+    <p>See <a href="/docs/printing/">Printing</a> for how VB prints embedded media.</p>
+  </section>
+
+  <section>
     <h2>Accessibility</h2>
 
     <h3>Title Attribute</h3>
     <p>Every iframe <strong>must</strong> have a <code>title</code> attribute that describes its content for screen readers.</p>
     <code-block language="html" show-lines label="Title attribute examples" data-escape><!-- Good: descriptive title -->
 <iframe
-  src="https://www.youtube.com/embed/..."
+  src="https://www.youtube-nocookie.com/embed/..."
   title="Introduction to Web Accessibility - Tutorial Video">
 </iframe>
 
@@ -183,38 +282,33 @@ Content-Security-Policy: frame-src 'self' https://www.youtube.com https://player
 <iframe src="..."></iframe>
 <iframe src="..." title="iframe"></iframe></code-block>
 
-    <h3>Lazy Loading</h3>
-    <p>Defer loading of below-the-fold iframes for better performance.</p>
-    <code-block language="html" show-lines label="Lazy loading iframe" data-escape><iframe
-  src="..."
-  title="..."
-  loading="lazy">
-</iframe></code-block>
-
     <h3>Best Practices</h3>
     <ul>
       <li>Always provide a descriptive <code>title</code> attribute</li>
-      <li>Use <code>loading="lazy"</code> for below-the-fold embeds</li>
-      <li>Ensure embedded content is itself accessible</li>
-      <li>Provide alternative content for critical information</li>
+      <li>Ensure embedded content is itself accessible; you can't fix it from the parent page</li>
+      <li>Provide alternative content (a link, transcript or summary) for critical information</li>
       <li>Consider that some users block third-party content</li>
+      <li>Don't put <code>tabindex="-1"</code> on an interactive embed; keyboard users need to reach its controls</li>
     </ul>
   </section>
 
   <section>
     <h2>CSS Reference</h2>
+    <p>Styles defined in <code>/src/native-elements/iframe/styles.css</code> and <code>/src/utils/media.css</code>.</p>
     <table class="props-table">
       <thead>
         <tr><th>Selector</th><th>Properties</th></tr>
       </thead>
       <tbody>
         <tr><td><code>iframe</code></td><td><code>display: block; border: none; max-inline-size: 100%;</code></td></tr>
-        <tr><td><code>iframe.full</code></td><td><code>inline-size: 100%;</code></td></tr>
+        <tr><td><code>iframe.full</code></td><td><code>inline-size: 100%;</code> (block size from <code>height</code>)</td></tr>
         <tr><td><code>iframe.fixed</code></td><td><code>inline-size: 100%; block-size: 400px;</code></td></tr>
         <tr><td><code>iframe.rounded</code></td><td><code>border-radius: var(--radius-m); overflow: hidden;</code></td></tr>
         <tr><td><code>iframe.bordered</code></td><td><code>border; border-radius;</code></td></tr>
-        <tr><td><code>.embed-responsive</code></td><td><code>position: relative; aspect-ratio: 16 / 9;</code></td></tr>
-        <tr><td><code>.embed-responsive > iframe</code></td><td><code>position: absolute; inset: 0; 100% width/height;</code></td></tr>
+        <tr><td><code>:is(iframe, embed, object)[data-ratio]</code></td><td><code>block-size: auto; aspect-ratio: var(--_ratio, 16 / 9);</code> plus <code>inline-size: 100%</code> when there is no <code>width</code> attribute</td></tr>
+        <tr><td><code>[data-media] &gt; iframe</code></td><td><code>position: absolute; inset: 0;</code> 100% width/height</td></tr>
+        <tr><td><code>.embed-responsive</code></td><td><code>position: relative; inline-size: 100%; aspect-ratio: 16 / 9;</code></td></tr>
+        <tr><td><code>.embed-responsive &gt; :is(iframe, embed, object)</code></td><td><code>position: absolute; inset: 0;</code> 100% width/height</td></tr>
       </tbody>
     </table>
   </section>
@@ -225,7 +319,12 @@ Content-Security-Policy: frame-src 'self' https://www.youtube.com https://player
       <li><a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> &mdash; For self-hosted video content</li>
       <li><a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> &mdash; For self-hosted audio content</li>
       <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> &mdash; For modal content on your own page</li>
-      <li><a href="/docs/elements/native/object/"><code>&lt;object&gt;</code></a> &mdash; Legacy embed mechanism</li>
+      <li><a href="/docs/elements/native/object/"><code>&lt;object&gt;</code></a> &mdash; Legacy embed mechanism, PDF fallback</li>
+      <li><a href="/docs/elements/native/embed/"><code>&lt;embed&gt;</code></a> &mdash; Same <code>data-ratio</code> sizing</li>
       <li><a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a> &mdash; Wrap embeds that need captions</li>
+      <li><a href="/docs/attributes/data-mock/"><code>data-mock</code></a> &mdash; Placeholder iframes for prototypes</li>
+      <li><a href="/docs/attributes/sandbox/"><code>sandbox</code></a> &mdash; Lock down what an iframe may do</li>
+      <li><a href="/docs/attributes/srcdoc/"><code>srcdoc</code></a> &mdash; Inline HTML documents for iframes</li>
+      <li><a href="/docs/attributes/allow/"><code>allow</code></a> &mdash; Permissions Policy for iframes</li>
     </ul>
   </section>

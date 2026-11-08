@@ -13,9 +13,9 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;b&gt;</code> element draws attention to text without conveying extra importance or urgency. It is styled with <code>font-weight: 600</code> and includes typographic refinements: <code>font-synthesis: none</code> stops the browser from generating faux bold, and <code>font-optical-sizing: auto</code> enables optical size adjustments.</p>
+    <p>The <code>&lt;b&gt;</code> element draws attention to text without conveying extra importance or urgency. It is styled with <code>font-weight: 600</code> and includes typographic refinements: <code>font-synthesis: weight style</code> lets the browser synthesize bold when the font has no bold face, and <code>font-optical-sizing: auto</code> enables optical size adjustments.</p>
 
-    <p>The trade-off of <code>font-synthesis: none</code>: if your font has no face at weight 600 or heavier (for example, a web font loaded only in its regular weight), <code>&lt;b&gt;</code> renders at the regular weight instead of a smeared faux bold. Load a bold face, or a variable font with a weight axis, when you change the font stack.</p>
+    <p>A real face always wins: if the font has a face at weight 600 or heavier (or a variable weight axis), that is used. Only when it does not (for example, a web font loaded only in its regular weight) does the browser synthesize a faux bold, so <code>&lt;b&gt;</code> never renders at plain body weight. Load a bold face for the best letterforms.</p>
 
     <p>In Vanilla Breeze, <code>&lt;b&gt;</code> also has special behavior inside code blocks &mdash; bold text gets a subtle highlight background instead of relying on weight alone, which is more visible in monospace fonts.</p>
   </section>
@@ -91,7 +91,7 @@ console.log(<strong>result</strong>);</code></pre></code-block>
 
   <section>
     <h2>Combined Bold + Italic</h2>
-    <p>Nesting <code>&lt;b&gt;</code> and <code>&lt;i&gt;</code> (or <code>&lt;strong&gt;</code> and <code>&lt;em&gt;</code>) combines the two through ordinary inheritance: the inner element inherits weight 600 and adds italic. Because both elements set <code>font-synthesis: none</code>, the browser will not fake the combination, so you get true bold italic only if the font has a bold-italic face (or variable weight and italic axes). Otherwise the browser falls back to the nearest face it has.</p>
+    <p>Nesting <code>&lt;b&gt;</code> and <code>&lt;i&gt;</code> (or <code>&lt;strong&gt;</code> and <code>&lt;em&gt;</code>) combines the two through ordinary inheritance: the inner element inherits weight 600 and adds italic. Both elements set <code>font-synthesis: weight style</code>, so a bold-italic face (or variable weight and italic axes) is used when the font has one, and the browser synthesizes the missing weight or slant when it does not.</p>
 
     <code-block language="html" show-lines label="Combined bold and italic" data-escape><p>Nested bold and italic combine properly:</p>
 <p><b><i>bold italic via b+i</i></b></p>
@@ -102,7 +102,7 @@ console.log(<strong>result</strong>);</code></pre></code-block>
     <h2>CSS Reference</h2>
     <code-block language="css" show-lines label="Bold and italic CSS" data-escape>strong, b {
   font-weight: 600;
-  font-synthesis: none;     /* prevent faux bold */
+  font-synthesis: weight style; /* real face wins; synthesize if missing */
   font-optical-sizing: auto;
 }
 
@@ -111,7 +111,7 @@ console.log(<strong>result</strong>);</code></pre></code-block>
 :where(b i, i b, strong em, em strong) {
   font-weight: 600;
   font-style: italic;
-  font-synthesis: none;
+  font-synthesis: weight style;
 }
 
 /* Bold in code — highlight background instead of just weight */
@@ -132,9 +132,9 @@ console.log(<strong>result</strong>);</code></pre></code-block>
       </thead>
       <tbody>
         <tr>
-          <td><code>font-synthesis: none</code></td>
+          <td><code>font-synthesis: weight style</code></td>
           <td>Applied to b, strong, i, em</td>
-          <td>Prevents browser from generating faux bold/italic glyphs (a font without a bold face renders <code>&lt;b&gt;</code> at regular weight)</td>
+          <td>Uses the font's real bold/italic face when present; otherwise the browser synthesizes one, so emphasis is never invisible</td>
         </tr>
         <tr>
           <td><code>font-optical-sizing: auto</code></td>

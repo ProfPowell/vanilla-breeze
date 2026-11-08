@@ -1,27 +1,30 @@
 /**
- * mobile-menu — Responsive mobile navigation menu
+ * mobile-menu — Responsive breakpoint observer for a header menu
  *
- * Renders a hamburger toggle button that opens a popover navigation
- * panel at mobile viewport widths. Hidden on desktop where the
- * primary nav is visible.
+ * The author writes the trigger button and the popover panel inside
+ * <mobile-menu>. At or below the breakpoint (default 52rem) the element
+ * shows (display: contents) and its sibling nav / nav-bar / site-tools
+ * in the parent <header> are hidden; above it, the element is hidden.
  *
- * The trigger is hidden by default and shown via the [data-mobile]
- * attribute which is set by the component's JS when the viewport
- * crosses the breakpoint (default 52rem).
+ * JS sets [data-mobile] for any breakpoint. For the default breakpoint a
+ * media query applies the same state before upgrade (and without JS —
+ * popover + popovertarget work natively), so there is no layout shift.
  *
  * Usage:
- *   <mobile-menu breakpoint="52rem">
- *     <nav aria-label="Mobile navigation">
- *       <ul>
- *         <li><a href="/about">About</a></li>
- *       </ul>
- *     </nav>
- *   </mobile-menu>
+ *   <header>
+ *     <nav aria-label="Main">...</nav>
+ *     <mobile-menu>
+ *       <button type="button" data-trigger popovertarget="m" aria-label="Menu">...</button>
+ *       <nav popover id="m" class="mobile-menu-panel" aria-label="Site menu">
+ *         <ul><li><a href="/about">About</a></li></ul>
+ *       </nav>
+ *     </mobile-menu>
+ *   </header>
  *
  * Themes can override via --mobile-menu-* tokens.
  */
 
-/* --- Trigger button --- */
+/* --- Visibility --- */
 mobile-menu {
   display: none;
 }
@@ -30,6 +33,26 @@ mobile-menu[data-mobile] {
   display: contents;
 }
 
+/* Hidden via CSS (not inline styles) so removing <mobile-menu> or leaving
+   mobile mode always restores the desktop chrome. !important: these must
+   beat author/theme display rules on header children. */
+header:has(> mobile-menu[data-mobile]) > :is(nav, nav-bar, site-tools) {
+  display: none !important;
+}
+
+/* Default-breakpoint state before upgrade / without JS. Must stay in
+   step with DEFAULT_BREAKPOINT in logic.js. */
+@media (width <= 52rem) {
+  mobile-menu:not(:defined):is(:not([breakpoint]), [breakpoint="52rem"]) {
+    display: contents;
+  }
+
+  header:has(> mobile-menu:not(:defined):is(:not([breakpoint]), [breakpoint="52rem"])) > :is(nav, nav-bar, site-tools) {
+    display: none !important;
+  }
+}
+
+/* --- Trigger button --- */
 mobile-menu [data-trigger] {
   padding: var(--size-xs);
   background: transparent;
@@ -108,9 +131,28 @@ mobile-menu a:hover {
   background: var(--color-surface-raised);
 }
 
+/* Filled current-page link. The panel is usually a <nav>, whose native
+   current-link rule sets `color: var(--_active-color) !important`, so the
+   text colour must go through that hook (a plain `color` loses, leaving
+   interactive-coloured text on the interactive fill). */
 mobile-menu a[aria-current="page"] {
-  background: var(--color-interactive);
-  color: white;
+  --_active-bg: var(--color-interactive);
+  --_active-color: var(--color-text-on-interactive-auto, var(--color-text-on-primary, white));
+  background: var(--_active-bg);
+  color: var(--_active-color);
+}
+
+/* Forced colors drop the background, which is the current link's only cue */
+@media (forced-colors: active) {
+  mobile-menu a[aria-current="page"] {
+    outline: 2px solid CanvasText;
+    outline-offset: -2px;
+    text-decoration: underline;
+  }
+
+  mobile-menu a:hover {
+    text-decoration: underline;
+  }
 }
 
 /* --- Sections --- */

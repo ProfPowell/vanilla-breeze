@@ -25,14 +25,14 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Basic Usage</h2>
-    <p>A simple meter showing a value within a range.</p>
+    <p>A simple meter showing a value within a range. Associate the label with <code>for</code>/<code>id</code>: <code>&lt;form-field&gt;</code> only wires up inputs, selects and textareas, so a meter inside it still needs the explicit pair.</p>
 
-    <browser-window src="/docs/snippets/demos/meter-basic.html" url="https://vanilla-breeze.com/meter/basic" title="Basic meter elements" shadow></browser-window>
-    <code-block language="html" show-lines label="Basic meter elements" data-escape><label>Storage Used</label>
-<meter value="0.7" min="0" max="1">70%</meter>
+    <browser-window src="/docs/snippets/demos/meter-basic.html" url="meter-basic.html" title="Basic meter elements" shadow></browser-window>
+    <code-block language="html" show-lines label="Basic meter elements" data-escape><label for="meter-storage">Storage used</label>
+<meter id="meter-storage" value="0.7" min="0" max="1">70%</meter>
 
-<label>Battery Level</label>
-<meter value="85" min="0" max="100">85%</meter></code-block>
+<label for="meter-battery">Battery level</label>
+<meter id="meter-battery" value="85" min="0" max="100">85%</meter></code-block>
   </section>
 
   <section>
@@ -82,40 +82,43 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Optimum Range Behavior</h2>
-    <p>The meter's color changes automatically based on where the value falls relative to the <code>optimum</code> attribute. Set <code>optimum</code> low for "less is better" metrics (CPU, disk usage) or high for "more is better" metrics (skills, scores). No classes or JavaScript needed — the browser handles the color logic.</p>
+    <p>The meter's color changes automatically based on where the value falls relative to the <code>optimum</code> attribute. Set <code>optimum</code> low for "less is better" metrics (CPU, disk usage) or high for "more is better" metrics (skills, scores). No classes or JavaScript needed — the browser handles the color logic. The colour is never announced, so say the state in the label (&ldquo;good&rdquo;, &ldquo;poor&rdquo;) as the demo does.</p>
 
-    <browser-window src="/docs/snippets/demos/meter-optimum-ranges.html" url="https://vanilla-breeze.com/meter/optimum-ranges" title="Meter optimum range behavior" shadow></browser-window>
+    <browser-window src="/docs/snippets/demos/meter-optimum-ranges.html" url="meter-optimum-ranges.html" title="Meter optimum range behavior" shadow></browser-window>
     <code-block language="html" show-lines label="Optimum range examples" data-escape><!-- Low optimum (lower is better, like CPU/disk usage) -->
-<meter value="22" min="0" max="100"
+<label for="meter-cpu">CPU usage — 22% (good)</label>
+<meter id="meter-cpu" value="22" min="0" max="100"
        low="40" high="75" optimum="20">22%</meter>
 
 <!-- High optimum (higher is better, like skills/score) -->
-<meter value="9" min="0" max="10"
+<label for="meter-html">HTML — 9/10 (good)</label>
+<meter id="meter-html" value="9" min="0" max="10"
        low="4" high="7" optimum="10">9/10</meter></code-block>
   </section>
 
   <section>
     <h2>Size Variants</h2>
-    <p>Different heights for various contexts.</p>
+    <p>Different heights for various contexts. <code>.xs</code> is a 2px hairline with no track border: treat it as decorative and always show the value in text next to it.</p>
 
-    <browser-window src="/docs/snippets/demos/meter-sizes.html" url="https://vanilla-breeze.com/meter/sizes" title="Meter size variants" shadow></browser-window>
-    <code-block language="html" show-lines label="Meter size variants" data-escape><meter class="xs" value="0.6">60%</meter>
-<meter class="s" value="0.6">60%</meter>
-<meter value="0.6">60%</meter>  <!-- default -->
-<meter class="l" value="0.6">60%</meter></code-block>
+    <browser-window src="/docs/snippets/demos/meter-sizes.html" url="meter-sizes.html" title="Meter size variants" shadow></browser-window>
+    <code-block language="html" show-lines label="Meter size variants" data-escape><meter class="xs" value="0.6" aria-label="Upload quota">60%</meter> <!-- decorative hairline -->
+<meter class="s" value="0.6" aria-label="Upload quota">60%</meter>
+<meter value="0.6" aria-label="Upload quota">60%</meter>  <!-- default -->
+<meter class="l" value="0.6" aria-label="Upload quota">60%</meter></code-block>
   </section>
 
   <section>
     <h2>Labeled Meter</h2>
-    <p>Use the <code>.labeled</code> wrapper pattern for meters with value displays.</p>
+    <p>Use the <code>.labeled</code> wrapper for a header row (label + value) above the meter. The <code>&lt;label for&gt;</code> names the meter and <code>aria-describedby</code> points at the <code>&lt;output&gt;</code> that shows the human-readable value. The class only applies to a wrapper whose direct child is a <code>&lt;meter&gt;</code>.</p>
 
-    <browser-window src="/docs/snippets/demos/meter-labeled.html" url="https://vanilla-breeze.com/meter/labeled" title="Labeled meters" shadow></browser-window>
+    <browser-window src="/docs/snippets/demos/meter-labeled.html" url="meter-labeled.html" title="Labeled meters" shadow></browser-window>
     <code-block language="html" show-lines label="Labeled meter" data-escape><section class="labeled">
-  <label>
-    <span>Storage</span>
-    <span>14.3 GB / 20 GB</span>
-  </label>
-  <meter value="14.3" min="0" max="20">71.5%</meter>
+  <header>
+    <label for="meter-quota">Storage</label>
+    <output id="meter-quota-value" for="meter-quota">14.3 GB / 20 GB</output>
+  </header>
+  <meter id="meter-quota" aria-describedby="meter-quota-value"
+         value="14.3" min="0" max="20">71.5%</meter>
 </section></code-block>
   </section>
 
@@ -123,10 +126,12 @@ crumbLabel: Native Elements
     <h2>Accessibility Notes</h2>
     <ul>
       <li><strong>Include fallback text</strong>: Content between tags is shown if meter is not supported</li>
-      <li><strong>Use labels</strong>: Always associate a label with the meter</li>
-      <li><strong>Provide context</strong>: Include units or percentages in visible text</li>
-      <li><strong>Don't rely on color alone</strong>: Accompany color changes with text indicators</li>
-      <li><strong>Screen reader support</strong>: Meters are announced as "X out of Y"</li>
+      <li><strong>Label every meter</strong>: <code>&lt;label for&gt;</code> + <code>id</code>, or <code>aria-labelledby</code>/<code>aria-label</code>. A <code>&lt;label&gt;</code> next to a meter without <code>for</code> labels nothing</li>
+      <li><strong>Provide context</strong>: Include units or percentages in visible text, and point <code>aria-describedby</code> at it</li>
+      <li><strong>Don't rely on color alone</strong>: The optimum/suboptimum colour is not exposed to assistive technology; state it in text</li>
+      <li><strong>Screen reader support varies</strong>: Most combinations announce the meter's role and current value, but wording (percentage, &ldquo;X out of Y&rdquo;, or the raw number) differs by screen reader and browser</li>
+      <li><strong>Visible track</strong>: The track has a 1px border at 3:1 against the surface so the range extent is perceivable (WCAG 1.4.11)</li>
+      <li><strong>Forced colors</strong>: The track draws in <code>CanvasText</code>; optimum fills with <code>Highlight</code>, suboptimum with diagonal <code>Highlight</code> stripes and even-less-good with <code>CanvasText</code> bars, so the three states stay distinct</li>
     </ul>
   </section>
 
@@ -164,8 +169,12 @@ crumbLabel: Native Elements
     <h2>CSS Reference</h2>
     <code-block language="css" show-lines label="Meter CSS styles" data-escape>/* Tokens (defined in src/tokens/forms.css) */
 :root {
-  --meter-h:           var(--size-s);
-  --progress-track-bg: var(--color-surface-raised);
+  --meter-h:                   var(--size-s);
+  --meter-track-bg:            var(--progress-track-bg);
+  --meter-track-border:        var(--control-border); /* 3:1 edge */
+  --meter-fill-optimum:        var(--color-success);
+  --meter-fill-suboptimum:     light-dark(oklch(from var(--color-warning) 0.6 c h), var(--color-warning));
+  --meter-fill-even-less-good: var(--color-error);
 }
 
 meter {
@@ -173,40 +182,57 @@ meter {
   display: block;
   inline-size: 100%;
   block-size: var(--meter-h);
-  border: none;
+  box-sizing: border-box;
+  border: 1px solid var(--meter-track-border);
   border-radius: var(--radius-full);
   overflow: hidden;
-  background: var(--progress-track-bg);
+  background: var(--meter-track-bg);
 }
 
-/* WebKit/Blink meter styling */
-meter::-webkit-meter-bar {
-  background: var(--progress-track-bg);
-  border-radius: var(--radius-full);
-  border: none;
-}
+/* WebKit/Blink */
+meter::-webkit-meter-bar { background: var(--meter-track-bg); border: none; block-size: 100%; }
+meter::-webkit-meter-optimum-value        { background: var(--meter-fill-optimum); }
+meter::-webkit-meter-suboptimum-value     { background: var(--meter-fill-suboptimum); }
+meter::-webkit-meter-even-less-good-value { background: var(--meter-fill-even-less-good); }
 
-/* Semantic colors via tokens */
-meter::-webkit-meter-optimum-value      { background: var(--color-success); }
-meter::-webkit-meter-suboptimum-value   { background: var(--color-warning); }
-meter::-webkit-meter-even-less-good-value { background: var(--color-error); }
+/* Firefox: one fill pseudo, state via pseudo-classes (separate rules) */
+meter:-moz-meter-optimum::-moz-meter-bar       { background: var(--meter-fill-optimum); }
+meter:-moz-meter-sub-optimum::-moz-meter-bar   { background: var(--meter-fill-suboptimum); }
+meter:-moz-meter-sub-sub-optimum::-moz-meter-bar { background: var(--meter-fill-even-less-good); }
 
-/* Size variants */
-meter.xs { block-size: var(--size-3xs); }
-meter.s { block-size: var(--size-2xs); }
-meter.m { block-size: var(--size-s); }
-meter.l { block-size: var(--size-m); }
+/* Size variants (.xs is decorative: 2px, no border) */
+meter.xs { block-size: var(--size-3xs); border-width: 0; }
+meter.s  { block-size: var(--size-2xs); }
+meter.m  { block-size: var(--size-s); }
+meter.l  { block-size: var(--size-m); }
 
-/* Segmented meter */
+/* Segmented meter (visual only; Chromium/WebKit draw the segments) */
 meter.segmented {
   background: repeating-linear-gradient(
     90deg,
-    var(--progress-track-bg),
-    var(--progress-track-bg) 9%,
+    var(--meter-track-bg),
+    var(--meter-track-bg) 9%,
     var(--color-surface) 9%,
     var(--color-surface) 10%
   );
+}
+
+/* Labeled wrapper — only when it directly holds a meter */
+.labeled:has(> meter) { display: flex; flex-direction: column; gap: var(--size-2xs); }
+
+/* Forced colors: distinct system colour + pattern per state */
+@media (forced-colors: active) {
+  meter { forced-color-adjust: none; border: 1px solid CanvasText; background: Canvas; }
+  meter::-webkit-meter-optimum-value { background: Highlight; }
+  meter::-webkit-meter-suboptimum-value {
+    background: repeating-linear-gradient(135deg, Highlight 0 3px, Canvas 3px 5px);
+  }
+  meter::-webkit-meter-even-less-good-value {
+    background: repeating-linear-gradient(90deg, CanvasText 0 2px, Canvas 2px 4px);
+  }
+  /* …plus the matching :-moz-meter-* rules */
 }</code-block>
+    <p>Firefox colours the fill through the <code>:-moz-meter-*</code> pseudo-classes. Themes override the <code>--meter-*</code> tokens, not the selectors.</p>
   </section>
 
   <section>

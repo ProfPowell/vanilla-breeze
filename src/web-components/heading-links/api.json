@@ -2,32 +2,49 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "heading-links",
   "type": "web-component",
-  "description": "Add anchor links to headings",
+  "description": "Add permalink anchors to headings; activating one follows the fragment and copies the section URL",
   "attributes": [
     {
       "name": "levels",
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "Heading levels to process (default: 'h2,h3')"
+      "description": "Comma-separated heading levels to process, h1–h6 only (default: 'h2,h3'). Invalid tokens are ignored; changes are observed",
+      "default": "h2,h3"
     },
     {
-      "name": "data-toc-ignore",
+      "name": "data-label-anchor",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "description": "Anchor accessible-name prefix; the anchor is named \"<prefix> <heading text>\" (default: 'Copy link to'). Observed",
+      "default": "Copy link to"
     },
     {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
+      "name": "data-label-copied",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Screen-reader announcement after the URL is copied (default: 'Link copied to clipboard')",
+      "default": "Link copied to clipboard"
     }
   ],
   "events": [
     {
-      "name": "heading-links:navigate"
+      "name": "heading-links:navigate",
+      "description": "Fires when an anchor is activated (unmodified primary click or Enter), after the fragment navigation and before the clipboard write",
+      "detail": "{ id: string, url: string, heading: HTMLElement }"
     }
   ],
-  "childAttributes": [],
+  "childAttributes": [
+    {
+      "name": "data-toc-ignore",
+      "on": "*",
+      "type": "boolean",
+      "required": false,
+      "description": "Skip this heading (or every heading inside this element): no anchor, no generated id. Shared with page-toc"
+    }
+  ],
   "structure": [],
   "htmlvalidate": {
     "flow": true,

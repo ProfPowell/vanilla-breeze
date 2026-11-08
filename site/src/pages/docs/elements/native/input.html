@@ -68,11 +68,13 @@ crumbLabel: Native Elements
 <input type="url" placeholder="https://" />
 <input type="tel" placeholder="Phone" autocomplete="tel" />
 <input type="search" placeholder="Search..." /></code-block>
+    <p><code>type="search"</code> keeps the browser's native clear (&times;) button; only the decorative search-results chrome is removed.</p>
   </section>
 
   <section>
     <h2>Numeric Input Types</h2>
     <p>Use <code>type="number"</code> for values with increment/decrement controls, and <code>type="range"</code> for slider selection. Constrain values with <code>min</code>, <code>max</code>, and <code>step</code>.</p>
+    <p>Number inputs keep the browser's native spinners. Only an upgraded <a href="#number-stepper-data-stepper"><code>data-stepper</code></a> hides them, because it supplies its own &minus;/+ buttons. Without JS the spinners stay.</p>
 
     <browser-window
       src="/docs/snippets/demos/input-numeric-date.html"
@@ -136,6 +138,16 @@ crumbLabel: Native Elements
     <input type="radio" name="size" value="large" /> Large
   </label>
 </fieldset></code-block>
+
+    <h3>Indeterminate checkboxes</h3>
+    <p>A "select all" checkbox whose children are partly checked shows a bar instead of a tick. There is no HTML attribute for this. Set the <code>indeterminate</code> DOM property from script. It is visual only and is not submitted. The next click clears it.</p>
+    <code-block language="html" show-lines label="Indeterminate checkbox" data-escape><label><input type="checkbox" id="all" /> All features</label>
+<script>
+  document.getElementById('all').indeterminate = true;
+</script></code-block>
+
+    <h3>Forced colors</h3>
+    <p>Checkboxes, radios, switches and range sliders are drawn with <code>appearance: none</code>. In Windows High Contrast and other forced-colors modes they repaint in system colours: <code>CanvasText</code> borders, a <code>Highlight</code> fill when checked, and a <code>HighlightText</code> tick, dot, bar or knob. Text fields show a <code>Highlight</code> focus outline, and invalid fields get a double border.</p>
   </section>
 
   <section>
@@ -145,7 +157,13 @@ crumbLabel: Native Elements
     <p>File upload. Use <code>accept</code> to restrict file types and <code>multiple</code> for multiple files. See also the <a href="#file-upload-zone-data-upload">data-upload enhancement</a> below.</p>
 
     <h3>type="color"</h3>
-    <p>Color picker returning a hex value. See also the <a href="#enhanced-color-input-data-color">data-color enhancement</a> below.</p>
+    <p>Color picker returning a hex value. The swatch is styled to match text inputs, with the same height, border and radius, and the native OS picker still opens on click. See also the <a href="#enhanced-color-input-data-color">data-color enhancement</a> below.</p>
+
+    <h3>type="submit", "reset", "button" and "image"</h3>
+    <p>Button-type inputs are left out of the text-field styling. <code>submit</code>, <code>reset</code> and <code>button</code> render as native buttons, so prefer <a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a>, which takes content and the VB button variants. <code>type="image"</code> is a graphical submit button and needs an <code>alt</code>.</p>
+    <code-block language="html" show-lines label="Button-type inputs" data-escape><input type="submit" value="Save" />
+<input type="reset" value="Clear" />
+<input type="image" src="/go.svg" alt="Search" /></code-block>
 
     <h3>type="hidden"</h3>
     <p>Invisible form data. Used for tokens, IDs, or tracking.</p>
@@ -160,7 +178,8 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Input States</h2>
-    <p>Inputs support disabled, readonly, required, and invalid states. Disabled inputs prevent interaction and are not submitted with the form. Readonly inputs allow selection but not editing, and their values are submitted.</p>
+    <p>Inputs support disabled, readonly, required, and invalid states. Disabled inputs prevent interaction and are not submitted with the form. Readonly inputs allow selection but not editing, and their values are submitted. To show that they are not open fields, readonly text fields get a sunken fill (<code>--input-readonly-bg</code>) and a dashed border (<code>--input-readonly-border-style</code>). <code>readonly</code> has no effect on checkbox, radio, range, color or file inputs, so they are not restyled.</p>
+    <p>Invalid fields (<code>aria-invalid="true"</code> or <code>:user-invalid</code>) get a thicker inline-start border as well as the error colour, so the state does not depend on colour alone.</p>
 
     <browser-window
       src="/docs/snippets/demos/input-states.html"
@@ -359,7 +378,7 @@ crumbLabel: Native Elements
 
     <code-block language="html" show-lines label="Toggle switch sizes" data-escape><!-- Small -->
 <label>
-  <input type="checkbox" data-switch="sm" name="compact">
+  <input type="checkbox" data-switch="s" name="compact">
   Compact mode
 </label>
 
@@ -371,7 +390,7 @@ crumbLabel: Native Elements
 
 <!-- Large -->
 <label>
-  <input type="checkbox" data-switch="lg" name="feature">
+  <input type="checkbox" data-switch="l" name="feature">
   Large switch
 </label></code-block>
 
@@ -386,8 +405,8 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>data-switch</code></td>
-          <td><code>""</code>, <code>"sm"</code>, <code>"lg"</code></td>
-          <td>Enable switch styling with optional size variant.</td>
+          <td><code>""</code>, <code>"s"</code>, <code>"l"</code></td>
+          <td>Enable switch styling with optional size variant. Track sizes: <code>s</code> 2&times;1.125rem, default 2.75&times;1.5rem, <code>l</code> 3.5&times;2rem. The knob slides toward the inline end, so it mirrors under <code>dir="rtl"</code>. Colours come from <code>--switch-track-bg</code>, <code>--switch-track-checked-bg</code> and <code>--switch-knob-bg</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -536,7 +555,7 @@ crumbLabel: Native Elements
 <input type="text" data-mask="ssn" placeholder="123-45-6789">
 <input type="text" data-mask="zip" placeholder="12345">
 
-<!-- Custom mask: # = digit, A = letter, * = any -->
+<!-- Custom mask: # = digit, A = letter, * = letter or digit -->
 <input type="text" data-mask="custom" data-pattern="AA-####" placeholder="AB-1234"></code-block>
 
     <h3>Preset Masks</h3>
@@ -580,7 +599,9 @@ crumbLabel: Native Elements
     <ul>
       <li>Auto-sets <code>inputmode="numeric"</code> for digit-only masks</li>
       <li>Auto-sets <code>maxlength</code> from the pattern length</li>
-      <li>Stores the unformatted value in <code>dataset.rawValue</code> for form processing</li>
+      <li>Stores the unformatted value in <code>data-raw-value</code> for scripts; the form submits the formatted value</li>
+      <li>An incomplete value is invalid (<code>setCustomValidity</code>), so <code>required</code> works</li>
+      <li>Presets are US formats; see <a href="/docs/attributes/data-mask/">data-mask</a> for details</li>
       <li>Without JS, the input works as a standard text field</li>
     </ul>
   </section>
@@ -589,15 +610,18 @@ crumbLabel: Native Elements
     <h2>Range Markers (data-markers)</h2>
     <p>Add <code>data-markers</code> to a <code>data-range</code> input to display tick marks at each step value. Combines with <code>data-bubble</code> and <code>&lt;datalist&gt;</code> labels.</p>
 
-    <div class="example">
-      <form-field>
-        <label for="demo-markers">Rating (1-5)</label>
-        <input type="range" id="demo-markers" min="1" max="5" step="1" value="3" data-range data-bubble data-markers>
-      </form-field>
-    </div>
+    <browser-window
+      src="/docs/snippets/demos/data-range-markers.html"
+      url="https://vanilla-breeze.com/range-markers"
+      title="Range with tick markers"
+      shadow>
+    </browser-window>
 
-    <code-block language="html" show-lines label="Range with tick markers" data-escape><input type="range" min="1" max="5" step="1" value="3"
-  data-range data-bubble data-markers></code-block>
+    <code-block language="html" show-lines label="Range with tick markers" data-escape><form-field>
+  <label for="temp">Temperature</label>
+  <input type="range" id="temp" name="temp" data-range data-bubble data-markers
+    data-suffix="°F" min="60" max="90" step="5" value="70" />
+</form-field></code-block>
 
     <table class="props-table">
       <thead>
@@ -739,7 +763,8 @@ crumbLabel: Native Elements
       <li><strong>Mark invalid fields</strong>: Use <code>aria-invalid="true"</code> for explicit invalid state</li>
       <li><strong>Avoid placeholder as label</strong>: Placeholders disappear when typing</li>
       <li><strong>Visible focus</strong>: Don't remove focus outlines</li>
-      <li><strong>Touch targets</strong>: Minimum 44x44px for checkboxes and radios</li>
+      <li><strong>Touch targets</strong>: The checkbox or radio box itself is 18px (<code>--control-size</code>). Wrap it in a <code>&lt;label&gt;</code> so the label is the pointer target. A label that contains a checkbox or radio is at least 24px tall, which meets WCAG 2.5.8 (AA). For 44px touch targets (2.5.5, AAA), add padding to the label.</li>
+      <li><strong>Control contrast</strong>: Control borders (<code>--control-border</code>, also used by <code>--input-border</code>, the range track and the unchecked switch track) are at least 3:1 against the surface in light and dark mode (WCAG 1.4.11).</li>
       <li><strong>Fieldsets for radio groups</strong>: Always wrap radio groups in <a href="/docs/elements/native/fieldset/">fieldset</a></li>
     </ul>
   </section>
@@ -751,14 +776,16 @@ crumbLabel: Native Elements
   --input-height:          var(--size-touch-min);
   --input-padding-inline:  var(--size-s);
   --input-bg:              var(--color-surface);
-  --input-border:          var(--color-border);
+  --input-border:          var(--control-border);
   --input-border-focus:    var(--color-interactive);
   --input-radius:          var(--radius-m);
   --input-text:            inherit;
   --input-placeholder:     var(--color-text-muted);
+  --input-readonly-bg:           var(--color-surface-raised);
+  --input-readonly-border-style: dashed;
 
   --control-size:            1.125rem;
-  --control-border:          var(--color-border-strong);
+  --control-border:          color-mix(in oklab, var(--color-border-strong), var(--color-text) 30%); /* >= 3:1 */
   --control-checked-bg:      var(--color-primary);
   --control-checked-border:  var(--color-primary);
   --control-radius-check:    var(--radius-s);
@@ -769,7 +796,11 @@ crumbLabel: Native Elements
   --select-chevron-inset:  var(--size-s);
 
   --range-track-h:      0.375rem;
-  --range-track-bg:     var(--color-border);
+  --switch-track-bg:         var(--control-border);
+  --switch-track-checked-bg: var(--color-interactive);
+  --switch-knob-bg:          var(--color-white);
+
+  --range-track-bg:     var(--control-border);
   --range-track-fill:   var(--color-primary);
   --range-thumb-size:   1.25rem;
   --range-thumb-bg:     var(--color-surface);
@@ -779,7 +810,7 @@ crumbLabel: Native Elements
 /* Text inputs, select, textarea — token-driven */
 input:not(:is([type="checkbox"], [type="radio"], [type="range"],
   [type="file"], [type="color"], [type="submit"],
-  [type="button"], [type="reset"])),
+  [type="button"], [type="reset"], [type="image"])),
 textarea, select {
   border: var(--border-width-thin) solid var(--input-border);
   border-radius: var(--input-radius);
@@ -792,8 +823,8 @@ textarea, select {
 input[type="checkbox"]:not([data-switch]),
 input[type="radio"] {
   appearance: none;
-  width: var(--control-size);
-  height: var(--control-size);
+  inline-size: var(--control-size);
+  block-size: var(--control-size);
   border: var(--border-width-medium) solid var(--control-border);
 }
 
@@ -814,13 +845,21 @@ input[type="radio"]:checked::after {
   border-radius: 50%;
 }
 
-/* Range — token-driven track and thumb */
+/* Range — token-driven track and thumb. The fill stop is --range-pct
+   (unset = 0%, a plain track); data-range sets it as the value changes.
+   The gradient direction flips under :dir(rtl). */
 input[type="range"] {
+  --_range-dir: to right;
   appearance: none;
-  background: linear-gradient(to right,
-    var(--range-track-fill) var(--_pct, 50%),
-    var(--range-track-bg) var(--_pct, 50%));
-}</code-block>
+  background: linear-gradient(var(--_range-dir),
+    var(--range-track-fill) var(--range-pct, 0%),
+    var(--range-track-bg) var(--range-pct, 0%));
+
+  &:dir(rtl) { --_range-dir: to left; }
+}
+
+/* Number spinners are hidden only once data-stepper has upgraded */
+input[type="number"][data-stepper-init] { appearance: textfield; }</code-block>
   </section>
 
   <section>
@@ -836,5 +875,25 @@ input[type="range"] {
       <li><a href="/docs/elements/web-components/combobox/">combo-box</a> - Searchable dropdown with filtering</li>
       <li><a href="/docs/elements/web-components/data-table/">data-table</a> - Sortable, filterable data with input controls</li>
       <li><a href="/docs/elements/native/dialog/">dialog</a> - Modal forms via <code>method="dialog"</code></li>
+      <li><a href="/docs/attributes/minlength-maxlength/"><code>minlength</code> / <code>maxlength</code></a> - Text length limits and their validity states</li>
+      <li><a href="/docs/attributes/min-max-step/"><code>min</code> / <code>max</code> / <code>step</code></a> - Range and increment constraints for numeric and date inputs</li>
+      <li><a href="/docs/attributes/accept/"><code>accept</code></a> - Which file types a file input offers</li>
+      <li><a href="/docs/attributes/pattern/"><code>pattern</code></a> - Regular-expression validation for text inputs</li>
+      <li><a href="/docs/attributes/readonly/"><code>readonly</code></a> - Not editable, but still focusable and submitted</li>
+      <li><a href="/docs/attributes/list/"><code>list</code></a> - Connect an input to a datalist of suggestions</li>
+    </ul>
+    <h3>Input enhancement attributes</h3>
+    <ul>
+      <li><a href="/docs/attributes/data-switch/"><code>data-switch</code></a> - Checkbox as a sliding switch (<code>type="checkbox"</code>)</li>
+      <li><a href="/docs/attributes/data-range/"><code>data-range</code></a> - Styled range with value bubble and markers (<code>type="range"</code>)</li>
+      <li><a href="/docs/attributes/data-stepper/"><code>data-stepper</code></a> - Increment and decrement buttons (<code>type="number"</code>)</li>
+      <li><a href="/docs/attributes/data-color/"><code>data-color</code></a> - Swatch and hex readout (<code>type="color"</code>)</li>
+      <li><a href="/docs/attributes/data-mask/"><code>data-mask</code></a> - Format as you type: phone, card, date (text-like types)</li>
+      <li><a href="/docs/attributes/data-accept/"><code>data-accept</code></a> - Filter allowed characters without a fixed format (text-like types)</li>
+      <li><a href="/docs/attributes/data-upload/"><code>data-upload</code></a> - Drag-and-drop zone and file list (<code>type="file"</code>)</li>
+      <li><a href="/docs/attributes/data-strength/"><code>data-strength</code></a> - Password strength meter and rules (<code>type="password"</code>)</li>
+      <li><a href="/docs/attributes/data-toggle-tags/"><code>data-toggle-tags</code></a> - Checkboxes as selectable chips (on the <code>&lt;fieldset&gt;</code>)</li>
+      <li><a href="/docs/attributes/data-show-when/"><code>data-show-when</code></a> - Show a section only when an input has a given value</li>
+      <li><a href="/docs/attributes/data-autosave/"><code>data-autosave</code></a> - Draft persistence for the whole form; mark an input <code>data-autosave-ignore</code> to keep it out</li>
     </ul>
   </section>

@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "mobile-menu"
-description: "Responsive mobile navigation menu with hamburger toggle and popover panel."
+description: "Breakpoint observer for a header menu: shows your popover trigger and hides the desktop nav below a viewport width."
 elementName: mobile-menu
 category: custom
 currentPath: /docs/elements/custom-elements/mobile-menu/
@@ -12,8 +12,10 @@ crumbLabel: Custom Elements
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;mobile-menu&gt;</code> element provides responsive navigation that activates at a configurable viewport breakpoint. Below the breakpoint, it shows a hamburger toggle and hides sibling <code>&lt;nav&gt;</code> and <code>&lt;site-tools&gt;</code> elements in the parent header. Above the breakpoint, it hides itself completely.</p>
-    <p>The menu panel uses the native HTML <code>popover</code> API for the overlay, with backdrop support and keyboard accessibility built in.</p>
+    <p>The <code>&lt;mobile-menu&gt;</code> element is a breakpoint observer. At or below a configurable viewport width it shows its contents and hides sibling <code>&lt;nav&gt;</code>, <code>&lt;nav-bar&gt;</code> and <code>&lt;site-tools&gt;</code> elements in the parent <code>&lt;header&gt;</code>. Above the breakpoint it hides itself.</p>
+    <p>It generates nothing. You write the trigger button and the menu panel inside it. The panel is a native HTML <code>popover</code>, so opening, closing, <kbd>Esc</kbd> and the backdrop work without any script from this element.</p>
+
+    <browser-window src="/docs/examples/demos/mobile-menu-basic.html" url="https://vanilla-breeze.com/mobile-menu" title="mobile-menu — header menu at phone width" device="iphone-16" device-color="midnight"></browser-window>
 </section>
 
 <section>
@@ -27,7 +29,13 @@ crumbLabel: Custom Elements
                 <td><code>breakpoint</code></td>
                 <td>CSS length</td>
                 <td><code>52rem</code></td>
-                <td>Viewport width below which mobile mode activates</td>
+                <td>Viewport width at or below which mobile mode activates. Observed: changing it re-evaluates immediately.</td>
+            </tr>
+            <tr>
+                <td><code>data-mobile</code></td>
+                <td>boolean (state)</td>
+                <td>&mdash;</td>
+                <td>Set by the element while mobile mode is active. Style against it; do not set it yourself.</td>
             </tr>
         </tbody>
     </table>
@@ -35,7 +43,7 @@ crumbLabel: Custom Elements
 
 <section>
     <h2>Basic Usage</h2>
-    <p>Place <code>&lt;mobile-menu&gt;</code> inside a <code>&lt;header&gt;</code> alongside the desktop navigation. The trigger button must have <code>data-trigger</code> and <code>popovertarget</code> pointing to the panel.</p>
+    <p>Place <code>&lt;mobile-menu&gt;</code> as a direct child of a <code>&lt;header&gt;</code>, alongside the desktop navigation. Put both the trigger and the panel inside it: the link, section and current-page styles are scoped to <code>mobile-menu</code>. The trigger needs <code>data-trigger</code> and a <code>popovertarget</code> that names the panel's <code>id</code>. Give the panel an <code>aria-label</code> so its navigation landmark has a name.</p>
 
 <code-block language="html" label="Header with mobile menu">
 <header class="site" data-sticky>
@@ -60,23 +68,25 @@ crumbLabel: Custom Elements
             popovertarget="main-menu" aria-label="Menu">
       <icon-wc name="menu"></icon-wc>
     </button>
+
+    <!-- Panel lives inside mobile-menu so its styles apply -->
+    <nav popover id="main-menu" class="mobile-menu-panel"
+         aria-label="Site menu">
+      <button type="button" class="mobile-menu-close"
+              popovertarget="main-menu"
+              popovertargetaction="hide" aria-label="Close menu">
+        <icon-wc name="x"></icon-wc>
+      </button>
+      <ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/docs" aria-current="page">Docs</a></li>
+        <li><a href="/blog">Blog</a></li>
+      </ul>
+    </nav>
   </mobile-menu>
 </header>
-
-<!-- Panel lives outside the header -->
-<nav popover id="main-menu" class="mobile-menu-panel">
-  <button type="button" class="mobile-menu-close"
-          popovertarget="main-menu"
-          popovertargetaction="hide" aria-label="Close">
-    <icon-wc name="x"></icon-wc>
-  </button>
-  <ul>
-    <li><a href="/about">About</a></li>
-    <li><a href="/docs">Docs</a></li>
-    <li><a href="/blog">Blog</a></li>
-  </ul>
-</nav>
 </code-block>
+    <p>For automatic <code>aria-current</code> in the panel, wrap its list in a <a href="/docs/elements/web-components/nav-bar/"><code>&lt;nav-bar&gt;</code></a> inside the popover <code>&lt;nav&gt;</code>.</p>
 </section>
 
 <section>
@@ -100,20 +110,22 @@ crumbLabel: Custom Elements
 <section>
     <h2>How It Works</h2>
     <ol>
-        <li>On <code>connectedCallback</code>, the component creates a <code>matchMedia</code> observer for the configured breakpoint.</li>
+        <li>On connect, and whenever <code>breakpoint</code> changes, the element creates a <code>matchMedia('(max-width: …)')</code> observer. The breakpoint is the <em>viewport</em> width, not a container width, because the menu replaces page-level chrome.</li>
         <li>When the viewport crosses the breakpoint, it sets or removes <code>[data-mobile]</code> on itself.</li>
-        <li>In mobile mode, the component hides sibling <code>&lt;nav&gt;</code> and <code>&lt;site-tools&gt;</code> elements in the parent header.</li>
-        <li>When switching back to desktop, it restores sibling visibility and closes any open popover.</li>
+        <li>CSS does the rest: <code>header:has(&gt; mobile-menu[data-mobile]) &gt; :is(nav, nav-bar, site-tools)</code> is hidden. No inline styles are written, so removing the element (or leaving mobile mode) always restores the desktop chrome.</li>
+        <li>When switching back to desktop, it closes the panel if it is open.</li>
     </ol>
-    <p>Without JavaScript, the element stays hidden (<code>display: none</code> by default). This is progressive enhancement &mdash; the desktop nav remains functional.</p>
+    <p>The default <code>52rem</code> breakpoint is also a CSS media query, so the right state paints before the element upgrades (no layout shift) and even without JavaScript. Because <code>popover</code> and <code>popovertarget</code> are native, the menu still opens and closes with JavaScript off. A custom <code>breakpoint</code> needs JavaScript; without it, the desktop nav stays visible at every width.</p>
 </section>
 
 <section>
     <h2>Accessibility</h2>
     <ul>
-        <li>The trigger button should have <code>aria-label="Menu"</code> for screen readers.</li>
-        <li>The popover panel uses the native <code>popover</code> API which provides focus trapping and <kbd>Esc</kbd> to close.</li>
+        <li>The trigger button should have <code>aria-label="Menu"</code> for screen readers. <code>popovertarget</code> gives it <code>aria-expanded</code> automatically.</li>
+        <li>Label the panel (<code>aria-label="Site menu"</code>). An unnamed <code>&lt;nav&gt;</code> is a second, anonymous navigation landmark.</li>
+        <li>The native <code>popover</code> gives you <kbd>Esc</kbd> to close, light dismiss on an outside click, and focus back on the trigger when it closes. It is <strong>not modal</strong>: there is no focus trap, the rest of the page stays reachable, and the page still scrolls. Focus does not move into the panel when it opens; the panel's links come next in the tab order after the trigger. If you need a modal menu, use a <code>&lt;dialog&gt;</code> opened with <code>showModal()</code> instead.</li>
         <li>Include a close button inside the panel with <code>popovertargetaction="hide"</code>.</li>
+        <li>The current-page link uses <code>--color-text-on-interactive-auto</code> on the interactive colour. In forced-colors mode it also gets an outline and underline.</li>
     </ul>
 </section>
 

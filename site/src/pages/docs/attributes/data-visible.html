@@ -27,22 +27,31 @@ crumbLabel: Data Attributes
       <li><code>data-visible="mobile"</code> &mdash; visible below 48 rem, hidden at 48 rem and above</li>
     </ul>
 
-    <p>The breakpoint (48 rem) corresponds to a typical tablet/desktop threshold. Because the rules live in the <code>utils</code> cascade layer, they override styles from earlier layers (tokens, reset, native-elements, custom-elements, web-components) without needing <code>!important</code>.</p>
+    <p>The breakpoint is <code>--bp-m</code> (48 rem, <code>src/tokens/breakpoints.css</code>), a typical tablet/desktop threshold. There are only these two values; for another breakpoint (a tablet tier at <code>--bp-l</code>, say) write your own <code>@media</code> rule.</p>
   </section>
 
   <section>
     <h2>How It Works</h2>
-    <p>Two media queries set <code>display: none</code> on the opposite breakpoint:</p>
+    <p>Two media queries set <code>display: none !important</code> on the opposite breakpoint:</p>
 
-    <code-block language="css" show-lines label="The complete CSS" data-escape>@media (width >= 48rem) {
-  [data-visible="mobile"] { display: none; }
+    <code-block language="css" show-lines label="The complete CSS (src/utils/responsive.css)" data-escape>@media screen and (width >= 48rem), print {
+  [data-visible="mobile"] { display: none !important; }
 }
 
-@media (width < 48rem) {
-  [data-visible="desktop"] { display: none; }
+@media screen and (width < 48rem) {
+  [data-visible="desktop"] { display: none !important; }
 }</code-block>
 
     <p>Works on any element &mdash; not just navigation. A hamburger button, a bottom nav, a sidebar, a CTA banner, or any content block can use <code>data-visible</code>.</p>
+
+    <h3>It always wins</h3>
+    <p>The rules sit in the lowest framework layer (<code>reset</code>, next to <code>[hidden]</code>) with <code>!important</code>. An important declaration in an earlier layer beats every normal declaration and every later layer's important ones, so a hidden variant stays hidden even on components that lock their own <code>display</code> (<code>&lt;content-swap&gt;</code>'s <code>display: grid !important</code>) and against your own unlayered <code>display</code> rules. To show the element, remove or change the attribute.</p>
+
+    <h3>Viewport, not container</h3>
+    <p><code>data-visible</code> measures the <strong>viewport</strong>. Inside a narrow sidebar or card on a wide screen, <code>mobile</code> content stays hidden. For &ldquo;narrow container&rdquo; behaviour make the region a query container with <a href="/docs/attributes/data-container/"><code>data-container</code></a> and write an <code>@container</code> rule.</p>
+
+    <h3>In print</h3>
+    <p>The queries are screen-only. Printed, the page box (about 42 rem on A4 or Letter) would otherwise pick the mobile variant, so print always shows the <code>desktop</code> variant and hides the <code>mobile</code> one. Use <a href="/docs/attributes/data-print/"><code>data-print-only</code> / <code>data-screen-only</code></a> for content that differs between screen and paper.</p>
   </section>
 
   <section>
@@ -60,7 +69,7 @@ crumbLabel: Data Attributes
     <h2>Mobile-Only Content</h2>
     <p>Use <code>data-visible="mobile"</code> on elements that should only appear on narrow viewports:</p>
 
-    <code-block language="html" show-lines label="Mobile-only elements" data-escape><button data-visible="mobile" commandfor="mobile-nav" command="show-modal" class="ghost icon-only" aria-label="Menu">
+    <code-block language="html" show-lines label="Mobile-only elements" data-escape><button data-visible="mobile" commandfor="mobile-nav" command="show-modal" class="ghost" aria-label="Menu">
   <icon-wc name="menu"></icon-wc>
 </button>
 
@@ -87,7 +96,7 @@ crumbLabel: Data Attributes
 
   <!-- Mobile: hamburger button -->
   <button data-visible="mobile" commandfor="mobile-nav" command="show-modal"
-          class="ghost icon-only" aria-label="Menu">
+          class="ghost" aria-label="Menu">
     <icon-wc name="menu"></icon-wc>
   </button>
 </header>
@@ -136,5 +145,17 @@ crumbLabel: Data Attributes
       <li>Ensure equivalent content is available at both breakpoints; hiding a desktop nav is fine when a mobile nav provides the same links</li>
       <li>Do not use <code>data-visible</code> to hide content that has no mobile equivalent &mdash; that would reduce accessibility on narrow screens</li>
       <li>The hamburger button should include an <code>aria-label</code> since it typically contains only an icon</li>
+      <li>At 400% zoom a 1280&nbsp;px desktop is about 20 rem wide, so zoomed-in users get the <code>mobile</code> variant. Keep the two variants equivalent so nothing is lost on reflow (WCAG 1.4.10)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/attributes/data-container/"><code>data-container</code></a> &mdash; container queries, for components that should respond to the space they have rather than the viewport.</li>
+      <li><a href="/docs/attributes/data-print/"><code>data-print</code></a> &mdash; <code>data-print-only</code>, <code>data-no-print</code> and <code>data-screen-only</code> for screen vs paper.</li>
+      <li><a href="/docs/attributes/hide-until-ready/"><code>hide-until-ready</code></a> &mdash; hiding until a component is defined, not by width.</li>
+      <li><a href="/docs/elements/custom-elements/mobile-menu/"><code>&lt;mobile-menu&gt;</code></a> &mdash; a complete responsive navigation that switches at its own <code>breakpoint</code>.</li>
+      <li><a href="/docs/attributes/hidden/"><code>hidden</code></a> &mdash; the native attribute; it shares the same reset-layer mechanism.</li>
     </ul>
   </section>

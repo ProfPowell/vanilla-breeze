@@ -40,7 +40,28 @@ crumbLabel: Native Elements
     <code-block language="html" show-lines label="Single key" data-escape><p>Press <kbd>Enter</kbd> to submit the form.</p></code-block>
     <code-block language="html" show-lines label="Key combinations" data-escape><p>Save: <kbd>Ctrl</kbd> + <kbd>S</kbd></p>
 <p>Command palette: <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd></p></code-block>
-    <code-block language="html" show-lines label="Nested sequences" data-escape><p>In Vim: <kbd><kbd>:</kbd><kbd>w</kbd><kbd>q</kbd></kbd> to save and quit.</p></code-block>
+    <code-block language="html" show-lines label="Nested sequences" data-escape><p>In Vim: <kbd><kbd>:</kbd><kbd>w</kbd><kbd>q</kbd></kbd> to save and quit.</p>
+<p>Save: <kbd><kbd>Ctrl</kbd>+<kbd>S</kbd></kbd></p></code-block>
+  </section>
+
+  <section>
+    <h2>Nested kbd</h2>
+    <p>The HTML spec uses nesting to mean <em>one input made of several keys</em>: the outer <code>&lt;kbd&gt;</code> is the whole sequence or combination, each inner <code>&lt;kbd&gt;</code> is one key. VB draws the cap on the inner elements only. A <code>&lt;kbd&gt;</code> that has a <code>&lt;kbd&gt;</code> child loses its own border, background, shadow and padding and keeps the surrounding text size, so the inner caps are the same size as a standalone cap.</p>
+    <p>Separate <code>&lt;kbd&gt;</code> elements with a <code>+</code> between them (<code>&lt;kbd&gt;Ctrl&lt;/kbd&gt; + &lt;kbd&gt;S&lt;/kbd&gt;</code>) read the same and need no wrapper. Use the nested form when the combination needs to be one element, for example to style or select it as a unit.</p>
+  </section>
+
+  <section>
+    <h2>Platform-aware shortcuts</h2>
+    <p>Add <a href="/docs/attributes/data-hotkey/"><code>data-hotkey</code></a> to have VB render the right keys for the reader's platform: <kbd>&#x2318;</kbd><kbd>K</kbd> on a Mac, <kbd>Ctrl</kbd>+<kbd>K</kbd> elsewhere. The text you write is the fallback before JavaScript runs. VB replaces it with nested caps and a visually hidden spoken form ("Command K").</p>
+    <code-block language="html" show-lines label="data-hotkey" data-escape><p>Search: <kbd data-hotkey="meta+k">Ctrl+K</kbd></p>
+<p>Close: <kbd data-hotkey="escape">Esc</kbd></p></code-block>
+    <p>Named keys get short labels (<code>escape</code> &rarr; Esc, <code>arrowup</code> &rarr; &uarr;, <code>pageup</code> &rarr; PgUp). Write the plus key as <code>plus</code> or <code>ctrl++</code>. To localise key names, set <code>data-label-ctrl="Strg"</code> (or any <code>data-label-<var>key</var></code>) on the element or on <code>&lt;html&gt;</code>. The attribute page has the full mapping.</p>
+  </section>
+
+  <section>
+    <h2>Key caps inside buttons</h2>
+    <p>A button sets its own text colour, which can be white on a primary fill. Inside <code>button</code>, <code>.button</code> and <code>[role="button"]</code>, a cap therefore keeps the button's text colour. Its edge and a translucent fill are derived from that colour, so the cap is always at least as legible as the button label.</p>
+    <code-block language="html" show-lines label="Shortcut hint in a button" data-escape><button type="button">Save <kbd data-hotkey="meta+s">Ctrl+S</kbd></button></code-block>
   </section>
 
   <section>
@@ -53,6 +74,22 @@ crumbLabel: Native Elements
   border-radius: var(--radius-s);
   border: var(--border-width-thin) solid var(--color-border);
   box-shadow: 0 1px 0 var(--color-border);
+}
+
+/* Nested: only the inner kbd is a cap */
+kbd:has(> kbd) {
+  font-size: inherit;
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* Inside buttons: cap follows the button's text colour */
+:is(button, .button, [role="button"]) kbd {
+  color: inherit;
+  border-color: color-mix(in oklab, currentColor 45%, transparent);
+  /* + a translucent fill at the text's opposite lightness */
 }</code-block>
 
     <p>The border and <code>box-shadow</code> create a 3D key-cap appearance. Browser translation will translate key names unless you add the HTML <code>translate="no"</code> attribute: <code>&lt;kbd translate="no"&gt;Ctrl&lt;/kbd&gt;</code>.</p>
@@ -63,6 +100,8 @@ crumbLabel: Native Elements
     <ul>
       <li>Screen readers announce <code>&lt;kbd&gt;</code> as plain text &mdash; the key-cap styling is not conveyed, so the surrounding words must say it is a key</li>
       <li>Use the plus symbol (+) between keys in combinations for clarity</li>
+      <li>Mac glyphs (&#x2318; &#x2325; &#x21E7; &#x2303;) are read inconsistently by screen readers. Spell the names out in hand-written text, or use <code>data-hotkey</code>, which adds a visually hidden spoken form</li>
+      <li>Do not put <code>aria-label</code> on <code>&lt;kbd&gt;</code>: it has a generic role, so the label is prohibited and usually ignored</li>
       <li>Provide context: "Press <kbd>X</kbd> to do Y"</li>
       <li>Document shortcuts in a discoverable location</li>
       <li>Always provide alternative methods for keyboard-shortcut-only actions</li>

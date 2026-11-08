@@ -15,7 +15,7 @@ crumbLabel: Native Elements
     <h2>Description</h2>
     <p>The <code>&lt;img&gt;</code> element is the primary way to embed images in HTML. Vanilla Breeze styles images to be responsive by default, constraining them to their container width while maintaining aspect ratio. Additional variant classes provide shapes, borders, and aspect ratio control.</p>
 
-    <p>Images are block-level elements with <code>max-inline-size: 100%</code> and <code>block-size: auto</code>, ensuring they never overflow their container while preserving their natural proportions.</p>
+    <p>Images are block-level elements with <code>max-inline-size: 100%</code> and <code>block-size: auto</code>, ensuring they never overflow their container while preserving their natural proportions. They are never upscaled past their intrinsic width unless you ask for it with <code>.full</code>.</p>
   </section>
 
   <section>
@@ -39,18 +39,21 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Variants and Aspect Ratios</h2>
-    <p>Vanilla Breeze provides variant classes for common image treatments: <code>.rounded</code>, <code>.circle</code>, <code>.thumbnail</code>, <code>.full</code>, and aspect ratio classes like <code>.ratio-square</code>, <code>.ratio-video</code>, <code>.ratio-portrait</code>, and <code>.ratio-landscape</code>.</p>
+    <p>Vanilla Breeze provides variant classes for common image treatments: <code>.rounded</code>, <code>.circle</code>, <code>.thumbnail</code>, <code>.full</code>, and aspect ratio classes <code>.ratio-square</code>, <code>.ratio-video</code>, <code>.ratio-landscape</code>, and <code>.ratio-portrait</code>.</p>
 
     <browser-window src="/docs/snippets/demos/img-variants.html" url="img-variants.html" title="Image variants, aspect ratios, and object-fit modes" shadow></browser-window>
 
     <h3>Variant Classes</h3>
-    <code-block language="html" show-lines label="Basic image" data-escape><img src="photo.jpg" alt="A scenic landscape photograph" /></code-block>
-    <code-block language="html" show-lines label="Rounded image" data-escape><img src="photo.jpg" alt="..." class="rounded" /></code-block>
-    <code-block language="html" show-lines label="Circle avatar image" data-escape><img src="avatar.jpg" alt="User name" class="circle" style="max-inline-size: 96px;" /></code-block>
-    <code-block language="html" show-lines label="Thumbnail image" data-escape><img src="thumb.jpg" alt="..." class="thumbnail" /></code-block>
-    <code-block language="html" show-lines label="Full width image" data-escape><img src="banner.jpg" alt="..." class="full" /></code-block>
+    <code-block language="html" show-lines label="Basic image" data-escape><img src="photo.jpg" alt="A scenic landscape photograph" width="800" height="533" /></code-block>
+    <code-block language="html" show-lines label="Rounded image" data-escape><img src="photo.jpg" alt="..." class="rounded" width="800" height="533" /></code-block>
+    <code-block language="html" show-lines label="Circle avatar image" data-escape><!-- width/height set the avatar's size; .circle crops to a circle -->
+<img src="avatar.jpg" alt="User name" class="circle" width="96" height="96" /></code-block>
+    <code-block language="html" show-lines label="Thumbnail image" data-escape><img src="thumb.jpg" alt="..." class="thumbnail" width="150" height="100" /></code-block>
+    <code-block language="html" show-lines label="Full width image" data-escape><img src="banner.jpg" alt="..." class="full" width="1600" height="500" /></code-block>
+    <p>Inside a <code>&lt;figure&gt;</code> an image fills the figure's width; to keep a small image (an avatar or thumbnail) at its own size, don't wrap it in a figure, or give it a wrapper that doesn't stretch it.</p>
 
     <h3>Aspect Ratio Classes</h3>
+    <p>Each class sets <code>aspect-ratio</code> and crops with <code>object-fit: cover</code>, so any source fits the ratio.</p>
     <table class="props-table">
       <thead>
         <tr>
@@ -71,36 +74,85 @@ crumbLabel: Native Elements
           <td>Video thumbnails, hero images</td>
         </tr>
         <tr>
-          <td><code>.ratio-portrait</code></td>
-          <td>3:4</td>
-          <td>Book covers, portraits</td>
-        </tr>
-        <tr>
           <td><code>.ratio-landscape</code></td>
           <td>4:3</td>
           <td>Classic photo format</td>
         </tr>
+        <tr>
+          <td><code>.ratio-portrait</code></td>
+          <td>3:4</td>
+          <td>Book covers, portraits</td>
+        </tr>
       </tbody>
     </table>
+    <p>For other ratios, or to set the focal point, use a <a href="#data-media"><code>[data-media]</code> wrapper</a>, which uses the same <code>data-ratio</code> vocabulary as <code>&lt;iframe&gt;</code>, <code>&lt;embed&gt;</code> and <code>&lt;object&gt;</code>.</p>
 
     <h3>Object Fit</h3>
-    <p>Control how images fit within constrained dimensions.</p>
-    <code-block language="html" show-lines label="Object fit examples" data-escape><!-- Contain: letterbox to fit -->
-<img src="tall.jpg" alt="..." class="contain" style="max-block-size: 200px;" />
+    <p><code>.contain</code> letterboxes the whole image inside its box; <code>.cover</code> crops to fill it. They combine with the ratio classes.</p>
+    <code-block language="html" show-lines label="Object fit examples" data-escape><!-- Contain: letterbox the whole image inside a square -->
+<img src="wide.jpg" alt="..." class="ratio-square contain" width="600" height="400" />
 
-<!-- Cover: crop to fill -->
-<img src="photo.jpg" alt="..." class="cover" style="block-size: 200px; inline-size: 100%;" /></code-block>
+<!-- Cover: crop to fill a square (the ratio classes' default) -->
+<img src="wide.jpg" alt="..." class="ratio-square cover" width="600" height="400" /></code-block>
+  </section>
+
+  <section id="data-media">
+    <h2>Ratio Boxes with data-media</h2>
+    <p>A <code>[data-media]</code> wrapper is a ratio box whose child image fills it. <code>data-ratio</code> picks the ratio (<code>1:1</code>, <code>4:3</code>, <code>3:2</code>, <code>16:9</code>, <code>21:9</code>, <code>2:3</code>, <code>3:4</code>, <code>9:16</code>), <code>data-fit</code> the object-fit (<code>cover</code>, <code>contain</code>, <code>fill</code>, <code>none</code>), <code>data-position</code> the focal point and <code>data-radius</code> the corners. On a <code>&lt;figure&gt;</code> with a caption, the ratio applies to the image and the caption flows below.</p>
+    <code-block language="html" show-lines label="data-media ratio box" data-escape><figure data-media data-ratio="3:2" data-fit="cover" data-position="top" data-radius="m">
+  <img src="team.jpg" alt="The design team at the spring offsite" width="1200" height="900" />
+  <figcaption>Spring offsite, 2026</figcaption>
+</figure></code-block>
+  </section>
+
+  <section id="sizing">
+    <h2>Sizing and Layout Shift</h2>
+    <p>Always set <code>width</code> and <code>height</code> to the image's intrinsic pixel size. The browser uses them to reserve the right-shaped box before the file arrives, so nothing jumps when it loads (Cumulative Layout Shift). VB's <code>block-size: auto</code> keeps the ratio from those attributes while <code>max-inline-size: 100%</code> shrinks the image to fit.</p>
+    <code-block language="html" show-lines label="Reserve space" data-escape><img src="photo.jpg" alt="..." width="1200" height="800" /></code-block>
+
+    <h3>Responsive Sources: srcset and sizes</h3>
+    <p>Offer several widths with <code>srcset</code> and tell the browser how wide the image will display with <code>sizes</code>; it picks the smallest file that looks sharp. Use <a href="/docs/elements/native/picture/"><code>&lt;picture&gt;</code></a> only when you need different crops (art direction) or formats.</p>
+    <code-block language="html" show-lines label="srcset and sizes" data-escape><img
+  src="photo-800.jpg"
+  srcset="photo-400.jpg 400w, photo-800.jpg 800w, photo-1600.jpg 1600w"
+  sizes="(min-width: 60rem) 50vw, 100vw"
+  alt="..."
+  width="1600" height="1067" /></code-block>
   </section>
 
   <section>
-    <h2>Lazy Loading</h2>
-    <p>Native lazy loading defers loading images until they approach the viewport, improving initial page load performance. Lazy-loaded images display a subtle background color while loading.</p>
+    <h2>Loading and Priority</h2>
+    <p>Native lazy loading defers loading images until they approach the viewport. VB adds no loading background, so transparent PNG and SVG logos render cleanly.</p>
 
-    <code-block language="html" show-lines label="Lazy loading examples" data-escape><!-- Lazy load images below the fold -->
-<img src="photo.jpg" alt="..." loading="lazy" />
+    <code-block language="html" show-lines label="Loading hints" data-escape><!-- The hero / LCP image: load now, at high priority. Never lazy-load it. -->
+<img src="hero.jpg" alt="..." width="1600" height="600" fetchpriority="high" />
 
-<!-- Eager load critical above-the-fold images -->
-<img src="hero.jpg" alt="..." loading="eager" /></code-block>
+<!-- Below the fold: defer, and decode off the main thread -->
+<img src="photo.jpg" alt="..." width="800" height="533" loading="lazy" decoding="async" /></code-block>
+
+    <ul>
+      <li><code>loading="lazy"</code> - Defer until near the viewport. Use for below-the-fold images only; lazy-loading the Largest Contentful Paint image delays it.</li>
+      <li><code>fetchpriority="high"</code> - Fetch ahead of other images. Use on the one LCP image; <code>low</code> for carousels' hidden slides.</li>
+      <li><code>decoding="async"</code> - Let the browser decode the image without blocking other content.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Missing Images</h2>
+    <p>An <code>&lt;img&gt;</code> with no <code>src</code>, or an empty one, gets a raised-surface background and a 100px minimum height, so the gap reads as "image goes here" instead of collapsing. A <code>src</code> that fails to load shows the browser's broken-image icon and the <code>alt</code> text, which is one more reason to write meaningful alt text.</p>
+  </section>
+
+  <section>
+    <h2>Outline</h2>
+    <p><code>data-outlined</code> draws a faint outline just inside the image edge, so light or transparent imagery keeps its shape on light and dark surfaces. It uses <code>outline</code>, so layout doesn't change. Works on <code>&lt;img&gt;</code> and on <code>&lt;picture data-outlined&gt;</code>. See <a href="/docs/concepts/feel/">Feel</a>.</p>
+    <code-block language="html" show-lines label="Outlined image" data-escape><img src="screenshot.png" alt="Settings panel with dark mode enabled" width="800" height="500" data-outlined /></code-block>
+  </section>
+
+  <section>
+    <h2>Prototyping with data-mock</h2>
+    <p>Add <a href="/docs/attributes/data-mock/"><code>data-mock</code></a> to an <code>&lt;img&gt;</code> without a <code>src</code> to get a sized placeholder. Presets such as <code>hero</code>, <code>card</code> and <code>logo</code> produce a local SVG. A few presets fetch from external services: <code>photo</code> (picsum.photos), <code>placehold</code> (placehold.co), and <code>avatar</code>, <code>portrait</code>, <code>profile</code> and <code>headshot</code> (CC0 portraits from the jsDelivr CDN). Use them for prototypes only, not shipped pages or offline demos.</p>
+    <code-block language="html" show-lines label="Mock images" data-escape><img data-mock="card" alt="Article image" />
+<img data-mock="avatar" alt="Sarah Chen" /></code-block>
   </section>
 
   <section>
@@ -157,20 +209,38 @@ crumbLabel: Native Elements
       <li>Keep alt text concise (under 125 characters when possible)</li>
       <li>Don't start with "Image of" or "Picture of" - screen readers announce this</li>
       <li>Include relevant text that appears in the image</li>
-      <li>For decorative images, use <code>alt=""</code> (not omitting the attribute)</li>
-      <li>Use <code>role="presentation"</code> for purely decorative images</li>
+      <li>For decorative images, use <code>alt=""</code> (not omitting the attribute). That alone hides the image from assistive technology; <code>role="presentation"</code> adds nothing</li>
     </ul>
 
     <code-block language="html" show-lines label="Alt text examples" data-escape><!-- Informative image -->
 <img src="team.jpg" alt="The engineering team celebrating the product launch" />
 
 <!-- Decorative image -->
-<img src="divider.png" alt="" role="presentation" />
+<img src="divider.png" alt="" />
 
 <!-- Functional image (link) -->
 <a href="/profile">
   <img src="avatar.jpg" alt="View your profile" />
 </a></code-block>
+
+    <h3 id="complex-images">Complex Images</h3>
+    <p>Charts, diagrams and maps carry more than fits in <code>alt</code>. Give a short <code>alt</code> that names the image and its key point, then put the full description in visible text: a caption, a linked description, or a disclosure.</p>
+    <code-block language="html" show-lines label="Complex image with a long description" data-escape><figure>
+  <img
+    src="q3-sales.png"
+    alt="Bar chart: Q3 sales rose in every region, led by APAC."
+    aria-describedby="q3-sales-desc"
+    width="800" height="450" />
+  <figcaption>Quarterly sales by region, Q3 2026.</figcaption>
+  <details>
+    <summary>Chart description</summary>
+    <p id="q3-sales-desc">APAC grew 24% to $4.1M, EMEA 12% to $3.6M, the Americas 8% to $5.2M ...</p>
+  </details>
+</figure></code-block>
+    <p>If the data matters, a <a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a> beside the image is better still.</p>
+
+    <h3>Dark Mode and Forced Colors</h3>
+    <p>VB doesn't recolor images in dark mode or forced-colors mode: photos should look the same everywhere. For a logo or diagram that needs a dark variant, serve one with <code>&lt;picture&gt;</code> and <code>&lt;source media="(prefers-color-scheme: dark)"&gt;</code>, or use inline <code>&lt;svg&gt;</code> with <code>currentColor</code>.</p>
   </section>
 
   <section>
@@ -182,8 +252,11 @@ crumbLabel: Native Elements
       <li><a href="/docs/elements/native/figcaption/"><code>&lt;figcaption&gt;</code></a> - Caption text for figures</li>
       <li><a href="/docs/elements/native/svg/"><code>&lt;svg&gt;</code></a> - Vector graphics and icons</li>
       <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> - Image links with automatic underline removal</li>
+      <li><a href="/docs/attributes/data-mock/"><code>data-mock</code></a> - Placeholder images for prototypes</li>
       <li><a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a> - Cards that commonly contain images</li>
       <li><a href="/docs/elements/web-components/comparison/"><code>&lt;compare-surface&gt;</code></a> - Before/after image comparison slider</li>
+      <li><a href="/docs/attributes/srcset/"><code>srcset</code></a> - Responsive image candidates and sizes</li>
+      <li><a href="/docs/attributes/loading/"><code>loading</code></a> - Lazy loading, fetchpriority and decoding hints</li>
     </ul>
   </section>
 
@@ -204,6 +277,10 @@ crumbLabel: Native Elements
           <td><code>max-inline-size: 100%; block-size: auto; display: block;</code></td>
         </tr>
         <tr>
+          <td><code>img.full</code></td>
+          <td><code>inline-size: 100%; block-size: auto;</code></td>
+        </tr>
+        <tr>
           <td><code>img.rounded</code></td>
           <td><code>border-radius: var(--radius-m);</code></td>
         </tr>
@@ -216,6 +293,10 @@ crumbLabel: Native Elements
           <td><code>padding; background; border; border-radius;</code></td>
         </tr>
         <tr>
+          <td><code>img.ratio-square</code>, <code>.ratio-video</code>, <code>.ratio-landscape</code>, <code>.ratio-portrait</code></td>
+          <td><code>aspect-ratio: 1 | 16 / 9 | 4 / 3 | 3 / 4; object-fit: cover;</code></td>
+        </tr>
+        <tr>
           <td><code>img.contain</code></td>
           <td><code>object-fit: contain;</code></td>
         </tr>
@@ -224,8 +305,12 @@ crumbLabel: Native Elements
           <td><code>object-fit: cover;</code></td>
         </tr>
         <tr>
-          <td><code>img[loading="lazy"]</code></td>
-          <td><code>background: var(--color-surface-raised);</code></td>
+          <td><code>img[data-outlined]</code>, <code>picture[data-outlined] &gt; img</code></td>
+          <td><code>outline: thin, 8% currentColor; outline-offset: -1px;</code></td>
+        </tr>
+        <tr>
+          <td><code>img:not([src])</code>, <code>img[src=""]</code></td>
+          <td><code>background: var(--color-surface-raised); min-block-size: 100px;</code></td>
         </tr>
       </tbody>
     </table>

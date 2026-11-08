@@ -15,6 +15,14 @@ import './custom-elements/register.js';
 import './web-components/core.js';
 import './utils/tooltip-init.js';
 import './utils/view-transition-init.js';
+// VB effects runtime + its built-in registrations. The runtime (vb.js) reaches
+// this bundle through web-components/core.js (reveal, highlight); the trigger
+// handlers and data-transition presets must ship with it, or every
+// data-trigger leaves its element unactivated and every preset unnamed.
+// tests/unit/effects-bundle-parity.test.js enforces this for every entry.
+import './lib/vb.js';
+import './lib/vb-triggers.js';
+import './lib/vb-transitions.js';
 // Progress ring upscale — static in every entry, self-guards via
 // MutationObserver so it also catches rings rendered after boot.
 import './utils/progress-ring-init.js';
@@ -31,6 +39,8 @@ export { Analytics } from './lib/analytics.js';
 // Public storage and service APIs (also on window.VB.store / VB.service)
 export { VBStore } from './lib/vb-store.js';
 export { VBService, VBServiceError } from './lib/vb-service.js';
+// Theme API (also on window.VB.themeManager). init() already ran on load.
+export { ThemeManager };
 
 // Initialize theme system early to prevent FOUC
 await ThemeManager.init();

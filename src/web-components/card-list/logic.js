@@ -30,7 +30,7 @@
  * first successful render.
  */
 
-import { sanitizeHTML } from '../../lib/sanitize-html.js';
+import { sanitizeToFragment } from '../../lib/sanitize-html.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { diffByKey } from '../../lib/diff-by-key.js';
@@ -431,7 +431,7 @@ class CardList extends VBElement {
 
     // data-field-html: Set innerHTML (sanitized)
     all('[data-field-html]').forEach(el => {
-      el.innerHTML = sanitizeHTML(getValueByPath(item, el.getAttribute('data-field-html')));
+      el.replaceChildren(sanitizeToFragment(getValueByPath(item, el.getAttribute('data-field-html'))));
     });
 
     // data-field-if / data-field-unless toggle [hidden] so re-binding a

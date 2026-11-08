@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-show-when / data-hide-when"
-description: "Conditionally show or hide form sections based on another field's value. Hidden elements get hidden and inert attributes to bypass validation. Covers data-show-when and data-hide-when."
+description: "Show or hide a form section based on other fields' values. Hidden sections get hidden + inert and their controls are disabled, so hidden required fields never block submit and hidden values are not sent."
 attributeName: data-show-when
 category: form-behavior
 attributeType: data
@@ -12,115 +12,145 @@ crumbLabel: Data Attributes
 ---
 
 <section>
-    <h2>Overview</h2>
-    <p>The <code>data-show-when</code> and <code>data-hide-when</code> attributes let you conditionally display form sections based on the value of another field. Hidden sections receive the <code>hidden</code> and <code>inert</code> attributes, which removes them from the tab order and bypasses any validation constraints inside. This is a combined page covering both attributes.</p>
+  <h2>Overview</h2>
+  <p><code>data-show-when</code> shows an element only while a condition on other form fields is true; <code>data-hide-when</code> is the inverse. Use them for sections that only apply to some answers: business details for a business account, a shipping address when delivery is chosen.</p>
+  <p>A hidden section gets the <code>hidden</code> and <code>inert</code> attributes, and every enabled form control inside it is <strong>disabled</strong> and marked <code>data-conditional-disabled</code>. Disabling is what matters for forms: disabled controls are barred from constraint validation, so a hidden <code>required</code> field never blocks submit, and their values are <strong>not submitted</strong>. When the section is shown again, only the controls it disabled are re-enabled; controls you disabled yourself stay disabled.</p>
+  <p>Without JavaScript every section is visible and every control is enabled, so the whole form still works.</p>
+</section>
 
-    <browser-window
-      src="/docs/examples/demos/conditional-basic.html"
-      url="https://vanilla-breeze.com/conditional"
-      title="Conditional Fields"
-      shadow>
-    </browser-window>
+<section>
+  <h2>Usage</h2>
+  <p>Name the controlling field and the value that reveals the section.</p>
 
-    <code-block language="html" show-lines label="Show a fieldset when a value is selected" data-escape><select name="account-type">
+  <browser-window
+    src="/docs/examples/demos/conditional-basic.html"
+    url="https://vanilla-breeze.com/conditional"
+    title="Conditional fields"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Show a fieldset when a value is selected" data-escape><select name="account-type">
   <option value="personal">Personal</option>
   <option value="business">Business</option>
 </select>
 
 <fieldset data-show-when="account-type=business">
   <legend>Business Details</legend>
-  <input name="company" placeholder="Company name">
+  <input name="company" placeholder="Company name" required>
 </fieldset></code-block>
-  </section>
 
-  <section>
-    <h2>How It Works</h2>
-    <p>Add <code>data-show-when</code> or <code>data-hide-when</code> to any element inside a form. The init script:</p>
-    <ol>
-      <li>Parses the attribute value to extract the field name and optional target value</li>
-      <li>Finds the referenced field within the closest <code>&lt;form&gt;</code> ancestor (or the document if no form exists)</li>
-      <li>Attaches delegated <code>change</code> and <code>input</code> event listeners on the form</li>
-      <li>Evaluates the condition on every field change and toggles <code>hidden</code> and <code>inert</code> on the conditional element</li>
-      <li>Runs an initial evaluation on page load to set the correct visibility state</li>
-      <li>Sets <code>data-conditional-init</code> to prevent double-binding</li>
-    </ol>
-    <p>Because hidden elements receive the <code>inert</code> attribute, any <code>required</code> fields inside them will not block form submission. This lets you safely add validation to conditional sections without worrying about invisible required fields.</p>
-  </section>
+  <p>Put the conditional section directly after the field that controls it. Revealed content is not announced, so DOM order is what lets keyboard and screen reader users find it next.</p>
+</section>
 
-  <section>
-    <h2>Attributes</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Format</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>data-show-when</code></td>
-          <td><code>"name=value"</code> or <code>"name"</code></td>
-          <td>Shows the element when the named field matches the value (equality check) or has any value (truthy check).</td>
-        </tr>
-        <tr>
-          <td><code>data-hide-when</code></td>
-          <td><code>"name=value"</code> or <code>"name"</code></td>
-          <td>Hides the element when the condition is met. The inverse of <code>data-show-when</code>.</td>
-        </tr>
-        <tr>
-          <td><code>data-conditional-init</code></td>
-          <td>boolean</td>
-          <td>Set automatically to prevent double-binding. Do not set manually.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+<section>
+  <h2>Options</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Values</th><th>Default</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-show-when</code></td><td>condition (see below)</td><td>&mdash;</td><td>The element is shown while the condition is true, hidden otherwise.</td></tr>
+      <tr><td><code>data-hide-when</code></td><td>condition</td><td>&mdash;</td><td>The element is hidden while the condition is true. Ignored when <code>data-show-when</code> is also present.</td></tr>
+      <tr><td><code>data-conditional-init</code></td><td>boolean</td><td>set by script</td><td>Marks a wired section. Read-only; a clone that carries it is still wired.</td></tr>
+      <tr><td><code>data-conditional-disabled</code></td><td>boolean</td><td>set by script</td><td>On each control the script disabled. Only these are re-enabled on show.</td></tr>
+    </tbody>
+  </table>
 
-  <section>
-    <h2>Condition Syntax</h2>
-    <p>The attribute value supports two formats:</p>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Syntax</th>
-          <th>Meaning</th>
-          <th>Example</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>name=value</code></td>
-          <td>Equality check &mdash; the named field must have this exact value</td>
-          <td><code>data-show-when="account-type=business"</code></td>
-        </tr>
-        <tr>
-          <td><code>name</code></td>
-          <td>Truthy check &mdash; the named field has any non-empty value, or the checkbox is checked</td>
-          <td><code>data-show-when="newsletter"</code></td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+  <h3>Condition syntax</h3>
+  <p>The same language as <a href="/docs/attributes/data-wizard/"><code>data-wizard-if</code></a>; <code>=</code> and <code>:</code> are interchangeable.</p>
+  <table class="props-table">
+    <thead><tr><th>Syntax</th><th>True when</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><code>name</code></td><td>The field has a value: non-empty text, a selected option, a checked box.</td><td><code>data-show-when="newsletter"</code></td></tr>
+      <tr><td><code>!name</code></td><td>The field has no value.</td><td><code>data-show-when="!newsletter"</code></td></tr>
+      <tr><td><code>name=value</code> or <code>name:value</code></td><td>One of the field's values equals <code>value</code>.</td><td><code>data-show-when="delivery=ship"</code></td></tr>
+      <tr><td><code>name!=value</code> or <code>name:!value</code></td><td>None of the field's values equals <code>value</code>.</td><td><code>data-show-when="plan!=free"</code></td></tr>
+      <tr><td><code>a &amp;&amp; b</code></td><td>Both terms are true. Binds tighter than <code>||</code>.</td><td><code>data-show-when="role=admin &amp;&amp; plan=pro"</code></td></tr>
+      <tr><td><code>a || b</code></td><td>Either term is true.</td><td><code>data-show-when="role=admin || role=editor"</code></td></tr>
+    </tbody>
+  </table>
 
-  <section>
-    <h2>Hide When (Inverse)</h2>
-    <p>Use <code>data-hide-when</code> for the inverse logic &mdash; the element is visible by default and hides when the condition matches.</p>
+  <h3>What counts as a field value</h3>
+  <ul>
+    <li><strong>Text-like inputs, textarea, single select</strong>: the current value; empty is "no value".</li>
+    <li><strong>Radio group</strong>: the checked radio's value.</li>
+    <li><strong>Checkbox</strong>: its <code>value</code> while checked (a checkbox without a <code>value</code> attribute is <code>"on"</code>, so <code>name=true</code> never matches; use the bare <code>name</code> form).</li>
+    <li><strong>Checkbox group</strong> (several boxes, one name): every checked value. <code>topics=sports</code> matches whenever the Sports box is checked, whatever its position.</li>
+    <li><strong>select[multiple]</strong>: every selected value.</li>
+    <li><strong>Form-associated components</strong> (<code>combo-box</code>, <code>date-picker</code>, <code>star-rating</code> and other components that submit a value): their <code>value</code>.</li>
+  </ul>
 
-    <div class="example">
-      <form>
-        <label>
-          <input type="checkbox" name="gift-demo" value="yes">
-          This is a gift
-        </label>
-        <form-field data-hide-when="gift-demo=yes">
-          <label for="receipt-demo">Send receipt to</label>
-          <input type="email" id="receipt-demo" name="receipt-demo">
-        </form-field>
-      </form>
-    </div>
+  <h3>Scope</h3>
+  <p>Inside a <code>&lt;form&gt;</code>, names resolve through <code>form.elements</code>, so controls attached with <code>form="id"</code> count and other forms on the page do not. A section outside any form looks the name up in the whole document.</p>
 
-    <code-block language="html" show-lines label="Hide a field when a checkbox is checked" data-escape><label>
+  <h3>Limits</h3>
+  <ul>
+    <li>Comparisons are exact string matches; there are no numeric or pattern operators.</li>
+    <li>Conditions re-run on <code>input</code> and <code>change</code>. If script sets a control's <code>.value</code>, dispatch an <code>input</code> event afterwards (<code>el.dispatchEvent(new Event('input', { bubbles: true }))</code>).</li>
+    <li>Changing the <code>data-show-when</code> attribute itself does not re-evaluate the section until the next field change.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Behaviour</h2>
+  <ul>
+    <li><strong>When it runs</strong>: every section is evaluated on load and when it is inserted later (fetched fragments, cloned templates, forms added after load). One capture-phase listener on the document handles every form and every section outside a form.</li>
+    <li><strong>Reset</strong>: after <code>form.reset()</code> or a reset button, sections re-evaluate against the restored values. A reset cancelled with <code>preventDefault()</code> changes nothing.</li>
+    <li><strong>Nesting</strong>: a control inside two hidden sections is re-enabled only when neither is hidden. Sections inside a hidden <code>data-wizard-if</code> step follow the same rule.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <p>None. The attribute listens to the form's own <code>input</code>, <code>change</code> and <code>reset</code> events.</p>
+</section>
+
+<section>
+  <h2>Styling</h2>
+  <p>The shipped rule (in <code>form-enhancements.css</code>) makes sure an author <code>display</code> value cannot override <code>hidden</code>:</p>
+  <code-block language="css" show-lines label="Shipped CSS" data-escape>[data-show-when][hidden],
+[data-hide-when][hidden] {
+  display: none !important;
+}</code-block>
+  <p>There are no custom properties or parts. Because the section switches between <code>display: none</code> and its normal display, a plain opacity transition never runs. To animate the reveal, use <code>@starting-style</code>:</p>
+  <code-block language="css" show-lines label="Optional reveal animation" data-escape>[data-show-when]:not([hidden]),
+[data-hide-when]:not([hidden]) {
+  transition: opacity 0.2s ease;
+
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-show-when],
+  [data-hide-when] {
+    transition: none;
+  }
+}</code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Hidden sections are removed from the accessibility tree and the tab order (<a href="/docs/attributes/hidden/"><code>hidden</code></a> + <a href="/docs/attributes/inert/"><code>inert</code></a>), so nobody lands in an invisible field.</li>
+    <li>Their controls are <a href="/docs/attributes/disabled/">disabled</a>, so validation never points at a field the user cannot see.</li>
+    <li>Revealing a section is not announced and does not move focus. Place the section right after its trigger so it is the next thing users reach.</li>
+    <li>The trigger gets no <code>aria-expanded</code> / <code>aria-controls</code>. If the reveal is a user-driven disclosure rather than a consequence of an answer, use <code>&lt;details&gt;</code> or <code>data-toggle</code> instead.</li>
+    <li>Without JavaScript all sections are visible, so no content or field is lost.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Hide when (inverse)</h3>
+  <p>The field is visible by default and hides when the box is checked.</p>
+  <browser-window
+    src="/docs/snippets/demos/data-show-when-hide.html"
+    url="https://vanilla-breeze.com/hide-when"
+    title="data-hide-when"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Hide a field when a checkbox is checked" data-escape><label>
   <input type="checkbox" name="gift" value="yes">
   This is a gift
 </label>
@@ -129,59 +159,38 @@ crumbLabel: Data Attributes
   <label for="receipt">Send receipt to</label>
   <input type="email" id="receipt" name="receipt">
 </form-field></code-block>
-  </section>
 
-  <section>
-    <h2>Radio Buttons</h2>
-    <p>Conditions work with radio button groups. The condition evaluates against the currently selected radio value within the named group.</p>
-
-    <div class="example">
-      <form>
-        <fieldset>
-          <legend>Delivery</legend>
-          <label><input type="radio" name="delivery-demo" value="pickup"> Pickup</label>
-          <label><input type="radio" name="delivery-demo" value="ship"> Ship</label>
-        </fieldset>
-        <fieldset data-show-when="delivery-demo=ship">
-          <legend>Shipping Address</legend>
-          <input name="address-demo" placeholder="Street address">
-        </fieldset>
-      </form>
-    </div>
-
-    <code-block language="html" show-lines label="Show section based on radio selection" data-escape><fieldset>
+  <h3>Radio group</h3>
+  <p>The address is required only while "Ship" is chosen; with "Pickup" the hidden field is disabled and the form submits.</p>
+  <browser-window
+    src="/docs/snippets/demos/data-show-when-radio.html"
+    url="https://vanilla-breeze.com/show-when-radio"
+    title="data-show-when with radios"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Show a section for one radio value" data-escape><fieldset>
   <legend>Delivery</legend>
-  <label><input type="radio" name="delivery" value="pickup"> Pickup</label>
+  <label><input type="radio" name="delivery" value="pickup" checked> Pickup</label>
   <label><input type="radio" name="delivery" value="ship"> Ship</label>
 </fieldset>
 
 <fieldset data-show-when="delivery=ship">
-  <legend>Shipping Address</legend>
-  <input name="address" placeholder="Street address">
+  <legend>Shipping address</legend>
+  <form-field>
+    <label for="address">Street address</label>
+    <input type="text" id="address" name="address" autocomplete="address-line1" required>
+  </form-field>
 </fieldset></code-block>
-  </section>
 
-  <section>
-    <h2>Truthy Check (Checkbox)</h2>
-    <p>Omit the <code>=value</code> part to use a truthy check. For checkboxes, this means the element shows when the checkbox is checked. For text inputs and selects, it shows when the field has any non-empty value.</p>
-
-    <div class="example">
-      <form>
-        <label>
-          <input type="checkbox" name="newsletter-demo">
-          Subscribe to newsletter
-        </label>
-        <form-field data-show-when="newsletter-demo">
-          <label for="freq-demo">Frequency</label>
-          <select id="freq-demo" name="frequency-demo">
-            <option>Weekly</option>
-            <option>Monthly</option>
-          </select>
-        </form-field>
-      </form>
-    </div>
-
-    <code-block language="html" show-lines label="Truthy check with a checkbox" data-escape><label>
+  <h3>Truthy check</h3>
+  <p>Leave out the value to show the section whenever the field has one: a checked box, a non-empty input, a selected option.</p>
+  <browser-window
+    src="/docs/snippets/demos/data-show-when-truthy.html"
+    url="https://vanilla-breeze.com/show-when-truthy"
+    title="Truthy check"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Truthy check with a checkbox" data-escape><label>
   <input type="checkbox" name="newsletter">
   Subscribe to newsletter
 </label>
@@ -193,77 +202,49 @@ crumbLabel: Data Attributes
     <option>Monthly</option>
   </select>
 </form-field></code-block>
-  </section>
 
-  <section>
-    <h2>Supported Field Types</h2>
-    <p>Conditions can reference any of the following field types by their <code>name</code> attribute:</p>
-    <ul>
-      <li><strong>Select</strong> &mdash; matches the selected option's value</li>
-      <li><strong>Radio buttons</strong> &mdash; matches the checked radio's value within the named group</li>
-      <li><strong>Checkboxes</strong> &mdash; equality check against the checkbox value, or truthy check against checked state</li>
-      <li><strong>Text inputs</strong> &mdash; equality check against the current value, or truthy check for non-empty</li>
-    </ul>
-  </section>
+  <h3>Checkbox group and compound conditions</h3>
+  <p>A term matches when any checked box in the group has the value; <code>&amp;&amp;</code> needs both.</p>
+  <browser-window
+    src="/docs/snippets/demos/data-show-when-group.html"
+    url="https://vanilla-breeze.com/show-when-group"
+    title="Checkbox group"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Checkbox group with AND" data-escape><fieldset>
+  <legend>Topics</legend>
+  <label><input type="checkbox" name="topics" value="news"> News</label>
+  <label><input type="checkbox" name="topics" value="sports"> Sports</label>
+  <label><input type="checkbox" name="topics" value="weather"> Weather</label>
+</fieldset>
 
-  <section>
-    <h2>Scope</h2>
-    <p>The condition resolver looks for the referenced field within the closest <code>&lt;form&gt;</code> ancestor. If the conditional element is not inside a form, the resolver searches the entire document. This scoping prevents conflicts when multiple forms exist on the same page.</p>
+<form-field data-show-when="topics=sports">
+  <label for="team">Favourite team</label>
+  <input type="text" id="team" name="team">
+</form-field>
 
-    <code-block language="html" show-lines label="Scoped to closest form" data-escape><!-- Scoped to closest <form> ancestor -->
-<form>
-  <select name="plan">
-    <option value="free">Free</option>
-    <option value="pro">Pro</option>
-  </select>
+<form-field data-show-when="topics=news && topics=weather">
+  <label for="region">Region for news and weather</label>
+  <input type="text" id="region" name="region">
+</form-field></code-block>
+</section>
 
-  <fieldset data-show-when="plan=pro">
-    <legend>Pro Features</legend>
-    <input name="api-key" placeholder="API key">
-  </fieldset>
-</form></code-block>
-  </section>
-
-  <section>
-    <h2>Validation Bypass</h2>
-    <p>When a section is hidden, the <code>inert</code> attribute is applied alongside <code>hidden</code>. This means:</p>
-    <ul>
-      <li>All <code>required</code> fields inside the hidden section are excluded from form validation</li>
-      <li>Users cannot tab into the hidden section</li>
-      <li>Screen readers skip the hidden content entirely</li>
-      <li>Click events inside the hidden section are blocked</li>
-    </ul>
-    <p>When the section becomes visible again, both <code>hidden</code> and <code>inert</code> are removed, restoring full interactivity and validation.</p>
-  </section>
-
-  <section>
-    <h2>Styling</h2>
-    <p>Hidden conditional elements use native <code>hidden</code> and <code>inert</code> attributes. The default browser behavior of <code>hidden</code> is <code>display: none</code>, which already works without any custom CSS.</p>
-
-    <code-block language="css" show-lines label="Optional styling for conditional sections" data-escape>/* Hidden conditional sections use native hidden + inert */
-[data-show-when][hidden],
-[data-hide-when][hidden] {
-  display: none;
-}
-
-/* Optional: transition when revealing */
-[data-show-when],
-[data-hide-when] {
-  transition: opacity 0.2s ease;
-}</code-block>
-
-    <p>All behavior is gated on <code>data-conditional-init</code>. Without JavaScript, the conditional sections render in their default visible state &mdash; progressive enhancement.</p>
-  </section>
-
-  <section>
-    <h2>Accessibility</h2>
-    <ul>
-      <li>The <code>hidden</code> attribute removes the element from visual display and the accessibility tree</li>
-      <li>The <code>inert</code> attribute ensures hidden content is completely non-interactive &mdash; no focus trapping in invisible fields</li>
-      <li>Required field validation is automatically bypassed for hidden sections, preventing invisible validation errors</li>
-      <li>Screen readers will not announce hidden conditional content</li>
-      <li>When content is revealed, focus order follows the natural DOM position</li>
-      <li>Event delegation on the form level avoids attaching listeners to individual fields</li>
-      <li>Without JavaScript, all sections are visible &mdash; progressive enhancement ensures no content is lost</li>
-    </ul>
-  </section>
+<section>
+  <h2>Related</h2>
+  <table class="props-table">
+    <thead><tr><th>Use this</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-show-when</code></td><td>A section applies only for some answers to other fields, and its fields must not block or join the submission while hidden.</td></tr>
+      <tr><td><a href="/docs/elements/native/details/"><code>&lt;details&gt;</code></a></td><td>The user chooses to open extra content (help, advanced options). Native, announced as expanded/collapsed.</td></tr>
+      <tr><td><a href="/docs/attributes/data-toggle/"><code>data-toggle</code></a></td><td>A button shows or hides a region, with <code>aria-expanded</code> on the button.</td></tr>
+      <tr><td><a href="/docs/attributes/hidden/"><code>hidden</code></a></td><td>Content that is hidden regardless of form state. Note that <code>hidden</code> alone does not stop a <a href="/docs/attributes/required/"><code>required</code></a> field from blocking submit.</td></tr>
+      <tr><td>CSS <code>:has(:checked)</code></td><td>A purely visual reveal with no fields inside (fields would still validate and submit).</td></tr>
+      <tr><td><a href="/docs/attributes/data-wizard/"><code>data-wizard-if</code></a></td><td>Whole wizard steps that apply only for some answers. Same condition language, same disabling.</td></tr>
+    </tbody>
+  </table>
+  <ul>
+    <li><a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> and <a href="/docs/elements/native/fieldset/"><code>&lt;fieldset&gt;</code></a> &mdash; the usual containers for conditional sections.</li>
+    <li><a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a> &mdash; wrap a single conditional field with its label and messages.</li>
+    <li><a href="/docs/attributes/data-autosave/"><code>data-autosave</code></a> &mdash; a restored draft dispatches <code>input</code>, so sections follow the restored answers.</li>
+  </ul>
+</section>

@@ -88,7 +88,7 @@ test('site-search :state(input-debounce-pending) round-trip', async ({ page }) =
 test('emoji-picker :state(search-pending) round-trip', async ({ page }) => {
   const r = await verifyStateRoundTrip(
     page,
-    '/docs/examples/demos/emoji-basic.html',
+    '/docs/examples/demos/emoji-picker-basic.html',
     'emoji-picker',
     'search-pending',
   );

@@ -187,6 +187,8 @@ The signed object is a UTF-8 JSON encoding with **fixed key order** (no alphabet
 
 `url` is the absolute URL of the page including scheme + host + path. Trailing slashes are preserved as published. Query strings and fragments are stripped. Default ports are stripped (`:80`, `:443`). Hostnames are lowercased. No percent-encoding renormalization is performed beyond what the URL parser produces.
 
+**Source of `url` (signer and verifier must agree).** Both sides read the raw `href` of `<link rel="canonical">` (matched as `[rel~="canonical" i]`). An absolute href is normalized as above. A relative href is kept as written, minus query and fragment — it is not resolved against the page or `<base>`, because the build-time signer has no page URL. A page with no canonical link signs `url: ""`. Publishers should emit an absolute canonical link; the relative and empty cases exist so a page still verifies when it doesn't.
+
 ### G-2. Date canonicalization
 
 `published` and `modified` are emitted as `YYYY-MM-DD` (UTC date). If the source meta tag carries a full ISO-8601 timestamp, only the date portion is used.

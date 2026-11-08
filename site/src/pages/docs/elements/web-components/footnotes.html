@@ -46,14 +46,38 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><code>&lt;foot-note&gt;</code></td>
-          <td>Text</td>
-          <td>Contains the footnote text. Becomes a superscript link when enhanced.</td>
+          <td>Phrasing content</td>
+          <td>Contains the footnote text (links and inline markup allowed). When enhanced the content nodes are moved into the note and the element holds a superscript reference link.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-ref</code></td>
+          <td>id</td>
+          <td>Cites an existing note again. Names the <code>id</code> of another <code>&lt;foot-note&gt;</code> collected by the same <code>&lt;foot-notes&gt;</code>; leave this element empty. See <a href="#repeat-citations">Repeat Citations</a>.</td>
+        </tr>
+        <tr>
+          <td><code>data-side</code></td>
+          <td><code>"false"</code></td>
+          <td>In sidenote mode, sends this note to the collected list instead of the margin.</td>
         </tr>
       </tbody>
     </table>
 
     <h3>&lt;foot-notes&gt;</h3>
     <p>The footnotes container. Place at the end of your content where you want footnotes collected.</p>
+
+    <p>All <code>data-label-*</code>, <code>data-mode</code> and <code>data-preview</code> changes are observed and re-render the notes in place.</p>
 
     <table class="props-table">
       <thead>
@@ -66,10 +90,34 @@ crumbLabel: Web Components
       </thead>
       <tbody>
         <tr>
-          <td><code>data-back-label</code></td>
+          <td><code>data-mode</code></td>
+          <td><code>"sidenotes"</code></td>
+          <td>(list)</td>
+          <td>Place notes in the margin instead of a collected list. See <a href="#sidenote-mode">Sidenote Mode</a>.</td>
+        </tr>
+        <tr>
+          <td><code>data-label-back</code></td>
           <td>string</td>
           <td><code>"Back to content"</code></td>
-          <td>Accessible label for back-reference links.</td>
+          <td>Accessible name of the back-reference links. Repeat citations append <code>(a)</code>, <code>(b)</code>&hellip;</td>
+        </tr>
+        <tr>
+          <td><code>data-label-ref</code></td>
+          <td>string</td>
+          <td><code>"Footnote {n}"</code></td>
+          <td>Accessible name of each reference link; <code>{n}</code> is the note number.</td>
+        </tr>
+        <tr>
+          <td><code>data-label-heading</code></td>
+          <td>string</td>
+          <td><code>"Notes"</code></td>
+          <td>Text of the generated, visually hidden heading that labels the notes list. An authored heading child (<code>&lt;h2&gt;</code> etc.) is used instead when present.</td>
+        </tr>
+        <tr>
+          <td><code>data-preview</code></td>
+          <td><code>"false"</code></td>
+          <td>(on)</td>
+          <td>Disables the hover / focus preview popover.</td>
         </tr>
       </tbody>
     </table>
@@ -90,9 +138,10 @@ provides a layered approach.</code-block>
     <p>When JavaScript loads, the component:</p>
     <ul>
       <li>Finds all <code>&lt;foot-note&gt;</code> elements before the <code>&lt;foot-notes&gt;</code></li>
-      <li>Converts them to superscript numbered links</li>
-      <li>Collects footnote content into an ordered list</li>
+      <li>Converts them to superscript numbered links named &ldquo;Footnote N&rdquo;</li>
+      <li>Moves the footnote content into an ordered list inside a labelled notes section</li>
       <li>Adds back-reference links from each footnote</li>
+      <li>Shows a preview of the note when a reference is hovered or focused</li>
     </ul>
   </section>
 
@@ -119,8 +168,8 @@ footnote.</foot-note> are numbered automatically.</p>
   </section>
 
   <section>
-    <h2>Custom Back Label</h2>
-    <p>Use <code>data-back-label</code> to customize the accessible label for back-reference links.</p>
+    <h2>Custom Labels</h2>
+    <p>Use <code>data-label-back</code> to customize the accessible label for back-reference links, <code>data-label-ref</code> for the reference links (<code>{n}</code> is the number) and <code>data-label-heading</code> for the hidden list heading.</p>
 
     <browser-window
       src="/docs/examples/demos/footnotes-custom-label.html"
@@ -129,9 +178,39 @@ footnote.</foot-note> are numbered automatically.</p>
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Custom back label attribute" data-escape><foot-notes data-back-label="Return to text"></foot-notes></code-block>
+    <code-block language="html" show-lines label="Custom back label attribute" data-escape><foot-notes data-label-back="Return to text"></foot-notes>
 
-    <p>The default label is "Back to content". Customize it for internationalization or to match your site's terminology.</p>
+<foot-notes data-label-ref="Nota {n}" data-label-back="Volver al texto"
+            data-label-heading="Notas"></foot-notes></code-block>
+
+    <p>The defaults are &ldquo;Back to content&rdquo;, &ldquo;Footnote {n}&rdquo; and &ldquo;Notes&rdquo;. Customize them for internationalization or to match your site's terminology.</p>
+  </section>
+
+  <section>
+    <h2 id="repeat-citations">Repeat Citations</h2>
+    <p>To cite the same note more than once, give the first <code>&lt;foot-note&gt;</code> an <code>id</code> and point later, empty <code>&lt;foot-note&gt;</code> elements at it with <code>data-ref</code>. Every citation gets the same number and the note gets one back-reference per citation, lettered <em>a</em>, <em>b</em>, &hellip;</p>
+
+    <browser-window
+      src="/docs/examples/demos/footnotes-multi-ref.html"
+      url="https://vanilla-breeze.com/footnotes/repeat"
+      title="Repeat Citations"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Citing one note twice" data-escape><p>Bush described the Memex.<foot-note id="note-bush">Vannevar Bush,
+<cite>As We May Think</cite>, 1945.</foot-note></p>
+
+<p>The same essay again.<foot-note data-ref="note-bush"></foot-note></p>
+
+<foot-notes></foot-notes></code-block>
+
+    <p>Numbering follows the first citation in document order, so the referenced note may come before or after the <code>data-ref</code>. A <code>data-ref</code> that does not name a collected note logs a warning and is rendered as its own note. Without JavaScript an empty <code>data-ref</code> element renders nothing.</p>
+  </section>
+
+  <section>
+    <h2>Note Preview</h2>
+    <p>Hovering a reference with a mouse, or focusing it with the keyboard, shows the note in a small popover anchored to the reference (CSS anchor positioning, with a script fallback). <kbd>Escape</kbd> closes it and keeps focus on the reference; moving away or tabbing on closes it too. The fade is skipped under <code>prefers-reduced-motion: reduce</code>.</p>
+    <p>The preview is a visual convenience only: it is <code>inert</code> and <code>aria-hidden</code>, so screen readers do not hear the note twice and its links are not extra tab stops &mdash; follow the reference to reach the real, interactive note. Add <code>data-preview="false"</code> to turn it off.</p>
   </section>
 
   <section>
@@ -154,39 +233,41 @@ footnote.</foot-note> are numbered automatically.</p>
       <li><strong>Collection:</strong> Finds all <code>&lt;foot-note&gt;</code> elements that appear before the <code>&lt;foot-notes&gt;</code> element in document order.</li>
       <li><strong>Enhancement:</strong> Each <code>&lt;foot-note&gt;</code> gets:
         <ul>
-          <li>A unique ID (e.g., <code>fnref-1</code>)</li>
-          <li>A <code>data-enhanced</code> attribute</li>
-          <li>The original content wrapped in a span</li>
-          <li>A superscript link to the footnote</li>
+          <li>A <code>data-enhanced</code> attribute (its authored <code>id</code>, if any, is kept)</li>
+          <li>A superscript <code>&lt;a role="doc-noteref"&gt;</code> with a unique ID scoped to the container (e.g. <code>fnref-1-1</code>; repeat citations get <code>fnref-1-1-b</code>, <code>-c</code>&hellip;) and the accessible name &ldquo;Footnote 1&rdquo;</li>
         </ul>
       </li>
-      <li><strong>List Generation:</strong> An ordered list is created inside <code>&lt;foot-notes&gt;</code> with:
+      <li><strong>List Generation:</strong> A <code>&lt;section role="doc-endnotes"&gt;</code> labelled by a heading holds an ordered list with:
         <ul>
-          <li>Each footnote's content</li>
-          <li>A back-reference link to the original location</li>
+          <li>Each footnote's content &mdash; the original nodes are moved, not copied, so ids stay unique and event listeners keep working</li>
+          <li>One <code>role="doc-backlink"</code> link per citation</li>
         </ul>
       </li>
     </ol>
+    <p>Disconnecting the container restores the authored markup; reconnecting it (or changing an observed attribute) re-renders from document order, so notes inserted meanwhile are numbered in place rather than starting a second list.</p>
 
     <h3>Generated HTML</h3>
     <code-block language="html" show-lines label="Generated HTML structure" data-escape><!-- Original -->
-<foot-note>Footnote content</foot-note>
+<p>Text<foot-note>Footnote content</foot-note></p>
+<foot-notes></foot-notes>
 
 <!-- Enhanced -->
-<foot-note id="fnref-1" data-enhanced>
-  <span>Footnote content</span>
-  <a href="#fn-1" aria-describedby="fn-1">[1]</a>
-</foot-note>
+<p>Text<foot-note data-enhanced>
+  <a id="fnref-1-1" href="#fn-1-1" role="doc-noteref" aria-label="Footnote 1">1</a>
+</foot-note></p>
 
-<!-- Footnotes list -->
 <foot-notes>
-  <ol>
-    <li id="fn-1">
-      Footnote content
-      <a href="#fnref-1" class="fn-backref" aria-label="Back to content">&#8617;</a>
-    </li>
-  </ol>
+  <section role="doc-endnotes" aria-labelledby="fnh-1">
+    <h2 id="fnh-1" class="visually-hidden">Notes</h2>
+    <ol>
+      <li id="fn-1-1">
+        Footnote content
+        <a href="#fnref-1-1" data-backref role="doc-backlink" aria-label="Back to content">&#8617;&#65038;</a>
+      </li>
+    </ol>
+  </section>
 </foot-notes></code-block>
+    <p>The brackets around the number are drawn by CSS (<code>::before</code>/<code>::after</code>) and dropped in print. The back glyph is U+21A9 followed by U+FE0E so it never renders as an emoji.</p>
   </section>
 
   <section>
@@ -194,21 +275,24 @@ footnote.</foot-note> are numbered automatically.</p>
 
     <h3>ARIA Attributes</h3>
     <ul>
-      <li>Footnote links have <code>aria-describedby</code> pointing to the footnote content</li>
-      <li>Back-reference links have <code>aria-label</code> for screen reader context</li>
+      <li>References use <code>role="doc-noteref"</code> and are named &ldquo;Footnote N&rdquo; (<code>data-label-ref</code>) &mdash; no <code>aria-describedby</code>, so the note is not read into the paragraph</li>
+      <li>Back-reference links use <code>role="doc-backlink"</code> with an <code>aria-label</code> (<code>data-label-back</code>)</li>
+      <li>The list sits in <code>role="doc-endnotes"</code>, labelled by a heading (visually hidden by default)</li>
+      <li>Sidenotes are <code>&lt;aside role="note"&gt;</code></li>
     </ul>
 
     <h3>Navigation</h3>
     <ul>
-      <li>Clicking a footnote number jumps to the footnote in the list</li>
-      <li>Clicking the back-reference returns to the original location</li>
-      <li>All links are keyboard accessible</li>
+      <li>Activating a footnote number (click or <kbd>Enter</kbd>) moves focus to the footnote in the list</li>
+      <li>Activating a back-reference returns focus to the reference</li>
+      <li>Links work on pages with <code>&lt;base href&gt;</code>: the relative <code>#id</code> hrefs are resolved against the document, not the base URL, and the URL hash and <code>:target</code> still update</li>
+      <li>All links are keyboard accessible; the note content contains no hidden tab stops</li>
     </ul>
 
     <h3>Screen Reader Experience</h3>
     <p>Screen readers will:</p>
     <ul>
-      <li>Announce the footnote number as a link</li>
+      <li>Announce &ldquo;Footnote 1, link&rdquo; in the running text &mdash; the note itself is read once, in the list</li>
       <li>Read the footnote content when navigating to it</li>
       <li>Allow users to return to their reading position</li>
     </ul>
@@ -226,36 +310,43 @@ footnote.</foot-note> are numbered automatically.</p>
     <h2>Styling</h2>
     <p>The component can be styled using CSS selectors.</p>
 
-    <code-block language="css" show-lines label="Footnote component styles" data-escape>/* Style the footnote reference links */
-foot-note a {
-  font-size: var(--font-size-s);
+    <code-block language="css" show-lines label="Footnote component styles" data-escape>/* The reference links */
+foot-note[data-enhanced] > a {
+  font-size: var(--font-size-xs);
   vertical-align: super;
   text-decoration: none;
   color: var(--color-interactive);
 }
 
-foot-note a:hover {
-  text-decoration: underline;
-}
-
-/* Hide the inline content when enhanced */
-foot-note[data-enhanced] > span {
-  display: none;
-}
-
-/* Style the footnotes list */
+/* The notes list */
 foot-notes ol {
   font-size: var(--font-size-s);
-  border-block-start: var(--border-width-thin) solid var(--color-border);
-  padding-block-start: var(--size-m);
-  margin-block-start: var(--size-xl);
 }
 
-/* Style the back-reference link */
-foot-notes .fn-backref {
+/* Back-reference links */
+foot-notes [data-backref] {
   margin-inline-start: var(--size-2xs);
   text-decoration: none;
+}
+
+/* Show the generated "Notes" heading instead of hiding it
+   (or author your own heading inside <foot-notes>) */
+foot-notes > [role="doc-endnotes"] > .visually-hidden {
+  position: static;
+  inline-size: auto;
+  block-size: auto;
+  margin: 0;
+  clip: auto;
+  white-space: normal;
+}
+
+/* The preview popover */
+foot-notes > .fn-preview {
+  max-inline-size: 30ch;
 }</code-block>
+
+    <h3>Print</h3>
+    <p>In print, back-reference links and the preview are hidden, references print as plain superscript numbers and each note avoids breaking across pages.</p>
   </section>
 
   <section>
@@ -275,7 +366,7 @@ foot-notes .fn-backref {
   </section>
 
   <section>
-    <h2>Sidenote Mode</h2>
+    <h2 id="sidenote-mode">Sidenote Mode</h2>
     <p>Add <code>data-mode="sidenotes"</code> to <code>&lt;foot-notes&gt;</code> to place footnotes as margin annotations alongside the text instead of collecting them at the bottom. The authored markup is identical to regular footnotes.</p>
 
     <browser-window
@@ -377,7 +468,7 @@ class fields and top-level await.</foot-note> support.</p></code-block>
     <h2>Limitations</h2>
     <ul>
       <li>Footnote numbering is determined by document order, not insertion order</li>
-      <li>The component doesn't support dynamically added footnotes after initial render</li>
-      <li>Rich HTML content in footnotes (links, formatting) is supported but may require additional styling</li>
+      <li>Footnotes added after the initial render are picked up when the container is reconnected or one of its observed attributes changes &mdash; there is no mutation observer</li>
+      <li>The preview popover is not interactive; links inside a note are used from the list</li>
     </ul>
   </section>

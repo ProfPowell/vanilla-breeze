@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>srcdoc attribute: origin</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+    iframe {
+      inline-size: 100%;
+      block-size: 5.5rem;
+    }
+  </style>
+  <script>
+    // Saved before the frames load: a value only same-origin documents can read.
+    localStorage.setItem('srcdoc-demo', 'session token abc123');
+  </script>
+</head>
+<body>
+  <layout-stack data-layout-gap="m">
+    <h1>Whose origin does srcdoc get?</h1>
+    <p>Both frames get the same <code>srcdoc</code>. Its script tries to read a value this page saved in <code>localStorage</code>.</p>
+
+    <h2>No <code>sandbox</code></h2>
+    <iframe class="bordered" title="Unsandboxed srcdoc frame"
+      srcdoc="<meta name='color-scheme' content='light dark'><style>body{font:1rem/1.4 system-ui,sans-serif;margin:.5rem}</style><p>Scripts are blocked in this frame.</p><script>let found;try{found='read the parent page’s storage: “'+localStorage.getItem('srcdoc-demo')+'”'}catch{found='has no access to the parent page’s storage'}document.querySelector('p').textContent='Origin: '+origin+'. This frame '+found+'.'</script>"></iframe>
+
+    <h2><code>sandbox="allow-scripts"</code></h2>
+    <iframe class="bordered" title="Sandboxed srcdoc frame" sandbox="allow-scripts"
+      srcdoc="<meta name='color-scheme' content='light dark'><style>body{font:1rem/1.4 system-ui,sans-serif;margin:.5rem}</style><p>Scripts are blocked in this frame.</p><script>let found;try{found='read the parent page’s storage: “'+localStorage.getItem('srcdoc-demo')+'”'}catch{found='has no access to the parent page’s storage'}document.querySelector('p').textContent='Origin: '+origin+'. This frame '+found+'.'</script>"></iframe>
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

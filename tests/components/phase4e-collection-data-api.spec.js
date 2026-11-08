@@ -68,6 +68,13 @@ test('tab-set: .tabs setter rebuilds with one tab open', async ({ page }) => {
   expect(result.count).toBe(3);
   expect(result.openIndex).toBe(1);
   expect(result.labels).toEqual(['One', 'Two', 'Three']);
+
+  // Generated <details> share a per-instance name, so a click still leaves
+  // exactly one tab open (they were unnamed and stacked open before).
+  await page.locator('tab-set').first().locator('summary').nth(2).click();
+  const open = await page.evaluate(() =>
+    [...document.querySelector('tab-set').querySelectorAll(':scope > details')].map(d => d.open));
+  expect(open).toEqual([false, false, true]);
 });
 
 test('carousel-wc: .slides setter rebuilds slide children', async ({ page }) => {

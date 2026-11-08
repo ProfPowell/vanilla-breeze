@@ -55,7 +55,7 @@ crumbLabel: Native Elements
 </table></code-block>
 
     <h3>Sticky Header</h3>
-    <p>Add <code>data-sticky="header"</code> to the <code>&lt;table&gt;</code> element so the header row stays visible as the user scrolls through long tables. VB applies <code>position: sticky</code>, <code>inset-block-start: 0</code>, and <code>z-index: 1</code> to the <code>thead th</code> cells.</p>
+    <p>Add <code>data-sticky="header"</code> to the <code>&lt;table&gt;</code> element so the header row stays visible as the user scrolls through long tables. VB applies <code>position: sticky</code>, <code>inset-block-start: var(--sticky-offset, 0px)</code>, and <code>z-index: 1</code> to the <code>thead th</code> cells, and redraws the header rule as an inset shadow so it stays with the stuck cells.</p>
     <code-block language="html" label="Sticky header" data-escape><table data-sticky="header">
   <thead>
     <tr>
@@ -68,6 +68,13 @@ crumbLabel: Native Elements
     <!-- Many rows of data -->
   </tbody>
 </table></code-block>
+
+    <h4>Sticky header caveats</h4>
+    <ul>
+      <li><strong>It sticks to the nearest scroller.</strong> Normally that is the page. Inside a <a href="/docs/elements/native/table/#scroll-region"><code>[data-table-scroll]</code></a> region the header pins to the region instead (at <code>0</code>); use <code>data-table-scroll="block"</code> to give the region a height so there is something to scroll.</li>
+      <li><strong>It clears the site header.</strong> When the page uses a coordinated sticky header (<code>header data-sticky</code>), the thead offsets by <code>--sticky-offset</code> so it never slides underneath.</li>
+      <li><strong>Print resets it.</strong> In print the header is static and repeats on every page instead.</li>
+    </ul>
 
     <h3>Scope Attribute</h3>
     <p>The <code>scope</code> attribute on <code>&lt;th&gt;</code> tells assistive technologies which cells the header relates to. See the shared demo for headers using <code>scope="col"</code> and <code>scope="row"</code>.</p>
@@ -86,10 +93,12 @@ thead th {
 }
 
 /* Sticky header via data attribute */
-table[data-sticky="header"] thead th {
+table:is([data-sticky="header"], [data-sticky="both"]) thead th {
   position: sticky;
-  inset-block-start: 0;
+  inset-block-start: var(--sticky-offset, 0px);
   z-index: 1;
+  background: var(--color-surface-overlay);
+  box-shadow: inset 0 calc(-1 * var(--border-width-medium)) 0 var(--color-border);
 }</code-block>
 
     <table class="props-table">
@@ -113,7 +122,7 @@ table[data-sticky="header"] thead th {
         </tr>
         <tr>
           <td><code>position: sticky</code></td>
-          <td>Via <code>data-sticky="header"</code></td>
+          <td>Via <code>data-sticky="header"</code> or <code>"both"</code></td>
           <td>Header stays fixed at the top when scrolling</td>
         </tr>
         <tr>

@@ -17,7 +17,7 @@ test.describe('toast-msg — baseline', () => {
 
     const toast = page.locator('toast-msg');
     await expect(toast).toHaveAttribute('data-upgraded', '');
-    await expect(toast).toHaveAttribute('role', 'region');
+    await expect(toast).toHaveAttribute('role', 'log');
     await expect(toast).toHaveAttribute('aria-label', 'Notifications');
   });
 

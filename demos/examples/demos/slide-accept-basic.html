@@ -75,12 +75,12 @@
     <!-- With reset -->
     <section>
       <h2>With Reset</h2>
-      <h3>Click "Reset" after activating</h3>
+      <h3>Tap the handle (or press Enter), then click "Reset"</h3>
       <slide-accept id="resettable" label="Slide to confirm" activated-label="Done!" attention="shimmer">
         Slide to confirm
       </slide-accept>
       <p>
-        <button type="button" onclick="document.getElementById('resettable').querySelector('slide-accept')?.reset?.() || document.getElementById('resettable').reset()">Reset</button>
+        <button type="button" id="reset-btn">Reset</button>
       </p>
     </section>
 
@@ -91,6 +91,22 @@
       <slide-accept label="Slide halfway" activated-label="Activated!" threshold="60">
         Slide halfway
       </slide-accept>
+    </section>
+
+    <!-- Form gate -->
+    <section>
+      <h2>Form Gate</h2>
+      <h3>name + required: the form submits only once confirmed</h3>
+      <form id="gate-form">
+        <slide-accept name="consent" required activated-label="Accepted">
+          Slide to accept the terms
+        </slide-accept>
+        <p>
+          <button type="submit">Continue</button>
+          <button type="reset">Start over</button>
+        </p>
+        <output id="gate-out" class="status">Not submitted</output>
+      </form>
     </section>
   </section>
 
@@ -104,6 +120,16 @@
           status.setAttribute('data-active', '');
         }
       });
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      document.getElementById('resettable').reset();
+    });
+
+    document.getElementById('gate-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(e.currentTarget);
+      document.getElementById('gate-out').textContent = `Submitted consent=${data.get('consent')}`;
     });
   </script>
 </body>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>readonly attribute compared with disabled</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <form class="stacked" id="ro-form">
+      <form-field>
+        <label for="ro-order">Order number</label>
+        <input type="text" id="ro-order" name="order" value="ORD-2026-00482" readonly />
+        <output class="hint" for="ro-order">readonly: focusable, selectable, submitted. Dashed border.</output>
+      </form-field>
+
+      <form-field>
+        <label for="ro-total">Total (USD)</label>
+        <input id="ro-total" type="number" name="total" value="149.99" readonly />
+        <output class="hint" for="ro-total">readonly also applies to number, date and time inputs.</output>
+      </form-field>
+
+      <form-field>
+        <label for="ro-region">Data region</label>
+        <input type="text" id="ro-region" name="region" value="eu-west" disabled />
+        <output class="hint" for="ro-region">disabled: skipped by Tab, not submitted.</output>
+      </form-field>
+
+      <form-field>
+        <label for="ro-notes">Delivery notes</label>
+        <textarea id="ro-notes" name="notes" rows="2">Leave with the concierge.</textarea>
+      </form-field>
+
+      <button type="submit">Update notes</button>
+      <pre><output id="ro-result">Submitted data appears here.</output></pre>
+    </form>
+  </layout-center>
+
+  <script type="module">
+    const form = document.querySelector('#ro-form');
+    const result = document.querySelector('#ro-result');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      result.textContent = [...new FormData(form)].map(([name, value]) => `${name} = ${value}`).join('\n');
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -5,6 +5,11 @@
  * layout-attributes.css (it spans cluster and reel). */
 
 :is(layout-cluster, [data-layout="cluster"]) {
+  /* Reset variant-only private props so an outer layout's values don't
+     inherit into a nested host that set nothing (see layout-grid/styles.css). */
+  --_gap: initial;
+  --_align: initial;
+
   display: flex;
   flex-wrap: wrap;
   gap: var(--_gap, var(--size-s));
@@ -48,8 +53,12 @@
     isolation: isolate;
     gap: 0;
 
+    /* --_overlap is set on the items (not the host) so it never inherits
+       into a nested cluster's items, and an item that is itself a cluster
+       still takes its parent's overlap. */
     & > * {
-      margin-inline-start: var(--_overlap, -0.5rem);
+      --_overlap: -0.5rem;
+      margin-inline-start: var(--_overlap);
       box-shadow: 0 0 0 2px var(--color-surface);
     }
 
@@ -64,8 +73,8 @@
     }
   }
 
-  &[data-layout-overlap="xs"] { --_overlap: -0.25rem; }
-  &[data-layout-overlap="s"]  { --_overlap: -0.5rem; }
-  &[data-layout-overlap="m"]  { --_overlap: -0.75rem; }
-  &[data-layout-overlap="l"]  { --_overlap: -1rem; }
+  &[data-layout-overlap="xs"] > * { --_overlap: -0.25rem; }
+  &[data-layout-overlap="s"] > *  { --_overlap: -0.5rem; }
+  &[data-layout-overlap="m"] > *  { --_overlap: -0.75rem; }
+  &[data-layout-overlap="l"] > *  { --_overlap: -1rem; }
 }

@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-stagger"
-description: "Cascades timing to child elements for choreographed entrance sequences."
+description: "Cascades entrance timing across a container's children: linear, reverse, random or a grid wave, with an optional interval such as 40ms."
 attributeName: data-stagger
 category: visual-effects
 attributeType: data
@@ -13,92 +13,134 @@ crumbLabel: Data Attributes
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>data-stagger</code> attribute goes on a <strong>parent</strong> element. It sets <code>--vb-stagger-index</code> on each child (0, 1, 2, ...) so CSS can calculate cascading delays for entrance effects.</p>
+  <p><code>data-stagger</code> goes on a <strong>container</strong>. The runtime numbers its direct children (<code>--vb-stagger-index</code>: 0, 1, 2&hellip;), and each child's effect waits <code>index &times; interval</code> before it starts, so a list or grid builds up one item after another instead of all at once.</p>
 
   <browser-window src="/docs/examples/demos/stagger-demo.html" url="https://vanilla-breeze.com/stagger" title="Stagger Demo" shadow></browser-window>
 </section>
 
-<section id="basic">
-  <h2>Basic usage</h2>
-  <code-block language="html" label="Staggered list">
-&lt;ul data-stagger="80ms"&gt;
-  &lt;li data-effect="fade-in slide-up" data-trigger="scroll"&gt;First&lt;/li&gt;
-  &lt;li data-effect="fade-in slide-up" data-trigger="scroll"&gt;Second&lt;/li&gt;
-  &lt;li data-effect="fade-in slide-up" data-trigger="scroll"&gt;Third&lt;/li&gt;
-&lt;/ul&gt;
-  </code-block>
-  <p>Each child appears 80ms after the previous one, creating a cascading entrance.</p>
+<section>
+  <h2>Usage</h2>
+  <code-block language="html" show-lines label="Staggered list" data-escape><ul data-stagger="80ms">
+  <li data-effect="fade-in slide-up" data-trigger="scroll">First</li>
+  <li data-effect="fade-in slide-up" data-trigger="scroll">Second</li>
+  <li data-effect="fade-in slide-up" data-trigger="scroll">Third</li>
+</ul></code-block>
+  <ul>
+    <li><code>data-stagger</code> only sets the timing. Every child still needs its own <a href="/docs/attributes/data-effect/"><code>data-effect</code></a>, and usually its own <a href="/docs/attributes/data-trigger/"><code>data-trigger</code></a>.</li>
+    <li>Only direct children are numbered.</li>
+    <li>Children added or removed later are renumbered automatically.</li>
+    <li>The runtime that numbers the children ships in every script bundle. The delay rule (<code>[data-stagger] &gt; *</code>) ships in both the core and the full stylesheet.</li>
+  </ul>
 </section>
 
-<section id="how-it-works">
-  <h2>How it works</h2>
-  <p>VB.js sets <code>--vb-stagger-index</code> on each direct child. The built-in CSS rule calculates the delay:</p>
-  <code-block language="css" label="Stagger CSS">
-[data-stagger] > * {
-  --vb-delay: calc(var(--vb-stagger-index, 0) * var(--vb-stagger, 80ms));
-}
-  </code-block>
-  <p>Effects that support <code>--vb-delay</code> (like <code>fade-in</code>, <code>slide-up</code>, <code>pop</code>) automatically pick up the staggered timing.</p>
+<section>
+  <h2>Options</h2>
+  <p>The value is up to two space-separated tokens, in any order: an ordering mode and an interval. <code>data-stagger</code> with no value means DOM order at 80ms.</p>
+  <table class="props-table">
+    <thead><tr><th>Token</th><th>Values</th><th>Default</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>interval</td>
+        <td>A CSS time: <code>40ms</code>, <code>0.1s</code></td>
+        <td><code>80ms</code></td>
+        <td>Sets <code>--vb-stagger</code> on the container. Removing the token removes the property again.</td>
+      </tr>
+      <tr>
+        <td>mode</td>
+        <td><em>(none)</em></td>
+        <td>&check;</td>
+        <td>DOM order: the first child gets index 0.</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><code>reverse</code></td>
+        <td></td>
+        <td>The last child gets index 0, the first child the highest index.</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><code>random</code></td>
+        <td></td>
+        <td>A shuffle seeded by the container's <code>id</code> (or a generated id), so the order is the same on every load. It is reshuffled when the attribute or the children change.</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><code>grid</code></td>
+        <td></td>
+        <td>A diagonal wave from the top inline-start cell: index = row + column, so cells on the same diagonal start together. Uses explicit <code>grid-row-start</code> / <code>grid-column-start</code> when every child has one; otherwise rows and columns come from where the children are laid out, which works for auto-placed grids and flex-wrap rows, and mirrors under <code>dir="rtl"</code>. Positions are measured when the children are numbered, not on resize.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Effects that stagger</h3>
+  <p>The stagger works through <code>--vb-delay</code>. These effects read it: <code>fade-in</code>, <code>slide-up</code>, <code>slide-in</code>, <code>pop</code>, <code>fade-in slide-up</code>, <code>shadow</code>, <code>fade-out</code> and <code>slide-out</code>. Other effects (for example <code>shake</code>, <code>pulse</code>, <code>reveal</code>, <code>typewriter</code>) ignore it.</p>
 </section>
 
-<section id="choreography">
-  <h2>Choreography</h2>
-  <p>Combine stagger with different effects for varied choreography patterns.</p>
+<section>
+  <h2>Events</h2>
+  <p>No events of its own. Each child fires the usual effect events (<code>vb:phase-change</code>, <code>vb:effect-phase-end</code>); see <a href="/docs/attributes/data-trigger/#events"><code>data-trigger</code></a>.</p>
+</section>
+
+<section>
+  <h2>Styling</h2>
+  <table class="props-table">
+    <thead><tr><th>Custom property</th><th>Set on</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>--vb-stagger-index</code></td><td>Each direct child (by the runtime)</td><td>The child's position in the cascade.</td></tr>
+      <tr><td><code>--vb-stagger</code></td><td>The container</td><td>The interval. Set by an interval token, or by your own CSS when the attribute has none. Default <code>80ms</code>.</td></tr>
+      <tr><td><code>--vb-delay</code></td><td>Each direct child (by CSS)</td><td><code>calc(var(--vb-stagger-index, 0) * var(--vb-stagger, 80ms))</code>. Override it on a child to take it out of the cascade.</td></tr>
+    </tbody>
+  </table>
+  <code-block language="css" show-lines label="Interval from your own CSS" data-escape>.feature-list {
+  --vb-stagger: 120ms;
+}</code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Keep the total short. Ten children at 80ms already take most of a second before the last one starts; a long cascade makes people wait to read.</li>
+    <li>Under reduced motion (<code>prefers-reduced-motion: reduce</code> or <code>:root[data-motion-reduced]</code>) the delays are dropped together with the animations, and every child is shown at once.</li>
+    <li>Staggering does not change reading or tab order. A <code>reverse</code>, <code>random</code> or <code>grid</code> cascade only changes when things appear, so the DOM order should still make sense on its own.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Choreography</h3>
   <browser-window src="/docs/examples/demos/stagger-choreography.html" url="https://vanilla-breeze.com/stagger-choreography" title="Stagger Choreography" shadow></browser-window>
+  <code-block language="html" show-lines label="Different effects, different intervals" data-escape><ul data-stagger="80ms">
+  <li data-effect="fade-in slide-up" data-trigger="scroll">First item</li>
+  <li data-effect="fade-in slide-up" data-trigger="scroll">Second item</li>
+</ul>
+
+<ul data-stagger="120ms">
+  <li data-effect="slide-in" data-trigger="scroll">Slid in one</li>
+  <li data-effect="slide-in" data-trigger="scroll">Slid in two</li>
+</ul></code-block>
+
+  <h3>Ordering modes</h3>
+  <code-block language="html" show-lines label="reverse, random, grid" data-escape><ul data-stagger="reverse">
+  <li data-effect="fade-in" data-trigger="scroll">Appears last</li>
+  <li data-effect="fade-in" data-trigger="scroll">Middle</li>
+  <li data-effect="fade-in" data-trigger="scroll">Appears first</li>
+</ul>
+
+<ol id="words" data-stagger="random 60ms">...</ol>
+
+<ul data-stagger="grid 60ms" data-layout="grid">
+  <li data-effect="pop" data-trigger="scroll">1</li>
+  <li data-effect="pop" data-trigger="scroll">2</li>
+  ...
+</ul></code-block>
 </section>
 
-<section id="custom-timing">
-  <h2>Custom timing</h2>
-  <p>Override the stagger interval with a CSS custom property or inline style:</p>
-  <code-block language="html" label="Custom stagger timing">
-&lt;!-- CSS-time shorthand: sets --vb-stagger directly --&gt;
-&lt;ul data-stagger="40ms"&gt;...&lt;/ul&gt;
-&lt;ul data-stagger="200ms"&gt;...&lt;/ul&gt;
-
-&lt;!-- Explicit CSS custom property --&gt;
-&lt;ul data-stagger style="--vb-stagger: 120ms"&gt;...&lt;/ul&gt;
-  </code-block>
-</section>
-
-<section id="modes">
-  <h2>Ordering modes</h2>
-  <p>By default <code>data-stagger</code> orders children by DOM position. Mode keywords change the index assignment:</p>
-  <table class="props-table">
-    <thead><tr><th>Mode</th><th>Effect</th></tr></thead>
-    <tbody>
-      <tr><td><em>(default / time value)</em></td><td>Linear DOM order: child 0 gets index 0, child 1 gets index 1, etc.</td></tr>
-      <tr><td><code>reverse</code></td><td>Last child gets index 0, first child gets the highest index.</td></tr>
-      <tr><td><code>random</code></td><td>Fisher-Yates shuffle seeded by the parent's <code>id</code> (or generated UID), so the order is deterministic across reloads.</td></tr>
-      <tr><td><code>grid</code></td><td>Manhattan distance from the top-left grid cell. Uses each child's computed <code>grid-row-start</code> / <code>grid-column-start</code>; falls back to DOM order outside a grid.</td></tr>
-    </tbody>
-  </table>
-
-  <code-block language="html" label="Stagger modes">
-&lt;ul data-stagger="reverse" style="--vb-stagger: 80ms"&gt;
-  &lt;li data-effect="fade-in" data-trigger="scroll"&gt;Last in DOM, first to appear&lt;/li&gt;
-  &lt;li data-effect="fade-in" data-trigger="scroll"&gt;Middle&lt;/li&gt;
-  &lt;li data-effect="fade-in" data-trigger="scroll"&gt;First in DOM, last to appear&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;ol id="words" data-stagger="random" style="--vb-stagger: 60ms"&gt;...&lt;/ol&gt;
-
-&lt;section data-stagger="grid" data-layout="grid" style="--vb-stagger: 50ms"&gt;...&lt;/section&gt;
-  </code-block>
-</section>
-
-<section id="api">
-  <h2>Attribute reference</h2>
-  <table class="props-table">
-    <thead><tr><th>Attribute</th><th>Applied to</th><th>Description</th></tr></thead>
-    <tbody>
-      <tr><td><code>data-stagger</code></td><td>Parent element</td><td>Empty or a CSS time (e.g. <code>"80ms"</code>) → linear cascade. <code>reverse</code> / <code>random</code> / <code>grid</code> → alternate ordering. CSS-time values set <code>--vb-stagger</code> on the parent as a shorthand.</td></tr>
-    </tbody>
-  </table>
-  <table class="props-table">
-    <thead><tr><th>CSS Property</th><th>Set on</th><th>Description</th></tr></thead>
-    <tbody>
-      <tr><td><code>--vb-stagger-index</code></td><td>Each child</td><td>Auto-set by JS (0, 1, 2, ...). Used in delay calculation.</td></tr>
-      <tr><td><code>--vb-stagger</code></td><td>Parent</td><td>Overrides the stagger interval. Falls back to attribute value or 80ms.</td></tr>
-    </tbody>
-  </table>
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-effect/"><code>data-effect</code></a> &mdash; the effects being staggered.</li>
+    <li><a href="/docs/attributes/data-trigger/"><code>data-trigger</code></a> &mdash; when each child starts.</li>
+    <li><a href="/docs/attributes/data-transition/"><code>data-transition="stagger"</code></a> &mdash; a staggered view transition for a container's children, which is a different mechanism.</li>
+  </ul>
 </section>

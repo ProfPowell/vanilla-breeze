@@ -139,8 +139,9 @@ test.describe('tab-set — ARIA contracts', () => {
     const controlsId = await summary.getAttribute('aria-controls');
     const panel = page.locator(`#${controlsId}`);
 
-    // The runtime must NOT set role="tablist", role="tab", or role="tabpanel"
-    await expect(tabset).not.toHaveAttribute('role');
+    // The runtime must NOT set role="tablist", role="tab", or role="tabpanel".
+    // A labelled host may be a named group (role="group"), never a tablist.
+    expect(await tabset.getAttribute('role')).not.toBe('tablist');
     await expect(summary).not.toHaveAttribute('role');
     await expect(panel).not.toHaveAttribute('role');
   });

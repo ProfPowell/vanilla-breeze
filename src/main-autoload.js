@@ -26,6 +26,8 @@ import './lib/sw-register.js';
 // Public storage and service APIs (also on window.VB.store / VB.service)
 export { VBStore } from './lib/vb-store.js';
 export { VBService, VBServiceError } from './lib/vb-service.js';
+// Theme API (also on window.VB.themeManager). init() already ran on load.
+export { ThemeManager };
 
 // VB effects system — unified data-effect API
 import { VB } from './lib/vb.js';
@@ -40,6 +42,7 @@ import './effects/scramble.js';
 import './effects/ticker.js';
 import './effects/animate-image.js';
 import './effects/flipboard.js';
+import './effects/stamp.js';
 import './effects/rating.js';
 
 // Initialize theme system

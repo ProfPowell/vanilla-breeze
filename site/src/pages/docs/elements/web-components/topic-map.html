@@ -12,7 +12,8 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>Joins two data sources to draw a concept tree. <code>vocabulary.json</code> supplies the SKOS graph (<code>skos:broader</code>, <code>skos:narrower</code>, <code>skos:hasTopConcept</code>) and the display labels. <code>pages.json</code> supplies each page's <code>concepts: []</code> array, harvested by the build from repeated <code>&lt;meta name="concept"&gt;</code> tags (per <a href="https://github.com/ProfPowell/vanilla-breeze/blob/main/admin/specs/meta-tag-contract-v1.md">meta-tag contract v1.1</a>). Each node shows the concept's <code>skos:prefLabel</code>, a count of pages tagged with that concept or any descendant, and links to <code>/topics/{id}/</code>. The native <code>&lt;details&gt;</code> tree expands and collapses without JavaScript.</p>
+  <p>Joins two data sources to draw a concept tree. <code>vocabulary.json</code> supplies the SKOS graph (<code>skos:broader</code>, <code>skos:narrower</code>, <code>skos:hasTopConcept</code>) and the display labels. <code>pages.json</code> supplies each page's <code>concepts: []</code> array, harvested by the build from repeated <code>&lt;meta name="concept"&gt;</code> tags (per <a href="https://github.com/ProfPowell/vanilla-breeze/blob/main/admin/specs/meta-tag-contract-v1.md">meta-tag contract v1.1</a>). Each node's summary shows the concept's <code>skos:prefLabel</code> and a count of distinct pages tagged with that concept or any descendant (a page tagged with a parent and its child counts once). The <code>/topics/{id}/</code> link sits first inside each node, so the summary only toggles.</p>
+  <p>The tree is built by JavaScript from the fetched JSON; without JavaScript the element shows only whatever fallback content you author inside it. Once rendered, the tree uses native <code>&lt;details&gt;</code> disclosure, so there is no custom keyboard code.</p>
 
   <browser-window
     src="/docs/examples/demos/topic-map.html"
@@ -22,6 +23,14 @@ crumbLabel: Web Components
   </browser-window>
 
   <code-block language="html" data-escape><topic-map data-lens-src="/pages.json"></topic-map></code-block>
+</section>
+
+<section>
+  <h2>Inside content-lens</h2>
+  <p><code>&lt;content-lens&gt;</code> already names each lens with its radio label, so turn the panel heading off with <code>data-heading-level="0"</code>.</p>
+  <code-block language="html" data-escape><content-lens data-lens-src="/pages.json">
+  <topic-map data-lens-name="topic" data-lens-label="By Topic" data-heading-level="0"></topic-map>
+</content-lens></code-block>
 </section>
 
 <section>
@@ -42,7 +51,32 @@ crumbLabel: Web Components
       <tr><td><code>data-lens-src</code></td><td>string</td><td>&mdash;</td><td>URL to <code>pages.json</code>. Each record must expose a <code>concepts: []</code> array.</td></tr>
       <tr><td><code>src</code></td><td>string</td><td>&mdash;</td><td>Alias for <code>data-lens-src</code>.</td></tr>
       <tr><td><code>data-vocabulary-src</code></td><td>string</td><td><code>/vocabulary.json</code></td><td>URL to the SKOS vocabulary file used to resolve labels and hierarchy.</td></tr>
-      <tr><td><code>expand-all</code></td><td>boolean</td><td>false</td><td>Render with every level expanded.</td></tr>
+      <tr><td><code>expand-all</code></td><td>boolean</td><td>false</td><td>Render with every level expanded. Read when the tree renders.</td></tr>
+      <tr><td><code>data-heading-level</code></td><td>number</td><td><code>2</code></td><td>Heading level 1&ndash;6; <code>0</code> renders no heading.</td></tr>
+      <tr><td><code>data-label-heading</code></td><td>string</td><td><code>Topics</code></td><td>Heading text.</td></tr>
+      <tr><td><code>data-label-page</code></td><td>string</td><td><code>{count} page</code></td><td>Count template when <code>Intl.PluralRules</code> selects &ldquo;one&rdquo;.</td></tr>
+      <tr><td><code>data-label-pages</code></td><td>string</td><td><code>{count} pages</code></td><td>Count template for every other plural category.</td></tr>
+      <tr><td><code>data-label-uncategorized</code></td><td>string</td><td><code>Uncategorized</code></td><td>Label of the node for pages whose concepts are not in the vocabulary.</td></tr>
+      <tr><td><code>data-label-topic-link</code></td><td>string</td><td><code>{label} topic page</code></td><td>Text of the link to <code>/topics/{id}/</code>.</td></tr>
+      <tr><td><code>data-label-error</code></td><td>string</td><td><code>Topics could not be loaded.</code></td><td>Shown when a source fails; the detail goes to the console only.</td></tr>
     </tbody>
   </table>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <p>Assign already-loaded payloads to skip the fetch. While set, <code>data</code> takes precedence over <code>data-lens-src</code>.</p>
+  <code-block language="js">document.querySelector('topic-map').data = { pages, vocabulary };</code-block>
+  <table class="props-table">
+    <thead><tr><th>Member</th><th>Detail</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>data</code> (property)</td><td><code>{ pages, vocabulary } | null</code></td><td>Returns the assigned payload, or <code>null</code> when the tree came from <code>src</code>.</td></tr>
+      <tr><td><code>topic-map:data-changed</code> (event)</td><td><code>{ pages, vocabulary, source: 'property' }</code></td><td>Fires after <code>data</code> is assigned and the tree re-renders.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Safety</h2>
+  <p>Page URLs that are not <code>http(s)</code> or relative (for example <code>javascript:</code>) render as plain text, not links. Cycles in <code>skos:broader</code> / <code>skos:narrower</code> are skipped instead of recursed.</p>
 </section>

@@ -11,18 +11,32 @@
     inset-block-start: 100%;
     inset-inline-start: 0;
     margin-block-start: var(--size-2xs, 4px);
-    background: var(--color-surface, #fff);
-    border: var(--border-width-thin, 1px) solid var(--color-border, #ddd);
+    padding: 0;
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: var(--border-width-thin, 1px) solid var(--color-border);
     border-radius: var(--radius-m, 0.5rem);
     box-shadow: var(--shadow-m, 0 4px 12px oklch(0% 0 0 / 0.12));
     inline-size: min(20rem, calc(100vw - 2rem));
     max-block-size: min(24rem, 60vh);
     display: grid;
-    grid-template-rows: auto auto 1fr;
+    grid-template-rows: auto auto 1fr auto;
     overflow: hidden;
   }
 
-  .picker[hidden] {
+  /* Top-layer mode (Popover API): never clipped by overflow containers or
+     dialogs. Physical: #position() computes viewport left/top. */
+  .picker[popover] {
+    position: fixed;
+    inset: auto;
+    top: var(--picker-top, 0);
+    left: var(--picker-left, 0);
+    margin: 0;
+  }
+
+  /* Re-assert hiding: author display:grid beats the UA [hidden]/[popover] rule */
+  .picker[hidden],
+  .picker[popover]:not(:popover-open) {
     display: none;
   }
 
@@ -32,28 +46,29 @@
     inline-size: 100%;
     padding: var(--size-xs, 0.5rem) var(--size-s, 0.75rem);
     border: none;
-    border-block-end: var(--border-width-thin, 1px) solid var(--color-border, #ddd);
+    border-block-end: var(--border-width-thin, 1px) solid var(--color-border);
+    border-radius: 0;
     background: transparent;
     font: inherit;
     font-size: var(--font-size-s, 0.875rem);
-    color: var(--color-text, #333);
+    color: var(--color-text);
     outline: none;
     min-block-size: 0;
   }
 
   input[type="search"]::placeholder {
-    color: var(--color-text-muted, #999);
+    color: var(--color-text-muted);
   }
 
-  input[type="search"]:focus {
-    box-shadow: inset 0 -2px 0 var(--color-interactive, oklch(55% 0.2 260));
+  input[type="search"]:focus-visible {
+    box-shadow: inset 0 -2px 0 var(--color-interactive);
   }
 
-  /* Category tabs */
+  /* Category toolbar */
   .categories {
     display: flex;
     gap: 0;
-    border-block-end: var(--border-width-thin, 1px) solid var(--color-border, #ddd);
+    border-block-end: var(--border-width-thin, 1px) solid var(--color-border);
     overflow-x: auto;
     scrollbar-width: none;
   }
@@ -80,20 +95,28 @@
     background: var(--color-hover-bg);
   }
 
-  .categories button[aria-selected="true"] {
-    border-block-end-color: var(--color-interactive, oklch(55% 0.2 260));
+  .categories button[aria-current="true"] {
+    border-block-end-color: var(--color-interactive);
     background: var(--color-hover-bg);
   }
 
   .categories button:focus-visible {
-    outline: 2px solid var(--color-interactive, oklch(55% 0.2 260));
+    outline: 2px solid var(--color-interactive);
     outline-offset: -2px;
   }
 
-  /* Emoji grid */
+  /* Emoji listbox (scroll container) */
   .grid {
+    position: relative;
     overflow-y: auto;
+    overscroll-behavior: contain;
     padding: var(--size-2xs, 4px);
+    min-block-size: 0;
+    /* Keyboard-focused cells scroll clear of the sticky group heading */
+    scroll-padding-block: 1.75rem var(--size-2xs, 4px);
+  }
+
+  .grid .group {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     gap: 1px;
@@ -102,24 +125,17 @@
 
   .grid .group-label {
     grid-column: 1 / -1;
-    padding: var(--size-2xs, 4px) var(--size-2xs, 4px);
+    padding: var(--size-2xs, 4px);
     font-size: var(--font-size-xs, 0.75rem);
     font-weight: 600;
-    color: var(--color-text-muted, #999);
+    color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
     position: sticky;
-    inset-block-start: 0;
-    background: var(--color-surface, #fff);
+    /* Stick to the scrollport edge, not the padding edge, so no emoji peek above */
+    inset-block-start: calc(-1 * var(--size-2xs, 4px));
+    background: var(--color-surface);
     z-index: 1;
-  }
-
-  .grid .no-results {
-    grid-column: 1 / -1;
-    padding: var(--size-l, 1.5rem) var(--size-s, 0.75rem);
-    text-align: center;
-    color: var(--color-text-muted, #999);
-    font-size: var(--font-size-s, 0.875rem);
   }
 
   .grid button {
@@ -141,13 +157,54 @@
   }
 
   .grid button:focus-visible {
-    outline: 2px solid var(--color-interactive, oklch(55% 0.2 260));
+    outline: 2px solid var(--color-interactive);
     outline-offset: -2px;
     background: var(--color-hover-bg);
   }
+
+  /* `all: unset` / display:grid would otherwise defeat [hidden] (search filter) */
+  .grid .group[hidden],
+  .grid button[hidden],
+  .no-results[hidden] {
+    display: none;
+  }
+
+  .no-results {
+    margin: 0;
+    padding: var(--size-l, 1.5rem) var(--size-s, 0.75rem);
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-s, 0.875rem);
+  }
+
+  /* Polite live region: announced, not shown */
+  .status {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (forced-colors: active) {
+    .categories button[aria-current="true"] {
+      border-block-end-color: Highlight;
+    }
+
+    .grid button:focus-visible,
+    .categories button:focus-visible {
+      outline-color: Highlight;
+    }
+  }
 }
 
-/* No-JS fallback: hide picker panel, show trigger as a plain button */
+/* No-JS: the trigger does nothing until the element is defined, so it is not
+   shown. The text field still works with the OS emoji keyboard. */
+emoji-picker:not(:defined) > [data-trigger],
 emoji-picker:not(:defined) .picker {
   display: none;
 }

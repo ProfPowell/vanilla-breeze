@@ -1,0 +1,94 @@
+---
+layout: attribute
+title: "data-border-shape"
+description: "A coloured hexagon, diamond or arch frame around an image: a clipped background layer plus the image clipped to the same shape, inset by --shape-border."
+attributeName: data-border-shape
+category: shapes
+attributeType: data
+currentPath: /docs/attributes/data-border-shape/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section id="overview">
+  <h2>Overview</h2>
+  <p><code>data-border-shape</code> goes on a wrapper around an image (or any single block) and draws a coloured frame in a hexagon, diamond or arch shape. CSS borders always follow the box, so the frame is built in two layers:</p>
+  <ol>
+    <li>The wrapper's <code>::before</code> paints the border colour across the whole shape.</li>
+    <li>Each direct child sits <code>--shape-border</code> inside the wrapper and is clipped to the same shape in its own box.</li>
+  </ol>
+  <p>The band of <code>::before</code> left between the two shapes is the border. The wrapper itself is never clipped, so its focus ring and shadow survive.</p>
+</section>
+
+<section id="usage">
+  <h2>Usage</h2>
+  <code-block language="html" label="Hexagon frame around an avatar" data-escape><span data-border-shape="hexagon">
+  <img src="avatar.jpg" alt="Ana Ruiz, head of design" width="200" height="200">
+</span></code-block>
+  <p>The wrapper becomes <code>inline-block</code> (and an <code>isolation</code> root, so the colour layer stays behind the image), and its direct children become <code>display: block</code> so the inset margin applies on all four sides.</p>
+</section>
+
+<section id="options">
+  <h2>Options</h2>
+  <table>
+    <thead>
+      <tr><th>Value</th><th>Frame</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>hexagon</code></td><td>Six-sided frame</td></tr>
+      <tr><td><code>diamond</code></td><td>Rotated-square frame</td></tr>
+      <tr><td><code>arch</code></td><td>Rounded-top arch frame</td></tr>
+    </tbody>
+  </table>
+  <p>All three are symmetric, so they look the same in right-to-left pages. The border is measured along the box axes, so on the slanted edges it is a little thinner than on the vertical ones.</p>
+</section>
+
+<section id="styling">
+  <h2>Styling</h2>
+  <table>
+    <thead>
+      <tr><th>Custom property</th><th>Default</th><th>Effect</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--shape-border</code></td><td><code>4px</code></td><td>Border thickness: the margin between the wrapper and its child.</td></tr>
+      <tr><td><code>--shape-border-color</code></td><td><code>var(--color-primary)</code></td><td>Border colour. Any background value works, including a gradient.</td></tr>
+    </tbody>
+  </table>
+  <code-block language="css" label="Thicker gradient frame" data-escape>.team-photo {
+  --shape-border: 6px;
+  --shape-border-color: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+}</code-block>
+  <p>It cannot be combined with <a href="/docs/concepts/shadows/"><code>data-border-effect</code></a>: both draw on <code>::before</code>. <code>data-morph</code> is skipped on the wrapper.</p>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The frame is decorative; the image inside still needs <code>alt</code> text.</li>
+    <li>If the wrapper or its direct child is focusable (a link around the image), the frame turns to the focus-ring colour (<code>--color-focus-ring</code>) while it has keyboard focus, so the focus indicator follows the shape. A focusable wrapper also keeps its normal outline, because the wrapper is not clipped.</li>
+    <li>In forced colours mode backgrounds are repainted as Canvas, which would erase the frame, so it is drawn in <code>CanvasText</code> (and <code>Highlight</code> when focused).</li>
+    <li>In print the frame keeps its colour (<code>print-color-adjust: exact</code>), because browsers drop backgrounds by default.</li>
+  </ul>
+</section>
+
+<section id="examples">
+  <h2>Examples</h2>
+  <p>The three frames on photos; the arch wraps a link, so tab to it to see the focus colour.</p>
+  <browser-window src="/docs/examples/demos/css-shapes-advanced.html" url="https://vanilla-breeze.com/shapes/advanced" title="CSS Shapes: Cutouts, borders and morphing" shadow></browser-window>
+  <code-block language="html" label="Linked arch frame" data-escape><span data-border-shape="arch">
+  <a href="/team/ana/">
+    <img src="ana.jpg" alt="Ana Ruiz, head of design" width="200" height="200">
+  </a>
+</span></code-block>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-clip/"><code>data-clip</code></a> &mdash; the same shapes without a frame.</li>
+    <li><a href="/docs/attributes/data-cutout/"><code>data-cutout</code></a> &mdash; punch a hole through an element.</li>
+    <li><a href="/docs/concepts/shadows/"><code>data-border-effect</code></a> &mdash; animated borders on rectangular boxes.</li>
+    <li><a href="/docs/attributes/data-shape-start/"><code>data-shape-start</code> / <code>data-shape-end</code></a> &mdash; shaped section edges.</li>
+  </ul>
+</section>

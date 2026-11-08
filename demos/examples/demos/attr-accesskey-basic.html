@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>accesskey Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-m);
+      background: var(--color-surface);
+    }
+  </style>
+</head>
+<body>
+  <main data-layout="stack" data-layout-gap="l">
+    <h1 class="visually-hidden">Admin shortcuts</h1>
+    <p>Click inside this window, then hold your browser's access-key modifier and press the letter. The shortcut list below shows the full combination where the browser reports it.</p>
+
+    <nav class="horizontal" aria-label="Admin sections">
+      <ul>
+        <li><a href="#orders" accesskey="o">Orders</a></li>
+        <li><a href="#products" accesskey="p">Products</a></li>
+      </ul>
+    </nav>
+
+    <search>
+      <form-field>
+        <label for="admin-search">Search orders</label>
+        <input type="search" id="admin-search" name="q" accesskey="s" />
+      </form-field>
+    </search>
+
+    <p data-layout="cluster" data-layout-gap="s">
+      <button type="button" id="new-order" accesskey="n">New order</button>
+      <output for="new-order" id="order-status">No orders created yet</output>
+    </p>
+
+    <section aria-labelledby="keys-heading">
+      <h2 id="keys-heading">Shortcuts on this page</h2>
+      <dl data-variant="horizontal">
+        <dt><kbd id="key-o">O</kbd></dt>
+        <dd>Orders</dd>
+        <dt><kbd id="key-p">P</kbd></dt>
+        <dd>Products</dd>
+        <dt><kbd id="key-s">S</kbd></dt>
+        <dd>Search orders</dd>
+        <dt><kbd id="key-n">N</kbd></dt>
+        <dd>New order</dd>
+      </dl>
+      <p><small id="label-note"></small></p>
+    </section>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    // accessKeyLabel gives the real combination (Firefox, Safari).
+    // Chromium has no accessKeyLabel, so fall back to the bare key.
+    let hasLabel = false;
+    for (const el of document.querySelectorAll('[accesskey]')) {
+      const kbd = document.getElementById(`key-${el.accessKey}`);
+      if (kbd && el.accessKeyLabel) {
+        kbd.textContent = el.accessKeyLabel;
+        hasLabel = true;
+      }
+    }
+    document.getElementById('label-note').textContent = hasLabel
+      ? 'Labels come from the browser (accessKeyLabel).'
+      : 'This browser does not report accessKeyLabel; the modifier depends on your platform.';
+
+    const status = document.getElementById('order-status');
+    let count = 0;
+    document.getElementById('new-order').addEventListener('click', () => {
+      count += 1;
+      status.textContent = `Draft order ${count} created`;
+    });
+  </script>
+</body>
+</html>

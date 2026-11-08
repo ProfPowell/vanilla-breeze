@@ -55,13 +55,14 @@
     cursor: var(--cursor-custom-pointer, pointer);
   }
 
-  .trust-filter-count {
+  [data-trust-filter-count] {
+    display: block;
     color: var(--color-text-muted);
     font-size: var(--font-size-s);
     margin-block-end: var(--size-s);
   }
 
-  .trust-filter-list {
+  [data-trust-filter-results] {
     list-style: none;
     padding: 0;
     display: flex;
@@ -69,26 +70,26 @@
     gap: var(--size-xs);
   }
 
-  .trust-filter-list li {
+  [data-trust-filter-results][hidden] { display: none; }
+
+  [data-trust-filter-results] li {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
     gap: var(--size-xs);
   }
 
-  .trust-filter-list li small {
+  [data-trust-filter-results] li small {
     color: var(--color-text-muted);
     font-size: var(--font-size-xs);
   }
 
-  .trust-filter-prov[data-provenance="ai-assisted"]   { color: oklch(55% 0.12 70); }
-  .trust-filter-prov[data-provenance="ai-generated"]  { color: oklch(55% 0.18 30); }
-  .trust-filter-prov[data-provenance="human"]         { color: var(--color-success); }
+  /* data-provenance is space-composed ("ai-generated translated"): match tokens */
+  .trust-filter-prov[data-provenance~="ai-assisted"]  { color: var(--color-warning-text, var(--color-text-muted)); }
+  .trust-filter-prov[data-provenance~="ai-generated"] { color: var(--color-error-text, var(--color-text-muted)); }
+  .trust-filter-prov[data-provenance~="human"]        { color: var(--color-success-text, var(--color-text-muted)); }
 
-  .trust-filter-signed {
-    color: var(--color-success);
-    font-weight: var(--font-weight-semibold, 600);
-  }
+  /* "has signature" is a declaration, not verified trust: neutral styling. */
 
   [data-trust-filter-error] {
     padding: var(--size-s);

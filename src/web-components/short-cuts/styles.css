@@ -14,7 +14,9 @@ short-cuts {
     max-inline-size: min(90vw, 28rem);
     max-block-size: min(85dvh, 32rem);
     padding: 0;
-    border: none;
+    /* Transparent edge: invisible normally, drawn in forced-colors mode
+       where the box-shadow outline disappears. */
+    border: 1px solid transparent;
     border-radius: var(--radius-l);
     background: var(--color-surface-overlay);
     color: var(--color-text);
@@ -35,8 +37,36 @@ short-cuts {
   }
 
   .shortcut-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--size-s);
     padding: var(--size-m) var(--size-l);
     border-block-end: 1px solid var(--color-border);
+  }
+
+  .shortcut-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--size-2xs);
+    min-block-size: 0;
+    min-inline-size: 0;
+    background: transparent;
+    border: var(--border-width-thin) solid transparent;
+    border-radius: var(--radius-s);
+    color: var(--color-text-muted);
+    cursor: var(--cursor-custom-pointer, pointer);
+  }
+
+  .shortcut-close:hover {
+    color: var(--color-text);
+    background: var(--color-surface-raised);
+  }
+
+  .shortcut-close:focus-visible {
+    outline: 2px solid var(--color-interactive);
+    outline-offset: 2px;
   }
 
   .shortcut-header h2 {
@@ -52,6 +82,7 @@ short-cuts {
   }
 
   .shortcut-group-header {
+    margin: 0;
     padding: var(--size-xs) var(--size-l);
     font-size: var(--font-size-xs, 0.75rem);
     font-weight: 600;
@@ -66,6 +97,14 @@ short-cuts {
     padding-block-start: var(--size-s);
   }
 
+  .shortcut-list {
+    margin: 0;
+  }
+
+  .shortcut-list dd {
+    margin: 0;
+  }
+
   .shortcut-row {
     display: flex;
     align-items: center;
@@ -76,7 +115,9 @@ short-cuts {
 
   .shortcut-label {
     flex: 1;
+    margin: 0;
     font-size: var(--font-size-s);
+    font-weight: var(--font-weight-normal, 400);
   }
 
   .shortcut-kbd {
@@ -90,6 +131,14 @@ short-cuts {
     font-family: inherit;
     min-inline-size: 2rem;
     text-align: center;
+  }
+}
+
+@media (forced-colors: active) {
+  @scope (short-cuts) {
+    .shortcut-dialog {
+      border-color: CanvasText;
+    }
   }
 }
 

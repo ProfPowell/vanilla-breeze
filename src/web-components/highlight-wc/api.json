@@ -2,26 +2,47 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "highlight-wc",
   "type": "web-component",
-  "description": "Medium-style text highlighting and annotation component with color swatches, private notes, and localStorage persistence",
+  "description": "Text highlighting with localStorage persistence. Inside <selection-menu> it renders a highlighter button + colour palette for the selection; standalone it renders no UI and exposes a JS API and events",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": ["@flow"]
   },
   "attributes": [
-    { "name": "for", "kind": "host-api", "purpose": "config", "type": "string", "description": "ID of element to annotate (defaults to first child element)" },
-    { "name": "colors", "kind": "host-api", "purpose": "config", "type": "string", "description": "Comma-separated color names (default: yellow,green,blue,pink)" },
-    { "name": "readonly", "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Render stored highlights but disable creating new ones" },
-    { "name": "storage-key", "kind": "host-api", "purpose": "config", "type": "string", "description": "Custom localStorage key suffix (default: page pathname)" }
+    { "name": "for", "kind": "host-api", "purpose": "config", "type": "string", "description": "Standalone mode: ID of the element to annotate (defaults to the first child element). Ignored inside <selection-menu>, which highlights its own targets" },
+    { "name": "colors", "kind": "host-api", "purpose": "config", "type": "string", "default": "yellow,green,blue,pink", "description": "Comma-separated palette colour names; each needs a --highlight-{name} token" },
+    { "name": "readonly", "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Render stored highlights but disable creating new ones. Inside <selection-menu> no highlighter button is rendered" },
+    { "name": "storage-key", "kind": "host-api", "purpose": "config", "type": "string", "description": "Custom storage key suffix (default: page pathname)" },
+    { "name": "data-label-button", "kind": "data", "purpose": "config", "type": "string", "default": "Highlight selection", "description": "Accessible name of the highlighter button (selection-menu mode)" },
+    { "name": "data-label-palette", "kind": "data", "purpose": "config", "type": "string", "default": "Highlight color", "description": "Accessible name of the colour palette group (selection-menu mode)" },
+    { "name": "data-label-annotation", "kind": "data", "purpose": "config", "type": "string", "default": "You highlighted", "description": "Margin annotation text; forwarded to the target as data-highlights-label-annotation" },
+    { "name": "data-label-added", "kind": "data", "purpose": "config", "type": "string", "default": "Highlight added", "description": "Screen-reader announcement when a highlight is created; forwarded as data-highlights-label-added" },
+    { "name": "data-label-removed", "kind": "data", "purpose": "config", "type": "string", "default": "Highlight removed", "description": "Screen-reader announcement when a highlight is removed; forwarded as data-highlights-label-removed" }
   ],
   "structure": [
-    { "element": "<article>", "description": "Content to annotate (when not using for= attribute)" }
+    { "element": "<article>", "description": "Standalone mode: content to annotate (when not using for=)" }
+  ],
+  "methods": [
+    { "name": "highlightSelection(color?)", "description": "Highlight the current text selection in the given palette colour (default: last used). No-op when readonly or the colour is not in the palette" },
+    { "name": "getHighlights()", "description": "Array of { id, startOffset, endOffset, text, color, note, created } records. Inside <selection-menu> the methods act on the most recently highlighted target (initially the first)" },
+    { "name": "removeHighlight(id)", "description": "Remove one highlight by id" },
+    { "name": "clearAll()", "description": "Remove every highlight on the target" },
+    { "name": "exportHighlights()", "description": "JSON string { version: 1, highlights: [...] }" },
+    { "name": "importHighlights(json)", "description": "Replace the highlights from an exported string or object. Records with a bad shape, offsets outside the text or a colour not in the palette are dropped. Returns { imported, rejected }" }
+  ],
+  "events": [
+    { "name": "highlights:added", "detail": "{ id, text, color, note }", "description": "A highlight was created. Dispatched on the target element and bubbles" },
+    { "name": "highlights:removed", "detail": "{ id }", "description": "A highlight was removed via removeHighlight(). Dispatched on the target and bubbles" },
+    { "name": "highlights:selected", "detail": "{ text, rect }", "description": "Text was selected inside an interactive target — hook for a custom UI in standalone mode. Dispatched on the target and bubbles" },
+    { "name": "highlights:clicked", "detail": "{ id, highlight }", "description": "An existing highlight or its margin annotation was clicked. Dispatched on the target and bubbles" },
+    { "name": "highlights:note-changed", "detail": "{ id, note }", "description": "A note was saved (via <note-wc>). Dispatched on the target and bubbles" }
   ],
   "css": {
     "tokens": [
-      { "name": "--highlight-yellow", "description": "Yellow highlight color" },
-      { "name": "--highlight-green", "description": "Green highlight color" },
-      { "name": "--highlight-blue", "description": "Blue highlight color" },
-      { "name": "--highlight-pink", "description": "Pink highlight color" }
+      { "name": "--highlight-yellow", "description": "Yellow highlight wash (light-dark() pair)" },
+      { "name": "--highlight-green", "description": "Green highlight wash (light-dark() pair)" },
+      { "name": "--highlight-blue", "description": "Blue highlight wash (light-dark() pair)" },
+      { "name": "--highlight-pink", "description": "Pink highlight wash (light-dark() pair)" },
+      { "name": "--highlight-ink", "description": "Text colour of highlighted text (light-dark() pair); per-colour override --highlight-{name}-ink" }
     ]
   }
 }

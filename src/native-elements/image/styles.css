@@ -11,8 +11,19 @@ picture {
   display: block;
 }
 
-picture > img {
+/* picture > img inherits img's max-inline-size: 100% — it shrinks to fit
+ * but is never upscaled past its intrinsic width. Stretch one with .full
+ * (on the img or the picture). Inside a [data-media] ratio box the picture
+ * fills the box, so its img fills the picture and crops via --_fit. */
+picture.full > img {
   inline-size: 100%;
+  block-size: auto;
+}
+
+[data-media] > picture > img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: var(--_fit, cover);
 }
 
 /* --- Image Variants --- */
@@ -21,16 +32,6 @@ picture > img {
 img.full {
   inline-size: 100%;
   block-size: auto;
-}
-
-/* Contain within bounds */
-img.contain {
-  object-fit: contain;
-}
-
-/* Cover/crop to fill */
-img.cover {
-  object-fit: cover;
 }
 
 /* Rounded image */
@@ -81,21 +82,30 @@ img.ratio-portrait {
   object-fit: cover;
 }
 
-
-/* --- Loading States --- */
-
-img[loading="lazy"] {
-  background: var(--color-surface-raised);
+img.ratio-landscape {
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
 }
 
-/* Placeholder for broken images */
+/* --- Object fit ---
+ * After the ratio classes so they combine: class="ratio-square contain"
+ * letterboxes instead of the ratio classes' default cover crop. */
+img.contain {
+  object-fit: contain;
+}
+
+img.cover {
+  object-fit: cover;
+}
+
+/* --- Missing source ---
+ * An img with no (or an empty) src renders as an empty box: give it a
+ * visible surface and a minimum height so the gap reads as "image goes
+ * here" rather than collapsing. (No ::before — img is a replaced element
+ * and never renders generated content.) Lazy-loaded images get no
+ * background: it would sit behind transparent PNG/SVG logos forever. */
 img:not([src]),
 img[src=""] {
   background: var(--color-surface-raised);
   min-block-size: 100px;
-
-  &::before {
-    content: "";
-    display: block;
-  }
 }

@@ -21,9 +21,33 @@
   display: none !important;
 }
 
+/* A closed popover is not rendered, for the same reason and by the same
+   mechanism as [hidden]: the UA's [popover]:not(:popover-open):not(dialog
+   [open]) { display: none } is a plain declaration, so VB's own element
+   rules (nav, section, article, aside, form, figure, header, footer, menu,
+   dl, search all set display) kept closed popovers on the page. dialog
+   [open] is excluded as in the UA rule, so a <dialog popover> opened with
+   showModal() still shows. Exit transitions still run: a transition of
+   display (allow-discrete) outranks !important.
+   The dashboard nav is the one framework popover that renders closed: it
+   is a grid column at 48rem and up (or with data-layout-nowrap) and an
+   off-canvas drawer that slides out below that (layout-attributes.css). */
+:where([popover]:not(:popover-open, dialog[open], [data-page-layout="dashboard"] > nav)) {
+  display: none !important;
+}
+
+/* Popovers centre in the viewport (UA margin: auto); the * { margin: 0 }
+   above pinned bare ones to the top-left corner. Zero specificity, so any
+   component or anchored placement that sets its own margin wins. */
+:where([popover]) {
+  margin: auto;
+}
+
 html {
-  -webkit-text-size-adjust: none;
-  text-size-adjust: none;
+  /* 100%, not none: none also blocks the user's own text zoom on some
+     mobile browsers. 100% only stops the automatic landscape inflation. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
   background: var(--page-bg-color, var(--color-surface));
@@ -34,10 +58,17 @@ html:focus-within {
   scroll-behavior: smooth;
 }
 
+/* Reduced motion: the OS preference or the site's own switch
+   (data-motion-reduced on <html>, written by settings-panel) */
 @media (prefers-reduced-motion: reduce) {
   html:focus-within {
     scroll-behavior: auto;
   }
+}
+
+:root[data-motion-reduced],
+:root[data-motion-reduced]:focus-within {
+  scroll-behavior: auto;
 }
 
 body {
@@ -56,11 +87,15 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Re-apply text color on scoped theme/mode elements so CSS variables
-   resolve in the element's own scope rather than inheriting from body */
-[data-theme]:not(:root),
-[data-mode]:not(:root) {
+/* Scoped theme/mode: an element carrying data-theme or data-mode paints
+   its own surface and text from the tokens re-derived on it (colors.css),
+   rather than inheriting body's text over the page's background. Without
+   the background a <aside data-mode="dark"> on a light page drew near-white
+   text on the white page. Zero specificity so any component or author
+   background still wins. */
+:where([data-theme]:not(:root), [data-mode="light"]:not(:root), [data-mode="dark"]:not(:root)) {
   color: var(--color-text);
+  background-color: var(--color-background);
 }
 
 img,
@@ -131,7 +166,9 @@ h6 {
   }
 }
 
-/* Touch devices — enforce comfortable target sizes (WCAG 2.5.8) */
+/* Touch devices — comfortable target heights: --size-touch-min (44px, the
+   WCAG 2.5.5 AAA figure; 2.5.8 AA asks for 24px) as min-block-size on
+   buttons and inputs only. Inline size and links are not touched. */
 @media (pointer: coarse) {
   button,
   [type="button"],

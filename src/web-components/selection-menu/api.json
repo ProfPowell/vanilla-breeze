@@ -2,19 +2,37 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "selection-menu",
   "type": "web-component",
-  "description": "Floating toolbar that appears on text selection. Composes action components like highlight-wc, share-wc, note-wc.",
+  "description": "Floating toolbar that appears on text selection (pointer or keyboard). Moves its authored action children into a generated <pop-over data-mode=\"manual\" role=\"toolbar\"> in the top layer; Alt+F10 focuses it, arrow keys rove, Escape returns focus and the selection.",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": ["@flow"]
   },
   "attributes": [
-    { "name": "for", "kind": "host-api", "purpose": "config", "type": "string", "description": "ID of a single target element to watch for text selection" }
+    { "name": "for", "kind": "host-api", "purpose": "config", "type": "string", "description": "ID of a single target element to watch for text selection. When the menu also has an id, the target is marked data-selection-menu=\"<id>\"." },
+    { "name": "id", "kind": "native", "purpose": "config", "type": "string", "description": "When set, every element with data-selection-menu=\"<id>\" is a target (many-to-one); targets added or changed later are picked up." },
+    { "name": "data-label", "kind": "data", "purpose": "config", "type": "string", "default": "Text selection actions", "description": "Accessible name of the toolbar (aria-label on the composed pop-over)" }
+  ],
+  "childAttributes": [
+    { "name": "data-selection-menu", "on": "any element", "type": "string", "description": "On a target element: the id of the selection-menu that serves it" }
+  ],
+  "events": [
+    { "name": "selection-menu:select", "detail": "{ range: Range, text: string, target: Element }", "description": "A selection inside a target opened (or moved) the toolbar" },
+    { "name": "selection-menu:dismiss", "description": "The toolbar was hidden (outside pointerdown, Escape, dismiss(), selection collapsed from the keyboard, or scrolled out of view)" },
+    { "name": "selection-menu:actions-changed", "detail": "{ actions: Array<{ tag, attrs?, html? }>, source: 'property' }", "description": "The actions property replaced the toolbar children" }
+  ],
+  "methods": [
+    { "name": "getSelection", "returns": "{ range: Range, text: string, target: Element } | null", "description": "The selection the toolbar is showing for (a cloned range), or null when hidden" },
+    { "name": "dismiss", "returns": "void", "description": "Hide the toolbar; focus inside it returns to the selection's target" }
+  ],
+  "properties": [
+    { "name": "actions", "type": "Array<{ tag: string, attrs?: object, html?: string } | Element>", "description": "Toolbar children as plain data; setting it replaces them and fires selection-menu:actions-changed" }
   ],
   "structure": [
-    { "element": "<highlight-wc>", "description": "Text highlighting with color palette" },
-    { "element": "<share-wc variant=\"selection\">", "description": "Share selected text quote" },
-    { "element": "<note-wc>", "description": "Private note on highlight" },
-    { "element": "<comment-wc>", "description": "Inline comment (future)" }
+    { "element": "<pop-over data-selection-menu-host role=\"toolbar\">", "required": false, "description": "Generated toolbar surface; setup() moves the authored children into it. Style this node, not the host (the host is display: contents)." },
+    { "element": "<highlight-wc>", "required": false, "description": "Text highlighting with color palette" },
+    { "element": "<share-wc>", "required": false, "description": "Share or copy the selected text as a quote (detected via closest('selection-menu'))" },
+    { "element": "<note-wc>", "required": false, "description": "Private note on highlight" },
+    { "element": "<comment-wc>", "required": false, "description": "Inline comment on a review-surface" }
   ],
   "css": { "tokens": [] }
 }

@@ -6,7 +6,7 @@
  * Events are <calendar-event> elements inside <hour-view>.
  *
  * Two-layer rendering:
- *   Layer 1 (CSS): Hour grid rows with subgrid half-hour positioning
+ *   Layer 1 (CSS): Hour grid rows with half-hour positioning (hour-view)
  *   Layer 2 (JS):  Spanning events positioned absolutely over the grid
  *
  * Generated grid (no authored <ol>):
@@ -46,14 +46,12 @@
 
 import { VBElement } from '../../lib/vb-element.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
-import {
-  parseTime, parseDuration, layoutColumns, eventLabel,
-  DEFAULT_DURATION_MINUTES, SPAN_STYLE_PROPS,
-} from '../../lib/time-grid.js';
+import { parseTime, parseDuration, layoutColumns, eventLabel, DEFAULT_DURATION_MINUTES, SPAN_STYLE_PROPS, sharesHalfHour } from '../../lib/time-grid.js';
 
 const DEFAULT_START_HOUR = 7;
 const DEFAULT_END_HOUR = 19;
 const NAV_KEYS = ['ArrowDown', 'ArrowUp', 'Home', 'End'];
+
 
 /**
  * @param {string | undefined} value
@@ -352,8 +350,9 @@ class DayView extends VBElement {
 
       const hourView = document.createElement('hour-view');
       const hourEvents = eventsByHour.get(h) || [];
-      // Spanning events are lifted out of the grid, so only in-grid ones share columns
-      if (hourEvents.filter((e) => !e.dataset.duration).length > 1) hourView.dataset.overlap = '';
+      // Columns only when in-grid events share a half-hour row (spanning
+      // events are lifted out of the grid and laid out by JS)
+      if (sharesHalfHour(hourEvents)) hourView.dataset.overlap = '';
       hourEvents.forEach((evt) => hourView.appendChild(evt));
 
       li.append(time, hourView);

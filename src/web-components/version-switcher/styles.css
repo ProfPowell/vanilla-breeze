@@ -1,5 +1,5 @@
 /* --------------------------------------------------------------------------
-   version-switcher (Phase 1): trigger button + picker popover.
+   version-switcher: trigger button + picker popover.
    Composes <pop-over> for the picker surface. Mode = releases (distinct
    URLs) or history (same URL with date/author differences).
    -------------------------------------------------------------------------- */
@@ -97,20 +97,38 @@ version-switcher .version-switcher-empty {
   color: var(--color-text-muted, currentColor);
 }
 
-/* -------- Entry -------- */
+/* -------- Entry --------
+   Entries render in the picker (inside the host) AND in a <page-info>
+   panel section (outside the host), so every entry rule is scoped to both.
+   Each <li> holds the entry button (label, badges, date), then the author,
+   summary and changelog link as siblings — no link nested in a button. */
 
-version-switcher .version-switcher-entry {
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-item {
+  display: grid;
+  gap: var(--size-3xs, 0.125rem);
+  padding-block-end: var(--size-3xs, 0.125rem);
+  border: var(--border-width-thin, 1px) solid transparent;
+  border-radius: var(--radius-s);
+}
+
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-item:not(:has(> :nth-child(2))) {
+  padding-block-end: 0;
+}
+
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-entry {
   appearance: none;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: baseline;
+  /* Buttons carry a touch-target min block size; keep the row centred in it. */
+  align-content: center;
   gap: var(--size-3xs, 0.25rem) var(--size-s, 0.5rem);
   inline-size: 100%;
   padding-block: var(--size-2xs, 0.375rem);
   padding-inline: var(--size-s, 0.5rem);
   background: transparent;
   color: var(--color-text);
-  border: var(--border-width-thin, 1px) solid transparent;
+  border: 0;
   border-radius: var(--radius-s);
   font: inherit;
   text-align: start;
@@ -118,34 +136,35 @@ version-switcher .version-switcher-entry {
   transition: background var(--duration-fast, 150ms);
 }
 
-version-switcher .version-switcher-entry:hover {
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-entry:hover {
   background: var(--color-surface-sunken, oklch(94% 0 0));
 }
 
-version-switcher .version-switcher-entry:focus-visible {
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-entry:focus-visible {
   outline: 2px solid var(--color-interactive);
   outline-offset: 2px;
 }
 
-version-switcher [data-current="true"] > .version-switcher-entry {
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-item[data-current="true"] {
   background: color-mix(in oklch, var(--color-interactive) 12%, transparent);
   border-color: var(--color-interactive);
 }
 
-version-switcher [data-archived] > .version-switcher-entry {
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-item[data-archived] .version-switcher-entry {
   color: var(--color-text-muted, currentColor);
 }
 
-version-switcher .version-switcher-entry-label {
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-entry-label {
   grid-column: 1;
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--size-2xs, 0.375rem);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
-version-switcher .version-switcher-entry-date {
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-entry-date {
   grid-column: 2;
   grid-row: 1;
   font-size: 0.85em;
@@ -154,34 +173,35 @@ version-switcher .version-switcher-entry-date {
   white-space: nowrap;
 }
 
-version-switcher .version-switcher-entry-author {
-  grid-column: 1 / -1;
+:is(version-switcher, .version-switcher-panel-section) :is(.version-switcher-entry-author, .version-switcher-entry-summary, .version-switcher-entry-changelog) {
+  padding-inline: var(--size-s, 0.5rem);
+}
+
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-entry-author {
   font-size: 0.85em;
   color: var(--color-text-muted, currentColor);
 }
 
-version-switcher .version-switcher-entry-summary {
-  grid-column: 1 / -1;
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-entry-summary {
   font-size: 0.9em;
   color: var(--color-text);
   line-height: 1.4;
 }
 
-version-switcher .version-switcher-entry-changelog {
-  grid-column: 1 / -1;
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-entry-changelog {
   font-size: 0.85em;
   color: var(--color-interactive);
   text-decoration: none;
   justify-self: start;
 }
 
-version-switcher .version-switcher-entry-changelog:hover {
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-entry-changelog:hover {
   text-decoration: underline;
 }
 
 /* -------- Badges -------- */
 
-version-switcher .version-switcher-badge {
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-badge {
   display: inline-flex;
   align-items: center;
   padding-block: 0;
@@ -194,22 +214,28 @@ version-switcher .version-switcher-badge {
   line-height: 1.4;
 }
 
-version-switcher .version-switcher-badge-current {
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-badge-current {
   background: var(--color-interactive);
   color: var(--color-text-on-interactive-auto, white);
 }
 
-version-switcher .version-switcher-badge-archived {
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-badge-archived {
   background: var(--color-text-muted, oklch(60% 0 0));
   color: var(--color-surface, white);
 }
 
-version-switcher .version-switcher-badge-draft {
+:is(version-switcher, .version-switcher-panel-section) .version-switcher-badge-draft {
   background: var(--color-warning);
   color: var(--color-text-on-warning-auto, white);
 }
 
-/* -------- Phase 2: diff render mounted as a sibling of the versioned region -------- */
+@media (forced-colors: active) {
+  :is(version-switcher, .version-switcher-panel-section) .version-switcher-badge {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* -------- Diff render mounted as a sibling of the versioned region -------- */
 
 change-set.version-switcher-diff-host {
   display: block;
@@ -221,7 +247,8 @@ change-set.version-switcher-diff-host {
 }
 
 change-set.version-switcher-diff-host::before {
-  content: 'Diff: ' attr(data-version-from) ' → ' attr(data-version-to);
+  /* Localised in JS (data-label-diff) */
+  content: attr(data-diff-label);
   display: block;
   font-size: 0.85em;
   font-weight: 600;
@@ -260,16 +287,16 @@ pre.text-diff del {
   color: var(--color-text);
 }
 
-/* -------- Phase 2: View Transition crossfade for swap action -------- */
+/* -------- Swap crossfade --------
+   Scoped to the typed transition the swap action starts, so loading this
+   stylesheet never retimes the site's other view transitions. */
 
-@supports (view-transition-name: none) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation-duration: var(--duration-normal, 250ms);
-  }
+:root:active-view-transition-type(version-swap)::view-transition-old(root),
+:root:active-view-transition-type(version-swap)::view-transition-new(root) {
+  animation-duration: var(--duration-normal, 250ms);
 }
 
-/* -------- Phase 3: archived-version banner -------- */
+/* -------- Archived-version banner -------- */
 
 version-switcher:has(.version-switcher-banner) {
   display: block;
@@ -292,6 +319,7 @@ version-switcher .version-switcher-banner {
 
 version-switcher .version-switcher-banner-text {
   flex: 1 1 auto;
+  margin: 0;
 }
 
 version-switcher .version-switcher-banner-link {
@@ -304,7 +332,7 @@ version-switcher .version-switcher-banner-link:hover {
   text-decoration: underline;
 }
 
-/* -------- Phase 3: page-info panel-section mount -------- */
+/* -------- page-info panel-section mount -------- */
 
 .version-switcher-panel-section {
   display: block;

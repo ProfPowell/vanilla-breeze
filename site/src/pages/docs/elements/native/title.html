@@ -41,7 +41,7 @@ crumbLabel: Native Elements
         <tr>
           <td><code>Page | Site</code></td>
           <td>Pricing | Acme Corp</td>
-          <td>Default for most pages. VB's head partial generates this automatically.</td>
+          <td>Default for most pages. The VB docs site builds its titles this way from page front matter; in your own site, generate it in your layout or head template.</td>
         </tr>
         <tr>
           <td><code>Site</code></td>
@@ -68,16 +68,16 @@ crumbLabel: Native Elements
     <h2>Static Emoji Status</h2>
     <p>The simplest form of tab status: prepend an emoji to the title in your HTML. No JavaScript required. This works for any state known at render time — connection status, build results, form state.</p>
     <code-block language="html" label="Emoji status patterns" data-escape><!-- Connection status -->
-<title>&#x1F7E2; Connected | Dashboard</title>
-<title>&#x1F534; Offline | Dashboard</title>
+<title>🟢 Connected | Dashboard</title>
+<title>🔴 Offline | Dashboard</title>
 
 <!-- Activity status -->
-<title>&#x23F3; Uploading... | Files</title>
-<title>&#x2705; Upload complete | Files</title>
+<title>⏳ Uploading... | Files</title>
+<title>✅ Upload complete | Files</title>
 
 <!-- Notification types -->
-<title>&#x1F4EC; (3) new | Inbox</title>
-<title>&#x26A0;&#xFE0F; Action required | Settings</title></code-block>
+<title>📬 (3) new | Inbox</title>
+<title>⚠️ Action required | Settings</title></code-block>
     <p>Choose emoji that are visually distinct at small sizes. Colored circles, warning signs, and mail icons work well. Avoid emoji that look similar across platforms or require fine detail to distinguish.</p>
   </section>
 
@@ -107,45 +107,55 @@ function setNotificationCount(count) {
   <!-- Animated Spinners Section -->
   <section>
     <h2>Animated Spinners</h2>
-    <p>Cycle through an emoji sequence with <code>setInterval</code> to create a loading spinner directly in the browser tab. This is a progressive enhancement — the tab title remains readable text with a rotating prefix.</p>
+    <p>Cycle through an emoji sequence with <code>setInterval</code> to create a loading spinner directly in the browser tab. This is a progressive enhancement: the tab title stays readable text with a rotating prefix.</p>
+    <p>Use it sparingly. Some screen readers announce title changes, a cycling title is motion that users who ask for reduced motion did not opt into, and a long task is better served by a static prefix such as <code>⏳ Uploading… | Files</code>. The utility below shows a static frame when <code>prefers-reduced-motion: reduce</code> matches, and guards against starting twice.</p>
     <code-block language="javascript" label="Title spinner utility" data-escape><script>
 // Emoji sequences that animate well in browser tabs
 const spinners = {
-  moon:    ['&#x1F311;','&#x1F312;','&#x1F313;','&#x1F314;','&#x1F315;','&#x1F316;','&#x1F317;','&#x1F318;'],
-  clock:   ['&#x1F55B;','&#x1F550;','&#x1F551;','&#x1F552;','&#x1F553;','&#x1F554;','&#x1F555;','&#x1F556;','&#x1F557;','&#x1F558;','&#x1F559;','&#x1F55A;'],
-  earth:   ['&#x1F30D;','&#x1F30E;','&#x1F30F;'],
-  braille: ['\u280B','\u2819','\u2839','\u2838','\u283C','\u2834','\u2826','\u2827','\u2807','\u280F'],
-  dots:    ['\u22C5','\u2219','\u25CF','\u2219'],
+  moon:    ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'],
+  clock:   ['🕛', '🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚'],
+  earth:   ['🌍', '🌎', '🌏'],
+  braille: ['\u280B', '\u2819', '\u2839', '\u2838', '\u283C', '\u2834', '\u2826', '\u2827', '\u2807', '\u280F'],
+  dots:    ['\u22C5', '\u2219', '\u25CF', '\u2219'],
 };
 
-let timer = null;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const originalTitle = document.title;
+let timer = null;
+let isLoading = false;
 
 function startSpinner(type = 'moon') {
+  isLoading = true;
+  if (timer) return; // already spinning: never stack intervals
   const frames = spinners[type];
+  if (reduceMotion.matches) {
+    document.title = '⏳ ' + originalTitle; // static prefix, no animation
+    return;
+  }
   let i = 0;
-  timer = setInterval(() =&gt; {
+  timer = setInterval(() => {
     document.title = frames[i++ % frames.length] + ' ' + originalTitle;
   }, 150);
 }
 
-function stopSpinner() {
+function stopSpinner({ done = true } = {}) {
   clearInterval(timer);
   timer = null;
+  if (done) isLoading = false;
   document.title = originalTitle;
 }
 
 // Usage: show spinner during a fetch
 startSpinner('clock');
 fetch('/api/data')
-  .then(res =&gt; res.json())
-  .then(data =&gt; {
+  .then((res) => res.json())
+  .then((data) => {
     stopSpinner();
     // ... use data
   })
-  .catch(() =&gt; {
+  .catch(() => {
     stopSpinner();
-    document.title = '\u26A0\uFE0F ' + originalTitle;
+    document.title = '⚠️ ' + originalTitle;
   });
 </script></code-block>
 
@@ -153,27 +163,27 @@ fetch('/api/data')
     <p>These sequences animate smoothly in browser tabs. Choose based on the mood you want:</p>
     <code-block language="javascript" label="Available spinner sequences" data-escape>// High-quality spinner sequences for document.title
 //
-// Moon phases     &#x1F311;&#x1F312;&#x1F313;&#x1F314;&#x1F315;&#x1F316;&#x1F317;&#x1F318;     Smooth 8-frame cycle
-// Clock faces     &#x1F55B;&#x1F550;&#x1F551;&#x1F552;...&#x1F55A;     12-frame, very readable
-// Earth           &#x1F30D;&#x1F30E;&#x1F30F;           3-frame, fast loop
-// Braille dots    &#x280B;&#x2819;&#x2839;&#x2838;&#x283C;&#x2834;&#x2826;&#x2827;&#x2807;&#x280F;     10-frame, monochrome
-// Quarter circle  &#x25DF;&#x25DC;&#x25DD;&#x25DE;           4-frame classic
-// Pulsing dot     &#x22C5;&#x2219;&#x25CF;&#x2219;           4-frame heartbeat</code-block>
+// Moon phases     🌑🌒🌓🌔🌕🌖🌗🌘     Smooth 8-frame cycle
+// Clock faces     🕛🕐🕑🕒...🕚       12-frame, very readable
+// Earth           🌍🌎🌏             3-frame, fast loop
+// Braille dots    ⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏         10-frame, monochrome
+// Quarter circle  ◟◜◝◞               4-frame classic
+// Pulsing dot     ⋅∙●∙               4-frame heartbeat</code-block>
     <p>Braille dot spinners are monochrome and compact — they work best when you want a subtle, terminal-style indicator. Moon and clock emoji are more playful and visible at a glance.</p>
 
     <h3>Performance</h3>
-    <p>Pause the spinner when the tab is hidden. The animation is invisible anyway, and clearing the interval avoids unnecessary work:</p>
+    <p>Pause the spinner when the tab is hidden. The animation is invisible anyway, and clearing the interval avoids unnecessary work. <code>isLoading</code> remembers that the task is still running, so the spinner resumes when the tab comes back:</p>
     <code-block language="javascript" label="Visibility-aware spinner" data-escape><script>
-// Pause spinner when tab is hidden (saves CPU)
-document.addEventListener('visibilitychange', () =&gt; {
+// Pause the spinner while the tab is hidden (uses the utility above)
+document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
-    stopSpinner();
+    stopSpinner({ done: false }); // keep isLoading = true
   } else if (isLoading) {
     startSpinner();
   }
 });
 </script></code-block>
-    <p><code>document.title</code> updates are not throttled by browsers (unlike <code>history.pushState</code>, which Chrome and Safari limit to ~100 calls per 30 seconds). An interval of 100&ndash;200ms produces smooth animation without measurable overhead.</p>
+    <p>Browsers throttle timers in background tabs, so a hidden spinner would mostly stall anyway. An interval of 100&ndash;200ms is enough for a visible animation.</p>
   </section>
 
   <!-- Badging API Section -->
@@ -181,17 +191,14 @@ document.addEventListener('visibilitychange', () =&gt; {
     <h2>Badging API</h2>
     <p>The <a href="https://developer.mozilla.org/en-US/docs/Web/API/Badging_API">Badging API</a> is the platform-native way to show a numeric badge on an installed PWA's icon in the dock or taskbar. It complements title-based indicators but does not replace them — the Badging API only works for installed web apps, while title updates work in every browser tab.</p>
     <code-block language="javascript" label="Badging API with title fallback" data-escape><script>
-// Modern Badging API (installed PWAs only)
-// Sets a numeric badge on the app icon in the dock/taskbar
-
-// Show unread count
-navigator.setAppBadge(5);
-
-// Show flag-only badge (no number)
-navigator.setAppBadge();
-
-// Clear badge
-navigator.clearAppBadge();
+// Badging API (installed PWAs; not in every browser).
+// Feature-check first: calling it unguarded throws a TypeError where it
+// is missing (for example Firefox).
+if ('setAppBadge' in navigator) {
+  navigator.setAppBadge(5);   // numeric badge
+  navigator.setAppBadge();    // flag-only badge (no number)
+  navigator.clearAppBadge();  // clear
+}
 
 // Progressive enhancement: badge API + title fallback
 function setBadge(count) {
@@ -238,6 +245,24 @@ function setBadge(count) {
     <p>Its content model is text only — no child elements, no HTML tags. The text between the opening and closing tags becomes the document's title.</p>
   </section>
 
+  <!-- Language and Direction Section -->
+  <section>
+    <h2>Language and Direction</h2>
+    <p>The document title takes its language and direction from <code>&lt;html lang dir&gt;</code>. Screen readers use <code>lang</code> to choose a voice, so a page in German needs <code>&lt;html lang="de"&gt;</code> for its title to be pronounced correctly.</p>
+    <p>In right-to-left pages the title is laid out right to left, so <code>Page | Site</code> reads from the right: the page name still comes first for the reader. Keep the separator between the two parts and do not reverse them by hand. When a title mixes scripts, such as an English product name in an Arabic title, the browser's bidi algorithm orders the runs; short neutral separators like <code>|</code> or <code>–</code> survive this better than arrows or brackets.</p>
+  </section>
+
+  <!-- SVG title Section -->
+  <section>
+    <h2>SVG <code>&lt;title&gt;</code></h2>
+    <p>Inside <code>&lt;svg&gt;</code>, <code>&lt;title&gt;</code> is a different element. It names the SVG or the shape it belongs to: it becomes the graphic's accessible name and, in most browsers, a hover tooltip. It must be the first child of its parent shape or <code>&lt;svg&gt;</code>, and it does not change the document title.</p>
+    <code-block language="html" label="SVG title as the accessible name" data-escape><svg role="img" viewBox="0 0 24 24" aria-labelledby="chart-title">
+  <title id="chart-title">Sales up 12% this quarter</title>
+  <!-- shapes -->
+</svg></code-block>
+    <p>Decorative icons should have no <code>&lt;title&gt;</code> and carry <code>aria-hidden="true"</code> instead.</p>
+  </section>
+
   <!-- Accessibility Section -->
   <section>
     <h2>Accessibility</h2>
@@ -246,7 +271,7 @@ function setBadge(count) {
       <li><strong>Unique per page:</strong> Every page must have a distinct title. Duplicate titles across pages make navigation impossible for screen reader users who rely on title differences to distinguish tabs and history entries.</li>
       <li><strong>Page-specific content first:</strong> The <code>Page | Site</code> format puts the distinguishing content first. A screen reader user scanning multiple tabs hears the unique part immediately rather than hearing the site name repeated for every tab.</li>
       <li><strong>Emoji are announced:</strong> Screen readers read emoji by their Unicode name. <code>&#x1F550;</code> is announced as "one o'clock," <code>&#x1F311;</code> as "new moon." This is meaningful but can be verbose — avoid stacking multiple emoji in the title.</li>
-      <li><strong>Dynamic updates are announced:</strong> Some screen readers announce title changes via live region behavior. Rapidly cycling a spinner may cause announcement storms. Use <code>aria-live</code> regions for important status messages rather than relying on title changes alone.</li>
+      <li><strong>Dynamic updates may be announced:</strong> Some screen readers announce title changes. A cycling spinner can cause a stream of announcements, so prefer a static prefix for long tasks, honour <code>prefers-reduced-motion</code>, and use an <code>aria-live</code> region for important status messages rather than relying on title changes alone.</li>
       <li><strong>Keep it concise:</strong> Aim for under 60 characters. Long titles are tedious to listen to and get truncated in visual UI.</li>
       <li><strong>Avoid keyword stuffing:</strong> Titles like "Shoes | Buy Shoes | Best Shoes | Shoe Store" are frustrating for everyone and actively harmful for screen reader users who must listen to the entire string.</li>
     </ul>
@@ -307,9 +332,10 @@ function setBadge(count) {
   <section>
     <h2>Related</h2>
     <ul>
-      <li><a href="/docs/elements/native/head/"><code>&lt;head&gt;</code></a> — Parent element; VB's head partial generates the title from frontmatter</li>
+      <li><a href="/docs/elements/native/head/"><code>&lt;head&gt;</code></a> — Parent element; the VB docs site generates its titles from page front matter</li>
       <li><a href="/docs/elements/native/meta/"><code>&lt;meta&gt;</code></a> — <code>description</code> meta pairs with the title for search results</li>
       <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> — Canonical URL and favicon, which appear alongside the title in tabs</li>
-      <li><a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a> — The <code>lang</code> attribute on the root element affects how screen readers pronounce the title</li>
+      <li><a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a> — The <code>lang</code> and <code>dir</code> attributes on the root element set the title's language and direction</li>
+      <li><a href="/docs/elements/native/svg/"><code>&lt;svg&gt;</code></a> — SVG <code>&lt;title&gt;</code> names a graphic rather than the document</li>
     </ul>
   </section>

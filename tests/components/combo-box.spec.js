@@ -286,9 +286,12 @@ test.describe('combo-box — popup positioning', () => {
       await new Promise(r => setTimeout(r, 100));
 
       const before = list.getBoundingClientRect().top;
-      window.scrollBy(0, 200);
-      // Allow scroll listener (passive) to repaint
-      await new Promise(r => setTimeout(r, 100));
+      // Instant: html:focus-within turns on smooth scrolling, and a slow
+      // runner would sample mid-animation.
+      window.scrollBy({ top: 200, behavior: 'instant' });
+      // Allow the scroll listener (passive) to reposition on the next frames
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      await new Promise(r => setTimeout(r, 50));
       const after = list.getBoundingClientRect().top;
       const inputAfter = input.getBoundingClientRect().bottom;
 

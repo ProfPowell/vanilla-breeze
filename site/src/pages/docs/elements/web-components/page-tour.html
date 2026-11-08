@@ -65,7 +65,7 @@ crumbLabel: Web Components
 </page-tour></code-block>
 
     <h3>Active Tour (Action-Gated)</h3>
-    <p>Set <code>data-mode="active"</code> and <code>data-action</code> on steps to require user interaction before advancing. The Next button stays disabled until the action completes.</p>
+    <p>Set <code>data-action</code> on a step to require an interaction with its target (<code>click</code>, <code>focus</code>, <code>input</code>, <code>change</code>, or <code>custom</code>) before advancing. Until it happens, Next carries <code>aria-disabled="true"</code> and does nothing, and <kbd>Tab</kbd> reaches the target as well as the card. When the action completes, Next is enabled and announced; focus stays where the user is, so typing is never interrupted.</p>
     <browser-window
       src="/docs/examples/demos/page-tour-active.html"
       url="https://vanilla-breeze.com/tour-active"
@@ -149,6 +149,28 @@ crumbLabel: Web Components
 </page-tour></code-block>
   </section>
 
+  <section>
+    <h2>Placement and Labels</h2>
+    <p><code>data-placement</code> on a step takes <code>top</code>, <code>bottom</code>, <code>inline-start</code>, <code>inline-end</code>, or <code>auto</code> (the side with the most room). The inline values follow the text direction, so <code>inline-end</code> is on the right in English and on the left in Arabic or Hebrew. The card is centred on that side of the target and flips to the opposite side when it would overflow the viewport.</p>
+    <p>Every string the tour renders can be replaced with a <code>data-label-*</code> attribute on <code>&lt;page-tour&gt;</code>. In <code>data-label-step</code>, <code>{n}</code> and <code>{total}</code> are replaced with the step number and count.</p>
+    <code-block language="html" show-lines label="Translated labels" data-escape><page-tour
+  data-title="Visite guidée"
+  data-label-step="Étape {n} sur {total}"
+  data-label-skip="Passer"
+  data-label-close="Fermer"
+  data-label-prev="Précédent"
+  data-label-next="Suivant"
+  data-label-finish="Terminer"
+  data-label-nav="Navigation de la visite"
+  data-label-ready="C’est fait. Suivant est disponible."
+>
+  <tour-step data-target="#editor" data-placement="inline-end">
+    <h3>Éditeur</h3>
+    <p>Rédigez votre contenu ici.</p>
+  </tour-step>
+</page-tour></code-block>
+  </section>
+
   {% from "partials/attribute-table.njk" import attributeTable, structureTable, eventsTable %}
   <section>
     <h2>Attributes</h2>
@@ -193,12 +215,12 @@ tour.addEventListener('tour:skip', (e) => {
         <tr><th>Method</th><th>Description</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>tour.start(step?)</code></td><td>Start tour, optionally at a given step index</td></tr>
+        <tr><td><code>tour.start(step?)</code></td><td>Start tour, optionally at a given step index. While the tour is running it moves to that step instead (no second overlay)</td></tr>
         <tr><td><code>tour.stop()</code></td><td>Stop tour silently (no event)</td></tr>
-        <tr><td><code>tour.next()</code></td><td>Advance to next step</td></tr>
+        <tr><td><code>tour.next()</code></td><td>Advance to next step (ignored while an action gate is waiting; completes on the last step)</td></tr>
         <tr><td><code>tour.prev()</code></td><td>Go to previous step</td></tr>
         <tr><td><code>tour.goto(index)</code></td><td>Jump to specific step (0-based)</td></tr>
-        <tr><td><code>tour.skip()</code></td><td>Skip tour (fires tour:skip)</td></tr>
+        <tr><td><code>tour.skip()</code></td><td>Skip tour (fires tour:skip); ignored when the step is not skippable</td></tr>
         <tr><td><code>tour.reset()</code></td><td>Clear persistence and reset to step 0</td></tr>
       </tbody>
     </table>
@@ -230,14 +252,16 @@ tour.dispatchEvent(
     <h2>Tour Modes</h2>
     <table class="props-table">
       <thead>
-        <tr><th>Mode</th><th>Skip Allowed</th><th>Action Gate</th><th>Use Case</th></tr>
+        <tr><th>Mode</th><th>Skip, <kbd>Escape</kbd>, backdrop click</th><th>Use Case</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>passive</code></td><td>Yes</td><td>Optional</td><td>Informational tours, docs sites</td></tr>
-        <tr><td><code>active</code></td><td>Yes</td><td>Required</td><td>Onboarding that validates user can perform tasks</td></tr>
-        <tr><td><code>forced</code></td><td>No</td><td>Required</td><td>Compliance flows, mandatory training</td></tr>
+        <tr><td><code>passive</code></td><td>Allowed</td><td>Informational tours, docs sites</td></tr>
+        <tr><td><code>active</code></td><td>Allowed</td><td>Onboarding where steps ask the user to perform tasks</td></tr>
+        <tr><td><code>forced</code></td><td>Not allowed</td><td>Compliance flows, mandatory training</td></tr>
       </tbody>
     </table>
+    <p>The mode only controls skipping. Action gates come from each step's <code>data-action</code> in any mode. <code>data-skippable="false"</code> on a single step removes skipping for that step only.</p>
+    <p>If a step's target is missing, the tour skips over it in the direction of travel. When no later step has a target, Next finishes the tour; when no step has a target at all, <code>start()</code> logs a warning and does nothing.</p>
   </section>
 
   <section>
@@ -247,14 +271,15 @@ tour.dispatchEvent(
         <tr><th>Key</th><th>Action</th></tr>
       </thead>
       <tbody>
-        <tr><td><kbd>Escape</kbd></td><td>Skip tour (passive/active modes only)</td></tr>
-        <tr><td><kbd>Tab</kbd></td><td>Cycle focus within the card (focus trap)</td></tr>
+        <tr><td><kbd>Escape</kbd></td><td>Skip tour (unless the mode is forced or the step is not skippable)</td></tr>
+        <tr><td><kbd>Tab</kbd></td><td>Cycle focus within the card; on action-gated steps the target joins the cycle</td></tr>
         <tr><td><kbd>ArrowRight</kbd> / <kbd>ArrowDown</kbd></td><td>Next step</td></tr>
         <tr><td><kbd>ArrowLeft</kbd> / <kbd>ArrowUp</kbd></td><td>Previous step</td></tr>
         <tr><td><kbd>Home</kbd></td><td>First step</td></tr>
         <tr><td><kbd>End</kbd></td><td>Last step</td></tr>
       </tbody>
     </table>
+    <p>The keys work wherever focus is while the tour runs, including on the step's target. Arrow, <kbd>Home</kbd> and <kbd>End</kbd> keys are left alone inside text fields and selects so they keep moving the caret.</p>
   </section>
 
   <section>
@@ -276,9 +301,11 @@ tour.dispatchEvent(
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Card uses <code>role="dialog"</code> with <code>aria-modal="true"</code></li>
-      <li>An <code>aria-live="polite"</code> region announces step transitions</li>
-      <li>Focus is trapped within the card (relaxed during action-gated steps)</li>
+      <li>Card uses <code>role="dialog"</code>, named by <code>data-title</code>. It carries <code>aria-modal="true"</code> only on steps without an action gate; on gated steps it drops it, because the user must operate the target outside the card</li>
+      <li>A waiting Next button has <code>aria-disabled="true"</code> and is described by the action hint</li>
+      <li>An <code>aria-live="polite"</code> region announces step transitions and when a required action completes</li>
+      <li>Focus is trapped within the card (relaxed during action-gated steps); completing an action never moves focus</li>
+      <li>In forced-colors mode the spotlight is drawn as a <code>Highlight</code> outline</li>
       <li>Focus returns to the original element when the tour ends</li>
       <li><code>prefers-reduced-motion</code> disables all spotlight/card transitions</li>
     </ul>
@@ -293,12 +320,13 @@ tour.dispatchEvent(
       <tbody>
         <tr><td><code>--tour-backdrop-color</code></td><td><code>oklch(0% 0 0 / 0.5)</code></td><td>Overlay background</td></tr>
         <tr><td><code>--tour-spotlight-ring</code></td><td><code>var(--color-primary)</code></td><td>Spotlight outline color</td></tr>
-        <tr><td><code>--tour-spotlight-padding</code></td><td><code>8px</code></td><td>Space around highlighted element</td></tr>
+        <tr><td><code>--tour-spotlight-padding</code></td><td><code>8px</code></td><td>Space around highlighted element (<code>data-spotlight-padding</code> overrides it)</td></tr>
         <tr><td><code>--tour-spotlight-radius</code></td><td><code>var(--radius-m)</code></td><td>Spotlight corner radius</td></tr>
         <tr><td><code>--tour-card-max-width</code></td><td><code>22rem</code></td><td>Maximum card width</td></tr>
         <tr><td><code>--tour-card-min-width</code></td><td><code>16rem</code></td><td>Minimum card width</td></tr>
         <tr><td><code>--tour-card-offset</code></td><td><code>var(--size-s)</code></td><td>Gap between spotlight and card</td></tr>
-        <tr><td><code>--tour-transition-duration</code></td><td><code>var(--duration-normal)</code></td><td>Spotlight/card animation</td></tr>
+        <tr><td><code>--tour-transition-duration</code></td><td><code>var(--duration-normal)</code></td><td>Spotlight/backdrop animation</td></tr>
+        <tr><td><code>--tour-z-index</code></td><td><code>var(--z-overlay)</code></td><td>Stacking level of the backdrop and spotlight</td></tr>
       </tbody>
     </table>
   </section>

@@ -28,8 +28,8 @@ crumbLabel: Web Components
     <p>The rating widget follows the progressive enhancement model:</p>
     <ol>
       <li><strong>CSS-only</strong> &mdash; Author writes a fieldset with radio inputs. <code>:has()</code> selectors handle visual selection and hover. Works without JS.</li>
-      <li><strong>JS enhancement</strong> &mdash; <code>rating-init.js</code> adds clear/unrate (click selected star again), <code>rating:change</code> events, and screen reader announcements.</li>
-      <li><strong>Web component</strong> &mdash; <code>&lt;star-rating&gt;</code> generates the fieldset internally. Form-associated via <code>ElementInternals</code> &mdash; no hidden inputs needed.</li>
+      <li><strong>JS enhancement</strong> &mdash; add <code>data-effect="rating"</code> to the fieldset. The rating effect (<code>src/effects/rating.js</code>, in the default bundle) adds clear/unrate, <code>rating:change</code> events, and a clear announcement.</li>
+      <li><strong>Web component</strong> &mdash; <code>&lt;star-rating&gt;</code> generates the fieldset (already opted into the effect). Form-associated via <code>ElementInternals</code>: <code>FormData</code> gets exactly one <code>name=value</code> entry and no hidden inputs are needed.</li>
     </ol>
   </section>
 
@@ -37,16 +37,12 @@ crumbLabel: Web Components
     <h2>CSS-Only Usage</h2>
     <p>Write a <code>&lt;fieldset data-rating&gt;</code> with radio inputs. The CSS handles selection highlighting and hover preview via <code>:has()</code> selectors. No JavaScript required.</p>
 
-    <div class="example">
-      <fieldset data-rating>
-        <legend>Rate this product</legend>
-        <label><input type="radio" name="demo-css" value="1" aria-label="1 star">&#9733;</label>
-        <label><input type="radio" name="demo-css" value="2" aria-label="2 stars">&#9733;</label>
-        <label><input type="radio" name="demo-css" value="3" aria-label="3 stars">&#9733;</label>
-        <label><input type="radio" name="demo-css" value="4" aria-label="4 stars">&#9733;</label>
-        <label><input type="radio" name="demo-css" value="5" aria-label="5 stars">&#9733;</label>
-      </fieldset>
-    </div>
+    <browser-window
+      src="/docs/snippets/demos/rating-css-only.html"
+      url="https://vanilla-breeze.com/rating/css-only"
+      title="CSS-only star rating"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="CSS-only star rating" data-escape><fieldset data-rating>
   <legend>Rate this product</legend>
@@ -62,21 +58,12 @@ crumbLabel: Web Components
     <h2>Half Stars</h2>
     <p>Add <code>data-rating-half</code> to the fieldset and use <code>data-half="left"</code> / <code>data-half="right"</code> on labels. Each star gets two radio inputs: one for the half value, one for the full value. For the web component, use the <code>allow-half</code> attribute instead.</p>
 
-    <div class="example">
-      <fieldset data-rating data-rating-half>
-        <legend>Half-star rating</legend>
-        <label data-half="left"><input type="radio" name="demo-half" value="0.5" aria-label="Half star">&#9733;</label>
-        <label data-half="right"><input type="radio" name="demo-half" value="1" aria-label="1 star">&#9733;</label>
-        <label data-half="left"><input type="radio" name="demo-half" value="1.5" aria-label="1 and a half stars">&#9733;</label>
-        <label data-half="right"><input type="radio" name="demo-half" value="2" aria-label="2 stars">&#9733;</label>
-        <label data-half="left"><input type="radio" name="demo-half" value="2.5" aria-label="2 and a half stars">&#9733;</label>
-        <label data-half="right"><input type="radio" name="demo-half" value="3" aria-label="3 stars">&#9733;</label>
-        <label data-half="left"><input type="radio" name="demo-half" value="3.5" aria-label="3 and a half stars">&#9733;</label>
-        <label data-half="right"><input type="radio" name="demo-half" value="4" aria-label="4 stars">&#9733;</label>
-        <label data-half="left"><input type="radio" name="demo-half" value="4.5" aria-label="4 and a half stars">&#9733;</label>
-        <label data-half="right"><input type="radio" name="demo-half" value="5" aria-label="5 stars">&#9733;</label>
-      </fieldset>
-    </div>
+    <browser-window
+      src="/docs/snippets/demos/rating-half.html"
+      url="https://vanilla-breeze.com/rating/half"
+      title="Half-star rating"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Half-star rating" data-escape><fieldset data-rating data-rating-half>
   <legend>Rate this</legend>
@@ -90,16 +77,12 @@ crumbLabel: Web Components
     <h2>Custom Icons</h2>
     <p>Replace the star character with any <code>&lt;icon-wc&gt;</code> icon. The <code>:has()</code> selectors work the same way &mdash; they target the label, not the star character.</p>
 
-    <div class="example">
-      <fieldset data-rating>
-        <legend>How much do you love this?</legend>
-        <label><input type="radio" name="demo-icon" value="1" aria-label="1 heart"><icon-wc name="heart"></icon-wc></label>
-        <label><input type="radio" name="demo-icon" value="2" aria-label="2 hearts"><icon-wc name="heart"></icon-wc></label>
-        <label><input type="radio" name="demo-icon" value="3" aria-label="3 hearts"><icon-wc name="heart"></icon-wc></label>
-        <label><input type="radio" name="demo-icon" value="4" aria-label="4 hearts"><icon-wc name="heart"></icon-wc></label>
-        <label><input type="radio" name="demo-icon" value="5" aria-label="5 hearts"><icon-wc name="heart"></icon-wc></label>
-      </fieldset>
-    </div>
+    <browser-window
+      src="/docs/snippets/demos/rating-icons.html"
+      url="https://vanilla-breeze.com/rating/icons"
+      title="Custom icon rating"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Custom icon rating" data-escape><fieldset data-rating>
   <legend>How much do you love this?</legend>
@@ -111,14 +94,28 @@ crumbLabel: Web Components
 
   <section>
     <h2>JS Enhancement</h2>
-    <p>When <code>rating-init.js</code> is loaded (included in the default bundle), <code>data-rating</code> fieldsets gain:</p>
+    <p>The enhancement is opt-in: add <code>data-effect="rating"</code> to a <code>&lt;fieldset data-rating&gt;</code>. The rating effect (<code>src/effects/rating.js</code>, included in the default bundle) then adds:</p>
     <ul>
-      <li><strong>Clear/unrate:</strong> Click the already-selected star to deselect (radio unchecked, value resets to 0)</li>
-      <li><strong><code>rating:change</code> event:</strong> Fires on the fieldset with <code>{ detail: { value } }</code></li>
-      <li><strong>Screen reader announcements:</strong> Live region announces the current value</li>
+      <li><strong>Clear/unrate:</strong> activate the already-selected star again (click, or <kbd>Space</kbd>), or press <kbd>Delete</kbd> / <kbd>Backspace</kbd> on it. The radio is unchecked and the value resets to 0.</li>
+      <li><strong><code>rating:change</code> event:</strong> fires on the fieldset with <code>{ detail: { value } }</code> for every change, including clear.</li>
+      <li><strong>Clear announcement:</strong> a persistent polite live region inside the fieldset announces <q>Rating cleared</q> (override with <code>data-label-cleared</code>). Selecting a star is not announced again &mdash; the checked radio already announces itself.</li>
     </ul>
+    <p>Without <code>data-effect="rating"</code> the fieldset stays CSS-only and no <code>rating:change</code> events fire.</p>
 
-    <code-block language="javascript" show-lines label="Listening to rating changes" data-escape>const rating = document.querySelector('[data-rating]');
+    <browser-window
+      src="/docs/snippets/demos/rating-effect.html"
+      url="https://vanilla-breeze.com/rating/effect"
+      title="JS-enhanced rating"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Opting in" data-escape><fieldset data-rating data-effect="rating" id="product-rating">
+  <legend>Rate this</legend>
+  <label><input type="radio" name="rating" value="1" aria-label="1 star">&#9733;</label>
+  <!-- ...repeat for each star... -->
+</fieldset></code-block>
+
+    <code-block language="javascript" show-lines label="Listening to rating changes" data-escape>const rating = document.querySelector('#product-rating');
 
 rating.addEventListener('rating:change', (e) => {
   console.log('New rating:', e.detail.value);
@@ -129,29 +126,39 @@ rating.addEventListener('rating:change', (e) => {
     <h2>Web Component</h2>
     <p>The <code>&lt;star-rating&gt;</code> web component generates the fieldset internally and adds form participation via <code>ElementInternals</code>.</p>
 
+    <browser-window
+      src="/docs/snippets/demos/rating-component.html"
+      url="https://vanilla-breeze.com/rating/component"
+      title="star-rating variants"
+      shadow>
+    </browser-window>
+
     <h3>Simple</h3>
-    <div class="example">
-      <star-rating name="demo-wc" label="Rate this product"></star-rating>
-    </div>
     <code-block language="html" show-lines label="Simple web component" data-escape><star-rating name="product-rating" label="Rate this product"></star-rating></code-block>
 
     <h3>Half-star with preset value</h3>
-    <div class="example">
-      <star-rating name="demo-wc-half" value="3.5" allow-half label="Your rating"></star-rating>
-    </div>
     <code-block language="html" show-lines label="Half-star preset" data-escape><star-rating name="rating" value="3.5" allow-half label="Your rating"></star-rating></code-block>
 
     <h3>Read-only display</h3>
-    <div class="example">
-      <star-rating value="4.2" readonly label="Average rating"></star-rating>
-    </div>
     <code-block language="html" show-lines label="Read-only" data-escape><star-rating value="4.2" readonly label="Average rating"></star-rating></code-block>
 
     <h3>Custom icons</h3>
-    <div class="example">
-      <star-rating name="demo-wc-icon" icon="heart" max="3" label="How much?"></star-rating>
-    </div>
     <code-block language="html" show-lines label="Custom icon" data-escape><star-rating name="rating" icon="heart" max="3" label="How much?"></star-rating></code-block>
+
+    <h3>Localized</h3>
+    <p>Numbers use <code>Intl.NumberFormat</code> and plurals <code>Intl.PluralRules</code> for the closest <code>[lang]</code>; the wording comes from <code>data-label-*</code>.</p>
+    <code-block language="html" show-lines label="German labels" data-escape><star-rating lang="de" name="bewertung" label="Bewertung" allow-half
+  data-label-one="{n} Stern" data-label-other="{n} Sterne"
+  data-label-required="Bitte eine Bewertung wählen"
+  data-label-cleared="Bewertung entfernt"></star-rating></code-block>
+
+    <h3>Properties</h3>
+    <table class="props-table">
+      <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>value</code></td><td>number</td><td>Current rating (0 = none). Can be set before the element connects.</td></tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
@@ -205,13 +212,34 @@ rating.addEventListener('rating:change', (e) => {
           <td>&mdash;</td>
           <td>Makes rating required for form validation</td>
         </tr>
+        <tr>
+          <td><code>data-label-one</code> / <code>data-label-other</code></td>
+          <td><code>"{n} star"</code> / <code>"{n} stars"</code></td>
+          <td>Radio labels per <code>Intl.PluralRules</code> category (any CLDR category works, e.g. <code>data-label-few</code>). <code>{n}</code> is formatted with <code>Intl.NumberFormat</code> for the closest <code>[lang]</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-label-readonly</code></td>
+          <td><code>"{label}: {value} out of {max}"</code></td>
+          <td>Read-only summary (<code>role="img"</code> name)</td>
+        </tr>
+        <tr>
+          <td><code>data-label-required</code></td>
+          <td><code>"Please select a rating"</code></td>
+          <td>Validation message</td>
+        </tr>
+        <tr>
+          <td><code>data-label-cleared</code></td>
+          <td><code>"Rating cleared"</code></td>
+          <td>Clear announcement</td>
+        </tr>
       </tbody>
     </table>
   </section>
 
   <section>
     <h2>Form Participation</h2>
-    <p>The web component uses <code>ElementInternals</code> to participate in native forms &mdash; no hidden inputs. It supports <code>FormData</code>, the <code>required</code> attribute, Constraint Validation API, <code>form.reset()</code>, and <code>:invalid</code>/<code>:valid</code> pseudo-classes.</p>
+    <p>The web component uses <code>ElementInternals</code> to participate in native forms &mdash; no hidden inputs. It supports <code>FormData</code> (exactly one <code>name=value</code> entry: the internal radios are detached from the form), the <code>required</code> attribute, Constraint Validation API, <code>form.reset()</code> (back to the <code>value</code> attribute), and <code>:invalid</code>/<code>:valid</code> pseudo-classes.</p>
+    <p>All attributes are live: changing <code>value</code>, <code>max</code>, <code>label</code>, <code>required</code> or <code>readonly</code> after upgrade updates the stars. The <code>value</code> property can be set before the element is connected (the usual framework pattern) and is applied when the stars are built.</p>
 
     <code-block language="html" show-lines label="Form integration" data-escape><form>
   <star-rating name="rating" required label="Your rating"></star-rating>
@@ -238,12 +266,16 @@ rating.addEventListener('rating:change', (e) => {
           <td>Select previous star</td>
         </tr>
         <tr>
+          <td><kbd>Space</kbd> on the selected star / <kbd>Delete</kbd> / <kbd>Backspace</kbd></td>
+          <td>Clear the rating (with <code>data-effect="rating"</code>)</td>
+        </tr>
+        <tr>
           <td><kbd>Tab</kbd></td>
           <td>Move focus into/out of the rating group</td>
         </tr>
       </tbody>
     </table>
-    <p>Keyboard navigation is provided natively by the radio group &mdash; no custom JavaScript needed.</p>
+    <p>Arrow-key navigation is provided natively by the radio group; only clearing needs the effect.</p>
   </section>
 
   <section>
@@ -273,19 +305,21 @@ rating.addEventListener('rating:change', (e) => {
       <li>Each radio has <code>aria-label</code> announcing the star count</li>
       <li>Native radio keyboard navigation (arrow keys) requires no custom handling</li>
       <li>Focus-visible outline appears on the active star label</li>
-      <li>JS enhancement adds screen reader announcements via live region</li>
-      <li>Read-only mode uses <code>role="img"</code> with a descriptive <code>aria-label</code></li>
+      <li>The effect announces clears through one persistent live region per fieldset; selection is announced by the radio itself</li>
+      <li>Read-only mode uses <code>role="img"</code> with a descriptive, localizable <code>aria-label</code></li>
+      <li>Filled and empty stars differ by shape, not just colour: empty text stars are outlines, filled ones are solid (hover preview too). In forced-colours mode filled stars use <code>Highlight</code> and empty outlines <code>CanvasText</code></li>
+      <li>Read-only partial stars fill from the inline start, so RTL pages fill from the right</li>
     </ul>
   </section>
 
   <section>
     <h2>Styling</h2>
-    <p>Override the rating color and size with CSS custom properties or direct selectors:</p>
+    <p>Override the rating colours with <code>--rating-color</code> (filled) and <code>--rating-color-empty</code> (empty outline) on the fieldset, the component, or any ancestor:</p>
 
-    <code-block language="css" show-lines label="Custom styling" data-escape>/* Custom color */
-[data-rating] > label:has(input:checked),
-[data-rating] > label:has(~ label > input:checked) {
-  color: var(--color-error);
+    <code-block language="css" show-lines label="Custom styling" data-escape>/* Custom colours */
+star-rating, [data-rating] {
+  --rating-color: var(--color-error);
+  --rating-color-empty: var(--color-text-muted);
 }
 
 /* Custom size */

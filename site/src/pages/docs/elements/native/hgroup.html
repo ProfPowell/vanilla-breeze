@@ -20,7 +20,7 @@ crumbLabel: Native Elements
       <li>Associate metadata text with a heading</li>
       <li>Create visually connected heading groups</li>
     </ul>
-    <p>The hgroup should contain one heading element (h1-h6) and one or more p or small elements for supporting text. Only the heading contributes to the document outline.</p>
+    <p>The HTML content model is: zero or more <code>&lt;p&gt;</code> elements, then exactly one heading (<code>h1</code>&ndash;<code>h6</code>), then zero or more <code>&lt;p&gt;</code> elements. Nothing else is allowed, including <code>&lt;small&gt;</code>. To put a kicker above the heading, write the <code>&lt;p&gt;</code> before the heading in the markup. That keeps the reading order and the visual order the same. Only the heading contributes to the document outline.</p>
   </section>
 
   <section>
@@ -85,6 +85,7 @@ crumbLabel: Native Elements
 
     <h3>Spacing variants</h3>
     <p><code>.tight</code> removes the gap. <code>.spaced</code> increases it.</p>
+    <browser-window src="/docs/snippets/demos/hgroup-spacing.html" url="https://vanilla-breeze.com/hgroup/spacing" title="hgroup spacing variants" shadow></browser-window>
     <code-block language="html" label="Spacing variants" data-escape><hgroup class="tight">
   <h2>Quick Setup</h2>
   <p>Install in under 5 minutes</p>
@@ -95,15 +96,16 @@ crumbLabel: Native Elements
   <p>Comprehensive guides and API reference</p>
 </hgroup></code-block>
 
-    <h3>.reversed</h3>
-    <p>Subtitle appears above the heading.</p>
-    <code-block language="html" label="Reversed hgroup" data-escape><hgroup class="reversed">
-  <h2>The Ultimate Guide</h2>
+    <h3>Text above the heading</h3>
+    <p>For a label or kicker above the heading, put the <code>&lt;p&gt;</code> first in the markup (add <code>.eyebrow</code> for the small uppercase style). There is no reversed variant: flipping the order with CSS would make screen readers and keyboard users read the subtitle in a different order from what is shown.</p>
+    <code-block language="html" label="Paragraph before the heading" data-escape><hgroup>
   <p>Chapter 1</p>
+  <h2>The Ultimate Guide</h2>
 </hgroup></code-block>
 
     <h3>.divided</h3>
     <p>Divider line between heading and subtitle.</p>
+    <browser-window src="/docs/snippets/demos/hgroup-divided.html" url="https://vanilla-breeze.com/hgroup/divided" title="Divided hgroup" shadow></browser-window>
     <code-block language="html" label="Divided hgroup" data-escape><hgroup class="divided">
   <h2>Features</h2>
   <p>What makes Vanilla Breeze special</p>
@@ -111,12 +113,17 @@ crumbLabel: Native Elements
 
     <h3>Combining variants</h3>
     <p>Multiple classes and data attributes can be combined.</p>
+    <browser-window src="/docs/snippets/demos/hgroup-combined.html" url="https://vanilla-breeze.com/hgroup/combined" title="Combined hgroup variants" shadow></browser-window>
     <code-block language="html" label="Combined variants" data-escape><hgroup class="eyebrow" data-align="center">
   <p>Features</p>
   <h2>Everything You Need</h2>
   <p>A thoughtfully scoped set of primitives,
   patterns, and conventions.</p>
 </hgroup></code-block>
+
+    <h3>All patterns</h3>
+    <p>Every hgroup pattern on one page, for side-by-side comparison.</p>
+    <browser-window src="/docs/snippets/demos/hgroup-patterns.html" url="https://vanilla-breeze.com/hgroup/patterns" title="hgroup patterns" shadow></browser-window>
   </section>
 
   <section>
@@ -138,10 +145,6 @@ crumbLabel: Native Elements
           <td>Generous spacing between elements</td>
         </tr>
         <tr>
-          <td><code>.reversed</code></td>
-          <td>Flexbox column-reverse to show subtitle above heading</td>
-        </tr>
-        <tr>
           <td><code>.centered</code></td>
           <td>Centers all text within the hgroup</td>
         </tr>
@@ -159,7 +162,7 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>.byline</code></td>
-          <td>Article metadata with dot-separated items (author, date, reading time)</td>
+          <td>Article metadata with dot-separated items (author, date, reading time). The dots are visual only and are not read aloud. An author link (<code>a[rel="author"]</code>) is underlined so it doesn't rely on colour alone.</td>
         </tr>
         <tr>
           <td><code>.section-header</code></td>
@@ -177,8 +180,9 @@ crumbLabel: Native Elements
     <h2>Accessibility</h2>
     <ul>
       <li>Only the heading (h1-h6) contributes to the document outline</li>
-      <li>Screen readers announce both the heading and subtitle as a group</li>
-      <li>The subtitle (p/small) provides context but is not treated as a separate heading</li>
+      <li><code>&lt;hgroup&gt;</code> has no special accessibility semantics: browsers expose it as a generic container with no name, and screen readers do not announce the heading and subtitle as a group. The heading is announced as a heading, and the paragraphs are read as ordinary text after it.</li>
+      <li>So the subtitle is not part of the heading's accessible name, and it doesn't show up when users browse by headings. Put anything essential to understanding the section in the heading itself.</li>
+      <li>Keep the source order the same as the visual order. Write a kicker <code>&lt;p&gt;</code> before the heading rather than moving it with CSS.</li>
       <li>Use appropriate heading levels - don't skip levels for visual styling</li>
       <li>Keep subtitles concise to avoid overwhelming screen reader users</li>
     </ul>

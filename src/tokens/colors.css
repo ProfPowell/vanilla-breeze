@@ -40,14 +40,39 @@
   --hue-accent: 30;
 
   /* ==================== BRAND SEEDS ==================== */
-  /* Lightness and chroma seeds — brand themes override these */
-  --lightness-primary: 50%;
-  --chroma-primary: 0.2;
+  /* Lightness and chroma seeds — brand themes override these.
+     --lightness-primary / --chroma-primary are mode-dependent and live in
+     the light-seed rule below (dark values in the dark-mode rule). */
   --lightness-secondary: 50%;
   --chroma-secondary: 0.08;
   --lightness-accent: 65%;
   --chroma-accent: 0.18;
+}
 
+/* ==================== LIGHT SEEDS ==================== */
+/* One source for the light primary seeds: the page root, and a scoped
+   data-mode="light" region inside a dark page (which would otherwise
+   inherit the dark seeds from :root[data-mode="dark"]). */
+:root,
+[data-mode="light"] {
+  --lightness-primary: 50%;
+  --chroma-primary: 0.2;
+}
+
+/* ==================== DERIVED TOKENS ==================== */
+/* Everything below is derived from the seeds through var() chains, and a
+   custom property's var() references are resolved on the element that
+   declares it — so tokens declared only on :root stay frozen at the root's
+   values for every descendant. Declaring them on scoped data-mode elements
+   too re-derives them from that element's own seeds and surfaces: an
+   <aside data-mode="dark"> on a light page gets dark --color-primary,
+   --color-hover-bg, etc., and data-mode="light" inside a dark page gets
+   the light ones (light-dark() resolves against the element's own
+   color-scheme). Concrete dark surfaces come from the dark-mode rule
+   further down, which wins on source order. */
+:root,
+[data-mode="light"],
+[data-mode="dark"] {
   /* ==================== BRAND COLORS ==================== */
   /* Derived from seeds + hues — themes set seeds, core derives states */
   --color-primary: oklch(var(--lightness-primary) var(--chroma-primary) var(--hue-primary));
@@ -137,6 +162,11 @@
   --color-interactive-hover: var(--color-primary-hover);
   --color-interactive-active: var(--color-primary-active);
 
+  /* Row stripe — the alternating wash for table[data-striped] and
+     dl[data-striped]. A text-tinted mix, so it shows on any surface in
+     either mode and stays distinct from the row hover colour. */
+  --color-row-stripe: color-mix(in oklch, var(--color-text) 5%, transparent);
+
   /* Interactive state colors — hover/active for list items, menus, nav links, table rows.
      Themes override these 4 tokens to control all interactive surfaces at once. */
   --color-hover-bg: var(--color-surface-raised);
@@ -169,7 +199,9 @@
    Components use these via fallback chain: var(--color-text-on-X-auto, white)
    so browsers without contrast-color() gracefully degrade. */
 @supports (color: contrast-color(red)) {
-  :root {
+  :root,
+  [data-mode="light"],
+  [data-mode="dark"] {
     --color-text-on-primary-auto:     contrast-color(var(--color-primary));
     --color-text-on-secondary-auto:   contrast-color(var(--color-secondary));
     --color-text-on-accent-auto:      contrast-color(var(--color-accent));
@@ -182,7 +214,9 @@
 }
 
 /* ==================== EXPLICIT MODE OVERRIDES ==================== */
-/* Force light mode */
+/* Force light mode. Light token values come from the shared rules above
+   (light seeds + derived tokens), so a scoped data-mode="light" inside a
+   dark page re-declares them from the same source. */
 :root[data-mode="light"],
 [data-mode="light"] {
   color-scheme: light;
@@ -223,6 +257,41 @@
      modes (surfaces.css), so a theme's own dark background is what paints. */
 }
 
+/* System dark mode with no explicit data-mode (CSS-only / no-JS consumers;
+   ThemeManager always writes data-mode when it runs). :root's
+   `color-scheme: light dark` already turns every light-dark() token dark,
+   so this block only has to supply what light-dark() cannot: the dark
+   primary seeds (percentages/numbers, not colours) and the hue-tinted
+   surfaces. It MUST stay identical to the [data-mode="dark"] block above —
+   tests/components/c-system-dark.spec.js compares the two.
+   :not([data-mode="light"]) (not :not([data-mode])) matches the existing
+   theme/accent system-dark rules; data-mode="light" keeps forcing light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mode="light"]) {
+    --lightness-primary: 65%;
+    --chroma-primary: 0.18;
+
+    --chroma-surface-tint: 0.02;
+
+    --color-background: oklch(12% var(--chroma-surface-tint) var(--hue-primary));
+    --color-surface: oklch(16% var(--chroma-surface-tint) var(--hue-primary));
+    --color-surface-raised: oklch(20% var(--chroma-surface-tint) var(--hue-primary));
+    --color-surface-sunken: oklch(10% var(--chroma-surface-tint) var(--hue-primary));
+
+    --color-text: oklch(93% 0.01 var(--hue-primary));
+    --color-text-muted: oklch(70% var(--chroma-surface-tint) var(--hue-primary));
+
+    --color-border: oklch(30% var(--chroma-surface-tint) var(--hue-primary));
+    --color-border-strong: oklch(50% var(--chroma-surface-tint) var(--hue-primary));
+
+    --shadow-xs: 0 1px 2px oklch(0% 0 0 / 0.3);
+    --shadow-s: 0 1px 3px oklch(0% 0 0 / 0.4), 0 1px 2px oklch(0% 0 0 / 0.3);
+    --shadow-m: 0 4px 6px oklch(0% 0 0 / 0.4), 0 2px 4px oklch(0% 0 0 / 0.3);
+    --shadow-l: 0 10px 15px oklch(0% 0 0 / 0.4), 0 4px 6px oklch(0% 0 0 / 0.3);
+    --shadow-xl: 0 20px 25px oklch(0% 0 0 / 0.4), 0 10px 10px oklch(0% 0 0 / 0.3);
+  }
+}
+
 /* ==================== THEME TRANSITIONS ==================== */
 /* Smooth interpolation when switching themes (hues + seeds) */
 :root {
@@ -243,4 +312,8 @@
   :root {
     transition: none;
   }
+}
+
+:root[data-motion-reduced] {
+  transition: none;
 }

@@ -41,6 +41,42 @@
     var(--vb-anim-exit,       none);
 }
 
+/* data-stagger: the runtime (src/lib/vb.js, in every bundle) sets
+   --vb-stagger-index on each direct child and, for a time token such as
+   data-stagger="40ms", --vb-stagger on the container. Effects that read
+   --vb-delay (fade-in, slide-up, slide-in, pop, fade-out, slide-out, shadow)
+   pick up the cascade. */
+[data-stagger] > * {
+  --vb-delay: calc(var(--vb-stagger-index, 0) * var(--vb-stagger, 80ms));
+}
+
+/* Pause hook (WCAG 2.2.2). data-paused on an effect element, or on any
+   ancestor (a section, <body>, <html>), holds every slot animation where it
+   is. Pair looping effects with a control that toggles it. Effects that
+   animate descendants or pseudo-elements (marquee, glitch, typewriter)
+   carry their own data-paused rules. */
+[data-paused][data-effect],
+[data-paused] [data-effect] {
+  animation-play-state: paused;
+}
+
+/* Accessible text splitting (src/lib/split-text.js): the original text
+   stays in a visually hidden copy for assistive technology, beside the
+   aria-hidden chunks the text effects animate. Not selectable, so copying
+   the text yields it once. */
+.vb-split-sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+  user-select: none;
+}
+
 /* --------------------------------------------------------------------------
    data-effect~="gradient-text": Gradient text coloring (CSS-only)
    -------------------------------------------------------------------------- */
@@ -144,19 +180,33 @@
 /* --------------------------------------------------------------------------
    data-effect~="reveal": Word/line reveal entrance
    -------------------------------------------------------------------------- */
+/* Chunks are hidden only while a registered trigger is armed and has not
+   fired yet (data-effect-armed is set by the runtime), so no JS, an unknown
+   trigger or a clone never leaves the text invisible. */
 [data-effect~="reveal"][data-effect-reveal-init] .vb-reveal-chunk {
   display: inline-block;
-  opacity: 0;
-  transform: translateY(0.5em);
   transition:
     opacity var(--reveal-duration, 400ms) var(--ease-out, ease-out),
     transform var(--reveal-duration, 400ms) var(--ease-out, ease-out);
   transition-delay: calc(var(--i, 0) * var(--reveal-delay, 80ms));
 }
 
-[data-effect~="reveal"][data-effect-reveal-init][data-effect-active] .vb-reveal-chunk {
-  opacity: 1;
-  transform: translateY(0);
+[data-effect~="reveal"][data-effect-reveal-init][data-effect-armed]:not([data-effect-active]) .vb-reveal-chunk {
+  opacity: 0;
+  transform: translateY(0.5em);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-effect~="reveal"] .vb-reveal-chunk {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+:root[data-motion-reduced] [data-effect~="reveal"] .vb-reveal-chunk {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
 }
 
 /* --------------------------------------------------------------------------

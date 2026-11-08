@@ -17,6 +17,8 @@ crumbLabel: Web Components
       <li><strong>Auto-generated:</strong> Scans the page for headings and builds the ToC automatically</li>
       <li><strong>Manual markup:</strong> Enhances existing navigation with scroll-spy (progressive enhancement)</li>
     </ul>
+
+    <browser-window url="page-toc" src="/docs/examples/demos/page-toc-basic.html"></browser-window>
   </section>
 
   <section>
@@ -41,13 +43,19 @@ crumbLabel: Web Components
           <td><code>scope</code></td>
           <td>string</td>
           <td><code>main</code></td>
-          <td>CSS selector for content scope to scan</td>
+          <td>CSS selector for the container to scan. The <em>first</em> match is used, so be specific (the docs layouts use <code>main article</code>)</td>
         </tr>
         <tr>
-          <td><code>title</code></td>
+          <td><code>data-title</code></td>
           <td>string</td>
           <td><code>On this page</code></td>
-          <td>Title shown above the ToC</td>
+          <td>Summary text shown above the generated ToC, also used as the nav&rsquo;s <code>aria-label</code></td>
+        </tr>
+        <tr>
+          <td><code>orientation</code></td>
+          <td><code>horizontal</code></td>
+          <td>&mdash; (vertical)</td>
+          <td>Renders an inline, horizontally scrollable bar instead of the vertical tree. See <a href="#horizontal-bar">Horizontal bar</a></td>
         </tr>
       </tbody>
     </table>
@@ -59,15 +67,19 @@ crumbLabel: Web Components
 
     <h3>On an ancestor container</h3>
     <p>All headings inside the marked container are skipped. This is the most common pattern for doc pages with inline examples:</p>
-    <code-block language="html" label="Exclude all headings in a container">&lt;div class="example" data-toc-ignore&gt;
+    <code-block language="html" label="Exclude all headings in a container">&lt;section data-toc-ignore&gt;
   &lt;h2&gt;Demo Heading&lt;/h2&gt;
   &lt;p&gt;This heading will not appear in the ToC.&lt;/p&gt;
-&lt;/div&gt;</code-block>
+&lt;/section&gt;</code-block>
 
     <h3>On a single heading</h3>
     <p>Exclude an individual heading while keeping its siblings:</p>
     <code-block language="html" label="Exclude a single heading">&lt;h2 data-toc-ignore&gt;This heading is skipped&lt;/h2&gt;
 &lt;h2&gt;This heading appears in the ToC&lt;/h2&gt;</code-block>
+    <p>Ignoring one <code>h2</code> does not ignore the <code>h3</code>s after it: they are listed under the previous <code>h2</code>. To drop a whole section, put the attribute on the <code>&lt;section&gt;</code>.</p>
+
+    <h3>Skipped automatically</h3>
+    <p>Headings inside a <code>&lt;dialog&gt;</code> or a <code>&lt;browser-window&gt;</code>, and headings that are not rendered (<code>hidden</code>, or a <code>data-visible</code> variant hidden at this width), are skipped too &mdash; the same list <code>&lt;heading-links&gt;</code> uses. Headings inside a closed <code>&lt;details&gt;</code> are kept: following the link opens it. Headings without an <code>id</code> are skipped; <code>&lt;heading-links&gt;</code> supplies ids. An auto-generated ToC updates itself when headings are added or removed or <code>data-toc-ignore</code> changes; see <a href="/docs/attributes/data-toc-ignore/"><code>data-toc-ignore</code></a>.</p>
 
   </section>
 
@@ -81,8 +93,8 @@ crumbLabel: Web Components
 <!-- With custom options -->
 <page-toc
   levels="h2,h3,h4"
-  scope="article"
-  title="Contents">
+  scope="main article"
+  data-title="Contents">
 </page-toc></code-block>
 
     <h3>Requirements</h3>
@@ -94,7 +106,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Manual Markup Mode</h2>
-    <p>For progressive enhancement, provide your own markup. The component will add scroll-spy behavior without modifying your structure.</p>
+    <p>For progressive enhancement, provide your own markup. The component will add scroll-spy behavior without modifying your structure. Express hierarchy by nesting a <code>.list</code> inside an <code>.item</code> &mdash; nested lists collapse unless their branch contains the active link, exactly like the generated tree.</p>
 
     <code-block language="html" show-lines label="Manual markup with progressive enhancement" data-escape><!-- Progressive enhancement: works without JS -->
 <page-toc>
@@ -104,15 +116,19 @@ crumbLabel: Web Components
       <ul class="list">
         <li class="item">
           <a href="#overview" class="link">Overview</a>
-        </li>
-        <li class="item" data-level="1">
-          <a href="#installation" class="link">Installation</a>
+          <ul class="list">
+            <li class="item">
+              <a href="#installation" class="link">Installation</a>
+            </li>
+          </ul>
         </li>
         <li class="item">
           <a href="#usage" class="link">Usage</a>
-        </li>
-        <li class="item" data-level="1">
-          <a href="#examples" class="link">Examples</a>
+          <ul class="list">
+            <li class="item">
+              <a href="#examples" class="link">Examples</a>
+            </li>
+          </ul>
         </li>
       </ul>
     </nav>
@@ -146,7 +162,7 @@ crumbLabel: Web Components
         </tr>
         <tr>
           <td><code>.item</code></td>
-          <td>List item (use <code>data-level</code> for nesting)</td>
+          <td>List item; nest a <code>.list</code> inside it for sub-sections</td>
         </tr>
         <tr>
           <td><code>.link</code></td>
@@ -168,7 +184,7 @@ crumbLabel: Web Components
       <li>The first visible heading in the viewport is highlighted</li>
       <li>Links receive the <code>.active</code> class and <code>aria-current="true"</code></li>
       <li>URL hash is updated when clicking links</li>
-      <li>Syncs with browser back/forward navigation</li>
+      <li>Syncs with browser back/forward navigation (percent-encoded hashes such as <code>#caf%C3%A9</code> are decoded before matching ids)</li>
     </ul>
   </section>
 
@@ -178,16 +194,15 @@ crumbLabel: Web Components
 
     <h3>Wide Screens (1024px+)</h3>
     <ul>
-      <li>ToC is always visible</li>
-      <li>Position: sticky for sidebar placement</li>
-      <li>Full heading hierarchy shown</li>
+      <li>ToC is always visible &mdash; the summary acts as a heading and does not collapse it</li>
+      <li>Position: sticky for sidebar placement (when the sticky system is active)</li>
+      <li>Sub-sections collapse except the branch containing the active section</li>
     </ul>
 
     <h3>Narrow Screens</h3>
     <ul>
-      <li>Collapsible disclosure pattern</li>
-      <li>Nested headings hidden (except active)</li>
-      <li>Click to expand/collapse</li>
+      <li>Collapsible disclosure pattern &mdash; click the summary to expand/collapse</li>
+      <li>Sub-sections collapse except the active branch, as on wide screens</li>
     </ul>
   </section>
 
@@ -195,7 +210,7 @@ crumbLabel: Web Components
     <h2>Sidebar Layout</h2>
     <p>Common pattern: ToC in a sidebar alongside main content.</p>
 
-    <code-block language="html" show-lines label="ToC in sidebar layout" data-escape><layout-sidebar data-layout-side="end" data-width="250px">
+    <code-block language="html" show-lines label="ToC in sidebar layout" data-escape><layout-sidebar data-layout-side="end" data-layout-sidebar-width="narrow">
   <article>
     <h1>Page Title</h1>
     <section id="overview">
@@ -209,9 +224,16 @@ crumbLabel: Web Components
   </article>
 
   <aside>
-    <page-toc levels="h2,h3"></page-toc>
+    <page-toc levels="h2,h3" scope="article"></page-toc>
   </aside>
 </layout-sidebar></code-block>
+  </section>
+
+  <section>
+    <h2 id="horizontal-bar">Horizontal Bar</h2>
+    <p>Add <code>orientation="horizontal"</code> for an inline, horizontally scrollable bar &mdash; useful above an article or under a sticky header. The summary is hidden, nesting is flattened so every heading is a chip in one row, and the active link gets an underline instead of a start border. With the sticky system active the bar sticks below <code>--sticky-offset</code>.</p>
+
+    <code-block language="html" label="Horizontal ToC bar" data-escape><page-toc orientation="horizontal" levels="h2" scope="main article"></page-toc></code-block>
   </section>
 
   <section>
@@ -245,14 +267,18 @@ toc.addEventListener('page-toc:navigate', (event) => {
     <table class="props-table">
       <thead>
         <tr>
-          <th>Method</th>
+          <th>Member</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td><code>refresh()</code></td>
-          <td>Rebuild ToC after dynamic content changes</td>
+          <td>Rebuild ToC after dynamic content changes (manual mode re-scans your links)</td>
+        </tr>
+        <tr>
+          <td><code>entries</code> (read-only)</td>
+          <td>Array of <code>{ id, text, level }</code> for the headings in the ToC</td>
         </tr>
       </tbody>
     </table>
@@ -268,8 +294,9 @@ toc.refresh();</code-block>
       <li>Uses semantic <code>&lt;nav&gt;</code> element with <code>aria-label</code></li>
       <li>Active link marked with <code>aria-current="true"</code></li>
       <li>Keyboard accessible - tab to navigate, enter to activate</li>
-      <li>Focus moves to heading after navigation</li>
-      <li>Respects <code>prefers-reduced-motion</code> for scroll behavior</li>
+      <li>Focus moves to the target heading after navigation (it receives <code>tabindex="-1"</code> if it is not already focusable)</li>
+      <li>Respects <code>prefers-reduced-motion</code>: link activation jumps instead of smooth-scrolling</li>
+      <li>The ToC label is <code>data-title</code>, not the global <code>title</code> attribute, so no hover tooltip covers the list</li>
     </ul>
   </section>
 

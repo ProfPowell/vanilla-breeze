@@ -150,7 +150,7 @@ function itemprop(doc, name) {
   return doc.querySelector(`meta[itemprop="${cssEscape(name)}"]`)?.getAttribute('content') || '';
 }
 function linkHref(doc, rel) {
-  return doc.querySelector(`link[rel="${cssEscape(rel)}"]`)?.getAttribute('href') || '';
+  return doc.querySelector(`link[rel~="${cssEscape(rel)}" i]`)?.getAttribute('href') || '';
 }
 
 /* Conservative CSS attribute-value escape — only handles the values we'll
@@ -159,11 +159,19 @@ function cssEscape(s) {
   return String(s).replace(/[^a-zA-Z0-9:_\-/]/g, '');
 }
 
-/* §G-1 — URL canonicalization. */
+/* §G-1 — URL canonicalization.
+   Absolute URLs: scheme + lowercased host (+ non-default port) + path; query
+   and fragment stripped. A relative or empty value (page has a relative
+   canonical link, or none) cannot be resolved identically by a build-time
+   signer (no deployed origin) and a browser verifier, so it is kept as
+   authored minus query/fragment. Both sides feed the RAW canonical href
+   (canonicalLinkHref) — never the browser-resolved link.href or
+   location.href — so they always sign/verify the same `url`. */
 function canonicalUrl(rawUrl) {
   if (!rawUrl) return '';
+  const raw = String(rawUrl).trim();
   try {
-    const url = new URL(rawUrl);
+    const url = new URL(raw);
     url.search = '';
     url.hash = '';
     /* Strip default ports — URL constructor already does this for http/https. */
@@ -172,8 +180,20 @@ function canonicalUrl(rawUrl) {
     out += url.pathname;
     return out;
   } catch {
-    return rawUrl;
+    return raw.replace(/[?#].*$/, '');
   }
+}
+
+/**
+ * The `url` input shared by signer (scripts/sign-pages.js) and verifier
+ * (<page-info>): the raw href of the page's <link rel="canonical">, or ''
+ * when there is none. Pass it as buildCanonicalDocument(doc, { url }).
+ *
+ * @param {Document} doc
+ * @returns {string}
+ */
+export function canonicalLinkHref(doc) {
+  return doc?.querySelector?.('link[rel~="canonical" i]')?.getAttribute('href')?.trim() || '';
 }
 
 /* §G-2 — Date canonicalization to YYYY-MM-DD. */

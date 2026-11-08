@@ -2,35 +2,35 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "star-rating",
   "type": "web-component",
-  "description": "Form-associated star rating web component",
+  "description": "Form-associated star rating web component: generates a fieldset[data-rating] of radios (CSS layer) opted into the rating effect (clear, rating:change), and submits one name=value entry via ElementInternals.",
   "attributes": [
     {
       "name": "name",
       "kind": "native",
       "purpose": "config",
       "type": "string",
-      "description": "Form field name (omit for read-only)"
+      "description": "Form field name. FormData gets exactly one name=value entry via ElementInternals; omit for read-only."
     },
     {
       "name": "value",
       "kind": "native",
       "purpose": "config",
       "type": "string",
-      "description": "Current rating value (default: 0)"
+      "description": "Rating value, also the form-reset default (default: 0). Observed: changing it after upgrade updates the rating."
     },
     {
       "name": "max",
       "kind": "native",
       "purpose": "config",
       "type": "string",
-      "description": "Number of stars (default: 5)"
+      "description": "Number of stars (default: 5). Observed: changing it rebuilds the stars, keeping the value."
     },
     {
       "name": "label",
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "Legend text (default: \"Rating\")"
+      "description": "Legend text (default: \"Rating\"). Observed."
     },
     {
       "name": "allow-half",
@@ -44,7 +44,7 @@
       "kind": "native",
       "purpose": "config",
       "type": "boolean",
-      "description": "Display-only mode"
+      "description": "Display-only mode (role=\"img\" summary, partial stars). Observed."
     },
     {
       "name": "icon",
@@ -58,41 +58,104 @@
       "kind": "native",
       "purpose": "config",
       "type": "boolean",
-      "description": "Makes rating required for form validation"
+      "description": "Makes rating required for form validation (valueMissing until a star is chosen). Observed."
     },
     {
-      "name": "data-rating",
+      "name": "data-label-one",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "description": "Radio label for the Intl.PluralRules \"one\" category; {n} is the Intl.NumberFormat value (default \"{n} star\"). Any CLDR category works (data-label-few, ...). Locale from the closest [lang]."
+    },
+    {
+      "name": "data-label-other",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Radio label for categories without their own data-label-* (default \"{n} stars\")"
+    },
+    {
+      "name": "data-label-readonly",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Read-only summary; {label}, {value}, {max} are replaced (default \"{label}: {value} out of {max}\")"
+    },
+    {
+      "name": "data-label-required",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Validation message when required and empty (default \"Please select a rating\")"
+    },
+    {
+      "name": "data-label-cleared",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Live-region announcement when the rating is cleared (default \"Rating cleared\")"
+    }
+  ],
+  "properties": [
+    {
+      "name": "value",
+      "type": "number",
+      "description": "Current rating (0 = none). Settable before connect; applied when the stars are built."
+    }
+  ],
+  "events": [
+    {
+      "name": "rating:change",
+      "description": "Fires (bubbling, from the inner fieldset) when the rating changes, including clear to 0. detail: { value: number }"
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "data-rating",
+      "on": "fieldset",
+      "type": "boolean",
+      "description": "Generated: the CSS-only rating fieldset"
     },
     {
       "name": "data-rating-half",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-effect",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-half",
-      "kind": "data",
-      "purpose": "config"
+      "on": "fieldset",
+      "type": "boolean",
+      "description": "Generated with allow-half: half-star labels"
     },
     {
       "name": "data-rating-readonly",
-      "kind": "data",
-      "purpose": "config"
+      "on": "fieldset",
+      "type": "boolean",
+      "description": "Generated with readonly: display-only stars (role=img)"
     },
     {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
+      "name": "data-effect",
+      "on": "fieldset",
+      "type": "string",
+      "description": "Generated: \"rating\" opts the fieldset into the rating effect"
+    },
+    {
+      "name": "data-half",
+      "on": "label",
+      "type": "enum",
+      "values": [
+        "left",
+        "right"
+      ],
+      "description": "Generated with allow-half: which half of the star the label covers"
     }
   ],
-  "childAttributes": [],
   "structure": [],
+  "cssProperties": [
+    {
+      "name": "--rating-color",
+      "description": "Filled star colour (default var(--color-warning)); set on star-rating or any [data-rating]"
+    },
+    {
+      "name": "--rating-color-empty",
+      "description": "Empty star outline colour (default var(--color-text-muted))"
+    }
+  ],
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [

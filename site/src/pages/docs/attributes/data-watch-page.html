@@ -23,16 +23,27 @@ crumbLabel: Data Attributes
   <p>Place the button anywhere &mdash; <code>&lt;page-tools&gt;</code> is the conventional home, but any DOM location works. The script lazy-loads when it sees the attribute on the page.</p>
 
   <code-block language="html" label="Basic watch button" data-escape><button type="button" data-watch-page>
-  <icon-wc name="eye"></icon-wc>
+  <icon-wc name="bookmark"></icon-wc>
   <span>Watch for updates</span>
 </button></code-block>
 
-  <p>The script swaps the <code>&lt;icon-wc&gt;</code> name (<code>eye</code> &harr; <code>eye-off</code>) and the inline text label (<code>Watch for updates</code> &harr; <code>Watching</code>). To keep your own label, add <code>data-watch-label-locked</code>.</p>
+  <p>The script swaps the <code>&lt;icon-wc&gt;</code> name (<code>bookmark</code> &harr; <code>bookmark-check</code>), sets <code>aria-pressed</code>, and swaps the inline text label (<code>Watch for updates</code> &harr; <code>Watching</code>). To keep your own label, add <code>data-watch-label-locked</code>.</p>
+
+  <p>Override the strings per button for other languages:</p>
+  <table>
+    <thead><tr><th>Attribute</th><th>Default</th><th>Used for</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-label-watch</code></td><td>Watch for updates</td><td>Text when the page is not watched</td></tr>
+      <tr><td><code>data-label-watching</code></td><td>Watching</td><td>Text when the page is watched</td></tr>
+      <tr><td><code>data-label-action</code></td><td>Watch this page for content updates</td><td>Title, and accessible name for icon-only buttons</td></tr>
+      <tr><td><code>data-label-stop</code></td><td>Stop watching this page</td><td>Same, when watched</td></tr>
+    </tbody>
+  </table>
 
   <code-block language="html" label="Inside page-tools" data-escape><page-tools data-position="sticky">
   <print-page></print-page>
   <button type="button" data-watch-page>
-    <icon-wc name="eye"></icon-wc>
+    <icon-wc name="bookmark"></icon-wc>
     <span>Watch</span>
   </button>
 </page-tools></code-block>
@@ -40,7 +51,7 @@ crumbLabel: Data Attributes
 
 <section>
   <h2>What gets stored</h2>
-  <p>VBStore namespace <code>watches</code>, key = <code>location.pathname</code>. Each entry:</p>
+  <p>VBStore namespace <code>watches</code>, key = the normalised page path (<code>/x</code>, <code>/x/</code> and <code>/x/index.html</code> all share <code>/x</code>; older keys are migrated on first read). Each entry:</p>
   <code-block language="js" label="Stored shape" data-escape>{
   url: '/docs/getting-started',
   title: 'Getting Started — Vanilla Breeze',
@@ -60,7 +71,7 @@ crumbLabel: Data Attributes
     <tbody>
       <tr><td><code>page-watch:add</code></td><td><code>{ entry }</code></td><td>User clicked Watch</td></tr>
       <tr><td><code>page-watch:remove</code></td><td><code>{ url, subscriptionId }</code></td><td>User clicked Unwatch (in the button or in the notification panel&rsquo;s Watching tab)</td></tr>
-      <tr><td><code>notification-wc:new</code></td><td><code>{ notification }</code></td><td>Page revisit detected a hash change &mdash; type is <code>watch</code></td></tr>
+      <tr><td><code>notification-wc:new</code></td><td><code>{ notification }</code></td><td>Page revisit detected a hash change &mdash; type is <code>watch</code>. Every <code>&lt;notification-wc&gt;</code> on the page shows it in the bell; unwatching from the bell also unsubscribes on the server when <code>server-sync</code> is on and resyncs every watch button.</td></tr>
     </tbody>
   </table>
 </section>

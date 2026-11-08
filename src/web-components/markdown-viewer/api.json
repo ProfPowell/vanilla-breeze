@@ -9,11 +9,13 @@
   },
   "attributes": [
     { "name": "src",            "kind": "host-api", "purpose": "config",       "type": "string",  "description": "URL of external markdown file" },
-    { "name": "loading",        "kind": "host-api", "purpose": "config",       "type": "enum",    "values": ["eager", "lazy"], "default": "eager", "description": "Defer fetch until element enters viewport (Phase 3)" },
-    { "name": "sanitize",       "kind": "host-api", "purpose": "config",       "type": "enum",    "values": ["on", "off"], "default": "on", "description": "Strip scripts, embeds, on* handlers and javascript: URLs from rendered HTML via the shared sanitizer. On by default; set sanitize=\"off\" only for trusted first-party markdown that needs raw embeds" },
+    { "name": "allow-cross-origin", "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Permit a src on another origin (CORS still applies; content is still sanitized unless sanitize=\"off\"). Without it src must be same-origin http(s); redirects are re-checked" },
+    { "name": "sanitize",       "kind": "host-api", "purpose": "config",       "type": "enum",    "values": ["on", "off", "false"], "default": "on", "description": "Sanitizing is on unless this is \"off\" or \"false\" (any other value, or no attribute, keeps it on). Off writes parser output raw with innerHTML: trusted first-party markdown only, never with a cross-origin or user-influenced src" },
     { "name": "highlight",      "kind": "host-api", "purpose": "config",       "type": "boolean", "description": "Fire per-block markdown-viewer:highlight events after render" },
     { "name": "ping",           "kind": "host-api", "purpose": "config",       "type": "string",  "description": "URL to ping with render metadata via sendBeacon" },
     { "name": "data-theme",     "kind": "data",     "purpose": "config",       "type": "string",  "description": "Theme name propagated to .md-content container" },
+    { "name": "data-label-error", "kind": "data",   "purpose": "config",       "type": "string",  "default": "Failed to load markdown", "description": "Text of the role=\"alert\" message shown when src fails to load or parse and no <pre> fallback is visible" },
+    { "name": "data-auto-mermaid", "kind": "data",  "purpose": "config",       "type": "boolean", "description": "Upgrade ```mermaid fences in the rendered output to <diagram-wc> (main.js loads the markdown-mermaid bridge when present)" },
     { "name": "data-rendered",  "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present after successful render" },
     { "name": "data-loading",   "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present while fetching external content" },
     { "name": "data-error",     "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present if fetch or parse fails" }
@@ -25,7 +27,8 @@
     { "name": "markdown-viewer:error",     "detail": "{ error }",          "description": "Fired on fetch or parse failure" }
   ],
   "properties": [
-    { "name": "parser", "type": "Function|null", "description": "Custom parser function (markdown string → HTML string). Overrides the default marked parser." }
+    { "name": "parser", "type": "Function|null", "description": "Custom parser function (markdown string → HTML string). Overrides the default marked parser. Its output is still sanitized unless sanitize=\"off\"" },
+    { "name": "markdown", "type": "string", "description": "Get the current markdown source, or set a string to render it instead of the slots/src (null or '' falls back to them)" }
   ],
   "methods": [
     { "name": "render()",  "returns": "Promise<void>", "description": "Force a re-render from the current content source" },

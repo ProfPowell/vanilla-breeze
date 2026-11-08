@@ -17,9 +17,18 @@ crumbLabel: Web Components
     <li><strong>Attribute form</strong> &mdash; <code>data-paged</code> on the container; controls render in place as siblings of the items.</li>
     <li><strong>Element form</strong> &mdash; <code>&lt;pager-wc target="#id"&gt;</code> anywhere on the page; controls live wherever you put the element.</li>
   </ul>
-  <p>This mirrors the framework-wide pattern: <code>&lt;layout-grid&gt;</code> + <code>data-layout-min</code>, <code>&lt;layout-stack&gt;</code> + <code>data-gap</code>, etc. Element-and-attribute symmetry covers all the cases &mdash; pick the one that fits the markup you already have.</p>
+  <p>This mirrors the framework-wide pattern: <code>&lt;layout-grid&gt;</code> + <code>data-layout-min</code>, <code>&lt;layout-stack&gt;</code> + <code>data-layout-gap</code>, etc. Element-and-attribute symmetry covers all the cases &mdash; pick the one that fits the markup you already have.</p>
 
   <browser-window url="pager-wc" src="/docs/snippets/demos/pager-wc-basic.html"></browser-window>
+  <code-block language="html" show-lines label="Controls in a header, items below" data-escape><header data-layout="cluster" data-layout-justify="between">
+  <h2>Setup steps</h2>
+  <pager-wc target="#steps" data-style="prev-next" data-label-nav="Setup steps pages"></pager-wc>
+</header>
+<ol id="steps" data-paged data-paged-size="4" data-paged-controls="none">
+  <li>Set up your account</li>
+  <li>Pick a theme</li>
+  ...
+</ol></code-block>
 </section>
 
 <section>
@@ -54,15 +63,45 @@ crumbLabel: Web Components
         <td>HTML-form-style alternative to <code>target</code>: the bare ID of the target.</td>
       </tr>
       <tr>
-        <td><code>style</code></td>
+        <td><code>data-style</code></td>
         <td>enum: <code>numbered</code> &middot; <code>prev-next</code> &middot; <code>load-more</code></td>
         <td><code>numbered</code></td>
-        <td>Control style. <code>infinite</code> is intentionally unsupported &mdash; an <code>IntersectionObserver</code> sentinel doesn't make sense for decoupled controls.</td>
+        <td>Control style. <code>load-more</code> needs a progressive target (see below). <code>infinite</code> is intentionally unsupported &mdash; an <code>IntersectionObserver</code> sentinel doesn't make sense for decoupled controls.</td>
       </tr>
     </tbody>
   </table>
 
   <p><strong>Implicit target:</strong> if neither <code>target</code> nor <code>for</code> is set, <code>&lt;pager-wc&gt;</code> binds to the nearest preceding <code>[data-paged]</code> sibling. Useful for the common "items above, pager below" pattern with zero wiring.</p>
+  <p>Only an element that carries <code>data-paged</code> counts as a target. If none resolves yet, the pager shows a short note and binds as soon as a matching target renders (it re-resolves on every <code>paged:change</code> and on click), so a target inserted later still works.</p>
+
+  <h3>Labels</h3>
+  <p>Every string is an attribute, so the controls can be translated or made more specific. Templates use <code>{page}</code>, <code>{total}</code> and <code>{n}</code>.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Default</th><th>Used for</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-label-nav</code></td><td><code>Pagination</code></td><td>Name of the <code>&lt;nav&gt;</code> landmark. Give top and bottom pagers different names.</td></tr>
+      <tr><td><code>data-label-prev</code></td><td><code>Previous</code></td><td>Previous button.</td></tr>
+      <tr><td><code>data-label-next</code></td><td><code>Next</code></td><td>Next button.</td></tr>
+      <tr><td><code>data-label-page</code></td><td><code>Page {page}</code></td><td>Accessible name of each page-number button (the visible text stays the number).</td></tr>
+      <tr><td><code>data-label-status</code></td><td><code>Page {page} of {total}</code></td><td><code>prev-next</code> status text.</td></tr>
+      <tr><td><code>data-label-load-more</code></td><td><code>Load more ({n})</code></td><td>Load-more button; <code>{n}</code> is the number of items still hidden.</td></tr>
+      <tr><td><code>data-label-no-more</code></td><td><code>No more</code></td><td>Load-more button once everything is shown.</td></tr>
+      <tr><td><code>data-label-missing</code></td><td><code>No paginated target found</code></td><td>Note shown while no target resolves.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Load more</h2>
+  <p>A load-more pager drives a <em>progressive</em> target: set <code>data-paged-style="load-more"</code> on the container, and <code>data-paged-controls="none"</code> so the engine doesn't render a second button. The remaining count comes from the engine (<code>paged:change</code> detail <code>visible</code>), so it counts down as items are revealed.</p>
+  <code-block language="html" show-lines label="Load-more pager" data-escape><ul id="activity" data-paged data-paged-size="3"
+    data-paged-style="load-more" data-paged-controls="none">
+  <li>...</li>
+</ul>
+<pager-wc target="#activity" data-style="load-more"></pager-wc></code-block>
+  <p>With a numbered or prev-next target, <code>data-style="load-more"</code> logs a console warning: those styles show one page at a time, so there is nothing to append to.</p>
 </section>
 
 <section>
@@ -75,7 +114,7 @@ crumbLabel: Web Components
       <tr>
         <td><code>pager-wc:navigate</code></td>
         <td><code>{ page }</code></td>
-        <td>Bubbles before the target processes the navigation. Use for analytics, scroll-restore, or transition hooks.</td>
+        <td>Bubbles from the pager before it dispatches <code>paged:goto</code> on the target. Fired for page navigations only (<code>numbered</code> and <code>prev-next</code>), not for load-more. Not cancelable. Use for analytics, scroll-restore, or transition hooks.</td>
       </tr>
     </tbody>
   </table>
@@ -86,13 +125,13 @@ crumbLabel: Web Components
   <h2>Multi-instance sync</h2>
   <p>Two or more <code>&lt;pager-wc&gt;</code> elements pointing at the same target stay in sync automatically &mdash; each subscribes to the target's <code>paged:change</code> event and re-renders. No additional wiring needed.</p>
 
-  <code-block language="html" show-lines label="Top + bottom controls" data-escape><pager-wc target="#feed"></pager-wc>
+  <code-block language="html" show-lines label="Top + bottom controls" data-escape><pager-wc target="#feed" data-label-nav="Results pages, top"></pager-wc>
 
 <ul id="feed" data-paged data-paged-size="10" data-paged-controls="none">
   <li>...</li>
 </ul>
 
-<pager-wc target="#feed"></pager-wc></code-block>
+<pager-wc target="#feed" data-label-nav="Results pages, bottom"></pager-wc></code-block>
 
   <aside class="note">
     <strong>Tip:</strong> set <code>data-paged-controls="none"</code> on the target to suppress the in-place controls and let your <code>&lt;pager-wc&gt;</code> instances be the only nav surface.
@@ -102,8 +141,12 @@ crumbLabel: Web Components
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li>Renders the same <code>&lt;nav aria-label="Pagination"&gt;</code> markup as <code>data-paged</code> &mdash; native <code>&lt;button&gt;</code>s, <code>aria-current="page"</code>, ellipsis with <code>aria-hidden</code>.</li>
-    <li>If the target can't be found, the element renders a polite live-region note (<code>"No paginated target found"</code>) instead of failing silently.</li>
+    <li>Renders the same <code>&lt;nav&gt;</code> markup as <code>data-paged</code> &mdash; native <code>&lt;button&gt;</code>s, <code>aria-current="page"</code>, ellipsis with <code>aria-hidden</code>. Page-number buttons are named <q>Page N</q> (<code>data-label-page</code>).</li>
+    <li>Each instance is a navigation landmark. When a page has more than one, name them apart with <code>data-label-nav</code> (for example <q>Results pages, top</q> and <q>Results pages, bottom</q>).</li>
+    <li>Focus stays put: after a click or key press, focus returns to the same control in the re-rendered nav (Next stays on Next; on the last page it falls back to the current page button).</li>
+    <li>The <code>prev-next</code> status (<q>Page N of M</q>) is a single polite live region that persists across renders, so page changes are announced.</li>
+    <li>In forced-colors mode the current page keeps a <code>Highlight</code> fill and a thicker border.</li>
+    <li>If the target can't be found, the element shows a visible note (<code>"No paginated target found"</code>, <code>data-label-missing</code>) instead of failing silently. The note is not a live region; it is an authoring signal.</li>
   </ul>
 </section>
 
@@ -111,7 +154,7 @@ crumbLabel: Web Components
   <h2>How it talks to the engine</h2>
   <p>The decoupled-control story is wired through three custom events on the target:</p>
   <ul>
-    <li><code>paged:change</code> &mdash; fired by the engine after each render. <code>&lt;pager-wc&gt;</code> listens and re-renders its own controls.</li>
+    <li><code>paged:change</code> &mdash; fired by the engine after each render, with <code>{ page, size, total, totalPages, visible, style }</code>. It bubbles; <code>&lt;pager-wc&gt;</code> listens at document level and re-renders its own controls.</li>
     <li><code>paged:goto</code> <code>{ page }</code> &mdash; fired by <code>&lt;pager-wc&gt;</code> button clicks. The engine listens and navigates.</li>
     <li><code>paged:loadmore</code> &mdash; fired for the load-more button. Same pattern.</li>
   </ul>

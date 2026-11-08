@@ -102,10 +102,10 @@
   </nav>
 
   <h1>Component Regions</h1>
-  <p><code>data-layout="regions"</code> creates a header / content / footer grid on any element. Semantic children auto-place without explicit layout attributes.</p>
+  <p><code>data-layout="regions"</code> stacks a header / content / footer column on any element: the <code>&lt;header&gt;</code> (or <code>[slot="header"]</code>) first, the <code>&lt;footer&gt;</code> (or <code>[slot="footer"]</code>) last, and every other child in between in DOM order. Semantic children place themselves without explicit layout attributes.</p>
 
   <h2>Basic Regions</h2>
-  <p>A <code>&lt;section&gt;</code> with <code>data-layout="regions"</code>. The <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code>, and <code>&lt;footer&gt;</code> children auto-register to named grid areas.</p>
+  <p>A <code>&lt;section&gt;</code> with <code>data-layout="regions"</code>. The <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code>, and <code>&lt;footer&gt;</code> children take their regions; the section grows to fill any spare height.</p>
 
   <figure class="demo-panel">
     <strong class="demo-label">data-layout="regions"</strong>
@@ -136,14 +136,15 @@
   </figure>
 
   <h2>Implicit Content Placement</h2>
-  <p>Children that are not <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;footer&gt;</code>, or <code>[slot]</code> are implicitly placed in the <code>content</code> area.</p>
+  <p>Children that are not a header or footer region sit between them in DOM order &mdash; several bare elements stack, they never overlap. With no <code>&lt;section&gt;</code>, the footer is pinned to the bottom.</p>
 
   <figure class="demo-panel">
     <strong class="demo-label">implicit content (bare &lt;p&gt; children)</strong>
     <section class="demo-area">
       <section data-layout="regions" data-layout-gap="m" class="region-card">
         <header aria-label="Regions Basic header 3">Notification</header>
-        <p>This bare paragraph auto-places into the content area without needing a <code>&lt;section&gt;</code> wrapper.</p>
+        <p>This bare paragraph sits between the header and footer without needing a <code>&lt;section&gt;</code> wrapper.</p>
+        <p>A second bare paragraph stacks below it.</p>
         <footer aria-label="Regions Basic footer 3">Dismiss</footer>
       </section>
     </section>
@@ -189,7 +190,7 @@
   </figure>
 
   <h2>Regions vs layout-card</h2>
-  <p><code>data-layout="regions"</code> is structural only (grid placement). <code>&lt;layout-card&gt;</code> adds visual chrome (borders, shadows, padding) on top of the same grid structure.</p>
+  <p><code>data-layout="regions"</code> is structural only (placement and gap). <code>&lt;layout-card&gt;</code> adds visual chrome (borders, shadows, padding) on top of a similar header / content / footer structure.</p>
 
   <figure class="demo-panel">
     <strong class="demo-label">structural vs visual</strong>

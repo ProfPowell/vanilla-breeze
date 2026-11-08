@@ -20,9 +20,6 @@
     .info-box p { margin: 0; }
     .success-panel { text-align: center; padding: var(--size-xl); }
     .success-panel .thanks { font-size: var(--font-size-xl); }
-    /* <section> gets a bare `display: block` that overrides the UA
-       [hidden] rule, so re-assert it for the hidden success panel. */
-    [data-form-success][hidden] { display: none; }
     code {
       background: var(--color-surface-raised);
       padding: 0.1em 0.3em;
@@ -55,6 +52,7 @@
         <h2>Contact Form (fetch with success)</h2>
         <layout-card>
           <form data-validate data-submit="fetch" action="/api/contact" method="post">
+            <p data-form-error role="alert" hidden>We could not send your message. Check your connection and try again.</p>
             <section data-form-summary role="alert" tabindex="-1" hidden>
               <h2>There are problems with your submission</h2>
               <ul data-summary-list></ul>
@@ -91,7 +89,7 @@
               <button type="submit">Send Message</button>
             </layout-stack>
 
-            <section data-form-success hidden>
+            <section data-form-success role="status" tabindex="-1" hidden>
               <layout-stack data-layout-gap="m" class="success-panel">
                 <p class="thanks">Thank you!</p>
                 <p>Your message has been sent. We will be in touch shortly.</p>
@@ -136,7 +134,7 @@
     // Mock fetch for the contact form demo
     const originalFetch = window.fetch;
     window.fetch = async (url, options) => {
-      if (url === '/api/contact') {
+      if (new URL(String(url), location.href).pathname === '/api/contact') {
         console.log('[Mock] POST /api/contact', Object.fromEntries(options.body));
         await new Promise(r => setTimeout(r, 1500)); // Simulate latency
         return new Response(JSON.stringify({ ok: true }), {

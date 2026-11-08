@@ -1,8 +1,8 @@
 ---
 layout: attribute
 title: "async / defer"
-description: "Control when external scripts download and execute relative to HTML parsing. Three strategies for balancing page load speed with script execution order."
-attributeName: async-defer
+description: "Control when external scripts download and run relative to HTML parsing: blocking, async, defer, and type=module, which is deferred by default."
+attributeName: async / defer
 attributeType: native
 nativeGroup: Performance
 category: native
@@ -12,113 +12,102 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>By default, when the browser encounters a <code>&lt;script&gt;</code> tag, it <strong>stops parsing HTML</strong>, downloads the script, executes it, and only then resumes parsing. For large scripts, this creates a visible delay before the page renders. The <code>async</code> and <code>defer</code> attributes change this behavior by allowing the download to happen in parallel with parsing.</p>
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> with a <code>src</code> attribute (external scripts only). These attributes have no effect on inline scripts.</p>
+<section>
+  <h2>Overview</h2>
+  <p>By default, a classic <code>&lt;script src&gt;</code> <strong>stops the HTML parser</strong>: the browser downloads the file, runs it, and only then carries on parsing. <code>async</code> and <code>defer</code> let the download happen alongside parsing. They differ in when the script runs.</p>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a>. Both are boolean attributes. On classic scripts they only work with <code>src</code>; inline classic scripts ignore them. On module scripts, <code>async</code> works inline too, and <code>defer</code> does nothing because modules are already deferred.</p>
 
-<h2>Values</h2>
-<table>
-  <thead><tr><th>Strategy</th><th>Downloads</th><th>Executes</th><th>Execution Order</th></tr></thead>
-  <tbody>
-    <tr><td>(none)</td><td>Blocks parsing during download</td><td>Immediately after download</td><td>In document order</td></tr>
-    <tr><td><code>async</code></td><td>In parallel with parsing</td><td>As soon as download finishes (pauses parser)</td><td>Not guaranteed</td></tr>
-    <tr><td><code>defer</code></td><td>In parallel with parsing</td><td>After HTML is fully parsed, before <code>DOMContentLoaded</code></td><td>In document order</td></tr>
-    <tr><td><code>type="module"</code></td><td>In parallel with parsing (deferred by default)</td><td>After HTML is fully parsed</td><td>In document order</td></tr>
-  </tbody>
-</table>
+  <browser-window
+    src="/docs/examples/demos/attr-async-defer-order.html"
+    url="https://vanilla-breeze.com/script-order"
+    title="Script execution order"
+    shadow>
+  </browser-window>
 
-<h2>Normal Loading (No Attribute)</h2>
-<p>The parser stops at each script tag, fetches the file, executes it, then continues. This guarantees execution order but delays rendering.</p>
-
-<code-block language="html" label="Blocking script" data-escape><!-- Normal (no attribute): blocks HTML parsing -->
-<!-- Parser stops, downloads script, executes it, then resumes parsing -->
-<script src="/js/blocking.js"></script></code-block>
-
-<h2>async</h2>
-<p>The script downloads in the background while parsing continues. As soon as the script finishes downloading, the parser pauses to execute it. If multiple async scripts are present, they execute in <strong>whichever order they finish downloading</strong>, not document order.</p>
-
-<code-block language="html" label="Async scripts" data-escape><!-- async: downloads in parallel, executes as soon as ready -->
-<!-- Execution order is NOT guaranteed between multiple async scripts -->
-<script src="/js/analytics.js" async></script>
-<script src="/js/ads.js" async></script></code-block>
-
-<p><strong>Best for:</strong> Independent scripts that do not depend on other scripts or DOM state — analytics, ad tags, monitoring, A/B testing.</p>
-
-<h2>defer</h2>
-<p>The script downloads in the background like async, but execution is postponed until HTML parsing is complete. Multiple deferred scripts execute in the <strong>order they appear in the document</strong>, and all run before the <code>DOMContentLoaded</code> event fires.</p>
-
-<code-block language="html" label="Deferred scripts" data-escape><!-- defer: downloads in parallel, executes after parsing in document order -->
-<!-- Guaranteed to execute in the order they appear -->
-<script src="/js/framework.js" defer></script>
-<script src="/js/app.js" defer></script></code-block>
-
-<p><strong>Best for:</strong> Application scripts that need the full DOM and depend on each other's execution order — frameworks, UI code, form handlers.</p>
-
-<h2>type="module"</h2>
-<p>ES module scripts are <strong>deferred by default</strong> without needing the <code>defer</code> attribute. They also support top-level <code>await</code>, strict mode is always on, and each module has its own scope (no global variable pollution).</p>
-<p>Adding <code>async</code> to a module script makes it execute as soon as it and its dependencies are ready, similar to async on classic scripts.</p>
-
-<code-block language="html" label="Module scripts" data-escape><!-- type="module" scripts are deferred by default -->
-<script type="module" src="/js/app.js"></script>
-
-<!-- You can add async to a module to make it execute as soon as ready -->
-<script type="module" src="/js/analytics.js" async></script>
-
-<!-- Modules support top-level await -->
-<script type="module">
-  const data = await fetch('/api/config').then(r => r.json());
-  console.log(data);
-</script></code-block>
-
-<h2>Decision Table</h2>
-<table>
-  <thead><tr><th>Scenario</th><th>Use</th><th>Reason</th></tr></thead>
-  <tbody>
-    <tr><td>Analytics, ads, third-party widgets</td><td><code>async</code></td><td>Independent; order does not matter; should not delay page</td></tr>
-    <tr><td>App scripts, UI initialization</td><td><code>defer</code></td><td>Needs the DOM; depends on load order</td></tr>
-    <tr><td>Framework/library followed by app code</td><td><code>defer</code> (both)</td><td>Guarantees library loads before app code</td></tr>
-    <tr><td>Modern ES modules</td><td><code>type="module"</code></td><td>Deferred by default; supports import/export</td></tr>
-    <tr><td>Script that must run before any rendering</td><td>(none)</td><td>Rare; only for critical inline polyfills or theme detection</td></tr>
-  </tbody>
-</table>
-
-<h2>Practical Example</h2>
-<code-block language="html" label="Combined loading strategy" data-escape><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>Loading Strategy Example</title>
-
-  <!-- Critical CSS: render-blocking (intentional) -->
-  <link rel="stylesheet" href="/css/main.css" />
-
-  <!-- Framework: defer ensures it runs before app.js, after parsing -->
-  <script src="/js/framework.js" defer></script>
-  <script src="/js/app.js" defer></script>
-
-  <!-- Analytics: independent, order does not matter -->
-  <script src="/js/analytics.js" async></script>
-</head>
-<body>
-  <h1>Content is visible before scripts execute</h1>
-</body>
-</html></code-block>
-
-<h2>Limitations</h2>
-<ul>
-  <li><strong>Inline scripts ignore async/defer:</strong> These attributes only work on scripts with a <code>src</code> attribute. Inline scripts always execute immediately (except <code>type="module"</code> inline scripts, which are deferred).</li>
-  <li><strong>async order is unpredictable:</strong> If script B depends on script A, do not use async on both. Use defer to preserve order.</li>
-  <li><strong>defer and DOMContentLoaded:</strong> Deferred scripts delay the <code>DOMContentLoaded</code> event. A slow deferred script holds up any code waiting for that event.</li>
-  <li><strong>Both attributes together:</strong> If both <code>async</code> and <code>defer</code> are present, <code>async</code> takes precedence in browsers that support it. <code>defer</code> acts as a fallback for very old browsers.</li>
-  <li><strong>Dynamic script injection:</strong> Scripts added via <code>document.createElement('script')</code> are async by default. Set <code>script.async = false</code> to preserve insertion order.</li>
-</ul>
+  <code-block language="html" show-lines label="The four loading modes" data-escape><script src="/js/blocking.js"></script>          <!-- parser waits -->
+<script src="/js/analytics.js" async></script>  <!-- runs when downloaded -->
+<script src="/js/app.js" defer></script>        <!-- runs after parsing, in order -->
+<script type="module" src="/js/main.js"></script> <!-- deferred by default --></code-block>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <table class="props-table">
+    <thead><tr><th>Script</th><th>Download</th><th>Runs</th><th>Order</th></tr></thead>
+    <tbody>
+      <tr><td>Classic, no attribute (the default)</td><td>Blocks the parser</td><td>As soon as it arrives</td><td>Document order</td></tr>
+      <tr><td>Classic <code>async</code></td><td>Alongside parsing</td><td>As soon as it arrives (pausing the parser)</td><td>Whichever finishes first</td></tr>
+      <tr><td>Classic <code>defer</code></td><td>Alongside parsing</td><td>After parsing, before <code>DOMContentLoaded</code></td><td>Document order</td></tr>
+      <tr><td><code>type="module"</code></td><td>Alongside parsing, with its imports</td><td>After parsing, before <code>DOMContentLoaded</code></td><td>Document order</td></tr>
+      <tr><td><code>type="module" async</code></td><td>Alongside parsing, with its imports</td><td>As soon as it and its imports are ready</td><td>Whichever is ready first</td></tr>
+    </tbody>
+  </table>
+  <p>If both <code>async</code> and <code>defer</code> are present, <code>async</code> wins. <code>defer</code> was only a fallback for very old browsers.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>async for independent scripts</h3>
+  <p>Analytics, monitoring and ad tags that depend on nothing else and that nothing depends on. Add <code>fetchpriority="low"</code> so they do not compete with resources the page needs.</p>
+  <code-block language="html" show-lines label="Independent third-party scripts" data-escape><script src="https://analytics.example.com/tag.js" async fetchpriority="low"></script></code-block>
+
+  <h3>defer for ordered classic scripts</h3>
+  <p>Deferred scripts run in the order they appear, after the DOM is complete, so a library can come before the code that uses it.</p>
+  <code-block language="html" show-lines label="Library then app" data-escape><script src="/js/library.js" defer></script>
+<script src="/js/app.js" defer></script></code-block>
+
+  <h3>Modules</h3>
+  <p>Module scripts are deferred without any attribute. They are always in strict mode, have their own scope, and can use <code>import</code> and top-level <code>await</code>. Preload a module's dependencies with <code>&lt;link rel="modulepreload"&gt;</code> to avoid a chain of round trips.</p>
+  <code-block language="html" show-lines label="Module with a preloaded dependency" data-escape><link rel="modulepreload" href="/js/lib/store.js">
+<script type="module" src="/js/main.js"></script></code-block>
+
+  <h3>Scripts that must run before first paint</h3>
+  <p>A small classic inline script in <code>&lt;head&gt;</code> runs before the body is parsed. This is the right tool for work that must happen before anything paints, such as applying a saved theme. Keep it tiny: it blocks parsing.</p>
+  <code-block language="html" show-lines label="Blocking inline script for theme" data-escape><head>
+  <script>
+    const mode = localStorage.getItem('mode'); // "light" or "dark"
+    if (mode) document.documentElement.dataset.mode = mode;
+  </script>
+</head></code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/attributes/blocking/"><code>blocking</code></a> &mdash; explicit render-blocking control for scripts and styles</li>
-    <li><a href="/docs/attributes/nonce/"><code>nonce</code></a> &mdash; CSP allowlisting for inline scripts</li>
-    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy loading for images and iframes</li>
-    <li><a href="/docs/attributes/integrity/"><code>integrity</code></a> &mdash; verify external script contents</li>
+    <li><strong>Install.</strong> The <a href="/docs/quick-start/">quick start</a> loads VB as one module in <code>&lt;head&gt;</code>: <code>&lt;script type="module" src="…/vanilla-breeze.js"&gt;&lt;/script&gt;</code>. Because modules are deferred, this does not block parsing or rendering, and it runs once the DOM is complete. You do not need <code>defer</code>.</li>
+    <li><strong>The docs site.</strong> The documentation layouts (for example <code>site/src/layouts/attribute.html</code>) load five module bundles at the end of <code>&lt;body&gt;</code>: core, extras, UI, doc extras and prototyping. They run in document order. See <a href="/docs/bundles/">bundles</a> for what each contains.</li>
+    <li><strong>Theme boot.</strong> The docs site's theme boot (<code>site/src/includes/head.html</code>) is a deliberate classic inline script in <code>&lt;head&gt;</code>. It reads the saved theme and writes the theme stylesheet link before the first paint, and a <code>:has(link[data-vb-theme-state="loading"])</code> rule keeps <code>&lt;body&gt;</code> hidden until that stylesheet has loaded. That is the "must run before rendering" case from the table above.</li>
+    <li><strong>No-JavaScript.</strong> VB's native-element CSS works before, and without, any script. Scripts enhance; they are never required to show content.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Inline classic scripts ignore both attributes.</strong> They run immediately where they appear. The demo shows an inline <code>&lt;script defer&gt;</code> running straight away.</li>
+    <li><strong>async order is unpredictable.</strong> If script B needs script A, do not make both <code>async</code>. Use <code>defer</code> or modules.</li>
+    <li><strong>Deferred scripts hold up <code>DOMContentLoaded</code>.</strong> A slow deferred or module script delays every handler waiting for that event.</li>
+    <li><strong>Script-inserted scripts are async by default.</strong> Set <code>script.async = false</code> on scripts you create with <code>document.createElement('script')</code> to run them in insertion order.</li>
+    <li><strong><code>nomodule</code></strong> marks a classic script that only browsers without module support should run. Every current browser supports modules (Chrome 61, Firefox 60, Safari 10.1), so it is rarely needed now.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/blocking/"><code>blocking</code></a> &mdash; hold the first paint for a module, async or script-inserted resource.</li>
+    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; <code>fetchpriority</code> also applies to scripts.</li>
+    <li><a href="/docs/attributes/integrity/"><code>integrity</code></a> and <a href="/docs/attributes/nonce/"><code>nonce</code></a> &mdash; verifying and allowing scripts.</li>
+    <li><a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> &mdash; element reference.</li>
+    <li><a href="/docs/performance/">Performance</a> and <a href="/docs/bundles/">bundles</a> &mdash; how VB keeps its own loading cost down.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>type="module"</code></strong> &mdash; your own code, including VB. Deferred and ordered by default.</li>
+    <li><strong><code>defer</code></strong> &mdash; classic scripts that need the DOM or each other.</li>
+    <li><strong><code>async</code></strong> &mdash; independent third-party scripts.</li>
+    <li><strong>No attribute</strong> &mdash; a tiny inline script that must run before first paint.</li>
+    <li><strong><code>blocking="render"</code></strong> &mdash; when a deferred or async script must still finish before the first paint.</li>
   </ul>
 </section>

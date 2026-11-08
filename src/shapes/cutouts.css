@@ -1,11 +1,24 @@
 /* Cutout shapes
-   [data-cutout] uses evenodd fill rule to punch holes through elements.
-   Outer rectangle + inner shape = visible hole effect.
-   Second subpath uses `move to` (not `from`) per shape() spec. */
+   [data-cutout] uses the evenodd fill rule to punch a hole through an
+   element: an outer rectangle plus an inner shape = a hole.
+   Second subpath uses `move to` (not `from`) per the shape() spec.
+
+   Contract:
+   - The hole removes everything the element paints there, including its own
+     text. Keep content out of the hole (put labels in a <figcaption> or
+     against an edge).
+   - The outer rectangle extends var(--_cutout-bleed) past the border box,
+     so the element's own focus ring, outline and shadow are not clipped.
+   - circle uses arcs; it is a true circle on a square element and an
+     ellipse otherwise (the radius is a % of each axis).
+   - badge-corner bites the top inline-end corner (top-left under RTL).
+   - Forced colours and print drop the clip: backgrounds are flattened
+     there, so the hole would only hide content. */
 
 @supports (clip-path: shape(from 0% 0%, close)) {
 
 [data-cutout] {
+  --_cutout-bleed: 1rem;
   position: relative;
 }
 
@@ -13,13 +26,14 @@
 [data-cutout="circle"] {
   clip-path: shape(
     evenodd
-    from 0% 0%, line to 100% 0%,
-    line to 100% 100%, line to 0% 100%, close,
+    from calc(0% - var(--_cutout-bleed)) calc(0% - var(--_cutout-bleed)),
+    line to calc(100% + var(--_cutout-bleed)) calc(0% - var(--_cutout-bleed)),
+    line to calc(100% + var(--_cutout-bleed)) calc(100% + var(--_cutout-bleed)),
+    line to calc(0% - var(--_cutout-bleed)) calc(100% + var(--_cutout-bleed)),
+    close,
     move to 50% 20%,
-    curve to 80% 50% with 80% 20%,
-    curve to 50% 80% with 80% 80%,
-    curve to 20% 50% with 20% 80%,
-    curve to 50% 20% with 20% 20%,
+    arc to 50% 80% of 30%,
+    arc to 50% 20% of 30%,
     close
   );
 }
@@ -28,8 +42,11 @@
 [data-cutout="diamond"] {
   clip-path: shape(
     evenodd
-    from 0% 0%, line to 100% 0%,
-    line to 100% 100%, line to 0% 100%, close,
+    from calc(0% - var(--_cutout-bleed)) calc(0% - var(--_cutout-bleed)),
+    line to calc(100% + var(--_cutout-bleed)) calc(0% - var(--_cutout-bleed)),
+    line to calc(100% + var(--_cutout-bleed)) calc(100% + var(--_cutout-bleed)),
+    line to calc(0% - var(--_cutout-bleed)) calc(100% + var(--_cutout-bleed)),
+    close,
     move to 50% 28%,
     line to 72% 50%,
     line to 50% 72%,
@@ -42,8 +59,11 @@
 [data-cutout="arch-window"] {
   clip-path: shape(
     evenodd
-    from 0% 0%, line to 100% 0%,
-    line to 100% 100%, line to 0% 100%, close,
+    from calc(0% - var(--_cutout-bleed)) calc(0% - var(--_cutout-bleed)),
+    line to calc(100% + var(--_cutout-bleed)) calc(0% - var(--_cutout-bleed)),
+    line to calc(100% + var(--_cutout-bleed)) calc(100% + var(--_cutout-bleed)),
+    line to calc(0% - var(--_cutout-bleed)) calc(100% + var(--_cutout-bleed)),
+    close,
     move to 30% 90%, line to 30% 52%,
     curve to 50% 30% with 30% 30%,
     curve to 70% 52% with 70% 30%,
@@ -56,8 +76,11 @@
 [data-cutout="hex"] {
   clip-path: shape(
     evenodd
-    from 0% 0%, line to 100% 0%,
-    line to 100% 100%, line to 0% 100%, close,
+    from calc(0% - var(--_cutout-bleed)) calc(0% - var(--_cutout-bleed)),
+    line to calc(100% + var(--_cutout-bleed)) calc(0% - var(--_cutout-bleed)),
+    line to calc(100% + var(--_cutout-bleed)) calc(100% + var(--_cutout-bleed)),
+    line to calc(0% - var(--_cutout-bleed)) calc(100% + var(--_cutout-bleed)),
+    close,
     move to 50% 22%,
     line to 72% 36%,
     line to 72% 64%,
@@ -68,18 +91,48 @@
   );
 }
 
-/* ── Badge Corner ── quarter-circle in top-right */
+/* ── Badge Corner ── concave quarter-circle bite out of the top inline-end
+   corner. The curve's control point sits inside the element (70% 30%), so
+   the removed region is the corner side of the curve: a bite, not a
+   rounded corner. */
 [data-cutout="badge-corner"] {
   clip-path: shape(
     evenodd
-    from 0% 0%, line to 100% 0%,
-    line to 100% 100%, line to 0% 100%, close,
+    from calc(0% - var(--_cutout-bleed)) calc(0% - var(--_cutout-bleed)),
+    line to calc(100% + var(--_cutout-bleed)) calc(0% - var(--_cutout-bleed)),
+    line to calc(100% + var(--_cutout-bleed)) calc(100% + var(--_cutout-bleed)),
+    line to calc(0% - var(--_cutout-bleed)) calc(100% + var(--_cutout-bleed)),
+    close,
     move to 70% 0%,
     line to 100% 0%,
     line to 100% 30%,
-    curve to 70% 0% with 100% 0%,
+    curve to 70% 0% with 70% 30%,
+    close
+  );
+}
+
+[data-cutout="badge-corner"]:dir(rtl) {
+  clip-path: shape(
+    evenodd
+    from calc(0% - var(--_cutout-bleed)) calc(0% - var(--_cutout-bleed)),
+    line to calc(100% + var(--_cutout-bleed)) calc(0% - var(--_cutout-bleed)),
+    line to calc(100% + var(--_cutout-bleed)) calc(100% + var(--_cutout-bleed)),
+    line to calc(0% - var(--_cutout-bleed)) calc(100% + var(--_cutout-bleed)),
+    close,
+    move to 30% 0%,
+    line to 0% 0%,
+    line to 0% 30%,
+    curve to 30% 0% with 30% 30%,
     close
   );
 }
 
 } /* end @supports */
+
+@media (forced-colors: active) {
+  [data-cutout] { clip-path: none; }
+}
+
+@media print {
+  [data-cutout] { clip-path: none; }
+}

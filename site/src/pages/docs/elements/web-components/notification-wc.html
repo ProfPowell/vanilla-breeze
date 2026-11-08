@@ -17,7 +17,7 @@ crumbLabel: Web Components
     <li><strong>Banner</strong> &mdash; full-width, sticky strip with a dismiss button. Dismissal persists across reloads via <a href="/docs/concepts/vb-store/"><code>VBStore</code></a> under the namespace <code>notifications</code>; optional <code>expires</code> re-shows after N days.</li>
     <li><strong>Panel</strong> &mdash; bell-icon trigger with an unread badge. Click opens a drawer with a list of notifications composed from static <code>&lt;article&gt;</code> children and (optionally) a dynamic JSON feed. Per-item read state persists via VBStore.</li>
   </ul>
-  <p>Both modes work without JavaScript &mdash; banner is plain HTML; panel renders its static articles inline. JS only adds dismissal, read tracking, and dynamic fetches.</p>
+  <p>With scripting disabled both modes still show their content: the banner is plain HTML and the panel&rsquo;s static <code>&lt;article&gt;</code> children render inline as a list. JS adds dismissal, read tracking, and dynamic fetches. While a script is still loading, the panel&rsquo;s articles (and a banner with <code>persist</code>) stay hidden so they don&rsquo;t flash before the upgrade.</p>
 </section>
 
 <section>
@@ -54,6 +54,8 @@ crumbLabel: Web Components
     shadow>
   </browser-window>
 
+  <p>Supply your own trigger by placing a <code>&lt;button data-trigger&gt;</code> child; the unread badge is appended inside it.</p>
+
   <code-block language="html" label="Panel mode (static + dynamic)" data-escape><toast-msg position="top-end"></toast-msg>
 
 <notification-wc src="/api/notify" toast-new>
@@ -84,13 +86,23 @@ crumbLabel: Web Components
   "dismissed": false
 }</code-block>
 
+  <p>Rows link to <code>url</code> only when it resolves to <code>http:</code> or <code>https:</code> (relative URLs included); any other scheme, such as <code>javascript:</code>, renders the row as a plain button. Dates are formatted with <code>Intl.DateTimeFormat</code> in the document language; date-only values (<code>2026-04-10</code>) are shown as that calendar day in every time zone.</p>
+
+  <h3>Setting notifications from JavaScript</h3>
+  <p>The <code>notifications</code> property takes the same entry shape as the feed. Entries merge over the static articles by <code>id</code>; the getter returns a copy. Each assignment re-renders and fires <code>notification-wc:notifications-changed</code>.</p>
+
+  <code-block language="js" label="notifications property" data-escape>const bell = document.querySelector('notification-wc');
+bell.notifications = [
+  { id: 'build-42', type: 'system', title: 'Build 42 passed', date: '2026-11-04T09:00:00Z', url: '/builds/42' },
+];</code-block>
+
   <p>Six recognized <code>type</code> values pick the row icon: <code>update</code> (package), <code>alert</code> (alert-triangle), <code>watch</code> (eye), <code>system</code> (settings), <code>message</code> (mail), <code>stewardship</code> (shield).</p>
 
   <h3>Polling</h3>
   <p>Set <code>poll</code> in milliseconds to re-fetch on an interval (e.g. <code>poll="300000"</code> for every 5 minutes). The component runs <code>setInterval</code>, cleared automatically when the element disconnects.</p>
 
   <h3>Toast on new</h3>
-  <p>With <code>toast-new</code> set, every never-before-seen entry on a non-initial fetch fires a toast on the nearest <code>&lt;toast-msg&gt;</code>. The first fetch is silent so the page does not light up on every reload.</p>
+  <p>With <code>toast-new</code> set, every never-before-seen entry on a non-initial fetch fires a toast on the <code>&lt;toast-msg&gt;</code> matched by its value (a selector such as <code>toast-new="#alerts"</code>); a bare <code>toast-new</code>, or a value that matches nothing, uses the first <code>&lt;toast-msg&gt;</code> in the document. The first fetch is silent so the page does not light up on every reload.</p>
 
   <h3>Watching tab</h3>
   <p>The panel grows two sub-tabs &mdash; <strong>All</strong> and <strong>Watching</strong>. The Watching tab reads VBStore namespace <code>watches</code> and lists every page the user has bookmarked via <a href="/docs/attributes/data-watch-page/"><code>data-watch-page</code></a>. Each row shows title, URL, time of last check, an &ldquo;Changed&rdquo; badge when the page&rsquo;s content hash drifted since the user last visited, and a per-row Unwatch button. The tab&rsquo;s count badge shows how many pages the user is watching.</p>
@@ -111,10 +123,24 @@ crumbLabel: Web Components
       <tr><td><code>expires</code></td><td>banner</td><td>Days until the banner re-shows after dismiss</td></tr>
       <tr><td><code>src</code></td><td>panel</td><td>URL or VBService role for dynamic notifications</td></tr>
       <tr><td><code>poll</code></td><td>panel</td><td>Polling interval (ms)</td></tr>
-      <tr><td><code>toast-new</code></td><td>panel</td><td>Fire a toast on each new dynamic notification</td></tr>
+      <tr><td><code>toast-new</code></td><td>panel</td><td>Fire a toast on each new dynamic notification. Optional value: a selector for the target <code>&lt;toast-msg&gt;</code> (default: the first one in the document)</td></tr>
       <tr><td><code>storage-key</code></td><td>panel</td><td>VBStore namespace for read-state (default <code>notifications</code>)</td></tr>
     </tbody>
   </table>
+  <p><code>variant</code> and <code>position</code> are reactive: changing them after upgrade restyles the banner.</p>
+
+  <h3>Child attributes</h3>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>On</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-trigger</code></td><td><code>&lt;button&gt;</code></td><td>Panel: replaces the minted bell trigger</td></tr>
+      <tr><td><code>data-id</code>, <code>data-type</code>, <code>data-date</code></td><td><code>&lt;article&gt;</code></td><td>Panel: id, icon type and date of a static notification</td></tr>
+      <tr><td><code>value="dismiss"</code> or <code>data-dismiss</code></td><td><code>&lt;button&gt;</code></td><td>Banner: the dismiss control</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Labels</h3>
+  <p>Every English string in the panel can be overridden on the element with <code>data-label-*</code>: <code>trigger</code> (Notifications), <code>unread</code> ({n} unread), <code>title</code> (Notifications), <code>mark-all</code> (Mark all read), <code>tabs</code> (Notification categories), <code>all</code> (All), <code>watching</code> (Watching), <code>empty</code> (No notifications), <code>watch-empty</code>, <code>last-checked</code> (Last checked: {date}), <code>never</code> (&mdash;), <code>changed</code> (Changed), <code>unwatch</code> (Unwatch {title}) and <code>new</code> (New notification, the toast fallback).</p>
 </section>
 
 <section>
@@ -124,11 +150,13 @@ crumbLabel: Web Components
       <tr><th>Event</th><th>Detail</th><th>When</th></tr>
     </thead>
     <tbody>
-      <tr><td><code>notification-wc:new</code></td><td><code>{ notification }</code></td><td>A previously-unseen entry arrived in a dynamic fetch</td></tr>
+      <tr><td><code>notification-wc:new</code></td><td><code>{ notification }</code></td><td>A previously-unseen entry arrived in a dynamic fetch. Panels also <strong>listen</strong> for this event on <code>document</code>: one dispatched by another script (for example <a href="/docs/attributes/data-watch-page/">page-watch</a>&rsquo;s &ldquo;content changed&rdquo; notice) is added to the list, deduplicated by <code>id</code>.</td></tr>
       <tr><td><code>notification-wc:read</code></td><td><code>{ id }</code></td><td>An entry was marked read</td></tr>
       <tr><td><code>notification-wc:dismiss</code></td><td><code>{ id }</code></td><td>Banner was dismissed</td></tr>
       <tr><td><code>notification-wc:open</code></td><td>&mdash;</td><td>Panel drawer opened</td></tr>
       <tr><td><code>notification-wc:close</code></td><td>&mdash;</td><td>Panel drawer closed</td></tr>
+      <tr><td><code>notification-wc:notifications-changed</code></td><td><code>{ notifications, source: 'property' }</code></td><td>The <code>notifications</code> setter replaced the dynamic list</td></tr>
+      <tr><td><code>page-watch:remove</code></td><td><code>{ url, subscriptionId }</code></td><td>A page was unwatched from the Watching tab</td></tr>
     </tbody>
   </table>
 </section>
@@ -136,11 +164,12 @@ crumbLabel: Web Components
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li>The bell trigger gets <code>aria-haspopup="dialog"</code> and tracks its open state with <code>aria-expanded</code>; the drawer carries <code>role="dialog" aria-label="Notifications"</code>.</li>
-    <li>Outside-click and <kbd>Esc</kbd> both close the drawer; focus returns to the trigger on Esc.</li>
-    <li>Static <code>&lt;article&gt;</code> children remain in the light DOM &mdash; screen readers can navigate them by heading even when the panel is closed.</li>
-    <li>The unread count is announced when present (a numeric badge inside the trigger button).</li>
-    <li>Banner dismiss respects <code>prefers-reduced-motion</code> &mdash; no entry/exit animation.</li>
+    <li>The bell trigger gets <code>aria-haspopup="dialog"</code>, <code>aria-controls</code> and <code>aria-expanded</code>. Its accessible name includes the unread count (&ldquo;Notifications, 3 unread&rdquo;); the visual badge is <code>aria-hidden</code>.</li>
+    <li>Opening moves focus into the drawer (<code>role="dialog"</code>, named by its heading). <kbd>Esc</kbd> closes it and returns focus to the trigger; tabbing out of the component or clicking outside also closes it, returning focus to the trigger if it was inside the drawer.</li>
+    <li>The All / Watching switcher is a full tabs pattern: <code>role="tablist"</code>, tabs with <code>aria-controls</code>, <code>role="tabpanel"</code> panels, and <kbd>&larr;</kbd> <kbd>&rarr;</kbd> <kbd>Home</kbd> <kbd>End</kbd> with a roving tabindex.</li>
+    <li>After upgrade the static articles are re-rendered as rows inside the drawer and the originals are hidden, so the content is reachable through the drawer, not by page heading navigation.</li>
+    <li>Dismissing a banner that holds focus moves focus to <code>&lt;main&gt;</code> rather than dropping it on the page body.</li>
+    <li>In forced-colors mode the badge, the selected tab and unread rows get system-colour borders.</li>
   </ul>
 </section>
 

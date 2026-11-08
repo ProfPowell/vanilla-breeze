@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "style"
-description: "Contains CSS styles for the document."
+description: "Embeds a CSS stylesheet in the document. Covers cascade-layer placement against VB's layers, media-scoped blocks, CSP nonces, render blocking, and why a style block or tokens beat style attributes."
 elementName: style
 category: native
 nativeGroup: Document
@@ -11,32 +11,116 @@ crumbHref: /docs/elements/native/
 crumbLabel: Native Elements
 ---
 
-<!-- Description Section -->
-  <section>
+<section>
     <h2>Description</h2>
-    <p>The <code>&lt;style&gt;</code> element is part of the Document category in HTML.</p>
+    <p>The <code>&lt;style&gt;</code> element holds CSS for the document it sits in. It belongs in the <code>&lt;head&gt;</code>. Its rules join the cascade exactly like a linked stylesheet at the same position, so the usual tools apply: cascade layers, specificity and source order.</p>
+    <p>For anything reused across pages, prefer a linked stylesheet (<a href="/docs/elements/native/link/"><code>&lt;link rel="stylesheet"&gt;</code></a>), which the browser can cache. A <code>&lt;style&gt;</code> block suits page-specific rules, demos and critical CSS.</p>
   </section>
 
-  <!-- Basic Example Section -->
   <section>
-    <h2>Basic Example</h2>
-    <code-block language="html" label="Basic style example" data-escape><style>...</style></code-block>
+    <h2>Cascade Layers in VB</h2>
+    <p>VB declares its layer order once, in <code>main.css</code>:</p>
+    <code-block language="css" label="VB layer order" data-escape>@layer tokens, reset, native-elements, custom-elements, web-components,
+       utils, bundle-theme, bundle-effects, bundle-components;</code-block>
+    <p>Later layers win over earlier ones. Themes self-declare <code>@layer bundle-theme</code>, so they sit above every framework layer. <strong>Unlayered CSS beats every layer</strong>, whatever its specificity. That is how your own <code>&lt;style&gt;</code> block overrides VB without <code>!important</code>.</p>
+    <ul>
+      <li><strong>Override VB</strong>: write plain, unlayered rules. They win.</li>
+      <li><strong>Extend VB at a given level</strong>: wrap rules in one of VB's layer names, e.g. <code>@layer native-elements { … }</code>. They then compete normally with VB's own rules in that layer, and themes still apply on top.</li>
+      <li>Link <code>main.css</code> (which declares the order) <em>before</em> any <code>&lt;style&gt;</code> that names a VB layer. A layer first named in your block would otherwise be created in the wrong position.</li>
+    </ul>
+    <browser-window src="/docs/snippets/demos/style-layers.html" url="https://vanilla-breeze.com/style/layers" title="style element and cascade layers" shadow></browser-window>
+    <code-block language="html" label="Layered vs unlayered rules" data-escape><link rel="stylesheet" href="/src/main.css" />
+<style>
+  /* Joins VB's native-elements layer */
+  @layer native-elements {
+    body p > mark.layer-demo { background: var(--color-warning-subtle); }
+  }
+
+  /* Unlayered: wins over the layered rule despite lower specificity */
+  .wins { background: var(--color-success-subtle); }
+</style></code-block>
+    <p>See <a href="/docs/overrides/">Overrides</a> for the full layer contract.</p>
   </section>
 
-  <!-- Attributes Section -->
+  <section>
+    <h2>Style Blocks, Tokens and the style Attribute</h2>
+    <p>VB's conformance check (<code>vb/no-inline-style</code>) flags <code>style="…"</code> <em>attributes</em>, not <code>&lt;style&gt;</code> elements. Inline attributes cannot be layered, overridden by themes, scoped by media queries or reused. Move the rule into a <code>&lt;style&gt;</code> block or stylesheet, and use design tokens for the values.</p>
+    <code-block language="html" label="Prefer a style block with tokens" data-escape><!-- Flagged: inline style attribute with a hardcoded colour -->
+<p style="color: #555; margin-top: 24px">…</p>
+
+<!-- Preferred: a rule in a style block, using tokens -->
+<style>
+  .note { color: var(--color-text-muted); margin-block-start: var(--size-l); }
+</style>
+<p class="note">…</p></code-block>
+    <p>For per-element values, use a data attribute that CSS reads, or one of the documented layout custom properties (<code>--layout-min</code>, <code>--layout-threshold</code>, <code>--layout-content-min</code>), which the conformance check allows.</p>
+  </section>
+
+  <section>
+    <h2>Media-Scoped Blocks</h2>
+    <p>The <code>media</code> attribute applies the whole block only when the query matches. It is equivalent to wrapping the contents in <code>@media</code>.</p>
+    <code-block language="html" label="Media attribute" data-escape><style media="print">
+  nav, footer { display: none; }
+</style></code-block>
+  </section>
+
+  <section>
+    <h2>Security: CSP Nonces</h2>
+    <p>A strict Content Security Policy blocks inline styles unless they carry the response's nonce, listed in <code>style-src</code>. Note that a nonce allows a <code>&lt;style&gt;</code> element but never a <code>style=""</code> attribute; that is one more reason to avoid style attributes.</p>
+    <code-block language="html" label="Nonce" data-escape><!-- Content-Security-Policy: style-src 'self' 'nonce-r4nd0m' -->
+<style nonce="r4nd0m">
+  .hero { min-block-size: 60vh; }
+</style></code-block>
+  </section>
+
   <section>
     <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/attributes/">global attributes</a>.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>media</code></td>
+          <td>Media query; the block applies only when it matches. Defaults to <code>all</code>.</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/blocking/"><code>blocking="render"</code></a></td>
+          <td>Explicitly hold rendering until the styles are ready. A <code>&lt;style&gt;</code> in the <code>&lt;head&gt;</code> is already render-blocking; the attribute matters mostly for blocks inserted by script.</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/nonce/"><code>nonce</code></a></td>
+          <td>One-time token matching the CSP <code>style-src</code> directive.</td>
+        </tr>
+        <tr>
+          <td><code>title</code></td>
+          <td>Puts the block in a named style sheet set. Blocks whose title differs from the first titled sheet become alternates and are disabled, so leave it off.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The element also accepts the <a href="/docs/attributes/">global attributes</a>. The old <code>type="text/css"</code> attribute is unnecessary.</p>
   </section>
 
-  <!-- Accessibility Section -->
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;style&gt;</code> element will be documented here.</p>
+    <ul>
+      <li>Never hide content that matters with CSS alone if assistive technology still reads it, or the reverse. Use <code>hidden</code> or VB's <code>.visually-hidden</code> deliberately.</li>
+      <li>Keep user preferences working: honour <code>prefers-reduced-motion</code> and VB's <code>data-motion-reduced</code> switch, and do not override focus outlines without a visible replacement.</li>
+      <li>Use colour tokens rather than hardcoded colours, so text keeps its contrast across themes and in dark mode.</li>
+      <li>CSS <code>content</code> text is announced inconsistently. Do not put essential information in generated content.</li>
+    </ul>
   </section>
 
-  <!-- Related Section -->
   <section>
     <h2>Related</h2>
-    <p>Related elements will be documented here.</p>
+    <ul>
+      <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> - External, cacheable stylesheets</li>
+      <li><a href="/docs/overrides/">Overrides</a> - VB's cascade layers and how to override them</li>
+      <li><a href="/docs/attributes/blocking/"><code>blocking</code></a> - Render-blocking styles and scripts</li>
+      <li><a href="/docs/attributes/nonce/"><code>nonce</code></a> - CSP nonces</li>
+      <li><a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> - The scripting counterpart</li>
+    </ul>
   </section>

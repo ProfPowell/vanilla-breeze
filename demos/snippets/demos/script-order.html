@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>script execution order</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+  </style>
+  <script>
+    // Classic, parser-blocking: runs now, before <body> exists.
+    window.scriptLog = ['Classic script in <head> (body not parsed yet)'];
+  </script>
+  <script type="module">
+    // Modules are deferred: this runs after the whole document is parsed.
+    window.scriptLog.push('type="module" in <head> (deferred, document parsed: '
+      + Boolean(document.getElementById('log')) + ')');
+  </script>
+  <script type="application/ld+json">
+    { "@context": "https://schema.org", "@type": "WebPage", "name": "script execution order" }
+  </script>
+</head>
+<body>
+  <h1>script execution order</h1>
+  <p>Each script appends a line when it runs. The JSON-LD block is data: it is never executed.</p>
+  <ol id="log"></ol>
+  <script>
+    // Classic at the end of <body>: runs during parsing, before deferred modules.
+    window.scriptLog.push('Classic script at end of <body>');
+    document.addEventListener('DOMContentLoaded', () => {
+      window.scriptLog.push('DOMContentLoaded');
+      const data = document.querySelectorAll('script[type="application/ld+json"]').length;
+      window.scriptLog.push(`JSON-LD data blocks found: ${data} (not executed)`);
+      const log = document.getElementById('log');
+      for (const line of window.scriptLog) {
+        const li = document.createElement('li');
+        li.textContent = line;
+        log.append(li);
+      }
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

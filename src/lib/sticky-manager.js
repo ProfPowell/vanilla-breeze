@@ -1,7 +1,8 @@
 /**
  * Sticky Manager — viewport-aware sticky coordination
  *
- * Measures sticky header height and sets --sticky-offset on :root so
+ * Measures the banner header (the first <header> not inside a sectioning
+ * element) height and sets --sticky-offset on :root so
  * that all sticky sidebars, TOC, and scroll-padding stay coordinated.
  *
  * CSS handles the height constraint (max-height + overflow-y) directly
@@ -13,21 +14,51 @@
 
 let active = false;
 let resizeObserver;
-let headerAddedByUs = false;
+/**
+ * Headers this module marked with data-sticky. The manager owns the banner
+ * header's attribute: it adds it only when missing and removes only what it
+ * added, so an authored header[data-sticky] is never touched.
+ * @type {Set<HTMLElement>}
+ */
+const headersAddedByUs = new Set();
+/** @type {WeakSet<Element>} */
+let observed = new WeakSet();
+
+/** Sectioning ancestors that turn a <header> into a section header, not the banner. */
+const NOT_BANNER = 'article, aside, main, nav, section, [role="article"], [role="complementary"], [role="main"], [role="navigation"], [role="region"]';
+
+/**
+ * The page's banner header: the first <header> that is not scoped to a
+ * sectioning element (an article/card header must never be made sticky).
+ * @returns {HTMLElement | null}
+ */
+export function findBannerHeader() {
+  for (const header of document.querySelectorAll('header')) {
+    if (!header.parentElement?.closest(NOT_BANNER)) return /** @type {HTMLElement} */ (header);
+  }
+  return null;
+}
 
 function update() {
   const root = document.documentElement;
   if (!root.hasAttribute('data-sticky')) return;
 
-  // Ensure the first header gets data-sticky when the system is active
-  const header = document.querySelector('header');
+  // Ensure the banner header gets data-sticky when the system is active
+  const header = findBannerHeader();
   if (header && !header.hasAttribute('data-sticky')) {
     header.dataset.sticky = '';
-    headerAddedByUs = true;
+    headersAddedByUs.add(header);
   }
 
-  const stickyHeader = document.querySelector('header[data-sticky]');
-  const offset = stickyHeader ? stickyHeader.getBoundingClientRect().height : 0;
+  if (header && resizeObserver && !observed.has(header)) {
+    resizeObserver.observe(header);
+    observed.add(header);
+  }
+
+  // A header that is not actually sticky (mobile rule, author override)
+  // covers nothing, so it contributes no offset.
+  const sticky = header?.hasAttribute('data-sticky') && getComputedStyle(header).position !== 'static';
+  const offset = header && sticky ? header.getBoundingClientRect().height : 0;
   root.style.setProperty('--sticky-offset', `${offset}px`);
 }
 
@@ -36,8 +67,15 @@ function handleToggle() {
 }
 
 export function initStickyManager() {
-  if (active) return;
+  // Already running (e.g. re-enabled after <html data-sticky> was restored):
+  // just re-measure so the banner header is (re)marked.
+  if (active) { update(); return; }
   active = true;
+
+  // Observe the banner header for size changes (banners, responsive reflow);
+  // update() attaches it.
+  resizeObserver = new ResizeObserver(update);
+  observed = new WeakSet();
 
   // Immediate measure + post-layout refinement
   update();
@@ -48,11 +86,6 @@ export function initStickyManager() {
 
   window.addEventListener('resize', update, { passive: true });
   document.addEventListener('toggle', handleToggle, true);
-
-  // Observe header for size changes (e.g. banners, responsive reflow)
-  resizeObserver = new ResizeObserver(update);
-  const header = document.querySelector('header[data-sticky]');
-  if (header) resizeObserver.observe(header);
 }
 
 export function destroyStickyManager() {
@@ -63,12 +96,9 @@ export function destroyStickyManager() {
   document.removeEventListener('toggle', handleToggle, true);
   resizeObserver?.disconnect();
 
-  // Only remove data-sticky from header if we added it
-  if (headerAddedByUs) {
-    const header = /** @type {HTMLElement | null} */ (document.querySelector('header[data-sticky]'));
-    if (header) delete header.dataset.sticky;
-    headerAddedByUs = false;
-  }
+  // Only remove data-sticky from headers we added it to
+  for (const header of headersAddedByUs) delete header.dataset.sticky;
+  headersAddedByUs.clear();
 
   document.documentElement.style.removeProperty('--sticky-offset');
 }

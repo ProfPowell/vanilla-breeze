@@ -16,6 +16,8 @@
 @layer bundle-theme {
   :root[data-theme~="8bit"],
   [data-theme~="8bit"] {
+    color-scheme: dark;
+
     /* ===== COLORS ===== */
     /* Classic NES-inspired palette */
     --color-surface: oklch(20% 0.02 250); /* Dark blue-gray */
@@ -115,10 +117,10 @@
     --control-checked-bg: oklch(70% 0.2 145);
     --control-checked-border: oklch(70% 0.2 145);
     --input-bg: oklch(15% 0.02 250);
-    --input-border: oklch(40% 0.04 250);
+    --input-border: color-mix(in oklab, oklch(40% 0.04 250), var(--color-text) 20%); /* 3:1 non-text contrast */
     --input-border-focus: oklch(70% 0.2 145);
     --range-track-h: 0.5rem;
-    --range-track-bg: oklch(25% 0.03 250);
+    --range-track-bg: color-mix(in oklab, oklch(25% 0.03 250), var(--color-text) 40%); /* 3:1 non-text contrast */
     --range-track-fill: oklch(70% 0.2 145);
     --range-thumb-size: 1.5rem;
     --range-thumb-bg: oklch(20% 0.02 250);
@@ -187,12 +189,12 @@
       text-shadow: var(--_8bit-glow-crt);
 
       &::before {
-        content: "★ ";
+        content: "★ " / "";
         color: var(--color-accent);
       }
 
       &::after {
-        content: " ★";
+        content: " ★" / "";
         color: var(--color-accent);
       }
     }
@@ -207,11 +209,11 @@
       color: var(--color-primary);
 
       &::before {
-        content: "■ ";
+        content: "■ " / "";
       }
 
       &::after {
-        content: " ■";
+        content: " ■" / "";
       }
     }
 
@@ -222,7 +224,7 @@
 
     & :is(main, article) {
     /* Pixel-style dividers */
-    & hr:not([data-ornament]) {
+    & hr:not([data-ornament], [class]) {
       border: none;
       height: var(--_8bit-border-pixel);
       margin-block: 2rem;
@@ -321,7 +323,7 @@
     & input,
     & textarea {
       background: oklch(10% 0 0);
-      border: var(--_8bit-border-pixel) solid var(--color-border);
+      border: var(--_8bit-border-pixel) solid var(--input-border); /* 3:1 non-text contrast */
       color: var(--color-text);
       font-family: var(--font-mono);
       font-size: var(--font-size-xs);
@@ -449,24 +451,23 @@
       --browser-window-border-color: var(--color-border-strong);
     }
 
-    /* HP bar style progress */
-    & progress {
+    /* HP bar style progress — fill from --progress-fill so .success/.warning/
+       .error still apply; enhanced rings keep their own geometry */
+    & progress:not([data-type="ring"][data-enhanced]) {
       appearance: none;
       height: 1rem;
       border: var(--_8bit-border-pixel) solid var(--color-border-strong);
       background: oklch(10% 0 0);
 
-      &::-webkit-progress-bar {
+      &:not(:indeterminate)::-webkit-progress-bar {
         background: oklch(10% 0 0);
       }
 
       &::-webkit-progress-value {
         background: repeating-linear-gradient(
           90deg,
-          var(--color-primary),
-          var(--color-primary) 8px,
-          var(--color-primary-hover) 8px,
-          var(--color-primary-hover) 16px
+          var(--progress-fill) 0 8px,
+          oklch(from var(--progress-fill) calc(l - 0.1) c h) 8px 16px
         );
       }
     }
@@ -641,7 +642,16 @@
       --browser-window-border-color: var(--_8bit-gb-darkest);
       --browser-window-text-color: var(--_8bit-gb-lightest);
       --browser-window-text-muted: var(--_8bit-gb-light);
-      --browser-window-url-bg: var(--_8bit-gb-dark);
+      /* Between dark and darkest so gb-light URL text clears 4.5:1 */
+      --browser-window-url-bg: color-mix(in oklch, var(--_8bit-gb-dark), var(--_8bit-gb-darkest));
+      --browser-window-hover-bg: var(--_8bit-gb-darkest);
+      --browser-window-active-bg: var(--_8bit-gb-darkest);
+      /* The header is gb-darkest: dots and focus ring use the light shades
+         (the mapped status colours all collapse to gb-darkest here) */
+      --browser-window-accent-color: var(--_8bit-gb-lightest);
+      --browser-window-close-color: var(--_8bit-gb-lightest);
+      --browser-window-minimize-color: var(--_8bit-gb-light);
+      --browser-window-maximize-color: oklch(56% 0.09 125);
     }
   }
 

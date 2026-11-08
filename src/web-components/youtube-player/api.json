@@ -2,75 +2,32 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "youtube-player",
   "type": "web-component",
-  "attributes": [
-    {
-      "name": "video-id",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "YouTube video ID (required)"
-    },
-    {
-      "name": "title",
-      "kind": "native",
-      "purpose": "config",
-      "type": "string",
-      "description": "Accessible title for iframe + play button"
-    },
-    {
-      "name": "start",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "number",
-      "description": "Start playback at N seconds"
-    },
-    {
-      "name": "list",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "YouTube playlist ID"
-    },
-    {
-      "name": "params",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Raw query string appended to embed URL"
-    },
-    {
-      "name": "autoplay",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "boolean",
-      "description": "Auto-initialise iframe on load (no facade)"
-    },
-    {
-      "name": "thumbnail",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Thumbnail resolution: hq | mq | sd | maxres"
-    },
-    {
-      "name": "state",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Component-managed: \"ready\" (facade) or \"active\" (iframe)"
-    },
-    {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
-    }
-  ],
-  "childAttributes": [],
-  "structure": [],
+  "description": "YouTube embed behind a facade: a thumbnail (or local poster) and one play button; the youtube-nocookie.com iframe loads only when the reader presses play. Without poster the thumbnail is requested from i.ytimg.com on render.",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
       "@flow"
     ]
-  }
+  },
+  "attributes": [
+    { "name": "video-id", "kind": "host-api", "purpose": "config", "type": "string", "required": true, "description": "YouTube video ID (6–20 of A–Z a–z 0–9 _ -). Missing or invalid: the element does not upgrade and the authored fallback stays." },
+    { "name": "title", "kind": "native", "purpose": "config", "type": "string", "default": "YouTube video", "description": "Video title: the iframe title and the {title} in the play-button name." },
+    { "name": "start", "kind": "host-api", "purpose": "config", "type": "number", "description": "Start playback at N seconds. Whole non-negative seconds only; anything else is ignored with a console warning." },
+    { "name": "end", "kind": "host-api", "purpose": "config", "type": "number", "description": "Stop playback at N seconds. Whole non-negative seconds only." },
+    { "name": "list", "kind": "host-api", "purpose": "config", "type": "string", "description": "YouTube playlist ID." },
+    { "name": "params", "kind": "host-api", "purpose": "config", "type": "string", "description": "Extra query string for the embed URL (escape hatch); its keys override start, end, list and autoplay. The embed host is fixed." },
+    { "name": "autoplay", "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Load the iframe on connect instead of the facade (this contacts YouTube at once). Ignored under prefers-reduced-motion or data-motion-reduced. Never moves focus." },
+    { "name": "thumbnail", "kind": "host-api", "purpose": "config", "type": "enum", "values": ["hq", "mq", "sd", "maxres"], "default": "hq", "description": "i.ytimg.com thumbnail size. sd and maxres fall back to hq when the video has none." },
+    { "name": "poster", "kind": "host-api", "purpose": "config", "type": "string", "description": "Local image URL for the facade. When set, no thumbnail is requested from i.ytimg.com; nothing contacts Google until play." },
+    { "name": "data-label-play", "kind": "data", "purpose": "config", "type": "string", "default": "Play {title}", "description": "Accessible name of the play button; {title} is replaced with the title." },
+    { "name": "state", "kind": "host-api", "purpose": "output-state", "direction": "output", "type": "enum", "values": ["ready", "active"], "description": "Set by the component: ready = facade shown, active = iframe inserted. Reconnect (move or reinsert) renders the facade again." }
+  ],
+  "properties": [],
+  "methods": [],
+  "events": [
+    { "name": "youtube-player:activate", "detail": "{ videoId: string, fromUser: boolean }", "description": "Fired (bubbles) when the iframe is inserted; fromUser is false for the autoplay attribute." },
+    { "name": "youtube-player:upgraded", "description": "Fired (bubbles) after the element upgrades." }
+  ],
+  "childAttributes": [],
+  "structure": []
 }

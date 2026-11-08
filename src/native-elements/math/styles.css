@@ -1,9 +1,27 @@
-/* math: Native MathML styling */
+/* math: Native MathML styling
+ *
+ * MathML Core (UA stylesheet + the font's OpenType MATH table) owns baseline
+ * alignment, operator spacing (lspace/rspace) and script sizing
+ * (font-size: math / math-depth). VB only picks the font, lays out display
+ * math and provides the numbered/captioned wrappers. Token colours are NOT
+ * applied to mi/mn/mo: author rules would override the `mathcolor`
+ * presentational hint and stop math inheriting colour from its context.
+ */
 
-/* --- Font Stack --- */
+/* --- Font --- */
+/* Self-hosted Latin Modern Math (GUST Font License, licence ships next to the
+   file as fonts/latinmodern-math-GUST-LICENSE.txt). A locally installed copy
+   wins; otherwise the woff2 is fetched only when a page actually renders
+   MathML text in this family — pages without <math> never download it. */
+@font-face {
+  font-family: "Latin Modern Math";
+  src: local("Latin Modern Math"), local("LatinModernMath-Regular"),
+    url("../../fonts/latinmodern-math.woff2") format("woff2");
+  font-display: swap;
+}
 
 math {
-  font-family: "Latin Modern Math", "STIX Two Math", "Cambria Math", serif;
+  font-family: "Latin Modern Math", "STIX Two Math", "Cambria Math", math, serif;
   font-size: 1em;
 }
 
@@ -11,8 +29,6 @@ math {
 
 math:not([display="block"]) {
   display: inline math;
-  vertical-align: middle;
-  line-height: 0;
 }
 
 /* --- Display (Block) Math --- */
@@ -24,22 +40,8 @@ math[display="block"] {
   overflow-x: auto;
 }
 
-/* --- Cross-Browser Normalization --- */
+/* --- Fraction breathing room --- */
 
-/* Operator spacing */
-mo {
-  margin-inline: 0.15em;
-}
-
-/* Subscript / superscript sizing */
-msub > :nth-child(2),
-msup > :nth-child(2),
-msubsup > :nth-child(2),
-msubsup > :nth-child(3) {
-  font-size: 0.7em;
-}
-
-/* Fraction rendering */
 mfrac > :first-child {
   padding-block-end: 0.1em;
 }
@@ -48,50 +50,9 @@ mfrac > :last-child {
   padding-block-start: 0.1em;
 }
 
-/* --- VB Token Integration --- */
-
-/* Identifiers (variables) */
-mi {
-  color: var(--color-text, inherit);
-}
-
-/* Operators (+, -, =, etc.) */
-mo {
-  color: var(--color-text-muted, inherit);
-}
-
-/* Numbers */
-mn {
-  color: var(--color-text, inherit);
-}
-
-/* --- Dark Mode --- */
-
-@media (prefers-color-scheme: dark) {
-  math {
-    background: transparent;
-    color: inherit;
-  }
-
-  mrow, msqrt, mfrac, msub, msup, msubsup, munder, mover, munderover,
-  mtable, mtr, mtd, mtext, mspace, menclose {
-    background: transparent;
-  }
-}
-
-:root[data-theme="dark"] math {
-  background: transparent;
-  color: inherit;
-}
-
-:root[data-theme="dark"] :is(mrow, msqrt, mfrac, msub, msup, msubsup,
-  munder, mover, munderover, mtable, mtr, mtd, mtext, mspace, menclose) {
-  background: transparent;
-}
-
 /* --- Numbered Equations (CSS Counters) --- */
-/* MathML elements do not support ::after pseudo-elements,
-   so numbering requires a wrapper: <div class="equation"> */
+/* MathML elements do not support ::after pseudo-elements, so numbering needs
+   a wrapper: <figure class="equation"> or <p class="equation">. */
 
 article, body {
   counter-reset: vb-equation;
@@ -102,6 +63,7 @@ article, body {
   position: relative;
   text-align: center;
   margin-block: var(--size-l, 1.5rem);
+  margin-inline: 0;
   padding-inline-end: 3.5rem;
 
   & > math[display="block"] {

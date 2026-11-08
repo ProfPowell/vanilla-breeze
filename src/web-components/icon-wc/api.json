@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "icon-wc",
   "type": "web-component",
-  "description": "Inline icon element using SVG sprite sets with accessible labelling",
+  "description": "Inline SVG icon: fetches one sanitized SVG file per icon from <base-path>/<set>/<name>.svg, sized by preset and labelled for assistive tech",
   "htmlvalidate": {
     "flow": true,
     "phrasing": true
@@ -13,50 +13,86 @@
       "kind": "native",
       "purpose": "config",
       "type": "string",
-      "description": "Icon name (required, matches filename without .svg)"
+      "description": "Icon name (required): the SVG filename without .svg"
     },
     {
       "name": "set",
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "Icon set directory (default: \"lucide\", or \"custom\")"
+      "description": "Icon set directory (lucide, phosphor, tabler, mage, bold, custom). Defaults to the nearest data-icon-set on the element, an ancestor or <html>, then lucide. Icons missing from the set fall back to Lucide."
     },
     {
       "name": "size",
       "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Icon size: xs, sm, md, lg, xl, 2xl (default: md)"
+      "purpose": "visual-variant",
+      "type": "enum",
+      "values": ["xs", "sm", "md", "lg", "xl", "2xl"],
+      "default": "md",
+      "description": "Size preset relative to the font size: 1em, 1.25em, 1.5em, 2em, 2.5em, 3em"
     },
     {
       "name": "label",
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "Accessible label for functional icons"
+      "description": "Accessible name for a meaningful icon (role=\"img\"). Without it the icon is decorative (aria-hidden). Adding or removing it updates the icon live."
     },
     {
       "name": "base-path",
       "kind": "host-api",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "/cdn/icons",
+      "description": "Icon base URL for this icon. Defaults to <html data-icon-path>, then /cdn/icons (root-absolute: <base href> is not applied)."
     },
     {
-      "name": "width",
-      "kind": "host-api",
-      "purpose": "config"
+      "name": "data-flip-rtl",
+      "kind": "data",
+      "purpose": "visual-variant",
+      "type": "boolean",
+      "description": "Mirror the glyph horizontally when the icon is in a right-to-left context (directional icons such as arrows and chevrons)"
     },
     {
-      "name": "height",
-      "kind": "host-api",
-      "purpose": "config"
+      "name": "data-animate",
+      "kind": "data",
+      "purpose": "visual-variant",
+      "type": "enum",
+      "values": ["spin"],
+      "description": "Spins the icon while an ancestor has [data-loading] (disabled under prefers-reduced-motion)"
     },
     {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
+      "name": "data-error",
+      "kind": "data",
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "boolean",
+      "description": "Present when the icon could not be loaded from the requested set or the Lucide fallback; light-DOM content is shown instead"
+    },
+    {
+      "name": "data-upgraded",
+      "kind": "data",
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "boolean",
+      "public": false,
+      "description": "Present while the element is connected and upgraded"
     }
   ],
+  "properties": [
+    { "name": "name", "type": "string", "readonly": true, "description": "The name attribute" },
+    { "name": "set", "type": "string", "readonly": true, "description": "Resolved set: set attribute, else nearest data-icon-set, else lucide" },
+    { "name": "size", "type": "string", "readonly": true, "description": "The size attribute (default md)" },
+    { "name": "label", "type": "string | null", "readonly": true, "description": "The label attribute" },
+    { "name": "basePath", "type": "string", "readonly": true, "description": "Resolved base URL: base-path attribute, else <html data-icon-path>, else /cdn/icons" },
+    { "name": "iconPath", "type": "string", "readonly": true, "description": "URL of the requested icon file (before any Lucide fallback)" }
+  ],
   "childAttributes": [],
-  "structure": []
+  "structure": [
+    {
+      "element": "light-DOM content",
+      "required": false,
+      "description": "Optional fallback shown until the SVG loads and when it fails (data-error)"
+    }
+  ]
 }

@@ -1,12 +1,78 @@
 /* glossary-index: Search/filter enhancement for glossary pages */
 
 @scope (glossary-index) {
-  /* Search input injected by JS */
-  [data-glossary-search] {
+  /* Search landmark + input injected by JS */
+  .glossary-search {
     display: block;
-    width: 100%;
-    max-width: 30rem;
+    max-inline-size: 30rem;
     margin-block-end: var(--size-m);
+  }
+
+  .glossary-search input {
+    display: block;
+    inline-size: 100%;
+  }
+
+  /* Polite match-count status: announced, not shown */
+  .glossary-status {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  /* Visible empty state */
+  .glossary-empty {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  /* Term permalink (copies the term URL) */
+  .glossary-permalink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 24px;
+    min-block-size: 24px;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  dt:hover .glossary-permalink,
+  .glossary-permalink:focus-visible,
+  .glossary-permalink[data-state="copied"] {
+    opacity: 1;
+  }
+
+  .glossary-permalink[data-state="copied"] {
+    color: var(--color-success, var(--color-interactive));
+  }
+
+  @media (hover: none) {
+    .glossary-permalink {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .glossary-permalink {
+      transition: none;
+    }
+  }
+
+  @media print {
+    .glossary-search,
+    .glossary-empty,
+    .glossary-permalink {
+      display: none;
+    }
   }
 }
 

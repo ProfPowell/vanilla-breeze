@@ -2,70 +2,215 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "version-switcher",
   "type": "web-component",
-  "description": "Surface and switch between versions of a page over time. Inline data source + trigger + picker popover; three actions (navigate / swap / diff). Modes auto-derived from data shape (releases vs history).",
+  "description": "Surface and switch between versions of a page over time. Data from inline JSON, a data-src manifest or the vb:versions-manifest meta tag; a trigger + picker popover; three actions (navigate / swap / diff). Mode (releases vs history) is derived from the data. Entry URLs are scheme-checked (javascript:/data: entries dropped); swap and diff fetch same-origin URLs only and swapped markup is sanitized.",
   "attributes": [
     {
       "name": "data-versions",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "Inline JSON array of version entries: { id, label?, url?, date?, author?, summary?, archived?, draft?, current?, versionUrl? }. Alternative: a <script type=\"application/json\" data-versions> child."
+      "description": "Inline JSON array of version entries: { id, label?, url?, date?, author?, summary?, archived?, draft?, current?, versionUrl? }. Alternative: a <script type=\"application/json\" data-versions> child. Entries whose url is a script/data URL are dropped; an unsafe versionUrl drops only the changelog link. Stripped by the untrusted sanitizer profile."
     },
     {
       "name": "data-src",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "URL of a JSON manifest to fetch when no inline data is provided. Falls back to <meta name=\"vb:versions-manifest\"> if neither is set."
+      "description": "URL of a JSON manifest (same entry shape) fetched when no inline data is provided. Falls back to <meta name=\"vb:versions-manifest\"> if neither is set. Stripped by the untrusted sanitizer profile."
     },
     {
       "name": "data-mode",
       "kind": "data",
       "purpose": "config",
-      "type": "string",
-      "description": "\"releases\" | \"history\" \u2014 override the auto-detected mode"
+      "type": "enum",
+      "description": "Override the derived mode: releases (entries have distinct URLs) or history (entries share one URL). Sets the picker heading; observed.",
+      "values": [
+        "releases",
+        "history"
+      ]
     },
     {
       "name": "data-action",
       "kind": "data",
       "purpose": "config",
-      "type": "string",
-      "description": "\"navigate\" (default) | \"swap\" | \"diff\""
+      "type": "enum",
+      "description": "navigate sets location.href to the entry url (skipped, with an error event, when that url is the current page); swap fetches the same-origin entry url and replaces the versioned region in place (sanitized, view-transition crossfade); diff mounts a <change-set> line diff beside the versioned region.",
+      "values": [
+        "navigate",
+        "swap",
+        "diff"
+      ],
+      "default": "navigate"
     },
     {
       "name": "data-versioned-region",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "CSS selector for the swappable / diffable region (default: \"[data-versioned], main\")"
+      "description": "CSS selector for the swappable / diffable region (default: \"[data-versioned], main\")",
+      "default": "[data-versioned], main"
     },
     {
       "name": "data-diff-position",
       "kind": "data",
       "purpose": "config",
-      "type": "string",
-      "description": "\"before\" (default) | \"after\" \u2014 where to mount the diff render"
+      "type": "enum",
+      "description": "Where to mount the diff render relative to the versioned region.",
+      "values": [
+        "before",
+        "after"
+      ],
+      "default": "before"
     },
     {
       "name": "data-banner",
       "kind": "data",
       "purpose": "config",
       "type": "boolean",
-      "description": "Render an archived-version warning banner above the trigger when current is archived AND a non-archived \"latest\" exists."
+      "description": "Render an archived-version notice (an <aside> with a polite status line, filled after insertion so it is announced) when the current entry is archived AND a non-archived latest exists; the latest is a link only when it has a safe url."
     },
     {
       "name": "data-page-info-target",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "ID of a <page-info> to mount inside as a section in its expandable panel; standalone trigger is hidden in this mode."
+      "description": "ID of a <page-info> to mount inside as a section in its expandable panel; the standalone trigger is hidden in this mode. The section is removed when the switcher disconnects."
     },
     {
       "name": "aria-label",
       "kind": "aria",
       "purpose": "config",
       "type": "string",
-      "description": "Trigger / popover label (default \"Version\")"
+      "description": "What the switcher picks (e.g. \"API version\"). Not applied to the host (it has no role): it names the trigger (\"API version: v2.1\") and the picker dialog. Falls back to data-label-trigger.",
+      "default": "Version"
+    },
+    {
+      "name": "data-label-trigger",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Version",
+      "description": "Fallback name for the trigger / picker when no aria-label is set, and trigger text with no current entry."
+    },
+    {
+      "name": "data-label-loading",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Loading…",
+      "description": "Trigger text while the manifest is fetched."
+    },
+    {
+      "name": "data-label-loading-versions",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Loading versions…",
+      "description": "Trigger title and panel row while the manifest is fetched."
+    },
+    {
+      "name": "data-label-empty",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "No versions available.",
+      "description": "Empty-state row and disabled-trigger title."
+    },
+    {
+      "name": "data-label-heading-releases",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Versions",
+      "description": "Picker / panel heading in releases mode."
+    },
+    {
+      "name": "data-label-heading-history",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "History",
+      "description": "Picker / panel heading in history mode."
+    },
+    {
+      "name": "data-label-archived",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "archived",
+      "description": "Archived badge."
+    },
+    {
+      "name": "data-label-draft",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "draft",
+      "description": "Draft badge."
+    },
+    {
+      "name": "data-label-current",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "current",
+      "description": "Current badge."
+    },
+    {
+      "name": "data-label-by",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "by {author}",
+      "description": "Author line ({author})."
+    },
+    {
+      "name": "data-label-changelog",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Changelog",
+      "description": "Changelog link text."
+    },
+    {
+      "name": "data-label-changelog-for",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "{version} changelog",
+      "description": "Changelog link accessible name ({version})."
+    },
+    {
+      "name": "data-label-banner-label",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Archived version notice",
+      "description": "Banner landmark name."
+    },
+    {
+      "name": "data-label-banner",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "You’re viewing {version} (archived).",
+      "description": "Banner status text ({version})."
+    },
+    {
+      "name": "data-label-banner-latest",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Latest: {version}",
+      "description": "Banner latest link / text ({version})."
+    },
+    {
+      "name": "data-label-diff",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Diff: {from} → {to}",
+      "description": "Caption above the diff render ({from}, {to})."
     }
   ],
   "events": [
@@ -85,17 +230,17 @@
     {
       "name": "version-switcher:before-navigate",
       "detail": "{ entry }",
-      "description": "Cancellable. Fires before location.href is set; preventDefault() blocks navigation."
+      "description": "Cancellable. Fires before location.href is set (only for a safe url that is not the current page); preventDefault() blocks navigation."
     },
     {
       "name": "version-switcher:before-swap",
       "detail": "{ entry }",
-      "description": "Cancellable. Fires before swap fetches and replaces the versioned region."
+      "description": "Cancellable. Fires before swap fetches (same-origin only) and replaces the versioned region."
     },
     {
       "name": "version-switcher:swap",
       "detail": "{ entry, previousId }",
-      "description": "Fires after swap completes. Versioned region replaced + vb:version meta updated."
+      "description": "Fires after swap completes: versioned region replaced (sanitized) and <meta itemprop=\"version\"> updated."
     },
     {
       "name": "version-switcher:before-diff",
@@ -110,37 +255,19 @@
     {
       "name": "version-switcher:error",
       "detail": "{ message, entry?, error? }",
-      "description": "Parse / fetch / action failure"
+      "description": "Parse / fetch / action failure, a dropped unsafe entry, a cross-origin swap/diff url, or a navigate to the current page."
     }
   ],
   "properties": [
     {
       "name": "versions",
       "type": "VersionEntry[]",
-      "description": "Resolved version entries"
+      "description": "Resolved (URL-checked) version entries; read-only copy."
     },
     {
       "name": "currentId",
       "type": "string|null",
-      "description": "Id of the current entry"
-    },
-    {
-      "name": "openPicker",
-      "type": "() => void"
-    },
-    {
-      "name": "closePicker",
-      "type": "() => void"
-    },
-    {
-      "name": "switchTo",
-      "type": "(id) => void",
-      "description": "Programmatic selection; honors data-action"
-    },
-    {
-      "name": "refresh",
-      "type": "() => void",
-      "description": "Re-resolve the data source"
+      "description": "Id of the current entry."
     }
   ],
   "childAttributes": [
@@ -157,5 +284,27 @@
     "permittedContent": [
       "@flow"
     ]
-  }
+  },
+  "methods": [
+    {
+      "name": "openPicker()",
+      "returns": "void",
+      "description": "Open the picker popover."
+    },
+    {
+      "name": "closePicker()",
+      "returns": "void",
+      "description": "Close the picker popover."
+    },
+    {
+      "name": "switchTo(id)",
+      "returns": "void",
+      "description": "Programmatic selection; fires select then runs data-action."
+    },
+    {
+      "name": "refresh()",
+      "returns": "void",
+      "description": "Re-resolve the data source and re-render."
+    }
+  ]
 }

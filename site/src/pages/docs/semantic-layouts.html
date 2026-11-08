@@ -1,143 +1,99 @@
 ---
 layout: guide
 title: "Semantic Layouts"
-description: "Use data-layout attributes on semantic HTML elements instead of custom element wrappers. Same CSS, same behavior, better semantics."
+description: "Use data-layout attributes on semantic HTML elements instead of custom element wrappers. The same CSS rules, real semantics, and one difference to know about: sectioning elements become container-query containers."
 guideGroup: Layouts
 toc: true
 currentPath: /docs/semantic-layouts/
 ---
 
-<template slot="extraHead">
-<style>
-    .nesting-stat {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--size-2xs);
-      padding: var(--size-m) var(--size-xl);
-      border: var(--border-width-thin) solid var(--color-border);
-      border-radius: var(--radius-l);
-      text-align: center;
-    }
-
-    .nesting-number {
-      font-size: var(--font-size-4xl);
-      font-weight: 700;
-      color: var(--color-interactive);
-      line-height: 1;
-    }
-
-    .nesting-label {
-      color: var(--color-text-muted);
-      font-size: var(--font-size-s);
-    }
-
-    .nesting-arrow {
-      font-size: var(--font-size-2xl);
-      color: var(--color-interactive);
-    }
-  </style>
-</template>
-
 <!-- Section 1: Why Semantic Layouts -->
   <section id="why-semantic" data-layout="stack" data-layout-gap="l">
     <h2>Why Semantic Layouts</h2>
-    <p class="step-intro">Vanilla Breeze layout primitives work on any element, not just custom elements. Using them on semantic HTML gives you the same layouts with additional benefits.</p>
+    <p class="step-intro">Vanilla Breeze layout primitives work on any element, not just custom elements. Putting them on the semantic HTML you already have gives you the same layouts with fewer wrappers.</p>
 
-    <div data-layout="grid" data-layout-min="m" data-layout-gap="m">
-      <layout-card data-variant="outlined" data-padding="m">
-        <layout-stack data-layout-gap="2xs">
-          <h4>Fewer Nesting Levels</h4>
-          <p>Combine center + gap on a single element instead of nesting center inside stack. Less indentation, easier to scan.</p>
-        </layout-stack>
-      </layout-card>
-      <layout-card data-variant="outlined" data-padding="m">
-        <layout-stack data-layout-gap="2xs">
-          <h4>Better Accessibility</h4>
-          <p>HTML validators and screen readers understand <code>&lt;section&gt;</code>, <code>&lt;header&gt;</code>, and <code>&lt;article&gt;</code> natively. No extra ARIA needed.</p>
-        </layout-stack>
-      </layout-card>
-      <layout-card data-variant="outlined" data-padding="m">
-        <layout-stack data-layout-gap="2xs">
-          <h4>LLM-Friendly Markup</h4>
-          <p>AI tools parse semantic HTML better than custom elements. Your code is more understandable to both humans and machines.</p>
-        </layout-stack>
-      </layout-card>
-      <layout-card data-variant="outlined" data-padding="m">
-        <layout-stack data-layout-gap="2xs">
-          <h4>Same CSS, Same Behavior</h4>
-          <p>The data-layout attributes use the exact same CSS as the custom elements. Nothing changes except the tag name.</p>
-        </layout-stack>
-      </layout-card>
-    </div>
+    <ul class="unstyled" data-layout="grid" data-layout-min="m" data-layout-gap="m">
+      <li>
+        <layout-card data-variant="outlined" data-padding="m">
+          <layout-stack data-layout-gap="2xs">
+            <h3>Fewer Nesting Levels</h3>
+            <p>Combine center + gap on a single element instead of nesting center inside stack. Less indentation, easier to scan.</p>
+          </layout-stack>
+        </layout-card>
+      </li>
+      <li>
+        <layout-card data-variant="outlined" data-padding="m">
+          <layout-stack data-layout-gap="2xs">
+            <h3>Real Semantics</h3>
+            <p>The layout lives on the element that already carries meaning: <code>&lt;nav&gt;</code>, <code>&lt;article&gt;</code>, <code>&lt;ul&gt;</code>. A <code>&lt;layout-stack&gt;</code> wrapper is a generic box to assistive technology.</p>
+          </layout-stack>
+        </layout-card>
+      </li>
+      <li>
+        <layout-card data-variant="outlined" data-padding="m">
+          <layout-stack data-layout-gap="2xs">
+            <h3>LLM-Friendly Markup</h3>
+            <p>Standard HTML elements are what tools and models know best. Your code is easier to read for both humans and machines.</p>
+          </layout-stack>
+        </layout-card>
+      </li>
+      <li>
+        <layout-card data-variant="outlined" data-padding="m">
+          <layout-stack data-layout-gap="2xs">
+            <h3>Same CSS Rules</h3>
+            <p>Each layout is defined once for both forms, as <code>:is(layout-stack, [data-layout="stack"])</code>. The host element still matters: see <a href="#differences">What differs</a>.</p>
+          </layout-stack>
+        </layout-card>
+      </li>
+    </ul>
 
     <status-message data-variant="info">
       <span data-content>
         <strong data-title>Key Insight</strong>
-        <span data-description>Semantic layouts are not a replacement for custom elements. They are an alternative authoring approach. Both are fully supported and share the same underlying CSS system.</span>
+        <span data-description>Semantic layouts are not a replacement for custom elements. They are an alternative authoring approach. Both are fully supported and share the same layout rules.</span>
       </span>
     </status-message>
   </section>
 
   <!-- Section 2: Two Approaches -->
   <section id="two-approaches" data-layout="stack" data-layout-gap="l">
-    <h2>Two Approaches, Same CSS</h2>
-    <p class="step-intro">Every layout primitive in Vanilla Breeze can be used as either a custom element or a data attribute on any HTML element.</p>
+    <h2>Two Approaches, One Set of Rules</h2>
+    <p class="step-intro">Most layout primitives come in both forms. A few exist only as an element or only as an attribute. The <a href="/docs/attributes/data-layout/"><code>data-layout</code> reference</a> lists every value and modifier.</p>
 
     <table>
       <thead>
         <tr>
           <th>Layout</th>
-          <th>Custom Element</th>
-          <th>Data Attribute</th>
+          <th>Custom element</th>
+          <th>Data attribute</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>Stack</td>
-          <td><code>&lt;layout-stack&gt;</code></td>
-          <td><code>data-layout="stack"</code></td>
-        </tr>
-        <tr>
-          <td>Center</td>
-          <td><code>&lt;layout-center&gt;</code></td>
-          <td><code>data-layout="center"</code></td>
-        </tr>
-        <tr>
-          <td>Grid</td>
-          <td><code>&lt;layout-grid&gt;</code></td>
-          <td><code>data-layout="grid"</code></td>
-        </tr>
-        <tr>
-          <td>Cluster</td>
-          <td><code>&lt;layout-cluster&gt;</code></td>
-          <td><code>data-layout="cluster"</code></td>
-        </tr>
-        <tr>
-          <td>Sidebar</td>
-          <td><code>&lt;layout-sidebar&gt;</code></td>
-          <td><code>data-layout="sidebar"</code></td>
-        </tr>
-        <tr>
-          <td>Cover</td>
-          <td><code>&lt;layout-cover&gt;</code></td>
-          <td><code>data-layout="cover"</code></td>
-        </tr>
-        <tr>
-          <td>Switcher</td>
-          <td><code>&lt;layout-switcher&gt;</code></td>
-          <td><code>data-layout="switcher"</code></td>
-        </tr>
+        <tr><td>Stack</td><td><a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a></td><td><code>data-layout="stack"</code></td></tr>
+        <tr><td>Cluster</td><td><a href="/docs/elements/custom-elements/cluster/"><code>&lt;layout-cluster&gt;</code></a></td><td><code>data-layout="cluster"</code></td></tr>
+        <tr><td>Grid</td><td><a href="/docs/elements/custom-elements/grid/"><code>&lt;layout-grid&gt;</code></a></td><td><code>data-layout="grid"</code></td></tr>
+        <tr><td>Center</td><td><a href="/docs/elements/custom-elements/center/"><code>&lt;layout-center&gt;</code></a></td><td><code>data-layout="center"</code></td></tr>
+        <tr><td>Cover</td><td><a href="/docs/elements/custom-elements/cover/"><code>&lt;layout-cover&gt;</code></a></td><td><code>data-layout="cover"</code></td></tr>
+        <tr><td>Sidebar</td><td><a href="/docs/elements/custom-elements/sidebar/"><code>&lt;layout-sidebar&gt;</code></a></td><td><code>data-layout="sidebar"</code></td></tr>
+        <tr><td>Switcher</td><td><a href="/docs/elements/custom-elements/switcher/"><code>&lt;layout-switcher&gt;</code></a></td><td><code>data-layout="switcher"</code></td></tr>
+        <tr><td>Reel</td><td><a href="/docs/elements/custom-elements/reel/"><code>&lt;layout-reel&gt;</code></a></td><td><code>data-layout="reel"</code></td></tr>
+        <tr><td>Columns</td><td><a href="/docs/elements/custom-elements/layout-columns/"><code>&lt;layout-columns&gt;</code></a></td><td><code>data-layout="columns"</code></td></tr>
+        <tr><td>Prose (reading column)</td><td><a href="/docs/elements/custom-elements/layout-text/"><code>&lt;layout-text&gt;</code></a></td><td><code>data-layout="prose"</code></td></tr>
+        <tr><td>Canvas (surface)</td><td><a href="/docs/elements/custom-elements/layout-canvas/"><code>&lt;layout-canvas&gt;</code></a></td><td><a href="/docs/attributes/data-canvas/"><code>data-canvas</code></a></td></tr>
+        <tr><td>Imposter, card, badge</td><td><a href="/docs/elements/custom-elements/imposter/"><code>&lt;layout-imposter&gt;</code></a>, <a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a>, <a href="/docs/elements/custom-elements/layout-badge/"><code>&lt;layout-badge&gt;</code></a></td><td>Element only</td></tr>
+        <tr><td>Page stack, split, regions, media</td><td>Attribute only</td><td><code>data-layout="page-stack|split|regions|media"</code></td></tr>
+        <tr><td>Main-level sidebars</td><td>Attribute only</td><td><code>&lt;main data-layout="sidebar-left|sidebar-right"&gt;</code></td></tr>
+        <tr><td>Whole-page templates</td><td>Attribute only</td><td><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> on <code>&lt;body&gt;</code></td></tr>
       </tbody>
     </table>
 
     <layout-text>
-      <p>All data-layout attributes (gap, min, max, align, justify) work identically on both custom elements and semantic elements. The only difference is the tag name in your HTML.</p>
+      <p>The <code>data-layout-*</code> modifiers (gap, min, max, align, justify, …) are the same on both forms. Surfaces (canvas, card, badge) use bare <code>data-*</code> modifiers instead.</p>
     </layout-text>
 
     <h3>Side-by-Side Comparison</h3>
-    <div data-layout="grid" data-layout-min="l" data-layout-gap="m">
-      <div>
+    <section data-layout="grid" data-layout-min="l" data-layout-gap="m" aria-label="Side-by-side comparison">
+      <article>
         <h4>Custom Elements</h4>
         <code-block language="html" label="Custom element approach" data-escape><layout-center data-layout-max="wide">
   <layout-stack data-layout-gap="2xl">
@@ -146,38 +102,51 @@ currentPath: /docs/semantic-layouts/
       <p class="lead">Build faster without compromising quality.</p>
     </layout-stack>
     <layout-grid data-layout-min="m" data-layout-gap="l">
-      <div>Feature 1</div>
-      <div>Feature 2</div>
-      <div>Feature 3</div>
+      <layout-card>Feature 1</layout-card>
+      <layout-card>Feature 2</layout-card>
+      <layout-card>Feature 3</layout-card>
     </layout-grid>
   </layout-stack>
 </layout-center></code-block>
-      </div>
-      <div>
+      </article>
+      <article>
         <h4>Semantic HTML</h4>
         <code-block language="html" label="Semantic approach" data-escape><section data-layout="center" data-layout-max="wide" data-layout-gap="2xl">
   <header data-layout="stack" data-layout-gap="s">
     <h2>Everything you need</h2>
     <p class="lead">Build faster without compromising quality.</p>
   </header>
-  <div data-layout="grid" data-layout-min="m" data-layout-gap="l">
-    <div>Feature 1</div>
-    <div>Feature 2</div>
-    <div>Feature 3</div>
-  </div>
+  <ul class="unstyled" data-layout="grid" data-layout-min="m" data-layout-gap="l">
+    <li><layout-card>Feature 1</layout-card></li>
+    <li><layout-card>Feature 2</layout-card></li>
+    <li><layout-card>Feature 3</layout-card></li>
+  </ul>
 </section></code-block>
-      </div>
-    </div>
+      </article>
+    </section>
 
     <status-message data-variant="info">
       <span data-content>
         <strong data-title>Notice</strong>
-        <span data-description>The semantic version uses <code>&lt;section&gt;</code> and <code>&lt;header&gt;</code> instead of generic wrappers. Screen readers announce these landmarks automatically. The <code>data-layout-gap</code> on center also eliminates the need for a nested stack.</span>
+        <span data-description>The semantic version uses <code>&lt;section&gt;</code>, <code>&lt;header&gt;</code> and a list instead of generic wrappers, so the heading group and the list of features are exposed as what they are. The <code>data-layout-gap</code> on center also removes the nested stack.</span>
       </span>
     </status-message>
   </section>
 
-  <!-- Section 3: Building a Feature Section -->
+  <!-- Section 3: What differs -->
+  <section id="differences" data-layout="stack" data-layout-gap="l">
+    <h2>What Differs Between the Forms</h2>
+    <p class="step-intro">The layout rules are shared, but the attribute form inherits everything about its host element.</p>
+
+    <ul>
+      <li><strong>Containers.</strong> VB makes every <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code> a size-query container (<code>container-type: inline-size</code>). A <code>&lt;section data-layout="stack"&gt;</code> is therefore a container, while a <code>&lt;layout-stack&gt;</code> is not. Container queries and <code>cqi</code> units inside it measure the section, not the page.</li>
+      <li><strong>Content-sized children.</strong> A container has no intrinsic width. Where a layout sizes its children by their content (cluster, reel, centred cover, a stack aligned start/center/end), a sectioning child would collapse to zero width, so VB switches containment off for those children. Add <a href="/docs/attributes/data-container/"><code>data-container</code></a> (and give the child a width) to keep one on purpose.</li>
+      <li><strong>Element defaults.</strong> The host keeps its own styles: a <code>ul</code> keeps its bullets (add <code>class="unstyled"</code>), a <code>nav</code> or <code>header</code> keeps any VB styling for that element.</li>
+      <li><strong>Semantics.</strong> The host keeps its role. <code>&lt;layout-*&gt;</code> elements have none.</li>
+    </ul>
+  </section>
+
+  <!-- Section 4: Building a Feature Section -->
   <section id="building-a-feature-section" data-layout="stack" data-layout-gap="l">
     <h2>Building a Feature Section</h2>
     <p class="step-intro">Let us transform a real feature section from custom elements to semantic HTML, one step at a time.</p>
@@ -243,43 +212,39 @@ currentPath: /docs/semantic-layouts/
 
     <h3>Step 3: Replace layout-grid</h3>
     <layout-text>
-      <p>The grid wrapper becomes a plain <code>&lt;div&gt;</code> with <code>data-layout="grid"</code>. Each feature item also gets <code>data-layout="stack"</code>.</p>
+      <p>The features are a list, so the grid goes on a <code>&lt;ul&gt;</code> and each feature is a list item with <code>data-layout="stack"</code>.</p>
     </layout-text>
 
-    <code-block language="html" label="Step 3: grid and stack on divs" data-escape><!-- Step 3: layout-grid &#x2192; div with data-layout="grid" -->
+    <code-block language="html" label="Step 3: grid on a list, stack on each item" data-escape><!-- Step 3: layout-grid &#x2192; ul with data-layout="grid" -->
 <!-- 3 levels of nesting (down from 5) -->
 <section data-layout="center" data-layout-max="wide" data-layout-gap="2xl">
   <header data-layout="stack" data-layout-gap="s">
     <h2>Everything you need to build faster</h2>
     <p class="lead">Our platform provides...</p>
   </header>
-  <div data-layout="grid" data-layout-min="m" data-layout-gap="l">
-    <div data-layout="stack" data-layout-gap="s">
+  <ul class="unstyled" data-layout="grid" data-layout-min="m" data-layout-gap="l">
+    <li data-layout="stack" data-layout-gap="s">
       <h3>Lightning Fast</h3>
       <p>Optimized for speed...</p>
-    </div>
-  </div>
+    </li>
+  </ul>
 </section></code-block>
 
     <h3>The Result</h3>
-    <div data-layout="cluster" data-layout-gap="xl" data-layout-justify="center" data-layout-align="center" style="margin-block: var(--size-l);">
-      <div class="nesting-stat">
-        <strong class="nesting-number">5</strong>
-        <small class="nesting-label">nesting levels</small>
-      </div>
-      <span class="nesting-arrow">&#8594;</span>
-      <div class="nesting-stat">
-        <strong class="nesting-number">3</strong>
-        <small class="nesting-label">nesting levels</small>
-      </div>
-    </div>
+    <table>
+      <thead><tr><th>Version</th><th>Nesting levels</th></tr></thead>
+      <tbody>
+        <tr><td>Custom elements</td><td>5</td></tr>
+        <tr><td>Semantic HTML</td><td>3</td></tr>
+      </tbody>
+    </table>
 
     <layout-text>
-      <p>The semantic version is flatter, uses real HTML landmarks, and produces the exact same visual result. Every <code>data-layout</code> attribute maps to the same CSS rules as its custom element counterpart.</p>
+      <p>The semantic version is flatter and the markup says what it is: a section, its heading group, a list of features. The layout is the same, because every <code>data-layout</code> value uses the same rules as its custom element. The one change is that the outer <code>&lt;section&gt;</code> is now a query container; its children sit in normal flow and grid tracks, so nothing collapses.</p>
     </layout-text>
   </section>
 
-  <!-- Section 4: The Center + Gap Pattern -->
+  <!-- Section 5: The Center + Gap Pattern -->
   <section id="center-gap-pattern" data-layout="stack" data-layout-gap="l">
     <h2>The Center + Gap Pattern</h2>
     <p class="step-intro">The most common refactoring: eliminating a nested stack inside a center element.</p>
@@ -305,12 +270,12 @@ currentPath: /docs/semantic-layouts/
     <status-message data-variant="info">
       <span data-content>
         <strong data-title>How It Works</strong>
-        <span data-description>The CSS rule <code>[data-layout="center"][data-layout-gap]</code> activates <code>display: flex; flex-direction: column</code>, turning the center into a flex container with vertical gap. This is the same behavior as <code>layout-center[data-layout-gap]</code> on the custom element.</span>
+        <span data-description>The center rules are written once as <code>:is(layout-center, [data-layout="center"])</code>; adding <code>data-layout-gap</code> switches either form to <code>display: flex; flex-direction: column</code> with that gap.</span>
       </span>
     </status-message>
   </section>
 
-  <!-- Section 5: Common Compositions -->
+  <!-- Section 6: Common Compositions -->
   <section id="common-compositions" data-layout="stack" data-layout-gap="l">
     <h2>Common Compositions</h2>
     <p class="step-intro">Here are the most useful semantic layout patterns you will reach for regularly.</p>
@@ -324,33 +289,31 @@ currentPath: /docs/semantic-layouts/
   <p>Content here...</p>
 </section></code-block>
 
-    <h3>Sidebar on Article or Section</h3>
+    <h3>Sidebar on Main or Section</h3>
     <layout-text>
-      <p>The sidebar layout is semantic-aware: it automatically recognizes <code>&lt;nav&gt;</code> and <code>&lt;aside&gt;</code> as sidebar elements and <code>&lt;main&gt;</code>, <code>&lt;article&gt;</code>, <code>&lt;section&gt;</code> as content elements.</p>
+      <p>The <a href="/docs/elements/custom-elements/sidebar/">sidebar layout</a> recognises <code>&lt;nav&gt;</code> and <code>&lt;aside&gt;</code> as the sidebar and <code>&lt;main&gt;</code>, <code>&lt;article&gt;</code> and <code>&lt;section&gt;</code> as the content.</p>
     </layout-text>
-    <code-block language="html" label="sidebar with semantic children" data-escape><div data-layout="sidebar" data-layout-gap="xl">
-  <aside>
-    <nav>Sidebar navigation...</nav>
-  </aside>
+    <code-block language="html" label="sidebar with semantic children" data-escape><section data-layout="sidebar" data-layout-gap="xl" aria-labelledby="docs-title">
+  <nav aria-label="Section navigation">...</nav>
   <article>
-    <h2>Main content</h2>
+    <h2 id="docs-title">Main content</h2>
     <p>The article takes up the remaining space.</p>
   </article>
-</div></code-block>
+</section></code-block>
 
-    <h3>Grid on a Div</h3>
+    <h3>Grid on a List</h3>
     <layout-text>
-      <p>Use <code>data-layout="grid"</code> on a plain div to create responsive grids. Visual components like <code>&lt;layout-card&gt;</code> remain as custom elements inside.</p>
+      <p>Use <code>data-layout="grid"</code> on the element that holds the items, usually a list, for responsive grids. Visual components like <code>&lt;layout-card&gt;</code> stay custom elements inside.</p>
     </layout-text>
-    <code-block language="html" label="grid with card children" data-escape><div data-layout="grid" data-layout-min="m" data-layout-gap="l">
-  <layout-card>Card 1</layout-card>
-  <layout-card>Card 2</layout-card>
-  <layout-card>Card 3</layout-card>
-</div></code-block>
+    <code-block language="html" label="grid with card children" data-escape><ul class="unstyled" data-layout="grid" data-layout-min="m" data-layout-gap="l">
+  <li><layout-card>Card 1</layout-card></li>
+  <li><layout-card>Card 2</layout-card></li>
+  <li><layout-card>Card 3</layout-card></li>
+</ul></code-block>
 
     <h3>Cover on Body or Main</h3>
     <layout-text>
-      <p>The cover layout vertically centers a principal element. Use <code>data-layout-principal</code> on the child you want centered.</p>
+      <p>The <a href="/docs/elements/custom-elements/cover/">cover layout</a> vertically centers a principal element. Use <code>data-layout-principal</code> on the child you want centered.</p>
     </layout-text>
     <code-block language="html" label="cover on body" data-escape><body data-layout="cover" data-layout-min="xl">
   <header>Top bar</header>
@@ -360,43 +323,50 @@ currentPath: /docs/semantic-layouts/
   <footer>Footer</footer>
 </body></code-block>
 
-    <h3>Cluster on a Div for Button Groups</h3>
+    <h3>Cluster on a Menu for Button Groups</h3>
     <layout-text>
-      <p>Use <code>data-layout="cluster"</code> for horizontal groups of items that wrap naturally.</p>
+      <p>Use <a href="/docs/elements/custom-elements/cluster/"><code>data-layout="cluster"</code></a> for horizontal groups of items that wrap naturally. A <code>&lt;menu&gt;</code> is a list of commands.</p>
     </layout-text>
-    <code-block language="html" label="cluster for button group" data-escape><div data-layout="cluster" data-layout-gap="s">
-  <button>Save</button>
-  <button class="secondary">Cancel</button>
-  <button class="ghost">Reset</button>
-</div></code-block>
+    <code-block language="html" label="cluster for button group" data-escape><menu data-layout="cluster" data-layout-gap="s">
+  <li><button type="button">Save</button></li>
+  <li><button type="button" class="secondary">Cancel</button></li>
+  <li><button type="button" class="ghost">Reset</button></li>
+</menu></code-block>
   </section>
 
-  <!-- Section 6: When to Keep Custom Elements -->
+  <!-- Section 7: When to Keep Custom Elements -->
   <section id="keep-custom-elements" data-layout="stack" data-layout-gap="l">
     <h2>When to Keep Custom Elements</h2>
-    <p class="step-intro">Not everything should become a data attribute. Visual components always stay as custom elements.</p>
+    <p class="step-intro">Not everything should become a data attribute. Visual components stay as custom elements.</p>
 
     <layout-text>
       <p>The key distinction is between <strong>layout primitives</strong> and <strong>visual components</strong>:</p>
     </layout-text>
 
     <ul>
-      <li><strong>Layout primitives</strong> (stack, center, grid, cluster, sidebar, cover, switcher) control spacing and arrangement. These are good candidates for <code>data-layout</code> attributes.</li>
-      <li><strong>Visual components</strong> (card, badge, text, brand-mark, form-field) provide visual styling like shadows, borders, backgrounds, and typography. These should remain as custom elements.</li>
+      <li><strong>Layout primitives</strong> (stack, cluster, grid, center, cover, sidebar, switcher, reel, columns, prose) control spacing and arrangement. These are good candidates for <code>data-layout</code> attributes.</li>
+      <li><strong>Visual components</strong> (card, badge, brand-mark, form-field) provide visual styling like shadows, borders, backgrounds, and typography. These stay custom elements. The canvas surface is the exception: it has an attribute form, <a href="/docs/attributes/data-canvas/"><code>data-canvas</code></a>.</li>
     </ul>
 
     <code-block language="html" label="Mixing both approaches" data-escape><!-- Visual components stay as custom elements -->
-<div data-layout="grid" data-layout-min="m" data-layout-gap="l">
-  <layout-card data-variant="elevated" data-padding="l">
-    <h3>Premium Plan</h3>
-    <p>Everything you need.</p>
-  </layout-card>
-  <layout-badge data-variant="success">New</layout-badge>
-  <layout-text data-size="lg">Large text block</layout-text>
-</div></code-block>
+<ul class="unstyled" data-layout="grid" data-layout-min="m" data-layout-gap="l">
+  <li>
+    <layout-card data-variant="elevated" data-padding="l">
+      <h3>Premium Plan</h3>
+      <p>Everything you need.</p>
+      <layout-badge data-variant="success">New</layout-badge>
+    </layout-card>
+  </li>
+  <li>
+    <layout-card data-variant="outlined" data-padding="l">
+      <h3>Starter Plan</h3>
+      <p>The basics, free.</p>
+    </layout-card>
+  </li>
+</ul></code-block>
 
     <layout-text>
-      <p>In this example, the grid is a data attribute (layout concern), while cards and badges remain as custom elements (visual concern). This is the recommended pattern: semantic HTML for structure, custom elements for styled components.</p>
+      <p>In this example, the grid is a data attribute (layout concern), while cards and badges remain custom elements (visual concern): semantic HTML for structure, custom elements for styled components.</p>
     </layout-text>
 
     <status-message data-variant="info">
@@ -407,7 +377,7 @@ currentPath: /docs/semantic-layouts/
     </status-message>
   </section>
 
-  <!-- Section 7: Decision Guide -->
+  <!-- Section 8: Decision Guide -->
   <section id="decision-guide" data-layout="stack" data-layout-gap="l">
     <h2>Decision Guide</h2>
     <p class="step-intro">Use this table to decide which approach fits your situation.</p>
@@ -427,24 +397,24 @@ currentPath: /docs/semantic-layouts/
           <td>Fastest to type, self-documenting tag names</td>
         </tr>
         <tr>
-          <td>Simple page, minimal nesting</td>
-          <td>Either</td>
-          <td>Both work well when structure is shallow</td>
+          <td>The right element already exists (<code>nav</code>, <code>ul</code>, <code>article</code>)</td>
+          <td>Data attribute on it</td>
+          <td>No extra wrapper; the element keeps its meaning</td>
         </tr>
         <tr>
-          <td>Production code</td>
-          <td>Data attributes</td>
-          <td>Better semantics, cleaner HTML, fewer nesting levels</td>
+          <td>You need a generic wrapper anyway</td>
+          <td>Custom element</td>
+          <td>A <code>&lt;layout-*&gt;</code> element is a clearer wrapper than a <code>&lt;div&gt;</code></td>
         </tr>
         <tr>
           <td>Complex nested layouts</td>
           <td>Data attributes</td>
-          <td>Significantly reduces nesting depth</td>
+          <td>Combining layout and meaning on one element reduces nesting depth</td>
         </tr>
         <tr>
-          <td>Accessibility-sensitive context</td>
-          <td>Data attributes</td>
-          <td>Screen readers understand native landmarks</td>
+          <td>Content-sized children that must be query containers</td>
+          <td>Either, plus <code>data-container</code></td>
+          <td>See <a href="#differences">What differs</a></td>
         </tr>
         <tr>
           <td>Working with LLMs or AI tools</td>
@@ -457,7 +427,7 @@ currentPath: /docs/semantic-layouts/
           <td>These provide styling, not just layout</td>
         </tr>
         <tr>
-          <td>Teaching HTML concepts</td>
+          <td>Teaching layout concepts</td>
           <td>Custom elements</td>
           <td>Tag names make the layout intent explicit</td>
         </tr>
@@ -465,29 +435,29 @@ currentPath: /docs/semantic-layouts/
     </table>
 
     <layout-text>
-      <p>You can freely mix both approaches in the same page. Use custom elements where they make the code clearer and data attributes where they reduce unnecessary nesting. The CSS is the same either way.</p>
+      <p>You can freely mix both approaches in the same page. Use custom elements where they make the code clearer and data attributes where they reduce unnecessary nesting.</p>
     </layout-text>
 
     <status-message data-variant="info">
       <span data-content>
         <strong data-title>Bottom Line</strong>
-        <span data-description>There is no wrong choice. Both approaches produce identical results. Choose whichever makes your HTML most readable for your team and your tools.</span>
+        <span data-description>There is no wrong choice. Both forms apply the same layout rules; the attribute form also brings its host's semantics and, on <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code>, container-query containment. Choose whichever makes your HTML most readable for your team and your tools.</span>
       </span>
     </status-message>
   </section>
 
-  <!-- Section 8: Page Layouts & Grid Identity -->
+  <!-- Section 9: Page Layouts & Grid Identity -->
   <section id="page-layouts" data-layout="stack" data-layout-gap="l">
     <h2>Page Layouts &amp; Grid Identity</h2>
     <p class="step-intro">Semantic layouts extend beyond component-level patterns to full page structure with the grid identity system.</p>
 
     <layout-text>
-      <p>VB includes a three-tier grid identity system where semantic HTML elements auto-register to grid areas based on their element type. At the page level, <code>data-page-layout</code> on the <code>&lt;body&gt;</code> turns <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code>, and <code>&lt;footer&gt;</code> into grid areas automatically &mdash; no classes needed.</p>
+      <p>At the page level, <a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> on <code>&lt;body&gt;</code> places <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code> and <code>&lt;footer&gt;</code> into named grid areas automatically &mdash; no classes needed. It is the only page-template system; <code>data-layout</code> lays out components inside it.</p>
     </layout-text>
 
     <code-block language="html" label="Page-level grid identity" data-escape><body data-page-layout="sidebar-left">
   <header>Site header</header>
-  <nav>Navigation</nav>
+  <nav aria-label="Primary">Navigation</nav>
   <main data-layout="stack" data-layout-gap="l">
     Content with nested layouts...
   </main>
@@ -495,13 +465,28 @@ currentPath: /docs/semantic-layouts/
 </body></code-block>
 
     <layout-text>
-      <p>At the component level, <code>data-layout="regions"</code> generalizes the header/content/footer pattern to any element, and <code>data-layout="media"</code> provides a figure+content media object. These compose with page layouts for full three-tier nesting.</p>
+      <p>At the component level, <code>data-layout="regions"</code> generalizes the header/content/footer pattern to any element, and <code>data-layout="media"</code> provides a figure+content media object. These compose with page layouts.</p>
     </layout-text>
+  </section>
 
-    <status-message data-variant="info">
-      <span data-content>
-        <strong data-title>Learn more</strong>
-        <span data-description>See the <a href="/docs/grid-identity/">Grid Identity</a> page for the full system documentation, including page templates, named area overrides, main-level layouts, and composing all three tiers together.</span>
-      </span>
-    </status-message>
+  <!-- Section 10: Accessibility -->
+  <section id="accessibility" data-layout="stack" data-layout-gap="l">
+    <h2>Accessibility</h2>
+    <ul>
+      <li><strong>Landmarks come from elements, not layouts.</strong> <code>main</code>, <code>nav</code> and <code>aside</code> are landmarks wherever they are; <code>header</code> and <code>footer</code> are banner and contentinfo landmarks only when they are not inside an <code>article</code>, <code>aside</code>, <code>main</code>, <code>nav</code> or <code>section</code>. A <code>section</code> is a region landmark only when it has an accessible name (<code>aria-labelledby</code> pointing at its heading). An unnamed section, or a header inside a section, gives document structure but is not a landmark.</li>
+      <li><strong>Keep DOM order meaningful.</strong> Layouts change visual position (reversed media objects, switchers, mobile collapse of sidebars). Keyboard and screen-reader order follow the DOM, so write the source in reading order.</li>
+      <li><strong>Lists for lists.</strong> Putting a grid or cluster on a <code>ul</code> or <code>menu</code> lets screen readers announce the number of items.</li>
+    </ul>
+  </section>
+
+  <!-- Section 11: Related -->
+  <section id="related" data-layout="stack" data-layout-gap="l">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> &mdash; every value and modifier.</li>
+      <li><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> &mdash; whole-page templates.</li>
+      <li><a href="/docs/attributes/data-container/"><code>data-container</code></a> &mdash; the container escape hatch.</li>
+      <li><a href="/docs/grid-identity/">Grid Identity</a> &mdash; page templates, main-level sidebars, regions and media in depth.</li>
+      <li><a href="/docs/elements/custom-elements/">Custom elements</a> &mdash; the <code>&lt;layout-*&gt;</code> element pages.</li>
+    </ul>
   </section>

@@ -13,8 +13,8 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;wbr&gt;</code> (Word Break Opportunity) element suggests where the browser <em>may</em> break a line if it needs to wrap. Unlike <a href="/docs/elements/native/br/"><code>&lt;br&gt;</code></a>, it does not force a break &mdash; the break only happens when the content would overflow its container.</p>
-    <p>This is essential for long URLs, compound words, technical identifiers, and mixed CJK/Latin text where the browser's default word-breaking algorithm fails.</p>
+    <p>The <code>&lt;wbr&gt;</code> (Word Break Opportunity) element suggests where the browser <em>may</em> break a line if it needs to wrap. Unlike <a href="/docs/elements/native/br/"><code>&lt;br&gt;</code></a>, it does not force a break &mdash; the break only happens when the line needs to wrap there.</p>
+    <p>It is most useful for long URLs, compound words, technical identifiers, and long Latin tokens (URLs, file paths, product codes) embedded in Chinese or Japanese text, where you want the line to wrap at a meaningful point rather than an arbitrary one.</p>
   </section>
 
   <section>
@@ -23,14 +23,15 @@ crumbLabel: Native Elements
       <li><strong>Long URLs:</strong> Insert break opportunities after slashes</li>
       <li><strong>Compound words:</strong> Long concatenated words that overflow narrow containers</li>
       <li><strong>Technical identifiers:</strong> CamelCase class names, package paths</li>
-      <li><strong>CJK mixed content:</strong> Latin words embedded in CJK text that disrupt line-breaking</li>
+      <li><strong>Long Latin tokens in CJK text:</strong> a URL or path inside Chinese or Japanese prose. The break between an ideograph and a Latin word is already allowed; put <code>&lt;wbr&gt;</code> <em>inside</em> the Latin token</li>
       <li><strong>Email addresses:</strong> Break opportunities before @ or after dots</li>
     </ul>
     <h3>When NOT to Use</h3>
     <ul>
       <li>For forced line breaks &mdash; use <a href="/docs/elements/native/br/"><code>&lt;br&gt;</code></a></li>
       <li>For hyphenation &mdash; use CSS <code>hyphens: auto</code></li>
-      <li>When <code>overflow-wrap: break-word</code> is sufficient &mdash; CSS is simpler</li>
+      <li>When an arbitrary break point is acceptable &mdash; VB's <code>overflow-wrap: break-word</code> already stops the overflow (see below)</li>
+      <li>Between CJK characters, or between CJK and Latin text &mdash; line breaking already allows a break there</li>
     </ul>
   </section>
 
@@ -42,7 +43,7 @@ crumbLabel: Native Elements
     <code-block language="html" show-lines label="Long URLs" data-escape><p>https://example.com/<wbr />very/<wbr />long/<wbr />path/<wbr />to/<wbr />page.html</p></code-block>
     <code-block language="html" show-lines label="Compound words" data-escape><p>Super<wbr />cali<wbr />fragilistic<wbr />expiali<wbr />docious</p></code-block>
     <code-block language="html" show-lines label="Technical identifiers" data-escape><p><code>AbstractSingle<wbr />tonProxy<wbr />FactoryBean</code></p></code-block>
-    <code-block language="html" show-lines label="CJK mixed content" data-escape><p lang="ja">日本語テキストに<wbr />LongEnglishWord<wbr />が含まれています。</p></code-block>
+    <code-block language="html" show-lines label="Long URL in Japanese text" data-escape><p lang="ja">詳しくは https://example.com/<wbr />docs/<wbr />guide/<wbr />getting-started.html をご覧ください。</p></code-block>
   </section>
 
   <section>
@@ -59,7 +60,7 @@ crumbLabel: Native Elements
         <tr>
           <td><code>&lt;wbr&gt;</code></td>
           <td>Optional &mdash; only if needed</td>
-          <td>URLs, long words, CJK mixed text</td>
+          <td>URLs, long words, long Latin tokens in CJK text</td>
         </tr>
         <tr>
           <td><code>&lt;br&gt;</code></td>
@@ -80,6 +81,58 @@ crumbLabel: Native Elements
   </section>
 
   <section>
+    <h2>How wbr Interacts with VB's overflow-wrap</h2>
+    <p>VB sets <code>overflow-wrap: break-word</code> on <code>p</code>, <code>h1</code>&ndash;<code>h6</code>, inline <code>code</code> and <code>samp</code>. So in VB a long URL never overflows its paragraph, with or without <code>&lt;wbr&gt;</code>. The difference is <em>where</em> the line breaks:</p>
+    <ul>
+      <li><strong>Without <code>&lt;wbr&gt;</code>:</strong> the browser finds no break opportunity in the token, so <code>overflow-wrap</code> breaks it at whatever character reaches the edge of the box, often mid-segment (<code>exam</code> / <code>ple.com</code>).</li>
+      <li><strong>With <code>&lt;wbr&gt;</code>:</strong> the browser prefers your break points, and wraps after a slash or between word parts. <code>overflow-wrap</code> is only the last resort if a single segment is still too wide.</li>
+    </ul>
+    <p>The demo above shows this: both boxes stay inside their border, but only the <code>&lt;wbr&gt;</code> version breaks at a sensible place.</p>
+  </section>
+
+  <section>
+    <h2>Copy, Paste and Search</h2>
+    <p><code>&lt;wbr&gt;</code> adds nothing to the text: copying, find-in-page and the accessible name all see the unbroken string. Its character-based alternatives do not behave the same:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Markup</th>
+          <th>When the line breaks</th>
+          <th>Copied text</th>
+          <th>Find-in-page</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;wbr&gt;</code></td>
+          <td>Breaks with no visible mark</td>
+          <td>Unchanged</td>
+          <td>Matches the whole word</td>
+        </tr>
+        <tr>
+          <td><code>&amp;shy;</code> (soft hyphen, U+00AD)</td>
+          <td>Shows a hyphen at the break</td>
+          <td>May include the invisible U+00AD</td>
+          <td>Usually matches; some tools treat U+00AD as a character</td>
+        </tr>
+        <tr>
+          <td><code>&amp;#8203;</code> (zero-width space, U+200B)</td>
+          <td>Breaks with no visible mark</td>
+          <td>Includes U+200B, which corrupts pasted URLs, identifiers and commands</td>
+          <td>Splits the word, so a search for the whole word can fail</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>That is the main reason to prefer <code>&lt;wbr&gt;</code> for URLs and code. Use <code>&amp;shy;</code> only for prose words where a hyphen at the break is wanted. In link text, <code>&lt;wbr&gt;</code> never changes the <code>href</code>: <code>&lt;a href="https://example.com/docs/guide"&gt;example.com/&lt;wbr&gt;docs/&lt;wbr&gt;guide&lt;/a&gt;</code> still links to the full URL.</p>
+  </section>
+
+  <section>
+    <h2>CJK Text</h2>
+    <p>Chinese and Japanese text needs no <code>&lt;wbr&gt;</code> between characters: line breaking already allows a break between any two ideographs or kana, and between an ideograph and a Latin word. VB keeps <code>word-break: normal</code> for CJK (and <code>keep-all</code> for Korean, which separates words with spaces), and adds <code>line-break: strict</code> for the stricter kinsoku rules. The useful place for <code>&lt;wbr&gt;</code> is inside a long Latin token such as a URL:</p>
+    <code-block language="html" show-lines label="wbr inside a URL in Japanese text" data-escape><p lang="ja">詳しくは https://example.com/<wbr />docs/<wbr />guide/<wbr />getting-started.html をご覧ください。</p></code-block>
+  </section>
+
+  <section>
     <h2>CSS Alternatives</h2>
     <p>Consider CSS solutions when <code>&lt;wbr&gt;</code> would be tedious to insert manually:</p>
     <table class="props-table">
@@ -89,11 +142,11 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>overflow-wrap: break-word</code></td>
-          <td>Break long words at any point to prevent overflow</td>
+          <td>Breaks a word at any point, but only when nothing else fits. VB applies it to paragraphs, headings, inline <code>code</code> and <code>samp</code></td>
         </tr>
         <tr>
           <td><code>word-break: break-all</code></td>
-          <td>Break between any two characters (aggressive, used by VB for CJK)</td>
+          <td>Breaks between any two characters, even when a better break exists. Aggressive: it splits Latin words and URLs embedded in CJK text, so VB deliberately does not use it</td>
         </tr>
         <tr>
           <td><code>hyphens: auto</code></td>

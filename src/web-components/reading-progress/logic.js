@@ -5,31 +5,47 @@
  * (default) or a specific element (data-for). Joins the doc-side family
  * with <page-stats>, <page-toc>, <page-info>.
  *
+ * The bar is decorative: the scroll position is already exposed to
+ * assistive technology by the scrollable document itself, so the child
+ * <progress> is aria-hidden. (A progressbar on the CSS-driven path would
+ * otherwise announce a stale 0% forever.)
+ *
  * Progressive enhancement layers:
- *   1. HTML: a child <progress> carries the semantic + AT label.
+ *   1. HTML: an optional child <progress> (aria-hidden) for SSR.
  *   2. CSS:  modern browsers animate the bar via animation-timeline:
  *            scroll(root block) — no JS required when tracking the
  *            whole document.
  *   3. JS:   fallback for browsers without scroll-timeline support, and
  *            the only path that honors data-for (target-bounded ratio).
+ *            A data-for whose target is missing falls back to document
+ *            progress and keeps looking for the target until it appears.
  *
  * @attr {string} data-for      - ID of the target element. Without it,
- *                                tracks document scroll.
- * @attr {string} data-position - 'top' (default) or 'bottom'.
+ *                                tracks document scroll. Observed.
+ * @attr {string} data-position - 'top' (default) or 'bottom'. Observed (CSS).
  *
  * @example Document scroll (CSS-driven in modern browsers)
  * <reading-progress></reading-progress>
  *
  * @example Target a specific article
- * <reading-progress data-for="article-content" data-position="bottom">
- *   <progress max="100" value="0" aria-label="Reading progress"></progress>
- * </reading-progress>
+ * <reading-progress data-for="article-content" data-position="bottom"></reading-progress>
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 
 class ReadingProgress extends VBElement {
+
+  static get observedAttributes() { return ['data-for']; }
+
+  /** @type {HTMLProgressElement | null} */
+  bar = null;
+  /** @type {HTMLElement | null} */
+  target = null;
+
+  #rafId = 0;
+  /** @type {MutationObserver | null} */
+  #lookup = null;
 
   setup() {
     /* SSR adoption: keep an existing <progress>, otherwise create one */
@@ -38,18 +54,21 @@ class ReadingProgress extends VBElement {
       this.bar = document.createElement('progress');
       this.bar.max = 100;
       this.bar.value = 0;
-      this.bar.setAttribute('aria-label', 'Reading progress');
       this.appendChild(this.bar);
     }
+    // Decorative; see the module note
+    this.bar.setAttribute('aria-hidden', 'true');
 
     const targetId = this.dataset.for;
     this.target = targetId ? document.getElementById(targetId) : null;
 
-    /* Modern browsers can drive the visual via scroll-timeline when
-       tracking the document. Skip the scroll listener in that case. */
-    const cssDriven = !this.target
+    /* Modern browsers drive the visual via scroll-timeline when tracking
+       the document (no data-for attribute). Skip the scroll listener. */
+    const cssDriven = !targetId
       && CSS.supports('animation-timeline', 'scroll(root block)');
     if (cssDriven) return;
+
+    if (targetId && !this.target) this.#watchForTarget(targetId);
 
     this.#update();
     const onScroll = () => {
@@ -63,7 +82,37 @@ class ReadingProgress extends VBElement {
     this.listen(window, 'resize', onScroll, { passive: true });
   }
 
-  #rafId = 0;
+  teardown() {
+    if (this.#rafId) cancelAnimationFrame(this.#rafId);
+    this.#rafId = 0;
+    this.#lookup?.disconnect();
+    this.#lookup = null;
+  }
+
+  /**
+   * @param {string} _name
+   * @param {string | null} oldValue
+   * @param {string | null} newValue
+   */
+  attributeChangedCallback(_name, oldValue, newValue) {
+    if (oldValue === newValue || !this.hasAttribute('data-upgraded')) return;
+    this._reinit();
+  }
+
+  /** Target rendered after upgrade: re-resolve once it exists. */
+  #watchForTarget(id) {
+    this.#lookup = new MutationObserver(() => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      this.#lookup?.disconnect();
+      this.#lookup = null;
+      this.target = el;
+      this.#update();
+    });
+    this.#lookup.observe(document.documentElement, {
+      childList: true, subtree: true, attributes: true, attributeFilter: ['id'],
+    });
+  }
 
   #update() {
     const ratio = this.target ? this.#targetRatio() : this.#documentRatio();

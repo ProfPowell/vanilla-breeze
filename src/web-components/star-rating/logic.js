@@ -2,19 +2,31 @@
  * star-rating: Form-associated star rating web component
  *
  * Layer 3 convenience wrapper that generates a data-rating fieldset
- * (Layer 1 CSS) and opts it into the rating enhancement (Layer 2 JS)
- * for clear/unrate behavior and rating:change events.
+ * (Layer 1 CSS) and opts it into the rating effect (Layer 2 JS,
+ * `data-effect="rating"`) for clear/unrate and rating:change events.
  *
- * Participates in native form submission via ElementInternals.
+ * Participates in native form submission via ElementInternals: FormData
+ * holds exactly one entry (`name=value`). The generated radios are detached
+ * from the owner form (`form` attribute pointing at no element) so they never
+ * submit their own entry, while a per-instance group name keeps native
+ * arrow-key navigation.
  *
  * @attr {string}  name       - Form field name (omit for read-only)
- * @attr {string}  value      - Current rating value (default: 0)
+ * @attr {string}  value      - Rating value; also the reset default (default: 0)
  * @attr {string}  max        - Number of stars (default: 5)
  * @attr {string}  label      - Legend text (default: "Rating")
  * @attr {boolean} allow-half - Enable half-star increments
  * @attr {boolean} readonly   - Display-only mode
  * @attr {string}  icon       - Lucide icon name for icon-wc (default: star text)
  * @attr {boolean} required   - Makes rating required for form validation
+ * @attr {string}  data-label-one      - Radio label, CLDR "one" category (default "{n} star")
+ * @attr {string}  data-label-other    - Radio label, other categories (default "{n} stars")
+ * @attr {string}  data-label-readonly - Read-only summary (default "{label}: {value} out of {max}")
+ * @attr {string}  data-label-required - Validation message (default "Please select a rating")
+ * @attr {string}  data-label-cleared  - Clear announcement (default "Rating cleared")
+ *
+ * All attributes are observed: changing them after upgrade re-renders.
+ * Setting `.value` before the element connects is kept and applied on build.
  *
  * @example
  * <star-rating name="rating" label="Rate this product"></star-rating>
@@ -24,12 +36,43 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 
+/** Radios carry form="<id of nothing>" so their form owner is null. */
+const DETACHED_FORM = '_star-rating-detached';
+const STRUCTURAL = new Set(['max', 'label', 'readonly', 'allow-half', 'icon',
+  'data-label-one', 'data-label-other', 'data-label-readonly', 'data-label-cleared']);
+const DEFAULT_LABELS = {
+  one: '{n} star',
+  other: '{n} stars',
+  readonly: '{label}: {value} out of {max}',
+  required: 'Please select a rating',
+};
+
+let instanceCount = 0;
+
+/** @param {unknown} v */
+function toNumber(v) {
+  const n = Number(v);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
 class StarRating extends VBElement {
   static formAssociated = true;
 
+  static get observedAttributes() {
+    return ['value', 'required', ...STRUCTURAL];
+  }
+
   #internals;
-  #initialValue;
-  #fieldset;
+  /** Reset target: the `value` attribute. */
+  #defaultValue = 0;
+  /** @type {HTMLFieldSetElement | null} */
+  #fieldset = null;
+  /** Value set while no fieldset exists (property set before connect, rebuild). */
+  /** @type {number | null} */
+  #pendingValue = null;
+  #readonlyValue = 0;
+  /** Per-instance radio group name: never collides across instances/forms. */
+  #groupName = `_sr_${++instanceCount}`;
 
   constructor() {
     super();
@@ -38,108 +81,118 @@ class StarRating extends VBElement {
   }
 
   setup() {
-    this.#build();
+    // Reconnect: reuse the fieldset we built (DOM survives disconnect), but
+    // always re-wire listeners below — listen() handlers were released.
+    const existing = /** @type {HTMLFieldSetElement | null} */ (
+      this.querySelector(':scope > fieldset[data-rating]')
+    );
+    // Only reuse the fieldset THIS instance built. One from a clone or from
+    // serialized markup carries another instance's group name (sharing it
+    // would merge the radio groups), so replace it, keeping its value.
+    if (!existing || existing !== this.#fieldset) {
+      if (existing) {
+        const checked = /** @type {HTMLInputElement | null} */ (existing.querySelector('input:checked'));
+        if (checked) this.#pendingValue ??= toNumber(checked.value);
+        existing.remove();
+      }
+      this.#build();
+    }
+
+    const fs = this.#fieldset;
+    if (fs && !this.#isReadonly()) {
+      // From the rating effect (also covers clear-to-0).
+      this.listen(fs, 'rating:change', () => this.#commit());
+      // Resilient fallback when the effect layer is not loaded.
+      this.listen(fs, 'change', (e) => {
+        const t = /** @type {HTMLInputElement} */ (e.target);
+        if (t.type === 'radio' && t.checked) this.#commit();
+      });
+    }
+    this.#commit();
+  }
+
+  attributeChangedCallback(name, oldVal, newVal) {
+    if (oldVal === newVal) return;
+    if (name === 'value') this.#defaultValue = toNumber(newVal);
+    // Before the first build, setup() reads every attribute itself.
+    if (!this.#fieldset) return;
+
+    if (name === 'value') this.value = toNumber(newVal);
+    else if (name === 'required') this.#validate();
+    else this.#rebuild(this.value);
+  }
+
+  // ── Build ───────────────────────────────────────────────────────────
+
+  #isReadonly() {
+    return this.hasAttribute('readonly');
   }
 
   #build() {
-    // Already built (reconnect after disconnect) — skip
-    if (this.querySelector('fieldset')) return;
+    this.#defaultValue = toNumber(this.getAttribute('value'));
+    const value = this.#pendingValue ?? this.#defaultValue;
+    this.#pendingValue = null;
 
-    const value = Number(this.getAttribute('value') || 0);
-    this.#initialValue = value;
-    const max = Number(this.getAttribute('max') || 5);
+    const max = Math.max(1, Math.round(toNumber(this.getAttribute('max')) || 5));
     const label = this.getAttribute('label') || 'Rating';
-    const isHalf = this.hasAttribute('allow-half');
-    const isReadonly = this.hasAttribute('readonly');
     const iconName = this.getAttribute('icon');
-    // Use a unique internal radio name per instance to prevent cross-talk
-    const name = this.getAttribute('name') || `star-rating-${crypto.randomUUID().slice(0, 8)}`;
-    const internalName = `_sr_${name}`;
 
-    if (isReadonly) {
+    if (this.#isReadonly()) {
+      this.#readonlyValue = value;
       this.#renderReadonly(value, max, label, iconName);
     } else {
-      this.#renderInteractive(value, max, label, internalName, isHalf, iconName);
+      this.#renderInteractive(value, max, label, this.hasAttribute('allow-half'), iconName);
     }
-
-    this.#syncFormValue(value);
-    this.#validate();
   }
 
-  #renderInteractive(value, max, label, internalName, isHalf, iconName) {
+  /** Throw away the generated DOM and build again, keeping `value`. */
+  #rebuild(value) {
+    this.#fieldset?.remove();
+    this.#fieldset = null;
+    this.#pendingValue = value;
+    // Connected + upgraded: rebuild now. Otherwise setup() builds on connect.
+    if (this.hasAttribute('data-upgraded')) this._reinit();
+  }
+
+  #renderInteractive(value, max, label, isHalf, iconName) {
     const fieldset = document.createElement('fieldset');
     fieldset.setAttribute('data-rating', '');
     if (isHalf) fieldset.setAttribute('data-rating-half', '');
-    // Opt into the rating enhancement layer
+    // Opt into the rating effect (Layer 2)
     fieldset.setAttribute('data-effect', 'rating');
+    const cleared = this.getAttribute('data-label-cleared');
+    if (cleared) fieldset.setAttribute('data-label-cleared', cleared);
 
     const legend = document.createElement('legend');
     legend.textContent = label;
     fieldset.appendChild(legend);
 
-    if (isHalf) {
-      for (let i = 1; i <= max; i++) {
-        const halfVal = i - 0.5;
+    const addRadio = (/** @type {number} */ v, /** @type {string | null} */ half) => {
+      const lbl = document.createElement('label');
+      if (half) lbl.setAttribute('data-half', half);
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = this.#groupName;
+      radio.setAttribute('form', DETACHED_FORM);
+      radio.value = String(v);
+      radio.setAttribute('aria-label', this.#countLabel(v));
+      if (value === v) radio.checked = true;
+      lbl.appendChild(radio);
+      lbl.append(this.#createIcon(iconName));
+      fieldset.appendChild(lbl);
+    };
 
-        // Left half
-        const leftLabel = document.createElement('label');
-        leftLabel.setAttribute('data-half', 'left');
-        const leftRadio = document.createElement('input');
-        leftRadio.type = 'radio';
-        leftRadio.name = internalName;
-        leftRadio.value = String(halfVal);
-        leftRadio.setAttribute('aria-label', `${halfVal} ${halfVal === 1 ? 'star' : 'stars'}`);
-        if (value === halfVal) leftRadio.checked = true;
-        leftLabel.appendChild(leftRadio);
-        leftLabel.append(this.#createIcon(iconName));
-        fieldset.appendChild(leftLabel);
-
-        // Right half (full star)
-        const rightLabel = document.createElement('label');
-        rightLabel.setAttribute('data-half', 'right');
-        const rightRadio = document.createElement('input');
-        rightRadio.type = 'radio';
-        rightRadio.name = internalName;
-        rightRadio.value = String(i);
-        rightRadio.setAttribute('aria-label', `${i} ${i === 1 ? 'star' : 'stars'}`);
-        if (value === i) rightRadio.checked = true;
-        rightLabel.appendChild(rightRadio);
-        rightLabel.append(this.#createIcon(iconName));
-        fieldset.appendChild(rightLabel);
-      }
-    } else {
-      for (let i = 1; i <= max; i++) {
-        const lbl = document.createElement('label');
-        const radio = document.createElement('input');
-        radio.type = 'radio';
-        radio.name = internalName;
-        radio.value = String(i);
-        radio.setAttribute('aria-label', `${i} ${i === 1 ? 'star' : 'stars'}`);
-        if (value === i) radio.checked = true;
-        lbl.appendChild(radio);
-        lbl.append(this.#createIcon(iconName));
-        fieldset.appendChild(lbl);
+    for (let i = 1; i <= max; i++) {
+      if (isHalf) {
+        addRadio(i - 0.5, 'left');
+        addRadio(i, 'right');
+      } else {
+        addRadio(i, null);
       }
     }
 
     this.appendChild(fieldset);
     this.#fieldset = fieldset;
-
-    // Listen for rating:change from the enhancement layer (Layer 2)
-    fieldset.addEventListener('rating:change', (e) => {
-      this.#syncFormValue(/** @type {CustomEvent} */ (e).detail.value);
-      this.#validate();
-    });
-
-    // Resilient fallback: also listen for native radio change events
-    // in case the enhancement layer doesn't attach
-    fieldset.addEventListener('change', (e) => {
-      const target = /** @type {HTMLInputElement} */ (e.target);
-      if (target.type === 'radio' && target.checked) {
-        this.#syncFormValue(Number(target.value));
-        this.#validate();
-      }
-    });
   }
 
   #renderReadonly(value, max, label, iconName) {
@@ -147,7 +200,11 @@ class StarRating extends VBElement {
     container.setAttribute('data-rating', '');
     container.setAttribute('data-rating-readonly', '');
     container.setAttribute('role', 'img');
-    container.setAttribute('aria-label', `${label}: ${value} out of ${max}`);
+    const tpl = this.getAttribute('data-label-readonly') ?? DEFAULT_LABELS.readonly;
+    container.setAttribute('aria-label', tpl
+      .replaceAll('{label}', label)
+      .replaceAll('{value}', this.#formatNumber(value))
+      .replaceAll('{max}', this.#formatNumber(max)));
 
     const legend = document.createElement('legend');
     legend.textContent = label;
@@ -188,98 +245,94 @@ class StarRating extends VBElement {
       icon.setAttribute('name', iconName);
       return icon;
     }
-    return document.createTextNode('\u2605');
+    return document.createTextNode('★');
   }
 
-  #syncFormValue(value) {
-    const numVal = Number(value);
-    if (numVal > 0) {
-      this.#internals.setFormValue(String(numVal));
-    } else {
-      this.#internals.setFormValue(null);
-    }
+  // ── i18n ────────────────────────────────────────────────────────────
+
+  #locale() {
+    return /** @type {HTMLElement | null} */ (this.closest('[lang]'))?.lang || undefined;
+  }
+
+  /** @param {number} n */
+  #formatNumber(n) {
+    try { return new Intl.NumberFormat(this.#locale()).format(n); } catch { return String(n); }
+  }
+
+  /** @param {number} n */
+  #countLabel(n) {
+    let cat = 'other';
+    try { cat = new Intl.PluralRules(this.#locale()).select(n); } catch { /* keep other */ }
+    const tpl = this.getAttribute(`data-label-${cat}`)
+      ?? this.getAttribute('data-label-other')
+      ?? (cat === 'one' ? DEFAULT_LABELS.one : DEFAULT_LABELS.other);
+    return tpl.replaceAll('{n}', this.#formatNumber(n));
+  }
+
+  // ── Form value + validity ───────────────────────────────────────────
+
+  #commit() {
+    const v = this.value;
+    this.#internals.setFormValue(v > 0 ? String(v) : null);
+    this.#validate();
   }
 
   #validate() {
-    if (this.hasAttribute('required')) {
-      const checked = this.#fieldset?.querySelector('input[type="radio"]:checked');
-      if (!checked) {
-        this.#internals.setValidity(
-          { valueMissing: true },
-          'Please select a rating',
-          this.#fieldset || this
-        );
-      } else {
-        this.#internals.setValidity({});
-      }
+    const fs = this.#fieldset;
+    if (this.hasAttribute('required') && !this.#isReadonly() && fs
+        && !fs.querySelector('input[type="radio"]:checked')) {
+      const anchor = /** @type {HTMLElement | null} */ (fs.querySelector('input[type="radio"]'));
+      this.#internals.setValidity(
+        { valueMissing: true },
+        this.getAttribute('data-label-required') || DEFAULT_LABELS.required,
+        anchor || fs,
+      );
     } else {
       this.#internals.setValidity({});
     }
   }
 
-  formResetCallback() {
-    if (!this.#fieldset) return;
-
-    this.#fieldset.querySelectorAll('input[type="radio"]').forEach(
-      (/** @type {HTMLInputElement} */ r) => { r.checked = false; }
-    );
-
-    if (this.#initialValue > 0) {
-      const target = /** @type {HTMLInputElement | null} */ (
-        this.#fieldset.querySelector(`input[value="${this.#initialValue}"]`)
-      );
-      if (target) target.checked = true;
+  /** Check the radio for `numVal` (0 = none) without firing events. */
+  #check(numVal) {
+    const fs = this.#fieldset;
+    if (!fs) return;
+    for (const r of /** @type {NodeListOf<HTMLInputElement>} */ (fs.querySelectorAll('input[type="radio"]'))) {
+      r.checked = numVal > 0 && Number(r.value) === numVal;
     }
+  }
 
-    this.#syncFormValue(this.#initialValue);
-    this.#validate();
+  formResetCallback() {
+    this.value = this.#defaultValue;
   }
 
   formStateRestoreCallback(state) {
-    if (!state || !this.#fieldset) return;
-
-    const target = /** @type {HTMLInputElement | null} */ (
-      this.#fieldset.querySelector(`input[value="${state}"]`)
-    );
-    if (target) {
-      target.checked = true;
-      this.#syncFormValue(Number(state));
-      this.#validate();
-    }
+    if (typeof state === 'string') this.value = toNumber(state);
   }
 
   get value() {
-    if (!this.#fieldset) return Number(this.getAttribute('value') || 0);
+    const fs = this.#fieldset;
+    if (!fs) return this.#pendingValue ?? toNumber(this.getAttribute('value'));
+    if (this.#isReadonly()) return this.#readonlyValue;
     const checked = /** @type {HTMLInputElement | null} */ (
-      this.#fieldset.querySelector('input[type="radio"]:checked')
+      fs.querySelector('input[type="radio"]:checked')
     );
     return checked ? Number(checked.value) : 0;
   }
 
   set value(val) {
-    if (!this.#fieldset) return;
-
-    const numVal = Number(val);
-    // Idempotent: skip if same as currently checked.
-    const currentChecked = /** @type {HTMLInputElement | null} */ (
-      this.#fieldset.querySelector('input[type="radio"]:checked')
-    );
-    const currentVal = currentChecked ? Number(currentChecked.value) : 0;
-    if (currentVal === numVal) return;
-
-    this.#fieldset.querySelectorAll('input[type="radio"]').forEach(
-      (/** @type {HTMLInputElement} */ r) => { r.checked = false; }
-    );
-
-    if (numVal > 0) {
-      const target = /** @type {HTMLInputElement | null} */ (
-        this.#fieldset.querySelector(`input[value="${numVal}"]`)
-      );
-      if (target) target.checked = true;
+    const numVal = toNumber(val);
+    if (!this.#fieldset) {
+      // Not built yet (property set before connect): apply on build.
+      this.#pendingValue = numVal;
+      return;
     }
-
-    this.#syncFormValue(numVal);
-    this.#validate();
+    if (this.value === numVal) return;
+    if (this.#isReadonly()) {
+      this.#rebuild(numVal);
+      return;
+    }
+    this.#check(numVal);
+    this.#commit();
   }
 }
 

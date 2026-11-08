@@ -5,24 +5,31 @@
  * (in priority order): `src` attribute, `<script type="text/markdown">`,
  * `<template data-md>`, or `<pre>` (recommended for progressive enhancement).
  *
- * The default parser is the vendored `marked` (src/vendor/marked). Supply a
- * custom parser via the `.parser` property to bypass the default entirely.
+ * The default parser is the vendored `marked` (src/vendor/marked) with GFM
+ * and VB callout blocks (`:::note|info|tip|warning|danger [title]` … `:::`).
+ * Supply a custom parser via the `.parser` property to bypass it entirely.
  *
  * Trust boundary: parsed HTML (from marked or a custom `.parser`) is passed
- * through the shared sanitizer (src/lib/sanitize-html.js) before it is
- * written via innerHTML — script/iframe/object/embed/form/base/link/meta/
- * noscript elements, on* handlers and javascript:/data:text/html URLs are
- * stripped. Sanitising is ON by default because the viewer renders model
- * output (ai-summary) and user comments (comment-box → markdown-editor).
- * Set `sanitize="off"` only for fully trusted first-party markdown that
- * genuinely needs raw embeds (iframes, forms).
+ * through the shared sanitizer (src/lib/sanitize-html.js, untrusted profile)
+ * and the cleaned nodes are inserted directly — never serialised and parsed
+ * again. Sanitising is ON by default because the viewer renders model output
+ * (ai-summary) and user comments (comment-box → markdown-editor).
+ * `sanitize="off"` writes the parser output with innerHTML: only for fully
+ * trusted first-party markdown, and never together with a cross-origin or
+ * user-influenced `src`.
  *
- * @attr {string} src - URL of external markdown file
+ * `src` is same-origin by default (http(s) only, redirects re-checked);
+ * `allow-cross-origin` opts in to other origins — the same policy as
+ * `<include-file>`.
+ *
+ * @attr {string} src - URL of external markdown file (same-origin unless allow-cross-origin)
+ * @attr {boolean} allow-cross-origin - Permit `src` on another origin (still sanitized unless sanitize="off")
  * @attr {string} sanitize - Sanitise rendered HTML. On by default (bare attribute or any value); "off"/"false" disables
- * @attr {string} loading - "eager" (default) or "lazy" (Phase 3)
  * @attr {boolean} highlight - Fire per-block highlight events after render
  * @attr {string} ping - URL to ping with render metadata
  * @attr {string} data-theme - Theme propagated to .md-content
+ * @attr {string} data-label-error - Text of the load-failure message (default "Failed to load markdown")
+ * @attr {boolean} data-auto-mermaid - Upgrade ```mermaid fences to <diagram-wc> (loads the bridge)
  *
  * State attributes (set by component):
  * @attr {boolean} data-rendered - Present after successful render
@@ -46,8 +53,46 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
-import { marked as markedLib } from '../../vendor/marked/marked.esm.js';
-import { sanitizeHTML } from '../../lib/sanitize-html.js';
+import { Marked } from '../../vendor/marked/marked.esm.js';
+import { sanitizeToFragment } from '../../lib/sanitize-html.js';
+
+const DEFAULT_ERROR_LABEL = 'Failed to load markdown';
+const CALLOUT_RE = /^:::[ \t]*(note|info|tip|warning|danger)(?:[ \t]+([^\n]*?))?[ \t]*\n([\s\S]*?)\n?^:::[ \t]*(?:\n+|$)/m;
+
+/** @param {string} s */
+const escapeHTML = (s) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+
+/**
+ * VB callout blocks: `:::warning Optional title` … `:::`. Rendered as the
+ * shared callout primitive — `<aside data-callout="kind" role="note">` (styled
+ * by src/shapes/callouts.css, not by this component) — with a visible
+ * `[data-callout-title]` so the kind is not conveyed by colour alone.
+ */
+const calloutExtension = {
+  name: 'vbCallout',
+  level: /** @type {const} */ ('block'),
+  /** @param {string} src */
+  start(src) { return src.match(/^:::[ \t]*(?:note|info|tip|warning|danger)\b/m)?.index; },
+  /** @param {string} src */
+  tokenizer(src) {
+    const m = CALLOUT_RE.exec(src);
+    if (!m || m.index !== 0) return undefined;
+    const kind = m[1];
+    const title = (m[2] || '').trim() || kind[0].toUpperCase() + kind.slice(1);
+    const token = { type: 'vbCallout', raw: m[0], kind, title, tokens: [] };
+    this.lexer.blockTokens(m[3], token.tokens);
+    return token;
+  },
+  /** @param {{ kind: string, title: string, tokens: any[] }} token */
+  renderer(token) {
+    return `<aside data-callout="${token.kind}" role="note">`
+      + `<p data-callout-title><strong>${escapeHTML(token.title)}</strong></p>`
+      + `${this.parser.parse(token.tokens)}</aside>\n`;
+  },
+};
+
+/** Private marked instance: callouts never leak into other marked users. */
+const markedLib = new Marked({ gfm: true, extensions: [/** @type {any} */ (calloutExtension)] });
 
 class MarkdownViewer extends VBElement {
   /** @type {Function|null} Custom parser override (md string → html string) */
@@ -56,13 +101,17 @@ class MarkdownViewer extends VBElement {
   #abortController = null;
   /** @type {HTMLElement|null} */
   #contentEl = null;
+  /** @type {HTMLElement|null} */
+  #errorEl = null;
   /** @type {string|null} Programmatic markdown override (wins over slot resolution) */
   #markdownOverride = null;
   /** @type {string|null} Last successfully resolved markdown source */
   #lastResolved = null;
+  /** Incremented per render; stale async renders bail out */
+  #renderId = 0;
 
   static get observedAttributes() {
-    return ['src'];
+    return ['src', 'sanitize', 'allow-cross-origin'];
   }
 
   setup() {
@@ -76,9 +125,10 @@ class MarkdownViewer extends VBElement {
   }
 
   attributeChangedCallback(name, oldVal, newVal) {
-    if (name === 'src' && newVal && oldVal !== newVal && this.isConnected) {
-      this.#render();
-    }
+    // Initial attributes are handled by setup(); afterwards any change —
+    // including removing src (fall back to the slots) — re-renders.
+    if (oldVal === newVal || !this.isConnected || !this.hasAttribute('data-upgraded')) return;
+    this.#render();
   }
 
   // ── Public API ──────────────────────────────────────────────
@@ -127,12 +177,9 @@ class MarkdownViewer extends VBElement {
 
   /**
    * Resolve markdown string from the slot priority chain.
-   * Returns null if `src` is set (handled separately via fetch).
    * @returns {string|null}
    */
   #resolveMarkdown() {
-    if (this.getAttribute('src')) return null;
-
     const script = this.querySelector('script[type="text/markdown"]');
     if (script) return script.textContent;
 
@@ -145,40 +192,70 @@ class MarkdownViewer extends VBElement {
     return null;
   }
 
+  /**
+   * Resolve `src` and apply the origin policy (mirrors include-file).
+   * @param {string} src
+   * @returns {string} absolute URL
+   */
+  #resolveUrl(src) {
+    let url;
+    try {
+      url = new URL(src, document.baseURI);
+    } catch {
+      throw new Error(`Invalid URL: ${src}`);
+    }
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      throw new Error(`Refused ${url.protocol} URL: only http(s) is allowed`);
+    }
+    this.#checkOrigin(url.href);
+    return url.href;
+  }
+
+  /** @param {string} href */
+  #checkOrigin(href) {
+    if (this.hasAttribute('allow-cross-origin')) return;
+    if (new URL(href).origin !== location.origin) {
+      throw new Error(`Refused cross-origin URL ${href} (add allow-cross-origin to permit)`);
+    }
+  }
+
   // ── Render pipeline ─────────────────────────────────────────
 
   async #render() {
+    const id = ++this.#renderId;
     const src = this.getAttribute('src');
     let md;
 
     // Clear previous state
+    this.#abortController?.abort();
+    this.#abortController = null;
     this.removeAttribute('data-rendered');
     this.removeAttribute('data-error');
+    this.removeAttribute('data-loading');
+    this.#errorEl?.remove();
+    this.#errorEl = null;
 
     if (src) {
-      // Abort any previous request
-      this.#abortController?.abort();
-      this.#abortController = new AbortController();
-
+      const controller = new AbortController();
+      this.#abortController = controller;
       this.setAttribute('data-loading', '');
-
       this.#emit('markdown-viewer:fetch', { src });
 
       try {
-        const response = await fetch(src, {
-          signal: this.#abortController.signal,
-        });
+        const url = this.#resolveUrl(src);
+        const response = await fetch(url, { signal: controller.signal });
+        // A same-origin URL may redirect elsewhere — apply the policy again
+        if (response.url) this.#checkOrigin(response.url);
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         md = await response.text();
       } catch (err) {
-        if (err.name === 'AbortError') return;
-        this.removeAttribute('data-loading');
-        this.setAttribute('data-error', '');
-        this.#emit('markdown-viewer:error', { error: err.message });
+        if (err.name === 'AbortError' || id !== this.#renderId) return;
+        this.#fail(err);
         return;
       }
+      if (id !== this.#renderId) return;
 
       this.removeAttribute('data-loading');
     } else if (this.#markdownOverride != null) {
@@ -188,7 +265,11 @@ class MarkdownViewer extends VBElement {
       md = this.#resolveMarkdown();
     }
 
-    if (md == null) return;
+    if (md == null) {
+      // Nothing to show (e.g. src removed with no slot): clear stale output
+      this.#contentEl?.replaceChildren();
+      return;
+    }
     this.#lastResolved = md;
 
     // Parse
@@ -197,19 +278,29 @@ class MarkdownViewer extends VBElement {
       const parse = await this.#getParser();
       html = await parse(md);
     } catch (err) {
-      this.setAttribute('data-error', '');
-      this.#emit('markdown-viewer:error', { error: err.message });
+      if (id !== this.#renderId) return;
+      this.#fail(err);
       return;
     }
+    if (id !== this.#renderId) return;
 
     // Render into .md-content
-    if (!this.#contentEl) {
+    if (!this.#contentEl || this.#contentEl.parentNode !== this) {
       this.#contentEl = document.createElement('div');
       this.#contentEl.className = 'md-content';
       this.#contentEl.setAttribute('part', 'content');
       this.appendChild(this.#contentEl);
     }
-    this.#contentEl.innerHTML = this.#shouldSanitize() ? sanitizeHTML(String(html ?? '')) : html;
+    // Rendered prose follows its own direction unless the author set one
+    if (!this.hasAttribute('dir')) this.#contentEl.setAttribute('dir', 'auto');
+    else this.#contentEl.removeAttribute('dir');
+
+    if (this.#shouldSanitize()) {
+      // Insert the cleaned nodes themselves — no serialise + re-parse (mXSS)
+      this.#contentEl.replaceChildren(sanitizeToFragment(String(html ?? '')));
+    } else {
+      this.#contentEl.innerHTML = String(html ?? '');
+    }
 
     // Theme propagation
     this.#propagateTheme();
@@ -235,11 +326,31 @@ class MarkdownViewer extends VBElement {
     }
   }
 
+  /**
+   * Stamp the error state; show an announced message when no fallback
+   * (`<pre>` slot) is visible.
+   * @param {Error} err
+   */
+  #fail(err) {
+    this.removeAttribute('data-loading');
+    this.setAttribute('data-error', '');
+    this.#contentEl?.replaceChildren();
+    if (!this.querySelector(':scope > pre')) {
+      const p = document.createElement('p');
+      p.setAttribute('role', 'alert');
+      p.setAttribute('data-md-error', '');
+      p.textContent = this.getAttribute('data-label-error') || DEFAULT_ERROR_LABEL;
+      this.append(p);
+      this.#errorEl = p;
+    }
+    this.#emit('markdown-viewer:error', { error: err.message });
+  }
+
   // ── Parser ──────────────────────────────────────────────────
 
   async #getParser() {
     if (this.#parser) return this.#parser;
-    return (md) => markedLib.parse(md, { gfm: true });
+    return (md) => markedLib.parse(md);
   }
 
   /** Sanitising is on unless explicitly disabled with sanitize="off"|"false". */

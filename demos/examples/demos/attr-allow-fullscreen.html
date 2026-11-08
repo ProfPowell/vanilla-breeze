@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>allow attribute</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+    iframe {
+      inline-size: 100%;
+      block-size: 7rem;
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="m">
+    <h1>Granting fullscreen to a frame</h1>
+    <p>Two frames run the same script. They are sandboxed so that, like a third-party embed, they are not same-origin with this page. Only the first is granted fullscreen.</p>
+
+    <h2><code>allowfullscreen</code></h2>
+    <iframe class="bordered" title="Frame allowed to go fullscreen" sandbox="allow-scripts"
+      allowfullscreen
+      srcdoc="<meta name='color-scheme' content='light dark'><style>body{font:1rem/1.4 system-ui,sans-serif;margin:.5rem}</style><p>Scripts are blocked in this frame.</p><button type='button'>Go fullscreen</button><script>const p=document.querySelector('p');p.textContent='document.fullscreenEnabled: '+document.fullscreenEnabled;document.querySelector('button').addEventListener('click',()=>{document.documentElement.requestFullscreen().catch(e=>{p.textContent='Blocked: '+e.message})})</script>"></iframe>
+
+    <h2>No fullscreen permission</h2>
+    <iframe class="bordered" title="Frame without fullscreen permission" sandbox="allow-scripts"
+      srcdoc="<meta name='color-scheme' content='light dark'><style>body{font:1rem/1.4 system-ui,sans-serif;margin:.5rem}</style><p>Scripts are blocked in this frame.</p><button type='button'>Go fullscreen</button><script>const p=document.querySelector('p');p.textContent='document.fullscreenEnabled: '+document.fullscreenEnabled;document.querySelector('button').addEventListener('click',()=>{document.documentElement.requestFullscreen().catch(e=>{p.textContent='Blocked: '+e.message})})</script>"></iframe>
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

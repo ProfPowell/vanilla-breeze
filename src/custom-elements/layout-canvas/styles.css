@@ -11,6 +11,17 @@
  *   <article data-canvas>...</article>
  *   <section data-canvas="flush">...</section>
  *   <layout-canvas data-variant="elevated">...</layout-canvas>
+ *
+ * Edges: a 1px border is always reserved. It is transparent under
+ * [data-backdrop] (the tinted page behind already frames the surface), a
+ * --color-border hairline on a plain page (where canvas and page share
+ * --color-surface), and CanvasText under forced colours (where background
+ * and shadow are flattened).
+ *
+ * Mobile (< 37.5rem): every canvas goes flush. The elevated variant and the
+ * depth sheets live in a (width >= 37.5rem) block so the element form
+ * (layout-canvas[data-variant]) and attribute form ([data-canvas="…"])
+ * behave the same below the breakpoint.
  */
 
 layout-canvas {
@@ -23,6 +34,7 @@ layout-canvas {
 [data-canvas],
 layout-canvas {
   background: var(--canvas-bg, var(--color-surface));
+  border: 1px solid transparent;
   border-radius: var(--canvas-radius, var(--radius-l));
   box-shadow: var(--canvas-shadow, var(--shadow-l));
   padding-inline: var(--canvas-padding-inline, var(--size-l));
@@ -30,6 +42,19 @@ layout-canvas {
   inline-size: 100%;
   max-inline-size: var(--canvas-width, min(72rem, 100%));
   margin-inline: auto;
+}
+
+/* Plain page (no data-backdrop): canvas and page share --color-surface, so
+   the shadow alone would mark the edge (and barely at all in dark mode). */
+:is([data-canvas], layout-canvas):not([data-backdrop], [data-backdrop] *) {
+  border-color: var(--color-border);
+}
+
+@media (forced-colors: active) {
+  [data-canvas],
+  layout-canvas {
+    border-color: CanvasText;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -42,22 +67,13 @@ layout-canvas[data-variant="flush"] {
 }
 
 /* --------------------------------------------------------------------------
-   Variant: elevated (larger radius, dramatic shadow)
-   -------------------------------------------------------------------------- */
-[data-canvas="elevated"],
-layout-canvas[data-variant="elevated"] {
-  border-radius: var(--radius-xl, var(--radius-l));
-  box-shadow: var(--shadow-xl, var(--shadow-l));
-}
-
-/* --------------------------------------------------------------------------
    Width constraints via data-max — narrow | normal | wide | prose, the
    same keyword set as layout-center and layout-card. Surfaces (canvas,
    card, badge) use bare data-* attributes; flow primitives use
    data-layout-*.
    -------------------------------------------------------------------------- */
 [data-canvas][data-max="narrow"],
-layout-canvas[data-max="narrow"]  { max-inline-size: var(--content-narrow, 45rem); }
+layout-canvas[data-max="narrow"]  { max-inline-size: var(--content-narrow, 40rem); }
 
 [data-canvas][data-max="normal"],
 layout-canvas[data-max="normal"] { max-inline-size: var(--content-normal, 60rem); }
@@ -93,29 +109,45 @@ layout-canvas[data-padding="xl"]   { padding-inline: var(--size-xl); padding-blo
 layout-canvas layout-canvas,
 [data-canvas] layout-canvas,
 layout-canvas [data-canvas] {
-  background: var(--color-surface-raised, var(--color-surface));
+  /* Set the token, not background: the base rule paints --canvas-bg, so
+     the depth sheets match and an author's own --canvas-bg on the nested
+     canvas still wins. */
+  --canvas-bg: var(--color-surface-raised, var(--color-surface));
 }
 
 /* --------------------------------------------------------------------------
-   Canvas depth — ghost cards on canvas elements
-   Same stacked-papers illusion as backdrop-depth.css but for data-canvas.
+   Elevated variant and depth sheets: wide containers only (>= --bp-s), so
+   both forms go flush on mobile.
    -------------------------------------------------------------------------- */
-[data-canvas][data-canvas-depth="1"]:not([data-canvas="flush"]),
-layout-canvas[data-canvas-depth="1"]:not([data-variant="flush"]) {
-  box-shadow:
-    var(--canvas-shadow, var(--shadow-l)),
-    0 8px 0 -3px var(--canvas-bg, var(--color-surface, #fff)),
-    0 10px 8px -3px oklch(0% 0 0 / 0.12);
-}
+@media (width >= 37.5rem) {
+  /* Variant: elevated (larger radius, dramatic shadow) */
+  [data-canvas="elevated"],
+  layout-canvas[data-variant="elevated"] {
+    border-radius: var(--radius-xl, var(--radius-l));
+    box-shadow: var(--shadow-xl, var(--shadow-l));
+  }
 
-[data-canvas][data-canvas-depth="2"]:not([data-canvas="flush"]),
-layout-canvas[data-canvas-depth="2"]:not([data-variant="flush"]) {
-  box-shadow:
-    var(--canvas-shadow, var(--shadow-l)),
-    0 8px 0 -3px var(--canvas-bg, var(--color-surface, #fff)),
-    0 10px 8px -3px oklch(0% 0 0 / 0.12),
-    0 16px 0 -6px var(--canvas-bg, var(--color-surface, #fff)),
-    0 18px 8px -6px oklch(0% 0 0 / 0.06);
+  /* --------------------------------------------------------------------------
+     Canvas depth — ghost cards on canvas elements
+     Same stacked-papers illusion as backdrop-depth.css but for data-canvas.
+     -------------------------------------------------------------------------- */
+  [data-canvas][data-canvas-depth="1"]:not([data-canvas="flush"]),
+  layout-canvas[data-canvas-depth="1"]:not([data-variant="flush"]) {
+    box-shadow:
+      var(--canvas-shadow, var(--shadow-l)),
+      0 8px 0 -3px var(--canvas-bg, var(--color-surface, #fff)),
+      0 10px 8px -3px oklch(0% 0 0 / 0.12);
+  }
+
+  [data-canvas][data-canvas-depth="2"]:not([data-canvas="flush"]),
+  layout-canvas[data-canvas-depth="2"]:not([data-variant="flush"]) {
+    box-shadow:
+      var(--canvas-shadow, var(--shadow-l)),
+      0 8px 0 -3px var(--canvas-bg, var(--color-surface, #fff)),
+      0 10px 8px -3px oklch(0% 0 0 / 0.12),
+      0 16px 0 -6px var(--canvas-bg, var(--color-surface, #fff)),
+      0 18px 8px -6px oklch(0% 0 0 / 0.06);
+  }
 }
 
 /* --------------------------------------------------------------------------

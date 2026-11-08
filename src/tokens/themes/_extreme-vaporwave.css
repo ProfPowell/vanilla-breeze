@@ -105,12 +105,12 @@
     );
 
     /* ===== FORM CONTROLS ===== */
-    --control-border: oklch(70% 0.08 310);
+    --control-border: color-mix(in oklab, oklch(70% 0.08 310), var(--color-text) 25%); /* 3:1 non-text contrast */
     --control-checked-bg: oklch(58% 0.22 330);
     --control-checked-border: oklch(58% 0.22 330);
-    --input-border: oklch(80% 0.04 310);
+    --input-border: color-mix(in oklab, oklch(80% 0.04 310), var(--color-text) 40%); /* 3:1 non-text contrast */
     --input-border-focus: oklch(58% 0.22 330);
-    --range-track-bg: oklch(85% 0.03 310);
+    --range-track-bg: color-mix(in oklab, oklch(85% 0.03 310), var(--color-text) 45%); /* 3:1 non-text contrast */
     --range-track-fill: oklch(58% 0.22 330);
     --range-thumb-bg: oklch(92% 0.02 310);
     --range-thumb-border: oklch(58% 0.22 330);
@@ -138,7 +138,7 @@
   [data-theme~="vaporwave"] {
     & :is(main, article) {
       /* Neon gradient HR */
-      & hr:not([data-ornament]) {
+      & hr:not([data-ornament], [class]) {
         border: none;
         height: 1px;
         background: linear-gradient(
@@ -192,10 +192,11 @@
         }
       }
 
-      /* Gradient + glow buttons */
+      /* Gradient + glow buttons. The white label needs both stops at or
+         below ~55% lightness for 4.5:1 (vanilla-breeze-4vhi). */
       & button,
       & .button {
-        background: linear-gradient(135deg, oklch(58% 0.22 330), oklch(65% 0.12 300));
+        background: linear-gradient(135deg, oklch(55% 0.22 330), oklch(55% 0.14 300));
         --btn-border-width: 1px;
         border-color: oklch(58% 0.22 330 / 0.5);
         color: oklch(100% 0 0);
@@ -319,12 +320,12 @@
 
     /* Form controls: dark violet surface with pink border */
     --input-bg: oklch(10% 0.04 300);
-    --input-border: oklch(22% 0.04 300);
+    --input-border: color-mix(in oklab, oklch(22% 0.04 300), var(--color-text) 45%); /* 3:1 non-text contrast */
     --input-border-focus: oklch(72% 0.22 330);
-    --control-border: oklch(40% 0.06 300);
+    --control-border: color-mix(in oklab, oklch(40% 0.06 300), var(--color-text) 25%); /* 3:1 non-text contrast */
     --control-checked-bg: oklch(72% 0.22 330);
     --control-checked-border: oklch(72% 0.22 330);
-    --range-track-bg: oklch(18% 0.04 300);
+    --range-track-bg: color-mix(in oklab, oklch(18% 0.04 300), var(--color-text) 50%); /* 3:1 non-text contrast */
     --range-track-fill: oklch(72% 0.22 330);
     --range-thumb-bg: oklch(20% 0.04 300);
     --range-thumb-border: oklch(72% 0.22 330);
@@ -353,7 +354,7 @@
     );
 
     & :is(main, article) {
-      & hr:not([data-ornament]) {
+      & hr:not([data-ornament], [class]) {
         background: linear-gradient(
           90deg,
           transparent,
@@ -383,7 +384,9 @@
 
       & button,
       & .button {
-        background: linear-gradient(135deg, oklch(72% 0.22 330), oklch(60% 0.15 300));
+        /* Neon stops dimmed until the white label reaches 4.5:1 (4vhi);
+           the glow and border keep the bright pink. */
+        background: linear-gradient(135deg, oklch(57% 0.24 330), oklch(53% 0.17 300));
         border-color: oklch(72% 0.22 330 / 0.5);
         box-shadow: inset 0 0 10px oklch(72% 0.22 330 / 0.2);
 

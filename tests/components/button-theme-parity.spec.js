@@ -31,6 +31,12 @@ const themes = ['default', ...themeFiles.map((f) => f.replace(/^_(extreme|brand)
 const accents = [...new Set([...readFileSync(join(THEME_DIR, '_accents.css'), 'utf8')
   .matchAll(/data-accent~="([a-z-]+)"/g)].map((m) => m[1]))];
 
+/** Variants whose label is measured against the button's own effective background (4vhi). */
+const VARIANTS = ['primary', 'secondary', 'ghost', 'link'];
+const variantButton = (v) => (v === 'link'
+  ? '<a data-probe="link" class="button" href="#z">Save</a>'
+  : `<button type="button" data-probe="${v}"${v === 'primary' ? '' : ` class="${v}"`}>Save</button>`);
+
 async function load(page) {
   await page.route('**/src/**', (route) => route.fulfill({
     path: join(REPO, decodeURIComponent(new URL(route.request().url()).pathname)),
@@ -55,6 +61,9 @@ async function load(page) {
         <button type="button" id="primary-large" class="large">Save</button>
         <button type="button" id="secondary-large" class="secondary large">Save</button></p>
       <p>Body text with <a id="link" href="#y">a link</a> inside.</p>
+      <p data-surface="page">${VARIANTS.map(variantButton).join('\n')}</p>
+      <article class="card"><p data-surface="card">${VARIANTS.map(variantButton).join('\n')}</p></article>
+      <layout-card><p data-surface="layout-card">${VARIANTS.map(variantButton).join('\n')}</p></layout-card>
       </article></main></body></html>`,
   }));
   await page.goto(url, { waitUntil: 'load' });
@@ -138,6 +147,104 @@ test('every theme and accent keeps interactive text at AA', async ({ page }, inf
         if (r !== null && r < 4.5) failures.push(`${accent ? `accent ${accent}` : theme}/${mode} ${what}: ${r}`);
       }
     }
+  }
+  expect(failures, failures.join('\n')).toEqual([]);
+});
+
+/**
+ * Label contrast on the button's own effective background (vanilla-breeze-4vhi).
+ * The background is composited from the button down through every ancestor
+ * until an opaque layer: translucent fills (glass) blend over what is behind
+ * them, and a gradient contributes each of its stops, so the worst stop is
+ * what is measured. Gradient text (background-clip: text with a transparent
+ * fill) is measured stop-by-stop against what is behind the button.
+ */
+function measureLabels([theme, mode]) {
+  const root = document.documentElement;
+  if (theme === 'default') root.removeAttribute('data-theme');
+  else root.setAttribute('data-theme', theme);
+  root.removeAttribute('data-accent');
+  root.setAttribute('data-mode', mode);
+  delete root.dataset.borderStyle;
+  const hint = getComputedStyle(root).getPropertyValue('--theme-border-style').trim();
+  if (hint) root.dataset.borderStyle = hint;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 1;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const rgba = (c) => { ctx.clearRect(0, 0, 1, 1); ctx.fillStyle = '#000'; ctx.fillStyle = c; ctx.fillRect(0, 0, 1, 1); return [...ctx.getImageData(0, 0, 1, 1).data]; };
+  const lum = ([r, g, b]) => [r, g, b].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; })
+    .reduce((s, v, i) => s + v * [0.2126, 0.7152, 0.0722][i], 0);
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+  const over = (top, base) => { const a = top[3] / 255; return [0, 1, 2].map((i) => top[i] * a + base[i] * (1 - a)).concat(255); };
+  const COLOR = /(?:rgba?|hsla?|oklch|oklab|lab|lch|color)\([^()]*\)|#[0-9a-f]{3,8}\b|\btransparent\b/gi;
+  const stops = (image) => (image && image !== 'none' && /gradient\(/.test(image)
+    ? [...image.matchAll(COLOR)].map((m) => rgba(m[0])) : []);
+  /** Paint layers of a node, bottom first: its colour, then its gradient's stops (as alternatives). */
+  const layersOf = (n) => {
+    const cs = getComputedStyle(n);
+    if (cs.backgroundClip === 'text' || cs.webkitBackgroundClip === 'text') return [];
+    const out = [];
+    const c = rgba(cs.backgroundColor);
+    if (c[3] > 0) out.push([c]);
+    const g = stops(cs.backgroundImage);
+    if (g.length) out.push(g);
+    return out;
+  };
+  /** Possible background colours behind (and including) `from`. */
+  const backgrounds = (from) => {
+    const chain = [];
+    for (let n = from; n; n = n.parentElement) {
+      const ls = layersOf(n);
+      chain.push(ls);
+      if (ls.some((alts) => alts.every((x) => x[3] === 255))) break;
+    }
+    let set = [[255, 255, 255, 255]];
+    for (const ls of chain.reverse()) {
+      for (const alts of ls) {
+        const next = [];
+        for (const base of set) for (const a of alts) next.push(over(a, base));
+        set = next.slice(0, 64);
+      }
+    }
+    return set;
+  };
+
+  const out = [];
+  for (const el of document.querySelectorAll('[data-surface] > [data-probe]')) {
+    const cs = getComputedStyle(el);
+    const gradientText = (cs.backgroundClip === 'text' || cs.webkitBackgroundClip === 'text')
+      && rgba(cs.webkitTextFillColor)[3] === 0;
+    const bgs = backgrounds(gradientText ? el.parentElement : el);
+    const fg = gradientText ? stops(cs.backgroundImage) : [rgba(cs.webkitTextFillColor || cs.color)];
+    let worst = Infinity;
+    for (const b of bgs) for (const f of fg) worst = Math.min(worst, ratio(over(f, b), b));
+    out.push({
+      surface: el.parentElement.dataset.surface,
+      variant: el.dataset.probe,
+      ratio: Math.round(worst * 100) / 100,
+      gradient: bgs.length > 1 || fg.length > 1,
+    });
+  }
+  return out;
+}
+
+test('every theme keeps button labels at AA on their own background', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop', 'colour check is viewport-independent');
+  await load(page);
+  const failures = [];
+  const table = [];
+  for (const theme of themes) {
+    for (const mode of MODES) {
+      for (const r of await page.evaluate(measureLabels, [theme, mode])) {
+        table.push(`${theme}/${mode} ${r.surface} ${r.variant}: ${r.ratio}${r.gradient ? ' (gradient)' : ''}`);
+        if (r.ratio < 4.5) failures.push(table.at(-1));
+      }
+    }
+  }
+  if (process.env.BUTTON_LABEL_TABLE) {
+    const { writeFileSync } = await import('node:fs');
+    writeFileSync(process.env.BUTTON_LABEL_TABLE, table.join('\n'));
   }
   expect(failures, failures.join('\n')).toEqual([]);
 });

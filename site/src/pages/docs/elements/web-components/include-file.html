@@ -12,10 +12,17 @@ crumbLabel: Web Components
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;include-file&gt;</code> component fetches HTML from a URL and injects it. Any existing content serves as a fallback shown until the fetch completes (or if it fails).</p>
+    <p>The <code>&lt;include-file&gt;</code> component fetches a same-origin HTML fragment, sanitizes it, and inserts it. Any existing content serves as a fallback shown until the fetch completes (or if it fails).</p>
+
+    <browser-window
+      src="/docs/examples/demos/include-file-basic.html"
+      url="https://vanilla-breeze.com/include-file"
+      title="Include File"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Basic include" data-escape><include-file src="/partials/header.html">
-  <p>Loading header...</p>
+  <p><a href="/">Home</a></p>
 </include-file></code-block>
   </section>
 
@@ -73,37 +80,60 @@ include.addEventListener('include-file:error', (e) => {
     <table class="props-table">
       <thead>
         <tr>
-          <th>Method</th>
+          <th>Member</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
         <tr>
+          <td><code>src</code></td>
+          <td>Mirror of the <code>src</code> attribute. Assigning a new value loads it and fires <code>include-file:src-changed</code>.</td>
+        </tr>
+        <tr>
           <td><code>reload()</code></td>
-          <td>Re-fetch content from the current <code>src</code>.</td>
+          <td>Re-fetch content from the current <code>src</code> (same policy checks as a normal load).</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section>
+    <h2>Security &amp; Nesting</h2>
+    <p><code>&lt;include-file&gt;</code> is safe by default. Each relaxation is an explicit attribute the page author writes; content can never grant itself trust.</p>
+
+    <h3>Same origin by default</h3>
+    <p><code>src</code> is resolved against the page (<code>document.baseURI</code>). Only <code>http:</code>/<code>https:</code> URLs on the page&rsquo;s own origin load. <code>blob:</code>, <code>data:</code>, <code>javascript:</code> and other schemes are always refused, and a same-origin URL that redirects to another origin is refused too. Add <code>allow-cross-origin</code> to load from another origin; that server must also allow it with CORS.</p>
+
+    <h3>Sanitized by default</h3>
+    <p>Fetched HTML goes through the shared VB sanitizer before it is inserted, and the cleaned nodes are inserted directly (never re-parsed from a string). It removes <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code>, <code>&lt;iframe&gt;</code>/<code>&lt;object&gt;</code>/<code>&lt;embed&gt;</code>, <code>&lt;form&gt;</code> and form-submission attributes, <code>&lt;base&gt;</code>, <code>&lt;meta&gt;</code>, <code>&lt;link&gt;</code>, SVG <code>&lt;foreignObject&gt;</code>, every <code>on*</code> event handler, <code>srcdoc</code>, <code>javascript:</code> and <code>data:</code> URLs on links and loaders, and script-bearing inline <code>style</code>. Partials keep their ids, names, safe inline styles and invoker attributes (<code>popovertarget</code>, <code>commandfor</code>), so first-party fragments such as a site header still work; a partial that relied on its own <code>&lt;style&gt;</code> block needs <code>trusted</code> or a stylesheet. The <code>include-file:loaded</code> event&rsquo;s <code>detail.html</code> is the serialised sanitized fragment for inspection &mdash; do not re-insert it with <code>innerHTML</code>. Nested <code>&lt;include-file&gt;</code> elements keep their <code>src</code> but lose <code>trusted</code>, <code>allow-scripts</code> and <code>allow-cross-origin</code>, so they stay same-origin and sanitized. The sanitizer is not a full HTML policy engine: it blocks script execution, not styling or layout tricks.</p>
+
+    <h3>trusted and allow-scripts</h3>
+    <p>Set <code>trusted</code> when you control the source and need markup the sanitizer removes (forms, inline handlers, iframes). Scripts in the fragment run only with <strong>both</strong> <code>trusted</code> and <code>allow-scripts</code>; <code>allow-scripts</code> alone is ignored with a console warning. Each load runs only that fragment&rsquo;s scripts, once; author scripts and earlier appended content are never re-run or removed. Never use <code>trusted</code> on a URL that serves user-generated content.</p>
+
+    <code-block language="html" show-lines label="Trusted first-party partial with scripts" data-escape><include-file src="/partials/newsletter-form.html" trusted allow-scripts>
+  <p><a href="/newsletter/">Sign up for the newsletter</a></p>
+</include-file></code-block>
+
+    <h3>Cycles and depth</h3>
+    <p>Fragments may contain further <code>&lt;include-file&gt;</code> elements. An include whose URL already appears among its ancestor includes (a fragment including itself, or A&nbsp;&rarr;&nbsp;B&nbsp;&rarr;&nbsp;A) is refused, as is nesting deeper than 10 levels. Both show the normal error state.</p>
+
+    <h3>Relative URLs inside fragments</h3>
+    <p>The fragment is parsed into the host page, so relative URLs inside it (links, images, nested <code>src</code>) resolve against the <strong>host page</strong>, not against the fragment&rsquo;s own URL. Use root-relative URLs (<code>/partials/&hellip;</code>) in fragments that are included from more than one place.</p>
+  </section>
+
+  <section>
     <h2>Progressive Enhancement</h2>
-    <p>Without JavaScript, the fallback content (whatever HTML is inside the element) remains visible. The <code>src</code> URL is never fetched, so users see the fallback. This makes it safe to use for non-critical content.</p>
+    <p>Without JavaScript, the fallback content (whatever HTML is inside the element) remains visible and the <code>src</code> URL is never fetched. Make the fallback useful on its own, for example a link to the full page the fragment comes from, so nothing is silently missing.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
       <li>Fallback content ensures content is always available.</li>
-      <li>Error state sets <code>data-error</code> on the element. The original fallback content is restored on first-load failure. Style <code>[data-error]</code> in CSS to show a visible error state.</li>
-      <li>Changing the <code>src</code> attribute triggers a re-fetch, enabling dynamic content updates.</li>
+      <li><code>aria-busy="true"</code> is set while a fetch is in flight.</li>
+      <li>Content that changes after load (a <code>src</code> change or <code>reload()</code>) is not announced by default. Add <code>aria-live="polite"</code> to the element to opt in.</li>
+      <li>On failure the original fallback is restored (first load, replace mode). When no fallback remains, an error message renders as a real <code>role="alert"</code> paragraph; set its text with <code>data-label-error</code>.</li>
     </ul>
-  </section>
-
-  <section>
-    <h2>Trust Boundary</h2>
-    <p>This component injects HTML via <code>innerHTML</code>. It is designed for loading <strong>trusted first-party fragments</strong> (partials, includes from your own server). Do not use it to load untrusted or user-generated HTML from third-party sources.</p>
-    <p>The <code>allow-scripts</code> attribute is an additional opt-in that re-executes inline scripts in loaded content. Only use it when you control the source URL.</p>
   </section>
 
   <section>

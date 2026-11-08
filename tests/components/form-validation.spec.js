@@ -334,7 +334,7 @@ test.describe('form validation — error summary', () => {
     await page.locator('#pe-form button[type="submit"]').click();
 
     const summary = page.locator('[data-form-summary]');
-    await expect(summary).toHaveAttribute('data-visible', '');
+    await expect(summary).toHaveAttribute('data-state-visible', '');
 
     const list = summary.locator('[data-summary-list] li');
     expect(await list.count()).toBeGreaterThan(0);
@@ -364,7 +364,7 @@ test.describe('form validation — error summary', () => {
     // First trigger summary by submitting empty form
     await page.locator('#pe-form button[type="submit"]').click();
     const summary = page.locator('[data-form-summary]');
-    await expect(summary).toHaveAttribute('data-visible', '');
+    await expect(summary).toHaveAttribute('data-state-visible', '');
 
     // Now fill all required fields
     await page.fill('#pe-name', 'John Doe');
@@ -374,17 +374,19 @@ test.describe('form validation — error summary', () => {
     // Intercept native submission by blocking the route
     await page.route('/contact', route => route.fulfill({ status: 200, body: 'OK' }));
 
-    // Before form.submit() navigates, check summary was cleared
-    // We do this by monkey-patching form.submit to verify before it fires
+    // Before the native submission navigates, check summary was cleared.
+    // The coordinator submits via requestSubmit(submitter) (form.submit()
+    // only as a fallback), so patch both to verify before it fires.
     const summaryClearedBeforeSubmit = page.evaluate(() => {
       return new Promise((resolve) => {
         const form = document.getElementById('pe-form');
-        const origSubmit = form.submit.bind(form);
-        form.submit = () => {
+        const check = () => {
           const summary = document.querySelector('[data-form-summary]');
-          resolve(!summary.hasAttribute('data-visible'));
+          resolve(!summary.hasAttribute('data-state-visible'));
           // Don't actually navigate
         };
+        form.requestSubmit = check;
+        form.submit = check;
       });
     });
 
@@ -435,11 +437,11 @@ test.describe('form validation — submit modes', () => {
     await page.goto(fetchPage);
     await waitForEnhanced(page);
 
-    // Intercept the fetch to control timing — hold the response
-    let resolveRoute;
-    await page.route('/api/contact', route => {
-      resolveRoute = () => route.fulfill({ status: 200, body: '{"ok":true}',
-        headers: { 'Content-Type': 'application/json' } });
+    // The demo mocks fetch with latency; if a request does reach the
+    // network, answer it after a delay so data-submitting is observable.
+    await page.route('**/api/contact', route => {
+      setTimeout(() => route.fulfill({ status: 200, body: '{"ok":true}',
+        headers: { 'Content-Type': 'application/json' } }), 500);
     });
 
     const form = page.locator('form[data-submit="fetch"]');
@@ -451,8 +453,6 @@ test.describe('form validation — submit modes', () => {
     await form.locator('button[type="submit"]').click();
     await expect(form).toHaveAttribute('data-submitting', '');
 
-    // Complete the fetch
-    resolveRoute();
     await expect(form).toHaveAttribute('data-success', '');
   });
 });
