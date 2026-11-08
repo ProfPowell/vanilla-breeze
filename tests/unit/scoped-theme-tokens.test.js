@@ -27,8 +27,14 @@ const TOKEN_FILES = [
   ...readdirSync(join(repo, 'src/tokens/extensions')).filter((f) => f.endsWith('.css')).map((f) => `src/tokens/extensions/${f}`),
   'src/charts/tokens.css',
 ];
-// Values that follow theme colours (directly or via another derived token).
-const THEME_DEPENDENT = /var\(--(color-|hue-|lightness-|chroma-|scrollbar-|control-border|progress-track-bg)/;
+// Values that follow theme-set inputs (directly or via another derived
+// token): colours and seeds, font stacks, radii, shadows, border width and
+// glass opacities. Not listed, on purpose: --size-unit (the one theme that
+// sets it, a11y-large-text, also sets every --size-* literally, and
+// re-deriving the scale would drop [data-layout-density] spacing inside a
+// themed element), --ease-3/--ease-in-2/--ease-out-3, --opacity-* and
+// --filter-rough-* (no theme sets them).
+const THEME_DEPENDENT = /var\(--(color-|hue-|lightness-|chroma-|scrollbar-|control-border|progress-track-bg|font-(sans|serif|mono)\b|radius-(full|m)\b|shadow-s\b|border-width-thin\b|glass-(surface|border)-opacity\b)/;
 // Page-level tokens painted on <html>/<body> or the backdrop canvas only.
 const PAGE_ONLY = new Set(['--page-bg-color', '--canvas-bg']);
 
@@ -54,12 +60,12 @@ test('colour-derived :root tokens are re-derived on :where([data-theme])', () =>
       const sel = items(rule.selector);
       rule.walkDecls(/^--/, (d) => {
         if (sel.includes(':root') && THEME_DEPENDENT.test(d.value) && !PAGE_ONLY.has(d.prop)) rootDerived.set(d.prop, rel);
-        if (sel.includes(':where([data-theme])')) scoped.add(d.prop);
+        if (sel.some((x) => x.startsWith(':where([data-theme]'))) scoped.add(d.prop);
       });
     });
   }
   const missing = [...rootDerived].filter(([p]) => !scoped.has(p)).map(([p, rel]) => `${rel}: ${p}`);
-  assert.ok(rootDerived.size > 60, `only ${rootDerived.size} derived tokens found`);
+  assert.ok(rootDerived.size > 70, `only ${rootDerived.size} derived tokens found`);
   assert.deepEqual(missing, [], 'declare these on :where([data-theme]) too, or a scoped theme keeps the page value');
 });
 
@@ -101,4 +107,14 @@ test('every theme mode variant also matches a themed element inside that mode', 
   }
   assert.ok(seen > 40, `only ${seen} theme mode variants found`);
   assert.deepEqual(missing, [], 'add the descendant selector, e.g. [data-mode="dark"] [data-theme~="x"]:where(:not([data-mode], [data-mode="light"] [data-theme~="x"]))');
+});
+
+test('fonts-display pack keeps its slots on scoped themes (fonts.css re-derives them there)', () => {
+  const css = readFileSync(join(repo, 'src/packs/fonts-display/fonts-display.theme.css'), 'utf8');
+  assert.match(css, /:root,\s+:where\(\[data-theme\]\) \{\s+--font-display: 'Fraunces'/);
+});
+
+test('a scoped theme sets its own text font (body resolves --font-sans on body)', () => {
+  const css = readFileSync(join(repo, 'src/base/reset.css'), 'utf8');
+  assert.match(css, /:where\(\[data-theme\]:not\(:root\)\) \{\s+font-family: var\(--font-sans\);/);
 });

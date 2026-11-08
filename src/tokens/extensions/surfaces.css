@@ -139,19 +139,25 @@
   --page-bg-blend: normal;
 }
 
-/* Re-derived on a scoped theme (<article data-theme>) from its own surface. */
+/* Re-derived on a scoped theme (<article data-theme>) from its own surface
+   and glass opacities (glassmorphism sets them). */
 :where([data-theme]) {
   --color-surface-overlay: var(--color-surface);
+  --glass-bg: oklch(100% 0 0 / var(--glass-surface-opacity));
+  --glass-border: oklch(100% 0 0 / var(--glass-border-opacity));
 }
 
-/* Dark mode glass adjustments */
-[data-mode="dark"] {
+/* Dark mode glass adjustments (also a themed element inside a dark region,
+   as in colors.css) */
+[data-mode="dark"],
+:where([data-mode="dark"] [data-theme]:not([data-mode="light"], [data-mode="light"] [data-theme])) {
   --glass-bg: oklch(20% 0 0 / var(--glass-surface-opacity));
   --glass-border: oklch(40% 0 0 / var(--glass-border-opacity));
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-mode="light"]) {
+  :root:not([data-mode="light"]),
+  :where([data-theme]:not([data-mode="light"], [data-mode="light"] [data-theme])) {
     --glass-bg: oklch(20% 0 0 / var(--glass-surface-opacity));
     --glass-border: oklch(40% 0 0 / var(--glass-border-opacity));
   }

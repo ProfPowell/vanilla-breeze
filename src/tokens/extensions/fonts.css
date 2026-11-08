@@ -12,9 +12,16 @@
  *   h4, h5, h6 { font-family: var(--font-heading); }
  *   body { font-family: var(--font-body); }
  *   pre, code { font-family: var(--font-code); }
+ *
+ * Also on :where([data-theme]): every slot derives from --font-sans /
+ * --font-serif / --font-mono, which themes set, and var() resolves where a
+ * property is declared, so a theme scoped to an element (<article
+ * data-theme="editorial">) re-derives its own slots. Zero specificity;
+ * a theme's own --font-display etc. still wins.
  */
 
-:root {
+:root,
+:where([data-theme]) {
   /* ========================================
    * Font Slots
    * Override these in themes to use custom fonts
