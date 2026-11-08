@@ -52,7 +52,19 @@ s {
   text-decoration-color: var(--color-text-muted);
 }
 
-/* Underline (proper names, misspellings) */
+/* Forced colours paint every line-through in CanvasText and drop <del>'s
+ * tint, so <s> and <del> would look identical. A dashed strike keeps "no
+ * longer accurate" visibly apart from "removed from the document". */
+@media (forced-colors: active) {
+  s {
+    text-decoration-style: dashed;
+  }
+}
+
+/* Unarticulated annotation: a red wavy line, the spell-check convention.
+ * In Chinese, Japanese and Korean text <u> is the proper-name mark
+ * (專名號), a plain solid underline. The rule for that lives with the other
+ * CJK typography in i18n/styles.css. */
 u {
   text-decoration: underline;
   text-decoration-style: wavy;
@@ -66,6 +78,14 @@ del {
   text-decoration-color: var(--color-error);
 }
 
+/* Forced colours drop <del>'s tint; a double strike keeps it distinct
+ * from <s> (dashed) and from any other line-through. */
+@media (forced-colors: active) {
+  del {
+    text-decoration-style: double;
+  }
+}
+
 /* Inserted text */
 ins {
   text-decoration: none;
@@ -73,35 +93,44 @@ ins {
   border-block-end: var(--border-width-thin) solid var(--color-success);
 }
 
-/* Subscript */
-sub {
-  font-variant-position: sub;
+/* Subscript and superscript: smaller text shifted off the baseline.
+ * line-height: 0 plus a relative offset keeps the line box from growing.
+ * This is unconditional. font-variant-position only switches to designed
+ * sups/subs glyphs when the CURRENT font has them; browsers do not
+ * synthesise them, and @supports cannot tell. Most theme fonts (Georgia,
+ * Verdana, Courier New, VT323, DM Serif Display...) have none, so an
+ * @supports reset rendered H2O and mc2 at full size on the baseline.
+ * data-variant="opentype" opts in when you know the font has the glyphs. */
+sub,
+sup {
   font-size: 0.75em;
   line-height: 0;
   position: relative;
   vertical-align: baseline;
+}
+
+sub {
   inset-block-end: -0.25em;
 }
 
-/* Superscript */
 sup {
-  font-variant-position: super;
-  font-size: 0.75em;
-  line-height: 0;
-  position: relative;
-  vertical-align: baseline;
   inset-block-end: 0.5em;
 }
 
-/* When font-variant-position works, let it handle everything */
-@supports (font-variant-position: super) {
-  sub, sup {
-    vertical-align: inherit;
-    font-size: inherit;
-    position: static;
-    inset-block-end: unset;
-    line-height: inherit;
-  }
+/* Opt-in: the font's own OpenType subs/sups glyphs (already small and
+ * positioned), so the manual size and offset are dropped. */
+:is(sub, sup)[data-variant~="opentype"] {
+  font-size: inherit;
+  position: static;
+  inset-block-end: auto;
+}
+
+sub[data-variant~="opentype"] {
+  font-variant-position: sub;
+}
+
+sup[data-variant~="opentype"] {
+  font-variant-position: super;
 }
 
 /* Time element */
@@ -141,6 +170,8 @@ rt {
   ruby-align: center;
 }
 
+/* Re-asserts the UA rule (author display rules elsewhere must not
+   resurrect it). Stays none in every data-ruby mode — see i18n/styles.css. */
 rp {
   display: none;
 }
@@ -148,16 +179,32 @@ rp {
 /* --- Variant Classes --- */
 
 /* Mark variants (extend existing) */
+/* Highlight categories (e.g. review annotations: agreed / query / problem).
+   Each pairs the opaque light-dark -subtle background with its -text
+   colour, so both modes stay AA. For status, use layout-badge instead. */
 mark.success {
   background: var(--color-success-subtle);
+  color: var(--color-success-text);
 }
 
 mark.warning {
   background: var(--color-warning-subtle);
+  color: var(--color-warning-text);
 }
 
 mark.error {
   background: var(--color-error-subtle);
+  color: var(--color-error-text);
+}
+
+/* Forced colours keep author alpha, so the 20%-tint default mark rendered
+   as a near-invisible Mark wash. Re-assert the solid system pair. */
+@media (forced-colors: active) {
+  mark,
+  mark:is(.success, .warning, .error) {
+    background: Mark;
+    color: MarkText;
+  }
 }
 
 /* Abbreviation without underline */
@@ -328,7 +375,9 @@ time.datetime {
   font-size: 0.9em;
 }
 
-/* Time badge — pill-style for dates that need to stand out */
+/* Time badge — bordered chip for dates that need to stand out.
+   Boolean and time-only: the decorative badge shapes live on
+   <layout-badge data-shape>, so no generic [data-badge] rule matches it. */
 time[data-badge] {
   display: inline-block;
   background: var(--color-surface-raised);
@@ -339,14 +388,17 @@ time[data-badge] {
   border: var(--border-width-thin) solid var(--color-border);
 }
 
-/* Sup/Sub for footnotes */
+/* Footnote reference marker. Sized once: it is a <sup>, so it already
+ * gets the 0.75em superscript size above (a further 0.65em made "[1]"
+ * illegible). The link keeps its underline so it is not marked by colour
+ * alone (WCAG 1.4.1), and inline padding widens the small hit area
+ * without moving the line box. */
 sup.footnote-ref {
-  font-size: 0.65em;
   font-weight: 500;
 
   & > a {
-    text-decoration: none;
-    padding: var(--size-3xs);
+    text-underline-offset: 0.15em;
+    padding: 0.2em 0.15em;
   }
 }
 
@@ -370,7 +422,9 @@ sup.footnote-ref {
 }
 
 /* --- Status Indicator --- */
-/* Inline status dot: <span class="status" data-status="success">Deployed</span> */
+/* Inline status dot: <span class="status" data-status="success">Deployed</span>
+ * The glyph is decorative (alt text "") — the visible label carries the
+ * meaning, so screen readers do not announce "black circle Deployed". */
 
 .status {
   display: inline-flex;
@@ -379,7 +433,7 @@ sup.footnote-ref {
   font-size: var(--font-size-s);
 
   &::before {
-    content: "\25CF"; /* filled circle */
+    content: "\25CF" / ""; /* filled circle */
     font-size: 0.7em;
     color: var(--color-text-muted);
   }
@@ -389,17 +443,17 @@ sup.footnote-ref {
   &[data-status="error"]::before   { color: var(--color-error); }
 
   &[data-status="inactive"]::before {
-    content: "\25CB"; /* empty circle */
+    content: "\25CB" / ""; /* empty circle */
     color: var(--color-text-muted);
   }
 
   &[data-status="check"]::before {
-    content: "\2714"; /* check mark */
+    content: "\2714" / ""; /* check mark */
     color: var(--color-success);
   }
 
   &[data-status="fail"]::before {
-    content: "\2718"; /* cross mark */
+    content: "\2718" / ""; /* cross mark */
     color: var(--color-error);
   }
 }

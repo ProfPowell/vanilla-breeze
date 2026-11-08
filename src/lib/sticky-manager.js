@@ -14,8 +14,13 @@
 
 let active = false;
 let resizeObserver;
-/** @type {HTMLElement | null} */
-let headerAddedByUs = null;
+/**
+ * Headers this module marked with data-sticky. The manager owns the banner
+ * header's attribute: it adds it only when missing and removes only what it
+ * added, so an authored header[data-sticky] is never touched.
+ * @type {Set<HTMLElement>}
+ */
+const headersAddedByUs = new Set();
 /** @type {WeakSet<Element>} */
 let observed = new WeakSet();
 
@@ -42,7 +47,7 @@ function update() {
   const header = findBannerHeader();
   if (header && !header.hasAttribute('data-sticky')) {
     header.dataset.sticky = '';
-    headerAddedByUs = header;
+    headersAddedByUs.add(header);
   }
 
   if (header && resizeObserver && !observed.has(header)) {
@@ -62,7 +67,9 @@ function handleToggle() {
 }
 
 export function initStickyManager() {
-  if (active) return;
+  // Already running (e.g. re-enabled after <html data-sticky> was restored):
+  // just re-measure so the banner header is (re)marked.
+  if (active) { update(); return; }
   active = true;
 
   // Observe the banner header for size changes (banners, responsive reflow);
@@ -89,11 +96,9 @@ export function destroyStickyManager() {
   document.removeEventListener('toggle', handleToggle, true);
   resizeObserver?.disconnect();
 
-  // Only remove data-sticky from header if we added it
-  if (headerAddedByUs) {
-    delete headerAddedByUs.dataset.sticky;
-    headerAddedByUs = null;
-  }
+  // Only remove data-sticky from headers we added it to
+  for (const header of headersAddedByUs) delete header.dataset.sticky;
+  headersAddedByUs.clear();
 
   document.documentElement.style.removeProperty('--sticky-offset');
 }

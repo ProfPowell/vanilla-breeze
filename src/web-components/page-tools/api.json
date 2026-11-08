@@ -8,76 +8,145 @@
       "name": "data-position",
       "kind": "data",
       "purpose": "config",
-      "type": "string",
-      "description": "Positioning: 'sticky' (default), 'fixed', 'inline'"
+      "type": "enum",
+      "description": "Positioning strategy",
+      "values": [
+        "sticky",
+        "fixed",
+        "inline"
+      ],
+      "default": "sticky"
     },
     {
       "name": "data-orientation",
       "kind": "data",
       "purpose": "config",
-      "type": "string",
-      "description": "Direction: 'auto' (default), 'vertical', 'horizontal'"
+      "type": "enum",
+      "description": "Tool strip direction; auto resolves to horizontal for inline, vertical otherwise. Re-resolved when changed",
+      "values": [
+        "auto",
+        "vertical",
+        "horizontal"
+      ],
+      "default": "auto"
     },
     {
       "name": "data-gap",
       "kind": "data",
       "purpose": "config",
-      "type": "string",
-      "description": "Gap token: 's' (default)"
+      "type": "enum",
+      "description": "Gap token between tools",
+      "values": [
+        "2xs",
+        "xs",
+        "s",
+        "m",
+        "l"
+      ],
+      "default": "s"
     },
     {
       "name": "data-fab-icon",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "Icon name for FAB (default: 'ellipsis-vertical')"
+      "description": "Icon name for the mobile FAB",
+      "default": "ellipsis-vertical"
     },
     {
       "name": "data-fab-label",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "Accessible label for FAB (default: 'Page tools')"
+      "description": "Accessible label for the FAB and its popover panel",
+      "default": "Page tools"
     },
     {
       "name": "data-breakpoint",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "Collapse width (default: '48rem')"
-    },
-    {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "data-page-tools-internal",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "popovertarget",
-      "kind": "host-api",
-      "purpose": "config"
+      "description": "Viewport width at or below which the toolbar collapses to a FAB",
+      "default": "48rem"
     },
     {
       "name": "data-resolved-orientation",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "output-state",
+      "type": "enum",
+      "values": [
+        "vertical",
+        "horizontal"
+      ],
+      "direction": "output",
+      "public": true,
+      "description": "Reflected effective orientation (data-orientation resolved against data-position)"
     },
     {
       "name": "data-collapsed",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "output-state",
+      "type": "boolean",
+      "direction": "output",
+      "public": true,
+      "description": "Present while the toolbar is collapsed to the FAB (viewport at or below data-breakpoint)"
     }
   ],
   "childAttributes": [],
-  "structure": [],
+  "structure": [
+    {
+      "element": "button.page-tools-fab",
+      "required": false,
+      "description": "Generated FAB (popovertarget → panel); visible only while collapsed. Internal (data-page-tools-internal)"
+    },
+    {
+      "element": "section.page-tools-popover[popover]",
+      "required": false,
+      "description": "Generated popover panel that holds the tools while collapsed. Internal (data-page-tools-internal)"
+    }
+  ],
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
       "@flow"
     ]
-  }
+  },
+  "properties": [
+    {
+      "name": "tools",
+      "type": "Element[]",
+      "readonly": true,
+      "description": "The tool elements (author children, excluding the generated FAB and popover; read from the popover while collapsed)"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--page-tools-gap",
+      "description": "Gap between tools (set by data-gap)"
+    },
+    {
+      "name": "--page-tools-offset",
+      "description": "Sticky top offset / fixed inline-end offset"
+    },
+    {
+      "name": "--page-tools-button-padding",
+      "description": "Padding of normalised icon tool buttons"
+    },
+    {
+      "name": "--page-tools-icon-size",
+      "description": "Icon size inside tool buttons (default 1.25rem)"
+    },
+    {
+      "name": "--page-tools-fab-size",
+      "description": "FAB diameter (default 3rem)"
+    },
+    {
+      "name": "--page-tools-fab-bottom",
+      "description": "FAB distance from the viewport block-end edge"
+    },
+    {
+      "name": "--page-tools-fab-end",
+      "description": "FAB distance from the viewport inline-end edge"
+    }
+  ]
 }

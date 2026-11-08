@@ -1,0 +1,184 @@
+---
+layout: attribute
+title: "data-markdown-editable"
+description: "Inline markdown editing on any text element: raw markdown while focused, sanitised formatting after blur. On a textarea or input it renders a preview instead."
+attributeName: data-markdown-editable
+category: interaction
+attributeType: data
+currentPath: /docs/attributes/data-markdown-editable/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>data-markdown-editable</code> turns a short piece of text into an inline markdown field. While the element has focus it shows the raw markdown. When focus leaves, the markdown is rendered as inline HTML (bold, italic, strikethrough, code, links), sanitised, and put back in place. Without JavaScript the element shows the raw markdown as plain text.</p>
+  <p>It works in two ways, depending on the element:</p>
+  <ul>
+    <li><strong>A text element</strong> (<code>&lt;p&gt;</code>, <code>&lt;span&gt;</code>, a table cell…) becomes <a href="/docs/attributes/contenteditable/"><code>contenteditable</code></a> and switches between raw and rendered text on focus and blur.</li>
+    <li><strong>A <code>&lt;textarea&gt;</code> or <code>&lt;input&gt;</code></strong> keeps its raw markdown as its value, so it submits with a form, and renders a preview next to it on blur.</li>
+  </ul>
+
+  <browser-window
+    src="/docs/examples/demos/markdown-editable-basic.html"
+    url="https://vanilla-breeze.com/markdown-editable"
+    title="data-markdown-editable"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="An editable note" data-escape><p data-markdown-editable aria-label="Note">This is **bold**, *italic*, ~~strikethrough~~, and `inline code`.</p></code-block>
+
+  <p>The script ships with the full bundle (<code>vanilla-breeze.js</code>) and the autoload bundle, which load it on demand when a <code>[data-markdown-editable]</code> element first appears. It is not part of <code>vanilla-breeze-core.js</code>.</p>
+</section>
+
+<section>
+  <h2>Options</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>On</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-markdown-editable</code></td>
+        <td>any text element, <code>&lt;textarea&gt;</code>, <code>&lt;input&gt;</code></td>
+        <td>Boolean. Turns on inline markdown editing. Read once, when the element is enhanced.</td>
+      </tr>
+      <tr>
+        <td><code>data-preview</code></td>
+        <td><code>&lt;textarea&gt;</code>, <code>&lt;input&gt;</code></td>
+        <td>The <code>id</code> of an element that receives the rendered preview. Without it, an <code>&lt;output class="md-editable-preview" aria-label="Markdown preview"&gt;</code> is inserted after the field.</td>
+      </tr>
+      <tr>
+        <td><code>data-markdown-value</code></td>
+        <td>text elements</td>
+        <td>(Set by the script.) The raw markdown, kept while the element shows rendered HTML. Read it to save the source.</td>
+      </tr>
+      <tr>
+        <td><code>data-md-editing</code></td>
+        <td>text elements</td>
+        <td>(Set by the script.) Present while the element has focus and shows raw markdown. Styling hook.</td>
+      </tr>
+      <tr>
+        <td><code>data-markdown-editable-init</code></td>
+        <td>any</td>
+        <td>(Set by the script.) Marks an enhanced element so it is not enhanced twice. Do not author it.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Event</th>
+        <th>Detail</th>
+        <th>When</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>markdown-editable:change</code></td>
+        <td><code>{ value, html }</code>: the raw markdown and the rendered, sanitised HTML</td>
+        <td>On blur. Text elements fire only when the markdown changed; a <code>&lt;textarea&gt;</code> or <code>&lt;input&gt;</code> fires on every blur. Bubbles, so one listener on <code>document</code> covers every field.</td>
+      </tr>
+    </tbody>
+  </table>
+  <code-block language="javascript" show-lines label="Saving changes" data-escape>document.addEventListener('markdown-editable:change', (event) => {
+  const { value, html } = event.detail;
+  saveNote(event.target.id, value); // store the markdown, not the HTML
+});</code-block>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Textarea with a preview target</h3>
+  <p>On a <code>&lt;textarea&gt;</code> the value stays markdown, so the field works with <a href="/docs/elements/web-components/form-field/"><code>&lt;form-field&gt;</code></a>, validation and form submission like any other. Point <code>data-preview</code> at the element that should show the rendered text.</p>
+  <browser-window
+    src="/docs/examples/demos/markdown-editable-preview.html"
+    url="https://vanilla-breeze.com/markdown-editable-preview"
+    title="Markdown textarea with preview"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Textarea with a preview target" data-escape><form-field>
+  <label for="summary">Summary</label>
+  <textarea id="summary" name="summary" rows="3"
+            data-markdown-editable data-preview="summary-preview"
+            aria-describedby="summary-hint">Adds **inline markdown** to `form-field` hints.</textarea>
+  <output id="summary-hint" class="hint" for="summary">Markdown: **bold**, *italic*, `code` and [links](url).</output>
+</form-field>
+<section aria-labelledby="preview-heading">
+  <h2 id="preview-heading">Preview</h2>
+  <p id="summary-preview"></p>
+</section></code-block>
+
+  <h3>Inside lists and headings</h3>
+  <p>The script gives the element <code>role="textbox"</code>, which replaces its own role. Put the attribute on a <code>&lt;span&gt;</code> inside a list item or heading so the list and the heading keep their meaning.</p>
+  <code-block language="html" show-lines label="Keep the list item and heading roles" data-escape><ul>
+  <li><span data-markdown-editable aria-label="Task 1">**Task one** — click to edit</span></li>
+</ul>
+<h3><span data-markdown-editable aria-label="Section title">Edit this **heading**</span></h3></code-block>
+</section>
+
+<section>
+  <h2>Styling</h2>
+  <ul>
+    <li><code>[data-markdown-editable]</code> gets a text cursor.</li>
+    <li><code>[data-md-editing]</code> (focused, showing raw markdown) switches to the monospace font, keeps line breaks visible (<code>white-space: pre-wrap</code>) and draws a 2px <code>--color-primary</code> outline.</li>
+    <li><code>.md-editable-preview</code>, the generated preview, is small muted text with a top border, and is hidden while empty. A <code>data-preview</code> target gets none of this: style it yourself.</li>
+  </ul>
+  <p>The rules live in <code>src/utils/markdown-editable.css</code>. There is no resting style, so an editable element looks like the element it is. Give it a visible edge when people need to know it can be edited, as the demo does.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Give every editable element a name.</strong> The script sets <code>role="textbox"</code> and <code>aria-multiline="false"</code>, but not a label. Add <code>aria-label</code> or <code>aria-labelledby</code>, as you would for any text field. A <code>&lt;textarea&gt;</code> takes a normal <code>&lt;label&gt;</code>.</li>
+    <li><strong>The role replaces the element's role.</strong> A <code>&lt;li&gt;</code>, heading or cell with the attribute is announced as a text box, not as a list item, heading or cell. Use an inner <code>&lt;span&gt;</code>.</li>
+    <li>Editable elements are in the tab order (contenteditable makes them focusable), so keyboard users can reach and edit them.</li>
+    <li>Rendered text is real HTML: <code>&lt;strong&gt;</code>, <code>&lt;em&gt;</code>, <code>&lt;del&gt;</code>, <code>&lt;code&gt;</code> and <code>&lt;a&gt;</code> keep their semantics once the element loses focus.</li>
+    <li>IME composition is respected: focus and blur switching waits until a composition has ended.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Security</h2>
+  <p>Markdown is parsed with the vendored <code>marked</code> (inline syntax only) and the result goes through VB's sanitiser (<code>src/lib/sanitize-html.js</code>) as nodes, never re-parsed from a string. Scripts, event-handler attributes, <code>style</code>, form-hijack and invoker attributes are removed, and dangerous URL schemes are dropped from links. Raw HTML typed into the field is treated the same way.</p>
+  <p>The sanitiser protects what the page renders. It does not make stored content safe for other places: sanitise again on the server, or wherever else you render the saved markdown.</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Inline markdown only.</strong> Headings, lists, block quotes and code fences are not rendered. Use <a href="/docs/elements/web-components/markdown-editor/"><code>&lt;markdown-editor&gt;</code></a> for whole documents.</li>
+    <li><strong>Enter is not intercepted.</strong> <code>aria-multiline="false"</code> tells assistive technology the field is single-line, but the browser still inserts a line break on Enter. Cancel <code>insertParagraph</code> and <code>insertLineBreak</code> in a <code>beforeinput</code> listener if the text must stay on one line.</li>
+    <li><strong>Formatting typed or pasted while editing is discarded.</strong> On blur the script reads the element's plain text and renders it as markdown, so rich text pasted into the raw view becomes text.</li>
+    <li><strong>Links are not followed by a click.</strong> Clicking a rendered link focuses the element and switches it to raw markdown.</li>
+    <li><strong>Read once.</strong> Removing the attribute later does not undo the enhancement, and the initial markdown is taken from the element's text when it is enhanced.</li>
+    <li><strong>A contenteditable element is not a form control.</strong> It is not submitted and has no validation. Use a <code>&lt;textarea data-markdown-editable&gt;</code> when the value belongs in a form.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/contenteditable/"><code>contenteditable</code></a> &mdash; the native attribute this builds on; roles, names and sanitising for your own editors.</li>
+    <li><a href="/docs/elements/web-components/markdown-editor/"><code>&lt;markdown-editor&gt;</code></a> &mdash; full markdown documents with a toolbar and live preview, inside a form.</li>
+    <li><a href="/docs/elements/web-components/markdown-viewer/"><code>&lt;markdown-viewer&gt;</code></a> &mdash; renders (block) markdown read-only.</li>
+    <li><a href="/docs/attributes/data-grow/"><code>data-grow</code></a> &mdash; auto-growing textarea, useful next to a markdown textarea.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>&lt;textarea&gt;</code></strong> &mdash; plain text in a form. The default choice.</li>
+    <li><strong><code>data-markdown-editable</code></strong> &mdash; short inline text with bold, italic, code and links, edited in place and stored as markdown (titles, captions, notes, list items).</li>
+    <li><strong><code>&lt;markdown-editor&gt;</code></strong> &mdash; longer documents with block markdown, submitted with a form.</li>
+    <li><strong><code>contenteditable</code></strong> &mdash; real rich text, when you are prepared to normalise and sanitise the HTML yourself.</li>
+  </ul>
+</section>

@@ -43,7 +43,9 @@ Without JavaScript, `<tab-set>` renders as a native exclusive accordion using `<
 
 ## Enhanced Form
 
-After upgrade, CSS Grid reorders summaries into a horizontal tab bar (row 1) with panels below (row 2). JS adds keyboard navigation (Arrow keys, Home, End) and View Transition support.
+After upgrade, the summaries line up as a tab row (a wrapping flex line, so many tabs wrap onto further rows instead of overflowing a narrow screen) and the open panel takes the full line below. `data-orientation="vertical"` puts the tabs in a column at the inline start with the panel beside them. JS adds keyboard navigation (Arrow keys, Home, End) and View Transition support.
+
+Each `<details>` holds one `<summary>` and **exactly one** panel element; use `<section>` panels (a labelled `<section>` is a region named by its tab, a `<div>` panel's name is ignored).
 
 ```html
 <tab-set transition="slide">
@@ -63,8 +65,17 @@ After upgrade, CSS Grid reorders summaries into a horizontal tab bar (row 1) wit
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `transition` | string | -- | View Transition type: "fade", "slide", "scale" |
+| `data-orientation` | `horizontal` \| `vertical` | `horizontal` | Vertical: tab column at the inline start, panel beside it, ArrowUp/ArrowDown navigation |
+| `aria-label` / `aria-labelledby` | string | -- | Names the set; a labelled host (with no role of its own) gets `role="group"` on upgrade |
 
-**Events:** `tab-set:change` with `{ index }` detail
+**Grouping:** exclusivity comes from a shared `<details name>`. On upgrade, a missing, mixed, or page-shared name (another `<details>` outside this set uses it) is replaced with a per-instance `tab-set-N`, so two tab-sets never close each other's tabs.
+
+**Property:** `tabs` — get the tabs as `[{ id?, label, content, active? }]`, or assign an array to rebuild (`<section>` panels). `content` is trusted HTML written with `innerHTML`; never pass unsanitised user input.
+
+**Events:**
+
+- `tab-set:change` `{ index, previousIndex, tab, panel }` — once per activation, from the opening tab (`tab` is its `<details>`). Not fired during setup or when the active tab is re-selected.
+- `tab-set:tabs-changed` `{ tabs, source: 'property' }` — after the `tabs` setter rebuilds.
 
 ## Failure Modes
 
@@ -82,20 +93,20 @@ After upgrade, CSS Grid reorders summaries into a horizontal tab bar (row 1) wit
 
 ### Upgrade Delay
 
-- **Behavior:** Before CSS loads, renders as native disclosure widgets. Once CSS loads but before JS upgrade, CSS Grid reorders summaries into tab bar. JS adds keyboard navigation. No layout shift occurs because the grid layout is defined in CSS, not JS.
-- **Implementation:** Tab-set styles apply to `:defined` and undefined states equally (no `:not(:defined)` block needed because the CSS grid layout works with native `<details>` behavior). Animation suppression via global `:not(:defined)` rule in `reset.css`.
+- **Behavior:** Before CSS loads, renders as native disclosure widgets. Once CSS loads but before the element is defined, `tab-set:not(:defined) { display: block }` keeps it a stacked exclusive accordion; when it is defined the summaries snap into the tab row (a one-time layout shift).
+- **Implementation:** The `:not(:defined)` block keeps the no-JS form an accordion; vertical layout is scoped to `:defined`. Animation suppression via global `:not(:defined)` rule in `reset.css`.
 - **Acceptable:** Yes
 
 ### Keyboard Only
 
-- **Behavior:** Tab to reach summaries, Enter/Space to toggle (native). After JS upgrade: Arrow Left/Right to navigate between tabs, Home/End to jump to first/last tab.
+- **Behavior:** Tab to reach summaries, Enter/Space to toggle (native). After JS upgrade: Arrow Left/Right to navigate between tabs (plus Up/Down with `data-orientation="vertical"`), Home/End to jump to first/last tab. Arrows activate automatically.
 - **Tab order:** Summaries receive focus in document order. After upgrade, inactive summaries have `tabindex="-1"` and the active summary has `tabindex="0"`, following roving tabindex pattern.
-- **Key bindings:** ArrowRight (next tab), ArrowLeft (previous tab), Home (first tab), End (last tab), Enter/Space (toggle -- native)
+- **Key bindings:** ArrowRight (next tab; previous in RTL), ArrowLeft (previous tab; next in RTL), ArrowDown/ArrowUp (next/previous, vertical only), Home (first tab), End (last tab), Enter/Space (activate -- native; re-activating the open tab is a no-op)
 - **Acceptable:** Yes
 
 ### Screen Reader
 
-- **ARIA roles:** No custom ARIA roles applied. `<summary>` has implicit button role. `<details>` announces expanded/collapsed state natively. `aria-controls` links summary to panel. `aria-labelledby` links panel back to summary.
+- **ARIA roles:** No tab/tablist/tabpanel roles. `<summary>` has implicit button role with `aria-expanded`. A labelled host gets `role="group"` (an unlabelled one stays role-less, since `aria-label` is prohibited on a generic). `aria-controls` links summary to panel; `aria-labelledby` names the panel (effective on `<section>` panels, which become regions).
 - **Live regions:** None needed -- native `<details>` toggle announces state changes.
 - **Announced state changes:** Panel open/close announced by browser. Tab change fires `tab-set:change` event.
 - **Tested with:** VoiceOver (macOS)
@@ -103,8 +114,8 @@ After upgrade, CSS Grid reorders summaries into a horizontal tab bar (row 1) wit
 
 ### RTL / i18n
 
-- **Behavior:** CSS Grid layout auto-mirrors. Tab bar flows right-to-left. Arrow key behavior is physical (Left = previous, Right = next) matching browser convention.
-- **CSS approach:** All spacing uses logical properties (`padding-block-start`, `margin-block-end`, `border-block-end`). Grid columns flow with writing direction.
+- **Behavior:** The tab row flows right-to-left. Arrow keys follow the visual order (APG): in RTL, ArrowLeft moves to the next tab and ArrowRight to the previous.
+- **CSS approach:** All spacing uses logical properties (`padding-block-start`, `margin-block-end`, `border-block-end`, `border-inline-end`). The flex row and the vertical grid flow with writing direction.
 - **Acceptable:** Yes
 
 ## Accessibility
@@ -113,6 +124,8 @@ After upgrade, CSS Grid reorders summaries into a horizontal tab bar (row 1) wit
 - Built entirely on native HTML semantics -- no ARIA role overrides
 - Focus management via roving tabindex pattern
 - Reduced motion: transitions disabled via `prefers-reduced-motion: reduce`
+- Forced colors: the selected tab's border uses `Highlight` (also in the extreme-neumorphism theme, whose shadow cue is dropped)
+- Print (`utils/print.css`): every panel prints in source order under its tab label, styled as a heading
 
 ## CSS Tokens
 

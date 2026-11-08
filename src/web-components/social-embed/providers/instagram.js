@@ -1,29 +1,47 @@
 /**
- * Instagram provider — script injection via instagram.com/embed.js
- * Builds a blockquote that the embed.js SDK processes into an iframe.
+ * Instagram provider — sandboxed www.instagram.com/p/<id>/embed/ iframe.
+ *
+ * No embed.js: the post URL is parsed and validated, and the frame URL is
+ * rebuilt from the shortcode.
  */
 
-import { SocialEmbed, loadScript } from '../logic.js';
+import { createEmbedFrame, parseHttpsUrl, messageData, POST_SANDBOX } from '../shared.js';
 
-const EMBED_SRC = 'https://www.instagram.com/embed.js';
+const HOSTS = new Set(['instagram.com', 'www.instagram.com']);
+const PATH = /^\/(?:[A-Za-z0-9_.]{1,30}\/)?(?:p|reel|tv)\/([A-Za-z0-9_-]{5,64})\/?$/;
+const FRAME_HOST = 'www.instagram.com';
 
-const InstagramProvider = {
-  canHandle(url) {
-    return /instagram\.com\/(p|reel|tv)\/[^/]+/.test(url);
+/**
+ * @param {string} url
+ * @returns {{ id: string } | null}
+ */
+export function parseInstagramUrl(url) {
+  const u = parseHttpsUrl(url, HOSTS);
+  const m = u && PATH.exec(u.pathname);
+  return m ? { id: m[1] } : null;
+}
+
+export const InstagramProvider = {
+  label: 'Instagram',
+  canHandle: (/** @type {string} */ url) => !!parseInstagramUrl(url),
+  frameHost: () => FRAME_HOST,
+
+  /**
+   * @param {HTMLElement} _host
+   * @param {string} url
+   * @param {{ title: string }} opts
+   */
+  async render(_host, url, { title }) {
+    const post = parseInstagramUrl(url);
+    if (!post) throw new Error('Not an Instagram post URL');
+    return createEmbedFrame({
+      src: new URL(`https://${FRAME_HOST}/p/${post.id}/embed/`),
+      title, sandbox: [...POST_SANDBOX], height: 560,
+      // {"type":"MEASURE","details":{"height":…}}
+      measure(data) {
+        const msg = messageData(data);
+        return msg?.type === 'MEASURE' ? msg.details?.height : null;
+      },
+    });
   },
-
-  async render(host, url) {
-    await loadScript(EMBED_SRC);
-
-    host.innerHTML = `<blockquote class="instagram-media" data-instgrm-permalink="${url}" data-instgrm-version="14"><a href="${url}"></a></blockquote>`;
-
-    // instgrm.Embeds.process() converts blockquotes to iframes
-    const w = /** @type {any} */ (window);
-    if (w.instgrm?.Embeds?.process) {
-      w.instgrm.Embeds.process();
-    }
-  }
 };
-
-SocialEmbed.register('instagram', InstagramProvider);
-export { InstagramProvider };

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Code Error Correction</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-m);
+      background: var(--color-surface);
+    }
+  </style>
+</head>
+<body>
+  <h1>QR Code Error Correction</h1>
+  <section data-layout="cluster" data-layout-gap="l" data-layout-align="start">
+    <qr-code value="https://vanilla-breeze.com/docs/elements/web-components/qr-code/" error-correction="L" data-caption="visible">L (7%)</qr-code>
+    <qr-code value="https://vanilla-breeze.com/docs/elements/web-components/qr-code/" error-correction="M" data-caption="visible">M (15%, default)</qr-code>
+    <qr-code value="https://vanilla-breeze.com/docs/elements/web-components/qr-code/" error-correction="Q" data-caption="visible">Q (25%)</qr-code>
+    <qr-code value="https://vanilla-breeze.com/docs/elements/web-components/qr-code/" error-correction="H" data-caption="visible">H (30%)</qr-code>
+  </section>
+
+  <h2>Too much data</h2>
+  <p>Text longer than the level&apos;s capacity draws no code. The caption stays visible and <code>qr-code:error</code> fires.</p>
+  <qr-code id="overflow" error-correction="H">
+    <a href="https://example.com/a-very-long-link">The link, as text, when the code cannot be drawn</a>
+  </qr-code>
+  <output id="overflow-log" for="overflow"></output>
+
+  <script type="module">
+    const qr = document.getElementById('overflow');
+    qr.addEventListener('qr-code:error', (e) => {
+      document.getElementById('overflow-log').textContent = `qr-code:error — reason: ${e.detail.reason}, level ${e.detail.errorCorrection}`;
+    });
+    customElements.whenDefined('qr-code').then(() => { qr.value = 'x'.repeat(1300); });
+  </script>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

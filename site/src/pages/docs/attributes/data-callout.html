@@ -1,0 +1,123 @@
+---
+layout: attribute
+title: "data-callout"
+description: "VB's one callout primitive: note, info, tip, warning and danger boxes, with optional speech and notched shapes. markdown-viewer renders :::kind blocks with the same markup."
+attributeName: data-callout
+category: shapes
+attributeType: data
+currentPath: /docs/attributes/data-callout/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section id="overview">
+  <h2>Overview</h2>
+  <p><code>data-callout</code> turns a block element into a callout: a tinted box with an accent border on its start edge. Its value is a token list holding one <strong>kind</strong> (the meaning and colour) and, optionally, one <strong>shape</strong> (the outline). It is CSS-only and works on any block element. Use <code>&lt;aside&gt;</code> for notes and warnings, and <code>&lt;blockquote&gt;</code> for a quoted speech callout.</p>
+  <p>This is the only callout in Vanilla Breeze. <a href="/docs/elements/web-components/markdown-viewer/#callout-blocks"><code>&lt;markdown-viewer&gt;</code></a> renders its <code>:::warning</code> blocks as <code>&lt;aside data-callout="warning" role="note"&gt;</code>. Markdown callouts and hand-written ones therefore look identical and use the same theme hooks.</p>
+
+  <browser-window
+    src="/docs/examples/demos/callout-kinds.html"
+    url="https://vanilla-breeze.com/callouts"
+    title="data-callout kinds and shapes"
+    shadow>
+  </browser-window>
+</section>
+
+<section id="usage">
+  <h2>Usage</h2>
+  <p>Put the kind in the attribute and start with a visible title. The <code>data-callout-title</code> marker on the title paragraph gives it tighter spacing. The title states the meaning in words, so the callout does not rely on colour alone.</p>
+  <code-block language="html" show-lines label="A warning callout" data-escape><aside data-callout="warning" role="note">
+  <p data-callout-title><strong>Warning</strong></p>
+  <p>Deleting a project also deletes its deploy history.</p>
+</aside></code-block>
+  <p>To give a kind a shape, add the shape as a second token:</p>
+  <code-block language="html" show-lines label="Kind plus shape" data-escape><aside data-callout="info notched" role="note">
+  <p data-callout-title><strong>Configuration</strong></p>
+  <p>The bevel size follows --shape-bevel.</p>
+</aside>
+
+<blockquote data-callout="speech">
+  <p>Shipping on a Friday was a great idea.</p>
+</blockquote></code-block>
+</section>
+
+<section id="options">
+  <h2>Options</h2>
+  <h3 id="kinds">Kinds</h3>
+  <table>
+    <thead><tr><th>Token</th><th>Accent / background</th><th>Use for</th></tr></thead>
+    <tbody>
+      <tr><td>(none) or <code>note</code></td><td><code>--color-border-strong</code> / <code>--color-surface-raised</code></td><td>Neutral asides and general notes</td></tr>
+      <tr><td><code>info</code></td><td><code>--color-info</code> / <code>--color-info-subtle</code></td><td>Background context</td></tr>
+      <tr><td><code>tip</code></td><td><code>--color-success</code> / <code>--color-success-subtle</code></td><td>Shortcuts and recommendations</td></tr>
+      <tr><td><code>warning</code></td><td><code>--color-warning</code> / <code>--color-warning-subtle</code></td><td>Things that can go wrong</td></tr>
+      <tr><td><code>danger</code></td><td><code>--color-error</code> / <code>--color-error-subtle</code></td><td>Data loss, security, anything irreversible</td></tr>
+    </tbody>
+  </table>
+  <h3 id="shapes">Shapes</h3>
+  <table>
+    <thead><tr><th>Token</th><th>Outline</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>(none)</td><td>Accent border on the start edge, rounded on the end side</td><td>Works in every browser</td></tr>
+      <tr><td><code>speech</code></td><td>Rounded box with a tail at the bottom start corner</td><td>No accent border. Reserves <code>--callout-tail</code> of extra bottom padding for the tail.</td></tr>
+      <tr><td><code>notched</code></td><td>Bevelled top end corner</td><td>Keeps the accent border on the straight start edge</td></tr>
+    </tbody>
+  </table>
+  <p>The shapes need CSS <code>shape()</code>. Browsers without it show the plain rectangular callout, which keeps the same colours. Packs can add shapes too: the journal pack adds <code>sticky</code>, a sticky note, under <code>data-theme="journal"</code>.</p>
+</section>
+
+<section id="styling">
+  <h2>Styling</h2>
+  <table>
+    <thead><tr><th>Custom property</th><th>Default</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>--callout-accent</code></td><td>Set by the kind</td><td>Colour of the start-edge border</td></tr>
+      <tr><td><code>--callout-bg</code></td><td>Set by the kind</td><td>Fill. It accepts gradients. Shaped callouts paint it inside the shape.</td></tr>
+      <tr><td><code>--callout-tail</code></td><td><code>1rem</code></td><td>Height of the <code>speech</code> tail and of the padding reserved for it</td></tr>
+      <tr><td><code>--shape-bevel</code></td><td><code>20px</code></td><td>Size of the <code>notched</code> corner cut. It is a shared shape token, and the cyber and kawaii themes change it.</td></tr>
+    </tbody>
+  </table>
+  <p>Shapes are painted on a <code>::before</code> layer behind the content. The callout itself is never clipped. Themes therefore set <code>--callout-bg</code> rather than <code>background</code>, and draw glows with <code>filter: drop-shadow()</code>, which follows the shape.</p>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Say the kind in words.</strong> The colour is decoration. Start every callout with a visible title such as "Warning" or "Tip". <code>&lt;markdown-viewer&gt;</code> always renders one.</li>
+    <li><strong>Pick the element for its meaning.</strong> An <code>&lt;aside&gt;</code> inside <code>&lt;main&gt;</code> or an article is a complementary landmark. Give it <code>role="note"</code> when it belongs to the surrounding text, as markdown-viewer does, so it does not add one landmark per callout. Use <code>&lt;blockquote&gt;</code> only for quotations.</li>
+    <li><strong>Do not use it for live alerts.</strong> A callout is static content. For messages that appear in response to an action, use <code>role="alert"</code> or <code>role="status"</code> on the element that receives the text.</li>
+    <li><strong>Focus rings survive.</strong> The shape is painted behind the content and nothing is clipped, so links and buttons inside keep their full focus outline.</li>
+    <li><strong>Forced colours and print.</strong> Backgrounds are flattened or dropped, so every callout gets a real <code>CanvasText</code> (or <code>currentColor</code>) frame with a thick start edge. Shaped callouts become plain framed boxes.</li>
+    <li><strong>Right-to-left.</strong> The accent border, the radii, the speech tail and the notch all follow the writing direction.</li>
+  </ul>
+</section>
+
+<section id="examples">
+  <h2>Examples</h2>
+  <h3>All kinds</h3>
+  <code-block language="html" label="Kinds" data-escape><aside data-callout="note" role="note"><p data-callout-title><strong>Note</strong></p><p>…</p></aside>
+<aside data-callout="info" role="note"><p data-callout-title><strong>Info</strong></p><p>…</p></aside>
+<aside data-callout="tip" role="note"><p data-callout-title><strong>Tip</strong></p><p>…</p></aside>
+<aside data-callout="warning" role="note"><p data-callout-title><strong>Warning</strong></p><p>…</p></aside>
+<aside data-callout="danger" role="note"><p data-callout-title><strong>Danger</strong></p><p>…</p></aside></code-block>
+
+  <h3>From markdown</h3>
+  <code-block language="markdown" label="markdown-viewer source" data-escape>:::danger Trust boundary
+Never set `sanitize="off"` on user-supplied markdown.
+:::</code-block>
+  <p>This renders as <code>&lt;aside data-callout="danger" role="note"&gt;&lt;p data-callout-title&gt;&lt;strong&gt;Trust boundary&lt;/strong&gt;&lt;/p&gt;…&lt;/aside&gt;</code>.</p>
+
+  <h3>Shapes in context</h3>
+  <browser-window src="/docs/examples/demos/css-shapes-decorative.html" url="https://vanilla-breeze.com/shapes/decorative" title="CSS Shapes: Badges &amp; Callouts" shadow></browser-window>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/markdown-viewer/#callout-blocks"><code>&lt;markdown-viewer&gt;</code></a> &mdash; renders <code>:::kind</code> blocks as <code>data-callout</code>.</li>
+    <li><a href="/docs/elements/native/aside/"><code>&lt;aside&gt;</code></a> &mdash; the usual host element, and its <code>.note</code> and <code>.sidenote</code> variants for margin notes.</li>
+    <li><a href="/docs/elements/native/blockquote/"><code>&lt;blockquote&gt;</code></a> &mdash; the host for <code>speech</code> callouts.</li>
+    <li><a href="/docs/attributes/data-bubble/"><code>data-bubble</code></a> &mdash; chat-message shapes built the same way.</li>
+  </ul>
+</section>

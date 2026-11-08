@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>disabled attribute: controls, fieldset and data-loading</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <form data-validate data-submit="event" class="stacked" id="dis-form">
+      <form-field>
+        <label for="dis-email">Account email</label>
+        <input id="dis-email" type="email" name="email" value="jane@example.com" disabled />
+        <output class="hint" for="dis-email">Disabled: not focusable and not submitted.</output>
+      </form-field>
+
+      <form-field>
+        <label for="dis-plan">Plan</label>
+        <select id="dis-plan" name="plan">
+          <option>Free</option>
+          <option selected>Pro</option>
+          <option disabled>Enterprise (contact sales)</option>
+        </select>
+        <output class="hint" for="dis-plan">A single option can be disabled.</output>
+      </form-field>
+
+      <fieldset disabled data-layout="stack" data-layout-gap="s">
+        <legend>Billing address (managed by your organisation)</legend>
+        <form-field>
+          <label for="dis-street">Street</label>
+          <input type="text" id="dis-street" name="street" value="18 Harbour Road" />
+        </form-field>
+        <form-field>
+          <label for="dis-city">City</label>
+          <input type="text" id="dis-city" name="city" value="Portland" />
+        </form-field>
+      </fieldset>
+
+      <footer class="actions">
+        <button type="submit" data-loading="Saving..." data-loading-timeout="2500">Save</button>
+        <button type="button" disabled>Delete account</button>
+      </footer>
+      <pre><output id="dis-result">Submitted data appears here.</output></pre>
+    </form>
+  </layout-center>
+
+  <script type="module">
+    const result = document.querySelector('#dis-result');
+    document.querySelector('#dis-form').addEventListener('vb:submit', (e) => {
+      const lines = [...e.detail].map(([name, value]) => `${name} = ${value}`);
+      result.textContent = lines.length ? lines.join('\n') : '(nothing: every named control is disabled)';
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

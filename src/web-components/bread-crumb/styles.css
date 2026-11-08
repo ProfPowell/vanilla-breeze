@@ -14,6 +14,7 @@ bread-crumb {
   --_hover-bg: transparent;
   --_active-bg: transparent;
   --_active-color: var(--color-text);
+  --_active-decoration: none;
 }
 
 @scope (bread-crumb) {
@@ -39,8 +40,8 @@ bread-crumb {
      announcing them. The first declaration is the fallback for browsers
      without the content alt-text syntax. */
   > ol > li:not(:last-child)::after {
-    content: var(--_separator, var(--sep-breadcrumb, "/"));
-    content: var(--_separator, var(--sep-breadcrumb, "/")) / "";
+    content: var(--_separator, var(--_sep-default, var(--sep-breadcrumb, "/")));
+    content: var(--_separator, var(--_sep-default, var(--sep-breadcrumb, "/"))) / "";
     margin-inline-start: var(--size-2xs);
     color: var(--color-text-muted);
     display: inline-flex;
@@ -106,6 +107,12 @@ bread-crumb[data-separator="chevron"] { --_separator: "\203A"; }
 bread-crumb[data-separator="arrow"]   { --_separator: "\2192"; }
 bread-crumb[data-separator="dot"]     { --_separator: "\00B7"; }
 bread-crumb[data-separator="pipe"]    { --_separator: "|"; }
+
+/* RTL: the trail reads right to left, so directional separators point
+   left. The default comes from --sep-breadcrumb-rtl. */
+bread-crumb:dir(rtl)                              { --_sep-default: var(--sep-breadcrumb-rtl, "\2039"); }
+bread-crumb[data-separator="chevron"]:dir(rtl)    { --_separator: "\2039"; }
+bread-crumb[data-separator="arrow"]:dir(rtl)      { --_separator: "\2190"; }
 
 /* data-collapsed: show the first crumb, the parent (second-to-last) and
    the current page. Once the toggle is expanded nothing is hidden. */

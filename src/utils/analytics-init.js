@@ -52,7 +52,7 @@ const TIER_1 = {
 
 const TIER_2 = {
   'accordion-wc:toggle':    (e) => Analytics.track('ui.accordion_toggle',{ open: e.detail?.open, index: e.detail?.index }),
-  'tab-set:change':         (e) => Analytics.track('ui.tab_change',      { tab: e.detail?.tab }),
+  'tab-set:change':         (e) => Analytics.track('ui.tab_change',      { tab: e.detail?.index, from: e.detail?.previousIndex }),
   'carousel-wc:change':     (e) => Analytics.track('ui.carousel_slide',  { index: e.detail?.index }),
   'carousel-wc:play':       ( ) => Analytics.track('ui.carousel_play'),
   'carousel-wc:pause':      ( ) => Analytics.track('ui.carousel_pause'),

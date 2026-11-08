@@ -7,6 +7,8 @@
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#080d16">
 <meta name="generator" content="Cook">
+<!-- Opt in to the device-local <recently-visited> history tracker on every docs page. -->
+<meta name="vb:track-history" content="on">
 
 <!-- Favicon -->
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -52,6 +54,33 @@
 <style>
   html:has(link[data-vb-theme-state="loading"]) body {
     visibility: hidden;
+  }
+
+  /* Skip link (the layouts put it first in <body>, targeting <main id="main">).
+     Same recipe as /docs/accessibility-utilities/#skip-link: off-screen until
+     focused. */
+  .skip-link {
+    position: absolute;
+    inset-block-start: var(--size-xs, 0.5rem);
+    inset-inline-start: var(--size-xs, 0.5rem);
+    z-index: 1000;
+    padding: var(--size-s, 0.75rem) var(--size-m, 1rem);
+    background: var(--color-surface, Canvas);
+    color: var(--color-text, CanvasText);
+    border: var(--border-width-thin, 1px) solid var(--color-border, CanvasText);
+    border-radius: var(--radius-s, 0.25rem);
+    transform: translateY(calc(-100% - 2rem));
+    transition: transform var(--duration-fast, 150ms) ease-out;
+  }
+
+  .skip-link:focus-visible {
+    transform: none;
+    outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, Highlight);
+    outline-offset: var(--focus-ring-offset, 2px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skip-link { transition-duration: 0s; }
   }
 </style>
 
@@ -156,6 +185,9 @@
     });
     const ext = vbRead('settings', 'extensions') || {};
     if (ext.motionFx === false) root.dataset.motionReduced = '';
+    // WCAG 2.1.4 single-key shortcuts (src/lib/char-shortcuts.js re-applies on import)
+    if (ext.charShortcuts === false) root.dataset.charShortcuts = 'off';
+    else if (ext.charShortcuts === true) delete root.dataset.charShortcuts;
     if (vbRead('settings', 'sticky') === 'on') root.dataset.sticky = '';
   } catch(e) {}
 </script>

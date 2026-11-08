@@ -49,6 +49,7 @@ This content is **invisible** without JavaScript.
 
     <h3><code>&lt;template&gt;</code></h3>
     <p>Inert DOM node can be consulted as long as you put the <code>data-md</code> attribute on it, framework-friendly. No fallback without JS.</p>
+    <p><strong>Escape <code>&lt;</code> and <code>&amp;</code> in <code>&lt;pre&gt;</code> and <code>&lt;template&gt;</code> slots.</strong> The HTML parser reads those slots before the viewer does, so a literal tag in the prose or in a code fence (<code>List&lt;String&gt;</code>, <code>&lt;div&gt;</code>) is turned into an element and silently disappears from the markdown. Write <code>&amp;lt;</code> and <code>&amp;amp;</code>, or use the <code>&lt;script type="text/markdown"&gt;</code> slot, whose content is raw text, for code-heavy documents.</p>
     <code-block language="html" show-lines label="Template slot" data-escape><markdown-viewer>
   <template data-md>
 # Hello world
@@ -61,8 +62,13 @@ This content is **invisible** without JavaScript.
 </markdown-viewer></code-block>
 
     <h3><code>src</code></h3>
-    <p>Fetch external markdown using the JS <code>fetch()</code> API. CORS rules apply.</p>
-    <code-block language="html" show-lines label="External file" data-escape><markdown-viewer src="/path/to/document.md"></markdown-viewer></code-block>
+    <p>Fetch external markdown with <code>fetch()</code>. Like <a href="/docs/elements/web-components/include-file/"><code>&lt;include-file&gt;</code></a>, <code>src</code> is <strong>same-origin by default</strong>: only <code>http(s)</code> URLs on the page's origin load, a redirect to another origin is refused, and <code>blob:</code>, <code>data:</code> and <code>javascript:</code> URLs are always refused. Add <code>allow-cross-origin</code> to load from another origin. That server must also allow it with CORS, and the content is still sanitized.</p>
+    <code-block language="html" show-lines label="External file" data-escape><markdown-viewer src="/path/to/document.md"></markdown-viewer>
+
+<!-- Another origin: explicit opt-in -->
+<markdown-viewer src="https://docs.example.com/guide.md" allow-cross-origin></markdown-viewer></code-block>
+    <p>Changing <code>src</code> re-fetches. Removing it falls back to the slots. If the fetch or parse fails, the viewer sets <code>data-error</code> and fires <code>markdown-viewer:error</code>. A <code>&lt;pre&gt;</code> slot stays visible as the fallback. Without one, the viewer shows a <code>role="alert"</code> message whose text comes from <code>data-label-error</code> (default &ldquo;Failed to load markdown&rdquo;).</p>
+    <code-block language="html" label="Translated error message" data-escape><markdown-viewer src="/notes.md" data-label-error="Impossible de charger le document."></markdown-viewer></code-block>
 
     <browser-window
       src="/docs/examples/demos/markdown-viewer-src.html"
@@ -133,7 +139,9 @@ console.log('hello');
 
   <section>
     <h2>Mermaid Diagrams</h2>
-    <p>Listen for <code>markdown-viewer:rendered</code> and lazy-load Mermaid only when needed:</p>
+    <p>Add <code>data-auto-mermaid</code> to have <code>main.js</code> load a bridge that upgrades <code>```mermaid</code> fences in the output to <a href="/docs/elements/web-components/diagram-wc/"><code>&lt;diagram-wc&gt;</code></a>:</p>
+    <code-block language="html" label="Automatic Mermaid upgrade" data-escape><markdown-viewer data-auto-mermaid src="/docs/architecture.md"></markdown-viewer></code-block>
+    <p>Or wire it yourself: listen for <code>markdown-viewer:rendered</code> and lazy-load Mermaid only when needed:</p>
     <code-block language="javascript" show-lines label="Mermaid integration" data-escape>document.addEventListener('markdown-viewer:rendered', ({ detail }) => {
   const diagrams = detail.node.querySelectorAll('code.language-mermaid');
   if (diagrams.length) {
@@ -150,11 +158,15 @@ console.log('hello');
   </section>
 
   <section>
-    <h2>Callout Extension</h2>
-    <p>Register the optional callout extension with <code>marked</code> for <code>:::type</code> blocks (warning, info, tip, danger, note):</p>
-    <code-block language="javascript" show-lines label="Callout extension" data-escape>import { marked } from 'marked';
-import { calloutExtension } from './markdown-viewer/vb-extensions.js';
-marked.use({ extensions: [calloutExtension] });</code-block>
+    <h2 id="callout-blocks">Callout Blocks</h2>
+    <p>The default parser renders <code>:::type</code> &hellip; <code>:::</code> blocks as callouts. The types are <code>note</code>, <code>info</code>, <code>tip</code>, <code>warning</code> and <code>danger</code>. Text after the type replaces the default title, which is the capitalised type name. Each callout is an <code>&lt;aside data-callout="&hellip;" role="note"&gt;</code> whose first child is a visible <code>&lt;p data-callout-title&gt;</code>, so its kind is not shown by colour alone. That is the same markup you write by hand in HTML: the styling comes from the shared <a href="/docs/attributes/data-callout/"><code>data-callout</code></a> attribute, not from this component, so markdown and hand-written callouts look identical and follow the same theme hooks. A custom <code>.parser</code> replaces this syntax along with the rest of the default parser.</p>
+    <code-block language="markdown" show-lines label="Callout syntax" data-escape>:::warning
+**Careful!** This action cannot be undone.
+:::
+
+:::tip Pro tip
+Use the `highlight` attribute to hook up a syntax highlighter.
+:::</code-block>
 
     <browser-window
       src="/docs/examples/demos/markdown-viewer-callouts.html"
@@ -166,9 +178,27 @@ marked.use({ extensions: [calloutExtension] });</code-block>
 
   <section>
     <h2>Sanitising</h2>
-    <p>Rendered HTML always passes through the shared Vanilla Breeze sanitizer before it reaches the page, including output from a custom <code>.parser</code>. The sanitizer removes <code>&lt;script&gt;</code>, <code>&lt;iframe&gt;</code>, <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>, <code>&lt;form&gt;</code> and similar elements, all <code>on*</code> event handlers, and <code>javascript:</code> URLs. Ordinary markdown, and inline HTML such as <code>&lt;details&gt;</code> or <code>&lt;kbd&gt;</code>, renders unchanged.</p>
-    <p>Sanitising is on by default because the viewer renders untrusted text such as AI output (<code>&lt;ai-summary&gt;</code>) and user comments (<code>&lt;markdown-editor&gt;</code>). Turn it off only for fully trusted, first-party markdown that really needs raw embeds:</p>
-    <code-block language="html" label="Opting out for trusted content" data-escape><markdown-viewer sanitize="off" src="/docs/trusted-embed.md"></markdown-viewer></code-block>
+    <p>By default, rendered HTML (including the output of a custom <code>.parser</code>) passes through the shared Vanilla Breeze sanitizer. The cleaned nodes are then inserted directly. They are never turned back into a string and parsed a second time, because that round trip is how mutation XSS gets past sanitizers. The viewer sanitizes by default because it renders untrusted text such as AI output (<code>&lt;ai-summary&gt;</code>) and user comments (<code>&lt;markdown-editor&gt;</code>).</p>
+    <p><strong>Removed:</strong></p>
+    <ul>
+      <li><code>&lt;script&gt;</code>, <code>&lt;style&gt;</code>, <code>&lt;iframe&gt;</code>, <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>, <code>&lt;form&gt;</code>, <code>&lt;base&gt;</code>, <code>&lt;link&gt;</code>, <code>&lt;meta&gt;</code>, <code>&lt;noscript&gt;</code>, <code>&lt;title&gt;</code> and the other raw-text elements, SVG <code>&lt;foreignObject&gt;</code>, MathML <code>&lt;mglyph&gt;</code> and <code>&lt;malignmark&gt;</code>, and comments.</li>
+      <li>Every <code>on*</code> event handler and every <code>style</code> attribute, which blocks fixed-position overlays and page-wide CSS.</li>
+      <li>Form-hijacking attributes (<code>form</code>, <code>formaction</code>, <code>formmethod</code>, <code>formtarget</code> and similar), invokers that reach into the page (<code>popovertarget</code>, <code>commandfor</code>, <code>interestfor</code>), and <code>autofocus</code> and <code>ping</code>.</li>
+      <li><code>javascript:</code> and <code>vbscript:</code> URLs, <code>data:</code> URLs in links, and non-media <code>data:</code> URLs in <code>src</code>.</li>
+      <li>On a nested <code>&lt;markdown-viewer&gt;</code> or <code>&lt;include-file&gt;</code>: the attributes that fetch or opt out (<code>src</code>, <code>sanitize</code>, <code>allow-cross-origin</code>, <code>trusted</code>).</li>
+    </ul>
+    <p><strong>Rewritten:</strong></p>
+    <ul>
+      <li><code>id</code> and <code>name</code> get a <code>user-content-</code> prefix (as on GitHub), so content cannot clobber page globals or page ids. Links and label references inside the same document are updated to match, so <code>[jump](#setup)</code> pointing at a raw <code>&lt;h2 id="setup"&gt;</code> in the same markdown still works. References to ids outside the content are dropped, except <code>href="#…"</code> links, which still point at the page.</li>
+      <li>Buttons and submit, reset and image inputs become <code>type="button"</code>, so they cannot submit a surrounding form.</li>
+    </ul>
+    <p><strong>Kept:</strong> ordinary markdown output, and inline HTML such as <code>&lt;details&gt;</code>, <code>&lt;kbd&gt;</code> and tables. Also kept are <code>class</code>, <code>data-*</code> and ARIA attributes, inline SVG and MathML, task-list checkboxes, <code>data:image</code> sources, and <strong>remote images</strong>. Remote images make tracking pixels possible: add a <code>Content-Security-Policy</code> <code>img-src</code> rule if that matters to you.</p>
+
+    <h3>Turning it off (trusted content only)</h3>
+    <aside class="note">
+      <p><strong><code>sanitize="off"</code> writes the parser output into the page as raw HTML.</strong> Any script or event handler in the markdown runs. Use it only for first-party markdown you wrote yourself and that really needs embeds (iframes, forms, styles). Never combine it with a <code>src</code> that users or another origin can influence, or with <code>allow-cross-origin</code>.</p>
+    </aside>
+    <code-block language="html" label="Opting out for trusted, first-party content" data-escape><markdown-viewer sanitize="off" src="/docs/trusted-embed.md"></markdown-viewer></code-block>
   </section>
 
   {% from "partials/attribute-table.njk" import attributeTable, eventsTable %}
@@ -189,7 +219,8 @@ marked.use({ extensions: [calloutExtension] });</code-block>
         <tr><th>Property / Method</th><th>Description</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>.parser</code></td><td>Get/set custom parser function (md &rarr; html string). Overrides the default marked parser.</td></tr>
+        <tr><td><code>.parser</code></td><td>Get/set custom parser function (md &rarr; html string). Overrides the default marked parser (and its callout syntax). Its output is still sanitized unless <code>sanitize="off"</code>.</td></tr>
+        <tr><td><code>.markdown</code></td><td>Get the current markdown source. Set a string to render it instead of the slots or <code>src</code>. Set <code>null</code> or <code>''</code> to fall back to them.</td></tr>
         <tr><td><code>.render()</code></td><td>Force a re-render from the current content source. Returns a Promise.</td></tr>
         <tr><td><code>.reload()</code></td><td>Re-fetch the <code>src</code> URL and re-render. Returns a Promise.</td></tr>
       </tbody>

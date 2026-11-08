@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>hide-until-ready</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+
+    /* Safety timeout: reveal anyway if the definition never arrives
+       (default 3s; longer here so there is time to read the page). */
+    :root { --vb-until-ready-timeout: 8s; }
+
+    status-card { display: block; }
+
+    /* Sibling placeholder: holds roughly the space the card will take (so
+       the swap does not shift the page) and steps aside once the element
+       after it is defined. */
+    p[aria-busy] { min-block-size: 6rem; }
+    p:has(+ status-card:defined) { display: none; }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+    <p>The card below is a custom element whose definition has not loaded yet. Until it does, a placeholder holds its place; press the button to load it. If you do nothing, the content is revealed anyway after 8 seconds &mdash; the safety timeout for a definition that never arrives.</p>
+
+    <button type="button" id="define">Define &lt;status-card&gt;</button>
+
+    <p aria-busy="true">Loading the status card&hellip;</p>
+    <!-- [html-validate-disable-next no-unknown-elements -- status-card is a demo-only element, defined by the button above] -->
+    <status-card hide-until-ready>
+      <article data-callout="info">
+        <p data-callout-title><strong>All systems normal</strong></p>
+        <p>This content was hidden until <code>&lt;status-card&gt;</code> was defined.</p>
+      </article>
+    </status-card>
+
+    <layout-card hide-until-ready>
+      <p>A CSS-only element (<code>&lt;layout-card&gt;</code>) is defined inertly by VB, so <code>hide-until-ready</code> on it never hides it.</p>
+    </layout-card>
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    document.getElementById('define').addEventListener('click', (event) => {
+      if (!customElements.get('status-card')) customElements.define('status-card', class extends HTMLElement {});
+      event.currentTarget.disabled = true;
+    });
+  </script>
+</body>
+</html>

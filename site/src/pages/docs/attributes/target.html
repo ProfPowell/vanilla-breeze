@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "target"
-description: "Controls where links and forms open their results: same tab, new tab, parent frame, or a named browsing context."
+description: "Chooses where a link or form result opens: the same tab, a new tab, a parent or top-level frame, or a named window or iframe."
 attributeName: target
 attributeType: native
 nativeGroup: Links & Security
@@ -12,113 +12,130 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>target</code> attribute specifies where to display the result of a navigation: a link click or a form submission. It accepts keyword values for well-known browsing contexts or a custom name to open content in a specific window or frame.</p>
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a>, <code>&lt;area&gt;</code>, <a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a>, <code>&lt;base&gt;</code></p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>target</code> attribute names the browsing context (tab, window or frame) where a navigation happens: following a link or showing a form's response. It takes a keyword or any name you choose; a named context is reused if it exists and created otherwise.</p>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a>, <a href="/docs/elements/native/area/"><code>&lt;area&gt;</code></a>, <a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> and <a href="/docs/elements/native/base/"><code>&lt;base&gt;</code></a> (page-wide default). Submit buttons can override a form's target with <code>formtarget</code>.</p>
 
-<h2>Values</h2>
-<table>
-  <thead><tr><th>Value</th><th>Where it opens</th></tr></thead>
-  <tbody>
-    <tr><td><code>_self</code></td><td>Same browsing context (the default)</td></tr>
-    <tr><td><code>_blank</code></td><td>A new, unnamed browsing context (new tab or window)</td></tr>
-    <tr><td><code>_parent</code></td><td>The parent browsing context. If no parent, behaves like <code>_self</code>.</td></tr>
-    <tr><td><code>_top</code></td><td>The topmost browsing context. Breaks out of all nested frames.</td></tr>
-    <tr><td><code><em>name</em></code></td><td>A named browsing context. Reuses it if already open; creates it otherwise.</td></tr>
-  </tbody>
-</table>
+  <browser-window
+    src="/docs/examples/demos/attr-target-basic.html"
+    url="https://vanilla-breeze.com/demos/target"
+    title="target: named frames and new tabs"
+    shadow>
+  </browser-window>
 
-<code-block language="html" label="Basic target usage" data-escape><!-- Default: opens in the same tab (target="_self" is implicit) -->
-<a href="/about">About Us</a>
-
-<!-- Open in a new tab -->
-<a href="https://example.com" target="_blank" rel="noopener noreferrer">
-  External Site
-</a>
-
-<!-- Form that opens results in a new tab -->
-<form action="/search" target="_blank">
-  <input type="search" name="q" />
-  <button type="submit">Search in New Tab</button>
-</form></code-block>
-
-<h2>Security: _blank and noopener</h2>
-<p>Historically, <code>target="_blank"</code> gave the opened page access to <code>window.opener</code>, allowing it to redirect your original tab to a phishing page. This required adding <code>rel="noopener"</code> as a countermeasure.</p>
-<p><strong>Modern browsers now imply <code>rel="noopener"</code> for all <code>target="_blank"</code> links by default.</strong> However, adding <code>rel="noopener noreferrer"</code> explicitly is still recommended for clarity and to support older browsers.</p>
-
-<h2>Named Targets</h2>
-<p>Any string that is not one of the underscore-prefixed keywords becomes a named browsing context. If a window or tab with that name already exists, the browser navigates it instead of opening a new one. This is useful for "preview" workflows.</p>
-
-<code-block language="html" label="Named target window" data-escape><!-- Both links open in the same named window called "preview" -->
-<a href="/draft/page-1" target="preview">Preview Page 1</a>
-<a href="/draft/page-2" target="preview">Preview Page 2</a>
-
-<!-- If "preview" is already open, the browser reuses it -->
-<!-- If not, it opens a new window/tab with that name --></code-block>
-
-<h2>Targeting Frames and Iframes</h2>
-<p>You can target a specific iframe by matching the <code>target</code> value to the iframe's <code>name</code> attribute. Links and forms outside the iframe can load content into it.</p>
-
-<code-block language="html" label="Loading into an iframe" data-escape><!-- Parent page with an iframe -->
-<iframe name="content-frame" src="/docs/intro" title="Content area"></iframe>
-<nav>
-  <!-- These links load inside the iframe -->
-  <a href="/docs/chapter-1" target="content-frame">Chapter 1</a>
-  <a href="/docs/chapter-2" target="content-frame">Chapter 2</a>
-</nav></code-block>
-
-<h3>_parent and _top</h3>
-<p>Inside nested iframes, <code>_parent</code> navigates one level up and <code>_top</code> navigates the outermost window. These are essential for breaking out of frame hierarchies, such as redirecting to a login page from inside an embedded widget.</p>
-
-<code-block language="html" label="Iframe navigation" data-escape><!-- Inside a nested iframe: -->
-
-<!-- Navigate the immediate parent frame -->
-<a href="/parent-page" target="_parent">Go to Parent</a>
-
-<!-- Navigate the outermost (top-level) window -->
-<a href="/home" target="_top">Go to Home</a>
-
-<!-- Break out of all frames entirely -->
-<a href="/login" target="_top">Log In</a></code-block>
-
-<h2>Setting a Default with base</h2>
-<p>The <code>&lt;base&gt;</code> element can set a default <code>target</code> for all links and forms on the page. Individual elements can still override it.</p>
-
-<code-block language="html" label="Default target via base" data-escape><!-- Set a default target for all links and forms on the page -->
-<head>
-  <base target="_blank" />
-</head>
-
-<body>
-  <!-- These all open in new tabs (inheriting from <base>) -->
-  <a href="https://example.com">Example</a>
-  <a href="https://docs.example.com">Docs</a>
-
-  <!-- Override the base target on a specific link -->
-  <a href="/settings" target="_self">Settings (same tab)</a>
-</body></code-block>
-
-<h2>Accessibility</h2>
-<p>Opening links in new tabs (<code>target="_blank"</code>) can disorient users, particularly those using screen readers or who have cognitive disabilities. The user loses their back-button history and may not realize a new tab opened.</p>
-<ul>
-  <li>Only use <code>_blank</code> when there is a clear reason (external site, in-progress form would be lost).</li>
-  <li>Indicate that a link opens in a new tab, either visually (icon) or via text (e.g. "opens in new tab") or with <code>aria-describedby</code> pointing to a hint.</li>
-  <li>Never force all links to open in new tabs via <code>&lt;base target="_blank"&gt;</code> unless the application context demands it (e.g. a link aggregator).</li>
-</ul>
-
-<h2>Limitations</h2>
-<ul>
-  <li><strong>Popup blockers:</strong> <code>target="_blank"</code> without a user gesture (e.g. triggered by JavaScript timers) may be blocked by popup blockers.</li>
-  <li><strong>Named targets persist:</strong> A named window stays open until the user closes it. Subsequent links with the same target name reuse it, which can be confusing if the user forgot the window is open.</li>
-  <li><strong>Sandboxed iframes:</strong> The <code>sandbox</code> attribute can block <code>_top</code> and <code>_parent</code> navigation unless <code>allow-top-navigation</code> is granted.</li>
-  <li><strong>Mobile behavior:</strong> On mobile browsers, <code>_blank</code> opens a new tab rather than a new window. Named targets may not behave consistently across mobile browsers.</li>
-</ul>
+  <p>The chapter links load into the iframe named <code>reader</code>, and the page inside reports that name through <code>window.name</code>. The last link opens a new tab, where <code>window.opener</code> is <code>null</code>.</p>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Value</th><th>Opens in</th></tr></thead>
+    <tbody>
+      <tr><td><code>_self</code></td><td>The current browsing context. The default when <code>target</code> is absent or empty (unless <code>&lt;base target&gt;</code> sets another default).</td></tr>
+      <tr><td><code>_blank</code></td><td>A new, unnamed tab or window. Implies <code>rel="noopener"</code>.</td></tr>
+      <tr><td><code>_parent</code></td><td>The parent frame; <code>_self</code> if there is none.</td></tr>
+      <tr><td><code>_top</code></td><td>The top-level page, leaving all frames; <code>_self</code> if not framed.</td></tr>
+      <tr><td><em>name</em></td><td>The frame or window with that name (an iframe's <code>name</code>, or a window opened with that name). A new tab if none exists.</td></tr>
+    </tbody>
+  </table>
+  <p>Keywords are case-insensitive. Other names starting with <code>_</code> are reserved; do not use them for your own windows or frames.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Load links into an iframe</h3>
+  <code-block language="html" show-lines label="Named iframe target" data-escape><nav aria-label="Load into the reader frame">
+  <ul data-layout="cluster" data-layout-gap="m">
+    <li><a href="/book/chapter-1" target="reader">Chapter 1</a></li>
+    <li><a href="/book/chapter-2" target="reader">Chapter 2</a></li>
+  </ul>
+</nav>
+<iframe name="reader" src="/book/chapter-1" title="Reader" class="bordered"></iframe></code-block>
+
+  <h3>Open in a new tab, and say so</h3>
+  <p>Tell users before they open a new tab. VB's <code>icon-wc</code> plus visually hidden text does both jobs:</p>
+  <code-block language="html" show-lines label="Announced new-tab link" data-escape><a href="https://developer.mozilla.org/" target="_blank">
+  MDN Web Docs
+  <icon-wc name="external-link"></icon-wc>
+  <span class="visually-hidden">(opens in a new tab)</span>
+</a></code-block>
+
+  <h3>Form results in a new tab</h3>
+  <code-block language="html" show-lines label="Form target" data-escape><form action="/reports/preview" target="_blank">
+  <form-field>
+    <label for="report-month">Month</label>
+    <input id="report-month" type="month" name="month">
+  </form-field>
+  <button type="submit">Preview report</button>
+  <button type="submit" formtarget="_self" formaction="/reports/download">Download here</button>
+</form></code-block>
+
+  <h3>Leave a frame</h3>
+  <p>Inside an embedded widget, send a sign-in link to the whole page rather than the small frame:</p>
+  <code-block language="html" show-lines label="_top" data-escape><a href="/login?next=/dashboard" target="_top">Sign in to continue</a></code-block>
+
+  <h3>Page-wide default with base</h3>
+  <code-block language="html" show-lines label="base target" data-escape><head>
+  <base target="docs-viewer">
+</head>
+<!-- every link and form now opens in the "docs-viewer" window -->
+<a href="/guide/install" target="_self">Install guide (this window)</a></code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/attributes/rel/"><code>rel</code></a> &mdash; <code>noopener</code> and <code>noreferrer</code> for link security</li>
-    <li><a href="/docs/attributes/sandbox/"><code>sandbox</code></a> &mdash; restrict iframe navigation capabilities</li>
-    <li><a href="/docs/attributes/download/"><code>download</code></a> &mdash; trigger a download instead of navigating</li>
+    <li><strong><code>noopener</code> made explicit.</strong> Any page with an <code>a[target="_blank"]</code> loads <code>src/utils/links-init.js</code>, which adds <code>rel="noopener"</code> to such links that declare no opener policy (and <code>noreferrer</code> as well under <code>&lt;html data-link-privacy="strict"&gt;</code>).</li>
+    <li><strong>No new-tab styling.</strong> VB does not style <code>[target="_blank"]</code>. Its automatic arrow marks <em>external</em> links (<code>a[href^="http"]</code> and <code>rel~="external"</code>, in <code>src/native-elements/anchor/styles.css</code> and <code>src/utils/links.css</code>), whatever their target. An <code>&lt;icon-wc&gt;</code> inside the link replaces the arrow.</li>
+    <li><a href="/docs/elements/web-components/image-map/"><code>&lt;image-map&gt;</code></a> honours <code>target="_blank"</code> on its areas and opens them with <code>noopener</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>New tabs break the Back button and can disorient screen-reader and low-vision users. Use <code>_blank</code> only with a reason (leaving would lose work, or the link is to a reference the user will come back from).</li>
+    <li>Say that a link opens a new tab, in visible text or visually hidden text. A tooltip or icon alone is not enough (WCAG 3.2.5 recommends warning of context changes).</li>
+    <li>Avoid <code>&lt;base target="_blank"&gt;</code>: it turns every link on the page into a new tab.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Security</h2>
+  <ul>
+    <li><code>target="_blank"</code> no longer exposes <code>window.opener</code> in any current browser. Add <code>rel="noopener"</code> only for clarity; add <code>noreferrer</code> if you also want to hide your URL (a privacy choice). See <a href="/docs/attributes/rel/"><code>rel</code></a>.</li>
+    <li><code>window.open(url, '_blank')</code> is not covered by the implicit rule; pass <code>'noopener'</code> as the third argument.</li>
+    <li>Named targets can be reused by other pages that know the name. Do not rely on a name to keep content private.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Sandboxed frames.</strong> <code>_top</code> needs <code>allow-top-navigation</code> or, better, <code>allow-top-navigation-by-user-activation</code>; <code>_blank</code> needs <code>allow-popups</code>. Navigating a non-top parent is blocked from a sandboxed frame.</li>
+    <li><strong>Popup blockers</strong> may stop <code>_blank</code> navigations that do not come from a user gesture.</li>
+    <li><strong>Named windows persist.</strong> Later links with the same name reuse a window the user may have forgotten about.</li>
+    <li><strong>Mobile.</strong> <code>_blank</code> opens a tab, not a window; named targets reuse tabs inconsistently across mobile browsers.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/rel/"><code>rel</code></a> &mdash; <code>noopener</code>, <code>noreferrer</code>, <code>opener</code>.</li>
+    <li><a href="/docs/attributes/download/"><code>download</code></a> &mdash; save instead of navigating.</li>
+    <li><a href="/docs/attributes/sandbox/"><code>sandbox</code></a> &mdash; controls which targets a frame may use.</li>
+    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> &mdash; what the opened page learns about yours.</li>
+    <li><a href="/docs/elements/native/base/"><code>&lt;base&gt;</code></a>, <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a>, <a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a>, <a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> &mdash; the elements.</li>
+    <li><a href="/docs/concepts/link-relations/">Link relations</a> &mdash; VB's link conventions.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong>Most links</strong> &mdash; no <code>target</code>; let users choose with middle-click or a long press.</li>
+    <li><strong>Leaving would lose work</strong> &mdash; <code>_blank</code>, announced in the link text.</li>
+    <li><strong>Master/detail inside one page</strong> &mdash; a named iframe, or fetch the content into the page instead.</li>
+    <li><strong>An overlay instead of a new page</strong> &mdash; a <code>&lt;dialog&gt;</code> opened with <code>commandfor</code>.</li>
   </ul>
 </section>

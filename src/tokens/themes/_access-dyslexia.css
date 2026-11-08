@@ -88,12 +88,12 @@
       letter-spacing: var(--letter-spacing-normal);
     }
 
-    /* Ensure no justified text - left-align only. bundle-theme sits above
+    /* Ensure no justified text - start-align only (logical, so RTL text aligns right). bundle-theme sits above
        native-elements, so this beats p.justify without !important. */
     & p,
     & li,
     & blockquote {
-      text-align: left;
+      text-align: start;
       hyphens: none;
     }
 
@@ -127,12 +127,21 @@
       text-underline-offset: 3px;
     }
 
-    /* Lists with more spacing */
-    & :is(main, article) :is(ul, ol) {
+    /* Lists with more spacing — plain block-flow lists only (.inline,
+       .unstyled, .meta and layout lists keep their own 0 indent), and ordered
+       lists that carry long markers keep the wide indent. */
+    & :is(main, article) :is(ul, ol):not([class], [data-layout]) {
       padding-inline-start: 1.5em;
     }
 
-    & :is(main, article) li {
+    & :is(main, article) ol:not([class], [data-layout]):where([type="i"], [start], [reversed], :has(> li[value], > li:nth-child(100)), [type="a"]:has(> li:nth-child(27))) {
+      padding-inline-start: var(--ol-indent, 2.5em);
+    }
+
+    /* Plain block-flow lists only: layout-primitive, .inline/.meta and other
+       classed lists space their items with gap, where a margin would double
+       the gap or offset items on the cross axis. */
+    & :is(main, article) :is(ul, ol):not([class], [data-layout]) > li {
       margin-block-end: 0.5em;
     }
 
@@ -163,6 +172,10 @@
     /* Light-only cream palette (no dark tokens): keep light UA chrome and
        light-dark() resolving light in dark mode too. (vggb) */
     color-scheme: light;
+    /* Light-only palette: keep the light primary seeds under dark mode too
+       (system dark and data-mode=dark both set the L65% dark seeds). */
+    --lightness-primary: 50%;
+    --chroma-primary: 0.2;
     --color-background: oklch(98% 0.008 80);
     --color-surface: oklch(97.5% 0.008 80);
     --color-surface-raised: oklch(99% 0.005 80);

@@ -1,96 +1,58 @@
 /**
  * Reveal effect — word-by-word or line-by-line text reveal.
- * Splits text into spans with staggered delays.
- * Trigger system handles scroll/hover/click activation.
+ *
+ * Splits the text nodes into word chunks (inline markup such as links is
+ * kept) with the shared accessible splitter: the full text stays readable
+ * to assistive technology once, the animated chunks are aria-hidden.
+ * class="line" staggers by rendered line instead of by word; the lines are
+ * re-measured when the element's width changes.
+ *
+ * Custom properties: --vb-reveal-delay (stagger step, default 80ms),
+ * --vb-reveal-duration (per-chunk transition, default 400ms).
  */
 
 import { VB } from '../lib/vb.js'
+import { splitText, unsplit, assignLines } from '../lib/split-text.js'
 
-function splitIntoWords(el) {
-  const text = el.textContent
-  el.setAttribute('aria-label', text)
-  el.innerHTML = ''
-
-  const words = text.split(/(\s+)/)
-  words.forEach((word, i) => {
-    if (/^\s+$/.test(word)) {
-      el.appendChild(document.createTextNode(word))
-      return
-    }
-    const span = document.createElement('span')
-    span.className = 'vb-reveal-chunk'
-    span.textContent = word
-    span.style.setProperty('--i', String(Math.floor(i / 2)))
-    span.setAttribute('aria-hidden', 'true')
-    el.appendChild(span)
-  })
-}
-
-function splitIntoLines(el) {
-  const text = el.textContent
-  el.setAttribute('aria-label', text)
-
-  const temp = document.createElement('div')
-  temp.style.cssText = getComputedStyle(el).cssText
-  temp.style.position = 'absolute'
-  temp.style.visibility = 'hidden'
-  temp.style.whiteSpace = 'normal'
-  document.body.appendChild(temp)
-
-  const words = text.split(/\s+/).filter(Boolean)
-  const lines = []
-  let currentLine = ''
-
-  words.forEach((word) => {
-    const test = currentLine ? currentLine + ' ' + word : word
-    temp.textContent = test
-    temp.style.width = getComputedStyle(el).width
-    if (temp.scrollWidth > temp.clientWidth && currentLine) {
-      lines.push(currentLine)
-      currentLine = word
-    } else {
-      currentLine = test
-    }
-  })
-  if (currentLine) lines.push(currentLine)
-  document.body.removeChild(temp)
-
-  if (lines.length === 0) lines.push(text)
-
-  el.innerHTML = ''
-  lines.forEach((line, i) => {
-    const span = document.createElement('span')
-    span.className = 'vb-reveal-chunk'
-    span.textContent = line
-    span.style.setProperty('--i', String(i))
-    span.setAttribute('aria-hidden', 'true')
-    el.appendChild(span)
-    if (i < lines.length - 1) el.appendChild(document.createTextNode(' '))
-  })
-}
+const INIT = 'data-effect-reveal-init'
 
 VB.effect('reveal', (el) => {
-  if (el.hasAttribute('data-effect-reveal-init')) return
-  el.setAttribute('data-effect-reveal-init', '')
+  const host = /** @type {HTMLElement} */ (el)
+  // A clone of a split element carries the old split and init marker.
+  unsplit(host)
+  host.removeAttribute(INIT)
 
-  if (VB.prefersReducedMotion()) return
+  if (VB.prefersReducedMotion()) return { cleanup() {} }
 
-  const mode = el.classList.contains('line') ? 'line' : 'word'
-  const params = VB.params(el)
-  const delay = params.get('reveal-delay') || '80ms'
-  const duration = params.get('reveal-duration') || '400ms'
+  const params = VB.params(host)
+  host.style.setProperty('--reveal-delay', params.get('reveal-delay') || '80ms')
+  host.style.setProperty('--reveal-duration', params.get('reveal-duration') || '400ms')
 
-  el.style.setProperty('--reveal-delay', delay)
-  el.style.setProperty('--reveal-duration', duration)
+  const chunks = splitText(host, { className: 'vb-reveal-chunk' })
+  chunks.forEach((c, i) => c.style.setProperty('--i', String(i)))
+  host.setAttribute(INIT, '')
 
-  if (mode === 'line') {
-    splitIntoLines(el)
-  } else {
-    splitIntoWords(el)
+  /** @type {ResizeObserver | null} */
+  let ro = null
+  if (host.classList.contains('line')) {
+    assignLines(chunks)
+    let width = host.clientWidth
+    ro = new ResizeObserver(() => {
+      if (host.clientWidth === width) return
+      width = host.clientWidth
+      assignLines(chunks)
+    })
+    ro.observe(host)
   }
 
   return {
-    activate() { el.setAttribute('data-effect-active', '') },
-    cleanup() {},
+    activate() { host.setAttribute('data-effect-active', '') },
+    cleanup() {
+      ro?.disconnect()
+      unsplit(host)
+      host.removeAttribute(INIT)
+      host.style.removeProperty('--reveal-delay')
+      host.style.removeProperty('--reveal-duration')
+    },
   }
 })

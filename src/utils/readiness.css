@@ -1,10 +1,47 @@
-/* readiness: FOUC prevention for custom elements */
-/* Hide elements until their custom element is defined (prevents flash of unstyled content) */
+/* readiness: hide-until-ready / show-until-ready
 
-[hide-until-ready]:not(:defined) {
-  display: none;
+   Imported into the RESET layer (src/main.css) so the !important hide beats
+   structural display:… !important rules in later layers (see responsive.css).
+
+   hide-until-ready hides a custom element until it is defined — but never
+   for good:
+   - (scripting: none): nothing will ever define it, so it is never hidden.
+   - Timeout: a failed or blocked module, a CSP error or a 404 would leave it
+     hidden forever. A one-shot animation on the root (running only while
+     an undefined [hide-until-ready] element exists) flips
+     --vb-until-ready from "waiting" to "expired" after
+     --vb-until-ready-timeout (3s); the hide rule only applies while the
+     root still says "waiting" (a container style query — every element is
+     a style container, and the property inherits from the root).
+     Browsers without container style queries simply never hide the element.
+   VB's CSS-only custom elements (layout-*, user-avatar…) are defined inertly
+   by src/custom-elements/register.js, so they upgrade immediately. */
+
+@keyframes vb-until-ready-expire {
+  to { --vb-until-ready: expired; }
 }
 
+@media (scripting: enabled) {
+  :root {
+    --vb-until-ready: waiting;
+  }
+
+  /* The timer only exists while something is waiting, so pages without
+     hide-until-ready carry no document animation (document.getAnimations()
+     stays empty for "wait until animations settle" code). */
+  :root:has([hide-until-ready]:not(:defined)) {
+    animation: vb-until-ready-expire 0s var(--vb-until-ready-timeout, 3s) forwards;
+  }
+
+  @container style(--vb-until-ready: waiting) {
+    [hide-until-ready]:not(:defined) {
+      display: none !important;
+    }
+  }
+}
+
+/* Placeholder content that steps aside once its own element is defined.
+   (Put it on a custom element only: native elements are always :defined.) */
 [show-until-ready]:defined {
-  display: none;
+  display: none !important;
 }

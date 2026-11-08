@@ -34,35 +34,64 @@ crumbLabel: Web Components
         <td><code>data-for</code></td>
         <td>string</td>
         <td>—</td>
-        <td>ID of the target content element to analyze</td>
+        <td>ID of the target content element to analyze. Without it the component only adopts existing markup.</td>
       </tr>
       <tr>
         <td><code>data-wpm</code></td>
         <td>number</td>
         <td><code>238</code></td>
-        <td>Words per minute for reading time calculation</td>
+        <td>Words per minute for reading time. The same default is used by <a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a>, so both always agree. Chinese and Japanese text is timed at 500 characters per minute instead.</td>
       </tr>
       <tr>
         <td><code>data-show</code></td>
-        <td>string</td>
+        <td>comma-separated list</td>
         <td><code>reading-time</code></td>
-        <td>Comma-separated stats: <code>reading-time</code>, <code>word-count</code>, <code>last-modified</code></td>
+        <td>Which stats to show, in this fixed order: <code>reading-time</code>, <code>word-count</code>, <code>last-modified</code>. Unknown tokens are ignored. <code>last-modified</code> reads <code>&lt;meta name="last-modified"&gt;</code>, then <code>&lt;meta property="article:modified_time"&gt;</code>, and is left out when neither exists.</td>
+      </tr>
+      <tr>
+        <td><code>data-label-reading-time</code>, <code>data-label-word-count</code>, <code>data-label-last-modified</code></td>
+        <td>string</td>
+        <td><q>Reading time</q>, <q>Word count</q>, <q>Last updated</q></td>
+        <td>Visually hidden <code>&lt;dt&gt;</code> labels.</td>
+      </tr>
+      <tr>
+        <td><code>data-label-min-read</code></td>
+        <td>template</td>
+        <td><code>{n} read</code> (English), <code>{n}</code> otherwise</td>
+        <td>Reading-time text. <code>{n}</code> is the minute value formatted with <code>Intl.NumberFormat</code> in the document language (<q>5 min</q>, <q>5分</q>).</td>
+      </tr>
+      <tr>
+        <td><code>data-label-words</code></td>
+        <td>template</td>
+        <td><code>{n} words</code> / <code>{n} word</code></td>
+        <td>Word-count text. Add <code>data-label-words-one</code>, <code>-two</code>, <code>-few</code>, <code>-many</code> or <code>-zero</code> for languages whose <code>Intl.PluralRules</code> categories need different wording.</td>
       </tr>
     </tbody>
   </table>
+  <p>Changing any of these attributes recomputes the stats.</p>
+</section>
+
+<section>
+  <h2>What is counted</h2>
+  <ul>
+    <li>Words are found with <code>Intl.Segmenter</code> (word granularity) in the target's language, so languages that do not put spaces between words, such as Japanese, Chinese and Thai, are counted correctly.</li>
+    <li>Skipped: <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code>, <code>&lt;template&gt;</code>, <code>&lt;noscript&gt;</code>, <code>[hidden]</code>, <code>[aria-hidden="true"]</code>, <code>[inert]</code>, <code>[data-signable="false"]</code>, nested <code>&lt;page-info&gt;</code> / <code>&lt;page-stats&gt;</code>, and anything marked <code>data-stats-ignore</code>.</li>
+    <li>Counted: code blocks and the content of closed <code>&lt;details&gt;</code>, because readers can open and read both. Add <code>data-stats-ignore</code> to leave a block out.</li>
+    <li>Numbers, plurals and relative dates use the language of the closest <code>[lang]</code> ancestor (usually <code>&lt;html lang&gt;</code>). The absolute date is in the <code>title</code> of the <code>&lt;time&gt;</code>.</li>
+  </ul>
 </section>
 
 <section>
   <h2>Usage</h2>
 
   <h3>CSR — Auto-computed</h3>
-  <p>Point <code>data-for</code> at a content element and the component computes stats on connect:</p>
+  <p>Point <code>data-for</code> at a content element and the component computes stats on connect. The <code>&lt;dl&gt;</code> it renders is marked <code>data-generated</code>, so it is replaced on the next recompute.</p>
   <code-block language="html" data-escape>
 <page-stats data-for="article-content" data-show="reading-time,word-count"></page-stats>
   </code-block>
 
   <h3>SSR — Pre-rendered</h3>
-  <p>Render stats at build time. The component adopts existing <code>&lt;dl&gt;</code> markup without re-rendering:</p>
+  <p>Render stats at build time. The component adopts an existing <code>&lt;dl&gt;</code> without <code>data-generated</code> and does not re-render it:</p>
 
   <browser-window url="page-stats-ssr" src="/docs/examples/demos/page-stats-ssr.html"></browser-window>
 
@@ -70,11 +99,27 @@ crumbLabel: Web Components
 <page-stats>
   <dl class="page-stats-list">
     <dl-item>
-      <dt class="sr-only">Reading time</dt>
+      <dt class="visually-hidden">Reading time</dt>
       <dd><time datetime="PT5M">5 min read</time></dd>
     </dl-item>
   </dl>
 </page-stats>
+  </code-block>
+
+  <h3>Other languages</h3>
+  <p>A Japanese page: words are segmented, timed by characters, and the labels are supplied with <code>data-label-*</code>.</p>
+
+  <browser-window url="page-stats-i18n" src="/docs/examples/demos/page-stats-i18n.html"></browser-window>
+
+  <code-block language="html" data-escape>
+<html lang="ja">
+…
+<page-stats data-for="article-ja"
+            data-show="reading-time,word-count,last-modified"
+            data-label-reading-time="読了時間"
+            data-label-word-count="語数"
+            data-label-last-modified="最終更新"
+            data-label-words="{n} 語"></page-stats>
   </code-block>
 </section>
 
@@ -85,5 +130,5 @@ crumbLabel: Web Components
 
 <section>
   <h2>Accessibility</h2>
-  <p>Labels use <code>class="sr-only"</code> to provide screen reader context while keeping the visual display compact. The <code>&lt;dl&gt;</code> structure groups each label-value pair semantically via <code>&lt;dl-item&gt;</code>.</p>
+  <p>Labels use <code>class="visually-hidden"</code> to provide screen reader context while keeping the visual display compact. The <code>&lt;dl&gt;</code> structure groups each label-value pair semantically via <code>&lt;dl-item&gt;</code>. The middle-dot separator between items is decorative CSS content with empty alternative text, so it is not announced.</p>
 </section>

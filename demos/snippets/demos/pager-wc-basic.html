@@ -7,108 +7,96 @@
   <link rel="stylesheet" href="/src/main.css" />
   <style>
     body { padding: var(--size-l); background: var(--color-surface); }
-    section + section { margin-block-start: var(--size-xl); }
-    h3 { margin-block: 0 var(--size-s); }
-
-    /* Sticky header pattern: pager pinned to the top, list scrolls below. */
-    .header-pager-demo {
-      position: relative;
-    }
-    .header-pager-demo header {
-      position: sticky;
-      inset-block-start: 0;
-      background: var(--color-surface);
-      padding-block: var(--size-s);
-      border-block-end: 1px solid var(--color-border);
-      z-index: 1;
-    }
-
-    /* Sidebar pattern: pager in aside, list in main */
-    .sidebar-pager-demo {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: var(--size-l);
-      align-items: start;
-    }
-    .sidebar-pager-demo aside {
-      position: sticky;
-      inset-block-start: var(--size-s);
-    }
   </style>
 </head>
 <body>
-  <h1>pager-wc — decoupled pagination controls</h1>
-  <layout-stack data-layout-gap="xl">
+  <main>
+    <layout-stack data-layout-gap="xl">
+      <h1>pager-wc — decoupled pagination controls</h1>
 
-    <section>
-      <h2>Top + bottom controls staying in sync</h2>
-      <p style="font-size: var(--font-size-s); color: var(--color-text-muted);">
-        Two <code>&lt;pager-wc&gt;</code> instances point at the same target. Click either; both update.
-        The data-paged container stays unaware of the surrounding controls.
-      </p>
-      <pager-wc target="#feed-a"></pager-wc>
-      <ul id="feed-a" data-paged data-paged-size="3" data-paged-controls="none">
-        <li>Article 1</li><li>Article 2</li><li>Article 3</li>
-        <li>Article 4</li><li>Article 5</li><li>Article 6</li>
-        <li>Article 7</li><li>Article 8</li><li>Article 9</li>
-        <li>Article 10</li><li>Article 11</li><li>Article 12</li>
-      </ul>
-      <pager-wc target="#feed-a"></pager-wc>
-    </section>
+      <section>
+        <layout-stack data-layout-gap="s">
+          <h2>Top + bottom controls staying in sync</h2>
+          <p>Two <code>&lt;pager-wc&gt;</code> instances point at the same target. Click either; both update. Each names its own landmark.</p>
+          <pager-wc target="#feed-a" data-label-nav="Articles pages, top"></pager-wc>
+          <ul id="feed-a" data-paged data-paged-size="3" data-paged-controls="none">
+            <li>Article 1</li><li>Article 2</li><li>Article 3</li>
+            <li>Article 4</li><li>Article 5</li><li>Article 6</li>
+            <li>Article 7</li><li>Article 8</li><li>Article 9</li>
+            <li>Article 10</li><li>Article 11</li><li>Article 12</li>
+          </ul>
+          <pager-wc target="#feed-a" data-label-nav="Articles pages, bottom"></pager-wc>
+        </layout-stack>
+      </section>
 
-    <section class="header-pager-demo">
-      <header>
-        <h2>Sticky header pager</h2>
-        <pager-wc target="#feed-b" style="prev-next"></pager-wc>
-      </header>
-      <ol id="feed-b" data-paged data-paged-size="4" data-paged-controls="none">
-        <li>Step 1: Set up your account</li>
-        <li>Step 2: Pick a theme</li>
-        <li>Step 3: Choose a template</li>
-        <li>Step 4: Add content</li>
-        <li>Step 5: Configure analytics</li>
-        <li>Step 6: Set up notifications</li>
-        <li>Step 7: Connect a domain</li>
-        <li>Step 8: Publish</li>
-        <li>Step 9: Share with the world</li>
-      </ol>
-    </section>
+      <section>
+        <layout-stack data-layout-gap="s">
+          <header data-layout="cluster" data-layout-justify="between">
+            <h2>Header pager</h2>
+            <pager-wc target="#feed-b" data-style="prev-next" data-label-nav="Setup steps pages"></pager-wc>
+          </header>
+          <ol id="feed-b" data-paged data-paged-size="4" data-paged-controls="none">
+            <li>Set up your account</li>
+            <li>Pick a theme</li>
+            <li>Choose a template</li>
+            <li>Add content</li>
+            <li>Configure analytics</li>
+            <li>Set up notifications</li>
+            <li>Connect a domain</li>
+            <li>Publish</li>
+            <li>Share with the world</li>
+          </ol>
+        </layout-stack>
+      </section>
 
-    <section class="sidebar-pager-demo">
-      <main>
-        <h2>Sidebar pager driving the main column</h2>
-        <ul id="feed-c" data-paged data-paged-size="2" data-paged-controls="none">
-          <li>Pinned: Welcome to Vanilla Breeze</li>
-          <li>Pinned: Get started in 5 minutes</li>
-          <li>Tip: Use data-paged on any container</li>
-          <li>Tip: pager-wc keeps controls anywhere you want them</li>
-          <li>Reference: data-paged attribute table</li>
-          <li>Reference: pager-wc element table</li>
-          <li>Recipe: content-feed composition</li>
-          <li>Recipe: search-results with infinite scroll</li>
-        </ul>
-      </main>
-      <aside>
-        <pager-wc target="#feed-c" style="numbered"></pager-wc>
-      </aside>
-    </section>
+      <section data-layout="sidebar" data-layout-side="end" data-layout-gap="l" data-layout-sidebar-width="wide">
+        <article>
+          <h2>Sidebar pager driving the content column</h2>
+          <ul id="feed-c" data-paged data-paged-size="2" data-paged-controls="none">
+            <li>Pinned: Welcome to Vanilla Breeze</li>
+            <li>Pinned: Get started in 5 minutes</li>
+            <li>Tip: Use data-paged on any container</li>
+            <li>Tip: pager-wc keeps controls anywhere you want them</li>
+            <li>Reference: data-paged attribute table</li>
+            <li>Reference: pager-wc element table</li>
+            <li>Recipe: content-feed composition</li>
+            <li>Recipe: search-results with infinite scroll</li>
+          </ul>
+        </article>
+        <aside>
+          <pager-wc target="#feed-c" data-label-nav="Posts pages"></pager-wc>
+        </aside>
+      </section>
 
-    <section>
-      <h2>Implicit target (preceding [data-paged] sibling)</h2>
-      <p style="font-size: var(--font-size-s); color: var(--color-text-muted);">
-        With no <code>target</code> or <code>for</code>, <code>&lt;pager-wc&gt;</code> binds to the nearest preceding <code>[data-paged]</code> sibling.
-      </p>
-      <ul data-paged data-paged-size="2" data-paged-controls="none">
-        <li>Quick item A</li>
-        <li>Quick item B</li>
-        <li>Quick item C</li>
-        <li>Quick item D</li>
-        <li>Quick item E</li>
-      </ul>
-      <pager-wc style="prev-next"></pager-wc>
-    </section>
+      <section>
+        <layout-stack data-layout-gap="s">
+          <h2>Load more</h2>
+          <p>The target sets <code>data-paged-style="load-more"</code> (progressive) and <code>data-paged-controls="none"</code>; the pager supplies the button.</p>
+          <ul id="feed-d" data-paged data-paged-size="3" data-paged-style="load-more" data-paged-controls="none">
+            <li>Activity 1</li><li>Activity 2</li><li>Activity 3</li>
+            <li>Activity 4</li><li>Activity 5</li><li>Activity 6</li>
+            <li>Activity 7</li><li>Activity 8</li>
+          </ul>
+          <pager-wc target="#feed-d" data-style="load-more" data-label-nav="More activity"></pager-wc>
+        </layout-stack>
+      </section>
 
-  </layout-stack>
+      <section>
+        <layout-stack data-layout-gap="s">
+          <h2>Implicit target (preceding [data-paged] sibling)</h2>
+          <p>With no <code>target</code> or <code>for</code>, <code>&lt;pager-wc&gt;</code> binds to the nearest preceding <code>[data-paged]</code> sibling.</p>
+          <ul data-paged data-paged-size="2" data-paged-controls="none">
+            <li>Quick item A</li>
+            <li>Quick item B</li>
+            <li>Quick item C</li>
+            <li>Quick item D</li>
+            <li>Quick item E</li>
+          </ul>
+          <pager-wc data-style="prev-next" data-label-nav="Quick items pages"></pager-wc>
+        </layout-stack>
+      </section>
+    </layout-stack>
+  </main>
 
   <script type="module" src="/src/main.js"></script>
 </body>

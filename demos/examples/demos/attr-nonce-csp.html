@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Demo only: a fixed nonce in a static file is NOT secure. A real nonce
+       is random and new for every response, and the policy belongs in a header. -->
+  <meta http-equiv="Content-Security-Policy"
+        content="script-src 'nonce-DEMO-fixed-not-random' 'strict-dynamic'; object-src 'none'; base-uri 'none'" />
+  <title>nonce attribute</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="m">
+    <p>This page sets <code>script-src 'nonce-…' 'strict-dynamic'</code>. Only scripts carrying the nonce run.</p>
+    <dl>
+      <dt>Inline script with the nonce</dt>
+      <dd><output id="with-nonce">Blocked: has not run.</output></dd>
+      <dt>Inline script without a nonce</dt>
+      <dd><output id="without-nonce">Blocked: has not run.</output></dd>
+      <dt>Can scripts read the nonce attribute?</dt>
+      <dd><output id="nonce-visible">(checking)</output></dd>
+    </dl>
+  </layout-stack>
+
+  <script nonce="DEMO-fixed-not-random">
+    document.getElementById('with-nonce').textContent = 'Ran: the nonce matched the policy.';
+  </script>
+  <script>
+    document.getElementById('without-nonce').textContent = 'Ran: this should not happen.';
+  </script>
+  <script type="module" nonce="DEMO-fixed-not-random">
+    const value = document.querySelector('script[nonce]').getAttribute('nonce');
+    document.getElementById('nonce-visible').textContent = value
+      ? 'Yes, because this policy comes from a <meta> tag. With a header policy the attribute reads as empty.'
+      : 'No: the attribute was emptied (header-delivered policy).';
+  </script>
+  <!-- VB's own entry needs the nonce too; 'strict-dynamic' then trusts the modules it loads. -->
+  <script type="module" src="/src/main.js" nonce="DEMO-fixed-not-random"></script>
+</body>
+</html>

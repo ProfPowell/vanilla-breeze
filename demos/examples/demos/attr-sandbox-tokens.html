@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sandbox attribute</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+    iframe {
+      inline-size: 100%;
+      block-size: 5.5rem;
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="m">
+    <h1>One document, three sandboxes</h1>
+    <p>The same inline document in three frames. Its script reports its origin and tries to read this page.</p>
+
+    <h2><code>sandbox</code> (no tokens)</h2>
+    <iframe class="bordered" title="Fully sandboxed frame" sandbox
+      srcdoc="<meta name='color-scheme' content='light dark'><style>body{font:1rem/1.4 system-ui,sans-serif;margin:.5rem}</style><p>Scripts are blocked in this frame.</p><script>let reach;try{reach='can read this page: “'+parent.document.title+'”'}catch{reach='cannot read the parent page'}document.querySelector('p').textContent='Script ran. Origin: '+origin+'. It '+reach+'.'</script>"></iframe>
+
+    <h2><code>sandbox="allow-scripts"</code></h2>
+    <iframe class="bordered" title="Sandboxed frame with scripts" sandbox="allow-scripts"
+      srcdoc="<meta name='color-scheme' content='light dark'><style>body{font:1rem/1.4 system-ui,sans-serif;margin:.5rem}</style><p>Scripts are blocked in this frame.</p><script>let reach;try{reach='can read this page: “'+parent.document.title+'”'}catch{reach='cannot read the parent page'}document.querySelector('p').textContent='Script ran. Origin: '+origin+'. It '+reach+'.'</script>"></iframe>
+
+    <h2><code>sandbox="allow-scripts allow-same-origin"</code> (unsafe here)</h2>
+    <iframe class="bordered" title="Sandboxed frame that can escape" sandbox="allow-scripts allow-same-origin"
+      srcdoc="<meta name='color-scheme' content='light dark'><style>body{font:1rem/1.4 system-ui,sans-serif;margin:.5rem}</style><p>Scripts are blocked in this frame.</p><script>let reach;try{reach='can read this page: “'+parent.document.title+'”'}catch{reach='cannot read the parent page'}document.querySelector('p').textContent='Script ran. Origin: '+origin+'. It '+reach+'.'</script>"></iframe>
+    <p>The last frame is same-origin with this page, so its script could also remove its own <code>sandbox</code> attribute. Never combine these two tokens for content you do not control.</p>
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

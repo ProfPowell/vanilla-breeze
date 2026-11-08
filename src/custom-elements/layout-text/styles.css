@@ -11,6 +11,10 @@
    Both attribute spellings map to the same token: data-layout-measure
    (columns) and data-layout-max (prose). */
 :is(layout-text, layout-columns, [data-layout="columns"], [data-layout="prose"]) {
+  /* Reset so an outer container's measure doesn't inherit into a nested
+     one that set nothing (see layout-grid/styles.css). */
+  --_measure: initial;
+
   display: block;
   max-inline-size: var(--_measure, var(--measure-normal, 65ch));
   line-height: var(--prose-line-height, 1.6);
@@ -55,12 +59,12 @@
     margin-block-start: var(--size-s);
   }
 
-  /* Figure and pre blocks get more breathing room */
-  & > * + :is(figure, pre) {
+  /* Block-level "objects" get more breathing room than paragraphs */
+  & > * + :is(figure, pre, table, code-block, browser-window, video, blockquote) {
     margin-block-start: var(--size-l);
   }
 
-  & > :is(figure, pre) + * {
+  & > :is(figure, pre, table, code-block, browser-window, video, blockquote) + * {
     margin-block-start: var(--size-l);
   }
 }
@@ -72,11 +76,38 @@
   }
 }
 
-/* ── Full-width breakout inside any measure-constrained context ── */
+/* ── Full-width breakout for a DIRECT child of a measure-constrained context ──
+   Bleeds to the full inline size of the nearest query container (main,
+   article, section and aside are containers by default), not the viewport:
+   100vw included a classic scrollbar (horizontal scroll) and the
+   calc(50% - 50vw) margin assumed the text sat in the viewport centre, so an
+   uncentered container pushed the child off the start edge.
+
+   - Uncentered text (the default) starts at its container's start edge, so
+     the child keeps margin-inline-start: 0 and grows to 100cqi.
+   - Centered text (data-layout-centered, layout-columns, article[data-measure])
+     is centred in the container, so a symmetric negative margin works.
+
+   A host that is itself a query container (<article data-layout="prose">,
+   article[data-measure]) would make 100cqi resolve against itself, so a
+   host that actually holds a bleed child stops being one (data-container
+   on the host keeps it). Without any ancestor container cqi falls back to
+   the small viewport size. */
 :is(layout-text, layout-columns, [data-layout="columns"], [data-layout="prose"], article[data-measure]) > [data-bleed] {
   max-inline-size: none;
-  inline-size: 100vw;
-  margin-inline: calc(50% - 50vw);
+  inline-size: 100cqi;
+  margin-inline: 0;
+  /* In a multi-column flow, span every column rather than sit in one */
+  column-span: all;
+}
+
+:is(layout-text, [data-layout="prose"])[data-layout-centered] > [data-bleed],
+:is(layout-columns, [data-layout="columns"], article[data-measure]) > [data-bleed] {
+  margin-inline: calc(50% - 50cqi);
+}
+
+:is(layout-text, layout-columns, [data-layout="columns"], [data-layout="prose"], article[data-measure]):has(> [data-bleed]):not([data-container]) {
+  container-type: normal;
 }
 
 /* ── data-measure on article: reading width only, no rhythm ──

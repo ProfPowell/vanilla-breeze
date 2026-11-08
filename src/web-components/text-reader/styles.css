@@ -127,9 +127,15 @@ text-reader[variant="icon"] [part="trigger"][aria-pressed="true"] {
   color: var(--color-interactive, oklch(55% 0.2 260));
 }
 
-/* Floating mini-toolbar (appended to body in icon mode) */
+/* Floating mini-toolbar (icon mode). It sits right after the trigger in
+   the DOM (tab order) and is promoted to the top layer as a manual popover;
+   reset the UA popover box so the JS-measured top/left apply. */
 [data-text-reader-toolbar] {
   position: fixed;
+  inset: auto;
+  margin: 0;
+  overflow: visible;
+  color: var(--color-text, CanvasText);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -184,6 +190,23 @@ text-reader[variant="icon"] [part="trigger"][aria-pressed="true"] {
 @media print {
   [data-text-reader-toolbar] {
     display: none !important;
+  }
+}
+
+/* Forced colors: keep the transport buttons and toolbar outlined */
+@media (forced-colors: active) {
+  text-reader [part~="button"],
+  text-reader[variant="icon"] [part="trigger"] {
+    border: 1px solid ButtonText;
+  }
+
+  text-reader [part~="button"]:disabled {
+    border-color: GrayText;
+    color: GrayText;
+  }
+
+  text-reader[variant="icon"] [part="trigger"][aria-pressed="true"] {
+    border-color: Highlight;
   }
 }
 

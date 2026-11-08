@@ -66,6 +66,17 @@ crumbLabel: Native Elements
   <option value="rust">Rust</option>
 </select></code-block>
 
+  <h3>Required, with a Placeholder Option</h3>
+  <p>A required single-row select is only invalid when the selected option is the <em>placeholder label option</em>: the first option, with an empty <code>value=""</code>, and not inside an <code>&lt;optgroup&gt;</code>. Without that placeholder the browser selects the first real option and <code>required</code> never fails. The rule does not apply to <code>multiple</code> or <code>size</code> greater than 1: those are invalid only when nothing is selected.</p>
+  <p>The shared form layer styles <code>select:user-invalid</code> with the error border once the user has interacted, so an untouched form is not painted red on load.</p>
+  <code-block language="html" label="Required select with a placeholder option" data-escape><label for="plan">Plan</label>
+<select id="plan" name="plan" required>
+  <option value="">Choose a plan...</option>
+  <option value="free">Free</option>
+  <option value="pro">Pro</option>
+</select></code-block>
+  <p>Adding <code>disabled</code> to the placeholder (<code>&lt;option value="" disabled selected&gt;</code>) stops users from re-choosing it once they have picked a value. It is still the placeholder, so validation works the same way.</p>
+
   <h3>Disabled States</h3>
   <p>Disable the entire select or individual options within it.</p>
   <code-block language="html" label="Disabled select and options" data-escape><!-- Entire select disabled -->
@@ -99,7 +110,7 @@ crumbLabel: Native Elements
       </tr>
       <tr>
         <td><code>required</code></td>
-        <td>Field must have a non-empty value</td>
+        <td>Field must have a non-empty value. Needs a placeholder first option with <code>value=""</code> (see below); not applicable to <code>multiple</code> or <code>size</code> &gt; 1</td>
         <td><code>required</code></td>
       </tr>
       <tr>
@@ -223,7 +234,7 @@ optgroup {
     <li>Picker animates in with opacity + translateY (respects <code>prefers-reduced-motion</code>)</li>
     <li><code>&lt;optgroup&gt;</code> headers render as uppercase muted section labels with dividers</li>
   </ul>
-  <p>No markup changes are required — every existing <code>&lt;select&gt;</code> upgrades automatically.</p>
+  <p>No markup changes are required: every existing single-row <code>&lt;select&gt;</code> upgrades automatically. List boxes (<code>multiple</code>, or <code>size</code> greater than 1) are not upgraded and keep <code>appearance: none</code>.</p>
 </section>
 
 <section>
@@ -252,10 +263,21 @@ optgroup {
 </select></code-block>
 
   <ul>
-    <li><code>&lt;button&gt;</code> becomes the trigger — VB styles it as a flex container</li>
+    <li><code>&lt;button&gt;</code> becomes the trigger. VB resets it to a plain content slot inside the select's own box: no padding, border, background, shadow, radius or minimum size. Theme button skins do not reach it, so a rich select is the same height as a plain one</li>
+    <li>Do not put <code>aria-label</code> on the inner button. The <code>&lt;label for&gt;</code> names the select, and browsers ignore names on the trigger</li>
     <li><code>&lt;selectedcontent&gt;</code> automatically clones the selected option's content</li>
     <li>Elements with <code>class="detail"</code> are hidden in the closed trigger to keep it compact</li>
     <li>Images inside options are sized to <code>1.5em</code> with <code>border-radius</code> and <code>object-fit: cover</code></li>
+  </ul>
+</section>
+
+<section>
+  <h2>Fallback Without base-select</h2>
+  <p>Browsers without <code>appearance: base-select</code> parse a select with the older rules. The <code>&lt;button&gt;</code> and <code>&lt;selectedcontent&gt;</code> are dropped, and each option collapses to its plain text. The closed select shows the whole option text, including emoji and any <code>.detail</code> text, for example "🇺🇸 English — American English". <code>aria-hidden</code> on spans inside an option is lost with the spans.</p>
+  <ul>
+    <li>Keep rich option text short and readable on its own, because it is also the fallback label</li>
+    <li>Put long descriptions in help text next to the select, not in the option, when they matter in every browser</li>
+    <li>Treat images and icons as decoration: the fallback has none of them</li>
   </ul>
 </section>
 
@@ -348,7 +370,8 @@ optgroup {
   <p>VB's implementation is fully gated behind <code>@supports</code>:</p>
 
   <code-block language="css" label="@supports progressive enhancement" data-escape>@supports (appearance: base-select) {
-  select:not([multiple]) {
+  /* Single-row selects only: not multiple, size absent, 0 or 1 */
+  select:not([multiple], [size]:not([size="0"], [size="1"])) {
     appearance: base-select;
     /* ... all customizations ... */
   }
@@ -376,5 +399,9 @@ select:where(:not([multiple]):is(:not([size]), [size="0"], [size="1"])) {
     <li><a href="/docs/elements/web-components/combobox/">combo-box</a> - Fully custom filterable dropdown</li>
     <li><a href="/docs/elements/custom-elements/form-field/">form-field</a> - Enhanced select with validation</li>
     <li><a href="/docs/elements/native/label/">label</a> - Required for accessibility</li>
+    <li><a href="/docs/attributes/data-show-when/"><code>data-show-when</code></a> - Show a section only when the select has a given value (multi-select aware)</li>
+    <li><a href="/docs/attributes/data-autosave/"><code>data-autosave</code></a> - Drafts keep single and multiple selections</li>
+    <li><a href="/docs/attributes/multiple/"><code>multiple</code></a> - More than one value, and how size interacts with it</li>
+    <li><a href="/docs/attributes/required/"><code>required</code></a> - Must-have-a-value fields, including the placeholder label option</li>
   </ul>
 </section>

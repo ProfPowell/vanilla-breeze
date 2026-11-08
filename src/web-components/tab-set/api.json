@@ -18,7 +18,19 @@
       "kind": "aria",
       "purpose": "semantic-state",
       "type": "string",
-      "description": "Accessible label for the tab group"
+      "description": "Names the set of tabs. When the host has aria-label or aria-labelledby (and no role of its own) it gets role=\"group\" on upgrade, so the name is exposed; an unlabelled tab-set stays role-less. Read at upgrade."
+    },
+    {
+      "name": "data-orientation",
+      "kind": "data",
+      "purpose": "visual-variant",
+      "type": "enum",
+      "values": [
+        "horizontal",
+        "vertical"
+      ],
+      "default": "horizontal",
+      "description": "Vertical puts the tabs in a column at the inline start with the panel beside them, and adds ArrowUp/ArrowDown navigation. Horizontal tabs wrap onto further rows when they don't fit."
     },
     {
       "name": "transition",
@@ -36,18 +48,34 @@
   "structure": [
     {
       "element": "<details>",
-      "description": "One per tab \u2014 native disclosure element provides open/close state"
+      "description": "One per tab — native disclosure element provides open/close state. Give every tab the same name for no-JS exclusivity; on upgrade a missing, mixed or page-shared name is replaced with a per-instance one"
     },
     {
       "element": "<summary>",
       "description": "Tab label inside each <details>"
+    },
+    {
+      "element": "<section>",
+      "description": "Exactly one panel element per <details>, after the summary. Use <section>: it is named by its tab (aria-labelledby) and exposed as a region; a <div> panel's name is ignored"
     }
   ],
   "events": [
     {
       "name": "tab-set:change",
-      "detail": "{ index }",
-      "description": "Fired when the active tab changes"
+      "detail": "{ index, previousIndex, tab, panel }",
+      "description": "Fired once per activation (click, arrow key or setting details.open), from the newly opened tab. index is the new tab, previousIndex the one it replaced, tab its <details>, panel its panel element. Not fired during setup or when the active tab is re-selected"
+    },
+    {
+      "name": "tab-set:tabs-changed",
+      "detail": "{ tabs, source: 'property' }",
+      "description": "Fired after the tabs property rebuilds the set"
+    }
+  ],
+  "properties": [
+    {
+      "name": "tabs",
+      "type": "Array<{ id?, label, content, active? }>",
+      "description": "Get the tabs as data, or assign an array to rebuild the set (<details> + <summary> + <section> panel per entry; first tab opens unless one has active: true). content is trusted HTML written with innerHTML — never pass unsanitised user input"
     }
   ]
 }

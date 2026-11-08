@@ -12,6 +12,7 @@ against Cloudflare Pages Functions + D1.
 | `POST` | `/api/analytics/click`    | `click.js` | Outbound link clicks (ping + beacon fallback) |
 | `POST` | `/api/analytics/events`   | `events.js`| Batched events from the sessionStorage buffer |
 | `GET`  | `/api/analytics/stats`    | `stats.js` | JSON aggregate for the dashboard              |
+| `GET`  | `/api/analytics/popular`  | `popular.js` | Public most-visited list for `<popularity-index>` (`?window=24h\|7d\|30d&limit=1-50`) |
 
 `/api/analytics/hit`, `/click`, and `/events` are exempt from the Basic
 Auth middleware (they accept unauthenticated beacons). `/api/analytics/stats`

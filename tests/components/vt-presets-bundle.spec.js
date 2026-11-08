@@ -43,7 +43,7 @@ const allRuleText = (page) => page.evaluate(() => {
 test('main bundle animates every data-transition preset class', async ({ page }) => {
   await load(page);
   const rules = (await allRuleText(page)).join('\n');
-  for (const cls of ['slide-left', 'slide-right', 'scale', 'fade', 'none']) {
+  for (const cls of ['slide-left', 'slide-right', 'scale', 'fade', 'vt-none']) {
     expect(rules, `::view-transition-new(*.${cls})`).toContain(`::view-transition-new(*.${cls})`);
   }
 });
@@ -69,3 +69,40 @@ test('data-transition="slide" gets the slide-left class', async ({ page }) => {
   await load(page, '<section id="s" data-transition="slide">x</section><script type="module" src="/cdn/vanilla-breeze.js"></script>');
   await expect.poll(() => page.locator('#s').evaluate((el) => el.style.viewTransitionClass)).toBe('slide-left');
 });
+
+/* ── Core and core+extras (effects review e2, bundle parity) ─────────────────
+ * The presets used to be registered only by vanilla-breeze.js / autoload, so
+ * on core and core+extras pages (the production docs) every preset got an
+ * unnamed fallback and `stagger` named nothing. Needs a build.
+ */
+async function loadWith(page, css, scripts, body) {
+  const url = `/__vt-presets-${Math.random().toString(36).slice(2)}.html`;
+  await page.route(`**${url}`, (route) => route.fulfill({
+    status: 200,
+    contentType: 'text/html; charset=utf-8',
+    body: `<!doctype html><html lang="en"><head><meta charset="utf-8">
+      <link rel="stylesheet" href="${css}"></head><body>${body}
+      ${scripts.map((s) => `<script type="module" src="${s}"></script>`).join('')}</body></html>`,
+  }));
+  await page.goto(url, { waitUntil: 'load' });
+}
+
+for (const [label, scripts] of [
+  ['core', ['/cdn/vanilla-breeze-core.js']],
+  ['core + extras', ['/cdn/vanilla-breeze-core.js', '/cdn/vanilla-breeze-extras.js']],
+]) {
+  test(`${label}: slide and stagger presets apply`, async ({ page }) => {
+    await loadWith(page, '/cdn/vanilla-breeze-core.css', scripts, `
+      <section id="s" data-transition="slide">x</section>
+      <ul id="l" data-transition="stagger"><li>a</li><li>b</li><li>c</li></ul>`);
+    await expect.poll(() => page.locator('#s').evaluate((el) => el.style.viewTransitionClass)).toMatch(/^slide-(left|right)$/);
+    await expect.poll(() => page.locator('#l li').evaluateAll((lis) => lis.map((li) => li.style.viewTransitionClass)))
+      .toEqual(['fade vt-stagger-0', 'fade vt-stagger-1', 'fade vt-stagger-2']);
+    const names = await page.locator('#l li').evaluateAll((lis) => lis.map((li) => li.style.viewTransitionName));
+    expect(new Set(names).size).toBe(3);
+    expect(names.every(Boolean)).toBe(true);
+    // The delay-ladder rules ship in the core stylesheet.
+    const rules = (await allRuleText(page)).join('\n');
+    expect(rules).toContain('::view-transition-group(*.vt-stagger-1)');
+  });
+}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>status-wc announcements</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="m">
+    <layout-cluster data-layout-gap="m" data-layout-align="center">
+      <strong>Ada Lovelace</strong>
+      <status-wc id="presence" data-variant="online" data-position="only"></status-wc>
+    </layout-cluster>
+    <layout-cluster data-layout-gap="s">
+      <button type="button" data-set="online">Online</button>
+      <button type="button" data-set="away">Away</button>
+      <button type="button" data-set="busy">Busy</button>
+      <button type="button" data-set="offline">Offline</button>
+    </layout-cluster>
+    <p>The bare dot has no slot text, so it renders a visually hidden default label (<q>Online</q>, <q>Away</q>…) that follows the variant. Because the element is a polite live region, each change is announced.</p>
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const presence = document.getElementById('presence');
+    for (const btn of document.querySelectorAll('[data-set]')) {
+      btn.addEventListener('click', () => { presence.variant = btn.dataset.set; });
+    }
+  </script>
+</body>
+</html>

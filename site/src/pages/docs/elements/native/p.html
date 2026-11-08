@@ -84,6 +84,21 @@ floor.</p>
 call. It was the kind of quiet that felt intentional.</p>
 <p class="indent">She stood, finally, and crossed to the
 window. The garden was still wet with dew.</p></code-block>
+
+    <p>In Chinese, Japanese and Korean text (<code>:lang(zh)</code>, <code>:lang(ja)</code>, <code>:lang(ko)</code>) the indent is exactly one full-width character (<code>1em</code>), following the CJK convention. <code>p.lead</code> in those languages keeps the CJK body leading of <code>1.8</code> instead of the Latin <code>--line-height-relaxed</code>.</p>
+  </section>
+
+  <!-- Drop Cap Section -->
+  <section>
+    <h2 id="drop-cap">Drop Cap</h2>
+    <p>Add <code>data-drop-cap</code> to a single paragraph to give it a large decorative initial letter. It uses <code>initial-letter: 3</code> where supported, with a floated fallback. To put the drop cap on an article's opening paragraph automatically, set <code>data-drop-cap</code> on the <code>&lt;article&gt;</code> instead &mdash; see the <a href="/docs/elements/native/article/">article page</a>.</p>
+
+    <browser-window src="/docs/snippets/demos/p-drop-cap.html" url="https://vanilla-breeze.com/p/drop-cap" title="Drop cap paragraph" shadow></browser-window>
+    <code-block language="html" label="Drop cap paragraph" data-escape><p data-drop-cap>Once upon a time, in a kingdom by
+the sea, there lived a cartographer who mapped
+only the places nobody had visited yet.</p></code-block>
+
+    <p>The enlarged letter is decorative: screen readers still read the word as written.</p>
   </section>
 
   <!-- Justify Section -->
@@ -95,6 +110,8 @@ window. The garden was still wet with dew.</p></code-block>
     <code-block language="html" label="Justified text" data-escape><p class="justify">Typography is the art and technique
 of arranging type to make written language legible,
 readable, and appealing when displayed.</p></code-block>
+
+    <p><strong>Language required:</strong> <code>hyphens: auto</code> only hyphenates when the paragraph (or an ancestor, usually <code>&lt;html&gt;</code>) has a <code>lang</code> attribute the browser has a hyphenation dictionary for. Without it the text is justified but not hyphenated, so expect wider word gaps.</p>
 
     <p><strong>Accessibility note:</strong> The <code>a11y-dyslexia</code> theme automatically overrides <code>p.justify</code> to left-aligned text with no hyphenation, ensuring readability for users with dyslexia.</p>
   </section>
@@ -122,14 +139,14 @@ matching terms.</p></code-block>
         <tr>
           <th>Element</th>
           <th>Meaning</th>
-          <th>Screen Reader</th>
+          <th>Screen readers (default settings)</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td><code>&lt;strong&gt;</code></td>
           <td>Importance, seriousness, urgency</td>
-          <td>Announced differently</td>
+          <td>Conveys semantics; most screen readers do not announce it by default</td>
         </tr>
         <tr>
           <td><code>&lt;b&gt;</code></td>
@@ -138,8 +155,8 @@ matching terms.</p></code-block>
         </tr>
         <tr>
           <td><code>&lt;em&gt;</code></td>
-          <td>Stress emphasis (spoken differently)</td>
-          <td>Announced differently</td>
+          <td>Stress emphasis</td>
+          <td>Conveys semantics; most screen readers do not announce it by default</td>
         </tr>
         <tr>
           <td><code>&lt;i&gt;</code></td>
@@ -154,15 +171,22 @@ matching terms.</p></code-block>
         <tr>
           <td><code>&lt;mark&gt;</code></td>
           <td>Highlighted for reference</td>
-          <td>Some readers announce</td>
+          <td>Some readers announce it, often only with verbose settings</td>
         </tr>
       </tbody>
     </table>
+
+    <p>Never rely on emphasis alone to carry meaning that matters (a warning, a required step): with default settings, most screen readers read <code>&lt;strong&gt;</code> and <code>&lt;em&gt;</code> in the normal voice. Put the meaning in the words.</p>
+
+    <h3>Nested Emphasis</h3>
+    <p>Italic inside an italic context toggles back to upright (the classic emphasis toggle), so <code>&lt;em&gt;</code> inside <code>&lt;em&gt;</code>, a <code>&lt;blockquote&gt;</code>, <code>&lt;cite&gt;</code>, <code>&lt;dfn&gt;</code> or <code>&lt;var&gt;</code> still shows a difference. Nested <code>&lt;strong&gt;&lt;em&gt;</code> renders as true bold-italic.</p>
   </section>
 
   <!-- CSS Properties Section -->
   <section>
     <h2 id="css-properties">CSS Properties</h2>
+
+    <p>The paragraph rules from <code>src/native-elements/paragraph/styles.css</code> (the same file also styles <code>strong</code>, <code>b</code>, <code>em</code>, <code>i</code>, <code>small</code> and <code>mark</code> &mdash; see each element's page). The CJK lead leading lives in <code>src/native-elements/i18n/styles.css</code>; the drop cap in <code>src/native-elements/article/styles.css</code>.</p>
 
     <code-block language="css" label="Paragraph CSS styling" data-escape>p {
   text-wrap: pretty;
@@ -190,28 +214,19 @@ p.indent + p.indent {
   margin-block-start: 0;
 }
 
+p.indent:is(:lang(zh), :lang(ja), :lang(ko)) {
+  text-indent: 1em;
+}
+
 p.justify {
   text-align: justify;
   hyphens: auto;
   -webkit-hyphens: auto;
 }
 
-strong, b {
-  font-weight: 600;
-}
-
-em, i {
-  font-style: italic;
-}
-
-small {
-  font-size: var(--font-size-s);
-}
-
-mark {
-  background: oklch(from var(--color-interactive) l c h / 0.2);
-  padding-inline: var(--size-2xs);
-  border-radius: var(--radius-s);
+/* i18n/styles.css */
+p.lead:is(:lang(zh), :lang(ja), :lang(ko)) {
+  line-height: 1.8;
 }</code-block>
 
     <h3>Variant Summary</h3>
@@ -237,7 +252,11 @@ mark {
         </tr>
         <tr>
           <td><code>p.justify</code></td>
-          <td>Justified alignment with auto-hyphenation</td>
+          <td>Justified alignment with auto-hyphenation (needs <code>lang</code>)</td>
+        </tr>
+        <tr>
+          <td><code>p[data-drop-cap]</code></td>
+          <td>Large decorative initial letter</td>
         </tr>
       </tbody>
     </table>
@@ -256,7 +275,7 @@ mark {
     </ul>
 
     <h3>Screen Reader Behavior</h3>
-    <p>Screen readers treat paragraphs as distinct blocks of content. Users can navigate between paragraphs using keyboard shortcuts and hear a pause between them to indicate the break.</p>
+    <p>Screen readers treat each paragraph as a separate block of content. In browse mode, most screen readers let users move between paragraphs with a keyboard command (for example, <kbd>P</kbd> in NVDA and JAWS). Paragraph styling such as <code>.lead</code>, <code>.indent</code> or <code>data-drop-cap</code> is visual only and is not announced.</p>
 
     <h3>Dyslexia Theme</h3>
     <p>The <code>a11y-dyslexia</code> theme overrides <code>p.justify</code> to use left-aligned text and disables hyphenation. The <code>.lead</code>, <code>.balance</code>, and <code>.indent</code> classes remain unaffected since they don't interfere with readability.</p>

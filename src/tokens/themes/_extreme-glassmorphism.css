@@ -145,8 +145,16 @@
   /* Glassmorphism component overrides */
   :root[data-theme~="glassmorphism"],
   [data-theme~="glassmorphism"] {
+    /* Outline buttons sit on the gradient mesh (and glass cards), whose darkest
+       stop leaves the base interactive tone just under 4.5:1. The hover
+       tone (darker in light mode, lighter in dark) clears it in both modes,
+       and an author --btn-color still wins (vanilla-breeze-4vhi). */
+    & :is(button, .button).secondary {
+      --color-interactive: var(--color-interactive-hover);
+    }
+
     & :is(main, article) {
-      & hr:not([data-ornament], .decorative, .wave, .zigzag, .scallop, .diamonds, .dots) {
+      & hr:not([data-ornament], [class]) {
         border: none;
         border-block-start: 1px solid oklch(100% 0 0 / var(--glass-border-opacity));
         margin-block: 2rem;
@@ -307,7 +315,7 @@
   :root[data-theme~="glassmorphism"][data-mode="dark"],
   [data-theme~="glassmorphism"][data-mode="dark"] {
     & :is(main, article) {
-      & hr:not([data-ornament], .decorative, .wave, .zigzag, .scallop, .diamonds, .dots) {
+      & hr:not([data-ornament], [class]) {
         border-color: oklch(100% 0 0 / var(--glass-border-opacity));
       }
     }

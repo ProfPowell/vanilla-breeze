@@ -2,65 +2,35 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "topic-map",
   "type": "web-component",
-  "description": "SKOS-aware hierarchical view of site concepts. Joins vocabulary.json (skos:broader/narrower edges) with pages.json (each page's concepts:[] array) to render a nested <details> tree rooted at top concepts.",
+  "description": "SKOS-aware hierarchical view of site concepts. Joins vocabulary.json (skos:broader/narrower edges) with pages.json (each page's concepts:[] array) to render a nested <details> tree rooted at top concepts. Counts are distinct pages per subtree; page links are scheme-checked; cyclic edges are skipped. Built by JavaScript (no-JS shows only authored fallback content).",
   "attributes": [
-    {
-      "name": "data-lens-src",
-      "kind": "data",
-      "purpose": "config",
-      "type": "string",
-      "description": "URL to pages.json. Each page record must expose a concepts:[] array (per meta-tag-contract v1.1)."
-    },
-    {
-      "name": "src",
-      "kind": "native",
-      "purpose": "config",
-      "type": "string",
-      "description": "Alias for data-lens-src."
-    },
-    {
-      "name": "data-vocabulary-src",
-      "kind": "data",
-      "purpose": "config",
-      "type": "string",
-      "default": "/vocabulary.json",
-      "description": "URL to the SKOS vocabulary.json. Provides concept @id, skos:prefLabel, and skos:broader/narrower/hasTopConcept edges used to build the tree."
-    },
-    {
-      "name": "expand-all",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "boolean",
-      "description": "Render with every level expanded. Default opens only the top-level concepts."
-    }
+    { "name": "data-lens-src", "kind": "data", "purpose": "config", "type": "string", "description": "URL to pages.json. Each page record must expose a concepts:[] array (per meta-tag-contract v1.1). Read at setup; forwarded by content-lens." },
+    { "name": "src", "kind": "native", "purpose": "config", "type": "string", "description": "Alias for data-lens-src." },
+    { "name": "data-vocabulary-src", "kind": "data", "purpose": "config", "type": "string", "default": "/vocabulary.json", "description": "URL to the SKOS vocabulary.json. Provides concept @id, skos:prefLabel, and skos:broader/narrower/hasTopConcept edges used to build the tree." },
+    { "name": "expand-all", "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Render with every level expanded. Default opens only the top-level concepts. Read at render (not observed)." },
+    { "name": "data-heading-level", "kind": "data", "purpose": "config", "type": "number", "default": 2, "description": "Heading level 1-6 for the panel heading; 0 renders no heading (e.g. inside content-lens, which already labels the lens)." },
+    { "name": "data-label-heading", "kind": "data", "purpose": "config", "type": "string", "default": "Topics", "description": "Heading text." },
+    { "name": "data-label-page", "kind": "data", "purpose": "config", "type": "string", "default": "{count} page", "description": "Count template used when Intl.PluralRules selects \"one\"; {count} is the formatted number." },
+    { "name": "data-label-pages", "kind": "data", "purpose": "config", "type": "string", "default": "{count} pages", "description": "Count template for every other plural category." },
+    { "name": "data-label-uncategorized", "kind": "data", "purpose": "config", "type": "string", "default": "Uncategorized", "description": "Label of the node holding pages whose concepts are not in the vocabulary." },
+    { "name": "data-label-topic-link", "kind": "data", "purpose": "config", "type": "string", "default": "{label} topic page", "description": "Text of the /topics/{id}/ link inside each node; {label} is the concept prefLabel." },
+    { "name": "data-label-error", "kind": "data", "purpose": "config", "type": "string", "default": "Topics could not be loaded.", "description": "Message when a data source fails to load or the tree cannot be built (detail goes to console.warn, never rendered)." }
   ],
   "childAttributes": [],
+  "properties": [
+    { "name": "data", "type": "{ pages: object[], vocabulary: object } | null", "description": "Assign in-memory payloads to bypass the fetch path (takes precedence over data-lens-src while set). Reading returns the assigned payload, or null when the tree came from src." }
+  ],
+  "events": [
+    { "name": "topic-map:data-changed", "detail": "{ pages, vocabulary, source: 'property' }", "description": "Fires after the data property is assigned and the tree re-rendered." }
+  ],
   "structure": [
-    {
-      "element": "details[data-topic-node]",
-      "required": false,
-      "description": "Generated. One <details> per concept node. data-topic-node carries the concept @id (or '__uncategorized'). Native disclosure widgets work without JS."
-    },
-    {
-      "element": "summary > a.topic-name",
-      "required": false,
-      "description": "Generated. Concept prefLabel linked to /topics/{id}/."
-    },
-    {
-      "element": "summary > .topic-count",
-      "required": false,
-      "description": "Generated. Total page count for the concept and all descendant concepts."
-    },
-    {
-      "element": "ul.topic-pages > li > a",
-      "required": false,
-      "description": "Generated. Pages tagged directly with this concept, in source order."
-    },
-    {
-      "element": "p[data-topic-map-error]",
-      "required": false,
-      "description": "Rendered when either data source fails to load."
-    }
+    { "element": "h2.topic-map-heading", "required": false, "description": "Generated heading (level from data-heading-level; omitted when 0) with the total page count in <small>." },
+    { "element": "details[data-topic-node]", "required": false, "description": "Generated. One <details> per concept node. data-topic-node carries the concept @id (or '__uncategorized'). Top level opens by default." },
+    { "element": "summary > .topic-name", "required": false, "description": "Generated. Concept prefLabel as plain text (the summary holds no link, so it only toggles)." },
+    { "element": "summary > .topic-count", "required": false, "description": "Generated. Distinct pages tagged with the concept or any descendant, with unit (\"5 pages\")." },
+    { "element": "p.topic-link > a", "required": false, "description": "Generated. Link to /topics/{id}/, first item in the disclosure body." },
+    { "element": "ul.topic-pages > li > a", "required": false, "description": "Generated. Pages tagged directly with this concept, in source order. URLs that are not http(s) or relative render as plain text." },
+    { "element": "p[data-topic-map-error]", "required": false, "description": "Rendered when either data source fails to load; authored fallback content is kept below it." }
   ],
   "htmlvalidate": {
     "flow": true,

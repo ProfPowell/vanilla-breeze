@@ -150,7 +150,7 @@ test.describe('RTL', () => {
     }, id);
   }
 
-  for (const size of ['', 'sm', 'lg']) {
+  for (const size of ['', 's', 'l']) {
     test(`switch${size ? ` ${size}` : ''} knob stays inside the track and moves toward the inline end`, async ({ page }) => {
       await load(page, `
         <input type="checkbox" data-switch="${size}" id="off" aria-label="off">

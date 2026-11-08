@@ -2,81 +2,106 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "tool-tip",
   "type": "web-component",
-  "description": "Enhanced tooltip with Popover API + interestfor",
+  "description": "Tooltip or hover card composed on <pop-over>: hover/focus with delay, interestfor where available, Escape and outside dismiss",
   "attributes": [
     {
       "name": "content",
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "Simple text tooltip content"
+      "description": "Plain-text tooltip content (a <template data-tooltip> child wins; the trigger's title is the last fallback)"
     },
     {
       "name": "position",
       "kind": "host-api",
       "purpose": "config",
-      "type": "string",
-      "description": "Position: 'top' (default), 'bottom', 'left', 'right'"
+      "type": "enum",
+      "values": [
+        "top",
+        "bottom",
+        "left",
+        "right"
+      ],
+      "description": "Placement; tooltips default to top, cards to bottom"
     },
     {
       "name": "delay",
       "kind": "host-api",
       "purpose": "config",
       "type": "number",
-      "description": "Show delay in ms (default: 200)"
+      "description": "Hover show delay in ms on the JS path (default 200; cards 300)"
     },
     {
       "name": "variant",
       "kind": "host-api",
       "purpose": "config",
-      "type": "string",
-      "description": "Variant: omit for tooltip (default), 'card' for hover card"
-    },
-    {
-      "name": "data-interest-polyfill",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "title",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "data-anchor",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "interestfor",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "data-content",
-      "kind": "data",
-      "purpose": "config"
+      "type": "enum",
+      "values": [
+        "card"
+      ],
+      "description": "Omit for a text tooltip; card for an interactive hover card"
     }
   ],
   "events": [
     {
-      "name": "tool-tip:show"
+      "name": "tool-tip:show",
+      "description": "Fired (bubbles) as the tooltip or card opens"
     },
     {
-      "name": "tool-tip:hide"
+      "name": "tool-tip:hide",
+      "description": "Fired (bubbles) as the tooltip or card closes"
     }
   ],
-  "childAttributes": [],
+  "childAttributes": [
+    {
+      "name": "data-tooltip",
+      "on": "template",
+      "type": "boolean",
+      "description": "Rich tooltip content (HTML) for the default variant"
+    },
+    {
+      "name": "data-trigger",
+      "on": "*",
+      "type": "boolean",
+      "required": true,
+      "description": "Card variant: the element that opens the card"
+    },
+    {
+      "name": "data-content",
+      "on": "*",
+      "type": "boolean",
+      "required": true,
+      "description": "Card variant: the card body. Moved into the card while upgraded and put back on disconnect"
+    },
+    {
+      "name": "title",
+      "on": "*",
+      "type": "string",
+      "description": "On the trigger: tooltip text fallback. Removed while upgraded (kept as aria-label when it was the trigger's only name) and restored on disconnect"
+    }
+  ],
   "structure": [],
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
       "@flow"
     ]
-  }
+  },
+  "properties": [
+    {
+      "name": "isVisible",
+      "type": "boolean",
+      "description": "Read-only. True while the tooltip or card is open"
+    }
+  ],
+  "methods": [
+    {
+      "name": "show()",
+      "description": "Open now (no delay)"
+    },
+    {
+      "name": "hide()",
+      "description": "Close now"
+    }
+  ]
 }

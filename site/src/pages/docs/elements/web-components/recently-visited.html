@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "recently-visited"
-description: "Device-local reader history lens. Tracks pages the reader has visited on this device only. Stored in localStorage, never sent to a backend, never aggregated."
+description: "Device-local reader history lens. Lists pages the reader has visited on this device, from localStorage. Tracking is opt-in, strips query strings and expires after 30 days; nothing is sent to a server."
 elementName: recently-visited
 category: component
 currentPath: /docs/elements/web-components/recently-visited/
@@ -12,8 +12,8 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>This is the <em>private</em> half of the lens family. It records pages the reader has visited on this device only and surfaces them as a most-recent-first list. The data lives in <code>localStorage</code> under <code>vb:recently-visited</code> and never crosses the network.</p>
-  <p>Reader sovereignty is non-negotiable here: the component renders both a <strong>Pause</strong> toggle and a <strong>Clear</strong> control alongside the list, and an explicit explainer that this history is local-only.</p>
+  <p>This is the <em>private</em> half of the lens family. It lists pages the reader has visited on this device, most recent first. The data lives in <code>localStorage</code> under <code>vb:recently-visited</code> and never crosses the network.</p>
+  <p>Reader control is built in: the header has <strong>Pause tracking</strong>, <strong>Show anchor visits</strong> and <strong>Clear history</strong> buttons, and a note that the history stays on the device. The page the reader is on is left out of the list unless you add <code>include-current</code>.</p>
 
   <browser-window
     src="/docs/examples/demos/recently-visited.html"
@@ -26,27 +26,76 @@ crumbLabel: Web Components
 </section>
 
 <section>
+  <h2>Turning tracking on</h2>
+  <p>The tracker ships in the VB bundles, but it records nothing until a page opts in. A page is recorded when either of these is true:</p>
+  <ul>
+    <li>it has <code>&lt;meta name="vb:track-history" content="on"&gt;</code>. Put this in your site's shared head to record every page;</li>
+    <li>it contains a <code>&lt;recently-visited&gt;</code> element.</li>
+  </ul>
+  <p>Without the meta, only pages that host the lens are recorded, which is rarely what you want. Most sites should add the meta site-wide.</p>
+  <code-block language="html" data-escape><!-- Shared head: record every page -->
+<meta name="vb:track-history" content="on">
+
+<!-- Optional: keep these query parameters (space or comma separated) -->
+<meta name="vb:track-history-params" content="q page"></code-block>
+
+  <h3>Opting out</h3>
+  <p>A page is never recorded when any of these is true:</p>
+  <ul>
+    <li><code>&lt;html data-vb-no-track&gt;</code> is set. This is the site-wide switch, shared with VB analytics;</li>
+    <li>the page has <code>&lt;meta name="vb:no-track-history"&gt;</code>. Use it for a single page, such as a dashboard that hosts the lens but should not appear in it;</li>
+    <li>the reader has pressed <strong>Pause tracking</strong>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Privacy defaults</h2>
+  <ul>
+    <li><strong>Query strings are stripped.</strong> Only the parameters listed in <code>vb:track-history-params</code> are kept, so reset tokens, email addresses and search terms are not stored by default. The fragment is stored separately as an anchor visit.</li>
+    <li><strong>Entries expire after 30 days.</strong> Expired records are dropped whenever the history is read or written.</li>
+    <li><strong>At most 100 entries</strong> are stored. The <code>limit</code> attribute only controls how many pages are shown.</li>
+    <li><strong>Only same-origin http(s) paths</strong> are stored or rendered. A leading <code>//</code> is collapsed to <code>/</code>, so a crafted URL cannot turn into a link to another site.</li>
+  </ul>
+</section>
+
+<section>
   <h2>Attributes</h2>
   <table class="props-table">
     <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>limit</code></td><td>number</td><td>25</td><td>Max entries kept in local history</td></tr>
-      <tr><td><code>no-track</code></td><td>boolean</td><td>false</td><td>Don't append the current page on connect (useful for an embed on the home page)</td></tr>
-      <tr><td><code>empty-text</code></td><td>string</td><td>built-in</td><td>Message rendered when history is empty</td></tr>
+      <tr><td><code>limit</code></td><td>number</td><td>25</td><td>Maximum number of page groups shown. Storage is capped separately at 100 entries.</td></tr>
+      <tr><td><code>include-current</code></td><td>boolean</td><td>&mdash;</td><td>Also list the page the reader is on.</td></tr>
+      <tr><td><code>data-heading-level</code></td><td>number</td><td>2</td><td>Heading level 1&ndash;6. <code>0</code> renders no heading, for example inside <code>&lt;content-lens&gt;</code>.</td></tr>
+      <tr><td><code>data-label-heading</code></td><td>string</td><td>Recently visited</td><td>Heading text.</td></tr>
+      <tr><td><code>data-label-explainer</code></td><td>string</td><td>Stored on this device only. Never sent to a server.</td><td>Privacy note under the heading.</td></tr>
+      <tr><td><code>data-label-pause</code></td><td>string</td><td>Pause tracking</td><td>Pause toggle label.</td></tr>
+      <tr><td><code>data-label-anchors</code></td><td>string</td><td>Show anchor visits</td><td>Anchor toggle label.</td></tr>
+      <tr><td><code>data-label-clear</code></td><td>string</td><td>Clear history</td><td>Clear button label.</td></tr>
+      <tr><td><code>data-label-empty</code></td><td>string</td><td>No recently visited pages yet.</td><td>Message shown when there is no history.</td></tr>
+      <tr><td><code>data-label-anchor-one</code></td><td>string</td><td>anchor</td><td>Anchor count noun when <code>Intl.PluralRules</code> selects &ldquo;one&rdquo;.</td></tr>
+      <tr><td><code>data-label-anchor-other</code></td><td>string</td><td>anchors</td><td>Anchor count noun for every other plural category.</td></tr>
     </tbody>
   </table>
+  <p>Relative times (&ldquo;5 minutes ago&rdquo;) use <code>Intl.RelativeTimeFormat</code> in the language of the nearest <code>lang</code> attribute. They are rendered as <code>&lt;time datetime&gt;</code> and refresh every minute.</p>
 </section>
 
 <section>
   <h2>Storage</h2>
-  <p>Two <code>localStorage</code> keys are used:</p>
+  <p>Three <code>localStorage</code> keys are used:</p>
   <dl>
     <dt><code>vb:recently-visited</code></dt>
-    <dd>JSON array of <code>{ url, title, ts }</code> records, most-recent-first.</dd>
+    <dd>JSON array of <code>{ url, hash, title, hashTitle, ts }</code> records, most recent first. <code>url</code> is a same-origin path plus any allowed query; <code>hash</code> is the fragment (or <code>""</code>) and <code>hashTitle</code> is the text of the element it targets; <code>ts</code> is epoch milliseconds.</dd>
     <dt><code>vb:recently-visited:paused</code></dt>
-    <dd><code>"1"</code> when the reader has paused tracking. Existence of the key is the signal &mdash; absence means tracking is active.</dd>
+    <dd><code>"1"</code> while the reader has paused tracking. If the key is absent, tracking is active.</dd>
+    <dt><code>vb:recently-visited:show-anchors</code></dt>
+    <dd><code>"1"</code> when anchor visits are shown, grouped under their page in a <code>&lt;details&gt;</code>. Anchor visits are always recorded; this key only controls whether they are shown.</dd>
   </dl>
-  <p>Both keys are reader-controllable: the Clear button removes the first; the Pause toggle manages the second. Privacy/incognito modes that block <code>localStorage</code> degrade silently &mdash; tracking just doesn't happen.</p>
+  <p>The reader controls all three keys. Clear history empties the first, and the two toggles set the others. Every instance on the page, and in other tabs, updates when any of them changes. In private modes that block <code>localStorage</code>, nothing is recorded and no error is shown.</p>
+</section>
+
+<section>
+  <h2>Data API</h2>
+  <p>The read-only <code>entries</code> property returns the stored records. Expired, malformed and off-origin records are already removed. It has no setter because the tracker owns all writes.</p>
 </section>
 
 <section>
@@ -54,7 +103,18 @@ crumbLabel: Web Components
   <table class="props-table">
     <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
     <tbody>
-      <tr><td><code>recently-visited:clear</code></td><td>&mdash;</td><td>Reader clears the local history</td></tr>
+      <tr><td><code>recently-visited:clear</code></td><td>&mdash;</td><td>The reader clears the history</td></tr>
+      <tr><td><code>recently-visited:pause-toggle</code></td><td><code>{ paused }</code></td><td>The reader pauses or resumes tracking</td></tr>
+      <tr><td><code>recently-visited:anchors-toggle</code></td><td><code>{ showAnchors }</code></td><td>The reader shows or hides anchor visits</td></tr>
     </tbody>
   </table>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The controls are icon buttons with fixed labels. The two toggles report their state with <code>aria-pressed</code>, so screen readers announce &ldquo;Pause tracking, pressed&rdquo; and not a label that contradicts the state.</li>
+    <li>The controls are built once and then updated in place, so focus stays on the button you pressed. Clear history uses <code>aria-disabled</code> when the history is empty, so it keeps focus.</li>
+    <li>When the list re-renders, for example after a change in another tab, a focused link gets focus back.</li>
+  </ul>
 </section>

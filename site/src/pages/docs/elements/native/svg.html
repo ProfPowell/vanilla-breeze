@@ -41,14 +41,15 @@ crumbLabel: Native Elements
     <p>Predefined size classes for consistent icon sizing across your application.</p>
 
     <browser-window
-      src="/docs/snippets/demos/svg-examples.html"
+      src="/docs/snippets/demos/svg-sizes.html"
       url="https://vanilla-breeze.com/svg/sizes"
       title="SVG size variants from xs to xxl"
       shadow>
     </browser-window>
 
-    <code-block language="html" label="SVG with size class" data-escape><svg class="m currentcolor" viewBox="0 0 24 24">
-  <!-- SVG content -->
+    <code-block language="html" label="SVG with size class" data-escape><svg class="m currentcolor" aria-hidden="true" viewBox="0 0 24 24"
+     fill="none" stroke="currentColor" stroke-width="2">
+  <circle cx="12" cy="12" r="10" />
 </svg></code-block>
 
     <table class="props-table">
@@ -96,35 +97,44 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Color Variants</h2>
-    <p>Control SVG fill color with utility classes.</p>
+    <p>Colour classes set the icon's <code>color</code> and, for fill-style icons, <code>fill: currentColor</code>. They work for both icon styles:</p>
+    <ul>
+      <li><strong>Fill-style icons</strong> (no <code>fill</code> attribute on the <code>&lt;svg&gt;</code>): the shapes are filled with the colour.</li>
+      <li><strong>Stroke-style icons</strong> (<code>fill="none" stroke="currentColor"</code> on the <code>&lt;svg&gt;</code>, the Lucide style VB uses): the class leaves <code>fill="none"</code> alone, so the icon stays an outline, and the stroke follows the colour.</li>
+    </ul>
 
     <browser-window
-      src="/docs/snippets/demos/svg-examples.html"
+      src="/docs/snippets/demos/svg-colors.html"
       url="https://vanilla-breeze.com/svg/colors"
       title="SVG color variants: currentcolor, interactive, muted"
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Color variants" data-escape><!-- Inherit text color -->
-<svg class="m currentcolor">...</svg>
+    <code-block language="html" label="Color variants" data-escape><!-- Fill-style: shapes filled with the text colour -->
+<svg class="m currentcolor" viewBox="0 0 24 24">...</svg>
 
-<!-- Interactive/primary color -->
-<svg class="m interactive">...</svg>
+<!-- Stroke-style: stays an outline, stroke in the interactive colour -->
+<svg class="m interactive" viewBox="0 0 24 24"
+     fill="none" stroke="currentColor" stroke-width="2">...</svg>
 
 <!-- Muted/secondary color -->
-<svg class="m muted">...</svg></code-block>
+<svg class="m muted" viewBox="0 0 24 24">...</svg></code-block>
 
     <h3>currentColor Pattern</h3>
-    <p>Use <code>currentColor</code> in your SVG to inherit the CSS color property. This allows icons to match surrounding text.</p>
-    <code-block language="html" label="currentColor pattern" data-escape><!-- SVG uses currentColor for stroke -->
-<svg viewBox="0 0 24 24" class="m">
-  <path stroke="currentColor" fill="none" d="..." />
+    <p>Use <code>currentColor</code> in your SVG to inherit the CSS <code>color</code> property. Icons then match the surrounding text, change with the theme and dark mode, and follow system colours in forced-colors mode.</p>
+    <code-block language="html" label="currentColor pattern" data-escape><!-- Stroke icon: currentColor stroke, no fill -->
+<svg viewBox="0 0 24 24" class="m" fill="none" stroke="currentColor">
+  <path d="..." />
 </svg>
 
-<!-- Or use the .currentcolor class for fill -->
+<!-- Fill icon: the .currentcolor class supplies the fill -->
 <svg viewBox="0 0 24 24" class="m currentcolor">
   <path d="..." />
 </svg></code-block>
+
+    <h3>Dark Mode and Forced Colors</h3>
+    <p>An SVG with no fill and no class is painted black, which disappears on a dark theme. Give every icon a colour source: <code>currentColor</code> (directly or through <code>.currentcolor</code>, <code>.interactive</code> or <code>.muted</code>), or a token such as <code>var(--color-text)</code>. Hardcoded hex fills do not adapt to themes or dark mode.</p>
+    <p>In forced-colors mode (Windows High Contrast) the browser replaces text colours with system colours. Icons drawn with <code>currentColor</code> follow along; fills from colour tokens or literal colours may not. Draw any icon that carries meaning with <code>currentColor</code>.</p>
   </section>
 
   <section>
@@ -132,65 +142,81 @@ crumbLabel: Native Elements
     <p>Built-in animation classes for loading indicators and attention-grabbing icons.</p>
 
     <browser-window
-      src="/docs/snippets/demos/svg-examples.html"
+      src="/docs/snippets/demos/svg-animations.html"
       url="https://vanilla-breeze.com/svg/animations"
       title="SVG spin and pulse animations"
       shadow>
     </browser-window>
 
     <code-block language="html" label="Animation classes" data-escape><!-- Spinning loader -->
-<svg class="m spin currentcolor" viewBox="0 0 24 24">
+<svg class="m spin" viewBox="0 0 24 24" aria-hidden="true">
   <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor"
           stroke-width="2" stroke-dasharray="30 60" />
 </svg>
 
 <!-- Pulsing indicator -->
-<svg class="m pulse currentcolor" viewBox="0 0 24 24">
-  <circle cx="12" cy="12" r="10" fill="currentColor" />
+<svg class="m pulse currentcolor" viewBox="0 0 24 24" aria-hidden="true">
+  <circle cx="12" cy="12" r="10" />
 </svg></code-block>
 
     <h3>Respecting Motion Preferences</h3>
-    <p>Animations should respect <code>prefers-reduced-motion</code>.</p>
-    <code-block language="css" label="Reduced motion media query" data-escape>@media (prefers-reduced-motion: reduce) {
-  svg.spin,
-  svg.pulse {
-    animation: none;
-  }
-}</code-block>
+    <p>Built in: <code>.spin</code> and <code>.pulse</code> stop when the OS asks for reduced motion (<code>prefers-reduced-motion: reduce</code>) or when the page sets VB's own switch, <code>data-motion-reduced</code> on <code>&lt;html&gt;</code> (written by the settings panel). You do not need to add the media query yourself. A stopped spinner no longer signals activity on its own, so pair it with visible or announced text such as "Loading…".</p>
   </section>
 
   <section>
     <h2>Responsive SVG</h2>
-    <p>Full-width SVG for illustrations and diagrams.</p>
+    <p><code>.full</code> makes an SVG fill its container's width; the <code>viewBox</code> sets the aspect ratio, so the height follows.</p>
 
     <browser-window
-      src="/docs/snippets/demos/svg-examples.html"
+      src="/docs/snippets/demos/svg-responsive.html"
       url="https://vanilla-breeze.com/svg/responsive"
       title="Full-width responsive SVG"
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Responsive SVG" data-escape><!-- Full-width responsive SVG -->
-<svg class="full" viewBox="0 0 400 100" preserveAspectRatio="xMidYMid meet">
-  <!-- SVG content scales to container -->
-</svg>
-
-<!-- Responsive SVG maintaining aspect ratio -->
-<svg class="responsive" viewBox="0 0 800 600">
-  <!-- Content -->
-</svg></code-block>
+    <code-block language="html" label="Responsive SVG" data-escape><figure>
+  <svg class="full" role="img" aria-labelledby="flow-title" viewBox="0 0 400 100">
+    <title id="flow-title">Three-step flow: draft, review, publish</title>
+    <!-- shapes drawn with currentColor -->
+  </svg>
+  <figcaption>The diagram fills the container width.</figcaption>
+</figure></code-block>
+    <p>An SVG with no class at all is capped at its container's width (<code>max-inline-size: 100%</code>), with the height following the <code>viewBox</code>.</p>
   </section>
 
   <section>
-    <h2>Live Examples</h2>
-    <p>Inline icons, button icons, and icon grids demonstrating real-world SVG usage patterns.</p>
+    <h2>Icons in Context</h2>
+    <p>An inline icon in running text, icons in buttons (with and without visible text), and an icon grid.</p>
 
     <browser-window
-      src="/docs/snippets/demos/svg-examples.html"
+      src="/docs/snippets/demos/svg-in-context.html"
       url="https://vanilla-breeze.com/svg/live-examples"
       title="SVG inline with text, in buttons, and in an icon grid"
       shadow>
     </browser-window>
+    <code-block language="html" label="Icons in buttons" data-escape><button type="button">
+  <svg class="s currentcolor" aria-hidden="true" viewBox="0 0 24 24">...</svg>
+  Favourite
+</button>
+
+<button type="button" aria-label="Close">
+  <svg class="s" aria-hidden="true" viewBox="0 0 24 24"
+       fill="none" stroke="currentColor" stroke-width="2">...</svg>
+</button></code-block>
+  </section>
+
+  <section>
+    <h2>Security: Untrusted SVG</h2>
+    <p>Inline SVG is live markup. If you insert SVG from user content, an API or a file upload with <code>innerHTML</code>, any <code>&lt;script&gt;</code>, <code>on*</code> event attribute or <code>javascript:</code> link inside it runs on your page.</p>
+    <ul>
+      <li>Show untrusted SVG with <code>&lt;img src="file.svg"&gt;</code>. An SVG loaded as an image cannot run scripts or reach the page.</li>
+      <li>Only inline it when you need CSS or <code>currentColor</code> control, and sanitize it first. VB's <a href="/docs/elements/web-components/icons/"><code>&lt;icon-wc&gt;</code></a> already runs every fetched icon through its <code>sanitizeSVG</code> helper, which strips scripts, event handlers and script URLs.</li>
+    </ul>
+    <code-block language="html" label="Untrusted SVG" data-escape><!-- Safe: rendered as an image, scripts never run -->
+<img src="/uploads/user-logo.svg" alt="Acme logo" />
+
+<!-- Unsafe: markup from data is executed -->
+<!-- el.innerHTML = svgFromApi; --></code-block>
   </section>
 
   <section>
@@ -204,14 +230,14 @@ crumbLabel: Native Elements
 
     <h3>Informative Icons</h3>
     <p>Icons that convey meaning need accessible names.</p>
-    <code-block language="html" label="Informative icons" data-escape><!-- Method 1: title element -->
-<svg role="img" class="m" viewBox="0 0 24 24">
-  <title>Warning</title>
+    <code-block language="html" label="Informative icons" data-escape><!-- Method 1: title element, referenced for robust support -->
+<svg role="img" aria-labelledby="warn-title" class="m currentcolor" viewBox="0 0 24 24">
+  <title id="warn-title">Warning</title>
   <path d="..." />
 </svg>
 
 <!-- Method 2: aria-label -->
-<svg aria-label="Error" role="img" class="m" viewBox="0 0 24 24">
+<svg aria-label="Error" role="img" class="m currentcolor" viewBox="0 0 24 24">
   <path d="..." />
 </svg></code-block>
 
@@ -233,9 +259,11 @@ crumbLabel: Native Elements
     <h3>Best Practices</h3>
     <ul>
       <li>Use <code>aria-hidden="true"</code> on decorative icons</li>
-      <li>Provide <code>&lt;title&gt;</code> or <code>aria-label</code> for meaningful icons</li>
+      <li>Give meaningful icons <code>role="img"</code> and a name: <code>aria-labelledby</code> pointing at a <code>&lt;title&gt;</code>, or <code>aria-label</code></li>
+      <li>Draw meaningful icons with <code>currentColor</code> so they survive dark mode and forced-colors mode</li>
       <li>Don't rely on icons alone - pair with visible text when possible</li>
-      <li>Ensure sufficient color contrast</li>
+      <li>Ensure sufficient color contrast (3:1 against the background for icons that carry meaning)</li>
+      <li>Spinners and pulses stop under reduced motion; never let them be the only sign of a state</li>
       <li>Test with screen readers</li>
     </ul>
   </section>
@@ -268,6 +296,10 @@ crumbLabel: Native Elements
           <td><code>display: inline-block; vertical-align: middle; overflow: visible;</code></td>
         </tr>
         <tr>
+          <td><code>svg:not([class])</code></td>
+          <td><code>max-inline-size: 100%; block-size: auto;</code></td>
+        </tr>
+        <tr>
           <td><code>svg.xs</code></td>
           <td><code>inline-size: 0.75rem; block-size: 0.75rem;</code></td>
         </tr>
@@ -292,16 +324,24 @@ crumbLabel: Native Elements
           <td><code>inline-size: 4rem; block-size: 4rem;</code></td>
         </tr>
         <tr>
-          <td><code>svg.currentcolor</code></td>
+          <td><code>svg.currentcolor:not([fill="none"])</code></td>
           <td><code>fill: currentColor;</code></td>
         </tr>
         <tr>
           <td><code>svg.interactive</code></td>
-          <td><code>fill: var(--color-interactive);</code></td>
+          <td><code>color: var(--color-interactive);</code></td>
         </tr>
         <tr>
           <td><code>svg.muted</code></td>
-          <td><code>fill: var(--color-text-muted);</code></td>
+          <td><code>color: var(--color-text-muted);</code></td>
+        </tr>
+        <tr>
+          <td><code>svg:is(.interactive, .muted):not([fill="none"])</code></td>
+          <td><code>fill: currentColor;</code></td>
+        </tr>
+        <tr>
+          <td><code>svg.full</code></td>
+          <td><code>inline-size: 100%; block-size: auto;</code></td>
         </tr>
         <tr>
           <td><code>svg.spin</code></td>
@@ -310,6 +350,14 @@ crumbLabel: Native Elements
         <tr>
           <td><code>svg.pulse</code></td>
           <td><code>animation: svg-pulse 2s ease-in-out infinite;</code></td>
+        </tr>
+        <tr>
+          <td><code>svg:is(.spin, .pulse)</code> in <code>@media (prefers-reduced-motion: reduce)</code></td>
+          <td><code>animation: none;</code></td>
+        </tr>
+        <tr>
+          <td><code>:root[data-motion-reduced] svg:is(.spin, .pulse)</code></td>
+          <td><code>animation: none;</code></td>
         </tr>
       </tbody>
     </table>

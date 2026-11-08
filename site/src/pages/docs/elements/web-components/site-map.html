@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "site-map"
-description: "Interactive HTML sitemap with current-page highlighting, auto-expand, and expand/collapse all controls."
+description: "Interactive HTML sitemap: a lightweight static-sitemap enhancer, or an information-architecture tree with page-type badges, keyboard navigation and an SVG org-chart view."
 elementName: site-map
 category: component
 currentPath: /docs/elements/web-components/site-map/
@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>&lt;site-map&gt;</code> component enhances a static HTML sitemap with current-page highlighting, auto-expanding the section containing the current page, and expand/collapse all controls. Without JavaScript, the sitemap is a fully functional nested list of links.</p>
+  <p>The <code>&lt;site-map&gt;</code> component has two modes. The default, <code>mode="nav-enhance"</code>, enhances a static HTML sitemap with current-page highlighting, auto-expanding the section containing the current page, and expand/collapse all controls. <a href="#ia-tree"><code>mode="ia-tree"</code></a> turns a nested list into an interactive information-architecture tree with page-type badges and an optional SVG org-chart view. Without JavaScript, either sitemap is a fully functional nested list of links.</p>
 
   <browser-window
     src="/docs/examples/demos/sitemap.html"
@@ -62,10 +62,52 @@ crumbLabel: Web Components
         <td>Pathname of the current page to highlight</td>
       </tr>
       <tr>
+        <td><code>mode</code></td>
+        <td>string</td>
+        <td><code>"nav-enhance"</code></td>
+        <td><code>"nav-enhance"</code> or <code>"ia-tree"</code> (see <a href="#ia-tree">IA tree mode</a>)</td>
+      </tr>
+      <tr>
         <td><code>src</code></td>
         <td>string</td>
         <td>&mdash;</td>
-        <td>URL to load sitemap data from as JSON</td>
+        <td>URL to load sitemap data from as JSON. Strings render as text; only <code>http(s)</code>, relative and fragment <code>href</code>s become link targets.</td>
+      </tr>
+      <tr>
+        <td><code>title</code></td>
+        <td>string</td>
+        <td>&mdash;</td>
+        <td>[ia-tree] Heading and tree name</td>
+      </tr>
+      <tr>
+        <td><code>collapsed</code></td>
+        <td>boolean</td>
+        <td>&mdash;</td>
+        <td>[ia-tree] Start with every node collapsed</td>
+      </tr>
+      <tr>
+        <td><code>compact</code></td>
+        <td>boolean</td>
+        <td>&mdash;</td>
+        <td>[ia-tree] Tighter spacing</td>
+      </tr>
+      <tr>
+        <td><code>data-view</code></td>
+        <td>string</td>
+        <td>&mdash;</td>
+        <td>[ia-tree] <code>"visual"</code> renders an SVG org chart</td>
+      </tr>
+      <tr>
+        <td><code>data-orientation</code></td>
+        <td>string</td>
+        <td><code>"vertical"</code></td>
+        <td>[visual] <code>"vertical"</code> or <code>"horizontal"</code></td>
+      </tr>
+      <tr>
+        <td><code>data-detail</code></td>
+        <td>number</td>
+        <td><code>2</code></td>
+        <td>[visual] 0 shape, 1 title, 2 full, 3 full + status, 4 wireframe</td>
       </tr>
     </tbody>
   </table>
@@ -114,12 +156,104 @@ crumbLabel: Web Components
 
 <section>
   <h2>JSON Data Loading</h2>
-  <p>When <code>src</code> is set, the component fetches sitemap data from the specified URL and renders the tree dynamically. Static markup serves as a fallback.</p>
+  <p>When <code>src</code> is set, the component fetches sitemap data from the specified URL and renders the tree dynamically, then adds the expand/collapse-all controls for it. Static markup serves as a fallback. In nav-enhance mode the JSON is <code>{ "children": [{ "title", "href", "children" }] }</code>.</p>
 
   <code-block language="html" show-lines label="Loading from JSON" data-escape><site-map
   src="/api/sitemap.json"
   current="/docs/quick-start/">
 </site-map></code-block>
+</section>
+
+<section id="ia-tree">
+  <h2>IA tree mode</h2>
+  <p><code>mode="ia-tree"</code> turns a nested <code>&lt;nav&gt;&lt;ul&gt;&lt;li&gt;&lt;a&gt;</code> list into a tree for information-architecture work: each <code>&lt;li&gt;</code> can carry a page type, a template name and a status, shown as badges and a status dot. A header shows the page count, depth and an expand/collapse-all button.</p>
+
+  <browser-window
+    src="/docs/examples/demos/site-map-wc-basic.html"
+    url="https://vanilla-breeze.com/demos/site-map-ia"
+    title="IA tree"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="IA tree" data-escape><site-map mode="ia-tree" title="Taskflow IA">
+  <nav>
+    <ul>
+      <li data-page-type="layout" data-template="app-shell" data-status="live">
+        <a href="/">Home</a>
+        <ul>
+          <li data-page-type="dashboard" data-status="ready"><a href="/dashboard">Dashboard</a></li>
+          <li data-page-type="page" data-status="draft"><a href="/about">About</a></li>
+        </ul>
+      </li>
+    </ul>
+  </nav>
+</site-map></code-block>
+
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute on <code>&lt;li&gt;</code></th><th>Values</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-page-type</code></td><td><code>layout</code>, <code>section</code>, <code>dashboard</code>, <code>page</code> (default), <code>modal</code>, <code>redirect</code></td></tr>
+      <tr><td><code>data-template</code></td><td>Any template or view name, shown as an outlined badge</td></tr>
+      <tr><td><code>data-status</code></td><td><code>draft</code>, <code>ready</code>, <code>live</code>, <code>deprecated</code> &mdash; a coloured dot plus visually hidden text</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Keyboard</h3>
+  <p>The tree is a single Tab stop (roving <code>tabindex</code>, starting at the current page&rsquo;s node or the first node); the links inside nodes leave the Tab order.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th>Key</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><kbd>&darr;</kbd> / <kbd>&uarr;</kbd></td><td>Next / previous visible node</td></tr>
+      <tr><td><kbd>&rarr;</kbd></td><td>Expand, or move to the first child (mirrored in right-to-left pages)</td></tr>
+      <tr><td><kbd>&larr;</kbd></td><td>Collapse, or move to the parent (mirrored in right-to-left pages)</td></tr>
+      <tr><td><kbd>Enter</kbd></td><td>Follow the node&rsquo;s link</td></tr>
+      <tr><td><kbd>Space</kbd></td><td>Expand/collapse a parent; follow the link on a leaf</td></tr>
+      <tr><td><kbd>Home</kbd> / <kbd>End</kbd></td><td>First / last visible node</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Visual (org chart) view</h3>
+  <p>Add <code>data-view="visual"</code> for an SVG org chart with a toolbar for zoom, orientation and detail level. Re-renders swap only the chart, so a toolbar control keeps focus while you adjust it. Colours come from theme tokens (light, dark and forced colours).</p>
+
+  <browser-window
+    src="/docs/examples/demos/site-map-wc-visual.html"
+    url="https://vanilla-breeze.com/demos/site-map-visual"
+    title="IA tree — visual view"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Visual view" data-escape><site-map mode="ia-tree" title="Taskflow" data-view="visual" data-detail="3">
+  <nav>
+    <ul>…</ul>
+  </nav>
+</site-map></code-block>
+
+  <p>The chart is a <code>role="tree"</code> SVG; each node is a <code>treeitem</code> with level, position and expanded state, and the active node is tracked with <code>aria-activedescendant</code>. Focus the chart, then: <kbd>&darr;</kbd> first child, <kbd>&uarr;</kbd> parent, <kbd>&larr;</kbd> <kbd>&rarr;</kbd> siblings, <kbd>Enter</kbd>/<kbd>Space</kbd> collapse or expand, <kbd>Home</kbd>/<kbd>End</kbd> first/last.</p>
+
+  <browser-window
+    src="/docs/examples/demos/site-map-wc-keyboard.html"
+    url="https://vanilla-breeze.com/demos/site-map-keyboard"
+    title="IA tree — keyboard"
+    shadow>
+  </browser-window>
+
+  <h3>Data API</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Member</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>pages</code></td><td>Get the tree as <code>[{ label, href, pageType, template, status, children }]</code>, or assign one to rebuild it (fires <code>site-map:pages-changed</code>)</td></tr>
+      <tr><td><code>src</code></td><td>JSON <code>{ "title", "pages": [...] }</code> in the same shape</td></tr>
+      <tr><td><code>site-map:ready</code></td><td><code>{ nodeCount, depth }</code> after the tree is built</td></tr>
+      <tr><td><code>site-map:select</code></td><td><code>{ href, pageType, template }</code> when a node is clicked</td></tr>
+      <tr><td><code>site-map:pages-changed</code></td><td><code>{ pages, source: 'property' }</code> after assigning <code>pages</code></td></tr>
+    </tbody>
+  </table>
 </section>
 
 <section>
@@ -137,9 +271,9 @@ crumbLabel: Web Components
   <ul>
     <li>Uses <code>&lt;nav aria-label="Full site map"&gt;</code> for landmark navigation</li>
     <li>Current page link is marked with <code>aria-current="page"</code></li>
-    <li>Expand/collapse controls have descriptive accessible labels</li>
-    <li><code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> provides native disclosure semantics</li>
-    <li>Keyboard accessible &mdash; tab through links, enter/space to toggle sections</li>
+    <li>nav-enhance: expand/collapse-all buttons are labelled by their text; <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> provide native disclosure semantics; tab through links, Enter/Space toggles sections</li>
+    <li>ia-tree: <code>role="tree"</code> with <code>treeitem</code>/<code>group</code>, <code>aria-expanded</code> on parents, one Tab stop with arrow-key navigation (mirrored in RTL), Enter follows links, and status announced as text rather than colour alone</li>
+    <li>Forced-colors mode keeps badges, status dots and the visual chart visible with system colours</li>
     <li>Without JavaScript, all content is accessible via native HTML disclosure widgets</li>
   </ul>
 </section>

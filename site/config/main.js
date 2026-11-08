@@ -33,7 +33,7 @@ export default {
     // the import path. That breaks api-tables' strip regex (which expects a
     // clean quoted string), so the directive survives to the rendered HTML
     // and trips audit-unresolved-templates.
-    default: ['generate-provenance-meta', 'generate-api-tables', 'auto-link-glossary', 'generate-indexes', 'render-dynamic-pages', 'generate-glossary'],
+    default: ['generate-provenance-meta', 'generate-api-tables', 'generate-layout-reference', 'generate-effect-reference', 'auto-link-glossary', 'generate-indexes', 'render-dynamic-pages', 'generate-glossary'],
     after: ['generate-pages-json', 'generate-definitions-json', 'generate-topic-assets', 'generate-changelog-feed'],
   },
   pluginPath: 'plugins',

@@ -135,7 +135,7 @@ const BTT_PAGE = `
 
 test('hidden back-to-top is skipped by Tab', async ({ page }) => {
   await load(page, BTT_PAGE);
-  await page.waitForSelector('#btt[data-back-to-top-init]:not([data-visible])', { state: 'attached' });
+  await page.waitForSelector('#btt[data-back-to-top-init]:not([data-state-visible])', { state: 'attached' });
   await expect.poll(() => page.locator('#btt').evaluate((el) => getComputedStyle(el).visibility)).toBe('hidden');
   await page.focus('#before');
   await page.keyboard.press('Tab');
@@ -151,7 +151,7 @@ test('visible back-to-top is reachable by Tab', async ({ page }) => {
     document.documentElement.scrollTop = y;
     window.scrollTo(0, y);
   });
-  await page.waitForSelector('#btt[data-visible]');
+  await page.waitForSelector('#btt[data-state-visible]');
   await expect.poll(() => page.locator('#btt').evaluate((el) => getComputedStyle(el).visibility)).toBe('visible');
   await page.focus('#before');
   await page.keyboard.press('Tab');

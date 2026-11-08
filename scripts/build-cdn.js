@@ -329,27 +329,14 @@ async function buildComponents() {
     const tagNames = extractTagNames(content);
     if (!tagNames.length) continue;
 
-    // Some components split runtime code into sibling modules that logic.js
-    // cannot import itself (e.g. social-embed's providers/*.js import from
-    // logic.js and self-register — importing them back would be a cycle).
-    // Bundle those into the per-component chunk via a synthesized entry, or
-    // the component ships inert on the autoload path.
-    const providersDir = join(wcDir, dir, 'providers');
-    const extraModules = existsSync(providersDir)
-      ? readdirSync(providersDir).filter(f => f.endsWith('.js')).map(f => `./providers/${f}`)
-      : [];
-
+    // Sibling modules (e.g. social-embed/providers/*.js) must be imported by
+    // logic.js itself, before it defines the element: the chunk is built from
+    // logic.js alone, and a define that runs before registration upgrades
+    // parsed markup against an empty registry.
     try {
       await esbuild.build({
         ...JS_DEFAULTS,
-        ...(extraModules.length
-          ? {
-              stdin: {
-                contents: ['./logic.js', ...extraModules].map(m => `import '${m}';`).join('\n'),
-                resolveDir: join(wcDir, dir),
-              },
-            }
-          : { entryPoints: [logicPath] }),
+        entryPoints: [logicPath],
         outfile: join(outDir, `${dir}.js`),
         logLevel: 'silent',
         ignoreAnnotations: true,
@@ -558,6 +545,21 @@ async function buildCDN() {
     cpSync(atkinsonLicence, join(CDN, 'fonts', 'atkinson-hyperlegible-OFL.txt'));
   }
 
+  // Self-hosted Latin Modern Math. The core bundles' @font-face
+  // (native-elements/math/styles.css) already makes esbuild emit
+  // fonts/latinmodern-math.woff2; math-init also lazily injects the standalone
+  // {cdn}/fonts/math-fonts.css, which points at the same file. Copy the face,
+  // its stylesheet and the GUST Font License explicitly so all three always
+  // travel together.
+  mkdirSync(join(CDN, 'fonts'), { recursive: true });
+  for (const target of [
+    join('fonts', 'math-fonts.css'),
+    join('fonts', 'latinmodern-math.woff2'),
+    join('fonts', 'latinmodern-math-GUST-LICENSE.txt'),
+  ]) {
+    if (existsSync(join(SRC, target))) cpSync(join(SRC, target), join(CDN, target));
+  }
+
   // Build charts CSS add-on
   const chartsPath = join(SRC, 'charts-standalone.css');
   if (existsSync(chartsPath)) {
@@ -582,6 +584,17 @@ async function buildCDN() {
       ignoreAnnotations: true,
     });
   }
+
+  // Cross-document view transitions opt-in (never in the main bundles: it
+  // turns on @view-transition for every navigation). Bundled so the
+  // vt-keyframes.css it imports is inlined. Exported as
+  // vanilla-breeze/view-transitions-css; served at /cdn/view-transitions.css.
+  await esbuild.build({
+    ...CSS_DEFAULTS,
+    entryPoints: [join(SRC, 'utils', 'view-transitions.css')],
+    outfile: join(CDN, 'view-transitions.css'),
+    logLevel: 'info',
+  });
 
   // Build dev CSS add-on
   const devCssPath = join(SRC, 'dev.css');

@@ -9,19 +9,6 @@
     body { padding: var(--size-l); background: var(--color-background); }
     section + section { margin-block-start: var(--size-xl); }
     h2 { margin-block-end: var(--size-s); }
-    .field-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-      gap: var(--size-l);
-    }
-    .comparison {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--size-l);
-    }
-    @media (max-width: 40rem) {
-      .comparison { grid-template-columns: 1fr; }
-    }
     fieldset {
       border: 1px solid var(--color-border);
       border-radius: var(--radius-m);
@@ -43,63 +30,63 @@
 
     <section aria-label="Presets">
       <h2>Presets</h2>
-      <nav aria-label="Accept Filter nav" class="field-grid">
+      <layout-grid data-layout-min="m" data-layout-gap="l">
         <fieldset>
           <legend>Phone</legend>
           <label for="phone">Flexible phone</label>
-          <input type="text" id="phone" data-accept="phone" placeholder="+1 (555) 123-4567" />
-          <p class="note">Allows: digits, +, (, ), -, space</p>
+          <input type="text" id="phone" aria-describedby="phone-note" data-accept="phone" placeholder="+1 (555) 123-4567" />
+          <p class="note" id="phone-note">Allows: digits, +, (, ), -, space</p>
         </fieldset>
 
         <fieldset>
           <legend>Date</legend>
           <label for="date">Flexible date</label>
-          <input type="text" id="date" data-accept="date" placeholder="03/19/2026 or 03-19-2026" />
-          <p class="note">Allows: digits, /, -, .</p>
+          <input type="text" id="date" aria-describedby="date-note" data-accept="date" placeholder="03/19/2026 or 03-19-2026" />
+          <p class="note" id="date-note">Allows: digits, /, -, .</p>
         </fieldset>
 
         <fieldset>
           <legend>Credit Card</legend>
           <label for="cc">Card number</label>
-          <input type="text" id="cc" data-accept="cc" placeholder="1234 5678 9012 3456" />
-          <p class="note">Allows: digits, spaces, -</p>
+          <input type="text" id="cc" aria-describedby="cc-note" data-accept="cc" placeholder="1234 5678 9012 3456" />
+          <p class="note" id="cc-note">Allows: digits, spaces, -</p>
         </fieldset>
 
         <fieldset>
           <legend>Currency</legend>
           <label for="currency">Amount</label>
-          <input type="text" id="currency" data-accept="currency" placeholder="1,234.56" />
-          <p class="note">Allows: digits, commas, periods</p>
+          <input type="text" id="currency" aria-describedby="currency-note" data-accept="currency" placeholder="1,234.56" />
+          <p class="note" id="currency-note">Allows: digits, commas, periods</p>
         </fieldset>
 
         <fieldset>
           <legend>Digits Only</legend>
           <label for="digits">Verification code</label>
-          <input type="text" id="digits" data-accept="digits" maxlength="6" placeholder="123456" />
-          <p class="note">Allows: digits only</p>
+          <input type="text" id="digits" aria-describedby="digits-note" data-accept="digits" maxlength="6" placeholder="123456" />
+          <p class="note" id="digits-note">Allows: digits only</p>
         </fieldset>
 
         <fieldset>
           <legend>Alpha Only</legend>
           <label for="alpha">Letters</label>
-          <input type="text" id="alpha" data-accept="alpha" placeholder="abcABC" />
-          <p class="note">Allows: letters only</p>
+          <input type="text" id="alpha" aria-describedby="alpha-note" data-accept="alpha" placeholder="abcABC" />
+          <p class="note" id="alpha-note">Allows: ASCII letters A–Z only (use <code>letters</code> for any script)</p>
         </fieldset>
 
         <fieldset>
           <legend>Alphanumeric</legend>
           <label for="alphanum">Code</label>
-          <input type="text" id="alphanum" data-accept="alphanum" placeholder="abc123" />
-          <p class="note">Allows: letters and digits</p>
+          <input type="text" id="alphanum" aria-describedby="alphanum-note" data-accept="alphanum" placeholder="abc123" />
+          <p class="note" id="alphanum-note">Allows: letters and digits</p>
         </fieldset>
 
         <fieldset>
           <legend>Hex</legend>
           <label for="hex">Hex value</label>
-          <input type="text" id="hex" data-accept="hex" maxlength="6" placeholder="FF00AA" />
-          <p class="note">Allows: 0-9, a-f, A-F</p>
+          <input type="text" id="hex" aria-describedby="hex-note" data-accept="hex" maxlength="6" placeholder="FF00AA" />
+          <p class="note" id="hex-note">Allows: 0-9, a-f, A-F</p>
         </fieldset>
-      </nav>
+      </layout-grid>
     </section>
 
     <section aria-label="Custom Character Class">
@@ -107,8 +94,8 @@
       <fieldset>
         <legend>Custom regex: [0-9a-fA-F]</legend>
         <label for="custom-hex">Hex with bracket syntax</label>
-        <input type="text" id="custom-hex" data-accept="[0-9a-fA-F]" maxlength="6" placeholder="C0FFEE" />
-        <p class="note">Same as the hex preset, using custom bracket syntax.</p>
+        <input type="text" id="custom-hex" aria-describedby="custom-hex-note" data-accept="[0-9a-fA-F]" maxlength="6" placeholder="C0FFEE" />
+        <p class="note" id="custom-hex-note">Same as the hex preset, using custom bracket syntax.</p>
       </fieldset>
     </section>
 
@@ -117,41 +104,44 @@
       <fieldset>
         <legend>Try pasting mixed content</legend>
         <label for="paste-test">Digits only</label>
-        <input type="text" id="paste-test" data-accept="digits" placeholder="Paste 'abc123def456' — only digits kept" />
-        <p class="note">Paste <code>abc123def456</code> — result: <code>123456</code>. Invalid characters are stripped, valid ones kept.</p>
+        <input type="text" id="paste-test" aria-describedby="paste-test-note" data-accept="digits" placeholder="Paste 'abc123def456' — only digits kept" />
+        <p class="note" id="paste-test-note">Paste <code>abc123def456</code> — result: <code>123456</code>. Invalid characters are stripped, valid ones kept.</p>
       </fieldset>
     </section>
 
     <section aria-label="data-accept vs data-mask">
       <h2>data-accept vs data-mask</h2>
       <p>Both filter input, but they serve different purposes:</p>
-      <nav aria-label="Accept Filter nav 2" class="comparison">
+      <layout-grid data-layout-min="m" data-layout-gap="l">
         <fieldset>
           <legend>data-accept="phone" (flexible)</legend>
           <label for="accept-phone">Type any valid phone format</label>
-          <input type="text" id="accept-phone" data-accept="phone" placeholder="+1 (555) 123-4567 or 555-123-4567" />
-          <p class="note">User decides the format. Only invalid chars blocked.</p>
+          <input type="text" id="accept-phone" aria-describedby="accept-phone-note" data-accept="phone" placeholder="+1 (555) 123-4567 or 555-123-4567" />
+          <p class="note" id="accept-phone-note">User decides the format. Only invalid chars blocked.</p>
         </fieldset>
 
         <fieldset>
           <legend>data-mask="phone" (rigid)</legend>
           <label for="mask-phone">Auto-formatted phone</label>
-          <input type="tel" id="mask-phone" data-mask="phone" placeholder="(555) 123-4567" />
-          <p class="note">Format enforced: (###) ###-####. Separators auto-injected.</p>
+          <input type="tel" id="mask-phone" aria-describedby="mask-phone-note" data-mask="phone" placeholder="(555) 123-4567" />
+          <p class="note" id="mask-phone-note">Format enforced: (###) ###-####. Separators auto-injected.</p>
         </fieldset>
-      </nav>
+      </layout-grid>
     </section>
 
     <section aria-label="Dynamic Elements">
       <h2>Dynamic Elements</h2>
       <p>Inputs added via JS are auto-enhanced by the shared MutationObserver.</p>
       <button type="button" id="add-dynamic">Add a digits-only input</button>
-      <nav aria-label="Accept Filter nav 3" id="dynamic-container" data-layout="stack" data-layout-gap="s"></nav>
+      <section id="dynamic-container" aria-label="Added inputs" data-layout="stack" data-layout-gap="s"></section>
       <script>
         document.getElementById('add-dynamic').addEventListener('click', () => {
+          const n = document.querySelectorAll('#dynamic-container input').length + 1;
           const label = document.createElement('label');
-          label.textContent = 'Dynamic input';
+          label.textContent = 'Dynamic input ' + n;
+          label.htmlFor = 'dynamic-' + n;
           const input = document.createElement('input');
+          input.id = 'dynamic-' + n;
           input.type = 'text';
           input.dataset.accept = 'digits';
           input.placeholder = 'Only digits allowed';

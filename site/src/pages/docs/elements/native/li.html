@@ -39,18 +39,20 @@ crumbLabel: Native Elements
     <browser-window src="/docs/snippets/demos/ul-basic.html" url="ul-basic.html" title="List items in ul" shadow></browser-window>
 
     <code-block language="html" show-lines label="Unordered list items" data-escape><ul>
-  <li>Simple text item</li>
-  <li>Another text item</li>
-  <li>Third text item</li>
+  <li>First item in the list</li>
+  <li>Second item in the list</li>
+  <li>Third item in the list</li>
+  <li>Fourth item in the list</li>
 </ul></code-block>
 
     <h3>In Ordered List</h3>
     <browser-window src="/docs/snippets/demos/ol-basic.html" url="ol-basic.html" title="List items in ol" shadow></browser-window>
 
     <code-block language="html" show-lines label="Ordered list items" data-escape><ol>
-  <li>First step</li>
-  <li>Second step</li>
-  <li>Third step</li>
+  <li>First step in the process</li>
+  <li>Second step in the process</li>
+  <li>Third step in the process</li>
+  <li>Fourth step in the process</li>
 </ol></code-block>
   </section>
 
@@ -60,6 +62,11 @@ crumbLabel: Native Elements
 
     <browser-window src="/docs/snippets/demos/li-rich-content.html" url="li-rich-content.html" title="Rich content in list items" shadow></browser-window>
 
+    <code-block language="html" show-lines label="Links in list items" data-escape><ul>
+  <li><a href="#">Link to page one</a></li>
+  <li><a href="#">Link to page two</a></li>
+  <li><a href="#">Link to page three</a></li>
+</ul></code-block>
     <code-block language="html" show-lines label="Multiple elements in list items" data-escape><ul>
   <li>
     <strong>Feature Name</strong>
@@ -122,13 +129,41 @@ crumbLabel: Native Elements
   </section>
 
   <section>
+    <h2>Markers</h2>
+    <p>VB styles list items through two list-level hooks. Both target only the list's <em>direct</em> <code>&lt;li&gt;</code> children, so a nested list keeps its own bullets or numbers.</p>
+    <ul>
+      <li><code>data-marker="check | arrow | dash | star"</code> on a <code>&lt;ul&gt;</code> replaces the bullet through <code>li::marker</code>. The arrow swaps to a left-pointing glyph in right-to-left text. See <a href="/docs/elements/native/ul/">custom markers on <code>&lt;ul&gt;</code></a>.</li>
+      <li><code>class="meta"</code> lays the items out in a row and puts a separator before each item after the first (<code>li + li::before</code>). <code>data-separator="pipe | dash | slash"</code> changes the separator.</li>
+    </ul>
+
+    <browser-window src="/docs/snippets/demos/li-markers.html" url="li-markers.html" title="Markers and separators" shadow></browser-window>
+
+    <code-block language="html" show-lines label="A nested list keeps its own numbering" data-escape><ul data-marker="check">
+  <li>Install the package</li>
+  <li>Configure the build
+    <ol>
+      <li>Add the CSS entry</li>
+      <li>Add the JS entry</li>
+    </ol>
+  </li>
+  <li>Deploy</li>
+</ul>
+
+<ul class="meta">
+  <li>Jane Smith</li>
+  <li><time datetime="2024-01-15">Jan 15, 2024</time></li>
+  <li>5 min read</li>
+</ul></code-block>
+  </section>
+
+  <section>
     <h2>Accessibility</h2>
 
     <h3>Screen Reader Behavior</h3>
     <ul>
       <li>Announced as "list item" with position (e.g., "bullet, list item 2 of 5")</li>
       <li>In ordered lists, the number is announced</li>
-      <li>Nested list items announce their depth level</li>
+      <li>Nested lists announce their nesting level when the reader enters them</li>
       <li>Users can navigate between items with keyboard shortcuts</li>
     </ul>
 
@@ -139,6 +174,14 @@ crumbLabel: Native Elements
       <li>Use meaningful content &mdash; avoid empty list items</li>
       <li>Limit nesting depth to 3 levels for usability</li>
     </ul>
+
+    <h3>Safari / VoiceOver</h3>
+    <p>Safari with VoiceOver can stop announcing a list as a list when it has <code>list-style: none</code>. VB's <code>.inline</code>, <code>.unstyled</code> and <code>.meta</code> lists all set that, so add <code>role="list"</code> where the list structure matters to the reader:</p>
+
+    <code-block language="html" show-lines label="Keeping list semantics in Safari" data-escape><ul class="inline" role="list">
+  <li>Item one</li>
+  <li>Item two</li>
+</ul></code-block>
 
     <h3>Common Mistakes</h3>
     <ul>
@@ -161,22 +204,38 @@ crumbLabel: Native Elements
       </thead>
       <tbody>
         <tr>
-          <td>Adjacent items (<code>li + li</code>)</td>
+          <td>Adjacent items (<code>:where(li + li)</code>)</td>
           <td><code>margin-block-start</code></td>
           <td><code>var(--size-xs)</code></td>
         </tr>
         <tr>
-          <td>In <code>.inline</code> / <code>.unstyled</code> lists</td>
+          <td>Nested list (<code>li &gt; ul</code>, <code>li &gt; ol</code>)</td>
+          <td><code>margin-block-start</code></td>
+          <td><code>var(--size-xs)</code></td>
+        </tr>
+        <tr>
+          <td>Direct children of <code>.inline</code>, <code>.unstyled</code> and <code>.meta</code> lists</td>
           <td><code>margin-block-start</code></td>
           <td><code>0</code></td>
         </tr>
         <tr>
-          <td>In <code>[data-layout="grid"]</code></td>
+          <td>Direct children of any <code>[data-layout]</code> list (stack, cluster, grid, &hellip;)</td>
           <td><code>margin-block-start</code></td>
           <td><code>0</code></td>
         </tr>
+        <tr>
+          <td><code>ul[data-marker] &gt; li</code></td>
+          <td><code>::marker</code> <code>content</code>, <code>color</code></td>
+          <td>Character token (<code>--marker-check</code>, <code>--marker-arrow</code>, &hellip;)</td>
+        </tr>
+        <tr>
+          <td><code>.meta &gt; li + li</code></td>
+          <td><code>::before</code> <code>content</code></td>
+          <td><code>var(--sep-list)</code> (middle dot) or the <code>data-separator</code> token</td>
+        </tr>
       </tbody>
     </table>
+    <p>The adjacent-item margin is wrapped in <code>:where()</code>, so it has zero specificity: any plain author rule such as <code>li { margin: 0 }</code> overrides it without a class or <code>!important</code>. The flex and grid resets exist because a block margin in a row or grid shows up as a cross-axis offset or a doubled gap.</p>
   </section>
 
   <section>
@@ -208,5 +267,6 @@ crumbLabel: Native Elements
       <li><a href="/docs/elements/native/menu/"><code>&lt;menu&gt;</code></a> &mdash; Semantic container for action buttons</li>
       <li><a href="/docs/elements/native/dl/"><code>&lt;dl&gt;</code></a> &mdash; Definition list (uses <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> instead)</li>
       <li><a href="/docs/elements/native/nav/"><code>&lt;nav&gt;</code></a> &mdash; Navigation container for menu lists</li>
+      <li><a href="/docs/attributes/reversed/"><code>reversed</code></a> &mdash; <code>li value</code> and the other numbering attributes</li>
     </ul>
   </section>

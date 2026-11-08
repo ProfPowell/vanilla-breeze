@@ -1,238 +1,80 @@
 /**
- * Social Embed Web Component Behavior Tests
+ * social-embed — lifecycle basics.
  *
- * Tests upgrade lifecycle, fallback preservation, click activation,
- * state management, reconnect safety, and error recovery.
+ * Upgrade, unsupported fallback, missing url, disconnect, reconnect and the
+ * visible activation mode. Provider rendering, security and a11y live in
+ * tests/components/s-social-embed.spec.js.
  *
- * Note: providers register after the custom element definition, so
- * elements already in the DOM at parse time get state=unsupported.
- * Tests that need click-mode behavior inject elements dynamically
- * after providers are loaded.
+ * Tests the working tree (/src from disk); every https request is stubbed or
+ * aborted, so nothing reaches a live network.
  */
-
 import { test, expect } from 'playwright/test';
+import { join } from 'node:path';
 
-const demoPage = '/docs/examples/demos/social-embed.html';
+const REPO = join(import.meta.dirname, '..', '..');
+const FRAME = join(REPO, 'tests/fixtures/social-embed/frame.html');
+const BSKY = 'https://bsky.app/profile/did:plc:z72i7hdynmk6r22z27h6tvur/post/3l6oveex3ii2l';
 
-test.describe('social-embed', () => {
+async function load(page, body) {
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.route('https://embed.bsky.app/**', (route) => route.fulfill({ path: FRAME, contentType: 'text/html' }));
+  await page.route('**/src/**', (route) => route.fulfill({
+    path: join(REPO, decodeURIComponent(new URL(route.request().url()).pathname)),
+  }));
+  const url = `/__social-embed-${Math.random().toString(36).slice(2)}.html`;
+  await page.route(`**${url}`, (route) => route.fulfill({
+    status: 200,
+    contentType: 'text/html; charset=utf-8',
+    body: `<!doctype html><html lang="en"><head><meta charset="utf-8">
+      <link rel="stylesheet" href="/src/main.css">
+      </head><body><main>${body}</main>
+      <script type="module" src="/src/web-components/social-embed/logic.js"></script></body></html>`,
+  }));
+  await page.goto(url, { waitUntil: 'load' });
+  await page.waitForFunction(() => customElements.get('social-embed'));
+}
 
-  test('renders with data-upgraded', async ({ page }) => {
-    await page.goto(demoPage);
-    await page.waitForSelector('social-embed[data-upgraded]');
+test('upgrades parsed markup to idle with the fallback link visible', async ({ page }) => {
+  await load(page, `<social-embed id="e" url="${BSKY}"><a href="${BSKY}">View post on Bluesky</a></social-embed>`);
+  const el = page.locator('#e');
+  await expect(el).toHaveAttribute('data-upgraded', '');
+  await expect(el).toHaveAttribute('state', 'idle');
+  await expect(el.getByRole('link', { name: 'View post on Bluesky' })).toBeVisible();
+});
 
-    const upgraded = page.locator('social-embed[data-upgraded]');
-    await expect(upgraded.first()).toBeVisible();
+test('unsupported URL keeps the fallback with no facade', async ({ page }) => {
+  await load(page, '<social-embed id="e" url="https://example.com/unknown"><a href="https://example.com/unknown">Visit</a></social-embed>');
+  const el = page.locator('#e');
+  await expect(el).toHaveAttribute('state', 'unsupported');
+  await expect(el).toHaveAttribute('data-upgraded', '');
+  await expect(el.locator('button, [data-embed-facade]')).toHaveCount(0);
+});
+
+test('missing url does not upgrade', async ({ page }) => {
+  await load(page, '<social-embed id="e"><a href="/">x</a></social-embed><social-embed id="ok" url="https://example.com/"></social-embed>');
+  await expect(page.locator('#ok')).toHaveAttribute('data-upgraded', '');
+  await expect(page.locator('#e')).not.toHaveAttribute('data-upgraded', /.*/);
+  await expect(page.locator('#e')).not.toHaveAttribute('state', /.*/);
+});
+
+test('data-upgraded is removed on disconnect and restored on reconnect without growing children', async ({ page }) => {
+  await load(page, `<social-embed id="e" url="${BSKY}"><a href="${BSKY}">View</a></social-embed>`);
+  const result = await page.evaluate(() => {
+    const el = document.getElementById('e');
+    const before = el.childElementCount;
+    el.remove();
+    const removed = el.hasAttribute('data-upgraded');
+    document.querySelector('main').append(el);
+    return { before, after: el.childElementCount, removed, upgraded: el.hasAttribute('data-upgraded'), state: el.getAttribute('state') };
   });
+  expect(result).toEqual({ before: 2, after: 2, removed: false, upgraded: true, state: 'idle' });
+});
 
-  test('shows fallback content initially (click mode)', async ({ page }) => {
-    await page.goto(demoPage);
-    await page.waitForSelector('social-embed[data-upgraded]');
-
-    // Inject a social-embed dynamically so providers are already loaded
-    await page.evaluate(() => {
-      const el = document.createElement('social-embed');
-      el.setAttribute('url', 'https://bsky.app/profile/bsky.app/post/3lb55bvibcs2w');
-      el.innerHTML = '<a href="https://bsky.app/profile/bsky.app/post/3lb55bvibcs2w">View post on Bluesky</a>';
-      document.body.appendChild(el);
-    });
-
-    const el = page.locator('social-embed[state="idle"]');
-    await expect(el.first()).toBeVisible();
-
-    // Fallback link should be visible inside the component
-    const link = el.first().locator('a');
-    await expect(link.first()).toBeVisible();
-  });
-
-  test('has the authored link visible before activation', async ({ page }) => {
-    await page.goto(demoPage);
-    await page.waitForSelector('social-embed[data-upgraded]');
-
-    // Inject a click-mode embed dynamically
-    await page.evaluate(() => {
-      const el = document.createElement('social-embed');
-      el.setAttribute('url', 'https://bsky.app/profile/bsky.app/post/3lb55bvibcs2w');
-      el.innerHTML = '<a href="https://bsky.app/profile/bsky.app/post/3lb55bvibcs2w">View post on Bluesky</a>';
-      document.body.appendChild(el);
-    });
-
-    const el = page.locator('social-embed[state="idle"]').first();
-    const link = el.locator('a[href*="bsky.app"]');
-    await expect(link).toBeVisible();
-
-    const href = await link.getAttribute('href');
-    expect(href).toContain('bsky.app');
-  });
-
-  test('state attribute is set (idle initially for click mode)', async ({ page }) => {
-    await page.goto(demoPage);
-    await page.waitForSelector('social-embed[data-upgraded]');
-
-    // Inject element dynamically so provider is found
-    await page.evaluate(() => {
-      const el = document.createElement('social-embed');
-      el.setAttribute('url', 'https://bsky.app/profile/bsky.app/post/3lb55bvibcs2w');
-      el.innerHTML = '<a href="https://bsky.app/profile/bsky.app/post/3lb55bvibcs2w">View post</a>';
-      document.body.appendChild(el);
-    });
-
-    const el = page.locator('social-embed[state="idle"]').first();
-    await expect(el).toHaveAttribute('state', 'idle');
-    await expect(el).toHaveAttribute('data-upgraded', '');
-  });
-
-  test('unsupported URL gets state=unsupported', async ({ page }) => {
-    await page.goto(demoPage);
-    await page.waitForSelector('social-embed[data-upgraded]');
-
-    const el = page.locator('social-embed[url="https://example.com/unknown-thing"]');
-    await expect(el).toHaveAttribute('state', 'unsupported');
-    await expect(el).toHaveAttribute('data-upgraded', '');
-  });
-
-  test('click-mode element has button role and tabindex', async ({ page }) => {
-    await page.goto(demoPage);
-    await page.waitForSelector('social-embed[data-upgraded]');
-
-    // Inject element dynamically
-    await page.evaluate(() => {
-      const el = document.createElement('social-embed');
-      el.setAttribute('url', 'https://bsky.app/profile/bsky.app/post/3lb55bvibcs2w');
-      el.innerHTML = '<a href="https://bsky.app/profile/bsky.app/post/3lb55bvibcs2w">View post</a>';
-      document.body.appendChild(el);
-    });
-
-    const el = page.locator('social-embed[state="idle"]').first();
-    await expect(el).toHaveAttribute('role', 'button');
-    await expect(el).toHaveAttribute('tabindex', '0');
-    await expect(el).toHaveAttribute('aria-label', 'Load embed');
-  });
-
-  test('reconnect does not duplicate activation wiring', async ({ page }) => {
-    const errors = [];
-    page.on('pageerror', err => errors.push(err.message));
-
-    await page.goto(demoPage);
-    await page.waitForSelector('social-embed[data-upgraded]');
-
-    // Use the unsupported URL embed — it upgrades without network calls
-    const el = page.locator('social-embed[url="https://example.com/unknown-thing"]');
-    await expect(el).toHaveAttribute('data-upgraded', '');
-
-    // Count children before disconnect
-    const childCountBefore = await el.evaluate(node => node.childElementCount);
-
-    // Remove and reinsert
-    await el.evaluate(node => {
-      const parent = node.parentElement;
-      const next = node.nextSibling;
-      node.remove();
-      parent.insertBefore(node, next);
-    });
-
-    // Wait for re-upgrade
-    await page.waitForSelector('social-embed[url="https://example.com/unknown-thing"][data-upgraded]');
-
-    // Should still have state=unsupported
-    await expect(el).toHaveAttribute('state', 'unsupported');
-
-    // Child count should not grow on reconnect
-    const childCountAfter = await el.evaluate(node => node.childElementCount);
-    expect(childCountAfter).toBe(childCountBefore);
-
-    expect(errors).toEqual([]);
-  });
-
-  test('reconnect of click-mode element preserves fallback', async ({ page }) => {
-    const errors = [];
-    page.on('pageerror', err => errors.push(err.message));
-
-    await page.goto(demoPage);
-    await page.waitForSelector('social-embed[data-upgraded]');
-
-    // Inject element dynamically so it gets idle state
-    await page.evaluate(() => {
-      const el = document.createElement('social-embed');
-      el.id = 'reconnect-test';
-      el.setAttribute('url', 'https://bsky.app/profile/bsky.app/post/3lb55bvibcs2w');
-      el.innerHTML = '<a href="https://bsky.app/profile/bsky.app/post/3lb55bvibcs2w">View post on Bluesky</a>';
-      document.body.appendChild(el);
-    });
-
-    const el = page.locator('#reconnect-test');
-    await expect(el).toHaveAttribute('state', 'idle');
-
-    // Remove and reinsert
-    await el.evaluate(node => {
-      const parent = node.parentElement;
-      const next = node.nextSibling;
-      node.remove();
-      parent.insertBefore(node, next);
-    });
-
-    // Wait for re-upgrade after reconnect
-    await page.waitForSelector('#reconnect-test[data-upgraded]');
-
-    // Should still be idle and have button role
-    await expect(el).toHaveAttribute('state', 'idle');
-    await expect(el).toHaveAttribute('role', 'button');
-
-    // The fallback link should still be present
-    const link = el.locator('a');
-    await expect(link.first()).toBeVisible();
-    const text = await link.first().textContent();
-    expect(text).toBe('View post on Bluesky');
-
-    expect(errors).toEqual([]);
-  });
-
-  test('data-upgraded is removed on disconnect', async ({ page }) => {
-    await page.goto(demoPage);
-    await page.waitForSelector('social-embed[data-upgraded]');
-
-    const el = page.locator('social-embed[data-upgraded]').first();
-
-    const hasUpgradedAfterRemove = await el.evaluate(node => {
-      node.remove();
-      return node.hasAttribute('data-upgraded');
-    });
-
-    expect(hasUpgradedAfterRemove).toBe(false);
-  });
-
-  test('error state restores the original fallback', async ({ page }) => {
-    // Intercept oEmbed requests to force an error
-    await page.route('**/oembed**', route => route.abort());
-
-    await page.goto(demoPage);
-    await page.waitForSelector('social-embed[data-upgraded]');
-
-    // Inject element dynamically so provider is found and we get click mode
-    await page.evaluate(() => {
-      const el = document.createElement('social-embed');
-      el.id = 'error-test';
-      el.setAttribute('url', 'https://bsky.app/profile/bsky.app/post/3lb55bvibcs2w');
-      el.innerHTML = '<a href="https://bsky.app/profile/bsky.app/post/3lb55bvibcs2w">View post on Bluesky</a>';
-      document.body.appendChild(el);
-    });
-
-    const el = page.locator('#error-test');
-    await expect(el).toHaveAttribute('state', 'idle');
-
-    // Capture the fallback link text before clicking
-    const fallbackText = await el.locator('a').first().textContent();
-
-    // Click to activate — the fetch will fail due to route abort
-    await el.click();
-
-    // Should transition to error state
-    await expect(el).toHaveAttribute('state', 'error');
-
-    // Original fallback link should be restored
-    const restoredLink = el.locator('a');
-    await expect(restoredLink.first()).toBeVisible();
-    const restoredText = await restoredLink.first().textContent();
-    expect(restoredText).toBe(fallbackText);
-  });
-
+test('activate="visible" loads when scrolled near the viewport', async ({ page }) => {
+  await load(page, `<p style="block-size: 300vh">spacer</p><social-embed id="e" activate="visible" url="${BSKY}"><a href="${BSKY}">View</a></social-embed>`);
+  const el = page.locator('#e');
+  await expect(el).toHaveAttribute('state', 'idle');
+  await el.scrollIntoViewIfNeeded();
+  await expect(el).toHaveAttribute('state', 'loaded');
+  await expect(el.locator('iframe[data-embed-frame]')).toHaveCount(1);
 });

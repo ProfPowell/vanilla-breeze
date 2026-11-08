@@ -188,7 +188,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Row Selection</h2>
-    <p>Add checkboxes to rows for selection, with a "select all" checkbox in the header and a bulk actions bar that appears when rows in <em>that</em> table are selected. The selection count is announced to screen readers.</p>
+    <p>Add checkboxes to rows for selection, with a "select all" checkbox in the header and a bulk actions bar that appears when rows in <em>that</em> table are selected. The selection count is announced to screen readers. Selected rows get <code>data-state-selected</code>, which uses the same selected tint as a native <code>tr[data-selected]</code>, plus a non-colour cue.</p>
 
     <code-block language="html" show-lines label="Row selection with bulk actions" data-escape><data-table>
   <div data-bulk-actions hidden>
@@ -221,7 +221,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Responsive Card Mode</h2>
-    <p>Add <code>data-responsive="card"</code> to transform the table into a card layout on narrow screens. Use <code>data-label</code> on cells to show column headers in card mode.</p>
+    <p>Add <code>data-responsive="card"</code> to transform the table into a card layout on narrow screens. Each cell's label is derived from its column header automatically, and the table roles are restored so screen readers still announce a table. An authored <code>data-label</code> on a cell overrides the derived one.</p>
 
     <code-block language="html" show-lines label="Responsive card layout" data-escape><data-table>
   <table data-responsive="card">
@@ -247,6 +247,18 @@ crumbLabel: Web Components
     <aside class="note">
       <strong>Note:</strong> The layout switches based on viewport width. In production, it adapts automatically.
     </aside>
+
+    <h3>Horizontal Scroll</h3>
+    <p>For wide tables that should keep their columns, wrap the table in a focusable scroll container labelled by its caption. Add <code>data-table-scroll="block"</code> to also cap the height.</p>
+
+    <code-block language="html" show-lines label="Scrolling table wrapper" data-escape><section data-table-scroll tabindex="0" aria-labelledby="orders-caption">
+  <data-table>
+    <table>
+      <caption id="orders-caption">Orders</caption>
+      <!-- Wide table content -->
+    </table>
+  </data-table>
+</section></code-block>
   </section>
 
   <section>

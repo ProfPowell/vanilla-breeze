@@ -1,10 +1,10 @@
 ---
 layout: attribute
 title: "is"
-description: "Extend native HTML elements with custom behavior via customized built-in elements. Inherits all native semantics, accessibility, and form participation for free."
+description: "Upgrades a native element into a customized built-in element that keeps its native semantics. Not supported in Safari; VB gets the same result with data-* enhancers."
 attributeName: is
 attributeType: native
-nativeGroup: Structure
+nativeGroup: Global
 category: native
 currentPath: /docs/attributes/is/
 
@@ -12,109 +12,130 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>is</code> attribute creates <strong>customized built-in elements</strong> — native HTML elements enhanced with custom JavaScript behavior. Unlike autonomous custom elements (e.g., <code>&lt;my-component&gt;</code>), customized built-ins inherit all native behavior: semantics, accessibility, form participation, and default styles.</p>
-<p>The syntax is <code>&lt;element is="custom-name"&gt;</code>, where the custom element class extends the native element's interface (e.g., <code>HTMLButtonElement</code>, <code>HTMLInputElement</code>).</p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>is</code> attribute turns a native element into a <strong>customized built-in element</strong>: a class that extends that element's interface (<code>HTMLButtonElement</code>, <code>HTMLInputElement</code>…) and adds behaviour. Unlike an autonomous custom element such as <code>&lt;my-button&gt;</code>, it keeps everything the native element has: its role, keyboard handling, form participation and default styles.</p>
+  <p><strong>Applies to:</strong> every HTML element (it is a global attribute). It only does something when a matching class has been registered with <code>customElements.define(name, Class, { extends: 'tag' })</code>.</p>
 
-<h2>Usage</h2>
-<p>Add the <code>is</code> attribute to a native element to activate the custom behavior registered for that name.</p>
+  <browser-window
+    src="/docs/examples/demos/attr-is-basic.html"
+    url="https://vanilla-breeze.com/is"
+    title="Customized built-in button"
+    shadow>
+  </browser-window>
 
-<code-block language="html" label="Customized built-in button" data-escape><!-- Use a customized built-in button -->
-<button is="confirm-button">Delete Account</button>
+  <code-block language="html" show-lines label="A customized built-in button" data-escape><button type="button" is="press-counter" id="counter">Add to basket</button>
+<output for="counter" id="counter-status">Basket is empty</output>
 
-<!-- The element is still a <button> with all native behavior:
-     - Form participation
-     - Keyboard activation (Enter/Space)
-     - Default button styling
-     - Screen reader announces "button"
-     But with custom behavior added by the class --></code-block>
-
-<h2>Registration</h2>
-<p>The custom element class must extend the specific element interface, and the <code>define()</code> call must include the <code>extends</code> option.</p>
-
-<code-block language="js" label="Defining a customized built-in" data-escape><script>
-class ConfirmButton extends HTMLButtonElement {
-  connectedCallback() {
-    this.addEventListener('click', (e) => {
-      if (!confirm(`Are you sure you want to: ${this.textContent}?`)) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    });
+<script type="module">
+  class PressCounter extends HTMLButtonElement {
+    #count = 0;
+    connectedCallback() {
+      this.addEventListener('click', () => {
+        this.#count += 1;
+        document.getElementById('counter-status').textContent = `${this.#count} in basket`;
+      });
+    }
   }
-}
-
-// Third argument { extends } tells the registry which element is being extended
-customElements.define('confirm-button', ConfirmButton, { extends: 'button' });
+  customElements.define('press-counter', PressCounter, { extends: 'button' });
 </script></code-block>
-
-<h2>Example: Auto-Format Input</h2>
-<p>A text input that automatically formats phone numbers as the user types. It inherits all native input behavior — form submission, validation, labels, autofill.</p>
-
-<code-block language="js" label="Auto-format input" data-escape><script>
-class AutoFormatInput extends HTMLInputElement {
-  connectedCallback() {
-    this.addEventListener('input', () => {
-      // Auto-format as phone number: (123) 456-7890
-      const digits = this.value.replace(/\D/g, '').slice(0, 10);
-      if (digits.length >= 6) {
-        this.value = `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
-      } else if (digits.length >= 3) {
-        this.value = `(${digits.slice(0,3)}) ${digits.slice(3)}`;
-      }
-    });
-  }
-}
-
-customElements.define('auto-format-input', AutoFormatInput, { extends: 'input' });
-</script>
-
-<label for="phone">Phone</label>
-<input is="auto-format-input" type="tel" id="phone" name="phone" /></code-block>
-
-<h2>Customized vs Autonomous</h2>
-<p>There are two types of custom elements. The <code>is</code> attribute is for the customized built-in type.</p>
-
-<code-block language="html" label="Two approaches" data-escape><!-- Customized built-in: extends <button>, inherits everything -->
-<button is="fancy-button">Click Me</button>
-
-<!-- Autonomous custom element: starts from scratch -->
-<fancy-button>Click Me</fancy-button></code-block>
-
-<table>
-  <thead><tr><th>Feature</th><th>Customized Built-in (<code>is</code>)</th><th>Autonomous (<code>&lt;my-el&gt;</code>)</th></tr></thead>
-  <tbody>
-    <tr><td>Syntax</td><td><code>&lt;button is="x"&gt;</code></td><td><code>&lt;my-button&gt;</code></td></tr>
-    <tr><td>Extends</td><td>Specific element interface</td><td><code>HTMLElement</code></td></tr>
-    <tr><td>Native semantics</td><td>Inherited</td><td>Must be added manually</td></tr>
-    <tr><td>Form participation</td><td>Inherited</td><td>Requires <code>ElementInternals</code></td></tr>
-    <tr><td>Default styles</td><td>Inherited</td><td>None</td></tr>
-    <tr><td>Safari support</td><td>No</td><td>Yes</td></tr>
-    <tr><td>Browser support</td><td>Chrome, Firefox, Edge</td><td>All modern browsers</td></tr>
-  </tbody>
-</table>
-
-<h2>Accessibility</h2>
-<ul>
-  <li>The primary advantage of customized built-in elements is accessibility. A <code>&lt;button is="fancy-button"&gt;</code> is announced as "button" by screen readers, participates in tab order, and responds to Enter and Space — with zero extra work.</li>
-  <li>An autonomous <code>&lt;fancy-button&gt;</code> would need <code>role="button"</code>, <code>tabindex="0"</code>, and keyboard event handlers to achieve the same accessibility.</li>
-  <li>For form controls, the <code>is</code> approach inherits native validation, labels, and error messages automatically.</li>
-</ul>
-
-<h2>Limitations</h2>
-<ul>
-  <li><strong>Safari does not support the <code>is</code> attribute.</strong> This is the most significant limitation. Safari's WebKit team has explicitly declined to implement it, citing architectural concerns. This makes customized built-ins unreliable for production use without a polyfill.</li>
-  <li>A <a href="https://github.com/ungap/custom-elements">polyfill</a> exists but adds bundle size and complexity. It works by detecting <code>is</code> attributes and manually upgrading elements.</li>
-  <li>Each customized built-in can only extend one specific element type. A class extending <code>HTMLButtonElement</code> cannot be used on an <code>&lt;input&gt;</code>.</li>
-  <li>Server-rendered HTML with <code>is</code> attributes works in Chrome and Firefox before JavaScript loads (the native element renders normally). In Safari, the <code>is</code> attribute is simply ignored.</li>
-  <li>Due to the Safari limitation, the web platform has largely moved toward autonomous custom elements instead. Most component libraries use <code>&lt;my-element&gt;</code> syntax for universal compatibility.</li>
-</ul>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>A valid custom element name, e.g. <code>press-counter</code></td><td>The element becomes that customized built-in once a class is defined for the name with a matching <code>extends</code> tag. Until then it is an ordinary native element.</td></tr>
+      <tr><td>Absent</td><td>An ordinary native element.</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Read once.</strong> The value is taken when the element is created. Changing or removing <code>is</code> later does nothing. In script, create one with <code>document.createElement('button', { is: 'press-counter' })</code>.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Registering</h3>
+  <code-block language="js" show-lines label="Extend the specific interface" data-escape>class PressCounter extends HTMLButtonElement {
+  connectedCallback() { /* add behaviour */ }
+}
+
+// The third argument names the element being extended
+customElements.define('press-counter', PressCounter, { extends: 'button' });
+
+// Creating one from script
+const button = document.createElement('button', { is: 'press-counter' });</code-block>
+
+  <h3>Customized built-in or autonomous element</h3>
+  <table>
+    <thead><tr><th></th><th>Customized built-in (<code>is</code>)</th><th>Autonomous (<code>&lt;my-el&gt;</code>)</th></tr></thead>
+    <tbody>
+      <tr><td>Markup</td><td><code>&lt;button is="x"&gt;</code></td><td><code>&lt;my-button&gt;</code></td></tr>
+      <tr><td>Extends</td><td>A specific element interface</td><td><code>HTMLElement</code></td></tr>
+      <tr><td>Role, keyboard, focus</td><td>Inherited</td><td>Added by you</td></tr>
+      <tr><td>Form participation</td><td>Inherited</td><td><code>ElementInternals</code></td></tr>
+      <tr><td>Before upgrade or without support</td><td>A working native element</td><td>An unknown inline element</td></tr>
+      <tr><td>Safari</td><td>Not supported</td><td>Supported</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/elements/web-components/">Web Components</a> — VB's custom elements (using autonomous syntax for browser compatibility)</li>
-    <li><a href="/docs/attributes/tabindex/"><code>tabindex</code></a> — manage focus order for custom interactive elements</li>
-    <li><a href="/docs/attributes/disabled/"><code>disabled</code></a> — inherited by customized built-in form controls</li>
+    <li><strong>VB does not use <code>is</code>.</strong> Its components are autonomous custom elements, which work in every browser.</li>
+    <li><strong><code>data-*</code> enhancers give the same result everywhere.</strong> What customized built-ins promise (native element, extra behaviour) is how VB's data attributes work: the element stays a real <code>&lt;input&gt;</code> or <code>&lt;button&gt;</code>, and a small script adds behaviour. A phone-formatting input is <a href="/docs/attributes/data-mask/"><code>&lt;input data-mask="phone"&gt;</code></a>; a copy button is <a href="/docs/attributes/data-copy/"><code>&lt;button data-copy&gt;</code></a>.</li>
+    <li><strong><code>&lt;card-list&gt;</code> never writes <code>is</code> from data.</strong> Like <code>style</code> and <code>srcdoc</code>, it is on the component's blocked list so a data value cannot turn an element into a different custom element (<code>src/web-components/card-list/logic.js</code>).</li>
+  </ul>
+
+  <browser-window
+    src="/docs/examples/demos/mask-basic.html"
+    url="https://vanilla-breeze.com/data-mask"
+    title="data-mask: the VB alternative"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="The VB way: a data attribute on the native element" data-escape><form-field>
+  <label for="mask-phone">Phone</label>
+  <input type="tel" id="mask-phone" name="phone" data-mask="phone" placeholder="(555) 123-4567">
+</form-field></code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>The main benefit.</strong> <code>&lt;button is="…"&gt;</code> is announced as a button, sits in the Tab order and responds to <kbd>Enter</kbd> and <kbd>Space</kbd> with no extra work.</li>
+    <li><strong>The fallback is safe.</strong> Where <code>is</code> is unsupported, users still get the native element. Design so the page works without the added behaviour.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <p>Not Baseline (checked 2026-11): Chrome 67, Edge 79 and Firefox 63 support customized built-ins. Safari does not, and WebKit's standards position on the feature is "oppose" (<a href="https://github.com/WebKit/standards-positions/issues/97">WebKit/standards-positions#97</a>). A polyfill exists but adds weight and complexity.</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>One tag per class.</strong> A class that extends <code>HTMLButtonElement</code> cannot be used on an <code>&lt;input&gt;</code>.</li>
+    <li><strong>Server-rendered markup is fine.</strong> Before the class is defined, and in Safari, <code>&lt;button is="x"&gt;</code> is a normal button. Only the added behaviour is missing.</li>
+    <li><strong>Shadow DOM is limited.</strong> Only some elements (such as <code>article</code>, <code>section</code>, <code>div</code>, <code>span</code>, <code>p</code>, headings) can have a shadow root; buttons and inputs cannot.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/">Web components</a> &mdash; VB's autonomous custom elements.</li>
+    <li><a href="/docs/attributes/data-mask/"><code>data-mask</code></a> &mdash; input formatting on a native input.</li>
+    <li><a href="/docs/attributes/data-copy/"><code>data-copy</code></a> &mdash; clipboard behaviour on a native button.</li>
+    <li><a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> &mdash; what a customized built-in button inherits.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>data-*</code> enhancer</strong> &mdash; extra behaviour on a native element, in every browser. VB's default.</li>
+    <li><strong>Autonomous custom element</strong> &mdash; a new component with its own structure and API.</li>
+    <li><strong><code>is</code></strong> &mdash; only when you can accept that Safari users get the plain native element.</li>
   </ul>
 </section>

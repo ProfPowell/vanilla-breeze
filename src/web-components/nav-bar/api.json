@@ -2,7 +2,7 @@
   "$schema": "../../schemas/api.schema.json",
   "element": "nav-bar",
   "type": "web-component",
-  "description": "Top-level site/app navigation primitive. HTML-first wrap or JSON-first .items setter; auto aria-current sync via pathname matching with popstate listener.",
+  "description": "Top-level site/app navigation primitive. HTML-first wrap or JSON-first .items setter; auto aria-current sync via URL matching (origin + normalised pathname) on popstate and Navigation API entry changes.",
   "attributes": [
     {
       "name": "aria-label",
@@ -20,19 +20,51 @@
         "exact"
       ],
       "description": "Pathname matching strictness. 'exact' requires exact match. Default: exact wins, longest prefix breaks ties, first-in-DOM-order breaks remaining ties."
+    },
+    {
+      "name": "data-label-new-tab",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Screen-reader suffix appended to external .items links. Default: '(opens in new tab)'."
+    }
+  ],
+  "properties": [
+    {
+      "name": "items",
+      "type": "Array<{ href, label, route?, icon?, external?, badge? }>",
+      "description": "Read returns the last assigned array, else { href, label } inferred from the managed links. Assigning replaces the direct <a> children with the default renderer (deep-equal assignment is a no-op). Only http(s) and relative hrefs render as links."
+    },
+    {
+      "name": "current",
+      "type": "string | null",
+      "description": "Read returns the active route (data-route or href of the aria-current link, or the explicit value). Assigning takes ownership: URL sync stops until releaseCurrent()."
+    }
+  ],
+  "methods": [
+    {
+      "name": "releaseCurrent()",
+      "description": "Drop explicit ownership of .current and re-run URL matching."
+    },
+    {
+      "name": "refresh()",
+      "description": "Re-run URL matching manually (for routers that change the URL without popstate or the Navigation API). No-op while .current is explicitly owned."
     }
   ],
   "events": [
     {
-      "name": "nav-bar:upgraded"
+      "name": "nav-bar:upgraded",
+      "description": "Fired after every connect, including reconnects after a move."
     },
     {
       "name": "nav-bar:items-changed",
-      "detail": "{ items, source: 'property' }"
+      "detail": "{ items, source: 'property' }",
+      "description": "Fired after .items is assigned a new (not deep-equal) value."
     },
     {
       "name": "nav-bar:current-changed",
-      "detail": "{ current, previous, source: 'property' | 'popstate' | 'pathname' }"
+      "detail": "{ current, previous, source: 'property' | 'popstate' | 'navigation' | 'pathname' }",
+      "description": "Fired when the active link changes."
     }
   ],
   "childAttributes": [
@@ -40,7 +72,7 @@
       "name": "href",
       "on": "a",
       "type": "string",
-      "description": "Standard anchor href. Used for both navigation and pathname matching."
+      "description": "Standard anchor href. Resolved against the document base URL and matched by origin + normalised pathname (trailing slash, query and hash ignored)."
     },
     {
       "name": "data-route",

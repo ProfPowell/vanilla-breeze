@@ -1,10 +1,10 @@
 ---
 layout: attribute
 title: "lang"
-description: "Declare the language of content. Screen readers use it to switch pronunciation, and browsers use it for hyphenation, spell-checking, and font selection."
+description: "Declares the language of content with a BCP 47 tag. Drives screen-reader pronunciation, and in VB also quotation marks, script typography, hyphenation and number and date formatting."
 attributeName: lang
 attributeType: native
-nativeGroup: Accessibility
+nativeGroup: Internationalization
 category: native
 currentPath: /docs/attributes/lang/
 
@@ -12,161 +12,126 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>lang</code> attribute declares the language of an element's content. It is one of the most impactful accessibility attributes — screen readers use it to switch pronunciation engines, and browsers use it for hyphenation, spell-checking, quote marks, and font selection.</p>
-<p>Set <code>lang</code> on the <a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a> element for the page's primary language, and on inline elements when the language changes mid-content.</p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>lang</code> attribute declares the language of an element's content. Screen readers use it to pick a voice and pronunciation rules; browsers use it for hyphenation, quotation marks and font fallback; Vanilla Breeze uses it for script-specific typography and for formatting numbers and dates. It is inherited, so set it on <a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a> for the page and on any element whose language differs.</p>
+  <p><strong>Applies to:</strong> every element (it is a global attribute).</p>
 
-<h2>Language Codes</h2>
-<p>The value is a <a href="https://en.wikipedia.org/wiki/IETF_language_tag">BCP 47 language tag</a>. The most common codes:</p>
+  <browser-window
+    src="/docs/examples/demos/attr-lang-locale.html"
+    url="https://vanilla-breeze.com/lang"
+    title="lang"
+    shadow>
+  </browser-window>
 
-<table>
-  <thead><tr><th>Code</th><th>Language</th></tr></thead>
-  <tbody>
-    <tr><td><code>en</code></td><td>English</td></tr>
-    <tr><td><code>es</code></td><td>Spanish</td></tr>
-    <tr><td><code>fr</code></td><td>French</td></tr>
-    <tr><td><code>de</code></td><td>German</td></tr>
-    <tr><td><code>ja</code></td><td>Japanese</td></tr>
-    <tr><td><code>zh</code></td><td>Chinese</td></tr>
-    <tr><td><code>ar</code></td><td>Arabic</td></tr>
-    <tr><td><code>hi</code></td><td>Hindi</td></tr>
-    <tr><td><code>ko</code></td><td>Korean</td></tr>
-    <tr><td><code>pt</code></td><td>Portuguese</td></tr>
-    <tr><td><code>ru</code></td><td>Russian</td></tr>
-    <tr><td><code>it</code></td><td>Italian</td></tr>
-  </tbody>
-</table>
+  <code-block language="html" show-lines label="Quotes, formatting and typography follow lang" data-escape><p>She said <q>the order shipped</q>.</p>
+<p lang="de">Sie sagte <q>die Bestellung ist unterwegs</q>.</p>
+<p lang="fr">Elle a dit <q>la commande est partie</q>.</p>
+<p lang="ja">彼女は<q>注文は発送されました</q>と言いました。</p>
 
-<h3>Regional Variants</h3>
-<p>Add a region subtag to distinguish dialects. The browser inherits the base language, so <code>en-GB</code> still matches <code>:lang(en)</code> in CSS.</p>
+<p lang="de">
+  Summe: <data value="48200.5" data-format-number="currency" data-currency="EUR">€48,200.50</data>,
+  versandt am <time datetime="2026-11-04" data-format-date>Nov 4, 2026</time>
+</p>
 
-<table>
-  <thead><tr><th>Code</th><th>Variant</th></tr></thead>
-  <tbody>
-    <tr><td><code>en-US</code></td><td>American English</td></tr>
-    <tr><td><code>en-GB</code></td><td>British English</td></tr>
-    <tr><td><code>pt-BR</code></td><td>Brazilian Portuguese</td></tr>
-    <tr><td><code>pt-PT</code></td><td>European Portuguese</td></tr>
-    <tr><td><code>zh-Hans</code></td><td>Simplified Chinese</td></tr>
-    <tr><td><code>zh-Hant</code></td><td>Traditional Chinese</td></tr>
-    <tr><td><code>es-MX</code></td><td>Mexican Spanish</td></tr>
-    <tr><td><code>fr-CA</code></td><td>Canadian French</td></tr>
-  </tbody>
-</table>
+<p lang="de" class="justify">Die Donaudampfschifffahrtsgesellschaft veröffentlichte ihren Jahresbericht …</p></code-block>
+</section>
 
-<h2>Page Language</h2>
-<p>Every page should declare its primary language on the <code>&lt;html&gt;</code> element. This is the single most important use of <code>lang</code>.</p>
+<section>
+  <h2>Values</h2>
+  <p>A <a href="https://www.rfc-editor.org/info/bcp47">BCP 47</a> language tag: a language subtag, optionally followed by script, region and other subtags, separated by hyphens. Matching is case-insensitive.</p>
+  <table>
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>en</code>, <code>fr</code>, <code>ja</code>, <code>ar</code>…</td><td>Language only.</td></tr>
+      <tr><td><code>en-GB</code>, <code>pt-BR</code>, <code>es-MX</code>, <code>fr-CA</code></td><td>Language and region. <code>:lang(en)</code> still matches <code>en-GB</code>.</td></tr>
+      <tr><td><code>zh-Hans</code>, <code>zh-Hant</code>, <code>sr-Latn</code>, <code>ja-Latn</code></td><td>Language and script, e.g. Simplified or Traditional Chinese, or romanised Japanese.</td></tr>
+      <tr><td><code>""</code> (empty)</td><td>The language is unknown. Screen readers fall back to their default voice.</td></tr>
+      <tr><td>Absent</td><td>Inherited from the parent. With nothing set anywhere, the language comes from a <code>Content-Language</code> HTTP header if there is one, otherwise it is unknown.</td></tr>
+    </tbody>
+  </table>
+</section>
 
-<code-block language="html" label="Page language" data-escape><html lang="en">
+<section>
+  <h2>Examples</h2>
+
+  <h3>Page language</h3>
+  <code-block language="html" show-lines label="Every page" data-escape><html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <title>My Page</title>
+    <meta charset="utf-8">
+    <title>Order history</title>
   </head>
-  <body>
-    <p>This page is declared as English.</p>
-  </body>
+  …
 </html></code-block>
 
-<h2>Inline Language Switches</h2>
-<p>When content in a different language appears inside the page, wrap it in an element with the appropriate <code>lang</code>. This tells screen readers to switch pronunciation — without it, a screen reader using English rules will mangle French, Japanese, or any other language.</p>
-
-<code-block language="html" label="Inline language switches" data-escape><p>The French word <span lang="fr">bonjour</span> means "hello".</p>
-
-<p>In Japanese, thank you is <span lang="ja">ありがとう</span>.</p>
+  <h3>Changes of language</h3>
+  <p>Mark every passage, phrase or quotation in another language. Without it, a screen reader reads <span lang="fr">bonjour</span> with English pronunciation.</p>
+  <code-block language="html" show-lines label="Inline language switches" data-escape><p>The French word <span lang="fr">bonjour</span> means "hello".</p>
 
 <blockquote lang="de">
   <p>Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.</p>
-  <footer>— Ludwig Wittgenstein</footer>
 </blockquote></code-block>
+  <p>A quotation inherits the language of its paragraph. Only set <code>lang</code> on the <code>&lt;q&gt;</code> when the quotation itself is in a different language.</p>
 
-<div class="example">
-  <p>The French word <span lang="fr">bonjour</span> means "hello".</p>
-  <p>In Japanese, thank you is <span lang="ja">ありがとう</span>.</p>
-  <blockquote lang="de">
-    <p>Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.</p>
-    <footer>— Ludwig Wittgenstein</footer>
-  </blockquote>
-</div>
+  <h3>Code</h3>
+  <p>Code is not natural language. <code>lang=""</code> marks it as unknown language, which does not stop screen readers reading it; it only stops them applying the page language. To keep code out of machine translation, use <a href="/docs/attributes/translate/"><code>translate="no"</code></a>.</p>
+  <code-block language="html" show-lines label="Code" data-escape><p>Run <code translate="no">npm install</code> first.</p></code-block>
 
-<h2>Effects of lang</h2>
-<p>Setting the correct <code>lang</code> value affects more than you might expect:</p>
+  <h3>Styling by language: <code>q:lang()</code></h3>
+  <p><code>:lang()</code> matches an element's resolved language, including inherited <code>lang</code>, which <code>[lang="…"]</code> does not. Put it on the element you style: <code>q:lang(fr)</code>, not <code>:lang(fr) &gt; q</code>. The compound form also honours <code>lang</code> set on the <code>&lt;q&gt;</code> itself and on a <code>&lt;q lang="en"&gt;</code> nested inside Japanese text. VB already ships these rules (below), so you only need this for your own components.</p>
+  <code-block language="css" show-lines label="Compound :lang() selectors" data-escape>q:lang(fr) { quotes: "\00AB\202F" "\202F\00BB" "\2039\202F" "\202F\203A"; }
 
-<h3>Hyphenation</h3>
-<p>The CSS <code>hyphens: auto</code> property requires a correct <code>lang</code> attribute to know where words can be broken. Without it, automatic hyphenation will not work.</p>
-
-<code-block language="html" label="Hyphenation" data-escape><style>
-  .hyphenated {
-    hyphens: auto;
-    max-width: 20ch;
-  }
-</style>
-
-<!-- hyphens: auto requires the correct lang to know where to break -->
-<p lang="en" class="hyphenated">
-  This paragraph demonstrates automatic hyphenation.
-</p>
-
-<p lang="de" class="hyphenated">
-  Donaudampfschifffahrtsgesellschaftskapitän
-</p></code-block>
-
-<h3>Screen Reader Pronunciation</h3>
-<p>Screen readers maintain pronunciation dictionaries for each language. When <code>lang</code> changes, the screen reader switches to the appropriate voice and pronunciation rules. Without this, "bonjour" would be read with English phonetics.</p>
-
-<h3>Spell-Checking</h3>
-<p>Browsers use <code>lang</code> to select the correct spell-check dictionary. A <code>&lt;textarea lang="fr"&gt;</code> will check spelling against French, not the page's default language.</p>
-
-<h3>Font Selection</h3>
-<p>When the primary font lacks glyphs for a language's characters, the browser uses <code>lang</code> to select the best fallback. This is especially important for CJK (Chinese, Japanese, Korean) text, where the same Unicode codepoint can render differently depending on language.</p>
-
-<h3>Quote Marks</h3>
-<p>The <a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a> element generates language-appropriate quotation marks based on the inherited <code>lang</code> value.</p>
-
-<code-block language="html" label="Language-aware quotes" data-escape><p lang="en">She said, <q>Hello!</q></p>
-<p lang="fr">Elle a dit, <q lang="fr">Bonjour!</q></p>
-<p lang="de">Sie sagte, <q lang="de">Hallo!</q></p></code-block>
-
-<div class="example">
-  <p lang="en">She said, <q>Hello!</q></p>
-  <p lang="fr">Elle a dit, <q lang="fr">Bonjour!</q></p>
-  <p lang="de">Sie sagte, <q lang="de">Hallo!</q></p>
-</div>
-
-<h2>CSS :lang() Pseudo-Class</h2>
-<p>The <code>:lang()</code> pseudo-class matches elements by their computed language, including inherited values. It is more reliable than <code>[lang="..."]</code> attribute selectors because it accounts for inheritance.</p>
-
-<code-block language="css" label="Language-specific styles" data-escape><style>
-  /* Style quotes differently by language */
-  :lang(en) > q { quotes: "\201C" "\201D" "\2018" "\2019"; }
-  :lang(fr) > q { quotes: "\00AB\00A0" "\00A0\00BB"; }
-  :lang(de) > q { quotes: "\201E" "\201C"; }
-
-  /* Different font for CJK languages */
-  :lang(ja), :lang(zh), :lang(ko) {
-    font-family: "Noto Sans CJK", sans-serif;
-  }
-
-  /* Increase line height for scripts that need more vertical space */
-  :lang(ar), :lang(hi), :lang(th) {
-    line-height: 1.8;
-  }
-</style></code-block>
-
-<h2>Code and Non-Language Content</h2>
-<p>Programming code is not natural language. Setting <code>lang=""</code> (empty string) signals that the content has no linguistic meaning, preventing screen readers from attempting to pronounce variable names as words.</p>
-
-<code-block language="html" label="Code with no language" data-escape><!-- Code should not be read as natural language -->
-<pre><code lang="">const greeting = "Hello, world!";</code></pre>
-
-<!-- Or use translate="no" alongside lang -->
-<p>Run <code lang="" translate="no">npm install</code> to install dependencies.</p></code-block>
+/* Override a VB script font instead of redeclaring font-family */
+:root {
+  --font-cjk: "Noto Sans JP", "Hiragino Sans", system-ui, sans-serif;
+}</code-block>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/attributes/dir/"><code>dir</code></a> — set text direction for RTL languages</li>
-    <li><a href="/docs/attributes/translate/"><code>translate</code></a> — control whether content should be translated</li>
-    <li><a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a> — where to set the page language</li>
-    <li><a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a> — inline quotations with language-aware quote marks</li>
+    <li><strong>Script typography.</strong> <code>:where(:lang(zh), :lang(ja), :lang(ko))</code> and the Arabic, Hebrew, Thai and Devanagari equivalents set <code>font-family</code> from <code>--font-cjk</code>, <code>--font-arabic</code>, <code>--font-hebrew</code>, <code>--font-thai</code> and <code>--font-devanagari</code>, plus line height and line-breaking rules. They have zero specificity, so element and component styles still win (<code>src/native-elements/i18n/styles.css</code>). Override the tokens to change fonts.</li>
+    <li><strong>CJK inline semantics.</strong> In Chinese, Japanese and Korean, <code>&lt;em&gt;</code> becomes emphasis dots, and <code>&lt;i&gt;</code>, <code>&lt;cite&gt;</code>, <code>&lt;dfn&gt;</code>, <code>&lt;u&gt;</code> and <code>&lt;var&gt;</code> use script-appropriate substitutes instead of a synthesised italic. Romanised tags (<code>ja-Latn</code>) keep Latin styling. <code>p.indent</code> indents by one full-width character.</li>
+    <li><strong>Quotation marks.</strong> <code>&lt;q&gt;</code> (and <code>cite[data-variant="quoted"]</code>) start from <code>quotes: auto</code> and pin marks for English, British English, German, Swiss German, French (with narrow no-break spaces), Italian, Spanish, Portuguese, Polish, Japanese, Simplified and Traditional Chinese, Korean, Russian and Arabic. See the table in the <a href="/docs/i18n/">i18n guide</a>.</li>
+    <li><strong>Ruby.</strong> <code>data-ruby="auto"</code> shows annotations only when the <code>&lt;rt&gt;</code>'s own language is CJK.</li>
+    <li><strong>Hyphenation.</strong> <code>p.justify</code>, <code>article.blog</code> and <code>article[data-prose]</code> set <code>hyphens: auto</code>, which only hyphenates when the browser knows the language (<code>src/native-elements/paragraph/styles.css</code>, <code>article/styles.css</code>).</li>
+    <li><strong>Formatting uses the nearest <code>lang</code>.</strong> <a href="/docs/attributes/data-format-number/"><code>data-format-number</code></a>, <a href="/docs/attributes/data-format-date/"><code>data-format-date</code></a> and <a href="/docs/attributes/data-format-bytes/"><code>data-format-bytes</code></a> resolve their locale as: the element's <code>data-locale</code>, then the nearest ancestor with <code>lang</code>, then <code>&lt;html lang&gt;</code>, then the browser language (<code>src/lib/number-format.js</code>, <code>getLocale(el)</code> in <code>src/lib/i18n.js</code>). Counts in <code>data-select-all</code>, <code>data-paged</code> and <code>data-sortable</code>, range values and the <code>&lt;video-player&gt;</code> use the same lookup, and <code>data-sortable</code> collates text in the container's language.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>WCAG 3.1.1 Language of Page</strong> requires <code>lang</code> on <code>&lt;html&gt;</code>.</li>
+    <li><strong>WCAG 3.1.2 Language of Parts</strong> requires <code>lang</code> on passages and phrases in another language. Proper names, technical terms and words that have become part of the surrounding language are exempt.</li>
+    <li><strong>Use the right tag.</strong> An English page wrongly marked <code>lang="fr"</code> is read with French pronunciation throughout.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong><code>[lang]</code> selectors miss inheritance.</strong> <code>[lang="de"] q</code> works, but <code>q[lang="de"]</code> misses quotes that inherit German. Use <code>:lang()</code>.</li>
+    <li><strong>Spell-check dictionaries.</strong> Browsers check spelling in the languages the user has configured. Do not rely on <code>lang</code> to switch the dictionary.</li>
+    <li><strong>CJK glyph variants.</strong> The same character can look different in Chinese and Japanese fonts. The right <code>lang</code> lets the browser and VB's tokens pick the right face.</li>
+    <li><strong>Hyphenation needs a dictionary.</strong> <code>hyphens: auto</code> does nothing for a language the browser has no hyphenation dictionary for.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/i18n/">Internationalization guide</a> &mdash; script typography, ruby, quotes and locale resolution.</li>
+    <li><a href="/docs/attributes/dir/"><code>dir</code></a> &mdash; text direction.</li>
+    <li><a href="/docs/attributes/translate/"><code>translate</code></a> &mdash; keep text out of machine translation.</li>
+    <li><a href="/docs/attributes/data-format-number/"><code>data-format-number</code></a> and <a href="/docs/attributes/data-format-date/"><code>data-format-date</code></a> &mdash; locale-aware formatting.</li>
+    <li><a href="/docs/attributes/spellcheck/"><code>spellcheck</code></a> &mdash; spell-checking editable text.</li>
+    <li><a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a>, <a href="/docs/elements/native/ruby/"><code>&lt;ruby&gt;</code></a>, <a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a></li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>lang</code></strong> &mdash; what language the content is in. Always.</li>
+    <li><strong><code>data-locale</code></strong> &mdash; format one number or date in a different locale from its surrounding text, without claiming the text is in that language.</li>
+    <li><strong><code>translate="no"</code></strong> &mdash; text that must not be translated, whatever its language.</li>
   </ul>
 </section>

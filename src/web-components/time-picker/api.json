@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "time-picker",
   "type": "web-component",
-  "description": "Form-associated time input with combobox text entry",
+  "description": "Form-associated time input with combobox text entry and a spinbutton popup",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -15,105 +15,218 @@
       "kind": "native",
       "purpose": "config",
       "type": "string",
-      "description": "Form field name"
+      "description": "Form field name. A name on the inner input (the no-JS path) moves here on upgrade so exactly one value submits; the host's own name wins if both are set."
     },
     {
       "name": "data-format",
       "kind": "data",
       "purpose": "config",
-      "type": "string",
-      "description": "\"12h\" or \"24h\" (default: locale-detected)"
+      "type": "enum",
+      "values": [
+        "12h",
+        "24h"
+      ],
+      "description": "Force a 12- or 24-hour display. Default: the hour cycle of the nearest [lang] (else the browser locale)."
     },
     {
       "name": "disabled",
       "kind": "native",
-      "purpose": "config",
+      "purpose": "semantic-state",
       "type": "boolean",
-      "description": "Disables the picker"
+      "description": "Disables the text input and clock button, closes the popup and drops the value from submission. Observed at runtime; a disabled ancestor fieldset has the same effect. A disabled on the inner input moves here on upgrade."
     },
     {
       "name": "required",
       "kind": "native",
       "purpose": "config",
       "type": "boolean",
-      "description": "Makes selection required"
+      "description": "Makes a time required (valueMissing while empty). Observed at runtime; a required on the inner input works too."
     },
     {
-      "name": "step",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "min",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "max",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "data-disabled",
+      "name": "data-label-input",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Time",
+      "description": "Accessible name for the text input when neither a <label> nor an aria-label/aria-labelledby is present."
     },
     {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "aria-haspopup",
-      "kind": "aria",
-      "purpose": "config"
-    },
-    {
-      "name": "autocomplete",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "placeholder",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "size",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "aria-valuemin",
-      "kind": "aria",
-      "purpose": "config"
-    },
-    {
-      "name": "aria-valuemax",
-      "kind": "aria",
-      "purpose": "config"
-    },
-    {
-      "name": "data-open",
+      "name": "data-label-placeholder",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Type a time…",
+      "description": "Placeholder for the text input."
     },
     {
-      "name": "aria-valuenow",
-      "kind": "aria",
-      "purpose": "config"
+      "name": "data-label-toggle",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Toggle time spinners",
+      "description": "Accessible name for the clock button."
     },
     {
-      "name": "aria-valuetext",
-      "kind": "aria",
-      "purpose": "config"
+      "name": "data-label-dialog",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Choose time",
+      "description": "Accessible name for the spinner popup (role=dialog)."
+    },
+    {
+      "name": "data-label-hours",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Hours",
+      "description": "Accessible name of the hours spinbutton."
+    },
+    {
+      "name": "data-label-minutes",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Minutes",
+      "description": "Accessible name of the minutes spinbutton."
+    },
+    {
+      "name": "data-label-seconds",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Seconds",
+      "description": "Accessible name of the seconds spinbutton."
+    },
+    {
+      "name": "data-label-period",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "AM/PM",
+      "description": "Prefix of the AM/PM button's accessible name (\"AM/PM: PM\"). The AM/PM text itself comes from Intl."
+    },
+    {
+      "name": "data-label-empty",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Not set",
+      "description": "Spinbutton value text while no time is set."
+    },
+    {
+      "name": "data-label-required",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Please select a time",
+      "description": "Validation message when required and empty. A data-message-valuemissing on the inner input wins."
+    },
+    {
+      "name": "data-label-range-underflow",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Choose a time at or after {time}",
+      "description": "Validation message when before min; {time} is the formatted min. A data-message-rangeunderflow on the inner input wins."
+    },
+    {
+      "name": "data-label-range-overflow",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Choose a time at or before {time}",
+      "description": "Validation message when after max; {time} is the formatted max. A data-message-rangeoverflow on the inner input wins."
+    },
+    {
+      "name": "data-label-step-mismatch",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Choose a valid time. The nearest are {lower} and {upper}",
+      "description": "Validation message when off the step grid; {lower}/{upper} are the nearest valid times. A data-message-stepmismatch on the inner input wins."
     }
   ],
   "events": [
     {
-      "name": "time-picker:change"
+      "name": "time-picker:change",
+      "detail": "{ value, hours, minutes, seconds, source: 'pointer' | 'keyboard' | 'api' }",
+      "description": "Fired when the value changes (not on form reset/restore, not when a commit leaves it unchanged). value is 'HH:MM' or 'HH:MM:SS', '' when cleared (hours/minutes/seconds are then null). source is 'api' for .value assignments, 'pointer' for spinner/AM-PM clicks, 'keyboard' for typed commits and spinner keys."
     }
   ],
-  "childAttributes": [],
-  "structure": []
+  "properties": [
+    {
+      "name": "value",
+      "type": "string",
+      "description": "Get or set the time as 'HH:MM' (or 'HH:MM:SS' when seconds are shown). '' when unset; assigning '' or null clears; malformed values are ignored."
+    },
+    {
+      "name": "form",
+      "type": "HTMLFormElement | null",
+      "description": "The associated form"
+    },
+    {
+      "name": "validity",
+      "type": "ValidityState",
+      "description": "Current validity, owned by the host: valueMissing, rangeUnderflow, rangeOverflow (both for a value outside an overnight range), stepMismatch. Anchored on the text input."
+    },
+    {
+      "name": "validationMessage",
+      "type": "string",
+      "description": "Current validation message"
+    },
+    {
+      "name": "willValidate",
+      "type": "boolean",
+      "description": "Whether the element is a candidate for constraint validation"
+    }
+  ],
+  "methods": [
+    {
+      "name": "checkValidity()",
+      "description": "Run constraint validation without showing UI"
+    },
+    {
+      "name": "reportValidity()",
+      "description": "Run constraint validation and show the browser message, anchored on the text input"
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "value",
+      "on": "input",
+      "type": "string",
+      "description": "Initial time (HH:MM[:SS]). The value attribute is the form-reset target; omit it for an empty field."
+    },
+    {
+      "name": "min",
+      "on": "input",
+      "type": "string",
+      "description": "Earliest valid time. Spinners stay at or after it; a typed earlier time is kept and flagged rangeUnderflow. A min later than max is an overnight range."
+    },
+    {
+      "name": "max",
+      "on": "input",
+      "type": "string",
+      "description": "Latest valid time. Spinners stay at or before it; a typed later time is kept and flagged rangeOverflow."
+    },
+    {
+      "name": "step",
+      "on": "input",
+      "type": "string",
+      "description": "Step in seconds (default 60; 'any' disables step checks), counted from min. Spinners snap to it; typed off-step times are flagged stepMismatch. Under 60 (or not a whole minute) shows a seconds spinner; whole hours (3600, 7200…) step the hours spinner and make minutes read-only."
+    },
+    {
+      "name": "name",
+      "on": "input",
+      "type": "string",
+      "description": "Submission name for the no-JS fallback. Moved to the host on upgrade."
+    }
+  ],
+  "structure": [
+    {
+      "element": "<input type=\"time\">",
+      "description": "Required. Supplies value/min/max/step and is the no-JS fallback. Its <label for> (or a <label for> on the host, or an aria-label) names the generated combobox."
+    }
+  ]
 }

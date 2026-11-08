@@ -11,20 +11,20 @@
 
     Upgrade relationship:
     - Without JS, modern browsers: CSS scroll-timeline drives the bar
-      via animation-timeline: scroll(root block). No script needed when
-      tracking the whole document.
-    - Without JS, older browsers: the inner <progress> remains semantic
-      and announceable; the visual bar simply stays at 0%.
-    - With JS: the component upgrades, and falls back to a passive
-      scroll listener when scroll-timeline is unsupported OR when
-      data-for binds progress to a specific element's bounds.
+      via animation-timeline: scroll(root block) when there is no
+      data-for. No script needed to track the whole document.
+    - Without JS, older browsers or with data-for: the bar stays empty.
+      Nothing is lost: the bar is decorative.
+    - With JS: the component upgrades, creates the <progress> child if
+      absent, and runs a passive scroll listener when scroll-timeline is
+      unsupported or data-for binds progress to an element's bounds.
 
-    The <progress> child is the AT anchor — keep it in markup so the
-    component is meaningful before any script runs.
+    The bar is decorative: the <progress> child is always aria-hidden
+    (the scrollable document already exposes the reading position).
   -->
 
   <reading-progress data-for="article-content" data-position="top">
-    <progress max="100" value="0" aria-label="Reading progress"></progress>
+    <progress max="100" value="0" aria-hidden="true"></progress>
   </reading-progress>
 
   <main>

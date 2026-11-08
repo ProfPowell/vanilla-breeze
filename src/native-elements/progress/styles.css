@@ -1,11 +1,20 @@
-/* progress: Progress bar styling */
+/* progress: Progress bar styling
+ *
+ * Tokens (src/tokens/forms.css): --progress-h, --progress-track-bg,
+ * --progress-track-border, --progress-fill, --progress-fill-warning.
+ * The bordered track keeps the remaining extent visible (3:1, WCAG 1.4.11).
+ * Colour variants only swap --progress-fill, so themes that restyle the fill
+ * pseudo-elements keep them by painting with var(--progress-fill).
+ * Name every bar: <label for> (or aria-label) — form-field does not wire it.
+ */
 
 progress {
   appearance: none;
   display: block;
   inline-size: 100%;
   block-size: var(--progress-h);
-  border: none;
+  box-sizing: border-box;
+  border: 1px solid var(--progress-track-border);
   border-radius: var(--radius-full);
   overflow: hidden;
   background: var(--progress-track-bg);
@@ -31,8 +40,10 @@ progress {
 
   /* --- Size Variants (use element.class scoping) --- */
 
+  /* .xs is a hairline: decorative only, never the sole carrier of a value */
   &.xs {
     block-size: var(--size-3xs);
+    border-width: 0;
   }
 
   &.s {
@@ -47,50 +58,45 @@ progress {
     block-size: var(--size-m);
   }
 
-  /* --- Color Variants --- */
+  /* --- Color Variants (swap the fill token; bar, ring and themes follow) --- */
 
   &.success {
-    &::-webkit-progress-value {
-      background: var(--color-success);
-    }
-    &::-moz-progress-bar {
-      background: var(--color-success);
-    }
+    --progress-fill: var(--color-success);
   }
 
   &.warning {
-    &::-webkit-progress-value {
-      background: var(--color-warning);
-    }
-    &::-moz-progress-bar {
-      background: var(--color-warning);
-    }
+    --progress-fill: var(--progress-fill-warning);
   }
 
   &.error {
-    &::-webkit-progress-value {
-      background: var(--color-error);
-    }
-    &::-moz-progress-bar {
-      background: var(--color-error);
-    }
+    --progress-fill: var(--color-error);
   }
 
-  /* --- Indeterminate Progress --- */
+  /* --- Indeterminate Progress ---
+     A shimmer on the track (Blink/WebKit) or the full-width bar (Firefox).
+     Separate rules: an unknown pseudo in a selector list drops the list. */
 
-  &:indeterminate {
+  &:indeterminate::-webkit-progress-bar {
+    background: linear-gradient(
+      90deg,
+      var(--progress-track-bg) 0%,
+      var(--progress-fill) 50%,
+      var(--progress-track-bg) 100%
+    );
+    background-size: 200% 100%;
     animation: progress-indeterminate 1.5s ease-in-out infinite;
+  }
 
-    &::-webkit-progress-bar {
-      background: linear-gradient(
-        90deg,
-        var(--progress-track-bg) 0%,
-        var(--progress-fill) 50%,
-        var(--progress-track-bg) 100%
-      );
-      background-size: 200% 100%;
-      animation: progress-indeterminate 1.5s ease-in-out infinite;
-    }
+  &:indeterminate::-moz-progress-bar {
+    inline-size: 100%;
+    background: linear-gradient(
+      90deg,
+      var(--progress-track-bg) 0%,
+      var(--progress-fill) 50%,
+      var(--progress-track-bg) 100%
+    );
+    background-size: 200% 100%;
+    animation: progress-indeterminate 1.5s ease-in-out infinite;
   }
 }
 
@@ -108,13 +114,17 @@ progress {
    Circular progress via conic-gradient. Enhanced by JS utility that
    auto-syncs --progress from value/max and generates the center label.
    Without JS: renders as a standard linear progress bar (PE baseline).
+   The ring keeps the bar's 1px --progress-track-border edge as its outer
+   circle (3:1), so the remaining arc's extent stays visible. The track is
+   not drawn in the border colour: many themes set --control-border to the
+   fill colour (8bit, art-deco, cyber, terminal), which erased the arc.
    ========================================================================== */
 
 progress[data-type="ring"][data-enhanced] {
   --_ring-size: var(--progress-ring-size, 4em);
   --_ring-width: var(--progress-ring-width, 0.35em);
   --_ring-color: var(--progress-fill);
-  --_ring-track: var(--progress-track-bg);
+  --_ring-track: var(--progress-ring-track, var(--progress-track-bg));
   --_progress: var(--progress, 0);
 
   /* Reset linear bar rendering */
@@ -141,15 +151,17 @@ progress[data-type="ring"][data-enhanced] {
     #000 calc(50% - var(--_ring-width) + 1px)
   );
 
-  /* Hide browser pseudo-elements */
+  /* Hide browser pseudo-elements (incl. the linear indeterminate shimmer) */
   &::-webkit-progress-bar {
     background: transparent;
+    animation: none;
   }
   &::-webkit-progress-value {
     background: transparent;
   }
   &::-moz-progress-bar {
     background: transparent;
+    animation: none;
   }
 }
 
@@ -160,10 +172,7 @@ progress[data-type="ring"][data-size="m"]  { --_ring-size: 4em; --_ring-width: 0
 progress[data-type="ring"][data-size="l"]  { --_ring-size: 6em; --_ring-width: 0.45em; }
 progress[data-type="ring"][data-size="xl"] { --_ring-size: 8em; --_ring-width: 0.55em; }
 
-/* Ring color variants */
-progress[data-type="ring"][data-enhanced].success { --_ring-color: var(--color-success, oklch(55% 0.18 145)); }
-progress[data-type="ring"][data-enhanced].warning { --_ring-color: oklch(60% 0.18 70); }
-progress[data-type="ring"][data-enhanced].error   { --_ring-color: var(--color-error, oklch(55% 0.2 25)); }
+/* Ring colours: .success / .warning / .error set --progress-fill (above). */
 
 /* Ring indeterminate — spinning */
 progress[data-type="ring"][data-enhanced]:indeterminate {
@@ -180,16 +189,32 @@ progress[data-type="ring"][data-enhanced]:indeterminate {
   to { transform: rotate(360deg); }
 }
 
-/* Ring transition for value changes */
-progress[data-type="ring"][data-enhanced]:not(:indeterminate) {
-  transition: background 0.3s ease;
+/* Reduced motion (media query or the VB [data-motion-reduced] switch):
+   an indeterminate bar is an essential progress cue, so slow rather than stop. */
+@media (prefers-reduced-motion: reduce) {
+  progress:indeterminate::-webkit-progress-bar {
+    animation-duration: 4s;
+  }
+
+  progress:indeterminate::-moz-progress-bar {
+    animation-duration: 4s;
+  }
+
+  progress[data-type="ring"][data-enhanced]:indeterminate {
+    animation-duration: 3s;
+  }
 }
 
-/* Ring reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  progress[data-type="ring"][data-enhanced]:indeterminate {
-    animation-duration: 2s;
-  }
+:root[data-motion-reduced] progress:indeterminate::-webkit-progress-bar {
+  animation-duration: 4s;
+}
+
+:root[data-motion-reduced] progress:indeterminate::-moz-progress-bar {
+  animation-duration: 4s;
+}
+
+:root[data-motion-reduced] progress[data-type="ring"][data-enhanced]:indeterminate {
+  animation-duration: 3s;
 }
 
 /* --- Ring wrapper (generated by JS upscale) --- */
@@ -210,20 +235,81 @@ progress[data-type="ring"][data-enhanced]:not(:indeterminate) {
   z-index: 1;
 }
 
-/* --- Labeled Progress (wrapper pattern) --- */
+/* --- Labeled Progress (header row + progress) ---
+   <section class="labeled">
+     <header><label for="p">Uploading</label> <output id="p-value" for="p">45%</output></header>
+     <progress id="p" aria-describedby="p-value" …>
+   Scoped to wrappers that hold a progress so the generic class name cannot
+   restyle unrelated .labeled elements. */
 
-.labeled {
+.labeled:has(> progress) {
   display: flex;
   flex-direction: column;
   gap: var(--size-2xs);
 
-  & > label {
+  & > :is(header, label) {
     display: flex;
     justify-content: space-between;
+    gap: var(--size-s);
     font-size: var(--font-size-s);
   }
 
   & > progress {
     inline-size: 100%;
+  }
+}
+
+/* --- Forced colours ---
+   Author colours are replaced by the system palette, which erased the track
+   and (for rings) the conic fill. Opt out and draw the fill in Highlight over
+   a Canvas track bounded by a CanvasText edge. */
+
+@media (forced-colors: active) {
+  progress {
+    forced-color-adjust: none;
+    --progress-fill: Highlight;
+    --progress-track-bg: Canvas;
+    border: 1px solid CanvasText;
+    background: Canvas;
+
+    &::-webkit-progress-bar {
+      background: Canvas;
+    }
+
+    &::-webkit-progress-value {
+      background: Highlight;
+    }
+
+    &::-moz-progress-bar {
+      background: Highlight;
+    }
+
+    &:indeterminate::-webkit-progress-bar {
+      background: linear-gradient(90deg, Canvas 0%, Highlight 50%, Canvas 100%);
+      background-size: 200% 100%;
+    }
+
+    &:indeterminate::-moz-progress-bar {
+      background: linear-gradient(90deg, Canvas 0%, Highlight 50%, Canvas 100%);
+      background-size: 200% 100%;
+    }
+
+    &.xs {
+      border-width: 1px;
+    }
+  }
+
+  progress[data-type="ring"][data-enhanced] {
+    --_ring-color: Highlight;
+    --_ring-track: GrayText;
+
+    &::-webkit-progress-bar,
+    &::-webkit-progress-value {
+      background: transparent;
+    }
+  }
+
+  progress[data-type="ring"][data-enhanced]::-moz-progress-bar {
+    background: transparent;
   }
 }

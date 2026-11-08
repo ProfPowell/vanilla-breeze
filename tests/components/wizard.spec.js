@@ -6,6 +6,20 @@
  */
 
 import { test, expect } from 'playwright/test';
+import { join } from 'node:path';
+
+const REPO = join(import.meta.dirname, '..', '..');
+
+// Test the working tree: serve the demo files and /src from disk (the
+// on-disk demos load /src/main.css + /src/main.js), not the build.
+test.beforeEach(async ({ page }) => {
+  await page.route('**/src/**', (route) => route.fulfill({
+    path: join(REPO, decodeURIComponent(new URL(route.request().url()).pathname)),
+  }));
+  await page.route('**/docs/examples/demos/*.html', (route) => route.fulfill({
+    path: join(REPO, 'demos/examples/demos', new URL(route.request().url()).pathname.split('/').pop()),
+  }));
+});
 
 const basicPage = '/docs/examples/demos/wizard-basic.html';
 const historyPage = '/docs/examples/demos/wizard-history.html';
@@ -457,7 +471,9 @@ test.describe('wizard — nav.steps sync', () => {
 
 test.describe('wizard — persistence', () => {
 
-  test('form data saved to sessionStorage on step change', async ({ page }) => {
+  // Persistence goes through VBStore: key vb:wizard:{form id}, envelope
+  // { data: { step, data: { name: string[] }, session }, timestamp }.
+  test('form data saved through VBStore on step change', async ({ page }) => {
     await page.goto(persistPage);
     await waitForWizard(page);
 
@@ -469,13 +485,13 @@ test.describe('wizard — persistence', () => {
     await page.waitForTimeout(100);
 
     const saved = await page.evaluate(() => {
-      const raw = sessionStorage.getItem('vb-wizard:persist-wizard');
-      return raw ? JSON.parse(raw) : null;
+      const raw = localStorage.getItem('vb:wizard:persist-wizard');
+      return raw ? JSON.parse(raw).data : null;
     });
 
     expect(saved).not.toBeNull();
     expect(saved.step).toBe(1);
-    expect(saved.data['p-name']).toBe('Alice');
+    expect(saved.data['p-name']).toEqual(['Alice']);
   });
 
   test('page reload restores step and field values', async ({ page }) => {
@@ -514,11 +530,9 @@ test.describe('wizard — persistence', () => {
       /** @type {any} */ (document.querySelector('form[data-wizard]')).wizardReset();
     });
 
-    const saved = await page.evaluate(() => {
-      return sessionStorage.getItem('vb-wizard:persist-wizard');
-    });
-
-    expect(saved).toBeNull();
+    await expect.poll(() => page.evaluate(() => {
+      return localStorage.getItem('vb:wizard:persist-wizard');
+    })).toBeNull();
   });
 });
 

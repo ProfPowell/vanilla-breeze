@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "datetime"
-description: "Provide machine-readable date and time values on time, del, and ins elements. Uses ISO 8601 format while the element's text content remains human-friendly."
+description: "A machine-readable date, time or duration on time, del and ins, while the visible text stays human-friendly. VB's data-format-date formats it for you."
 attributeName: datetime
 attributeType: native
 nativeGroup: Structure
@@ -12,112 +12,116 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>datetime</code> attribute provides a machine-readable date or time value while the element's text content displays a human-friendly version. Search engines, feed readers, and assistive technologies use the attribute value; users see the text.</p>
-<p><strong>Applies to:</strong></p>
-<ul>
-  <li><a href="/docs/elements/native/time/"><code>&lt;time&gt;</code></a> — the primary use; marks up dates, times, and durations</li>
-  <li><code>&lt;del&gt;</code> — records when a deletion was made</li>
-  <li><code>&lt;ins&gt;</code> — records when an insertion was made</li>
-</ul>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>datetime</code> attribute holds a machine-readable date, time or duration, while the element's text says the same thing for people. Scripts, search engines, feed readers and VB components read the attribute; readers see the text.</p>
+  <p><strong>Applies to:</strong></p>
+  <ul>
+    <li><a href="/docs/elements/native/time/"><code>&lt;time&gt;</code></a> &mdash; dates, times, time-zone offsets, weeks, years and durations.</li>
+    <li><a href="/docs/elements/native/del/"><code>&lt;del&gt;</code></a> and <a href="/docs/elements/native/ins/"><code>&lt;ins&gt;</code></a> &mdash; when the change was made: a date, optionally with a time.</li>
+  </ul>
 
-<h2>Values</h2>
-<p>The <code>datetime</code> attribute accepts ISO 8601 formatted strings.</p>
+  <browser-window
+    src="/docs/examples/demos/attr-datetime-basic.html"
+    url="https://vanilla-breeze.com/datetime"
+    title="datetime on time, del and ins"
+    shadow>
+  </browser-window>
 
-<table>
-  <thead><tr><th>Format</th><th>Example</th><th>Meaning</th></tr></thead>
-  <tbody>
-    <tr><td>Date</td><td><code>2024-01-15</code></td><td>January 15, 2024</td></tr>
-    <tr><td>Date + time</td><td><code>2024-01-15T09:30:00</code></td><td>Local time</td></tr>
-    <tr><td>Date + time + UTC</td><td><code>2024-01-15T09:30:00Z</code></td><td>UTC time</td></tr>
-    <tr><td>Date + time + offset</td><td><code>2024-01-15T09:30:00-05:00</code></td><td>With timezone offset</td></tr>
-    <tr><td>Time only</td><td><code>14:30</code></td><td>2:30 PM</td></tr>
-    <tr><td>Year + month</td><td><code>2024-01</code></td><td>January 2024</td></tr>
-    <tr><td>Year + week</td><td><code>2024-W03</code></td><td>Third week of 2024</td></tr>
-    <tr><td>Duration</td><td><code>PT2H30M</code></td><td>2 hours 30 minutes</td></tr>
-    <tr><td>Duration (days)</td><td><code>P3DT4H</code></td><td>3 days 4 hours</td></tr>
-  </tbody>
-</table>
+  <code-block language="html" show-lines label="Native and formatted dates" data-escape><p>Published <time datetime="2026-09-22">22 September 2026</time>.</p>
 
-<h2>Dates and Times</h2>
-<p>The most common use is pairing a machine-readable timestamp with human-friendly text on the <code>&lt;time&gt;</code> element.</p>
+<!-- VB rewrites the text in the reader's locale -->
+<p>Updated <time datetime="2026-11-01T09:00:00Z" data-format-date="relative">1 November 2026</time>.</p></code-block>
+</section>
 
-<code-block language="html" label="Time element with datetime" data-escape><!-- Date only -->
-<p>Published on <time datetime="2024-01-15">January 15, 2024</time>.</p>
+<section>
+  <h2>Values</h2>
+  <p>On <code>&lt;time&gt;</code> the value must be one of these forms. They are a subset of ISO 8601.</p>
+  <table class="props-table">
+    <thead><tr><th>Form</th><th>Example</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Year</td><td><code>2026</code></td><td>The year 2026</td></tr>
+      <tr><td>Month</td><td><code>2026-09</code></td><td>September 2026</td></tr>
+      <tr><td>Date</td><td><code>2026-09-22</code></td><td>22 September 2026</td></tr>
+      <tr><td>Yearless date</td><td><code>09-22</code></td><td>22 September, any year</td></tr>
+      <tr><td>Week</td><td><code>2026-W39</code></td><td>Week 39 of 2026</td></tr>
+      <tr><td>Time</td><td><code>14:30</code>, <code>14:30:15.5</code></td><td>A time of day, no date</td></tr>
+      <tr><td>Local date and time</td><td><code>2026-09-22T14:30</code></td><td>No time zone</td></tr>
+      <tr><td>Global date and time</td><td><code>2026-09-22T14:30Z</code>, <code>2026-09-22T14:30-05:00</code></td><td>A moment in time, with UTC or an offset</td></tr>
+      <tr><td>Time-zone offset</td><td><code>+05:30</code></td><td>An offset on its own</td></tr>
+      <tr><td>Duration</td><td><code>PT1H45M</code>, <code>P3D</code></td><td>1 hour 45 minutes; 3 days</td></tr>
+      <tr><td>Absent (the default)</td><td>&nbsp;</td><td>The element's text is parsed instead</td></tr>
+    </tbody>
+  </table>
+  <p>On <code>&lt;del&gt;</code> and <code>&lt;ins&gt;</code> only a date, optionally followed by a time, is allowed. A space may replace the <code>T</code>. Durations use <code>P</code> (period) and <code>T</code> before time parts; ISO 8601 durations with years or months (<code>P1Y</code>) are not valid in HTML.</p>
+</section>
 
-<!-- Date and time with timezone -->
-<p>Event starts at <time datetime="2024-06-20T19:00:00-05:00">7 PM Central</time>.</p>
+<section>
+  <h2>Examples</h2>
 
-<!-- UTC timestamp -->
-<p>Last updated <time datetime="2024-03-10T14:30:00Z">March 10, 2024 at 2:30 PM UTC</time>.</p>
+  <h3>Dates and times</h3>
+  <code-block language="html" show-lines label="Dates, times and durations" data-escape><p>Event starts <time datetime="2026-06-20T19:00-05:00">7 PM Central, 20 June</time>.</p>
+<p>Doors open at <time datetime="18:30">6:30 PM</time>.</p>
+<p>Runtime <time datetime="PT1H45M">1 hour 45 minutes</time>.</p>
+<p>Shipping takes <time datetime="P3D">3 days</time>.</p></code-block>
+  <p>If the text is already a valid value, <code>datetime</code> can be left off: <code>&lt;time&gt;2026-09-22&lt;/time&gt;</code>. Human-friendly text almost never is.</p>
 
-<!-- Time only -->
-<p>Doors open at <time datetime="18:30">6:30 PM</time>.</p></code-block>
-
-<p>If the <code>&lt;time&gt;</code> element's text content is already a valid ISO 8601 string, the <code>datetime</code> attribute is optional. But in practice, human-friendly text almost never matches the machine format, so the attribute is nearly always needed.</p>
-
-<h2>Durations</h2>
-<p>Durations use the ISO 8601 duration format starting with <code>P</code> (period). Time components are preceded by <code>T</code>.</p>
-
-<code-block language="html" label="Durations" data-escape><!-- Duration: 2 hours 30 minutes -->
-<p>Runtime: <time datetime="PT2H30M">2 hours, 30 minutes</time>.</p>
-
-<!-- Duration: 3 days -->
-<p>Shipping takes <time datetime="P3D">3 business days</time>.</p>
-
-<!-- Duration: 1 year 6 months -->
-<p>Contract length: <time datetime="P1Y6M">18 months</time>.</p></code-block>
-
-<h2>Edit Timestamps</h2>
-<p>On <code>&lt;del&gt;</code> and <code>&lt;ins&gt;</code> elements, the <code>datetime</code> attribute records when the edit was made. This is useful for document revision history and change tracking.</p>
-
-<code-block language="html" label="Edit timestamps" data-escape><!-- When a deletion was made -->
-<p>Price: <del datetime="2024-11-01T09:00:00Z">$49.99</del>
-<ins datetime="2024-11-01T09:00:00Z">$39.99</ins></p>
-
-<!-- Edit log with human-readable context -->
-<del datetime="2024-08-15">
-  <p>This section has been removed as of August 15, 2024.</p>
-</del>
-<ins datetime="2024-08-15">
-  <p>Replacement content added on the same date.</p>
-</ins></code-block>
-
-<h2>Article Dates</h2>
-<p>Use <code>&lt;time&gt;</code> with <code>datetime</code> for publication and modification dates. Search engines use this to determine content freshness.</p>
-
-<code-block language="html" label="Article timestamps" data-escape><article>
-  <h2>New Feature Announcement</h2>
-  <p>
-    <time datetime="2024-09-22T10:00:00Z">September 22, 2024</time>
-    by Jane Smith
-  </p>
-  <p>We are excited to announce the launch of our new dashboard.</p>
+  <h3>Article dates</h3>
+  <code-block language="html" show-lines label="Published and updated" data-escape><article>
+  <h2>New dashboard</h2>
+  <p>Published <time datetime="2026-09-22T10:00Z">22 September 2026</time> by Jane Smith</p>
+  <p>…</p>
   <footer>
-    <p>Last updated: <time datetime="2024-10-05T16:45:00Z">October 5, 2024</time></p>
+    <p>Updated <time datetime="2026-10-05T16:45Z">5 October 2026</time></p>
   </footer>
 </article></code-block>
 
-<h2>Accessibility</h2>
-<ul>
-  <li>Screen readers typically read the visible text content, not the <code>datetime</code> attribute value. Ensure the human-readable text is clear and unambiguous.</li>
-  <li>Avoid displaying only relative times ("3 hours ago") without also providing the absolute time, either as visible text or via <code>datetime</code>.</li>
-  <li>The <code>datetime</code> attribute gives assistive technologies access to the precise timestamp when needed.</li>
-</ul>
-
-<h2>Limitations</h2>
-<ul>
-  <li>Browsers do not render the <code>datetime</code> value visually. It is purely semantic.</li>
-  <li>There is no built-in tooltip or formatting of the <code>datetime</code> value. If you want to show a formatted date on hover, you need JavaScript or a title attribute.</li>
-  <li>Invalid <code>datetime</code> values are silently ignored — the browser will not warn you about malformed ISO strings.</li>
-  <li>The <code>&lt;time&gt;</code> element is the only one where <code>datetime</code> conveys semantic meaning to search engines. On <code>&lt;del&gt;</code>/<code>&lt;ins&gt;</code> it is primarily for tooling and documentation.</li>
-</ul>
+  <h3>Edit timestamps</h3>
+  <code-block language="html" show-lines label="When a change was made" data-escape><p>Price:
+  <del datetime="2026-11-01T09:00Z">$49</del>
+  <ins datetime="2026-11-01T09:00Z">$39</ins>
+</p></code-block>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/elements/native/time/"><code>&lt;time&gt;</code></a> — the time element</li>
-    <li><a href="/docs/attributes/cite/"><code>cite</code> attribute</a> — source URL for blockquotes, del, and ins</li>
-    <li><a href="/docs/attributes/data-format-date/"><code>data-format-date</code></a> — VB attribute for formatting dates</li>
+    <li><strong><a href="/docs/attributes/data-format-date/"><code>data-format-date</code></a></strong> on a <code>&lt;time datetime&gt;</code> rewrites the text with <code>Intl.DateTimeFormat</code> in the reader's locale (<code>short</code>, <code>medium</code>, <code>long</code>, <code>full</code>) or as relative time (<code>relative</code>, refreshed as time passes). The tooltip is built in: in absolute mode the original text moves to <code>title</code>; in relative mode <code>title</code> holds the exact date and time. An authored <code>title</code> is kept (<code>src/utils/format-date-init.js</code>). Date-only values are formatted in UTC so they never shift a day.</li>
+    <li><code>data-format-date</code> only handles values JavaScript's <code>Date</code> can parse: years, months, dates and date-times. Durations, time-only, week and offset values are left as written. Do not use it on yearless dates (<code>09-22</code>): some engines parse them as a date in 2001.</li>
+    <li><strong>Components that read <code>time[datetime]</code>:</strong> <a href="/docs/attributes/data-sortable/"><code>data-sortable</code></a> sorts table cells by it; <a href="/docs/elements/web-components/day-view/"><code>&lt;day-view&gt;</code></a> and <a href="/docs/elements/web-components/week-view/"><code>&lt;week-view&gt;</code></a> place events by it; <a href="/docs/elements/web-components/activity-feed/"><code>&lt;activity-feed&gt;</code></a>, <a href="/docs/elements/web-components/recently-visited/"><code>&lt;recently-visited&gt;</code></a> and <a href="/docs/elements/web-components/comment-thread/"><code>&lt;comment-thread&gt;</code></a> use it for relative times; <a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a> reads page dates from it.</li>
+    <li><strong>Styling.</strong> Every <code>&lt;time&gt;</code> gets <code>font-variant-numeric: tabular-nums</code> so digits line up in tables and lists (<code>src/native-elements/inline-semantics/styles.css</code>).</li>
+    <li><strong><code>&lt;del&gt;</code> / <code>&lt;ins&gt;</code></strong> accept VB's <code>data-author</code>, <code>data-reason</code> and <code>data-announce</code> annotations; see the <a href="/docs/elements/native/ins/"><code>&lt;ins&gt;</code></a> page.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Screen readers read the visible text, not <code>datetime</code>. Make the text clear on its own: "22 September 2026", not "22/09".</li>
+    <li>Relative times ("last week") should have the absolute date available. <code>data-format-date="relative"</code> puts it in <code>title</code>, but <code>title</code> is not reliably exposed to touch or keyboard users, so show the absolute date nearby where it matters.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li>Browsers do not show <code>datetime</code> and do not warn about invalid values. Run an HTML validator.</li>
+    <li>A date-time without <code>Z</code> or an offset is a local time with no zone. Anyone formatting it has to guess the zone; add one for real moments in time.</li>
+    <li>On <code>&lt;del&gt;</code> and <code>&lt;ins&gt;</code>, <code>datetime</code> is for tools and change tracking; nothing displays it.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/native/time/"><code>&lt;time&gt;</code></a>, <a href="/docs/elements/native/del/"><code>&lt;del&gt;</code></a> and <a href="/docs/elements/native/ins/"><code>&lt;ins&gt;</code></a> &mdash; element references.</li>
+    <li><a href="/docs/attributes/data-format-date/"><code>data-format-date</code></a> &mdash; locale-aware and relative formatting.</li>
+    <li><a href="/docs/attributes/cite/"><code>cite</code></a> &mdash; the source of an edit or quotation.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>datetime</code> alone</strong> &mdash; static pages where you write the date text yourself.</li>
+    <li><strong><code>datetime</code> + <code>data-format-date</code></strong> &mdash; dates that should appear in the reader's locale or as relative time, with the exact value in a tooltip.</li>
+    <li><strong>A calendar or feed component</strong> &mdash; when dates drive layout or sorting; they read the same <code>datetime</code>.</li>
   </ul>
 </section>

@@ -15,7 +15,7 @@
       "kind": "aria",
       "purpose": "config",
       "type": "string",
-      "description": "Toolbar label (default \"Reactions\")"
+      "description": "Toolbar label (default: data-label-toolbar, then \"Reactions\"). Also names the palette group."
     },
     {
       "name": "data-trigger-icon",
@@ -32,23 +32,45 @@
       "description": "aria-label for the trigger (default \"Add reaction\")"
     },
     {
+      "name": "data-label-toolbar",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Default toolbar label when no aria-label is authored (default \"Reactions\")"
+    },
+    {
+      "name": "data-label-dialog",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "aria-label of the palette dialog (default \"Choose a reaction\")"
+    },
+    {
+      "name": "data-label-count-one",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Count phrase in chip names for the Intl.PluralRules \"one\" category; {count} is replaced by the Intl.NumberFormat count (default \"{count} reaction\"). Any CLDR category works: data-label-count-zero, -two, -few, -many."
+    },
+    {
+      "name": "data-label-count-other",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Count phrase for every category without its own data-label-count-* (default \"{count} reactions\"). Locale comes from the closest [lang]."
+    },
+    {
       "name": "data-disabled",
       "kind": "data",
       "purpose": "config",
       "type": "boolean",
-      "description": "Read-only mode — chips don't toggle, trigger is disabled"
-    },
-    {
-      "name": "role",
-      "kind": "aria",
-      "purpose": "config",
-      "description": "Set to \"toolbar\""
+      "description": "Read-only mode, observed: chips get aria-disabled and do not toggle, the trigger is disabled and leaves the roving tab order, an open palette closes"
     }
   ],
   "events": [
     {
       "name": "reaction-bar:toggle",
-      "description": "Fires when a chip or palette option is clicked. detail: { reaction, action: 'add'|'remove', count, mine }"
+      "description": "Fires when a chip or palette option is clicked. detail: { reaction, action: 'add'|'remove', count, mine } — count and mine are the values BEFORE the toggle. The chip is then data-pending until setCount() is called for that reaction."
     },
     {
       "name": "reaction-bar:palette-open",
@@ -77,7 +99,19 @@
       "name": "data-mine",
       "on": "button",
       "type": "boolean",
-      "description": "Whether the current user has this reaction"
+      "description": "Whether the current user has this reaction (exposed as aria-pressed)"
+    },
+    {
+      "name": "data-label",
+      "on": "button",
+      "type": "string",
+      "description": "Accessible name of the reaction (e.g. \"Thumbs up\"), on chips and palette buttons; an authored aria-label works too. Falls back to the emoji."
+    },
+    {
+      "name": "data-pending",
+      "on": "button",
+      "type": "boolean",
+      "description": "Output: a toggle for this chip is in flight (also aria-busy); further clicks are ignored until setCount()"
     },
     {
       "name": "data-palette",
@@ -86,5 +120,19 @@
       "description": "Marks a <template> child as the available-reactions palette"
     }
   ],
-  "structure": []
+  "structure": [],
+  "methods": [
+    {
+      "name": "setCount(reaction, count, { mine })",
+      "description": "Update a chip after the server confirms (call it on failure too, with the old values, to roll back). Clears the pending state, creates the chip from the palette template button (keeping its data-label) if missing, and removes the chip at count 0 — focus moves to a neighbour if the chip had it."
+    },
+    {
+      "name": "openPalette()",
+      "description": "Open the palette popover (no-op while data-disabled)"
+    },
+    {
+      "name": "closePalette()",
+      "description": "Close the palette popover"
+    }
+  ]
 }

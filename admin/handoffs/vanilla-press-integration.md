@@ -70,9 +70,9 @@ The single most-quoted convention in this repo (`CLAUDE.md`, `CONVENTIONS.md`, s
 <main data-layout="sidebar">…</main>
 ```
 
-Values: `stack | cluster | center | grid | cover | sidebar | switcher | reel | imposter | text | split | holy-grail | dashboard | regions | media | page-stack`.
+Values: `stack | cluster | center | grid | cover | sidebar | switcher | reel | columns | prose | split | media | regions | page-stack`, plus `sidebar-left | sidebar-right` on `<main>` only. There is no `data-layout="text"` (use `prose`, or `<layout-text>`), and `<layout-imposter>` / `<layout-card>` are element only.
 
-`<body data-page-layout="…">` for page-level shells. See `admin/syntax.md` §5.
+Page templates are a separate attribute: `<body data-page-layout="stack | sidebar-left | sidebar-right | holy-grail | app-shell | dashboard | article | landing">` (bare `data-page-layout` = `stack`). `holy-grail` and `dashboard` are no longer `data-layout` values. See `admin/reference/syntax.md` §5 and `/docs/attributes/data-layout/`.
 
 ### 3. Doc-page demo pattern (only relevant if VanillaPress emits doc-style examples)
 

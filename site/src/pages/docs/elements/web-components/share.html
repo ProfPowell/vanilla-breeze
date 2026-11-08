@@ -44,14 +44,14 @@ crumbLabel: Web Components
       <tr>
         <td><code>url</code></td>
         <td>string</td>
-        <td><code>location.href</code></td>
+        <td>canonical link, then <code>location.href</code></td>
         <td>URL to share</td>
       </tr>
       <tr>
         <td><code>title</code></td>
         <td>string</td>
-        <td><code>document.title</code></td>
-        <td>Share title</td>
+        <td><code>og:title</code>, then <code>document.title</code></td>
+        <td>Share title (the JS property is <code>shareTitle</code>)</td>
       </tr>
       <tr>
         <td><code>text</code></td>
@@ -81,13 +81,13 @@ crumbLabel: Web Components
         <td><code>label</code></td>
         <td>string</td>
         <td><code>Share</code></td>
-        <td>Label for Tier 1 native button</td>
+        <td>Visible label of the Tier 1 native button; it is also the button's accessible name</td>
       </tr>
       <tr>
         <td><code>color</code></td>
         <td>boolean</td>
         <td>absent</td>
-        <td>Use platform brand colours</td>
+        <td>Platform brand colours on each button's border and icon; label text keeps the theme text colour for AA contrast</td>
       </tr>
       <tr>
         <td><code>mastodon-instance</code></td>
@@ -99,10 +99,48 @@ crumbLabel: Web Components
         <td><code>tier</code></td>
         <td>string</td>
         <td>auto</td>
-        <td>Force tier: <code>native</code> or <code>platforms</code>. Overrides auto-detection.</td>
+        <td>Force tier: <code>native</code> or <code>platforms</code>. Overrides auto-detection. <code>native</code> without Web Share support resolves to <code>hidden</code>.</td>
+      </tr>
+      <tr>
+        <td><code>data-tier-resolved</code></td>
+        <td>output</td>
+        <td>&mdash;</td>
+        <td>Set by the component: <code>native</code>, <code>platforms</code>, <code>hidden</code> or <code>selection</code> (inside <code>&lt;selection-menu&gt;</code>)</td>
       </tr>
     </tbody>
   </table>
+</section>
+
+<section>
+  <h2>Localization</h2>
+  <p>Every string the component generates has a <code>data-label-*</code> override on the host. The native button uses <code>label</code>; platform names (X, LinkedIn&hellip;) are brand names and are not translated.</p>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Default</th><th>Used for</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-label-share-page</code></td><td>Share this page</td><td>Name of the share <code>&lt;nav&gt;</code></td></tr>
+      <tr><td><code>data-label-share-on</code></td><td>Share on {platform}</td><td>Platform button name (<code>{platform}</code> is replaced)</td></tr>
+      <tr><td><code>data-label-copy</code></td><td>Copy link</td><td>Copy button label</td></tr>
+      <tr><td><code>data-label-copied</code></td><td>Copied!</td><td>Copy button label for 2 seconds after copying</td></tr>
+      <tr><td><code>data-label-link-copied</code></td><td>Link copied to clipboard</td><td>Screen-reader announcement after copying the link</td></tr>
+      <tr><td><code>data-label-share-selection</code></td><td>Share selection</td><td>Button name inside <code>&lt;selection-menu&gt;</code></td></tr>
+      <tr><td><code>data-label-selection-copied</code></td><td>Selection copied</td><td>Announcement after copying a selection quote</td></tr>
+    </tbody>
+  </table>
+  <code-block language="html" show-lines label="German labels" data-escape><share-wc tier="platforms" platforms="x,linkedin,copy"
+  label="Teilen"
+  data-label-share-page="Diese Seite teilen"
+  data-label-share-on="Auf {platform} teilen"
+  data-label-copy="Link kopieren"
+  data-label-copied="Kopiert!"
+  data-label-link-copied="Link in die Zwischenablage kopiert"></share-wc></code-block>
+</section>
+
+<section>
+  <h2>Inside selection-menu</h2>
+  <p>As a child of <a href="/docs/elements/web-components/selection-menu/"><code>&lt;selection-menu&gt;</code></a>, <code>&lt;share-wc&gt;</code> renders one icon button. It shares the selected text as a quote with the share sheet. Without Web Share it copies the quote instead and announces the copy. The quote links to the resolved <code>url</code> (attribute, then canonical link) with a <code>#:~:text=</code> fragment, so readers land on the quoted passage.</p>
+  <code-block language="html" show-lines label="Quote sharing" data-escape><selection-menu for="post">
+  <share-wc data-label-share-selection="Share quote"></share-wc>
+</selection-menu></code-block>
 </section>
 
 <section>
@@ -182,7 +220,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Progressive Enhancement</h2>
-  <p>For full no-JS support, slot <code>&lt;a&gt;</code> elements with <code>data-platform</code> attributes. The component enhances them with click handlers and substitutes <code>{url}</code>, <code>{title}</code>, <code>{text}</code> tokens in href values.</p>
+  <p>For full no-JS support, slot <code>&lt;a&gt;</code> elements with <code>data-platform</code> attributes. The component enhances them with click handlers and substitutes <code>{url}</code>, <code>{title}</code>, <code>{text}</code> tokens in href values. It keeps the original templates, so setting <code>url</code>, <code>shareTitle</code> or <code>text</code> from JavaScript substitutes them again.</p>
   <code-block language="html" show-lines label="Slotted links with no-JS fallback" data-escape><share-wc>
   <a href="https://x.com/intent/post?url={url}&text={title}"
      data-platform="x" target="_blank" rel="noopener noreferrer">
@@ -233,12 +271,12 @@ crumbLabel: Web Components
       <tr>
         <td><code>share-wc:success</code></td>
         <td><code>{ platform }</code></td>
-        <td>Fired after successful share or copy</td>
+        <td>Fired after a share window opens, the native share resolves, or the link is copied (<code>platform: 'copy'</code>)</td>
       </tr>
       <tr>
         <td><code>share-wc:error</code></td>
-        <td><code>{ platform, error }</code></td>
-        <td>Fired on failure (user cancel is not an error)</td>
+        <td><code>{ platform, error? }</code></td>
+        <td>Fired when native share fails (a user cancel is not an error) or the clipboard write fails. After a native failure the component copies the link instead.</td>
       </tr>
     </tbody>
   </table>
@@ -267,22 +305,22 @@ share.addEventListener('share-wc:error', (e) => {
       <tr>
         <td><code>url</code></td>
         <td>get/set</td>
-        <td>Current share URL</td>
+        <td>Share URL. A value set here wins over the attribute and page metadata, survives reconnects, and re-substitutes slotted tokens.</td>
       </tr>
       <tr>
-        <td><code>title</code></td>
+        <td><code>shareTitle</code></td>
         <td>get/set</td>
-        <td>Current share title</td>
+        <td>Share title, with the same rules. Named so it does not shadow <code>HTMLElement.title</code> (the tooltip).</td>
       </tr>
       <tr>
         <td><code>text</code></td>
         <td>get/set</td>
-        <td>Current share description</td>
+        <td>Share description, with the same rules</td>
       </tr>
       <tr>
         <td><code>share()</code></td>
-        <td>method</td>
-        <td>Programmatically trigger native share</td>
+        <td>method &rarr; <code>Promise&lt;boolean&gt;</code></td>
+        <td>Native tier: opens the share sheet and copies the link if that fails. Other tiers: copies the link. Resolves <code>true</code> when the page was shared or the link was copied.</td>
       </tr>
     </tbody>
   </table>
@@ -290,21 +328,22 @@ share.addEventListener('share-wc:error', (e) => {
 
 // Update share data
 share.url = 'https://example.com/new-page';
-share.title = 'New Title';
+share.shareTitle = 'New Title';
 
-// Trigger native share programmatically
-share.share();</code-block>
+// Share sheet in the native tier, copy the link otherwise
+const ok = await share.share();</code-block>
 </section>
 
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li>Tier 1 button has <code>aria-label="Share this page"</code></li>
-    <li>Tier 2 wraps buttons in <code>&lt;nav aria-label="Share this page"&gt;</code></li>
-    <li>Each platform button has an accessible label: "Share on X", "Copy link", etc.</li>
-    <li>Copy button announces "Copied!" via <code>aria-live="polite"</code></li>
+    <li>The Tier 1 button is named by its visible <code>label</code>, so the name always matches what is on screen, in any language</li>
+    <li>Tier 2 wraps buttons in <code>&lt;nav aria-label="Share this page"&gt;</code> (<code>data-label-share-page</code>)</li>
+    <li>Platform buttons are named "Share on X" and so on, a name that contains the visible platform label. The copy button is named by its visible "Copy link" label.</li>
+    <li>Copying announces "Link copied to clipboard" (<code>data-label-link-copied</code>) through a <code>role="status"</code> live region, and the label reads "Copied!" for 2 seconds</li>
     <li>Icons are hidden from assistive technology with <code>aria-hidden="true"</code></li>
-    <li>Labels remain in the DOM for <code>icon</code> variant (visually hidden, not removed)</li>
+    <li>In the <code>icon</code> variant, labels stay in the accessibility tree (visually hidden, not removed)</li>
+    <li>With <code>color</code>, brand colours apply only to borders and icons, so label text keeps AA contrast</li>
     <li>Reduced motion: transitions disabled via <code>prefers-reduced-motion</code></li>
   </ul>
 </section>

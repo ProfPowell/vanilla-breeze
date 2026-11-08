@@ -29,22 +29,19 @@ crumbLabel: Web Components
   <code-block language="html" show-lines label="Static markup" data-escape><page-info>
   <details>
     <summary>
-      <span class="page-info-author">
-        <a href="/team/jane" rel="author">Jane Doe</a>
-      </span>
+      <span class="page-info-author">Jane Doe</span>
       <span class="page-info-sep" aria-hidden="true">&middot;</span>
       <time datetime="2026-03-15" data-relative>
         15 March 2026
       </time>
       <span class="page-info-sep" aria-hidden="true">&middot;</span>
       <span class="page-info-badge"
-            data-provenance="human-ai-assisted"
-            data-trust="declared"
-            aria-label="Content provenance: human-written, AI-assisted">
+            data-provenance="ai-assisted"
+            data-trust="declared">
         Human-written, AI-assisted
       </span>
     </summary>
-    <nav class="page-info-panel">
+    <section class="page-info-panel">
       <section>
         <h2 class="page-info-section-heading">Author</h2>
         <ul class="page-info-author-list">
@@ -75,6 +72,10 @@ crumbLabel: Web Components
             <dt>Version</dt>
             <dd>1.4.0</dd>
           </dl-item>
+          <dl-item>
+            <dt>Reading time</dt>
+            <dd data-reading-time>&mdash;</dd>
+          </dl-item>
         </dl>
       </section>
       <section>
@@ -82,54 +83,55 @@ crumbLabel: Web Components
         <dl>
           <dl-item>
             <dt>Authorship</dt>
-            <dd>Human-written with AI assistance</dd>
+            <dd>Human-written, AI-assisted</dd>
           </dl-item>
           <dl-item>
             <dt>AI tools used</dt>
             <dd>Claude Sonnet 4 &mdash; research and drafting</dd>
           </dl-item>
           <dl-item>
-            <dt>Human review</dt>
-            <dd>Substantial edit</dd>
+            <dt>Review</dt>
+            <dd>Editor-reviewed</dd>
           </dl-item>
         </dl>
       </section>
-    </nav>
+    </section>
   </details>
 </page-info></code-block>
+  <p>Keep links out of <code>&lt;summary&gt;</code>: it is the disclosure control, so a link inside it competes with the toggle. Put the author link in the panel and plain text in the summary.</p>
+  <p>In static markup the component enhances three hooks: <code>time[data-relative]</code> (localized relative time, absolute date in <code>title</code>), any element with <code>data-reading-time</code> (filled with the estimated reading time), and the first <code>.page-info-badge</code> (trust tier).</p>
 </section>
 
 <section>
   <h2>Auto Mode</h2>
-  <p>When the CMS cannot easily render the full static markup, <code>auto</code> makes the component self-contained. It reads provenance information from <code>&lt;meta&gt;</code> tags in the page <code>&lt;head&gt;</code> and renders the panel automatically.</p>
+  <p>When the CMS cannot easily render the full static markup, <code>auto</code> makes the component self-contained. It reads the <a href="/docs/concepts/document-provenance/">meta-tag contract</a> fields from the page <code>&lt;head&gt;</code> and renders the panel. Every value is inserted as text, never as markup, and links are only rendered when they resolve to <code>http:</code> or <code>https:</code>.</p>
 
-  <code-block language="html" show-lines label="Auto mode" data-escape><!-- Reads all provenance data from <meta> tags -->
-<page-info auto></page-info>
+  <code-block language="html" show-lines label="Auto mode" data-escape><page-info auto></page-info></code-block>
 
-<!-- Required meta tags in <head>: -->
-<!-- <meta name="author" content="Jane Doe"> -->
-<!-- <meta name="last-modified" content="2026-03-15"> -->
-<!-- <meta name="content-provenance" content="human-ai-assisted"> -->
-<!-- <meta name="ai-tools" content="Claude Sonnet 4"> -->
-<!-- <meta name="human-review" content="substantial-edit"> --></code-block>
-
-  <h3>Required Meta Tags</h3>
-  <code-block language="html" show-lines label="Head metadata" data-escape><!-- In <head> — read by page-info in auto mode -->
+  <h3>Meta tags read in auto mode</h3>
+  <code-block language="html" show-lines label="Head metadata" data-escape><!-- Section A: public standards -->
 <meta name="author" content="Jane Doe">
-<meta property="article:author" content="/team/jane">
-<meta name="last-modified" content="2026-03-15">
-<meta name="content-version" content="1.4.0">
-<meta name="content-provenance" content="human-ai-assisted">
-<meta name="ai-tools" content="Claude Sonnet 4">
-<meta name="human-review" content="substantial-edit">
+<link rel="author" href="/team/jane">                <!-- or meta property="article:author" -->
+<meta name="last-modified" content="2026-03-15">     <!-- or meta property="article:modified_time" -->
+<meta property="article:published_time" content="2026-01-10T00:00:00Z">
+<meta itemprop="version" content="1.4.0">
 <meta name="license" content="CC BY 4.0">
-<meta name="license-url"
-      content="https://creativecommons.org/licenses/by/4.0/"></code-block>
+<link rel="license" href="https://creativecommons.org/licenses/by/4.0/">
+<meta name="keywords" content="provenance, metadata">
+
+<!-- Section B: vb:* namespace -->
+<meta name="vb:provenance" content="ai-assisted">
+<meta name="vb:ai-tools" content="Claude Sonnet 4">
+<meta name="vb:review" content="editor-reviewed">
+<meta name="vb:status" content="published">
+<meta name="vb:version-url" content="/changelog#v1-4-0">
+<meta name="concept" content="provenance">          <!-- repeat per concept --></code-block>
+  <p>Concept IDs link to <code>/topics/{id}/</code>. Set <code>data-concept-base</code> to point them elsewhere, for example <code>data-concept-base="/tags/"</code>. A <code>vb:status</code> other than <code>published</code> also adds a status badge to the summary.</p>
 </section>
 
 <section>
   <h2>Provenance Vocabulary</h2>
-  <p>The <code>vb:provenance</code> meta tag and <code>data-provenance</code> attribute use the controlled vocabulary defined in <a href="/docs/attributes/data-provenance/"><code>data-provenance</code></a>. Core tokens describe how the content was produced; extension tokens compose with a core value.</p>
+  <p>The <code>vb:provenance</code> meta tag and <code>data-provenance</code> attribute use the controlled vocabulary defined in <a href="/docs/attributes/data-provenance/"><code>data-provenance</code></a>. Core tokens describe how the content was produced; extension tokens compose with a core value (space-separated; labels are joined with <q>&middot;</q>). Unknown tokens are shown as written.</p>
 
   <table class="props-table">
     <thead>
@@ -137,32 +139,33 @@ crumbLabel: Web Components
     </thead>
     <tbody>
       <tr><td><code>human</code></td><td>core</td><td>Human written</td></tr>
-      <tr><td><code>ai-assisted</code></td><td>core</td><td>AI-assisted</td></tr>
+      <tr><td><code>ai-assisted</code></td><td>core</td><td>Human-written, AI-assisted</td></tr>
       <tr><td><code>ai-generated</code></td><td>core</td><td>AI-generated</td></tr>
       <tr><td><code>translated</code></td><td>extension</td><td>Translated</td></tr>
       <tr><td><code>synthesized</code></td><td>extension</td><td>Synthesized from sources</td></tr>
       <tr><td><code>migrated</code></td><td>extension</td><td>Migrated content</td></tr>
     </tbody>
   </table>
-  <p>Review level is declared separately via <a href="/docs/attributes/data-review/"><code>data-review</code></a>; publication state via <a href="/docs/attributes/data-status/"><code>data-status</code></a>.</p>
+  <p>Review level (<code>vb:review</code>: Unreviewed, Fact-checked, Editor-reviewed) and publication state (<code>vb:status</code>: Draft, Published, Archived) are declared separately; see <a href="/docs/attributes/data-review/"><code>data-review</code></a> and <a href="/docs/attributes/data-status/"><code>data-status</code></a>.</p>
 </section>
 
 <section>
   <h2>Verification Tiers</h2>
-  <p>The badge <code>data-trust</code> attribute indicates the runtime verification tier. The component sets it based on whether a cryptographic signature is present and whether the rendered content matches it. See <a href="/docs/attributes/data-trust/"><code>data-trust</code></a>.</p>
+  <p>The badge <code>data-trust</code> attribute holds the runtime verification tier. The component starts at <code>declared</code> (or <code>undeclared</code>) and, when the page carries <code>&lt;meta name="vb:signature"&gt;</code>, fetches the <code>link rel="author-key"</code> JWK and checks the signature over the <a href="/docs/concepts/document-provenance/">canonical document</a>. The tier is also written as visible text inside the badge (for example <q>Human-written, AI-assisted &middot; Verified</q>), so it never depends on colour alone. See <a href="/docs/attributes/data-trust/"><code>data-trust</code></a>.</p>
 
   <table class="props-table">
     <thead>
-      <tr><th>Tier</th><th><code>data-trust</code></th><th>Badge Style</th><th>Meaning</th></tr>
+      <tr><th>Tier</th><th><code>data-trust</code></th><th>Badge text</th><th>Meaning</th></tr>
     </thead>
     <tbody>
-      <tr><td>0</td><td><code>undeclared</code></td><td>Neutral</td><td>No provenance metadata</td></tr>
-      <tr><td>1</td><td><code>declared</code></td><td>Warning</td><td>Provenance claimed, not verified</td></tr>
-      <tr><td>2</td><td><code>domain-anchored</code></td><td>Info</td><td>Public key reachable at author's domain</td></tr>
-      <tr><td>3</td><td><code>verified</code></td><td>Success</td><td>DOM content matches cryptographic signature</td></tr>
-      <tr><td>&mdash;</td><td><code>failed</code></td><td>Error</td><td>Signature present but content doesn't match</td></tr>
+      <tr><td>0</td><td><code>undeclared</code></td><td>&mdash;</td><td>No provenance metadata</td></tr>
+      <tr><td>1</td><td><code>declared</code></td><td>Self-declared</td><td>Provenance claimed, not verified</td></tr>
+      <tr><td>3</td><td><code>verified</code></td><td>Verified</td><td>Rendered content matches the cryptographic signature</td></tr>
+      <tr><td>&minus;1</td><td><code>failed</code></td><td>Signature failed</td><td>Signature present but content doesn't match, the algorithm is unsupported, or no author key is linked</td></tr>
+      <tr><td>&minus;2</td><td><code>key-unavailable</code></td><td>Key unavailable</td><td>Signature present but the author key could not be fetched or imported</td></tr>
     </tbody>
   </table>
+  <p>The signed <code>url</code> is the raw <code>href</code> of <code>&lt;link rel="canonical"&gt;</code> (normalized when absolute; an empty string when there is no canonical link). The build-time signer and the browser verifier use the same rule, so pages with a relative canonical link, or none, still verify.</p>
 </section>
 
 <section>
@@ -179,13 +182,26 @@ crumbLabel: Web Components
         <td>Render from <code>&lt;meta&gt;</code> tags instead of light DOM</td>
       </tr>
       <tr>
-        <td><code>og-preview</code></td>
-        <td>Boolean</td>
-        <td>&mdash;</td>
-        <td>Show Open Graph social preview card (planned)</td>
+        <td><code>data-concept-base</code></td>
+        <td>URL path</td>
+        <td><code>/topics/</code></td>
+        <td>Auto mode: base for concept links (<code>{base}{id}/</code>)</td>
+      </tr>
+      <tr>
+        <td><code>data-heading-level</code></td>
+        <td><code>2</code>&ndash;<code>6</code></td>
+        <td><code>2</code></td>
+        <td>Auto mode: level of the panel section headings. Match it to where the component sits in the page outline.</td>
+      </tr>
+      <tr>
+        <td><code>data-label-*</code></td>
+        <td>string</td>
+        <td>English</td>
+        <td>Override any UI string: section headings (<code>author</code>, <code>history</code>, <code>provenance</code>, <code>topic</code>), row labels (<code>published</code>, <code>updated</code>, <code>version</code>, <code>authorship</code>, <code>ai-tools</code>, <code>review</code>, <code>status</code>, <code>license</code>, <code>concepts</code>, <code>keywords</code>), tier text (<code>tier-declared</code>, <code>tier-verified</code>, <code>tier-failed</code>, <code>tier-key-unavailable</code>), vocabulary labels (<code>provenance-{token}</code>, <code>review-{token}</code>, <code>status-{token}</code>) and <code>reading-time</code> (template, default <code>~{n}</code>).</td>
       </tr>
     </tbody>
   </table>
+  <p>Relative times use <code>Intl.RelativeTimeFormat</code> and reading time uses <code>Intl.NumberFormat</code>, both in the language of the closest <code>[lang]</code> ancestor. Future dates read <q>in 3 days</q>. Reading time counts the page's outermost <code>[data-signable]</code> roots at 238 words per minute (500 characters per minute for Chinese and Japanese), the same rules as <a href="/docs/elements/web-components/page-stats/"><code>&lt;page-stats&gt;</code></a>; <code>[data-signable="false"]</code>, hidden content and scripts are skipped.</p>
 </section>
 
 <section>
@@ -197,16 +213,17 @@ crumbLabel: Web Components
     <tbody>
       <tr>
         <td><code>page-info:verified</code></td>
-        <td><code>{ status: string, tier: number }</code></td>
-        <td>Fired when trust assessment completes. Bubbles.</td>
+        <td><code>{ status: string, tier: number, reason?: string }</code></td>
+        <td>Bubbles. Fired on connect with the declared tier, then again with the verification result when the page is signed. <code>reason</code> is <code>ok</code>, <code>mismatch</code>, <code>missing-author-key</code>, <code>unsupported-algorithm:…</code>, <code>canonicalize:…</code>, <code>verify:…</code>, or the key fetch error.</td>
       </tr>
     </tbody>
   </table>
 
   <code-block language="javascript" show-lines label="Event handling" data-escape>// Listen for trust assessment
 document.addEventListener('page-info:verified', (e) => {
-  console.log(e.detail.status); // 'declared'
-  console.log(e.detail.tier);   // 1
+  console.log(e.detail.status); // 'declared', then 'verified'
+  console.log(e.detail.tier);   // 1, then 3
+  console.log(e.detail.reason); // undefined, then 'ok'
 });</code-block>
 </section>
 
@@ -220,9 +237,10 @@ document.addEventListener('page-info:verified', (e) => {
   <h2>Accessibility</h2>
   <ul>
     <li><code>&lt;details&gt;/&lt;summary&gt;</code> provides native expand/collapse without JavaScript</li>
-    <li>Trust badges include <code>aria-label</code> with the full provenance description</li>
+    <li>The summary holds only text; links live in the expanded panel so they do not compete with the disclosure toggle</li>
+    <li>The trust tier is spelled out as text inside the badge and the badge colours use AA text tokens; colour is never the only signal. If static markup puts an <code>aria-label</code> on the badge, the component appends the tier to the authored label instead of piling up suffixes</li>
     <li>Separator dots use <code>aria-hidden="true"</code></li>
-    <li>Section headings provide landmarks within the expanded panel</li>
-    <li>Relative time text replaces the <code>&lt;time&gt;</code> content but the <code>datetime</code> attribute preserves the machine-readable date</li>
+    <li>Section headings are real headings (level set with <code>data-heading-level</code>), so the panel shows up in heading navigation</li>
+    <li>Relative time text replaces the <code>&lt;time&gt;</code> content; the <code>datetime</code> attribute keeps the machine-readable date and <code>title</code> shows the absolute date</li>
   </ul>
 </section>

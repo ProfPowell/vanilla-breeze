@@ -3,96 +3,199 @@ import { VBElement } from '../../lib/vb-element.js';
 
 /**
  * trust-filter: Provenance lens — filter pages by vb:provenance, vb:review,
- * vb:status, and signed status.
+ * vb:status, and whether a signature is declared.
  *
- * Reads pages.json (data-lens-src) and renders interactive checkbox chips
- * across the four dimensions plus a results list. Multiple chips combine
- * with OR within a dimension and AND across dimensions.
+ * Reads pages.json (data-lens-src) and renders checkbox groups across the
+ * four dimensions plus a results list. Multiple values combine with OR
+ * within a dimension and AND across dimensions.
+ *
+ * The "Has signature" dimension reflects pages.json `signed`, which the
+ * build sets when a page carries a vb:signature meta. It is NOT a verified
+ * trust claim — verification happens client-side in <page-info>.
+ *
+ * Only the count is a live region (<output>); the list renders beside it,
+ * so a change announces "N of M pages" rather than every title. Nothing is
+ * announced and no event fires on the initial render.
  *
  * @attr {string} data-lens-src   URL to pages.json (or compatible)
  * @attr {string} src             Alias for data-lens-src
+ * @attr {string} data-label-*    Text overrides (see DEFAULT_LABELS keys)
  *
- * @fires trust-filter:change   detail: { selected, count }
+ * @fires trust-filter:change   detail: { selected, count } — reader changes or clears a filter
  *
  * @example
  *   <trust-filter data-lens-src="/pages.json"></trust-filter>
  */
+
+const DEFAULT_LABELS = {
+  form: 'Filter pages',
+  provenance: 'How was it made',
+  review: 'Review',
+  status: 'Status',
+  signed: 'Has signature',
+  yes: 'Yes',
+  no: 'No',
+  clear: 'Clear all',
+  page: '{count} of {total} page',
+  pages: '{count} of {total} pages',
+  'has-signature': 'has signature',
+  error: 'Pages could not be loaded.',
+  'no-source': 'No data source set.',
+};
+
+const DIMENSIONS = /** @type {const} */ (['provenance', 'review', 'status', 'signed']);
+
+/**
+ * Pure: return the href if it is http(s) or relative, else null.
+ * Mirrors author-index's safeHref.
+ * @param {unknown} raw
+ * @returns {string | null} The safe href, or null.
+ */
+export function safeHref(raw) {
+  const s = String(raw ?? '').trim();
+  if (!s) return null;
+  try {
+    const { protocol } = new URL(s, 'https://trust-filter.invalid/');
+    return protocol === 'http:' || protocol === 'https:' ? s : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Pure: space-separated provenance tokens. @param {unknown} v */
+function tokens(v) {
+  return String(v ?? '').split(/\s+/).filter(Boolean);
+}
+
+/**
+ * Pure: does a page match the selection? OR within a dimension, AND across.
+ * @param {any} p
+ * @param {Record<string, Set<string>>} selected
+ * @returns {boolean} True when the page passes every active dimension.
+ */
+export function matchesSelection(p, selected) {
+  if (selected.provenance?.size) {
+    if (!tokens(p.provenance).some((t) => selected.provenance.has(t))) return false;
+  }
+  if (selected.review?.size && !selected.review.has(p.review)) return false;
+  if (selected.status?.size && !selected.status.has(p.status)) return false;
+  /* Both "yes" and "no" (or neither) means no constraint. */
+  if (selected.signed?.size === 1) {
+    const want = selected.signed.has('yes');
+    if (!!p.signed !== want) return false;
+  }
+  return true;
+}
+
 class TrustFilter extends VBElement {
-  /** @type {Array} */
+  /** @type {any[]} */
   #pages = [];
-  /** @type {{ provenance: Set<string>, review: Set<string>, status: Set<string>, signed: Set<string> }} */
-  #selected = {
-    provenance: new Set(),
-    review: new Set(),
-    status: new Set(),
-    signed: new Set()
-  };
+  /** @type {Record<string, Set<string>>} */
+  #selected = emptySelection();
+  /** Bumped per setup/teardown so stale fetches never render. */
+  #gen = 0;
 
   setup() {
+    const gen = ++this.#gen;
+    /* Controls are rebuilt unchecked, so the selection must start empty too. */
+    this.#selected = emptySelection();
     const src = this.getAttribute('data-lens-src') || this.getAttribute('src');
     if (!src) {
-      this.#renderError('No data source — set data-lens-src or src to a pages.json URL.');
+      this.#renderError(this.#label('no-source'));
       return;
     }
-    this.#loadFromSrc(src).catch(() => { /* error rendered by loader */ });
+    this.#loadFromSrc(src, gen);
   }
 
-  async #loadFromSrc(src) {
+  teardown() {
+    this.#gen++;
+  }
+
+  async #loadFromSrc(src, gen) {
     let payload;
     try {
       const res = await fetch(src);
       if (!res.ok) throw new Error(`status ${res.status}`);
       payload = await res.json();
     } catch (err) {
-      this.#renderError(`Could not load ${src}: ${err.message}`);
+      if (gen !== this.#gen) return;
+      console.warn(`[trust-filter] could not load ${src}:`, err);
+      this.#renderError(this.#label('error'));
       return;
     }
-    this.#pages = Array.isArray(payload) ? payload : (payload.pages || []);
+    if (gen !== this.#gen) return;
+    const pages = Array.isArray(payload) ? payload : payload?.pages;
+    this.#pages = Array.isArray(pages) ? pages.filter((p) => p && typeof p === 'object') : [];
     this.#renderShell();
     this.#renderResults();
   }
 
   #renderShell() {
-    const dims = [
-      { key: 'provenance', label: 'How was it made', values: this.#unique('provenance') },
-      { key: 'review', label: 'Review', values: this.#unique('review') },
-      { key: 'status', label: 'Status', values: this.#unique('status') },
-      { key: 'signed', label: 'Signed', values: ['yes', 'no'] }
-    ];
+    const values = {
+      provenance: this.#unique('provenance'),
+      review: this.#unique('review'),
+      status: this.#unique('status'),
+      signed: ['yes', 'no'],
+    };
 
-    const html = ['<form data-trust-filter-controls aria-label="Filter pages">'];
-    for (const dim of dims) {
-      if (dim.values.length === 0) continue;
-      html.push(`<fieldset data-dim="${dim.key}"><legend>${escapeHtml(dim.label)}</legend>`);
-      for (const v of dim.values) {
-        const id = `tf-${dim.key}-${slugify(v)}`;
-        html.push(`<label for="${id}"><input type="checkbox" id="${id}" data-dim="${escapeAttr(dim.key)}" value="${escapeAttr(v)}"> <span>${escapeHtml(humanize(v))}</span></label>`);
+    const form = document.createElement('form');
+    form.setAttribute('data-trust-filter-controls', '');
+    form.setAttribute('aria-label', this.#label('form'));
+
+    for (const dim of DIMENSIONS) {
+      if (values[dim].length === 0) continue;
+      const fieldset = document.createElement('fieldset');
+      fieldset.dataset.dim = dim;
+      const legend = document.createElement('legend');
+      legend.textContent = this.#label(dim);
+      fieldset.append(legend);
+      for (const v of values[dim]) {
+        /* Input nested in its label: no ids, so no cross-instance collisions. */
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.dataset.dim = dim;
+        input.value = v;
+        const span = document.createElement('span');
+        span.textContent = dim === 'signed' ? this.#label(v) : humanize(v);
+        label.append(input, ' ', span);
+        fieldset.append(label);
       }
-      html.push(`</fieldset>`);
+      form.append(fieldset);
     }
-    html.push(`<button type="reset" class="ghost">Clear all</button>`);
-    html.push('</form>');
-    html.push('<output data-trust-filter-results aria-live="polite"></output>');
-    this.innerHTML = html.join('\n');
 
-    const form = /** @type {HTMLFormElement} */ (this.querySelector('form'));
+    const reset = document.createElement('button');
+    reset.type = 'reset';
+    reset.className = 'ghost';
+    reset.textContent = this.#label('clear');
+    form.append(reset);
+
+    const count = document.createElement('output');
+    count.setAttribute('data-trust-filter-count', '');
+    count.setAttribute('aria-live', 'polite');
+
+    const list = document.createElement('ul');
+    list.setAttribute('data-trust-filter-results', '');
+
+    this.replaceChildren(form, count, list);
+
     form.addEventListener('change', (e) => {
       const target = /** @type {HTMLInputElement | null} */ (e.target);
-      if (target && target.matches('input[type="checkbox"]')) {
-        const dim = target.getAttribute('data-dim');
-        const val = target.value;
-        const set = dim ? this.#selected[dim] : null;
-        if (!set) return;
-        if (target.checked) set.add(val);
-        else set.delete(val);
-        this.#renderResults();
-      }
+      if (!target?.matches('input[type="checkbox"]')) return;
+      const set = this.#selected[target.dataset.dim || ''];
+      if (!set) return;
+      if (target.checked) set.add(target.value);
+      else set.delete(target.value);
+      this.#renderResults();
+      this.#emitChange();
     });
 
     form.addEventListener('reset', () => {
-      for (const set of Object.values(this.#selected)) set.clear();
-      /* Defer until reset clears native checked state */
-      setTimeout(() => this.#renderResults(), 0);
+      /* Selection is the source of truth, so the results can update now;
+         the native reset unchecks the boxes right after this handler. */
+      this.#selected = emptySelection();
+      this.#renderResults();
+      this.#emitChange();
     });
   }
 
@@ -100,62 +203,75 @@ class TrustFilter extends VBElement {
     const out = new Set();
     for (const p of this.#pages) {
       const v = p[field];
-      if (!v) continue;
+      if (!v || typeof v !== 'string') continue;
       /* provenance is space-composable */
-      if (field === 'provenance') {
-        for (const tok of String(v).split(/\s+/).filter(Boolean)) out.add(tok);
-      } else {
-        out.add(v);
-      }
+      if (field === 'provenance') for (const t of tokens(v)) out.add(t);
+      else out.add(v);
     }
     return [...out].sort();
   }
 
-  #matches(p) {
-    if (this.#selected.provenance.size) {
-      const tokens = (p.provenance || '').split(/\s+/).filter(Boolean);
-      if (!tokens.some((t) => this.#selected.provenance.has(t))) return false;
-    }
-    if (this.#selected.review.size && !this.#selected.review.has(p.review)) return false;
-    if (this.#selected.status.size && !this.#selected.status.has(p.status)) return false;
-    if (this.#selected.signed.size) {
-      const want = this.#selected.signed;
-      const isSigned = !!p.signed;
-      if (want.has('yes') && !isSigned) return false;
-      if (want.has('no') && isSigned) return false;
-      if (want.has('yes') && want.has('no')) { /* both — no filter */ }
-    }
-    return true;
+  #renderResults() {
+    const count = this.querySelector('[data-trust-filter-count]');
+    const list = /** @type {HTMLUListElement | null} */ (this.querySelector('[data-trust-filter-results]'));
+    if (!count || !list) return;
+    const matched = this.#pages.filter((p) => matchesSelection(p, this.#selected));
+
+    const locale = this.#locale();
+    const total = this.#pages.length;
+    const fmt = new Intl.NumberFormat(locale);
+    const key = new Intl.PluralRules(locale).select(total) === 'one' ? 'page' : 'pages';
+    count.textContent = this.#label(key)
+      .replaceAll('{count}', fmt.format(matched.length))
+      .replaceAll('{total}', fmt.format(total));
+
+    const items = matched.map((p) => {
+      const li = document.createElement('li');
+      const text = String(p.title || p.url || '');
+      const href = safeHref(p.url);
+      if (href) {
+        const a = document.createElement('a');
+        a.href = href;
+        a.textContent = text;
+        li.append(a);
+      } else {
+        li.append(text);
+      }
+
+      const labels = [];
+      if (typeof p.provenance === 'string' && p.provenance) {
+        const chip = document.createElement('span');
+        chip.className = 'trust-filter-prov';
+        chip.dataset.provenance = p.provenance;
+        chip.textContent = p.provenance;
+        labels.push(chip);
+      }
+      if (p.review && p.review !== 'unreviewed') labels.push(String(p.review));
+      if (p.status && p.status !== 'published') labels.push(String(p.status));
+      if (p.signed) {
+        const sig = document.createElement('span');
+        sig.className = 'trust-filter-signature';
+        sig.textContent = this.#label('has-signature');
+        labels.push(sig);
+      }
+      if (labels.length) {
+        const small = document.createElement('small');
+        labels.forEach((l, i) => { if (i) small.append(' · '); small.append(l); });
+        li.append(small);
+      }
+      return li;
+    });
+    list.replaceChildren(...items);
+    list.hidden = items.length === 0;
   }
 
-  #renderResults() {
-    const out = this.querySelector('[data-trust-filter-results]');
-    if (!out) return;
-    const matched = this.#pages.filter((p) => this.#matches(p));
-
-    const parts = [];
-    parts.push(`<p class="trust-filter-count">${matched.length} of ${this.#pages.length} pages</p>`);
-    if (matched.length) {
-      parts.push('<ul class="trust-filter-list">');
-      for (const p of matched) {
-        const labels = [
-          p.provenance ? `<span class="trust-filter-prov" data-provenance="${escapeAttr(p.provenance)}">${escapeHtml(p.provenance)}</span>` : '',
-          p.review && p.review !== 'unreviewed' ? `<span>${escapeHtml(p.review)}</span>` : '',
-          p.status && p.status !== 'published' ? `<span>${escapeHtml(p.status)}</span>` : '',
-          p.signed ? `<span class="trust-filter-signed">signed</span>` : ''
-        ].filter(Boolean).join(' · ');
-        parts.push(`<li><a href="${escapeAttr(p.url)}">${escapeHtml(p.title || p.url)}</a>${labels ? `<small>${labels}</small>` : ''}</li>`);
-      }
-      parts.push('</ul>');
-    }
-    out.innerHTML = parts.join('\n');
-
-    const selectedFlat = {};
-    for (const [k, v] of Object.entries(this.#selected)) selectedFlat[k] = [...v];
-
+  #emitChange() {
+    const selected = {};
+    for (const [k, v] of Object.entries(this.#selected)) selected[k] = [...v];
+    const count = this.#pages.filter((p) => matchesSelection(p, this.#selected)).length;
     this.dispatchEvent(new CustomEvent('trust-filter:change', {
-      detail: { selected: selectedFlat, count: matched.length },
-      bubbles: true
+      detail: { selected, count },
+      bubbles: true,
     }));
   }
 
@@ -163,22 +279,30 @@ class TrustFilter extends VBElement {
     const p = document.createElement('p');
     p.setAttribute('data-trust-filter-error', '');
     p.textContent = message;
-    this.innerHTML = '';
-    this.append(p);
+    this.replaceChildren(p);
+  }
+
+  #label(key) {
+    return this.getAttribute(`data-label-${key}`) || DEFAULT_LABELS[key];
+  }
+
+  #locale() {
+    const lang = this.closest('[lang]')?.getAttribute('lang') || undefined;
+    try {
+      return Intl.getCanonicalLocales(lang)[0];
+    } catch {
+      return undefined;
+    }
   }
 }
 
-function escapeHtml(s) {
-  return String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+function emptySelection() {
+  return Object.fromEntries(DIMENSIONS.map((d) => [d, new Set()]));
 }
-function escapeAttr(s) {
-  return String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-}
-function slugify(s) {
-  return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
+
+/** Display form of a data token: hyphens become spaces (case left to CSS). */
 function humanize(s) {
-  return String(s).replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return String(s).replace(/-/g, ' ');
 }
 
 registerComponent('trust-filter', TrustFilter);

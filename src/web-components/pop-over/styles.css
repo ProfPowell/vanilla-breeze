@@ -2,7 +2,10 @@
    Re-asserts display:none under VB's cascade layers (UA rule loses
    to author rules — see popover_display_gotcha memory). */
 
-pop-over:not(:defined) {
+/* Hide a script-only host until it upgrades. An authored [popover]
+   host is left to the popover rule below, so it still opens via
+   popovertarget without script (progressive enhancement). */
+pop-over:not(:defined):not([popover]) {
   display: none;
 }
 
@@ -12,8 +15,11 @@ pop-over[popover]:not(:popover-open) {
 }
 
 pop-over[popover] {
-  /* Reset popover defaults so VB tokens own the surface. */
-  margin: 0;
+  /* VB tokens own the surface. margin: auto restores the UA popover
+     centring (VB's element reset zeroes it) for a pop-over with no
+     anchor, e.g. manual mode opened from script; anchored hosts set
+     their offset margin below and the JS fallback writes margin: 0. */
+  margin: auto;
   border: var(--border-width-thin) solid var(--color-border);
   background: var(--color-surface-raised);
   color: var(--color-text);
@@ -57,6 +63,13 @@ pop-over[popover] {
     pop-over[popover][data-position="left-end"]     { position-area: left span-top; }
     pop-over[popover][data-position="right-start"]  { position-area: right span-bottom; }
     pop-over[popover][data-position="right-end"]    { position-area: right span-top; }
+
+    /* Documented default: bottom. role=tooltip hosts are excluded — the
+       tooltip cascade places them with anchor() insets, and a non-none
+       position-area would turn their auto insets into 0. */
+    pop-over[popover][data-anchor-name]:not([data-position], [role="tooltip"]) {
+      position-area: bottom;
+    }
   }
 }
 

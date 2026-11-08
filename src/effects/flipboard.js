@@ -1,165 +1,172 @@
 /**
  * Flipboard effect — split-flap departure board display.
- * Stamp effect — SVG noise filter injector.
+ *
+ * Accessible: the board's cells are aria-hidden and the original text is
+ * kept once in a visually hidden copy (shared splitter), so a screen reader
+ * reads "Gate 42", not every flap four times. Cells are grapheme clusters
+ * (Intl.Segmenter), so emoji and accented letters never split.
+ *
+ * Lifecycle: per-element state lives in a WeakMap. cleanup() cancels the
+ * running flips and restores the original text (original case), so a
+ * removed + re-inserted or cloned board rebuilds from the real text.
+ *
+ * Custom property: --vb-flip-ms — one flip, a number of milliseconds or a
+ * CSS time (default 60). JS timing and the CSS flip animation both follow it.
  */
 
 import { VB } from '../lib/vb.js'
+import { replaceWithVisual, unsplit, plainText, graphemes } from '../lib/split-text.js'
 
+const INIT = 'data-effect-flipboard-init'
 const FLAP_CHARS = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,:!?/-'
-const FLIP_MS = 60
+const DEFAULT_FLIP_MS = 60
 const DWELL_MS = 30
 const STAGGER_MS = 80
+const NBSP = ' '
+
+/**
+ * @typedef {object} Board
+ * @property {string} original  authored text (restored on cleanup)
+ * @property {string[]} chars   upper-cased graphemes, one per cell
+ * @property {number} generation  bumped to cancel a running sequence
+ * @property {Set<number>} timers
+ */
+
+/** @type {WeakMap<Element, Board>} */
+const boards = new WeakMap()
 
 function createCharCell() {
   const cell = document.createElement('span')
   cell.className = 'vb-flap-char'
-  cell.innerHTML = `
-    <span class="vb-flap-top"><span class="vb-flap-text">\u00A0</span></span>
-    <span class="vb-flap-bottom"><span class="vb-flap-text">\u00A0</span></span>
-    <span class="vb-flap-flip-top"><span class="vb-flap-text">\u00A0</span></span>
-    <span class="vb-flap-flip-bottom"><span class="vb-flap-text">\u00A0</span></span>
-    <span class="vb-flap-hinge"></span>
-  `
+  for (const part of ['top', 'bottom', 'flip-top', 'flip-bottom']) {
+    const half = document.createElement('span')
+    half.className = `vb-flap-${part}`
+    const text = document.createElement('span')
+    text.className = 'vb-flap-text'
+    text.textContent = NBSP
+    half.append(text)
+    cell.append(half)
+  }
+  const hinge = document.createElement('span')
+  hinge.className = 'vb-flap-hinge'
+  cell.append(hinge)
   return cell
 }
 
 function setCharImmediate(cell, ch) {
-  for (const el of cell.querySelectorAll('.vb-flap-text')) {
-    el.textContent = ch || '\u00A0'
-  }
+  for (const el of cell.querySelectorAll('.vb-flap-text')) el.textContent = ch || NBSP
 }
 
-function flipChar(cell, from, to) {
-  return new Promise(resolve => {
-    const topHalf = cell.querySelector('.vb-flap-top .vb-flap-text')
-    const bottomHalf = cell.querySelector('.vb-flap-bottom .vb-flap-text')
-    const flipTop = cell.querySelector('.vb-flap-flip-top')
-    const flipTopText = flipTop.querySelector('.vb-flap-text')
-    const flipBottom = cell.querySelector('.vb-flap-flip-bottom')
-    const flipBottomText = flipBottom.querySelector('.vb-flap-text')
-
-    topHalf.textContent = from || '\u00A0'
-    bottomHalf.textContent = from || '\u00A0'
-    flipTopText.textContent = from || '\u00A0'
-    flipBottomText.textContent = to || '\u00A0'
-
-    flipTop.classList.add('vb-flap-flipping')
-    flipBottom.classList.add('vb-flap-flipping')
-
-    setTimeout(() => { topHalf.textContent = to || '\u00A0' }, FLIP_MS / 2)
-
-    setTimeout(() => {
-      bottomHalf.textContent = to || '\u00A0'
-      flipTop.classList.remove('vb-flap-flipping')
-      flipBottom.classList.remove('vb-flap-flipping')
-      resolve(undefined)
-    }, FLIP_MS)
+/** setTimeout tracked on the board so cleanup can cancel it. */
+function wait(board, ms) {
+  return new Promise((resolve) => {
+    const id = window.setTimeout(() => { board.timers.delete(id); resolve(undefined) }, ms)
+    board.timers.add(id)
   })
 }
 
-async function cycleChar(cell, targetChar, totalFlips, generation, el) {
-  let currentIdx = 0
-  for (let f = 0; f < totalFlips; f++) {
-    if (el._flipGeneration !== generation) return
-    const isLast = f === totalFlips - 1
-    const from = FLAP_CHARS[currentIdx % FLAP_CHARS.length]
-    const to = isLast ? targetChar : FLAP_CHARS[(currentIdx + 1) % FLAP_CHARS.length]
-    await flipChar(cell, from, to)
-    currentIdx++
-    if (!isLast) await new Promise(r => setTimeout(r, DWELL_MS))
+async function flipChar(board, cell, from, to, flipMs) {
+  const topHalf = cell.querySelector('.vb-flap-top .vb-flap-text')
+  const bottomHalf = cell.querySelector('.vb-flap-bottom .vb-flap-text')
+  const flipTop = cell.querySelector('.vb-flap-flip-top')
+  const flipBottom = cell.querySelector('.vb-flap-flip-bottom')
+
+  topHalf.textContent = from || NBSP
+  bottomHalf.textContent = from || NBSP
+  flipTop.querySelector('.vb-flap-text').textContent = from || NBSP
+  flipBottom.querySelector('.vb-flap-text').textContent = to || NBSP
+  flipTop.classList.add('vb-flap-flipping')
+  flipBottom.classList.add('vb-flap-flipping')
+
+  await wait(board, flipMs / 2)
+  topHalf.textContent = to || NBSP
+  await wait(board, flipMs / 2)
+  bottomHalf.textContent = to || NBSP
+  flipTop.classList.remove('vb-flap-flipping')
+  flipBottom.classList.remove('vb-flap-flipping')
+}
+
+async function cycleChar(board, cell, target, flips, generation, flipMs) {
+  for (let f = 0; f < flips; f++) {
+    if (board.generation !== generation) return
+    const last = f === flips - 1
+    const from = FLAP_CHARS[f % FLAP_CHARS.length]
+    const to = last ? target : FLAP_CHARS[(f + 1) % FLAP_CHARS.length]
+    await flipChar(board, cell, from, to, flipMs)
+    if (!last) await wait(board, DWELL_MS)
   }
 }
 
-function buildBoard(el, text) {
-  const generation = (el._flipGeneration || 0) + 1
-  el._flipGeneration = generation
+function cancel(board) {
+  board.generation++
+  for (const id of board.timers) clearTimeout(id)
+  board.timers.clear()
+}
 
-  while (el.firstChild) el.removeChild(el.firstChild)
+/** Build the cells (aria-hidden) beside a visually hidden copy of the text. */
+function buildBoard(el, board) {
+  const visual = replaceWithVisual(el, board.original)
   el.classList.add('vb-flap-board')
-
-  const cells = []
-  for (let i = 0; i < text.length; i++) {
-    const cell = createCharCell()
-    el.appendChild(cell)
-    cells.push(cell)
-  }
-  el._flipboardCells = cells
-
-  return { cells, generation }
+  return board.chars.map(() => visual.appendChild(createCharCell()))
 }
 
-async function runFlipSequence(el, text, cells, generation) {
-  const promises = cells.map((cell, i) => {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        if (el._flipGeneration !== generation) { resolve(undefined); return }
-        const flips = 4 + Math.floor(Math.random() * 7)
-        cycleChar(cell, text[i], flips, generation, el).then(resolve)
-      }, i * STAGGER_MS)
-    })
-  })
-
-  await Promise.all(promises)
-
-  if (el._flipGeneration === generation) {
-    cells.forEach((cell, i) => setCharImmediate(cell, text[i]))
-  }
-}
-
-VB.effect('flipboard', (el) => {
-  // The only effect that lacked this guard. Without it a second VB instance
-  // re-runs the effect after the board is built, and `el.textContent` then
-  // reads back the concatenated flap cells — mid-flip filler, not the original
-  // string — so the board rebuilds from garbage.
-  if (el.hasAttribute('data-effect-flipboard-init')) return
-  el.setAttribute('data-effect-flipboard-init', '')
-
-  const text = (el.textContent || '').trim().toUpperCase()
-  if (!text) return
-
-  el._flipboardOriginal = text
+function run(el, board) {
+  cancel(board)
+  const host = /** @type {HTMLElement} */ (el)
+  const flipMs = VB.params(host).getTime('flip-ms', DEFAULT_FLIP_MS)
+  host.style.setProperty('--_vb-flip-duration', `${flipMs}ms`)
+  const cells = buildBoard(el, board)
+  const generation = board.generation
 
   if (VB.prefersReducedMotion()) {
-    const { cells } = buildBoard(el, text)
-    cells.forEach((cell, i) => setCharImmediate(cell, text[i]))
+    cells.forEach((cell, i) => setCharImmediate(cell, board.chars[i]))
     return
   }
 
-  const { cells, generation } = buildBoard(el, text)
-  runFlipSequence(el, text, cells, generation)
+  Promise.all(cells.map(async (cell, i) => {
+    await wait(board, i * STAGGER_MS)
+    if (board.generation !== generation) return
+    const flips = 4 + Math.floor(Math.random() * 7)
+    await cycleChar(board, cell, board.chars[i], flips, generation, flipMs)
+  })).then(() => {
+    if (board.generation === generation) cells.forEach((cell, i) => setCharImmediate(cell, board.chars[i]))
+  })
+}
+
+VB.effect('flipboard', (el) => {
+  // A clone (or a board left over from another runtime copy) holds cells:
+  // read the authored text back from the hidden copy, then start clean.
+  const original = plainText(el).trim()
+  unsplit(el)
+  el.classList.remove('vb-flap-board')
+  if (!original) return { cleanup() {} }
+
+  /** @type {Board} */
+  const board = {
+    original,
+    chars: graphemes(original.toLocaleUpperCase(el.closest('[lang]')?.getAttribute('lang') || undefined)),
+    generation: 0,
+    timers: new Set(),
+  }
+  boards.set(el, board)
+  el.setAttribute(INIT, '')
+  run(el, board)
 
   return {
     cleanup() {
-      el._flipGeneration = (el._flipGeneration || 0) + 1
-      if (el._flipboardOriginal) {
-        el.textContent = el._flipboardOriginal
-        el.classList.remove('vb-flap-board')
-      }
+      cancel(board)
+      boards.delete(el)
+      el.textContent = board.original
+      el.classList.remove('vb-flap-board')
+      el.removeAttribute(INIT)
+      const host = /** @type {HTMLElement} */ (el)
+      host.style.removeProperty('--_vb-flip-duration')
     },
   }
 })
 
-VB.effect('stamp', (el) => {
-  if (document.getElementById('vb-stamp-noise')) return
-
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-  svg.setAttribute('aria-hidden', 'true')
-  svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden'
-  svg.innerHTML = `
-    <defs>
-      <filter id="vb-stamp-noise" x="-5%" y="-5%" width="110%" height="110%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" stitchTiles="stitch" result="noise"/>
-        <feColorMatrix type="saturate" values="0" in="noise" result="greyNoise"/>
-        <feComposite in="SourceGraphic" in2="greyNoise" operator="in"/>
-      </filter>
-    </defs>
-  `
-  document.body.prepend(svg)
-})
-
+/** Replay the flip sequence on an enhanced board. */
 export function replayFlipboard(el) {
-  if (!el._flipboardOriginal) return
-  const text = el._flipboardOriginal
-  const { cells, generation } = buildBoard(el, text)
-  runFlipSequence(el, text, cells, generation)
+  const board = boards.get(el)
+  if (board) run(el, board)
 }

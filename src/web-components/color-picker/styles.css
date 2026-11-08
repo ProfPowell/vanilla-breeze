@@ -109,6 +109,25 @@ color-picker {
     left: var(--panel-left, 0);
   }
 
+  /* A closed popover is display:none (reset layer, like [hidden]), so the
+     fade needs display/overlay in the exit transition and a starting
+     style on open; the panel used to stay displayed at visibility:hidden. */
+  .color-panel[popover] {
+    transition:
+      opacity var(--motion-exit-duration, 120ms) var(--ease-in),
+      visibility var(--motion-exit-duration, 120ms) var(--ease-in),
+      transform var(--motion-exit-duration, 120ms) var(--ease-in),
+      display var(--motion-exit-duration, 120ms) allow-discrete,
+      overlay var(--motion-exit-duration, 120ms) allow-discrete;
+  }
+
+  @starting-style {
+    .color-panel[popover]:popover-open {
+      opacity: 0;
+      transform: translateY(-0.25rem);
+    }
+  }
+
   .color-panel[popover]::backdrop {
     background: none;
   }

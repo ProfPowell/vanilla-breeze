@@ -58,6 +58,7 @@ poll-wc .poll-option-label {
 
 poll-wc .poll-option-count {
   grid-column: 2;
+  white-space: nowrap;
   position: relative;
   z-index: 1;
   font-variant-numeric: tabular-nums;
@@ -121,9 +122,54 @@ poll-wc .poll-total {
   font-variant-numeric: tabular-nums;
 }
 
-poll-wc[data-closed] .poll-total::after {
-  content: ' · closed';
-  font-style: italic;
+/* -------- Disabled / pending -------- */
+
+poll-wc[disabled] .poll-option {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+poll-wc[disabled] .poll-option:hover {
+  border-color: var(--color-border);
+}
+
+poll-wc .poll-option[data-pending] {
+  cursor: progress;
+}
+
+poll-wc .poll-option[data-pending] .poll-option-bar {
+  opacity: 0.6;
+}
+
+/* -------- Hidden counts: no bars either -------- */
+
+poll-wc[data-hide-counts] .poll-option-bar {
+  display: none;
+}
+
+/* -------- Forced colors --------
+   Background fills are dropped, so the bar becomes a Highlight strip along
+   the block-end edge and the voter's own choice gets a thicker border. */
+
+@media (forced-colors: active) {
+  poll-wc .poll-option-bar,
+  poll-wc .poll-option[data-mine] .poll-option-bar {
+    inset-block-start: auto;
+    block-size: 0.3em;
+    background: Highlight;
+    forced-color-adjust: none;
+  }
+
+  poll-wc .poll-option[data-mine],
+  poll-wc[data-closed] .poll-option[data-mine] {
+    border-width: 3px;
+    border-color: Highlight;
+  }
+
+  poll-wc[disabled] .poll-option {
+    border-color: GrayText;
+    color: GrayText;
+  }
 }
 
 /* -------- Print -------- */

@@ -1,4 +1,12 @@
-/* main: Main content area styling */
+/* main: Main content area styling
+ *
+ * main is also a size query container (container-type: inline-size, set in
+ * custom-elements/layout-attributes.css) and, as a direct child of a
+ * [data-page-layout] body, lands in grid-area body-main with
+ * container-name region-main. These classes size main inside whatever
+ * shell the page uses; for the page shell itself prefer
+ * data-page-layout (sidebar-left/right, holy-grail) or <layout-sidebar>.
+ */
 
 main {
   display: block;
@@ -6,43 +14,53 @@ main {
 
 /* --- Main Variants --- */
 
-/* Contained main (centered with max-width) */
+/* The capped variants centre with auto inline margins. In a grid or flex
+   parent (data-page-layout, a flex-column body) auto margins turn off
+   stretch, and main's container-type: inline-size gives it no intrinsic
+   width, so without inline-size: 100% it collapses to its padding. */
+main:is(.contained, .narrow, .wide) {
+  inline-size: 100%;
+}
+
+/* Contained main (centered, fixed 1200px cap — not a token) */
 main.contained {
   max-inline-size: 1200px;
   margin-inline: auto;
   padding-inline: var(--size-m);
 }
 
-/* Narrow main (for reading content) */
+/* Narrow main (reading measure — follows the fluid profiles) */
 main.narrow {
-  max-inline-size: 65ch;
+  max-inline-size: var(--measure-normal, 65ch);
   margin-inline: auto;
   padding-inline: var(--size-m);
 }
 
-/* Wide main (for dashboards) */
+/* Wide main (for dashboards; fixed 1600px cap — not a token) */
 main.wide {
   max-inline-size: 1600px;
   margin-inline: auto;
   padding-inline: var(--size-l);
 }
 
-/* Full-width main */
+/* Full-width main: the full width of its container, not the viewport */
 main.full {
   inline-size: 100%;
   padding-inline: var(--size-l);
 }
 
-/* Main with sidebar layout */
+/* Main with sidebar layout. minmax(0, 1fr) lets the content column shrink
+   below a wide <pre> or <table>, which then scrolls instead of pushing the
+   grid past its container (a bare 1fr has an auto minimum). */
 main.with-sidebar {
   display: grid;
   gap: var(--size-xl);
-  grid-template-columns: 1fr minmax(200px, 300px);
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 300px);
 }
 
 @media (width < 48rem) { /* --bp-m */
   main.with-sidebar {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -51,7 +69,8 @@ main.padded {
   padding-block: var(--size-xl);
 }
 
-/* Flex main (fill available space) */
+/* Flex main: grows to fill a flex-column parent (e.g. a body set to
+   display:flex; flex-direction:column) and stacks its own children. */
 main.flex {
   flex: 1;
   display: flex;

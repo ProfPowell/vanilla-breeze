@@ -132,15 +132,22 @@ export class GenerateSidebars {
     const attrs = this.nav.attributes;
     let html = '';
 
-    // Native Attributes (nested: native > groups > items)
+    // Native Attributes (nested: native > groups > items). The groups come
+    // from each page's frontmatter `nativeGroup` via the attribute index
+    // (site/data/nativeAttributes.js), not from navigation.json, so the
+    // sidebar and the index cannot disagree. Alias rows (attributes covered
+    // on another page, e.g. fetchpriority) stay in the index only.
+    const nativeGroups = Object.values(this.data.attributeIndex?.nativeCategories ?? {})
+      .map((cat) => ({ label: cat.label, items: cat.items.filter((item) => !item.alias) }))
+      .filter((group) => group.items.length);
     html += `<details data-sidebar-section="native">\n`;
     html += `  <summary>${attrs.native.label}</summary>\n`;
-    for (const group of attrs.native.groups) {
+    for (const group of nativeGroups) {
       html += `  <details data-sidebar-group="${group.label}">\n`;
       html += `    <summary>${group.label}</summary>\n`;
       html += `    <ul>\n`;
       for (const item of group.items) {
-        html += `      <li><a href="${item.href}">${item.name}</a></li>\n`;
+        html += `      <li><a href="${item.href}">${escapeHtml(item.name)}</a></li>\n`;
       }
       html += `    </ul>\n`;
       html += `  </details>\n`;
@@ -217,8 +224,8 @@ export class GenerateSidebars {
     // <nav> stays inside so the existing .horizontal.pills CSS (scoped
     // to native nav) keeps applying — nav-bar adds behavior, not a
     // visual reset.
-    html += `  <nav-bar aria-label="Main navigation">\n`;
-    html += `    <nav class="horizontal pills">\n`;
+    html += `  <nav-bar>\n`;
+    html += `    <nav class="horizontal pills" aria-label="Main navigation">\n`;
     html += `    <ul>\n`;
 
     for (const item of header.nav) {
@@ -248,9 +255,6 @@ export class GenerateSidebars {
     html += `        Search\n`;
     html += `      </button>\n`;
     html += `    </site-search>\n`;
-    html += `    <notification-wc src="/go/notify/messages">\n`;
-    html += await latestReleaseArticle();
-    html += `    </notification-wc>\n`;
     html += `    <theme-picker compact>\n`;
     html += `      <button type="button" data-trigger class="ghost">\n`;
     html += `        <icon-wc name="palette" size="sm"></icon-wc>\n`;
@@ -264,6 +268,11 @@ export class GenerateSidebars {
     html += `    </button>\n`;
     html += this.#generateMobileMenuPanel();
     html += `  </mobile-menu>\n`;
+    // Bell sits outside site-tools so it stays reachable when mobile-menu
+    // hides the tools cluster at narrow widths.
+    html += `  <notification-wc src="/go/notify/messages">\n`;
+    html += (await latestReleaseArticle()).replace(/^  /gm, '');
+    html += `  </notification-wc>\n`;
     html += `</header>\n`;
 
     writeFileSync(resolve(this.includesDir, 'header.html'), html);
@@ -274,7 +283,7 @@ export class GenerateSidebars {
     const header = this.nav.header;
     let html = '';
 
-    html += `    <nav popover id="mobile-menu" class="mobile-menu-panel">\n`;
+    html += `    <nav popover id="mobile-menu" class="mobile-menu-panel" aria-label="Site menu">\n`;
     html += `      <button type="button" class="mobile-menu-close" popovertarget="mobile-menu" popovertargetaction="hide" aria-label="Close menu">\n`;
     html += `        <icon-wc name="x"></icon-wc>\n`;
     html += `      </button>\n`;

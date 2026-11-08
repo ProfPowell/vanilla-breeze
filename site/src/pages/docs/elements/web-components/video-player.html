@@ -100,6 +100,7 @@ crumbLabel: Web Components
   <p>Unlike <code>&lt;audio-player&gt;</code> which shows a permanent control bar, video controls are an <strong>overlay</strong> that fades in and out:</p>
   <ul>
     <li>Visible for 3 seconds after any interaction (mousemove, focus, keypress)</li>
+    <li>Never hidden while keyboard focus is inside the controls</li>
     <li>Always visible when paused, before first play, or after ended</li>
     <li>Touch devices: tap toggles visibility</li>
     <li>Cursor hides when controls are hidden during playback</li>
@@ -113,10 +114,12 @@ crumbLabel: Web Components
   <table>
     <thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>autoplay</code></td><td>Boolean</td><td>Start playing on load (subject to browser autoplay policy)</td></tr>
-      <tr><td><code>loop</code></td><td>Boolean</td><td>Loop single video or entire playlist</td></tr>
-      <tr><td><code>shuffle</code></td><td>Boolean</td><td>Randomize playlist order on track advance</td></tr>
-      <tr><td><code>muted</code></td><td>Boolean</td><td>Start muted</td></tr>
+      <tr><td><code>autoplay</code></td><td>Boolean</td><td>Start playing when first connected (subject to browser autoplay policy). Skipped for users with <code>prefers-reduced-motion: reduce</code>, which also cancels a native <code>autoplay</code> on the inner <code>&lt;video&gt;</code>. Not re-run when the player is moved in the DOM.</td></tr>
+      <tr><td><code>loop</code></td><td>Boolean</td><td>Single video: loop it. Playlist: wrap to the first track after the last</td></tr>
+      <tr><td><code>shuffle</code></td><td>Boolean</td><td>Playlist: advance to a random other track</td></tr>
+      <tr><td><code>muted</code></td><td>Boolean</td><td>Start muted (an authored <code>&lt;video muted&gt;</code> works too)</td></tr>
+      <tr><td><code>captions</code></td><td>Boolean</td><td>Start with the first captions/subtitles track showing</td></tr>
+      <tr><td><code>data-label-*</code></td><td>String</td><td>Override any UI string; see <a href="#localization">Localization</a></td></tr>
     </tbody>
   </table>
 
@@ -126,12 +129,44 @@ crumbLabel: Web Components
     <tbody>
       <tr><td><code>state</code></td><td><code>idle</code>, <code>playing</code>, <code>paused</code>, <code>buffering</code>, <code>ended</code></td><td>Current playback state</td></tr>
       <tr><td><code>data-upgraded</code></td><td>Present</td><td>Component has initialized</td></tr>
-      <tr><td><code>data-fullscreen</code></td><td>Present</td><td>Player is in fullscreen</td></tr>
+      <tr><td><code>data-fullscreen</code></td><td>Present</td><td>This player (not just any element on the page) is fullscreen</td></tr>
       <tr><td><code>captions</code></td><td>Present</td><td>Captions are currently showing</td></tr>
       <tr><td><code>controls</code></td><td>Present</td><td>Overlay controls are visible</td></tr>
       <tr><td><code>muted</code></td><td>Present</td><td>Audio is muted</td></tr>
+      <tr><td><code>role</code>, <code>aria-label</code>, <code>aria-keyshortcuts</code>, <code>tabindex</code></td><td>group, "Video player", key list, 0</td><td>Make the host a named keyboard target; authored values are kept</td></tr>
     </tbody>
   </table>
+</section>
+
+<section>
+  <h2 id="localization">Localization</h2>
+  <p>Every control name and announcement is an English default that you can override with a <code>data-label-*</code> attribute on the host. Times and numbers use the locale of the closest <code>[lang]</code> (via <code>Intl.DurationFormat</code>, falling back to <code>Intl.NumberFormat</code>), so Arabic-Indic digits, for example, appear automatically.</p>
+  <table>
+    <thead><tr><th>Attribute</th><th>Default</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-label-player</code></td><td>Video player</td></tr>
+      <tr><td><code>data-label-controls</code></td><td>Video controls</td></tr>
+      <tr><td><code>data-label-play-video</code></td><td>Play video</td></tr>
+      <tr><td><code>data-label-play</code> / <code>data-label-pause</code></td><td>Play / Pause</td></tr>
+      <tr><td><code>data-label-seek</code></td><td>Seek</td></tr>
+      <tr><td><code>data-label-skip-back</code> / <code>data-label-skip-forward</code></td><td>Skip back 10 seconds / Skip forward 10 seconds</td></tr>
+      <tr><td><code>data-label-mute</code></td><td>Mute</td></tr>
+      <tr><td><code>data-label-volume</code></td><td>Volume</td></tr>
+      <tr><td><code>data-label-speed</code></td><td>Playback speed {rate}</td></tr>
+      <tr><td><code>data-label-captions</code></td><td>Captions</td></tr>
+      <tr><td><code>data-label-fullscreen</code> / <code>data-label-exit-fullscreen</code></td><td>Fullscreen / Exit fullscreen</td></tr>
+      <tr><td><code>data-label-playing</code>, <code>-paused</code>, <code>-ended</code>, <code>-buffering</code></td><td>Status announcements</td></tr>
+      <tr><td><code>data-label-time-of</code></td><td>{current} of {duration}</td></tr>
+    </tbody>
+  </table>
+  <code-block language="html" show-lines label="French labels" data-escape><video-player lang="fr"
+  data-label-player="Lecteur vidéo"
+  data-label-play="Lire" data-label-pause="Pause"
+  data-label-mute="Couper le son"
+  data-label-time-of="{current} sur {duration}">
+  <video controls width="960" height="540">…</video>
+</video-player></code-block>
+  <p>The controls bar is always laid out left-to-right, also on right-to-left pages, because the timeline runs from the start to the end of the media like every platform player.</p>
 </section>
 
 <section>
@@ -140,7 +175,6 @@ crumbLabel: Web Components
     <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
     <tbody>
       <tr><td><code>--video-player-accent</code></td><td><code>var(--color-primary)</code></td><td>Play button, timeline fill, active states</td></tr>
-      <tr><td><code>--video-player-controls-bg</code></td><td><code>oklch(0% 0 0 / 0.75)</code></td><td>Controls bar background (semi-transparent dark)</td></tr>
       <tr><td><code>--video-player-controls-text</code></td><td><code>#fff</code></td><td>Controls text and icon color</td></tr>
       <tr><td><code>--video-player-radius</code></td><td><code>var(--radius-m)</code></td><td>Player border radius</td></tr>
       <tr><td><code>--video-player-border</code></td><td><code>none</code></td><td>Player border (off by default)</td></tr>
@@ -162,7 +196,6 @@ crumbLabel: Web Components
   --video-player-accent: oklch(60% 0.2 30);
   --video-player-radius: var(--radius-l);
   --video-player-shadow: var(--shadow-l);
-  --video-player-controls-bg: oklch(0% 0 0 / 0.85);
   --video-player-timeline-height: 6px;
 }</code-block>
 </section>
@@ -177,6 +210,7 @@ crumbLabel: Web Components
       <tr><td><code>play-overlay</code></td><td>Big center play button</td></tr>
       <tr><td><code>play-button</code></td><td>Play/pause button in controls row</td></tr>
       <tr><td><code>timeline</code></td><td>Seek range input</td></tr>
+      <tr><td><code>mute-button</code></td><td>Mute toggle (<code>aria-pressed</code>)</td></tr>
       <tr><td><code>volume</code></td><td>Volume range input</td></tr>
       <tr><td><code>time-display</code></td><td>Current time / duration display</td></tr>
       <tr><td><code>speed-button</code></td><td>Playback speed cycle button</td></tr>
@@ -198,6 +232,7 @@ crumbLabel: Web Components
       <tr><td><code>video-player:fullscreen</code></td><td><code>{ active: boolean }</code></td></tr>
       <tr><td><code>video-player:speed</code></td><td><code>{ rate: number }</code></td></tr>
       <tr><td><code>video-player:captions</code></td><td><code>{ active: boolean, label: string }</code></td></tr>
+      <tr><td><code>video-player:src-changed</code></td><td><code>{ src, source: 'property' }</code> (fired when the <code>src</code> property is set)</td></tr>
     </tbody>
   </table>
   <code-block language="js" show-lines label="Listening for events" data-escape>const player = document.querySelector('video-player');
@@ -220,7 +255,19 @@ player.addEventListener('video-player:speed', (e) => {
 </section>
 
 <section>
+  <h2>Properties</h2>
+  <table>
+    <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>src</code></td><td>String</td><td>Get/set the inner video source; setting loads it and fires <code>video-player:src-changed</code></td></tr>
+      <tr><td><code>currentTime</code></td><td>Number</td><td>Playback position in seconds</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
   <h2>Keyboard Shortcuts</h2>
+  <p>Shortcuts work while the player itself has focus (it is a tab stop). When focus is on one of its controls, that control keeps its own keys, and key chords with <kbd>Ctrl</kbd>, <kbd>Cmd</kbd> or <kbd>Alt</kbd> are never intercepted.</p>
   <table>
     <thead><tr><th>Key</th><th>Action</th></tr></thead>
     <tbody>
@@ -232,7 +279,15 @@ player.addEventListener('video-player:speed', (e) => {
       <tr><td><kbd>M</kbd></td><td>Toggle mute</td></tr>
       <tr><td><kbd>F</kbd></td><td>Toggle fullscreen</td></tr>
       <tr><td><kbd>C</kbd></td><td>Toggle captions</td></tr>
-      <tr><td><kbd>Escape</kbd></td><td>Exit fullscreen</td></tr>
+      <tr><td><kbd>Escape</kbd></td><td>Exit fullscreen (browser default)</td></tr>
+    </tbody>
+  </table>
+  <h3>On the sliders</h3>
+  <table>
+    <thead><tr><th>Control</th><th>Keys</th></tr></thead>
+    <tbody>
+      <tr><td>Seek slider</td><td><kbd>Left</kbd>/<kbd>Down</kbd> back 5 seconds, <kbd>Right</kbd>/<kbd>Up</kbd> forward 5 seconds; <kbd>Home</kbd>, <kbd>End</kbd>, <kbd>Page Up</kbd>, <kbd>Page Down</kbd> as native</td></tr>
+      <tr><td>Volume slider</td><td>Native: arrows change volume in 5% steps</td></tr>
     </tbody>
   </table>
 </section>
@@ -259,7 +314,6 @@ player.addEventListener('video-player:speed', (e) => {
     <tbody>
       <tr><td><code>data-video-active</code></td><td>Component + author</td><td>Currently loaded/playing track</td></tr>
       <tr><td><code>data-video-played</code></td><td>Component</td><td>Track has been played this session</td></tr>
-      <tr><td><code>data-video-favorite</code></td><td>Author</td><td>Editorially marked as a highlight</td></tr>
     </tbody>
   </table>
   <p>Track <code>&lt;a&gt;</code> elements support optional attributes for per-track switching:</p>
@@ -275,22 +329,24 @@ player.addEventListener('video-player:speed', (e) => {
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li>All controls use native <code>&lt;button&gt;</code> or <code>&lt;input type="range"&gt;</code> with <code>aria-label</code></li>
-    <li>Controls group has <code>role="group"</code> with label</li>
-    <li>Seek slider uses <code>aria-valuetext</code> with verbose time (e.g. "2 minutes 30 seconds")</li>
-    <li>Captions button uses <code>aria-pressed</code> to reflect state</li>
+    <li>The host is a focusable <code>role="group"</code> named "Video player", with <code>aria-keyshortcuts</code> listing its shortcuts</li>
+    <li>All controls use native <code>&lt;button&gt;</code> or <code>&lt;input type="range"&gt;</code> with <code>aria-label</code>; the controls bar is a labelled <code>role="group"</code></li>
+    <li>Seek slider <code>aria-valuetext</code> reads "0:05 of 3:20"; the volume slider reads a percentage, e.g. "37%"</li>
+    <li>Mute and captions buttons use <code>aria-pressed</code> to reflect state</li>
+    <li>The big play button is only focusable while it is visible (idle and ended); otherwise it is <code>inert</code></li>
+    <li>Auto-hide never hides the controls while focus is inside them</li>
     <li>Speed button announces rate changes via <code>aria-live="polite"</code></li>
-    <li>Hidden <code>role="status"</code> region announces "Playing", "Paused", "Buffering"</li>
-    <li>Keyboard navigable with documented shortcuts</li>
-    <li>Respects <code>prefers-reduced-motion</code> — no transitions, controls stay visible</li>
+    <li>Hidden <code>role="status"</code> region announces "Playing", "Paused", "Ended", "Buffering"</li>
+    <li>Respects <code>prefers-reduced-motion</code>: no autoplay, no transitions, controls stay visible</li>
+    <li>Forced colours: progress and volume fills use system colours (<code>Highlight</code>), tracks are outlined</li>
     <li>Falls back to fully accessible native <code>&lt;video&gt;</code> without JS</li>
-    <li>Captions rendered by native <code>&lt;video&gt;</code> — browser handles text overlay positioning</li>
+    <li>Captions rendered by native <code>&lt;video&gt;</code> and styled with the <a href="/docs/elements/native/video/"><code>video::cue</code> hooks</a></li>
   </ul>
 </section>
 
 <section>
   <h2>Fullscreen</h2>
-  <p>Fullscreen is requested on the <strong>host element</strong> (not the <code>&lt;video&gt;</code>), so the custom shadow DOM controls remain visible in fullscreen mode. The <code>&lt;video&gt;</code> fills the host via CSS.</p>
+  <p>Fullscreen is requested on the <strong>host element</strong> (not the <code>&lt;video&gt;</code>), so the custom shadow DOM controls remain visible in fullscreen mode. The <code>&lt;video&gt;</code> fills the host via CSS. Fullscreen state is tracked per player: only the player that is actually fullscreen sets <code>data-fullscreen</code> and fires <code>video-player:fullscreen</code>.</p>
 </section>
 
 <section>
@@ -300,5 +356,8 @@ player.addEventListener('video-player:speed', (e) => {
     <li><a href="/docs/elements/web-components/audio-player/"><code>&lt;audio-player&gt;</code></a> — Audio equivalent with same architecture</li>
     <li><a href="/docs/elements/web-components/youtube-player/"><code>&lt;youtube-player&gt;</code></a> — YouTube embed with facade pattern (no <code>&lt;video&gt;</code> element)</li>
     <li><a href="/docs/elements/native/track/"><code>&lt;track&gt;</code></a> — Captions, subtitles, and chapter tracks</li>
+    <li><a href="/docs/attributes/controls/"><code>controls</code></a> — The browser's built-in media controls</li>
+    <li><a href="/docs/attributes/poster/"><code>poster</code></a> — The poster image; also set through <code>data-poster</code></li>
+    <li><a href="/docs/attributes/preload/"><code>preload</code></a> — How much media to download before play</li>
   </ul>
 </section>

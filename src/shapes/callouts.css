@@ -1,43 +1,108 @@
-/* Callout shapes
-   [data-callout] block containers with shaped outlines.
-   Speech bubble tail is part of the shape path (no pseudo-element hacks).
-   Notched corner uses calc() inside shape() coordinates. */
+/* Callouts — [data-callout], VB's one admonition primitive.
+
+   The value is a token list: at most one KIND plus an optional SHAPE.
+     kind:  note (default) | info | tip | warning | danger
+     shape: speech | notched            (packs may add more, e.g. journal "sticky")
+   <aside data-callout="warning">, <aside data-callout="tip notched">,
+   <blockquote data-callout="speech">. <markdown-viewer> emits the same markup
+   for its :::kind blocks.
+
+   Hooks: --callout-accent, --callout-bg, --callout-tail (speech), --shape-bevel
+   (notched). The kind sets the colours; themes override the hooks, not
+   background, so shaped variants keep their outline.
+
+   Shapes are painted on ::before, never by clipping the callout itself, so
+   focus rings of links inside, theme shadows and the content near the edges
+   all survive. :dir(rtl) mirrors the painted shape. */
 
 [data-callout] {
-  padding: var(--size-m) var(--size-l);
-  background: var(--color-surface-raised);
+  --_callout-accent: var(--callout-accent, var(--color-border-strong));
+  --_callout-bg: var(--callout-bg, var(--color-surface-raised));
+
+  display: block;
+  padding: var(--size-s) var(--size-m);
   color: var(--color-text);
+  background: var(--_callout-bg);
+  border-inline-start: var(--border-width-thick) solid var(--_callout-accent);
+  /* Square on the accent side, rounded on the far side — logical, so RTL
+     keeps the accent border on the square edge. */
+  border-start-end-radius: var(--radius-m);
+  border-end-end-radius: var(--radius-m);
+
+  & > :first-child { margin-block-start: 0; }
+  & > :last-child { margin-block-end: 0; }
+  & > [data-callout-title] { margin-block-end: var(--size-2xs); }
 }
 
-/* ── Tip ── left accent border (works everywhere, no shape() needed) */
-[data-callout="tip"] {
-  border-inline-start: 4px solid var(--color-primary);
-  border-radius: 0 var(--radius-m) var(--radius-m) 0;
+/* ── Kinds ── colour only; the visible title carries the meaning */
+[data-callout~="info"] {
+  --_callout-accent: var(--callout-accent, var(--color-info));
+  --_callout-bg: var(--callout-bg, var(--color-info-subtle));
 }
 
+[data-callout~="tip"] {
+  --_callout-accent: var(--callout-accent, var(--color-success));
+  --_callout-bg: var(--callout-bg, var(--color-success-subtle));
+}
+
+[data-callout~="warning"] {
+  --_callout-accent: var(--callout-accent, var(--color-warning));
+  --_callout-bg: var(--callout-bg, var(--color-warning-subtle));
+}
+
+[data-callout~="danger"] {
+  --_callout-accent: var(--callout-accent, var(--color-error));
+  --_callout-bg: var(--callout-bg, var(--color-error-subtle));
+}
+
+/* ── Shapes ── */
 @supports (clip-path: shape(from 0% 0%, close)) {
 
-/* ── Speech ── rounded rectangle with bottom-left tail */
-[data-callout="speech"] {
-  clip-path: shape(
-    from 0% 8%,
-    curve to 8% 0% with 0% 0%,
-    line to 92% 0%,
-    curve to 100% 8% with 100% 0%,
-    line to 100% 82%,
-    curve to 92% 90% with 100% 90%,
-    line to 20% 90%,
-    line to 0% 100%,
-    line to 8% 90%,
-    curve to 0% 82% with 0% 90%,
-    close
-  );
-  padding-block-end: calc(var(--size-m) + 10%);
+[data-callout]:is([data-callout~="speech"], [data-callout~="notched"]) {
+  position: relative;
+  isolation: isolate;
+  background: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--_callout-bg);
+    clip-path: var(--_callout-shape);
+    pointer-events: none;
+  }
+
+  &:dir(rtl)::before { scale: -1 1; }
 }
 
-/* ── Notched ── top-right corner bevel */
-[data-callout="notched"] {
-  clip-path: shape(
+/* Speech: rounded body with a tail at the bottom start corner. The tail is a
+   fixed length (not a percentage), so the reserved padding always matches it. */
+[data-callout~="speech"] {
+  --_tail: var(--callout-tail, 1rem);
+  --_r: var(--radius-l);
+  --_callout-shape: shape(
+    from 0% var(--_r),
+    curve to var(--_r) 0% with 0% 0%,
+    line to calc(100% - var(--_r)) 0%,
+    curve to 100% var(--_r) with 100% 0%,
+    line to 100% calc(100% - var(--_tail) - var(--_r)),
+    curve to calc(100% - var(--_r)) calc(100% - var(--_tail)) with 100% calc(100% - var(--_tail)),
+    line to calc(var(--_r) + var(--_tail) * 1.5) calc(100% - var(--_tail)),
+    line to 0% 100%,
+    line to var(--_r) calc(100% - var(--_tail)),
+    curve to 0% calc(100% - var(--_tail) - var(--_r)) with 0% calc(100% - var(--_tail)),
+    close
+  );
+  border-inline-start: none;
+  padding: var(--size-m) var(--size-l);
+  padding-block-end: calc(var(--size-m) + var(--_tail));
+}
+
+/* Notched: bevel on the top end corner; the accent border stays on the
+   straight start edge. */
+[data-callout~="notched"] {
+  --_callout-shape: shape(
     from 0% 0%,
     line to calc(100% - var(--shape-bevel)) 0%,
     line to 100% var(--shape-bevel),
@@ -45,6 +110,26 @@
     line to 0% 100%,
     close
   );
+  padding-inline-end: max(var(--size-m), calc(var(--shape-bevel) * 0.5));
 }
 
 } /* end @supports */
+
+/* Forced colours flatten backgrounds to Canvas, and print drops them: draw a
+   real frame instead and stop painting the shape. */
+@media (forced-colors: active) {
+  [data-callout] {
+    border: 1px solid CanvasText;
+    border-inline-start: var(--border-width-thick) solid CanvasText;
+  }
+  [data-callout]::before { display: none; }
+}
+
+@media print {
+  [data-callout] {
+    border: 1px solid currentColor;
+    border-inline-start: var(--border-width-thick) solid currentColor;
+    break-inside: avoid;
+  }
+  [data-callout]::before { display: none; }
+}

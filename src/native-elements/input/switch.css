@@ -1,6 +1,7 @@
 /* Toggle Switch
    Checkbox styled as an on/off toggle.
-   Sizes: default, data-switch="sm", data-switch="lg"
+   Sizes: default, data-switch="s", data-switch="l" (the VB size
+   vocabulary; renamed from sm / lg pre-release, no alias)
    Geometry is driven by --_switch-w / --_switch-h so the knob travel is
    derived once; --_switch-dir flips that travel under RTL (translate is
    physical, so the knob would otherwise slide out of the track).
@@ -52,6 +53,14 @@ input[data-switch]:checked::before {
   translate: calc((var(--_switch-w) - var(--_switch-h)) * var(--_switch-dir)) 0;
 }
 
+/* Invalid (a required switch left off, after interaction). The track has
+   no border to recolour, so a dashed error outline marks it; dashed is the
+   non-colour cue. Focus below wins while the switch is focused. */
+input[data-switch]:is(:user-invalid, [aria-invalid="true"]) {
+  outline: 2px dashed var(--color-error);
+  outline-offset: 2px;
+}
+
 /* Focus */
 input[data-switch]:focus-visible {
   outline: 2px solid var(--color-interactive, oklch(55% 0.2 260));
@@ -65,13 +74,13 @@ input[data-switch]:disabled {
 }
 
 /* Small variant */
-input[data-switch="sm"] {
+input[data-switch="s"] {
   --_switch-w: 2rem;
   --_switch-h: 1.125rem;
 }
 
 /* Large variant */
-input[data-switch="lg"] {
+input[data-switch="l"] {
   --_switch-w: 3.5rem;
   --_switch-h: 2rem;
 }

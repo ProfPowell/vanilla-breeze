@@ -12,8 +12,8 @@ crumbLabel: Web Components
 
   <section>
     <h2>Overview</h2>
-    <p>A split-pane markdown editor that pairs a <code>&lt;textarea&gt;</code> with a <code>&lt;markdown-viewer&gt;</code> for live preview. Part of the <a href="/docs/bundles/#extras">Extras Pack</a>.</p>
-    <p>Progressive enhancement: without JavaScript the <code>&lt;textarea&gt;</code> is fully usable. The preview pane appears only after the component upgrades.</p>
+    <p>A split-pane markdown editor that pairs your <code>&lt;textarea&gt;</code> with a <code>&lt;markdown-viewer&gt;</code> for live preview. Part of the <a href="/docs/bundles/#extras">Extras Pack</a>.</p>
+    <p>The editor <strong>adopts</strong> the textarea you write rather than replacing it. Its <code>id</code>, <code>&lt;label&gt;</code>, <code>name</code>, <code>required</code>, <code>minlength</code>/<code>maxlength</code>, <code>readonly</code>, <code>dir</code>, <code>form</code> and <code>aria-*</code> attributes all survive the upgrade, so the field submits, validates and resets exactly as a plain textarea does &mdash; with or without JavaScript.</p>
 
     <browser-window url="markdown-editor" src="/docs/examples/demos/markdown-editor-basic.html"></browser-window>
   </section>
@@ -22,38 +22,48 @@ crumbLabel: Web Components
     <h2>Usage</h2>
 
     <h3>Basic</h3>
-    <p>Wrap a <code>&lt;textarea&gt;</code> with initial content. The editor adopts it and builds the preview pane.</p>
-    <code-block language="html" show-lines label="Basic editor" data-escape><markdown-editor name="content" placeholder="Write markdown here...">
-  <textarea>
-# Hello world
+    <p>Wrap a labelled <code>&lt;textarea&gt;</code> with initial content. The editor moves it into the source pane and builds the preview pane beside it.</p>
+    <code-block language="html" show-lines label="Basic editor" data-escape><label for="notes">Notes</label>
+<markdown-editor>
+  <textarea id="notes"># Hello world
 
-Start editing to see a live preview.
-  </textarea>
+Start editing to see a live preview.</textarea>
 </markdown-editor></code-block>
 
     <h3>With Syntax Highlighting</h3>
     <p>Add the <code>highlight</code> attribute to pass through to the preview viewer. Bring your own highlighter via the <code>markdown-viewer:highlight</code> event.</p>
-    <code-block language="html" show-lines label="Syntax highlighting" data-escape><markdown-editor highlight data-tab-indent>
-  <textarea>
-```javascript
+    <code-block language="html" show-lines label="Syntax highlighting" data-escape><markdown-editor highlight>
+  <textarea aria-label="Snippet">```javascript
 console.log('hello');
-```
-  </textarea>
+```</textarea>
 </markdown-editor></code-block>
 
     <h3>Form Integration</h3>
-    <p>The <code>name</code> attribute is reflected to the internal textarea, so it works as a standard form field.</p>
+    <p>Put <code>name</code> and any constraints on the <code>&lt;textarea&gt;</code>. That textarea is what the form submits, so the value is sent even before (or without) the upgrade. <code>form.reset()</code> restores the authored text and the preview follows it.</p>
     <code-block language="html" show-lines label="Form field" data-escape><form>
-  <markdown-editor name="body" rows="8" placeholder="Write your message...">
-    <textarea></textarea>
+  <label for="body">Message</label>
+  <markdown-editor rows="8">
+    <textarea id="body" name="body" required maxlength="5000"></textarea>
   </markdown-editor>
   <button type="submit">Submit</button>
+  <button type="reset">Reset</button>
 </form></code-block>
+    <p>The host <code>placeholder</code> and <code>rows</code> attributes override the textarea's own; there is no default placeholder.</p>
 
     <h3>Tab Indentation</h3>
-    <p>Add <code>data-tab-indent</code> to make the Tab key insert two spaces instead of moving focus.</p>
+    <p>Add <code>data-tab-indent</code> to make the Tab key insert two spaces instead of moving focus. To leave the textarea with the keyboard, press <kbd>Escape</kbd> and then <kbd>Tab</kbd>; <kbd>Shift</kbd>+<kbd>Tab</kbd> always moves focus back. The textarea carries a description saying so (override it with <code>data-label-tab-hint</code>).</p>
     <code-block language="html" show-lines label="Tab indent" data-escape><markdown-editor data-tab-indent>
-  <textarea></textarea>
+  <textarea aria-label="Code notes"></textarea>
+</markdown-editor></code-block>
+
+    <h3>Mermaid Diagrams</h3>
+    <p>Add <code>data-auto-mermaid</code> and <code>```mermaid</code> fences in the preview upgrade to <code>&lt;diagram-wc&gt;</code>, re-rendered with a debounce while you type.</p>
+    <browser-window url="markdown-editor + Mermaid" src="/docs/examples/demos/markdown-editor-mermaid.html"></browser-window>
+
+    <h3>Labels and Direction</h3>
+    <p>The two panes are named &ldquo;Markdown source&rdquo; and &ldquo;Rendered preview&rdquo;; override them with <code>data-label-source</code> and <code>data-label-preview</code>. The textarea gets <code>dir="auto"</code> unless you set <code>dir</code>, and the preview uses the same direction, so right-to-left and mixed content lays out correctly.</p>
+    <code-block language="html" show-lines label="Translated labels" data-escape><markdown-editor data-label-source="Source Markdown" data-label-preview="Aperçu">
+  <textarea aria-label="Article"></textarea>
 </markdown-editor></code-block>
   </section>
 
@@ -66,6 +76,7 @@ console.log('hello');
   <section>
     <h2>Events</h2>
     {{ eventsTable("markdown-editor", apiRegistry) }}
+    <p><code>markdown-editor:change</code> carries <code>detail.source</code>: <code>"user"</code> when the textarea loses focus after an edit, <code>"api"</code> when you assign <code>.value</code>. Filter on it to ignore your own assignments. A form reset fires neither.</p>
   </section>
 
   <section>
@@ -75,13 +86,36 @@ console.log('hello');
         <tr><th>Property</th><th>Type</th><th>Description</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>.value</code></td><td><code>string</code></td><td>Get or set the current markdown content. Setting updates the preview.</td></tr>
-        <tr><td><code>.textarea</code></td><td><code>HTMLTextAreaElement</code></td><td>Reference to the internal textarea element for direct access.</td></tr>
+        <tr><td><code>.value</code></td><td><code>string</code></td><td>Get or set the markdown. Setting updates the preview immediately and fires <code>markdown-editor:change</code> with <code>source: "api"</code>.</td></tr>
+        <tr><td><code>.textarea</code></td><td><code>HTMLTextAreaElement</code></td><td>The backing textarea &mdash; your own when you provided one. It is the same object for the element&rsquo;s whole life, including after it is moved in the DOM.</td></tr>
       </tbody>
     </table>
   </section>
 
   <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Name the textarea as you would any field: a <code>&lt;label for&gt;</code>, a wrapping <code>&lt;label&gt;</code>, <code>aria-label</code> or <code>aria-labelledby</code>. They all keep working after the upgrade. Only when nothing names it does the editor fall back to the source pane label.</li>
+      <li>The source and preview panes are labelled <code>&lt;section&gt;</code> regions.</li>
+      <li>The preview is <em>not</em> a live region. Re-announcing the whole rendered document on every keystroke would drown out typing; review the preview by moving to its region.</li>
+      <li>With <code>data-tab-indent</code>, Tab is captured for indentation. <kbd>Escape</kbd> then <kbd>Tab</kbd> moves focus on, and <kbd>Shift</kbd>+<kbd>Tab</kbd> is never captured, so there is no keyboard trap. A read-only or disabled textarea never captures Tab.</li>
+      <li>Required and length errors are the native textarea's own messages and styling.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Security</h2>
+    <p>The preview is a <a href="/docs/elements/web-components/markdown-viewer/"><code>&lt;markdown-viewer&gt;</code></a> with its default sanitising on, and the editor never writes HTML itself. Script elements, event-handler attributes and <code>javascript:</code> URLs typed or pasted into the editor are removed before the preview shows them. The preview runs in your page, so treat anything you later render from the submitted markdown as untrusted and sanitise it on the server as well. See the viewer&rsquo;s sanitising notes for exactly what is kept.</p>
+  </section>
+
+  <section>
     <h2>Progressive Enhancement</h2>
-    <p>Before the component upgrades, the <code>&lt;textarea&gt;</code> renders at full width with monospace styling. After upgrade, the split layout appears with the live preview pane. Content is never lost.</p>
+    <p>Without JavaScript the <code>&lt;textarea&gt;</code> renders at full width with monospace styling and is a complete form field: labelled, named, validated and submitted. After the upgrade the same textarea sits in the source pane with the live preview beside it. The panes sit side by side when the editor is at least about 40em wide and stack when it is narrower &mdash; the editor&rsquo;s own width decides, not the viewport&rsquo;s.</p>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/attributes/contenteditable/"><code>contenteditable</code></a> &mdash; in-place editing without a separate source pane, including VB's inline markdown-editable enhancement</li>
+    </ul>
   </section>

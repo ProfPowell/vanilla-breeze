@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>source in picture: format fallback and art direction</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    picture img { inline-size: 100%; block-size: auto; }
+  </style>
+</head>
+<body>
+  <h1>source in picture</h1>
+  <layout-stack data-layout-gap="l">
+    <figure>
+      <picture>
+        <!-- A type no browser decodes: always skipped, so the next candidate is used -->
+        <source srcset="/src/assets/placeholders/photo-id-10-1200x800.svg" type="image/x-unsupported-demo" />
+        <source srcset="/src/assets/placeholders/photo-id-20-1200x800.svg" type="image/svg+xml" />
+        <img src="/src/assets/placeholders/photo-id-30-1200x800.svg" alt="Placeholder landscape" width="1200" height="800" />
+      </picture>
+      <figcaption>Format fallback: the first <code>&lt;source&gt;</code> has a <code>type</code> the browser cannot decode, so it moves on to the next one.</figcaption>
+    </figure>
+    <figure>
+      <picture>
+        <source media="(min-width: 40rem)" srcset="/src/assets/placeholders/photo-winter-camp-1200x600.svg" width="1200" height="600" />
+        <img src="/src/assets/placeholders/photo-winter-camp-600x340.svg" alt="Winter campsite" width="600" height="340" />
+      </picture>
+      <figcaption>Art direction: a wide 2:1 crop at 40rem and up, a taller crop on narrow screens. Resize the window to switch.</figcaption>
+    </figure>
+  </layout-stack>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

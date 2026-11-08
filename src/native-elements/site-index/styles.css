@@ -40,6 +40,14 @@
   color: var(--color-text-muted);
   pointer-events: none;
   opacity: 0.4;
+  text-decoration: none;
+}
+
+@media (forced-colors: active) {
+  .index-jump [aria-disabled="true"] {
+    color: GrayText;
+    opacity: 1;
+  }
 }
 
 .index-jump [aria-current="true"] {
@@ -80,13 +88,15 @@
 }
 
 /* Multi-column at wider viewports */
+/* The index nav: explicit nav[data-index], or site-index's direct-child nav
+   of sections (no dependency on an English aria-label) */
 @media (min-width: 60rem) {
-  nav[aria-label="Site index"] {
+  :is(nav[data-index], site-index > nav:has(> section)) {
     columns: 2;
     column-gap: var(--size-2xl);
   }
 
-  nav[aria-label="Site index"] section {
+  :is(nav[data-index], site-index > nav:has(> section)) > section {
     break-inside: avoid;
   }
 }

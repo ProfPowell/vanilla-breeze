@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>srcset attribute: width and density descriptors</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+    /* Render the first image at half the viewport, matching its sizes="50vw". */
+    img[sizes="50vw"] { inline-size: 50vw; }
+    /* Density candidates are for an image shown at a fixed CSS size. */
+    img[srcset*=" 2x"] { inline-size: 200px; }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="xl">
+
+  <p>Each placeholder prints its own width. The caption reads <code>img.currentSrc</code>, the file the browser chose. Resize the window and reload to see the choice change.</p>
+
+  <figure>
+    <img
+         src="/src/assets/placeholders/responsive-800.svg"
+         srcset="/src/assets/placeholders/responsive-400.svg 400w,
+                 /src/assets/placeholders/responsive-800.svg 800w,
+                 /src/assets/placeholders/responsive-1200.svg 1200w"
+         sizes="50vw"
+         width="1200" height="600"
+         alt="Landscape placeholder chosen from 400, 800 and 1200 pixel candidates" />
+    <figcaption>Width descriptors with <code>sizes="50vw"</code>: <output data-current-src>…</output></figcaption>
+  </figure>
+
+  <figure>
+    <img
+         src="/src/assets/placeholders/responsive-400.svg"
+         srcset="/src/assets/placeholders/responsive-400.svg 1x,
+                 /src/assets/placeholders/responsive-800.svg 2x"
+         width="200" height="100"
+         alt="Fixed-size placeholder with 1x and 2x candidates" />
+    <figcaption>Density descriptors (1x, 2x): <output data-current-src>…</output></figcaption>
+  </figure>
+
+  <figure>
+    <img loading="lazy" sizes="auto"
+         src="/src/assets/placeholders/responsive-400.svg"
+         srcset="/src/assets/placeholders/responsive-400.svg 400w,
+                 /src/assets/placeholders/responsive-800.svg 800w,
+                 /src/assets/placeholders/responsive-1200.svg 1200w"
+         width="1200" height="600"
+         alt="Lazy placeholder whose sizes the browser measures" />
+    <figcaption>Lazy image with <code>sizes="auto"</code>: <output data-current-src>…</output></figcaption>
+  </figure>
+
+  <script type="module">
+    for (const figure of document.querySelectorAll('figure')) {
+      const img = figure.querySelector('img');
+      const out = figure.querySelector('[data-current-src]');
+      const show = () => { out.textContent = img.currentSrc.split('/').pop(); };
+      if (img.complete && img.currentSrc) show();
+      img.addEventListener('load', show);
+    }
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

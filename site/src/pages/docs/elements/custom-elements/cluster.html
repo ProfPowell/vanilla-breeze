@@ -18,6 +18,35 @@ crumbLabel: Custom Elements
   </browser-window>
 
   <section>
+    <h2>Overview</h2>
+    <p>A cluster lays its children out in a row and wraps them onto new lines when they run out of room, with an even gap in both directions. It is a wrapping flex row (<code>display: flex; flex-wrap: wrap</code>) whose items keep their own content width.</p>
+    <p>By default the gap is <code>s</code>, items are vertically centred (<code>align-items: center</code>) and packed at the start of the line. Because items are content-sized, direct <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code> children drop their query-container status, which would otherwise collapse them to zero width; <a href="/docs/attributes/data-container/"><code>data-container</code></a> opts one back in.</p>
+  </section>
+
+  <section>
+    <h2>Element and attribute forms</h2>
+    <p>Any element can be a cluster with <code>data-layout="cluster"</code>. The same <code>data-layout-*</code> modifiers work on both forms; the two below lay out identically. The attribute form on a <code>&lt;ul&gt;</code> also tells screen readers how many items there are.</p>
+    <browser-window
+      src="/docs/snippets/demos/cluster-forms.html"
+      url="https://vanilla-breeze.com/cluster/forms"
+      title="Cluster element and attribute forms"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Element form and attribute form" data-escape><layout-cluster data-layout-gap="xs">
+  <layout-badge>HTML</layout-badge>
+  <layout-badge>CSS</layout-badge>
+  <layout-badge>JavaScript</layout-badge>
+</layout-cluster>
+
+<ul class="unstyled" data-layout="cluster" data-layout-gap="xs">
+  <li><layout-badge>HTML</layout-badge></li>
+  <li><layout-badge>CSS</layout-badge></li>
+  <li><layout-badge>JavaScript</layout-badge></li>
+</ul></code-block>
+    <p><strong>Which to choose:</strong> use the attribute form when a semantic element already wraps the items: a <code>&lt;nav&gt;</code>, <code>&lt;ul&gt;</code>, <code>&lt;footer&gt;</code> or <code>&lt;menu&gt;</code>. Use <code>&lt;layout-cluster&gt;</code> when there is no meaningful element to carry it and you would otherwise add a wrapper. In the attribute form, <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code> are also container-query containers, which the element is not, so container queries inside the cluster resolve against it. See <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> for the full comparison and <a href="/docs/semantic-layouts/">Semantic Layouts</a> for the approach.</p>
+  </section>
+
+  <section>
     <h2>Attributes</h2>
     <table class="props-table">
       <thead>
@@ -25,6 +54,7 @@ crumbLabel: Custom Elements
           <th>Attribute</th>
           <th>Values</th>
           <th>Default</th>
+          <th>Applies to</th>
           <th>Description</th>
         </tr>
       </thead>
@@ -33,54 +63,67 @@ crumbLabel: Custom Elements
           <td><code>data-layout-gap</code></td>
           <td><code>none</code>, <code>3xs</code>, <code>2xs</code>, <code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code>, <code>2xl</code>, <code>3xl</code></td>
           <td><code>s</code></td>
+          <td>both</td>
           <td>Gap between items, on the shared size scale.</td>
         </tr>
         <tr>
           <td><code>data-layout-justify</code></td>
           <td><code>start</code>, <code>end</code>, <code>center</code>, <code>between</code></td>
           <td><code>start</code></td>
+          <td>both</td>
           <td>Main-axis distribution.</td>
         </tr>
         <tr>
           <td><code>data-layout-align</code></td>
           <td><code>start</code>, <code>end</code>, <code>center</code>, <code>stretch</code>, <code>baseline</code></td>
           <td><code>center</code></td>
+          <td>both</td>
           <td>Cross-axis alignment.</td>
         </tr>
         <tr>
           <td><code>data-layout-nowrap</code></td>
           <td>(boolean)</td>
           <td>&mdash;</td>
-          <td>Keep everything on one line; no wrapping.</td>
+          <td>both</td>
+          <td>Keep everything on one line; no wrapping. See <a href="#nowrap">No wrap</a>.</td>
         </tr>
         <tr>
           <td><code>data-layout-overlap</code></td>
           <td>(bare), <code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code></td>
           <td><code>s</code></td>
-          <td>Overlap items (avatar groups) in DOM order, later items on top, each with a surface-coloured ring. Forces gap 0. Bare attribute = s.</td>
-        </tr>
-        <tr>
-          <td><code>data-container</code> <small>(on main, article, section, aside)</small></td>
-          <td>(boolean)</td>
-          <td>&mdash;</td>
-          <td>Opt a semantic child back into container queries. The layout removes container-type from such children so they size to content; this restores it.</td>
+          <td>both</td>
+          <td>Overlap items (avatar groups) in DOM order, later items on top, each with a surface-coloured ring. Each item after the first is pulled back by xs 0.25rem, s 0.5rem, m 0.75rem or l 1rem. Forces gap 0. Bare attribute = s.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section>
-    <h2>Element or Attribute</h2>
-    <p>The same layout is available as <code>data-layout="cluster"</code> on any element. Prefer the attribute when a semantic element already wraps the items &mdash; a <code>&lt;nav&gt;</code>, <code>&lt;ul&gt;</code>, <code>&lt;footer&gt;</code> or <code>&lt;menu&gt;</code> &mdash; so you don't add a wrapper just for layout. Use <code>&lt;layout-cluster&gt;</code> when there is no meaningful element to carry it. All <code>data-layout-*</code> modifiers work on both forms. See <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> for the full comparison.</p>
-    <code-block language="html" show-lines label="Attribute form on a list" data-escape><ul data-layout="cluster" data-layout-gap="xs">
-  <li><span class="tag">HTML</span></li>
-  <li><span class="tag">CSS</span></li>
-  <li><span class="tag">JavaScript</span></li>
-</ul></code-block>
+    <h2>Child attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>On</th>
+          <th>Applies to</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="/docs/attributes/data-container/"><code>data-container</code></a></td>
+          <td><code>main</code>, <code>article</code>, <code>section</code>, <code>aside</code></td>
+          <td>both</td>
+          <td>Opt a semantic child back into container queries. The layout removes container-type from such children so they size to content; this restores it (give the child an explicit inline size, or it collapses).</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
-    <h2>Gap Variants</h2>
+    <h2>Examples</h2>
+
+    <h3>Gap</h3>
     <p>The <code>data-layout-gap</code> attribute controls spacing between items.</p>
 
     <browser-window
@@ -95,10 +138,7 @@ crumbLabel: Custom Elements
   <button type="button">Button</button>
   <button type="button">Button</button>
 </layout-cluster></code-block>
-  </section>
-
-  <section>
-    <h2>Justify Variants</h2>
+    <h3>Justify</h3>
     <p>The <code>data-layout-justify</code> attribute controls horizontal distribution.</p>
 
     <browser-window
@@ -119,10 +159,7 @@ crumbLabel: Custom Elements
 
 <!-- Items spread with space between -->
 <layout-cluster data-layout-justify="between">...</layout-cluster></code-block>
-  </section>
-
-  <section>
-    <h2>Align Variants</h2>
+    <h3>Align</h3>
     <p>The <code>data-layout-align</code> attribute controls vertical alignment.</p>
 
     <browser-window
@@ -146,15 +183,36 @@ crumbLabel: Custom Elements
 
 <!-- Items aligned by text baseline -->
 <layout-cluster data-layout-align="baseline">...</layout-cluster></code-block>
-  </section>
 
-  <section>
-    <h2>Overlap Variant</h2>
-    <p>The <code>data-layout-overlap</code> attribute creates overlapping items &mdash; useful for avatar groups and stacked card effects. Items stay in DOM order, so what sighted users see matches reading and focus order; each later item stacks above the one before it, and a hovered or focused item is lifted to the top.</p>
+    <h3 id="nowrap">No wrap</h3>
+    <p><code>data-layout-nowrap</code> keeps every item on one line. Items no longer wrap, so in a narrow container they overflow; give the cluster (or its parent) <code>overflow-x: auto</code> so the overflow scrolls instead of spilling out. Use it for short toolbars and breadcrumbs that must stay on one line.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/cluster-nowrap.html"
+      url="https://vanilla-breeze.com/cluster/nowrap"
+      title="Cluster no-wrap"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="No-wrap cluster" data-escape><layout-cluster class="toolbar" data-layout-gap="xs" data-layout-nowrap>
+  <button type="button">Bold</button>
+  <button type="button">Italic</button>
+  <button type="button">Underline</button>
+  <button type="button">Link</button>
+  <button type="button">Quote</button>
+</layout-cluster></code-block>
+    <code-block language="css" label="Let the overflow scroll" data-escape>.toolbar {
+  overflow-x: auto;
+}</code-block>
+
+    <h3 id="overlap">Overlap</h3>
+    <p>The <code>data-layout-overlap</code> attribute overlaps the items, for avatar groups and stacked chips. Items stay in DOM order, so what sighted users see matches reading and focus order; each later item stacks above the one before it, and a hovered or focused item is lifted to the top.</p>
     <ul>
+      <li><strong>Overlap sizes.</strong> Each item after the first is pulled back by <code>xs</code> 0.25rem, <code>s</code> 0.5rem (the bare attribute), <code>m</code> 0.75rem or <code>l</code> 1rem.</li>
       <li><strong>Gap is forced to 0.</strong> The overlap comes from negative inline margins, so <code>data-layout-gap</code> has no effect.</li>
-      <li><strong>Surface-coloured ring.</strong> Each item gets a 2px <code>box-shadow</code> ring in <code>var(--color-surface)</code> to separate it from its neighbour. On a different background, override the ring colour on the items.</li>
+      <li><strong>Surface-coloured ring.</strong> Each item gets a 2px <code>box-shadow</code> ring in <code>var(--color-surface)</code> to separate it from its neighbour. In the list form, <code>&lt;user-avatar&gt;</code> draws the same ring itself, because the square <code>&lt;li&gt;</code> would otherwise carry it.</li>
     </ul>
+    <p>Mark an avatar group up as a list, as on the <a href="/docs/elements/custom-elements/user-avatar/"><code>&lt;user-avatar&gt;</code> page</a> (Avatar Group): one <code>&lt;li&gt;</code> per person, the list named by a visible heading with <code>aria-labelledby</code>, and an <code>aria-label</code> on the <q>+N</q> chip that says what it stands for.</p>
 
     <browser-window
       src="/docs/snippets/demos/cluster-overlap.html"
@@ -163,20 +221,29 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
-    <p>Control overlap amount with size values:</p>
+    <code-block language="html" show-lines label="Overlapping avatar group" data-escape><h2 id="overlap-default">Project members</h2>
+<ul class="unstyled" data-layout="cluster" data-layout-overlap aria-labelledby="overlap-default">
+  <li><user-avatar><img src="jane.jpg" alt="Jane Doe" /></user-avatar></li>
+  <li><user-avatar><img src="john.jpg" alt="John Smith" /></user-avatar></li>
+  <li><user-avatar><img src="alex.jpg" alt="Alex Johnson" /></user-avatar></li>
+  <li>
+    <user-avatar role="img" aria-label="3 more members">
+      <span data-fallback aria-hidden="true">+3</span>
+    </user-avatar>
+  </li>
+</ul>
 
-    <code-block language="html" show-lines label="Overlapping avatar group" data-escape><layout-cluster data-layout-overlap>
-  <user-avatar><img src="user1.jpg" alt="User 1" /></user-avatar>
-  <user-avatar><img src="user2.jpg" alt="User 2" /></user-avatar>
-  <user-avatar><img src="user3.jpg" alt="User 3" /></user-avatar>
-  <user-avatar><span data-fallback>+3</span></user-avatar>
-</layout-cluster></code-block>
-  </section>
+<!-- Tighter or looser: xs, m, l -->
+<ul class="unstyled" data-layout="cluster" data-layout-overlap="xs" aria-labelledby="overlap-xs">
+  <li><user-avatar data-size="sm" role="img" aria-label="Ana Lopez"><span data-fallback aria-hidden="true">AL</span></user-avatar></li>
+  ...
+</ul></code-block>
+    <p>On a background other than <code>--color-surface</code>, match the ring to it by re-declaring the token on the group. That recolours the separator on every item, including the ring that <code>&lt;user-avatar&gt;</code> draws in the list form:</p>
+    <code-block language="css" label="Ring colour on a raised card" data-escape>.members-on-card {
+  --color-surface: var(--color-surface-raised);
+}</code-block>
 
-  <section>
-    <h2>Usage Examples</h2>
-
-    <h3>Button Group</h3>
+    <h3>Button group</h3>
 
     <browser-window
       src="/docs/snippets/demos/cluster-button-group.html"
@@ -191,7 +258,7 @@ crumbLabel: Custom Elements
   <button type="button" class="ghost">Reset</button>
 </layout-cluster></code-block>
 
-    <h3>Tag Cloud</h3>
+    <h3>Tag cloud</h3>
 
     <browser-window
       src="/docs/snippets/demos/cluster-tag-cloud.html"
@@ -206,7 +273,7 @@ crumbLabel: Custom Elements
   <span class="tag">JavaScript</span>
 </layout-cluster></code-block>
 
-    <h3>Card Footer Actions</h3>
+    <h3>Card footer actions</h3>
 
     <browser-window
       src="/docs/snippets/demos/cluster-card-footer.html"
@@ -245,11 +312,24 @@ crumbLabel: Custom Elements
   </section>
 
   <section>
+    <h2 id="accessibility">Accessibility</h2>
+    <ul>
+      <li>The cluster never reorders items, and <code>data-layout-justify</code> only moves free space around, so reading and focus order are the DOM order.</li>
+      <li>When the items are a set (tags, avatars, links), use the attribute form on a <code>&lt;ul&gt;</code> or <code>&lt;menu&gt;</code> so screen readers announce the number of items. <code>&lt;layout-cluster&gt;</code> has no role of its own.</li>
+      <li>Give overlapping avatars a name each (<code>alt</code> or <code>aria-label</code>) and label the <q>+N</q> chip with what it stands for; the overlap hides part of each avatar, so the picture alone is not enough.</li>
+      <li>Wrapping is what lets a cluster reflow at high zoom (<a href="https://www.w3.org/WAI/WCAG22/Understanding/reflow.html">WCAG 1.4.10 Reflow</a>). With <code>data-layout-nowrap</code>, make sure the overflow can scroll and every item can still be reached by keyboard.</li>
+    </ul>
+  </section>
+
+  <section>
     <h2>Related</h2>
     <ul>
+      <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> — The attribute form (<code>data-layout="cluster"</code>) and every layout modifier</li>
+      <li><a href="/docs/semantic-layouts/">Semantic Layouts</a> — When to use a layout element and when an attribute</li>
+      <li><a href="/docs/attributes/data-container/"><code>data-container</code></a> — Opt a child back into container queries</li>
       <li><a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a> — Vertical stacking layout</li>
       <li><a href="/docs/elements/custom-elements/grid/"><code>&lt;layout-grid&gt;</code></a> — Auto-fit grid layout</li>
       <li><a href="/docs/elements/custom-elements/sidebar/"><code>&lt;layout-sidebar&gt;</code></a> — Two-column layout with sidebar</li>
-      <li><a href="/docs/elements/custom-elements/user-avatar/"><code>&lt;user-avatar&gt;</code></a> — Avatar element for use with overlap</li>
+      <li><a href="/docs/elements/custom-elements/user-avatar/"><code>&lt;user-avatar&gt;</code></a> — Avatar element and the avatar group pattern</li>
     </ul>
   </section>

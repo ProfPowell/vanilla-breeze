@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Noscript Fallback</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    /* Only shown when scripting is off; the reset already hides [data-requires-js]. */
+    .no-js-hint { display: none; }
+    @media (scripting: none) {
+      .no-js-hint { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Share this page</h1>
+    <p>Link: <a href="https://vanilla-breeze.com/docs/elements/native/noscript/">vanilla-breeze.com/docs/elements/native/noscript/</a></p>
+    <p>
+      <button type="button" data-requires-js>Copy link</button>
+      <output aria-live="polite"></output>
+    </p>
+    <noscript>
+      <p>Copy the link above to share this page.</p>
+    </noscript>
+    <p class="no-js-hint">Scripting is off, so the copy button is hidden.</p>
+  </main>
+  <script>
+    const button = document.querySelector('button[data-requires-js]');
+    const status = document.querySelector('output');
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(document.querySelector('main a').href);
+        status.textContent = 'Copied.';
+      } catch {
+        status.textContent = 'Copy failed. Select the link above instead.';
+      }
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

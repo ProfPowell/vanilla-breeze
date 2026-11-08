@@ -17,7 +17,7 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "data-layout-gap": { enum: ["none", "3xs", "2xs", "xs", "s", "m", "l", "xl", "2xl", "3xl"] },
-      "data-layout-threshold": { enum: ["s", "m", "l"], omit: true },
+      "data-layout-threshold": { enum: ["s", "m", "l"] },
       "data-layout-limit": { enum: ["2", "3", "4"] },
       "data-layout-reverse": { boolean: true }
     }
@@ -74,7 +74,7 @@ module.exports = {
     attributes: {
       "data-layout-min": { enum: ["xs", "s", "m", "l", "xl"] },
       "data-layout-gap": { enum: ["none", "3xs", "2xs", "xs", "s", "m", "l", "xl", "2xl", "3xl"] },
-      "data-layout-subgrid": { enum: ["2", "4"], omit: true }
+      "data-layout-subgrid": { enum: ["2", "3", "4"], omit: true }
     }
   },
 
@@ -139,6 +139,7 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
+      "data-canvas": { enum: ["flush", "elevated"], omit: true },
       "data-variant": { enum: ["flush", "elevated"] },
       "data-max": { enum: ["narrow", "normal", "wide", "prose"] },
       "data-padding": { enum: ["none", "s", "m", "l", "xl"] },
@@ -151,10 +152,10 @@ module.exports = {
     phrasing: true,
     permittedContent: ["@phrasing"],
     attributes: {
-      "data-size": { enum: ["sm", "lg"] },
+      "data-size": { enum: ["s", "l"] },
       "data-color": { enum: ["primary", "success", "warning", "error", "info", "brand", "secondary", "accent"] },
       "data-variant": { enum: ["subtle", "outlined"] },
-      "data-shape": { enum: ["square"] }
+      "data-shape": { enum: ["square", "ribbon", "notch", "flag", "double-arrow", "stamp"] }
     }
   },
 
@@ -177,7 +178,7 @@ module.exports = {
     permittedContent: ["@phrasing"],
     attributes: {
       "data-size": { enum: ["xs", "s", "m", "l", "xl"] },
-      "data-variant": {},
+      "data-variant": { enum: ["primary", "success", "warning", "error"] },
       "data-overlay": { boolean: true }
     }
   },
@@ -186,13 +187,17 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "breakpoint": {}
+      "breakpoint": {},
+      "data-mobile": { boolean: true }
     }
   },
 
   "site-legal": {
     flow: true,
-    permittedContent: ["@flow"]
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-justify": { enum: ["start", "center", "end", "between"] }
+    }
   },
 
   "site-tools": {
@@ -212,7 +217,13 @@ module.exports = {
 
   "user-avatar": {
     flow: true,
-    permittedContent: ["@flow"]
+    phrasing: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-size": { enum: ["xs", "sm", "md", "lg", "xl", "2xl"] },
+      "data-shape": { enum: ["rounded", "square"] },
+      "data-ring": { boolean: true }
+    }
   },
 
   "brand-mark": {
@@ -268,7 +279,11 @@ module.exports = {
       "data-label-rule-uppercase": {},
       "data-label-rule-lowercase": {},
       "data-label-rule-number": {},
-      "data-label-rule-special": {}
+      "data-label-rule-special": {},
+      "data-label-strength-empty": {},
+      "data-label-strength-too-weak": {},
+      "data-label-rule-met": {},
+      "data-label-rule-unmet": {}
     }
   },
 
@@ -998,12 +1013,15 @@ module.exports = {
     flow: true,
     permittedContent: ["textarea", "@flow"],
     attributes: {
-      "name": {},
       "placeholder": {},
       "rows": {},
       "highlight": { boolean: true },
       "data-tab-indent": { boolean: true },
-      "data-theme": {}
+      "data-auto-mermaid": { boolean: true },
+      "data-theme": {},
+      "data-label-source": {},
+      "data-label-preview": {},
+      "data-label-tab-hint": {}
     }
   },
 
@@ -1012,11 +1030,13 @@ module.exports = {
     permittedContent: ["pre", "script", "template", "@flow"],
     attributes: {
       "src": {},
-      "loading": { enum: ["eager", "lazy"] },
-      "sanitize": { enum: ["on", "off"] },
+      "allow-cross-origin": { boolean: true },
+      "sanitize": { enum: ["on", "off", "false"] },
       "highlight": { boolean: true },
       "ping": {},
-      "data-theme": {}
+      "data-theme": {},
+      "data-label-error": {},
+      "data-auto-mermaid": { boolean: true }
     }
   },
 
@@ -1025,13 +1045,25 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "aria-label": {},
-      "data-match": { enum: ["exact"] }
+      "data-match": { enum: ["exact"] },
+      "data-label-new-tab": {}
     }
   },
 
   "note-wc": {
     flow: true,
-    permittedContent: ["@flow"]
+    permittedContent: ["@flow"],
+    attributes: {
+      "for": {},
+      "data-label-add": {},
+      "data-label-view": {},
+      "data-label-dialog": {},
+      "data-label-heading": {},
+      "data-label-placeholder": {},
+      "data-label-textarea": {},
+      "data-label-save": {},
+      "data-label-cancel": {}
+    }
   },
 
   "notification-wc": {
@@ -1045,9 +1077,26 @@ module.exports = {
       "expires": {},
       "src": {},
       "poll": {},
-      "toast-new": { boolean: true },
+      "toast-new": {},
       "storage-key": {},
-      "data-trigger": {}
+      "data-label-trigger": {},
+      "data-label-unread": {},
+      "data-label-title": {},
+      "data-label-mark-all": {},
+      "data-label-tabs": {},
+      "data-label-all": {},
+      "data-label-watching": {},
+      "data-label-empty": {},
+      "data-label-watch-empty": {},
+      "data-label-last-checked": {},
+      "data-label-never": {},
+      "data-label-changed": {},
+      "data-label-unwatch": {},
+      "data-label-new": {},
+      "data-label-variant-info": {},
+      "data-label-variant-success": {},
+      "data-label-variant-warning": {},
+      "data-label-variant-error": {}
     }
   },
 
@@ -1056,9 +1105,27 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "auto": { boolean: true },
-      "og-preview": { boolean: true },
-      "datetime": {},
-      "data-trust": {}
+      "data-concept-base": {},
+      "data-heading-level": { enum: ["2", "3", "4", "5", "6"] },
+      "data-label-reading-time": {},
+      "data-label-author": {},
+      "data-label-history": {},
+      "data-label-provenance": {},
+      "data-label-topic": {},
+      "data-label-published": {},
+      "data-label-updated": {},
+      "data-label-version": {},
+      "data-label-authorship": {},
+      "data-label-ai-tools": {},
+      "data-label-review": {},
+      "data-label-status": {},
+      "data-label-license": {},
+      "data-label-concepts": {},
+      "data-label-keywords": {},
+      "data-label-tier-declared": {},
+      "data-label-tier-verified": {},
+      "data-label-tier-failed": {},
+      "data-label-tier-key-unavailable": {}
     }
   },
 
@@ -1068,7 +1135,12 @@ module.exports = {
     attributes: {
       "data-for": {},
       "data-wpm": {},
-      "data-show": {}
+      "data-show": {},
+      "data-label-reading-time": {},
+      "data-label-word-count": {},
+      "data-label-last-modified": {},
+      "data-label-min-read": {},
+      "data-label-words": {}
     }
   },
 
@@ -1077,9 +1149,9 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "levels": {},
-      "title": {},
-      "href": {},
-      "data-toc-ignore": {}
+      "scope": {},
+      "data-title": {},
+      "orientation": { enum: ["horizontal"] }
     }
   },
 
@@ -1087,17 +1159,14 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-position": {},
-      "data-orientation": {},
-      "data-gap": {},
+      "data-position": { enum: ["sticky", "fixed", "inline"] },
+      "data-orientation": { enum: ["auto", "vertical", "horizontal"] },
+      "data-gap": { enum: ["2xs", "xs", "s", "m", "l"] },
       "data-fab-icon": {},
       "data-fab-label": {},
       "data-breakpoint": {},
-      "role": {},
-      "data-page-tools-internal": {},
-      "popovertarget": {},
-      "data-resolved-orientation": {},
-      "data-collapsed": {}
+      "data-resolved-orientation": { enum: ["vertical", "horizontal"] },
+      "data-collapsed": { boolean: true }
     }
   },
 
@@ -1111,6 +1180,14 @@ module.exports = {
       "data-persist": { enum: ["none", "session", "local"] },
       "data-persist-key": {},
       "data-spotlight-padding": {},
+      "data-label-step": {},
+      "data-label-skip": {},
+      "data-label-close": {},
+      "data-label-prev": {},
+      "data-label-next": {},
+      "data-label-finish": {},
+      "data-label-nav": {},
+      "data-label-ready": {},
       "data-step": {},
       "data-active": { boolean: true },
       "data-complete": { boolean: true }
@@ -1123,7 +1200,15 @@ module.exports = {
     attributes: {
       "target": {},
       "for": {},
-      "style": { enum: ["numbered", "prev-next", "load-more"] }
+      "data-style": { enum: ["numbered", "prev-next", "load-more"] },
+      "data-label-nav": {},
+      "data-label-prev": {},
+      "data-label-next": {},
+      "data-label-page": {},
+      "data-label-status": {},
+      "data-label-load-more": {},
+      "data-label-no-more": {},
+      "data-label-missing": {}
     }
   },
 
@@ -1135,7 +1220,12 @@ module.exports = {
       "data-multi": { boolean: true },
       "data-closed": { boolean: true },
       "data-hide-counts": { boolean: true },
-      "disabled": { boolean: true }
+      "disabled": { boolean: true },
+      "data-label-vote": {},
+      "data-label-votes": {},
+      "data-label-your-choice": {},
+      "data-label-closed": {},
+      "data-label-poll": {}
     }
   },
 
@@ -1146,7 +1236,8 @@ module.exports = {
       "data-mode": { enum: ["auto", "manual", "hint"] },
       "data-anchor": {},
       "data-position": { enum: ["top", "bottom", "left", "right", "top-start", "top-end", "bottom-start", "bottom-end", "left-start", "left-end", "right-start", "right-end"] },
-      "data-offset": { enum: ["none", "xs", "s", "m", "l"] }
+      "data-offset": { enum: ["none", "xs", "s", "m", "l"] },
+      "data-anchor-name": {}
     }
   },
 
@@ -1158,7 +1249,14 @@ module.exports = {
       "data-meta-src": {},
       "data-lens-src": {},
       "limit": {},
-      "window": {}
+      "window": {},
+      "data-heading-level": {},
+      "data-label-heading": {},
+      "data-label-view": {},
+      "data-label-views": {},
+      "data-label-unavailable": {},
+      "data-label-empty": {},
+      "data-state": { enum: ["loading", "ready", "empty", "unavailable"] }
     }
   },
 
@@ -1168,19 +1266,24 @@ module.exports = {
     attributes: {
       "raw-toggle": { boolean: true },
       "label": {},
-      "role": {},
-      "data-print-raw": {}
+      "variant": { enum: ["icon", "label", "icon-label"] },
+      "data-label-raw": {}
     }
   },
 
   "progress-tracker": {
     flow: true,
-    permittedContent: ["li", "@flow"],
+    permittedContent: ["ol"],
     attributes: {
       "data-current": {},
       "data-clickable": { boolean: true },
-      "aria-label": {},
-      "role": {}
+      "data-direction": { enum: ["horizontal", "vertical"] },
+      "data-label-list": {},
+      "data-label-step": {},
+      "data-label-complete": {},
+      "data-label-current": {},
+      "data-label-upcoming": {},
+      "data-label-error": {}
     }
   },
 
@@ -1192,8 +1295,11 @@ module.exports = {
       "size": {},
       "color": {},
       "background": {},
-      "error-correction": {},
-      "role": {}
+      "error-correction": { enum: ["l", "m", "q", "h", "0", "1", "2", "3"] },
+      "data-caption": { enum: ["visible"] },
+      "data-label-prefix": {},
+      "data-label-copied": {},
+      "data-error": { enum: ["capacity", "encoding"] }
     }
   },
 
@@ -1204,8 +1310,11 @@ module.exports = {
       "aria-label": {},
       "data-trigger-icon": {},
       "data-trigger-label": {},
-      "data-disabled": { boolean: true },
-      "role": {}
+      "data-label-toolbar": {},
+      "data-label-dialog": {},
+      "data-label-count-one": {},
+      "data-label-count-other": {},
+      "data-disabled": { boolean: true }
     }
   },
 
@@ -1213,18 +1322,36 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "upgraded": {},
-      "mode": {},
-      "columns": {},
-      "role": {},
-      "font-controls": {},
-      "col-controls": {},
+      "mode": { enum: ["scroll", "pages"] },
+      "columns": { enum: ["auto", "1", "2", "3"] },
+      "font-controls": { enum: ["true", "false"] },
+      "col-controls": { enum: ["true", "false"] },
       "reader-title": {},
-      "disabled": {},
-      "persist": {},
+      "persist": { enum: ["true", "false"] },
       "storage-key": {},
-      "data-reader-state": {},
-      "aria-pressed": {}
+      "data-remember-mode": { boolean: true },
+      "data-label-kicker": {},
+      "data-label-controls": {},
+      "data-label-mode-group": {},
+      "data-label-mode": {},
+      "data-label-scroll": {},
+      "data-label-pages": {},
+      "data-label-font-group": {},
+      "data-label-type": {},
+      "data-label-font-decrease": {},
+      "data-label-font-increase": {},
+      "data-label-columns-group": {},
+      "data-label-cols": {},
+      "data-label-auto": {},
+      "data-label-column-auto": {},
+      "data-label-column-1": {},
+      "data-label-column-2": {},
+      "data-label-column-3": {},
+      "data-label-pages-region": {},
+      "data-label-page-nav": {},
+      "data-label-prev": {},
+      "data-label-next": {},
+      "data-label-page-indicator": {}
     }
   },
 
@@ -1233,17 +1360,25 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "data-for": {},
-      "data-position": {}
+      "data-position": { enum: ["top", "bottom"] }
     }
   },
 
   "recently-visited": {
     flow: true,
-    permittedContent: ["@flow"],
+    permittedContent: [],
     attributes: {
       "limit": {},
-      "no-track": { boolean: true },
-      "empty-text": {}
+      "include-current": { boolean: true },
+      "data-heading-level": {},
+      "data-label-heading": {},
+      "data-label-explainer": {},
+      "data-label-pause": {},
+      "data-label-anchors": {},
+      "data-label-clear": {},
+      "data-label-empty": {},
+      "data-label-anchor-one": {},
+      "data-label-anchor-other": {}
     }
   },
 
@@ -1262,7 +1397,9 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "for": {}
+      "for": {},
+      "id": {},
+      "data-label": {}
     }
   },
 
@@ -1271,9 +1408,75 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "open": { boolean: true },
-      "data-trigger": {},
-      "aria-haspopup": {},
-      "role": {}
+      "data-label-trigger": {},
+      "data-label-dialog": {},
+      "data-label-title": {},
+      "data-label-close": {},
+      "data-label-appearance": {},
+      "data-label-color-mode": {},
+      "data-label-mode-auto": {},
+      "data-label-mode-light": {},
+      "data-label-mode-dark": {},
+      "data-label-theme": {},
+      "data-label-accessibility": {},
+      "data-label-high-contrast": {},
+      "data-label-large-text": {},
+      "data-label-dyslexia": {},
+      "data-label-char-shortcuts": {},
+      "data-label-layout": {},
+      "data-label-fluid": {},
+      "data-label-density": {},
+      "data-label-density-compact": {},
+      "data-label-density-default": {},
+      "data-label-density-spacious": {},
+      "data-label-backdrop": {},
+      "data-label-backdrop-style": {},
+      "data-label-backdrop-default": {},
+      "data-label-backdrop-flush": {},
+      "data-label-backdrop-elevated": {},
+      "data-label-chrome": {},
+      "data-label-chrome-card": {},
+      "data-label-chrome-stretch": {},
+      "data-label-chrome-integrated": {},
+      "data-label-fixed-header": {},
+      "data-label-page-bg": {},
+      "data-label-page-bg-default": {},
+      "data-label-page-bg-color": {},
+      "data-label-page-bg-gradient": {},
+      "data-label-bg-color": {},
+      "data-label-grad-start": {},
+      "data-label-grad-end": {},
+      "data-label-grad-direction": {},
+      "data-label-dir-to-bottom": {},
+      "data-label-dir-to-right": {},
+      "data-label-dir-135deg": {},
+      "data-label-dir-45deg": {},
+      "data-label-sticky": {},
+      "data-label-effects": {},
+      "data-label-motion": {},
+      "data-label-sounds": {},
+      "data-label-environment": {},
+      "data-label-time-of-day": {},
+      "data-label-seasonal": {},
+      "data-label-system": {},
+      "data-label-sw-label": {},
+      "data-label-sw-checking": {},
+      "data-label-sw-unsupported": {},
+      "data-label-sw-active": {},
+      "data-label-sw-unregistered": {},
+      "data-label-clear-cache": {},
+      "data-label-clearing": {},
+      "data-label-cleared": {},
+      "data-label-check-update": {},
+      "data-label-checking": {},
+      "data-label-update-available": {},
+      "data-label-up-to-date": {},
+      "data-label-failed": {},
+      "data-label-reset": {},
+      "data-label-reset-confirm": {},
+      "data-label-reset-yes": {},
+      "data-label-reset-cancel": {},
+      "data-label-reset-done": {}
     }
   },
 
@@ -1285,36 +1488,56 @@ module.exports = {
       "title": {},
       "text": {},
       "platforms": {},
-      "variant": {},
-      "size": {},
+      "variant": { enum: ["icon", "label", "icon-label"] },
+      "size": { enum: ["s", "m", "l"] },
       "label": {},
       "color": { boolean: true },
       "mastodon-instance": {},
-      "tier": {},
-      "data-tier-resolved": {},
-      "href": {},
-      "content": {}
+      "tier": { enum: ["native", "platforms"] },
+      "data-tier-resolved": { enum: ["native", "platforms", "hidden", "selection"] },
+      "data-label-share-page": {},
+      "data-label-share-on": {},
+      "data-label-copy": {},
+      "data-label-copied": {},
+      "data-label-link-copied": {},
+      "data-label-share-selection": {},
+      "data-label-selection-copied": {}
     }
   },
 
   "short-cuts": {
     flow: true,
-    permittedContent: ["@flow"]
+    permittedContent: ["@flow"],
+    attributes: {
+      "hotkey": {},
+      "data-label-title": {},
+      "data-label-general": {},
+      "data-label-self": {},
+      "data-label-close": {}
+    }
   },
 
   "site-index": {
     attributes: {
       "placeholder": {},
-      "letters": {},
-      "filter": {},
-      "sort": {},
+      "letters": { enum: ["entries", "all", "none"] },
+      "filter": { enum: ["topic", "all"] },
+      "sort": { enum: ["alpha", "count"] },
       "limit": {},
       "src": {},
-      "data-index-controls": {},
-      "data-index-search": {},
-      "href": {},
-      "data-index-overflow": {},
-      "data-index-expand": {}
+      "data-label-controls": {},
+      "data-label-scope": {},
+      "data-label-scope-topic": {},
+      "data-label-scope-all": {},
+      "data-label-sort": {},
+      "data-label-sort-alpha": {},
+      "data-label-sort-count": {},
+      "data-label-jump": {},
+      "data-label-more": {},
+      "data-label-less": {},
+      "data-label-matches": {},
+      "data-label-matches-one": {},
+      "data-label-no-matches": {}
     }
   },
 
@@ -1322,16 +1545,15 @@ module.exports = {
     flow: true,
     permittedContent: ["nav"],
     attributes: {
-      "mode": {},
+      "mode": { enum: ["nav-enhance", "ia-tree"] },
       "current": {},
       "src": {},
       "title": {},
       "collapsed": { boolean: true },
       "compact": { boolean: true },
-      "data-view": {},
-      "data-orientation": {},
-      "data-detail": {},
-      "data-sitemap-controls": {}
+      "data-view": { enum: ["visual"] },
+      "data-orientation": { enum: ["vertical", "horizontal"] },
+      "data-detail": { enum: ["0", "1", "2", "3", "4"] }
     }
   },
 
@@ -1339,7 +1561,25 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "open": { boolean: true }
+      "open": { boolean: true },
+      "data-pagefind-path": {},
+      "data-base-url": {},
+      "data-label-trigger": {},
+      "data-label-dialog": {},
+      "data-label-placeholder": {},
+      "data-label-input": {},
+      "data-label-results": {},
+      "data-label-searching": {},
+      "data-label-empty": {},
+      "data-label-count": {},
+      "data-label-count-one": {},
+      "data-label-unavailable": {},
+      "data-label-error": {},
+      "data-label-untitled": {},
+      "data-label-navigate": {},
+      "data-label-select": {},
+      "data-label-close": {},
+      "data-label-powered": {}
     }
   },
 
@@ -1349,15 +1589,15 @@ module.exports = {
     attributes: {
       "label": {},
       "activated-label": {},
-      "attention": {},
+      "data-label-hint": {},
+      "attention": { enum: ["shimmer", "pulse"] },
       "threshold": {},
-      "role": {},
-      "aria-valuemin": {},
-      "aria-valuemax": {},
-      "aria-valuenow": {},
-      "data-activated": {},
-      "transitioning": {},
-      "data-dragging": {}
+      "name": {},
+      "value": {},
+      "required": { boolean: true },
+      "disabled": { boolean: true },
+      "data-activated": { boolean: true },
+      "data-dragging": { boolean: true }
     }
   },
 
@@ -1365,14 +1605,17 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "url": {},
+      "url": { required: true },
       "provider": {},
-      "theme": {},
-      "activate": {},
-      "state": {},
-      "role": {},
-      "data-embed-live": {},
-      "style": {}
+      "poster": {},
+      "theme": { enum: ["light", "dark", "auto"] },
+      "activate": { enum: ["click", "visible", "eager"] },
+      "data-title": {},
+      "data-label-load": {},
+      "data-label-loading": {},
+      "data-label-error": {},
+      "data-label-note": {},
+      "state": { enum: ["idle", "loading", "loaded", "error", "unsupported"] }
     }
   },
 
@@ -1385,7 +1628,9 @@ module.exports = {
       "min": {},
       "max": {},
       "persist": {},
-      "collapsible": { boolean: true }
+      "collapsible": { boolean: true },
+      "data-label-resize": {},
+      "data-label-collapsed": {}
     }
   },
 
@@ -1401,12 +1646,11 @@ module.exports = {
       "readonly": { boolean: true },
       "icon": {},
       "required": { boolean: true },
-      "data-rating": {},
-      "data-rating-half": {},
-      "data-effect": {},
-      "data-half": {},
-      "data-rating-readonly": {},
-      "role": {}
+      "data-label-one": {},
+      "data-label-other": {},
+      "data-label-readonly": {},
+      "data-label-required": {},
+      "data-label-cleared": {}
     }
   },
 
@@ -1419,6 +1663,7 @@ module.exports = {
       "data-position": {},
       "data-pulse": {},
       "data-live": {},
+      "data-label-*": {},
       "aria-label": {},
       "role": {},
       "aria-live": {}
@@ -1441,14 +1686,12 @@ module.exports = {
       "data-suffix": {},
       "data-show-label": { boolean: true },
       "data-accelerate": { boolean: true },
+      "data-label-decrease": {},
+      "data-label-increase": {},
+      "aria-label": {},
+      "aria-labelledby": {},
       "disabled": { boolean: true },
-      "readonly": { boolean: true },
-      "role": {},
-      "aria-valuenow": {},
-      "aria-valuemin": {},
-      "aria-valuemax": {},
-      "aria-valuetext": {},
-      "aria-disabled": {}
+      "readonly": { boolean: true }
     }
   },
 
@@ -1457,7 +1700,16 @@ module.exports = {
     permittedContent: ["details", "nav", "section", "@script"],
     attributes: {
       "aria-label": {},
+      "data-orientation": { enum: ["horizontal", "vertical"] },
       "transition": { enum: ["fade", "slide", "scale"] }
+    }
+  },
+
+  "table": {
+    attributes: {
+      "data-striped": { boolean: true },
+      "data-bordered": { boolean: true },
+      "data-density": { enum: ["compact", "comfortable"] }
     }
   },
 
@@ -1466,19 +1718,22 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "for": {},
+      "variant": { enum: ["icon"] },
       "selectors": {},
       "speed": {},
       "voice": {},
       "highlight": {},
       "scroll": {},
-      "part": {},
-      "role": {},
-      "label-play": {},
-      "label-pause": {},
-      "label-stop": {},
-      "data-speed-group": {},
-      "data-speed-value": {},
-      "slot": {}
+      "data-label-play": {},
+      "data-label-pause": {},
+      "data-label-stop": {},
+      "data-label-reader": {},
+      "data-label-controls": {},
+      "data-label-voice": {},
+      "data-label-loading-voices": {},
+      "data-label-speed": {},
+      "data-label-slower": {},
+      "data-label-faster": {}
     }
   },
 
@@ -1486,23 +1741,35 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "variant": {},
+      "variant": { enum: ["popover", "inline"] },
       "compact": { boolean: true },
       "open": { boolean: true },
-      "data-trigger": {},
-      "aria-haspopup": {},
-      "role": {},
-      "aria-busy": {}
+      "data-label-panel": {},
+      "data-label-trigger": {},
+      "data-label-mode": {},
+      "data-label-accent": {},
+      "data-label-style": {},
+      "data-label-featured": {},
+      "data-label-more-themes": {},
+      "data-label-theme": {},
+      "data-label-a11y": {},
+      "data-label-sizing": {},
+      "data-label-extensions": {},
+      "data-label-download": {}
     }
   },
 
   "time-index": {
     attributes: {
-      "group": {},
-      "view": {},
       "versions": { boolean: true },
       "updates-src": {},
-      "data-timeline-controls": {}
+      "data-label-controls": {},
+      "data-label-sort": {},
+      "data-label-filter": {},
+      "data-label-all": {},
+      "data-label-status": {},
+      "data-label-status-all": {},
+      "data-label-recent": {}
     }
   },
 
@@ -1511,23 +1778,22 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "name": {},
-      "data-format": {},
+      "data-format": { enum: ["12h", "24h"] },
       "disabled": { boolean: true },
       "required": { boolean: true },
-      "step": {},
-      "min": {},
-      "max": {},
-      "data-disabled": {},
-      "role": {},
-      "aria-haspopup": {},
-      "autocomplete": {},
-      "placeholder": {},
-      "size": {},
-      "aria-valuemin": {},
-      "aria-valuemax": {},
-      "data-open": {},
-      "aria-valuenow": {},
-      "aria-valuetext": {}
+      "data-label-input": {},
+      "data-label-placeholder": {},
+      "data-label-toggle": {},
+      "data-label-dialog": {},
+      "data-label-hours": {},
+      "data-label-minutes": {},
+      "data-label-seconds": {},
+      "data-label-period": {},
+      "data-label-empty": {},
+      "data-label-required": {},
+      "data-label-range-underflow": {},
+      "data-label-range-overflow": {},
+      "data-label-step-mismatch": {}
     }
   },
 
@@ -1537,7 +1803,13 @@ module.exports = {
     attributes: {
       "position": { enum: ["top-start", "top-center", "top-end", "bottom-start", "bottom-center", "bottom-end"] },
       "duration": {},
-      "max": {}
+      "max": {},
+      "data-label-region": {},
+      "data-label-dismiss": {},
+      "data-label-info": {},
+      "data-label-success": {},
+      "data-label-warning": {},
+      "data-label-error": {}
     }
   },
 
@@ -1546,15 +1818,9 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "content": {},
-      "position": {},
+      "position": { enum: ["top", "bottom", "left", "right"] },
       "delay": {},
-      "variant": {},
-      "data-interest-polyfill": {},
-      "title": {},
-      "role": {},
-      "data-anchor": {},
-      "interestfor": {},
-      "data-content": {}
+      "variant": { enum: ["card"] }
     }
   },
 
@@ -1565,7 +1831,14 @@ module.exports = {
       "data-lens-src": {},
       "src": {},
       "data-vocabulary-src": {},
-      "expand-all": { boolean: true }
+      "expand-all": { boolean: true },
+      "data-heading-level": {},
+      "data-label-heading": {},
+      "data-label-page": {},
+      "data-label-pages": {},
+      "data-label-uncategorized": {},
+      "data-label-topic-link": {},
+      "data-label-error": {}
     }
   },
 
@@ -1574,7 +1847,20 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "data-lens-src": {},
-      "src": {}
+      "src": {},
+      "data-label-form": {},
+      "data-label-provenance": {},
+      "data-label-review": {},
+      "data-label-status": {},
+      "data-label-signed": {},
+      "data-label-yes": {},
+      "data-label-no": {},
+      "data-label-clear": {},
+      "data-label-page": {},
+      "data-label-pages": {},
+      "data-label-has-signature": {},
+      "data-label-error": {},
+      "data-label-no-source": {}
     }
   },
 
@@ -1584,13 +1870,29 @@ module.exports = {
     attributes: {
       "data-versions": {},
       "data-src": {},
-      "data-mode": {},
-      "data-action": {},
+      "data-mode": { enum: ["releases", "history"] },
+      "data-action": { enum: ["navigate", "swap", "diff"] },
       "data-versioned-region": {},
-      "data-diff-position": {},
+      "data-diff-position": { enum: ["before", "after"] },
       "data-banner": { boolean: true },
       "data-page-info-target": {},
-      "aria-label": {}
+      "aria-label": {},
+      "data-label-trigger": {},
+      "data-label-loading": {},
+      "data-label-loading-versions": {},
+      "data-label-empty": {},
+      "data-label-heading-releases": {},
+      "data-label-heading-history": {},
+      "data-label-archived": {},
+      "data-label-draft": {},
+      "data-label-current": {},
+      "data-label-by": {},
+      "data-label-changelog": {},
+      "data-label-changelog-for": {},
+      "data-label-banner-label": {},
+      "data-label-banner": {},
+      "data-label-banner-latest": {},
+      "data-label-diff": {}
     }
   },
 
@@ -1600,19 +1902,31 @@ module.exports = {
     attributes: {
       "autoplay": { boolean: true },
       "loop": { boolean: true },
+      "shuffle": { boolean: true },
       "muted": { boolean: true },
-      "controls": {},
-      "data-fullscreen": {},
-      "state": {},
-      "data-video-played": {},
-      "captions": {},
-      "aria-pressed": {},
-      "data-video-active": {},
-      "data-poster": {},
-      "data-captions": {},
-      "data-dynamic": {},
-      "shuffle": {},
-      "aria-valuetext": {}
+      "captions": { boolean: true },
+      "state": { enum: ["idle", "playing", "paused", "buffering", "ended"] },
+      "controls": { boolean: true },
+      "data-fullscreen": { boolean: true },
+      "data-label-player": {},
+      "data-label-controls": {},
+      "data-label-play-video": {},
+      "data-label-play": {},
+      "data-label-pause": {},
+      "data-label-seek": {},
+      "data-label-skip-back": {},
+      "data-label-skip-forward": {},
+      "data-label-mute": {},
+      "data-label-volume": {},
+      "data-label-speed": {},
+      "data-label-captions": {},
+      "data-label-fullscreen": {},
+      "data-label-exit-fullscreen": {},
+      "data-label-playing": {},
+      "data-label-paused": {},
+      "data-label-ended": {},
+      "data-label-buffering": {},
+      "data-label-time-of": {}
     }
   },
 
@@ -1623,7 +1937,10 @@ module.exports = {
       "variant": { enum: ["icon", "compact", "button"] },
       "label": {},
       "server-sync": { boolean: true },
-      "data-variant": {}
+      "data-label-watch": {},
+      "data-label-watching": {},
+      "data-label-action": {},
+      "data-label-stop": {}
     }
   },
 
@@ -1635,7 +1952,8 @@ module.exports = {
       "data-days": {},
       "data-start-hour": {},
       "data-end-hour": {},
-      "data-label-continues": {}
+      "data-label-continues": {},
+      "data-label-time": {}
     }
   },
 
@@ -1643,15 +1961,17 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "video-id": {},
+      "video-id": { required: true },
       "title": {},
       "start": {},
+      "end": {},
       "list": {},
       "params": {},
       "autoplay": { boolean: true },
-      "thumbnail": {},
-      "state": {},
-      "role": {}
+      "thumbnail": { enum: ["hq", "mq", "sd", "maxres"] },
+      "poster": {},
+      "data-label-play": {},
+      "state": { enum: ["ready", "active"] }
     }
   },
 

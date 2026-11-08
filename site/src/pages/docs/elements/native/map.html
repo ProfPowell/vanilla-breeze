@@ -70,21 +70,22 @@ crumbLabel: Native Elements
         <td><code>name</code></td>
         <td>string</td>
         <td>Yes</td>
-        <td>Unique name referenced by the <code>usemap</code> attribute on an <code>&lt;img&gt;</code>. Must not contain spaces.</td>
+        <td>Unique name referenced by the <code>usemap</code> attribute on an <code>&lt;img&gt;</code>. Must not be empty or contain spaces.</td>
       </tr>
     </tbody>
   </table>
+  <p>If the <code>&lt;map&gt;</code> also has an <code>id</code>, the spec requires the <code>id</code> to equal the <code>name</code>.</p>
   <p>The <code>&lt;map&gt;</code> element also supports <a href="/docs/attributes/">global attributes</a>.</p>
 </section>
 
 <section>
   <h2>The Responsive Problem</h2>
-  <p>Native <code>&lt;map&gt;</code> coordinates are defined in <strong>absolute pixels</strong> matching the image&rsquo;s natural dimensions. Modern layouts scale images fluidly with <code>max-inline-size: 100%</code>, but the coordinate system does not scale with them. The result: hotspot regions drift away from their visual targets as the image shrinks or grows.</p>
+  <p>Native <code>&lt;map&gt;</code> coordinates are defined in <strong>absolute pixels</strong> matching the image&rsquo;s natural dimensions. Modern layouts scale images fluidly, but the coordinate system does not scale with them. The result: hotspot regions drift away from their visual targets as the image shrinks or grows.</p>
+  <p>In a VB page this happens with no author CSS at all. The reset gives every <code>&lt;img&gt;</code> <code>max-inline-size: 100%</code>, so as soon as the container is narrower than the image, the image shrinks and the hotspots stay where they were.</p>
 
   <code-block language="html" show-lines label="Pixel coordinates break at different sizes" data-escape><!-- Native map: pixel coords break at any size other than 800x500 -->
 <img src="plan.jpg" alt="Floor plan" usemap="#plan"
-  width="800" height="500"
-  style="max-inline-size: 100%; block-size: auto;" />
+  width="800" height="500" />
 
 <map name="plan">
   <!-- These coords target exact pixels in the 800x500 image.
@@ -94,7 +95,12 @@ crumbLabel: Native Elements
     href="#room-a" alt="Room A" />
 </map></code-block>
 
-  <p>Workarounds exist (JavaScript that recalculates coordinates on resize), but they add complexity and fragility. The native element was not designed for responsive use.</p>
+  <p>To keep a native map accurate, stop the image from shrinking and let it scroll instead. This is what the demo above does:</p>
+
+  <code-block language="css" label="Keep a native image map at its pixel size" data-escape>figure:has(img[usemap]) { overflow-x: auto; }
+img[usemap] { max-inline-size: none; }</code-block>
+
+  <p>Other workarounds (JavaScript that recalculates coordinates on resize) add complexity and fragility. The native element was not designed for responsive use.</p>
 
   <aside class="note">
     <strong>Recommendation:</strong> For responsive image maps, use the <a href="/docs/elements/web-components/image-map/"><code>&lt;image-map&gt;</code></a> web component. It uses percentage-based coordinates (0&ndash;100) that scale with the image, supports rich HTML tooltips, and provides keyboard navigation.
@@ -137,7 +143,7 @@ crumbLabel: Native Elements
     <li>The <code>&lt;img&gt;</code> itself needs an <code>alt</code> describing the overall image</li>
     <li>Native image maps support keyboard navigation via <kbd>Tab</kbd> between areas</li>
     <li>Screen readers announce area <code>alt</code> text as link text</li>
-    <li>No visual focus indicator exists on native areas &mdash; users cannot see which region has focus</li>
+    <li>Browsers draw the focus ring around the area&rsquo;s shape. VB styles it with <code>:focus-visible</code> in the theme&rsquo;s interactive colour; on a busy image it can still be hard to see, so keep hotspots on calm regions or add visible labels.</li>
   </ul>
 </section>
 

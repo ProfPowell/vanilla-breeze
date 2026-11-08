@@ -1,91 +1,50 @@
 /**
  * Blur-reveal effect — word-by-word or line-by-line blur-to-clear reveal.
- * Similar to reveal but words start blurred and transition to clear.
+ * Same splitting as reveal (shared accessible splitter, inline markup kept,
+ * class="line" re-measured on resize); chunks start blurred instead of
+ * offset.
+ *
+ * Custom property: --vb-blur-reveal-delay (stagger step, default 80ms).
  */
 
 import { VB } from '../lib/vb.js'
+import { splitText, unsplit, assignLines } from '../lib/split-text.js'
 
-function splitIntoWords(el) {
-  const text = el.textContent
-  el.setAttribute('aria-label', text)
-  el.innerHTML = ''
-
-  const words = text.split(/(\s+)/)
-  words.forEach((word, i) => {
-    if (/^\s+$/.test(word)) {
-      el.appendChild(document.createTextNode(word))
-      return
-    }
-    const span = document.createElement('span')
-    span.className = 'vb-blur-chunk'
-    span.textContent = word
-    span.style.setProperty('--i', String(Math.floor(i / 2)))
-    span.setAttribute('aria-hidden', 'true')
-    el.appendChild(span)
-  })
-}
-
-function splitIntoLines(el) {
-  const text = el.textContent
-  el.setAttribute('aria-label', text)
-
-  const words = text.split(/\s+/).filter(Boolean)
-  const lines = []
-  let currentLine = ''
-  const elWidth = el.offsetWidth
-
-  const temp = document.createElement('span')
-  temp.style.visibility = 'hidden'
-  temp.style.position = 'absolute'
-  temp.style.font = getComputedStyle(el).font
-  document.body.appendChild(temp)
-
-  words.forEach((word) => {
-    const test = currentLine ? currentLine + ' ' + word : word
-    temp.textContent = test
-    if (temp.offsetWidth > elWidth && currentLine) {
-      lines.push(currentLine)
-      currentLine = word
-    } else {
-      currentLine = test
-    }
-  })
-  if (currentLine) lines.push(currentLine)
-  document.body.removeChild(temp)
-
-  if (lines.length === 0) lines.push(text)
-
-  el.innerHTML = ''
-  lines.forEach((line, i) => {
-    const span = document.createElement('span')
-    span.className = 'vb-blur-chunk'
-    span.textContent = line
-    span.style.setProperty('--i', String(i))
-    span.setAttribute('aria-hidden', 'true')
-    el.appendChild(span)
-    if (i < lines.length - 1) el.appendChild(document.createTextNode(' '))
-  })
-}
+const INIT = 'data-effect-blur-reveal-init'
 
 VB.effect('blur-reveal', (el) => {
-  if (el.hasAttribute('data-effect-blur-reveal-init')) return
-  el.setAttribute('data-effect-blur-reveal-init', '')
+  const host = /** @type {HTMLElement} */ (el)
+  unsplit(host)
+  host.removeAttribute(INIT)
 
-  if (VB.prefersReducedMotion()) return
+  if (VB.prefersReducedMotion()) return { cleanup() {} }
 
-  const mode = el.classList.contains('line') ? 'line' : 'word'
-  const delay = VB.params(el).get('blur-reveal-delay') || '80ms'
+  host.style.setProperty('--blur-delay', VB.params(host).get('blur-reveal-delay') || '80ms')
 
-  el.style.setProperty('--blur-delay', delay)
+  const chunks = splitText(host, { className: 'vb-blur-chunk' })
+  chunks.forEach((c, i) => c.style.setProperty('--i', String(i)))
+  host.setAttribute(INIT, '')
 
-  if (mode === 'line') {
-    splitIntoLines(el)
-  } else {
-    splitIntoWords(el)
+  /** @type {ResizeObserver | null} */
+  let ro = null
+  if (host.classList.contains('line')) {
+    assignLines(chunks)
+    let width = host.clientWidth
+    ro = new ResizeObserver(() => {
+      if (host.clientWidth === width) return
+      width = host.clientWidth
+      assignLines(chunks)
+    })
+    ro.observe(host)
   }
 
   return {
-    activate() { el.setAttribute('data-effect-active', '') },
-    cleanup() {},
+    activate() { host.setAttribute('data-effect-active', '') },
+    cleanup() {
+      ro?.disconnect()
+      unsplit(host)
+      host.removeAttribute(INIT)
+      host.style.removeProperty('--blur-delay')
+    },
   }
 })

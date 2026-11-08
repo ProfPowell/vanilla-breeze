@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-wizard"
-description: "Multi-step form wizard with per-step validation, conditional steps, and progress tracking. Add data-wizard to a form to split fieldsets into navigable steps."
+description: "Split a form into steps: per-step validation, conditional steps whose fields are disabled while skipped, Enter-to-advance, focus management, localisable labels, optional persistence and URL history. Add data-wizard to a form of fieldsets."
 attributeName: data-wizard
 category: form-behavior
 attributeType: data
@@ -12,27 +12,34 @@ crumbLabel: Data Attributes
 ---
 
 <section>
-    <h2>Overview</h2>
-    <p>The <code>data-wizard</code> attribute transforms a standard form with multiple fieldsets into a multi-step wizard. Each <code>&lt;fieldset data-wizard-step&gt;</code> becomes a navigable step with per-step validation, conditional visibility, and progress tracking. This page is an attribute-focused API reference.</p>
+  <h2>Overview</h2>
+  <p><code>data-wizard</code> turns one <code>&lt;form&gt;</code> into a sequence of steps. Each <code>&lt;fieldset data-wizard-step&gt;</code> is a step; the wizard shows one at a time, validates it before moving on, skips steps whose <code>data-wizard-if</code> condition is false, and keeps a <code>&lt;progress&gt;</code>, a <code>nav.steps</code> list or a <code>&lt;progress-tracker&gt;</code> in sync. It is still one form with one submission.</p>
+  <p>Without JavaScript every fieldset is visible and the form submits as a single page.</p>
+  <p>For walkthroughs and layout recipes see the <a href="/docs/patterns/forms/wizard/">Wizard pattern</a>; <a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> covers the form features the wizard builds on.</p>
+</section>
 
-    <p><strong>For full walkthroughs and pattern examples, see the <a href="/docs/patterns/forms/wizard/">Wizard Pattern page</a>.</strong></p>
+<section>
+  <h2>Usage</h2>
+  <browser-window
+    src="/docs/patterns/demos/wizard-steps.html"
+    url="https://vanilla-breeze.com/wizard"
+    title="Form wizard"
+    shadow>
+  </browser-window>
 
-    <browser-window
-      src="/docs/patterns/demos/wizard-steps.html"
-      url="https://vanilla-breeze.com/wizard"
-      title="Form Wizard"
-      shadow>
-    </browser-window>
+  <code-block language="html" show-lines label="Basic multi-step wizard" data-escape><form data-wizard>
+  <progress data-wizard-progress></progress>
 
-    <code-block language="html" show-lines label="Basic multi-step wizard" data-escape><form data-wizard>
   <fieldset data-wizard-step>
     <legend>Account</legend>
-    <input name="email" type="email" required>
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" required>
   </fieldset>
 
   <fieldset data-wizard-step>
     <legend>Profile</legend>
-    <input name="name" required>
+    <label for="name">Name</label>
+    <input id="name" name="name" required>
   </fieldset>
 
   <nav data-wizard-nav>
@@ -41,193 +48,233 @@ crumbLabel: Data Attributes
     <button type="submit">Submit</button>
   </nav>
 </form></code-block>
-  </section>
 
-  <section>
-    <h2>How It Works</h2>
-    <p>Add <code>data-wizard</code> to a <code>&lt;form&gt;</code> containing multiple <code>&lt;fieldset data-wizard-step&gt;</code> elements. The init script:</p>
-    <ol>
-      <li>Discovers all <code>[data-wizard-step]</code> fieldsets within the form</li>
-      <li>Shows the first step and hides the rest with <code>data-wizard-active</code> / <code>data-wizard-hidden</code></li>
-      <li>Wires up <code>data-wizard-prev</code> and <code>data-wizard-next</code> buttons for navigation</li>
-      <li>Validates the current step's fields before advancing (native constraint validation)</li>
-      <li>Evaluates <code>data-wizard-if</code> conditions to skip inapplicable steps</li>
-      <li>Updates <code>&lt;progress&gt;</code> and external <code>nav.steps</code> if connected</li>
-      <li>Sets <code>data-wizard-enhanced</code> on the form to prevent double-binding</li>
-    </ol>
-    <p>The submit button is only enabled on the final step. On earlier steps, clicking Next validates the current step before proceeding.</p>
-  </section>
-
-  <section>
-    <h2>Attributes</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Element</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>data-wizard</code></td>
-          <td><code>&lt;form&gt;</code></td>
-          <td>Enables wizard behavior on the form.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-step</code></td>
-          <td><code>&lt;fieldset&gt;</code></td>
-          <td>Marks a fieldset as a wizard step.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-progress</code></td>
-          <td><code>&lt;progress&gt;</code></td>
-          <td>Auto-updated progress bar. Value reflects current step / total steps.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-nav</code></td>
-          <td><code>&lt;nav&gt;</code></td>
-          <td>Container for navigation buttons. The wizard manages button visibility.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-prev</code></td>
-          <td><code>&lt;button&gt;</code></td>
-          <td>Go to previous step. Hidden on the first step.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-next</code></td>
-          <td><code>&lt;button&gt;</code></td>
-          <td>Go to next step (validates current step first). Hidden on the last step.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-if</code></td>
-          <td><code>&lt;fieldset&gt;</code></td>
-          <td>Conditional step. Formats: <code>"name:value"</code>, <code>"name:!value"</code>, <code>"name"</code>, <code>"!name"</code>.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-optional</code></td>
-          <td><code>&lt;fieldset&gt;</code></td>
-          <td>Step can be skipped without validation.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-summary</code></td>
-          <td><code>&lt;fieldset&gt;</code></td>
-          <td>Marks a step as a review/summary step. Child elements with <code>data-wizard-field="name"</code> are populated with the named field's value. If no <code>data-wizard-field</code> children exist, a <code>&lt;dl&gt;</code> is auto-generated from all non-empty form values.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-field</code></td>
-          <td>any element</td>
-          <td>Inside a summary step, displays the value of the named form field. Element's <code>textContent</code> is replaced with the field value.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-steps</code></td>
-          <td><code>&lt;form&gt;</code></td>
-          <td>CSS selector for an external <code>nav.steps</code> element to sync as progress nav.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-history</code></td>
-          <td><code>&lt;form&gt;</code></td>
-          <td>Opt-in URL hash synchronization. Syncs current step to <code>#step=N</code> and restores on page load.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-persist</code></td>
-          <td><code>&lt;form&gt;</code></td>
-          <td>Save/restore form data and step across reloads. Values: <code>"session"</code> (sessionStorage) or <code>"local"</code> (localStorage). Requires <code>id</code> on the form.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-validate</code></td>
-          <td><code>&lt;form&gt;</code></td>
-          <td>Validation mode. <code>"step"</code> (default) validates before advancing. <code>"none"</code> allows free navigation; validation occurs only on submit.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-enhanced</code></td>
-          <td><code>&lt;form&gt;</code></td>
-          <td>Auto-set after init. Do not set manually.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-active</code> / <code>data-wizard-hidden</code></td>
-          <td><code>&lt;fieldset&gt;</code></td>
-          <td>Auto-set to mark the visible step and hide inactive steps.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-current</code> / <code>data-wizard-total</code></td>
-          <td><code>&lt;form&gt;</code></td>
-          <td>Auto-set with current step index (1-based) and total visible steps.</td>
-        </tr>
-        <tr>
-          <td><code>data-wizard-last</code></td>
-          <td><code>&lt;form&gt;</code></td>
-          <td>Auto-set when on the final step.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section>
-    <h2>Progress Bar</h2>
-    <p>Add a <code>&lt;progress data-wizard-progress&gt;</code> element inside the form. The wizard sets its <code>value</code> and <code>max</code> attributes automatically as the user navigates.</p>
-
-    <code-block language="html" show-lines label="Progress bar" data-escape><form data-wizard>
-  <progress data-wizard-progress></progress>
-  <!-- steps... -->
-</form></code-block>
-  </section>
-
-  <section>
-    <h2>Conditional Steps</h2>
-    <p>Use <code>data-wizard-if</code> on a fieldset to make it conditional. The step is only included in the wizard flow when the condition matches. Skipped steps do not count toward the total and their validation is bypassed. Four condition formats are supported:</p>
-    <ul>
-      <li><code>name:value</code> &mdash; show when field equals value</li>
-      <li><code>name:!value</code> &mdash; show when field does not equal value</li>
-      <li><code>name</code> &mdash; show when field has any truthy value</li>
-      <li><code>!name</code> &mdash; show when field is empty or unchecked</li>
-      <li><code>name:a &amp;&amp; other:b</code> &mdash; AND: show when all conditions are true</li>
-      <li><code>name:a || name:b</code> &mdash; OR: show when any condition is true</li>
-    </ul>
-    <p>AND (<code>&amp;&amp;</code>) has higher precedence than OR (<code>||</code>), so <code>a:x &amp;&amp; b:y || c:z</code> means "(a equals x AND b equals y) OR (c equals z)".</p>
-
-    <code-block language="html" show-lines label="Conditional step based on field value" data-escape><fieldset data-wizard-step data-wizard-if="account-type:business">
-  <legend>Business Details</legend>
-  <!-- Only shown when account-type field = business -->
-</fieldset></code-block>
-  </section>
-
-  <section>
-    <h2>External Steps Navigation</h2>
-    <p>Use <code>data-wizard-steps</code> on the form with a CSS selector pointing to an external <code>nav.steps</code> element. The wizard synchronizes the nav's list items with the current step, applying <code>aria-current="step"</code> to the active item. The nav can be placed anywhere on the page.</p>
-
-    <code-block language="html" show-lines label="External steps navigation" data-escape><form data-wizard data-wizard-steps="#progress-nav">
-  <!-- steps... -->
-</form>
-
-<nav class="steps" id="progress-nav" aria-label="Progress">
+  <h3>What the script does</h3>
   <ol>
-    <li>Account</li>
-    <li>Profile</li>
-    <li>Review</li>
+    <li>Collects the <code>fieldset[data-wizard-step]</code> elements in order.</li>
+    <li>Marks the current step with <code>data-wizard-active</code>. Inactive steps are hidden by CSS because they lack that attribute; <code>data-wizard-hidden</code> is only for steps whose <code>data-wizard-if</code> condition is false.</li>
+    <li>Wires Back / Next (or injects them), validates the current step before moving forward, and moves focus to the new step's <code>&lt;legend&gt;</code>.</li>
+    <li>Hides the submit button until the last step. It is hidden, not disabled; pressing Enter in a text field before the last step means Next, never submit.</li>
+    <li>Sets <code>data-wizard-enhanced</code> and the counter attributes on the form.</li>
   </ol>
-</nav></code-block>
+</section>
 
-    <h3>Auto-Populated Step List</h3>
-    <p>If the <code>nav.steps ol</code> is empty (no <code>&lt;li&gt;</code> children), the wizard auto-populates it from the <code>&lt;legend&gt;</code> text of each step fieldset. This saves you from duplicating step names.</p>
-  </section>
+<section>
+  <h2>Options</h2>
 
-  <section>
-    <h2>Auto-Injected Navigation</h2>
-    <p>If no <code>[data-wizard-nav]</code> element is found in the form, the wizard automatically injects a navigation bar with Back, Next, and Submit buttons. This lets you create a minimal wizard with just steps:</p>
-    <code-block language="html" show-lines label="Minimal wizard (nav auto-injected)" data-escape><form data-wizard>
-  <fieldset data-wizard-step><legend>Step 1</legend>...</fieldset>
-  <fieldset data-wizard-step><legend>Step 2</legend>...</fieldset>
-  <!-- nav is auto-injected with Back / Next / Submit -->
-</form></code-block>
-  </section>
+  <h3>Authored attributes</h3>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>On</th><th>Values</th><th>Default</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-wizard</code></td><td><code>&lt;form&gt;</code></td><td>boolean</td><td>&mdash;</td><td>Enables the wizard.</td></tr>
+      <tr><td><code>data-wizard-step</code></td><td><code>&lt;fieldset&gt;</code></td><td>boolean</td><td>&mdash;</td><td>One step. Its <code>&lt;legend&gt;</code> names the step.</td></tr>
+      <tr><td><code>data-wizard-if</code></td><td>step</td><td>condition</td><td>&mdash;</td><td>Include the step only while the condition is true. Same language as <a href="/docs/attributes/data-show-when/"><code>data-show-when</code></a>: <code>name</code>, <code>!name</code>, <code>name:value</code>, <code>name:!value</code> (or <code>=</code> / <code>!=</code>), joined with <code>&amp;&amp;</code> and <code>||</code>.</td></tr>
+      <tr><td><code>data-wizard-optional</code></td><td>step</td><td>boolean</td><td>&mdash;</td><td>Next skips this step's validation. Its fields still validate on submit.</td></tr>
+      <tr><td><code>data-wizard-summary</code></td><td>step</td><td>boolean</td><td>&mdash;</td><td>A review step, filled in when it becomes active (see Summary).</td></tr>
+      <tr><td><code>data-wizard-field</code></td><td>any element in a summary step</td><td>field name</td><td>&mdash;</td><td>Its text becomes the field's value (several values joined with ", "; empty shows &mdash;).</td></tr>
+      <tr><td><code>data-wizard-progress</code></td><td><code>&lt;progress&gt;</code></td><td>boolean</td><td>&mdash;</td><td><code>value</code> / <code>max</code> follow the current step and the number of included steps.</td></tr>
+      <tr><td><code>data-wizard-nav</code></td><td><code>&lt;nav&gt;</code></td><td>boolean</td><td>injected</td><td>Holds Back / Next / Submit. When missing, the wizard injects one.</td></tr>
+      <tr><td><code>data-wizard-prev</code></td><td><code>&lt;button&gt;</code></td><td>boolean</td><td>&mdash;</td><td>Previous step. <code>visibility: hidden</code> on the first step.</td></tr>
+      <tr><td><code>data-wizard-next</code></td><td><code>&lt;button&gt;</code></td><td>boolean</td><td>&mdash;</td><td>Next step after validating the current one. Hidden on the last step, where the submit button shows.</td></tr>
+      <tr><td><code>data-wizard-steps</code></td><td><code>&lt;form&gt;</code></td><td>CSS selector</td><td><code>nav.steps</code> inside the form</td><td>The step list to sync: a <code>nav.steps</code> or a <code>&lt;progress-tracker&gt;</code> anywhere on the page.</td></tr>
+      <tr><td><code>data-wizard-validate</code></td><td><code>&lt;form&gt;</code></td><td><code>step</code>, <code>none</code></td><td><code>step</code></td><td><code>none</code>: move freely; validation happens on submit, which jumps to the first step with an invalid field.</td></tr>
+      <tr><td><code>data-wizard-history</code></td><td><code>&lt;form&gt;</code></td><td>boolean</td><td>&mdash;</td><td>Keep <code>#step=N</code> in the URL. Each step change pushes a history entry, so the browser Back button steps back; loading a <code>#step=N</code> URL opens that step.</td></tr>
+      <tr><td><code>data-wizard-persist</code></td><td><code>&lt;form id&gt;</code></td><td><code>session</code>, <code>local</code></td><td>&mdash;</td><td>Save the step and field values and restore them on reload (see Persistence). Needs an <code>id</code>.</td></tr>
+      <tr><td><code>data-wizard-persist-hours</code></td><td><code>&lt;form&gt;</code></td><td>number</td><td><code>24</code></td><td>How long a saved state stays valid.</td></tr>
+      <tr><td><code>data-label-back</code></td><td><code>&lt;form&gt;</code></td><td>text</td><td>Back</td><td>Injected Back button.</td></tr>
+      <tr><td><code>data-label-next</code></td><td><code>&lt;form&gt;</code></td><td>text</td><td>Next</td><td>Injected Next button.</td></tr>
+      <tr><td><code>data-label-submit</code></td><td><code>&lt;form&gt;</code></td><td>text</td><td>Submit</td><td>Injected submit button.</td></tr>
+      <tr><td><code>data-label-step</code></td><td><code>&lt;form&gt;</code></td><td>template, <code>{n}</code></td><td>Step {n}</td><td>Name of a step that has no legend.</td></tr>
+      <tr><td><code>data-label-status</code></td><td><code>&lt;form&gt;</code></td><td>template, <code>{current}</code> <code>{total}</code> <code>{name}</code></td><td>Now on step {current} of {total}: {name}</td><td>Live-region announcement.</td></tr>
+      <tr><td><code>data-label-completed</code></td><td><code>&lt;form&gt;</code></td><td>template, <code>{name}</code></td><td>Go to {name} (completed)</td><td>Accessible name of a completed item in a <code>nav.steps</code> list.</td></tr>
+    </tbody>
+  </table>
+  <p>Numbers in the labels are formatted with <code>Intl.NumberFormat</code> for the nearest <code>lang</code>. The visible "Step 1 of 3" counter is CSS; translate it with <code>--wizard-label-step</code> and <code>--wizard-label-of</code> (see Styling).</p>
 
-  <section>
-    <h2>Summary Step</h2>
-    <p>Add <code>data-wizard-summary</code> to a step fieldset to make it a review step. There are two modes:</p>
-    <h3>Manual Mode</h3>
-    <p>Place elements with <code>data-wizard-field="fieldName"</code> inside the summary step. Their text content is replaced with the corresponding field value when the step becomes active.</p>
-    <code-block language="html" show-lines label="Manual summary with data-wizard-field" data-escape><fieldset data-wizard-step data-wizard-summary>
+  <h3>State attributes (set by script)</h3>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>On</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-wizard-enhanced</code></td><td>form</td><td>The wizard is running. Gates every hiding rule.</td></tr>
+      <tr><td><code>data-wizard-current</code></td><td>form</td><td>Current step, 1-based, among included steps.</td></tr>
+      <tr><td><code>data-wizard-total</code></td><td>form</td><td>Number of included steps.</td></tr>
+      <tr><td><code>data-wizard-last</code></td><td>form</td><td>On the last included step.</td></tr>
+      <tr><td><code>data-wizard-active</code></td><td>step</td><td>The step on screen.</td></tr>
+      <tr><td><code>data-wizard-hidden</code></td><td>step</td><td>The step's <code>data-wizard-if</code> is false: skipped, not counted, controls disabled.</td></tr>
+      <tr><td><code>data-conditional-disabled</code></td><td>controls</td><td>Disabled by the wizard (or <code>data-show-when</code>); re-enabled when the step comes back.</td></tr>
+      <tr><td><code>data-wizard-status</code></td><td>injected <code>&lt;p role="status"&gt;</code></td><td>The live region.</td></tr>
+      <tr><td><code>data-wizard-summary-list</code></td><td>generated <code>&lt;dl&gt;</code></td><td>Auto summary list.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Behaviour</h2>
+
+  <h3>Validation</h3>
+  <ul>
+    <li>Next checks every enabled control in the current step with constraint validation, including form-associated components (<code>combo-box</code>, <code>date-picker</code>, <code>star-rating</code> &hellip;), and reports the first invalid one.</li>
+    <li>On submit, if the first invalid control is in another step, the wizard goes to that step and reports it instead of failing silently. This is how <code>data-wizard-validate="none"</code> forms validate. Calling <code>form.requestSubmit()</code> from script skips this routing.</li>
+    <li>Enter in a text field before the last step runs Next. On the last step it submits as usual.</li>
+  </ul>
+
+  <h3>Conditional steps</h3>
+  <p>A step whose <code>data-wizard-if</code> is false gets <code>data-wizard-hidden</code>; it is skipped by Next and Back and not counted in the total. Its controls are disabled (the same contract as <code>data-show-when</code>), so its <code>required</code> fields never block submit and its values are <strong>not submitted</strong>. When the condition turns true, the controls the wizard disabled are enabled again; controls you disabled stay disabled.</p>
+  <p>Conditions re-run on every <code>input</code> and <code>change</code> and after a reset. If script sets a value, dispatch an <code>input</code> event afterwards.</p>
+
+  <h3>Persistence</h3>
+  <p><code>data-wizard-persist</code> saves the current step and field values through <a href="/docs/concepts/vb-store/">VBStore</a> under <code>vb:wizard:{form id}</code>, as <code>{ step, data, session }</code> with a timestamp. Saved state older than <code>data-wizard-persist-hours</code> (default 24) is ignored.</p>
+  <ul>
+    <li><code>session</code>: restored only in the same browser tab session (a per-tab id in <code>sessionStorage</code> is checked).</li>
+    <li><code>local</code>: restored in any tab until it expires.</li>
+    <li>Never saved: passwords, <code>type="hidden"</code> (CSRF tokens, record versions), file inputs, buttons, <code>autocomplete="off"</code>, credit card, one-time-code and new/current password fields, and anything marked <code>data-autosave-ignore</code> (on the control or a container). The same filter backs <a href="/docs/attributes/data-autosave/"><code>data-autosave</code></a>.</li>
+    <li>On restore, read-only and author-disabled controls keep their server values. Restored controls dispatch <code>input</code>.</li>
+    <li>The saved state is cleared on submit from the last step, on <code>wizardReset()</code> and on form reset.</li>
+  </ul>
+  <p>Storage is <code>localStorage</code>: readable by any script on the origin and kept on shared devices until it expires. Mark anything sensitive with <code>data-autosave-ignore</code>.</p>
+
+  <h3>History</h3>
+  <p>With <code>data-wizard-history</code>, Next / Back / step-list clicks push <code>#step=N</code> entries; the browser Back and Forward buttons move between steps. A forward history move that fails validation puts the URL back on the current step. Initial load, condition changes and reset replace the entry instead of adding one.</p>
+
+  <h3>Step list: nav.steps or progress-tracker</h3>
+  <p>Both expect one <code>&lt;li&gt;</code> per step fieldset, in order. An empty list is filled from the legends.</p>
+  <ul>
+    <li><strong><code>nav.steps</code></strong> (no extra JavaScript): the wizard sets <code>aria-current="step"</code>, <code>data-completed</code> and <code>aria-disabled</code>, makes completed items go back, hides items of skipped steps and runs a roving tabindex (arrows, Home, End).</li>
+    <li><strong><a href="/docs/elements/web-components/progress-tracker/"><code>&lt;progress-tracker&gt;</code></a></strong>: the wizard sets <code>data-current</code> to the step's <code>data-step</code> id (or position) and hides items of skipped steps. With <code>data-clickable</code>, clicking a completed step moves the wizard back. The tracker's "Step N of M" text counts every item, hidden ones included, so prefer it for wizards without conditional steps.</li>
+  </ul>
+
+  <h3>Reset, insertion and clones</h3>
+  <p>A form reset returns to step 1 after the defaults are restored and re-evaluates conditions; a cancelled reset does nothing. Wizards inserted after load are enhanced. A cloned wizard (which copies <code>data-wizard-enhanced</code>) is enhanced on insertion, replaces the copied status region and reuses the copied nav.</p>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Detail</th><th>Fired when</th></tr></thead>
+    <tbody>
+      <tr><td><code>wizard:step-change</code></td><td><code>{ from, to }</code> (0-based, among included steps)</td><td>After any step change.</td></tr>
+      <tr><td><code>wizard:complete</code></td><td>&mdash;</td><td>The form submits from the last step (before your own submit handlers that were added later).</td></tr>
+      <tr><td><code>wizard:reset</code></td><td>&mdash;</td><td><code>wizardReset()</code> or a form reset.</td></tr>
+      <tr><td><code>wizard:restore</code></td><td><code>{ step, fields }</code> (field names restored)</td><td>Persisted state was applied after load.</td></tr>
+    </tbody>
+  </table>
+  <p>All events bubble from the form.</p>
+
+  <code-block language="javascript" show-lines label="Listening for wizard events" data-escape>const form = document.querySelector('[data-wizard]');
+
+form.addEventListener('wizard:step-change', (e) => {
+  console.log('Moved from step', e.detail.from, 'to', e.detail.to);
+});
+
+form.addEventListener('wizard:restore', (e) => {
+  console.log('Restored', e.detail.fields.length, 'fields on step', e.detail.step + 1);
+});</code-block>
+
+  <h3>JavaScript API</h3>
+  <ul>
+    <li><code>form.wizardNext()</code> &mdash; next step after validating the current one; returns <code>false</code> when blocked.</li>
+    <li><code>form.wizardPrev()</code> &mdash; previous step.</li>
+    <li><code>form.wizardGoTo(index)</code> &mdash; 0-based index among included steps; validates when moving forward.</li>
+    <li><code>form.wizardReset()</code> &mdash; back to step 1, clears saved state.</li>
+    <li><code>form.wizardController</code> &mdash; the controller, with <code>currentStep</code> and <code>totalSteps</code> getters.</li>
+  </ul>
+  <p>These calls move focus to the new step only when focus is already in the wizard (or nowhere), so a call from elsewhere on the page does not steal it.</p>
+</section>
+
+<section>
+  <h2>Styling</h2>
+  <p>Shipped rules (from <code>wizard.css</code>), all gated on <code>data-wizard-enhanced</code>:</p>
+  <code-block language="css" show-lines label="Shipped selectors" data-escape>form[data-wizard][data-wizard-enhanced] fieldset[data-wizard-step] {
+  display: none;
+}
+form[data-wizard][data-wizard-enhanced] fieldset[data-wizard-step][data-wizard-active] {
+  display: block;
+}
+form[data-wizard][data-wizard-enhanced] fieldset[data-wizard-step][data-wizard-hidden] {
+  display: none !important;
+}
+
+/* Back hidden on step 1; Submit only on the last step, Next hidden there */
+form[data-wizard][data-wizard-enhanced][data-wizard-current="1"] [data-wizard-prev] {
+  visibility: hidden;
+}
+form[data-wizard][data-wizard-enhanced] [data-wizard-nav] [type="submit"] {
+  display: none;
+}
+form[data-wizard][data-wizard-enhanced][data-wizard-last] [data-wizard-nav] [type="submit"] {
+  display: inline-flex;
+}
+form[data-wizard][data-wizard-enhanced][data-wizard-last] [data-wizard-nav] [data-wizard-next] {
+  display: none;
+}</code-block>
+
+  <table class="props-table">
+    <thead><tr><th>Custom property</th><th>Default</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>--wizard-gap</code></td><td><code>var(--size-m)</code></td><td>Gap between the form's rows.</td></tr>
+      <tr><td><code>--wizard-label-step</code></td><td><code>"Step "</code></td><td>Counter prefix (a CSS string).</td></tr>
+      <tr><td><code>--wizard-label-of</code></td><td><code>" of "</code></td><td>Counter separator (a CSS string).</td></tr>
+    </tbody>
+  </table>
+  <code-block language="css" show-lines label="Translating the CSS counter" data-escape>form[data-wizard]:lang(fr) {
+  --wizard-label-step: "Étape ";
+  --wizard-label-of: " sur ";
+}</code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>After each step change focus moves to the new step's <code>&lt;legend&gt;</code> (given <code>tabindex="-1"</code>), so keyboard and screen reader users start at the step's name instead of on <code>&lt;body&gt;</code> when the button they pressed disappears.</li>
+    <li>A polite live region announces "Now on step 2 of 3: Profile" (<code>data-label-status</code>), and is not re-announced on every keystroke.</li>
+    <li>Inactive steps are <code>display: none</code>, so only the current step is in the tab order and the accessibility tree.</li>
+    <li>Skipped steps' fields are disabled, so validation never points at a field the user cannot reach.</li>
+    <li><code>nav.steps</code> gets <code>aria-current="step"</code>, completed items are named "Go to {name} (completed)", future items are <code>aria-disabled</code>, and arrows / Home / End move between items.</li>
+    <li>The <code>&lt;progress&gt;</code> element is a native progress indicator.</li>
+    <li>Without JavaScript every step is visible and the form submits as one page.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Conditional and optional steps</h3>
+  <p>"Business Details" appears only for business accounts; while skipped, its fields are disabled and not submitted. "Preferences" can be skipped without validation.</p>
+  <browser-window
+    src="/docs/examples/demos/wizard-basic.html"
+    url="https://vanilla-breeze.com/wizard-conditional"
+    title="Conditional steps"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Conditional and optional steps" data-escape><fieldset data-wizard-step>
+  <legend>Profile</legend>
+  <label for="account-type">Account Type</label>
+  <select id="account-type" name="account-type">
+    <option value="personal">Personal</option>
+    <option value="business">Business</option>
+  </select>
+</fieldset>
+
+<fieldset data-wizard-step data-wizard-if="account-type:business">
+  <legend>Business Details</legend>
+  <label for="company">Company Name</label>
+  <input type="text" id="company" name="company">
+</fieldset>
+
+<fieldset data-wizard-step data-wizard-optional>
+  <legend>Preferences</legend>
+  <label><input type="checkbox" name="newsletter" value="yes"> Subscribe</label>
+</fieldset></code-block>
+
+  <h3>Summary step</h3>
+  <p>Manual mode fills elements that name a field with <code>data-wizard-field</code>. Without any, the step gets a generated <code>&lt;dl&gt;</code> of every non-empty field in the other included steps, labelled from each field's <code>&lt;label&gt;</code> (or a group's <code>&lt;legend&gt;</code>); hidden and password inputs are left out.</p>
+  <browser-window
+    src="/docs/examples/demos/wizard-summary.html"
+    url="https://vanilla-breeze.com/wizard-summary"
+    title="Summary step"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Manual summary" data-escape><fieldset data-wizard-step data-wizard-summary>
   <legend>Review</legend>
   <dl>
     <dt>Email</dt>
@@ -237,109 +284,112 @@ crumbLabel: Data Attributes
   </dl>
 </fieldset></code-block>
 
-    <h3>Auto Mode</h3>
-    <p>If no <code>data-wizard-field</code> elements are found, a <code>&lt;dl&gt;</code> is auto-generated from all non-empty fields across visible steps, using labels as terms and field values as definitions.</p>
-    <code-block language="html" show-lines label="Auto-generated summary" data-escape><fieldset data-wizard-step data-wizard-summary>
-  <legend>Review</legend>
-  <!-- dl auto-generated from all form field values -->
-</fieldset></code-block>
-  </section>
+  <h3>External step list</h3>
+  <p>A <code>nav.steps</code> anywhere on the page, named with <code>data-wizard-steps</code>. An empty <code>&lt;ol&gt;</code> is filled from the legends.</p>
+  <browser-window
+    src="/docs/examples/demos/wizard-nav-steps.html"
+    url="https://vanilla-breeze.com/wizard-nav-steps"
+    title="nav.steps"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="External nav.steps" data-escape><form data-wizard data-wizard-steps="#step-nav">
+  <!-- steps -->
+</form>
 
-  <section>
-    <h2>Events</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Event</th>
-          <th>Detail</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>wizard:step-change</code></td>
-          <td><code>{ from, to }</code></td>
-          <td>Fired on step navigation. Indices are 0-based.</td>
-        </tr>
-        <tr>
-          <td><code>wizard:complete</code></td>
-          <td>&mdash;</td>
-          <td>Fired when the form is submitted from the final step.</td>
-        </tr>
-        <tr>
-          <td><code>wizard:reset</code></td>
-          <td>&mdash;</td>
-          <td>Fired when the wizard is reset to the first step.</td>
-        </tr>
-      </tbody>
-    </table>
+<nav class="steps" id="step-nav" aria-label="Progress">
+  <ol>
+    <li><a href="#step-1">Account</a></li>
+    <li><a href="#step-2">Profile</a></li>
+    <li><a href="#step-3">Review</a></li>
+  </ol>
+</nav></code-block>
 
-    <code-block language="javascript" show-lines label="Listening for wizard events" data-escape>const form = document.querySelector('[data-wizard]');
+  <h3>Driving a progress-tracker</h3>
+  <browser-window
+    src="/docs/snippets/demos/data-wizard-progress-tracker.html"
+    url="https://vanilla-breeze.com/wizard-progress-tracker"
+    title="Wizard with progress-tracker"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="progress-tracker as the step list" data-escape><progress-tracker id="signup-progress" data-clickable data-label-list="Sign-up progress">
+  <ol>
+    <li data-step="account">Account</li>
+    <li data-step="profile">Profile</li>
+    <li data-step="review">Review</li>
+  </ol>
+</progress-tracker>
 
-form.addEventListener('wizard:step-change', (e) => {
-  console.log('Moved from step', e.detail.from, 'to', e.detail.to);
-});
+<form data-wizard data-wizard-steps="#signup-progress">
+  <fieldset data-wizard-step>…</fieldset>
+  <fieldset data-wizard-step>…</fieldset>
+  <fieldset data-wizard-step data-wizard-summary><legend>Review</legend></fieldset>
+  <nav data-wizard-nav aria-label="Sign-up steps">
+    <button type="button" data-wizard-prev>Back</button>
+    <button type="button" data-wizard-next>Next</button>
+    <button type="submit">Create account</button>
+  </nav>
+</form></code-block>
 
-form.addEventListener('wizard:complete', () => {
-  console.log('Wizard submitted');
-});</code-block>
-  </section>
+  <h3>Auto-injected navigation and localised labels</h3>
+  <p>Leave out <code>[data-wizard-nav]</code> and the wizard adds Back / Next / Submit, named by the <code>data-label-*</code> attributes.</p>
+  <browser-window
+    src="/docs/snippets/demos/data-wizard-labels.html"
+    url="https://vanilla-breeze.com/wizard-labels"
+    title="Localised wizard"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="French labels" data-escape><form data-wizard lang="fr"
+      data-label-back="Retour"
+      data-label-next="Suivant"
+      data-label-submit="Envoyer"
+      data-label-step="Étape {n}"
+      data-label-status="Étape {current} sur {total} : {name}"
+      data-label-completed="Revenir à {name} (terminée)">
+  <progress data-wizard-progress></progress>
+  <fieldset data-wizard-step><legend>Compte</legend>…</fieldset>
+  <fieldset data-wizard-step><legend>Profil</legend>…</fieldset>
+</form></code-block>
 
-  <section>
-    <h2>JavaScript API</h2>
-    <p>The wizard adds navigation methods directly to the form element:</p>
-    <ul>
-      <li><code>form.wizardNext()</code> &mdash; advance to next step (validates current step first)</li>
-      <li><code>form.wizardPrev()</code> &mdash; go back to previous step (no validation)</li>
-      <li><code>form.wizardGoTo(index)</code> &mdash; jump to step by 0-based index</li>
-      <li><code>form.wizardReset()</code> &mdash; reset to first step and clear progress</li>
-    </ul>
+  <h3>History and persistence</h3>
+  <p>With <code>data-wizard-history</code> the browser Back button steps back. With <code>data-wizard-persist</code> a reload returns to the same step with the answers filled in.</p>
+  <browser-window
+    src="/docs/examples/demos/wizard-history.html"
+    url="https://vanilla-breeze.com/wizard-history"
+    title="History"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="URL history" data-escape><form id="history-wizard" data-wizard data-wizard-history>
+  <progress data-wizard-progress></progress>
+  <fieldset data-wizard-step><legend>Step One</legend>…</fieldset>
+  <fieldset data-wizard-step><legend>Step Two</legend>…</fieldset>
+  <fieldset data-wizard-step><legend>Step Three</legend>…</fieldset>
+</form></code-block>
+  <browser-window
+    src="/docs/examples/demos/wizard-persist.html"
+    url="https://vanilla-breeze.com/wizard-persist"
+    title="Persistence"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Session persistence" data-escape><form id="persist-wizard" data-wizard data-wizard-persist="session">
+  <fieldset data-wizard-step>
+    <legend>Info</legend>
+    <label for="p-name">Name</label>
+    <input type="text" id="p-name" name="p-name">
+  </fieldset>
+  …
+</form></code-block>
+</section>
 
-    <code-block language="javascript" show-lines label="Programmatic navigation" data-escape>const form = document.querySelector('[data-wizard]');
-
-form.wizardNext();       // Go to next step (validates first)
-form.wizardPrev();       // Go to previous step
-form.wizardGoTo(2);      // Jump to step index 2
-form.wizardReset();      // Reset to first step</code-block>
-  </section>
-
-  <section>
-    <h2>Styling</h2>
-    <p>Step visibility is controlled via <code>data-wizard-active</code> and <code>data-wizard-hidden</code> attributes. Nav buttons are automatically shown or hidden based on step position.</p>
-
-    <code-block language="css" show-lines label="Wizard CSS selectors" data-escape>/* Active step */
-[data-wizard-step][data-wizard-active] {
-  display: block;
-}
-
-/* Hidden steps */
-[data-wizard-step][data-wizard-hidden] {
-  display: none;
-}
-
-/* Progress bar */
-[data-wizard] progress[data-wizard-progress] {
-  width: 100%;
-}</code-block>
-
-    <p>All behavior is gated on <code>data-wizard-enhanced</code>. Without JavaScript, all fieldsets are visible and the form submits normally &mdash; progressive enhancement.</p>
-  </section>
-
-  <section>
-    <h2>Accessibility</h2>
-    <ul>
-      <li>A live region announces the current step (e.g., "Step 2 of 3") when navigating</li>
-      <li>External <code>nav.steps</code> uses <code>aria-current="step"</code> on the active step</li>
-      <li>Hidden steps are removed from tab order so keyboard users only interact with the active step</li>
-      <li>Per-step validation prevents advancing past incomplete steps with immediate feedback</li>
-      <li>The <code>&lt;progress&gt;</code> element provides a native accessible progress indicator</li>
-      <li>Back is hidden on the first step; Submit is only visible on the final step</li>
-      <li>Step indicator uses roving tabindex &mdash; Arrow Left/Right, Home/End cycle focus between items</li>
-      <li>Without JavaScript, all fieldsets are visible and the form submits as one page</li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>See Also</h2>
-    <p><a href="/docs/patterns/forms/wizard/">Wizard Pattern</a> &mdash; full walkthroughs, layout examples, and step-by-step tutorials.</p>
-  </section>
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/patterns/forms/wizard/">Wizard pattern</a> &mdash; walkthroughs and layouts.</li>
+    <li><a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a>, <a href="/docs/elements/native/fieldset/"><code>&lt;fieldset&gt;</code></a> and <a href="/docs/elements/native/progress/"><code>&lt;progress&gt;</code></a> &mdash; the native pieces the wizard uses.</li>
+    <li><a href="/docs/elements/web-components/progress-tracker/"><code>&lt;progress-tracker&gt;</code></a> &mdash; a richer step list; choose it over <code>nav.steps</code> when you want status text and the step event, choose <code>nav.steps</code> when the list should work without JavaScript or the wizard has conditional steps.</li>
+    <li><a href="/docs/attributes/data-show-when/"><code>data-show-when</code></a> &mdash; conditional sections inside a step; same condition language and disabling.</li>
+    <li><a href="/docs/attributes/data-autosave/"><code>data-autosave</code></a> &mdash; draft saving for single-page forms; shares the persistence filter.</li>
+    <li><a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a> &mdash; label, control and messages for each field in a step.</li>
+    <li><a href="/docs/attributes/disabled/"><code>disabled</code></a> &mdash; controls in hidden steps are disabled so they don't block submission.</li>
+    <li><a href="/docs/attributes/required/"><code>required</code></a> &mdash; required fields are only checked on the visible step.</li>
+  </ul>
+</section>

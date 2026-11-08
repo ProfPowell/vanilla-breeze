@@ -16,53 +16,67 @@
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "xs | sm | md (default) | lg \u2014 dot diameter scale"
+      "description": "xs | sm | md (default) | lg — dot diameter scale"
     },
     {
       "name": "data-position",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "before (default) | after | only \u2014 dot position relative to label; \"only\" visually hides label"
+      "description": "before (default) | after | only — dot position relative to label; \"only\" visually hides label"
     },
     {
       "name": "data-pulse",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "on | off \u2014 override the variant's default animation"
+      "description": "on | off — override the variant's default animation"
     },
     {
       "name": "data-live",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "Set to \"off\" to suppress live-region announcements (decorative use)"
+      "description": "Set to \"off\" to drop role=\"status\"/aria-live (decorative use)"
+    },
+    {
+      "name": "data-label-*",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Visually hidden default label per variant, used when the element has no slot text (e.g. data-label-online=\"En ligne\"). Defaults: the English variant name (Live, Recording, Streaming, Error, Online, Running, Away, Paused, Busy, Offline, Stopped); a custom variant falls back to its name."
     },
     {
       "name": "aria-label",
       "kind": "aria",
       "purpose": "config",
       "type": "string",
-      "description": "Required when slot has no text content"
+      "description": "Explicit name; with no slot text it is also used as the visually hidden label text"
     },
     {
       "name": "role",
       "kind": "aria",
       "purpose": "config",
-      "description": "Defaults to \"status\""
+      "description": "Defaults to \"status\" unless the author sets role/aria-live or data-live=\"off\""
     },
     {
       "name": "aria-live",
       "kind": "aria",
       "purpose": "config",
-      "description": "Defaults to \"polite\""
+      "description": "Defaults to \"polite\" alongside role=\"status\""
+    }
+  ],
+  "properties": [
+    {
+      "name": "variant",
+      "type": "string | null",
+      "description": "Reads and writes data-variant (null/empty removes it)"
     }
   ],
   "events": [
     {
       "name": "status-wc:change",
-      "description": "Fires when data-variant mutates. detail: { variant, previousVariant }"
+      "description": "Fires when data-variant mutates after upgrade (not for the initial value). detail: { variant, previousVariant }"
     }
   ],
   "childAttributes": [],
@@ -75,6 +89,10 @@
     {
       "name": "--status-dot-color",
       "description": "Dot color (overrides variant default)"
+    },
+    {
+      "name": "--status-dot-ring",
+      "description": "Dot ring colour (default: a darker shade of the dot colour in light mode, the dot colour in dark mode)"
     },
     {
       "name": "--status-pulse-duration",

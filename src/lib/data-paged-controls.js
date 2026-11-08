@@ -9,22 +9,41 @@
  * controls — same markup, same a11y, same data-* hooks for styling.
  *
  * The builders return a freshly-constructed <nav> with no event wiring.
- * Callers wire `data-paged-target` buttons to whatever navigates pages.
+ * Callers wire `data-paged-target` buttons to whatever navigates pages,
+ * and swap an old nav for a new one with `replaceNav()` so focus and the
+ * prev-next live region survive the re-render.
  */
 
 /**
- * @param {{
+ * @typedef {{
  *   style: 'numbered' | 'prev-next' | 'load-more',
  *   page: number,
  *   totalPages: number,
  *   pageNumbers: Array<number | '…'>,
  *   total: number,
  *   visible: number,
+ *   navLabel?: string,
  *   prevLabel?: string,
  *   nextLabel?: string,
+ *   pageLabel?: (page: number) => string,
+ *   statusLabel?: (page: number, total: number) => string,
  *   loadMoreLabel?: (remaining: number) => string,
  *   noMoreLabel?: string,
- * }} args
+ * }} NavArgs
+ */
+
+/**
+ * Fill a `{name}` template. Unknown names are left as-is.
+ * @param {string} template
+ * @param {Record<string, string | number>} values
+ * @returns {string}
+ */
+export function fillTemplate(template, values) {
+  return template.replace(/\{(\w+)\}/g, (m, k) => (k in values ? String(values[k]) : m));
+}
+
+/**
+ * @param {NavArgs} args
  * @returns {HTMLElement}
  */
 export function buildNav(args) {
@@ -36,15 +55,17 @@ export function buildNav(args) {
   }
 }
 
-function makeNav() {
+/** @param {string} [label] */
+function makeNav(label = 'Pagination') {
   const nav = document.createElement('nav');
   nav.setAttribute('data-paged-nav', '');
-  nav.setAttribute('aria-label', 'Pagination');
+  nav.setAttribute('aria-label', label);
   return nav;
 }
 
-function buildNumberedNav({ page, totalPages, pageNumbers, prevLabel = 'Previous', nextLabel = 'Next' }) {
-  const nav = makeNav();
+/** @param {NavArgs} args */
+function buildNumberedNav({ page, totalPages, pageNumbers, navLabel, prevLabel = 'Previous', nextLabel = 'Next', pageLabel = (n) => `Page ${n}` }) {
+  const nav = makeNav(navLabel);
   const list = document.createElement('ol');
   list.setAttribute('role', 'list');
 
@@ -58,7 +79,9 @@ function buildNumberedNav({ page, totalPages, pageNumbers, prevLabel = 'Previous
       li.setAttribute('data-paged-ellipsis', '');
       list.appendChild(li);
     } else {
-      list.appendChild(pageItem(String(n), n, false, n === page, 'page'));
+      const item = pageItem(String(n), n, false, n === page, 'page');
+      item.firstElementChild?.setAttribute('aria-label', pageLabel(n));
+      list.appendChild(item);
     }
   }
 
@@ -68,27 +91,29 @@ function buildNumberedNav({ page, totalPages, pageNumbers, prevLabel = 'Previous
   return nav;
 }
 
-function buildPrevNextNav({ page, totalPages, prevLabel = 'Previous', nextLabel = 'Next' }) {
-  const nav = makeNav();
+/** @param {NavArgs} args */
+function buildPrevNextNav({ page, totalPages, navLabel, prevLabel = 'Previous', nextLabel = 'Next', statusLabel = (p, t) => `Page ${p} of ${t}` }) {
+  const nav = makeNav(navLabel);
   const list = document.createElement('ol');
   list.setAttribute('role', 'list');
   list.appendChild(pageItem(prevLabel, page - 1, page === 1, false, 'prev'));
   const status = document.createElement('li');
   status.setAttribute('data-paged-status', '');
   status.setAttribute('aria-live', 'polite');
-  status.textContent = `Page ${page} of ${totalPages}`;
+  status.textContent = statusLabel(page, totalPages);
   list.appendChild(status);
   list.appendChild(pageItem(nextLabel, page + 1, page === totalPages, false, 'next'));
   nav.appendChild(list);
   return nav;
 }
 
-function buildLoadMoreNav({ total, visible, loadMoreLabel = (n) => `Load more (${n})`, noMoreLabel = 'No more' }) {
-  const nav = makeNav();
+/** @param {NavArgs} args */
+function buildLoadMoreNav({ total, visible, navLabel, loadMoreLabel = (n) => `Load more (${n})`, noMoreLabel = 'No more' }) {
+  const nav = makeNav(navLabel);
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.setAttribute('data-paged-loadmore', '');
-  const remaining = total - visible;
+  const remaining = Math.max(0, total - visible);
   btn.textContent = remaining > 0 ? loadMoreLabel(remaining) : noMoreLabel;
   btn.disabled = remaining <= 0;
   nav.appendChild(btn);
@@ -134,4 +159,63 @@ export function wireNav(nav, { onNavigate, onLoadMore }) {
       btn.addEventListener('click', () => onLoadMore());
     });
   }
+}
+
+/**
+ * Swap `oldNav` for `newNav` in the DOM without dropping the user's place:
+ *   - the prev-next status node is carried over (same node, new text), so
+ *     the polite live region is persistent and its change is announced;
+ *   - if focus was inside `oldNav`, it moves to the equivalent button in
+ *     `newNav` (same action + target, else same action, else the current
+ *     page, else the first enabled button, else the nav itself).
+ *
+ * @param {HTMLElement | null} oldNav
+ * @param {HTMLElement} newNav
+ */
+export function replaceNav(oldNav, newNav) {
+  if (!oldNav || !oldNav.parentNode) return;
+  const active = /** @type {HTMLElement | null} */ (document.activeElement);
+  const hadFocus = !!active && oldNav.contains(active);
+  const key = hadFocus && active
+    ? {
+        action: active.getAttribute('data-paged-action'),
+        target: active.getAttribute('data-paged-target'),
+        loadMore: active.hasAttribute('data-paged-loadmore'),
+      }
+    : null;
+
+  const oldStatus = oldNav.querySelector('[data-paged-status]');
+  const newStatus = newNav.querySelector('[data-paged-status]');
+  if (oldStatus && newStatus) {
+    if (oldStatus.textContent !== newStatus.textContent) oldStatus.textContent = newStatus.textContent;
+    if (newStatus.hasAttribute('aria-live')) oldStatus.setAttribute('aria-live', newStatus.getAttribute('aria-live') || 'polite');
+    else oldStatus.removeAttribute('aria-live');
+    newStatus.replaceWith(oldStatus);
+  }
+
+  oldNav.replaceWith(newNav);
+  if (key) restoreFocus(newNav, key);
+}
+
+/**
+ * @param {HTMLElement} nav
+ * @param {{ action: string | null, target: string | null, loadMore: boolean }} key
+ */
+function restoreFocus(nav, key) {
+  const enabled = (/** @type {string} */ sel) =>
+    /** @type {HTMLButtonElement | null} */ (nav.querySelector(`${sel}:not([disabled])`));
+  const candidates = [];
+  if (key.loadMore) candidates.push('button[data-paged-loadmore]');
+  if (key.action) {
+    candidates.push(`button[data-paged-action="${key.action}"][data-paged-target="${key.target}"]`);
+    if (key.action !== 'page') candidates.push(`button[data-paged-action="${key.action}"]`);
+  }
+  candidates.push('button[aria-current="page"]', 'button');
+  for (const sel of candidates) {
+    const btn = enabled(sel);
+    if (btn) { btn.focus(); return; }
+  }
+  // Nothing focusable left (e.g. "No more"): keep focus in the region.
+  nav.tabIndex = -1;
+  nav.focus();
 }

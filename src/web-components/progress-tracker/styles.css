@@ -1,15 +1,11 @@
 /* --------------------------------------------------------------------------
    progress-tracker: multi-step progress bar.
-   Decorates author-rendered <li data-step> children with circle + connector.
+   Decorates the author's <ol> of steps with circle + connector + status.
+   Without JS the <ol> renders as a plain numbered list.
    -------------------------------------------------------------------------- */
 
 progress-tracker {
-  display: flex;
-  align-items: stretch;
-  gap: 0;
-  list-style: none;
-  margin: 0;
-  padding: 0;
+  display: block;
   font: inherit;
   --pt-circle-size: 1.75rem;
   --pt-line-thickness: 2px;
@@ -20,29 +16,89 @@ progress-tracker {
   --pt-color-text-on-fill: var(--color-text-on-interactive-auto, white);
 }
 
-progress-tracker > li[data-step] {
+progress-tracker[data-upgraded] > ol {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+progress-tracker > ol > li[data-status] {
   flex: 1 1 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--size-2xs, 0.375rem);
   position: relative;
+  margin: 0;
   padding-block-start: var(--size-2xs, 0.375rem);
   text-align: center;
   font-size: 0.9em;
-  outline: none;
 }
 
-progress-tracker > li[data-step]:focus-visible {
+/* Visually hidden status / position text (self-contained so the
+   component doesn't depend on the .visually-hidden utility). */
+progress-tracker .pt-sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+progress-tracker .pt-body {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Same box with or without the button, so labels line up; 1.5rem
+     keeps the button at the WCAG 2.5.8 minimum target size. */
+  min-block-size: 1.5rem;
+}
+
+/* Activatable (completed) step: a native button around the label. */
+progress-tracker button.pt-body {
+  display: inline-flex;
+  flex-direction: column;
+  min-block-size: 1.5rem;
+  min-inline-size: 1.5rem;
+  block-size: auto;
+  inline-size: auto;
+  margin: 0;
+  box-shadow: none;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0 var(--size-3xs, 0.125rem);
+  border-radius: var(--radius-s);
+  cursor: var(--cursor-custom-pointer, pointer);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+progress-tracker button.pt-body:focus-visible {
   outline: 2px solid var(--color-interactive);
   outline-offset: 2px;
-  border-radius: var(--radius-s);
+}
+
+progress-tracker > ol > li:has(> button.pt-body) {
+  cursor: var(--cursor-custom-pointer, pointer);
 }
 
 /* -------- Connector line behind the circles -------- */
 
-progress-tracker > li[data-step]::before,
-progress-tracker > li[data-step]::after {
+progress-tracker > ol > li[data-status]::before,
+progress-tracker > ol > li[data-status]::after {
   content: '';
   position: absolute;
   inset-block-start: calc(var(--size-2xs, 0.375rem) + var(--pt-circle-size) / 2 - var(--pt-line-thickness) / 2);
@@ -51,33 +107,37 @@ progress-tracker > li[data-step]::after {
   z-index: 0;
 }
 
-progress-tracker > li[data-step]::before {
+progress-tracker > ol > li[data-status]::before {
   inset-inline-start: 0;
   inset-inline-end: 50%;
 }
-progress-tracker > li[data-step]::after {
+progress-tracker > ol > li[data-status]::after {
   inset-inline-start: 50%;
   inset-inline-end: 0;
 }
 
-progress-tracker > li[data-step]:first-child::before { display: none; }
-progress-tracker > li[data-step]:last-child::after  { display: none; }
+progress-tracker > ol > li[data-status]:first-child::before { display: none; }
+progress-tracker > ol > li[data-status]:last-child::after  { display: none; }
 
-/* Filled connector colors based on neighboring statuses. The "before" line
-   leading INTO a step shows green if the previous step is complete; the
-   "after" line LEAVING a step shows green only when this step is complete. */
-progress-tracker > li[data-status="complete"]::after,
-progress-tracker > li[data-status="complete"] + li::before,
-progress-tracker > li[data-status="current"]::before {
+/* The connector between two steps takes the colour of the step it leaves:
+   green after a completed step, red after an errored one. */
+progress-tracker > ol > li[data-status="complete"]::after,
+progress-tracker > ol > li[data-status="complete"] + li::before {
   background: var(--pt-color-complete);
+}
+
+progress-tracker > ol > li[data-status="error"]::after,
+progress-tracker > ol > li[data-status="error"] + li::before {
+  background: var(--pt-color-error);
 }
 
 /* -------- Circle -------- */
 
-progress-tracker > li[data-step] > .pt-circle {
+progress-tracker > ol > li > .pt-circle {
   position: relative;
   z-index: 1;
   display: inline-flex;
+  flex: none;
   align-items: center;
   justify-content: center;
   inline-size: var(--pt-circle-size);
@@ -92,13 +152,13 @@ progress-tracker > li[data-step] > .pt-circle {
   transition: background var(--duration-fast, 150ms), border-color var(--duration-fast, 150ms), color var(--duration-fast, 150ms);
 }
 
-progress-tracker > li[data-status="complete"] > .pt-circle {
+progress-tracker > ol > li[data-status="complete"] > .pt-circle {
   background: var(--pt-color-complete);
   border-color: var(--pt-color-complete);
   color: var(--pt-color-text-on-fill);
 }
 
-progress-tracker > li[data-status="current"] > .pt-circle {
+progress-tracker > ol > li[data-status="current"] > .pt-circle {
   background: var(--color-surface, white);
   border-color: var(--pt-color-current);
   color: var(--pt-color-current);
@@ -106,7 +166,7 @@ progress-tracker > li[data-status="current"] > .pt-circle {
   box-shadow: 0 0 0 4px color-mix(in oklch, var(--pt-color-current) 18%, transparent);
 }
 
-progress-tracker > li[data-status="error"] > .pt-circle {
+progress-tracker > ol > li[data-status="error"] > .pt-circle {
   background: var(--pt-color-error);
   border-color: var(--pt-color-error);
   color: var(--pt-color-text-on-fill);
@@ -114,27 +174,100 @@ progress-tracker > li[data-status="error"] > .pt-circle {
 
 /* -------- Label -------- */
 
-progress-tracker > li[data-step] > .pt-label {
-  position: relative;
-  z-index: 1;
+progress-tracker .pt-label {
   font-size: 0.85em;
   color: var(--color-text-muted, currentColor);
   line-height: 1.3;
 }
 
-progress-tracker > li[data-status="current"] > .pt-label,
-progress-tracker > li[data-status="complete"] > .pt-label {
+progress-tracker > ol > li[data-status="current"] .pt-label,
+progress-tracker > ol > li[data-status="complete"] .pt-label {
   color: var(--color-text);
   font-weight: 500;
 }
 
-progress-tracker > li[data-status="error"] > .pt-label {
+progress-tracker > ol > li[data-status="error"] .pt-label {
   color: var(--pt-color-error);
   font-weight: 500;
 }
 
-/* -------- Hover (clickable mode, completed steps only) -------- */
+/* -------- Hover (clickable mode, activatable steps only) -------- */
 
-progress-tracker[data-clickable] > li[data-status="complete"]:hover > .pt-circle {
+progress-tracker > ol > li:has(> button.pt-body):hover > .pt-circle {
   filter: brightness(0.95);
+}
+
+/* -------- Vertical -------- */
+
+progress-tracker[data-direction="vertical"] > ol {
+  flex-direction: column;
+}
+
+progress-tracker[data-direction="vertical"] > ol > li[data-status] {
+  flex: none;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--size-s, 0.75rem);
+  text-align: start;
+  padding-block: 0 var(--size-m, 1rem);
+}
+
+progress-tracker[data-direction="vertical"] .pt-body {
+  align-items: flex-start;
+  padding-block-start: calc((var(--pt-circle-size) - 1.3em) / 2);
+}
+
+/* One vertical connector per step, from below its circle to the next. */
+progress-tracker[data-direction="vertical"] > ol > li[data-status]::before {
+  display: none;
+}
+
+progress-tracker[data-direction="vertical"] > ol > li[data-status]::after {
+  inset-block-start: calc(var(--pt-circle-size));
+  inset-block-end: 0;
+  inset-inline-start: calc(var(--pt-circle-size) / 2 - var(--pt-line-thickness) / 2);
+  inset-inline-end: auto;
+  inline-size: var(--pt-line-thickness);
+  block-size: auto;
+}
+
+/* -------- Forced colors -------- */
+
+/* Connectors are backgrounds on empty pseudo-elements and the current
+   ring is a box-shadow; both are painted out. Re-draw them in system
+   colours: CanvasText lines, Highlight fills for complete / error, and an
+   outline ring on the current step. */
+@media (forced-colors: active) {
+  progress-tracker {
+    --pt-color-complete: CanvasText;
+    --pt-color-current: CanvasText;
+    --pt-color-upcoming: CanvasText;
+    --pt-color-error: CanvasText;
+  }
+
+  progress-tracker > ol > li[data-status]::before,
+  progress-tracker > ol > li[data-status]::after {
+    forced-color-adjust: none;
+  }
+
+  progress-tracker > ol > li > .pt-circle {
+    forced-color-adjust: none;
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+    transition: none;
+  }
+
+  progress-tracker > ol > li[data-status="complete"] > .pt-circle,
+  progress-tracker > ol > li[data-status="error"] > .pt-circle {
+    background: Highlight;
+    border-color: Highlight;
+    color: HighlightText;
+  }
+
+  progress-tracker > ol > li[data-status="current"] > .pt-circle {
+    box-shadow: none;
+    outline: 3px solid CanvasText;
+    outline-offset: 2px;
+  }
 }

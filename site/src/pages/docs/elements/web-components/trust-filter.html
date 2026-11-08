@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "trust-filter"
-description: "Filter pages by provenance, review level, status, and signed state. Interactive checkbox chips drive a live results list."
+description: "Filter pages by provenance, review level, status, and whether a signature is declared. Checkbox groups narrow a results list; only the count is announced."
 elementName: trust-filter
 category: component
 currentPath: /docs/elements/web-components/trust-filter/
@@ -12,8 +12,8 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>Reads <code>pages.json</code> and presents four orthogonal dimensions as checkbox groups: <strong>provenance</strong>, <strong>review level</strong>, <strong>status</strong>, and <strong>signed state</strong>. Multiple chips combine with OR within a dimension and AND across dimensions.</p>
-  <p>This is the most direct expression of the meta-tag contract from a reader's perspective &mdash; it answers questions like <em>show me every page that's AI-generated and editor-reviewed and signed</em>.</p>
+  <p>Reads <code>pages.json</code> and presents four orthogonal dimensions as checkbox groups: <strong>provenance</strong>, <strong>review level</strong>, <strong>status</strong>, and <strong>has signature</strong>. Several values in one group combine with OR; groups combine with AND. Ticking both <em>Yes</em> and <em>No</em> under <em>Has signature</em> is the same as ticking neither.</p>
+  <p>It answers reader questions like <em>show me every page that's AI-generated and editor-reviewed</em>. Only the count (&ldquo;3 of 10 pages&rdquo;) is a live region; the list sits beside it, so a change is announced as one short message. Nothing is announced on first load.</p>
 
   <browser-window
     src="/docs/examples/demos/trust-filter.html"
@@ -32,8 +32,14 @@ crumbLabel: Web Components
     <tbody>
       <tr><td><code>data-lens-src</code></td><td>string</td><td>&mdash;</td><td>URL to <code>pages.json</code></td></tr>
       <tr><td><code>src</code></td><td>string</td><td>&mdash;</td><td>Alias for <code>data-lens-src</code></td></tr>
+      <tr><td><code>data-label-*</code></td><td>string</td><td>English</td><td>Text overrides: <code>form</code>, <code>provenance</code>, <code>review</code>, <code>status</code>, <code>signed</code> (&ldquo;Has signature&rdquo;), <code>yes</code>, <code>no</code>, <code>clear</code>, <code>has-signature</code>, <code>error</code>, <code>no-source</code>, plus the count templates <code>page</code> (<code>{count} of {total} page</code>) and <code>pages</code> (<code>{count} of {total} pages</code>), chosen with <code>Intl.PluralRules</code>.</td></tr>
     </tbody>
   </table>
+</section>
+
+<section>
+  <h2>&ldquo;Has signature&rdquo; is not verification</h2>
+  <p>The <code>signed</code> field in <code>pages.json</code> is set at build time when a page carries a <code>&lt;meta name="vb:signature"&gt;</code>. It says a signature is <em>declared</em>, not that it checked out. Verification happens in the reader's browser in <a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a>, which can report a declared signature as failed. That is why the group is labelled <em>Has signature</em> and shown in neutral text, not in success colours.</p>
 </section>
 
 <section>
@@ -41,12 +47,17 @@ crumbLabel: Web Components
   <table class="props-table">
     <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
     <tbody>
-      <tr><td><code>trust-filter:change</code></td><td><code>{ selected, count }</code></td><td>Reader changes any chip; <code>selected</code> is a per-dimension array of values</td></tr>
+      <tr><td><code>trust-filter:change</code></td><td><code>{ selected, count }</code></td><td>Reader ticks, unticks or clears a filter; <code>selected</code> is a per-dimension array of values. Not fired on the initial render or when the element reconnects (which rebuilds the controls unchecked and clears the selection).</td></tr>
     </tbody>
   </table>
 </section>
 
 <section>
   <h2>Provenance composition</h2>
-  <p>The <code>vb:provenance</code> attribute is space-composable (e.g., <code>"ai-generated translated"</code>). The trust-filter splits each page's tokens and matches against any selected chip. A page tagged <code>"ai-generated translated"</code> matches both the <em>ai-generated</em> chip and the <em>translated</em> chip independently.</p>
+  <p>The <code>vb:provenance</code> attribute is space-composable (e.g., <code>"ai-generated translated"</code>). The trust-filter splits each page's tokens and matches against any selected chip. A page tagged <code>"ai-generated translated"</code> matches both the <em>ai-generated</em> chip and the <em>translated</em> chip independently. The provenance colour in the results also matches per token, using theme tokens.</p>
+</section>
+
+<section>
+  <h2>Safety</h2>
+  <p>Result URLs that are not <code>http(s)</code> or relative (for example <code>javascript:</code>) render as plain text. Load errors show a generic message; the detail goes to the console.</p>
 </section>

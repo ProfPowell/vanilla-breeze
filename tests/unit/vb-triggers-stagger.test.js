@@ -328,7 +328,7 @@ describe('VB stagger modes', () => {
     assert.notEqual(a, b);
   });
 
-  it('grid mode orders by Manhattan distance from top-left', () => {
+  it('grid mode indexes by Manhattan distance from top-left', () => {
     const p = parentWith(4, { mode: 'grid' });
     // Lay out the children in a 2x2 grid:
     //   (1,1) -> dist 0
@@ -343,12 +343,124 @@ describe('VB stagger modes', () => {
     VB._processStagger(p);
 
     const got = p.children.map((c) => Number(c.style.getPropertyValue('--vb-stagger-index')));
-    // Child 1 (dist 0) → rank 0
-    // Children 2 and 3 (dist 1) → ranks 1, 2 (stable sort)
-    // Child 0 (dist 2) → rank 3
-    assert.equal(got[1], 0);
-    assert.equal(got[0], 3);
-    assert.ok(new Set([got[2], got[3]]).has(1));
-    assert.ok(new Set([got[2], got[3]]).has(2));
+    // The index IS the Manhattan distance, so cells on the same diagonal
+    // (children 2 and 3) share a delay — a diagonal wave, not a sequence.
+    assert.deepEqual(got, [2, 0, 1, 1]);
+  });
+});
+
+describe('VB stagger time shorthand and grid layout fallback', () => {
+  before(async () => {
+    installBrowserShim();
+    const mod = await import('../../src/lib/vb.js');
+    VB = mod.VB;
+  });
+  beforeEach(() => {
+    installBrowserShim();
+  });
+  afterEach(() => {
+    delete globalThis.getComputedStyle;
+  });
+
+  function parent(mode, n = 3) {
+    const p = new globalThis.Element('ul');
+    p.setAttribute('data-stagger', mode);
+    p.style.removeProperty = function (name) { this._props.delete(name); };
+    p.children = Array.from({ length: n }, () => new globalThis.Element('li'));
+    return p;
+  }
+
+  it('a CSS time value sets --vb-stagger on the container', () => {
+    const p = parent('200ms');
+    VB._processStagger(p);
+    assert.equal(p.style.getPropertyValue('--vb-stagger'), '200ms');
+    assert.deepEqual(p.children.map((c) => c.style.getPropertyValue('--vb-stagger-index')), ['0', '1', '2']);
+  });
+
+  it('mode and time combine in any order', () => {
+    const p = parent('0.1s reverse');
+    VB._processStagger(p);
+    assert.equal(p.style.getPropertyValue('--vb-stagger'), '0.1s');
+    assert.deepEqual(p.children.map((c) => c.style.getPropertyValue('--vb-stagger-index')), ['2', '1', '0']);
+  });
+
+  it('dropping the time token removes the --vb-stagger it set', () => {
+    const p = parent('40ms');
+    VB._processStagger(p);
+    p.setAttribute('data-stagger', 'reverse');
+    VB._processStagger(p);
+    assert.equal(p.style.getPropertyValue('--vb-stagger'), '');
+  });
+
+  it('grid mode locates auto-placed items from their layout boxes', () => {
+    // 3-column auto grid, 6 items: computed grid-row-start is `auto`.
+    globalThis.getComputedStyle = () => ({ gridRowStart: 'auto', gridColumnStart: 'auto', direction: 'ltr' });
+    const p = parent('grid', 6);
+    p.children.forEach((c, i) => {
+      const row = Math.floor(i / 3);
+      const col = i % 3;
+      c.getBoundingClientRect = () => ({ top: row * 50, bottom: row * 50 + 40, left: col * 100, right: col * 100 + 90, width: 90, height: 40 });
+    });
+    VB._processStagger(p);
+    assert.deepEqual(p.children.map((c) => Number(c.style.getPropertyValue('--vb-stagger-index'))), [0, 1, 2, 1, 2, 3]);
+  });
+
+  it('grid mode measures columns from the right edge in RTL', () => {
+    globalThis.getComputedStyle = () => ({ gridRowStart: 'auto', gridColumnStart: 'auto', direction: 'rtl' });
+    const p = parent('grid', 3);
+    // DOM order 0,1,2 laid out right-to-left: child 0 is right-most.
+    p.children.forEach((c, i) => {
+      const left = (2 - i) * 100;
+      c.getBoundingClientRect = () => ({ top: 0, bottom: 40, left, right: left + 90, width: 90, height: 40 });
+    });
+    VB._processStagger(p);
+    assert.deepEqual(p.children.map((c) => Number(c.style.getPropertyValue('--vb-stagger-index'))), [0, 1, 2]);
+  });
+});
+
+describe('VB click / time trigger parameters', () => {
+  before(async () => {
+    installBrowserShim();
+    const mod = await import('../../src/lib/vb.js');
+    VB = mod.VB;
+    await import('../../src/lib/vb-triggers.js');
+  });
+  beforeEach(() => {
+    installBrowserShim();
+  });
+
+  it('click toggles: first click activates, second deactivates', () => {
+    const el = new globalThis.Element('button');
+    const events = [];
+    el.addEventListener('vb:phase-change', (e) => events.push(e.detail.active));
+    VB._triggers.get('click')(el, () => VB.activate(el), null);
+    el.dispatchEvent(new globalThis.Event('click'));
+    assert.equal(el.hasAttribute('data-effect-active'), true);
+    el.dispatchEvent(new globalThis.Event('click'));
+    assert.equal(el.hasAttribute('data-effect-active'), false);
+    assert.deepEqual(events, [true, false]);
+  });
+
+  it('click:replay replays on every click and reports the reset', () => {
+    const el = new globalThis.Element('button');
+    const events = [];
+    el.addEventListener('vb:phase-change', (e) => events.push(e.detail.active));
+    VB._triggers.get('click')(el, () => VB.activate(el), 'replay');
+    el.dispatchEvent(new globalThis.Event('click'));
+    el.dispatchEvent(new globalThis.Event('click'));
+    assert.equal(el.hasAttribute('data-effect-active'), true);
+    assert.deepEqual(events, [true, false, true]);
+  });
+
+  it('time accepts ms, ms-suffixed and seconds values', async () => {
+    const seen = [];
+    const realSetTimeout = globalThis.setTimeout;
+    globalThis.setTimeout = (fn, ms) => { seen.push(ms); return 0; };
+    try {
+      for (const p of ['1500', '1500ms', '1.5s']) VB._triggers.get('time')(new globalThis.Element('p'), () => {}, p);
+    } finally {
+      globalThis.setTimeout = realSetTimeout;
+    }
+    assert.deepEqual(seen, [1500, 1500, 1500]);
   });
 });

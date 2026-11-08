@@ -31,11 +31,19 @@
 <body>
   <h1>Pop Over — Basic Demo</h1>
   <section>
-    <h2>Bottom-start (default placement)</h2>
-    <button type="button" popovertarget="pop-bottom">Open below</button>
-    <pop-over id="pop-bottom" data-position="bottom-start">
+    <h2>Default placement (bottom)</h2>
+    <button type="button" popovertarget="pop-default">Open below</button>
+    <pop-over id="pop-default">
       <strong>Hello.</strong>
-      <p>This is anchored to the trigger button.</p>
+      <p>No <code>data-position</code>: centred below the trigger.</p>
+    </pop-over>
+  </section>
+
+  <section>
+    <h2>Bottom-start</h2>
+    <button type="button" popovertarget="pop-bottom">Open below, start-aligned</button>
+    <pop-over id="pop-bottom" data-position="bottom-start">
+      <p>Hangs from the trigger's inline-start edge (mirrors in RTL).</p>
     </pop-over>
   </section>
 
@@ -64,7 +72,21 @@
   </section>
 
   <section>
-    <h2>Hint mode (auto-dismiss when next hint opens)</h2>
+    <h2>Manual, no anchor (centred)</h2>
+    <button type="button" id="pop-centre-open">Open centred</button>
+    <pop-over id="pop-centre" data-mode="manual">
+      <p>No anchor: the popover keeps the browser's centring.</p>
+      <button type="button" id="pop-centre-close">Close</button>
+    </pop-over>
+    <script type="module">
+      const centred = document.getElementById('pop-centre');
+      document.getElementById('pop-centre-open').addEventListener('click', () => centred.show());
+      document.getElementById('pop-centre-close').addEventListener('click', () => centred.hide());
+    </script>
+  </section>
+
+  <section>
+    <h2>Hint mode (opening one hint closes the other)</h2>
     <nav class="row" aria-label="Hint controls">
       <button type="button" popovertarget="pop-hint-1">Hint 1</button>
       <button type="button" popovertarget="pop-hint-2">Hint 2</button>

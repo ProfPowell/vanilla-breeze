@@ -12,175 +12,244 @@
  *     kept in sync automatically
  *   - Pagination in a sidebar driving the main content column
  *
- * The element listens for `paged:change` on the target and re-renders.
- * Buttons dispatch `paged:goto { page }` (or `paged:loadmore`) on the
- * target, which the data-paged engine handles via event listeners
- * registered during enhance().
+ * The element listens for `paged:change` (at document level, so a target
+ * inserted later is picked up) and re-renders. Buttons dispatch
+ * `paged:goto { page }` (or `paged:loadmore`) on the target, which the
+ * data-paged engine handles via event listeners registered during enhance().
  *
- * @attr {string}  target  - CSS selector for the [data-paged] container (preferred)
- * @attr {string}  for     - ID of the target container (alternative; HTML-form-style)
- * @attr {string}  style   - "numbered" (default) | "prev-next" | "load-more".
- *                           Infinite-style is intentionally unsupported — a sentinel
- *                           pattern doesn't make sense for decoupled controls.
+ * @attr {string}  target      - CSS selector for the [data-paged] container (preferred)
+ * @attr {string}  for         - ID of the target container (alternative; HTML-form-style)
+ * @attr {string}  data-style  - "numbered" (default) | "prev-next" | "load-more".
+ *                               load-more needs a progressive target
+ *                               (data-paged-style="load-more"). Infinite is
+ *                               intentionally unsupported for decoupled controls.
+ * @attr {string}  data-label-nav       - Nav landmark name (default "Pagination")
+ * @attr {string}  data-label-prev      - Previous button text (default "Previous")
+ * @attr {string}  data-label-next      - Next button text (default "Next")
+ * @attr {string}  data-label-page      - Page button name, {page} (default "Page {page}")
+ * @attr {string}  data-label-status    - prev-next status, {page}/{total} (default "Page {page} of {total}")
+ * @attr {string}  data-label-load-more - Load-more text, {n} remaining (default "Load more ({n})")
+ * @attr {string}  data-label-no-more   - Exhausted load-more text (default "No more")
+ * @attr {string}  data-label-missing   - Note shown when no target resolves (default "No paginated target found")
  *
  * @fires pager-wc:navigate - { page } — bubbles before the target's data-paged engine
- *                            processes the navigation. Use for analytics / scroll-restore.
+ *                            processes a page navigation (not fired for load-more;
+ *                            not cancelable). Use for analytics / scroll-restore.
  *
  * @example Controls in header, items below
  *   <pager-wc target="#feed"></pager-wc>
  *   <ul id="feed" data-paged data-paged-size="10"> ... </ul>
  *
  * @example Top + bottom controls staying in sync
- *   <pager-wc target="#feed"></pager-wc>
+ *   <pager-wc target="#feed" data-label-nav="Results pages, top"></pager-wc>
  *   <ul id="feed" data-paged data-paged-size="20"> ... </ul>
- *   <pager-wc target="#feed"></pager-wc>
+ *   <pager-wc target="#feed" data-label-nav="Results pages, bottom"></pager-wc>
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { paginationState } from '../../lib/data-paged.js';
-import { buildNav, wireNav } from '../../lib/data-paged-controls.js';
+import { buildNav, wireNav, replaceNav, fillTemplate } from '../../lib/data-paged-controls.js';
+
+const STYLES = ['numbered', 'prev-next', 'load-more'];
+const LABEL_ATTRS = [
+  'data-label-nav', 'data-label-prev', 'data-label-next', 'data-label-page',
+  'data-label-status', 'data-label-load-more', 'data-label-no-more', 'data-label-missing',
+];
+
+/**
+ * @typedef {{ page: number, size: number, total: number, totalPages: number, visible?: number, style?: string }} PagedDetail
+ */
 
 class PagerWC extends VBElement {
-  static observedAttributes = ['target', 'for', 'style'];
+  static observedAttributes = ['target', 'for', 'data-style', 'aria-label', ...LABEL_ATTRS];
 
   /** @type {HTMLElement | null} */
   #target = null;
-  /** @type {(() => void) | null} */
-  #unsubscribe = null;
+  /** @type {PagedDetail | null} */
+  #last = null;
+  #warnedStyle = false;
 
   setup() {
-    this.#bind();
+    // Document-level: catches the target's paged:change even when the
+    // target is inserted (and enhanced) after this element.
+    this.listen(document, 'paged:change', (e) => this.#onChange(/** @type {CustomEvent} */ (e)));
+    this.#target = this.#resolveTarget();
+    this.#renderFromTarget();
   }
 
   teardown() {
-    this.#unsubscribe?.();
-    this.#unsubscribe = null;
+    this.#target = null;
+    this.#last = null;
   }
 
-  attributeChangedCallback() {
-    if (!this.isConnected || !this.hasAttribute('data-upgraded')) return;
-    this.#unsubscribe?.();
-    this.#unsubscribe = null;
-    this.#bind();
-  }
-
-  /** Locate the target [data-paged] container and subscribe to its updates. */
-  #bind() {
-    this.#target = this.#resolveTarget();
-    if (!this.#target) {
-      this.#renderMissing();
-      return;
+  attributeChangedCallback(/** @type {string} */ name, /** @type {string|null} */ oldVal, /** @type {string|null} */ newVal) {
+    if (oldVal === newVal || !this.isConnected || !this.hasAttribute('data-upgraded')) return;
+    if (name === 'target' || name === 'for') {
+      this.#target = this.#resolveTarget();
+      this.#last = null;
+      this.#renderFromTarget();
+    } else if (this.#last) {
+      this.#renderFor(this.#last);
+    } else {
+      this.#renderFromTarget();
     }
-    const onChange = (/** @type {Event} */ e) => this.#renderFor(/** @type {CustomEvent} */ (e).detail);
-    this.#target.addEventListener('paged:change', onChange);
-    this.#unsubscribe = () => this.#target?.removeEventListener('paged:change', onChange);
+  }
 
-    // Initial render — synthesize a paged:change-equivalent state from
-    // the target's current attributes. The engine fires paged:change on
-    // its initial render, but if the engine has already run before we
-    // mounted, we need to compute state ourselves to avoid an empty
-    // first render.
-    this.#renderFromTarget();
+  /**
+   * @param {CustomEvent} e
+   */
+  #onChange(e) {
+    if (!this.#target || !this.#target.isConnected || e.target !== this.#target) {
+      this.#target = this.#resolveTarget();
+    }
+    if (e.target !== this.#target) return;
+    this.#renderFor(e.detail);
   }
 
   /**
    * Resolve target via `target` (CSS selector) then `for` (id), falling
-   * back to the previous sibling if neither is set (a common pattern:
-   * <ul data-paged>...</ul><pager-wc>).
+   * back to the nearest preceding [data-paged] sibling. Only an element
+   * carrying [data-paged] counts — anything else has no engine listening.
    *
    * @returns {HTMLElement | null}
    */
   #resolveTarget() {
+    /** @type {Element | null} */
+    let el = null;
     const sel = this.getAttribute('target');
-    if (sel) {
-      try { return /** @type {HTMLElement | null} */ (document.querySelector(sel)); } catch { return null; }
-    }
     const id = this.getAttribute('for');
-    if (id) return /** @type {HTMLElement | null} */ (document.getElementById(id));
-    // Implicit: nearest preceding sibling with [data-paged].
-    let sib = this.previousElementSibling;
-    while (sib) {
-      if (sib.hasAttribute('data-paged')) return /** @type {HTMLElement} */ (sib);
-      sib = sib.previousElementSibling;
+    if (sel) {
+      try { el = document.querySelector(sel); } catch { el = null; }
+    } else if (id) {
+      el = document.getElementById(id);
+    } else {
+      let sib = this.previousElementSibling;
+      while (sib && !sib.hasAttribute('data-paged')) sib = sib.previousElementSibling;
+      el = sib;
     }
-    return null;
+    return el && el.hasAttribute('data-paged') ? /** @type {HTMLElement} */ (el) : null;
   }
 
-  /** Compute current state from the target's attributes + child count. */
+  /** Compute current state from the target's attributes + children. */
   #renderFromTarget() {
-    if (!this.#target) return;
     const t = this.#target;
-    const size = parseInt(t.dataset.pagedSize || '10', 10) || 10;
+    if (!t) { this.#renderMissing(); return; }
+    const size = parseInt(t.dataset.pagedSize || '10', 10) || 0;
     const page = parseInt(t.dataset.pagedPage || '1', 10) || 1;
-    // Item count: <table> uses tbody.children, otherwise direct children
-    // sans nav/sentinel siblings (which are placed outside the host anyway).
     const items = t.tagName === 'TABLE'
       ? Array.from(t.querySelector(':scope > tbody')?.children || [])
       : Array.from(t.children).filter(
           (n) => !(/** @type {Element} */ (n).matches('nav[data-paged-nav], div[data-paged-sentinel]'))
         );
     const total = items.length;
-    const totalPages = Math.max(1, Math.ceil(total / size));
-    this.#renderFor({ page, size, total, totalPages });
+    const totalPages = size > 0 ? Math.max(1, Math.ceil(total / size)) : 1;
+    // Engine already ran → trust the hidden flags; otherwise one page.
+    const enhanced = items.some((n) => /** @type {HTMLElement} */ (n).hidden);
+    const visible = enhanced
+      ? items.filter((n) => !(/** @type {HTMLElement} */ (n).hidden)).length
+      : Math.min(size || total, total);
+    this.#renderFor({ page, size, total, totalPages, visible, style: t.dataset.pagedStyle || 'numbered' });
+  }
+
+  /** @returns {'numbered' | 'prev-next' | 'load-more'} */
+  #style() {
+    const s = this.getAttribute('data-style') || 'numbered';
+    return /** @type {any} */ (STYLES.includes(s) ? s : 'numbered');
   }
 
   /**
-   * Render controls for an explicit pagination state.
-   * @param {{page:number,size:number,total:number,totalPages:number}} detail
+   * @param {string} name
+   * @param {string} fallback
+   */
+  #label(name, fallback) {
+    return this.getAttribute(`data-label-${name}`) || fallback;
+  }
+
+  /**
+   * @param {PagedDetail} detail
    */
   #renderFor(detail) {
-    const style = this.getAttribute('style') || 'numbered';
-    const window = parseInt(this.#target?.dataset.pagedWindow || '2', 10) || 2;
+    this.#last = detail;
+    const style = this.#style();
+    const target = this.#target;
+    if (!target) { this.#renderMissing(); return; }
+
+    if (style === 'load-more' && !this.#warnedStyle && !/^(load-more|infinite)$/.test(target.dataset.pagedStyle || '')) {
+      this.#warnedStyle = true;
+      console.warn('[pager-wc] data-style="load-more" needs a progressive target: set data-paged-style="load-more" on', target);
+    }
+
     const sm = paginationState({
       total: detail.total,
       size: detail.size,
       page: detail.page,
-      window,
+      window: parseInt(target.dataset.pagedWindow || '2', 10) || 2,
     });
+    const visible = typeof detail.visible === 'number'
+      ? detail.visible
+      : Math.min(detail.page * detail.size, detail.total);
 
-    // For load-more we don't have a 'visible' counter from the engine;
-    // approximate from page * size, capped at total. This matches what
-    // the in-place data-paged-init does internally.
-    const visible = Math.min(detail.page * detail.size, detail.total);
+    const old = /** @type {HTMLElement | null} */ (this.querySelector(':scope > nav[data-paged-nav]'));
+    this.querySelector(':scope > [data-pager-missing]')?.remove();
 
-    this.replaceChildren();
-    if (style !== 'load-more' && sm.totalPages <= 1) return;
+    if (style !== 'load-more' && sm.totalPages <= 1) {
+      old?.remove();
+      return;
+    }
 
     const nav = buildNav({
-      style: /** @type {'numbered' | 'prev-next' | 'load-more'} */ (style),
+      style,
       page: sm.page,
       totalPages: sm.totalPages,
       pageNumbers: sm.pageNumbers,
       total: detail.total,
       visible,
+      navLabel: this.#label('nav', this.getAttribute('aria-label') || 'Pagination'),
+      prevLabel: this.#label('prev', 'Previous'),
+      nextLabel: this.#label('next', 'Next'),
+      pageLabel: (n) => fillTemplate(this.#label('page', 'Page {page}'), { page: n }),
+      statusLabel: (p, t) => fillTemplate(this.#label('status', 'Page {page} of {total}'), { page: p, total: t }),
+      loadMoreLabel: (n) => fillTemplate(this.#label('load-more', 'Load more ({n})'), { n }),
+      noMoreLabel: this.#label('no-more', 'No more'),
     });
     wireNav(nav, {
       onNavigate: (page) => this.#dispatch(page),
       onLoadMore: () => this.#dispatchLoadMore(),
     });
-    this.appendChild(nav);
+    if (old) replaceNav(old, nav);
+    else this.appendChild(nav);
   }
 
   #renderMissing() {
-    this.replaceChildren();
-    const note = document.createElement('p');
-    note.setAttribute('data-pager-missing', '');
-    note.setAttribute('aria-live', 'polite');
-    note.textContent = 'No paginated target found';
-    this.appendChild(note);
+    this.querySelector(':scope > nav[data-paged-nav]')?.remove();
+    let note = this.querySelector(':scope > [data-pager-missing]');
+    if (!note) {
+      note = document.createElement('p');
+      note.setAttribute('data-pager-missing', '');
+      this.appendChild(note);
+    }
+    note.textContent = this.#label('missing', 'No paginated target found');
   }
 
-  /** @param {number} page */
+  /** Re-resolve if the bound target went away (lazy resolution). */
+  #liveTarget() {
+    if (!this.#target?.isConnected) this.#target = this.#resolveTarget();
+    return this.#target;
+  }
+
+  /**
+   * @param {number} page
+   */
   #dispatch(page) {
-    if (!this.#target) return;
+    const target = this.#liveTarget();
+    if (!target) return;
     this.dispatchEvent(new CustomEvent('pager-wc:navigate', { bubbles: true, detail: { page } }));
-    this.#target.dispatchEvent(new CustomEvent('paged:goto', { detail: { page } }));
+    target.dispatchEvent(new CustomEvent('paged:goto', { detail: { page } }));
   }
 
   #dispatchLoadMore() {
-    if (!this.#target) return;
-    this.#target.dispatchEvent(new CustomEvent('paged:loadmore'));
+    this.#liveTarget()?.dispatchEvent(new CustomEvent('paged:loadmore'));
   }
 }
 

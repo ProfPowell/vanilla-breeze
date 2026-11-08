@@ -13,7 +13,7 @@ crumbLabel: Web Components
 <section>
   <h2>Overview</h2>
   <p>The aggregated counterpart to <a href="/docs/elements/web-components/recently-visited/"><code>&lt;recently-visited&gt;</code></a>. Where that surface is local-only, this one consumes site-wide aggregate data from an analytics endpoint and shows the most-visited pages.</p>
-  <p>The default endpoint <code>/api/analytics/popular</code> is not yet implemented in the VB site &mdash; the component degrades to a friendly explanatory message when the endpoint is unavailable, returns 5xx, or returns an empty list. Sites that don't run analytics can hide it via <code>display: none</code> or simply not place the element.</p>
+  <p>The default endpoint <code>/api/analytics/popular</code> is a Cloudflare Pages Function over VB's D1 analytics store (the same <code>page.view</code> aggregate the stats dashboard uses). When the endpoint is missing, errors, or has no data yet, the component shows a short generic message and reflects <code>data-state</code> so sites can hide it instead.</p>
 
   <browser-window
     src="/docs/examples/demos/popularity-index.html"
@@ -32,12 +32,35 @@ crumbLabel: Web Components
     <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
     <tbody>
       <tr><td><code>analytics-src</code></td><td>string</td><td><code>"/api/analytics/popular"</code></td><td>Endpoint URL that returns popularity data</td></tr>
-      <tr><td><code>data-meta-src</code></td><td>string</td><td>&mdash;</td><td>Optional <code>pages.json</code> URL used to enrich each entry with title/topic/provenance metadata when the endpoint returns sparse data</td></tr>
+      <tr><td><code>data-meta-src</code></td><td>string</td><td>&mdash;</td><td>Optional <code>pages.json</code> URL. Fills in a missing <code>title</code> and adds the <code>provenance</code> chip; no other fields are read. Fetched in parallel with the endpoint</td></tr>
       <tr><td><code>data-lens-src</code></td><td>string</td><td>&mdash;</td><td>The lens family's shared <code>pages.json</code> URL (forwarded by <a href="/docs/elements/web-components/content-lens/"><code>&lt;content-lens&gt;</code></a>). Used only as the metadata source when <code>data-meta-src</code> is unset &mdash; never as the analytics endpoint</td></tr>
-      <tr><td><code>limit</code></td><td>number</td><td>10</td><td>Max entries shown</td></tr>
-      <tr><td><code>window</code></td><td>string</td><td>&mdash;</td><td>Optional time-window query forwarded as <code>?window=24h</code> (or <code>7d</code>, <code>30d</code>)</td></tr>
+      <tr><td><code>limit</code></td><td>number</td><td>10</td><td>Max entries shown (values below 1 become 1)</td></tr>
+      <tr><td><code>window</code></td><td>string</td><td>&mdash;</td><td>Time window forwarded as <code>?window=</code>. The VB endpoint accepts <code>24h</code>, <code>7d</code> (its default) and <code>30d</code></td></tr>
+      <tr><td><code>data-heading-level</code></td><td>number</td><td>2</td><td>Level of the panel heading (1&ndash;6). <code>0</code> renders no heading &mdash; use it inside <code>&lt;content-lens&gt;</code> or wherever the surrounding markup already labels the list</td></tr>
+      <tr><td><code>data-label-heading</code></td><td>string</td><td><code>Most visited</code></td><td>Heading text</td></tr>
+      <tr><td><code>data-label-view</code> / <code>data-label-views</code></td><td>string</td><td><code>view</code> / <code>views</code></td><td>Count noun, chosen with <code>Intl.PluralRules</code> for the element's <code>lang</code></td></tr>
+      <tr><td><code>data-label-unavailable</code></td><td>string</td><td><code>Popularity data is unavailable right now.</code></td><td>Message when the endpoint fails</td></tr>
+      <tr><td><code>data-label-empty</code></td><td>string</td><td><code>Not enough data yet to surface most-visited pages.</code></td><td>Message when there is nothing to list</td></tr>
     </tbody>
   </table>
+  <p>Changing <code>analytics-src</code>, <code>window</code>, <code>limit</code>, <code>data-meta-src</code>, <code>data-lens-src</code> or <code>data-heading-level</code> after upgrade re-fetches. Any request still in flight is aborted, so a slow stale response can never overwrite a newer one, and nothing renders after the element is removed.</p>
+</section>
+
+<section>
+  <h2>States</h2>
+  <table class="props-table">
+    <thead><tr><th><code>data-state</code></th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>loading</code></td><td>Request in flight; the host also carries <code>aria-busy="true"</code>.</td></tr>
+      <tr><td><code>ready</code></td><td>The list is rendered.</td></tr>
+      <tr><td><code>empty</code></td><td>The endpoint answered, but with no usable pages.</td></tr>
+      <tr><td><code>unavailable</code></td><td>Network error, non-2xx response, or invalid JSON. The message is generic; the technical reason goes to <code>data-error</code> and the console, never to the page.</td></tr>
+    </tbody>
+  </table>
+  <p>Each settled load also fires <code>popularity-index:state</code> with <code>{ state }</code>. To remove the panel entirely when there is nothing to show:</p>
+  <code-block language="css"><![CDATA[popularity-index:is([data-state="unavailable"], [data-state="empty"]) {
+  display: none;
+}]]></code-block>
 </section>
 
 <section>
@@ -47,5 +70,23 @@ crumbLabel: Web Components
   { "url": "/docs/concepts/document-provenance/", "title": "Document Provenance", "views": 1234 },
   { "url": "/glossary/", "title": "Glossary", "views": 980 }
 ]}]]></code-block>
-  <p>or simply an array. Each entry must carry <code>url</code>; <code>title</code> and <code>views</code> are optional but improve the rendered list. If <code>data-meta-src</code> is set, missing titles fall back to the matching <code>pages.json</code> record.</p>
+  <p>or simply an array. Each entry must carry <code>url</code>; <code>title</code> and <code>views</code> (or <code>count</code>) are optional. If <code>data-meta-src</code> is set, missing titles fall back to the matching <code>pages.json</code> record. VB's own endpoint returns only <code>url</code> and <code>views</code>, so pair it with <code>data-meta-src="/pages.json"</code> for titles.</p>
+  <p>Links are checked before they render: only <code>http:</code>/<code>https:</code> URLs and same-origin paths are kept. <code>javascript:</code>, <code>data:</code> and scheme-relative <code>//host</code> entries are dropped. The list is built with DOM APIs, so titles from the payload are always treated as text.</p>
+  <p>VB's endpoint accepts <code>?window=24h|7d|30d</code>, <code>?limit=1&ndash;50</code> and <code>?site=</code>, and returns <code>{ ok, site, window, pages }</code>.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The list is an ordered list (<code>&lt;ol&gt;</code>), so rank is announced with each item.</li>
+    <li>The heading level is configurable with <code>data-heading-level</code>, so the panel fits the page outline instead of forcing an <code>&lt;h2&gt;</code>. Use <code>0</code> when a lens label or surrounding heading already names it.</li>
+    <li>While loading, the host has <code>aria-busy="true"</code>; the heading is present from the start.</li>
+    <li>View counts use <code>Intl.NumberFormat</code> compact notation (<q>1.8K</q>) and <code>Intl.PluralRules</code>, both for the nearest <code>lang</code>.</li>
+    <li>The provenance chip is a text label; its colour is only a secondary cue.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Styling</h2>
+  <p>The heading is <code>.popularity-heading</code>, the list <code>.popularity-list</code>, and the status messages <code>.popularity-empty</code>. Provenance chips (<code>.popularity-prov[data-provenance]</code>) take their colour from the theme's AA text tokens: <code>--color-success-text</code> for <code>human</code>, <code>--color-warning-text</code> for <code>ai-assisted</code> and <code>--color-error-text</code> for <code>ai-generated</code>.</p>
 </section>

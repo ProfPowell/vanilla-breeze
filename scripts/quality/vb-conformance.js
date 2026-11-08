@@ -373,6 +373,29 @@ function checkFile(filePath) {
       }
     }
 
+    // vb/layout-attr-value, presence-only attributes on the wrong layout.
+    // The value loop above skips presence attributes (any value is valid),
+    // and it never sees the bare form, so data-layout-centered on a cluster
+    // passed even though no cluster rule reads it.
+    for (const m of line.matchAll(/\sdata-layout-([a-z-]+)(?:="[^"]*")?(?=[\s>/])/g)) {
+      const [, attr] = m;
+      if (!presenceLayoutAttrs.has(attr) || layoutChildAttrs.has(attr)) continue;
+      const layouts = resolveLayouts(tagAround(lineOffsets[lineNum - 1] + m.index + 1));
+      if (!layouts.length || layouts.some((k) => layoutVocabularyByLayout.get(k)?.has(attr))) continue;
+      const others = [...layoutVocabularyByLayout.entries()]
+        .filter(([, attrs]) => attrs.has(attr))
+        .map(([name]) => name);
+      issues.push({
+        line: lineNum,
+        col: m.index + 2,
+        rule: 'vb/layout-attr-value',
+        severity: severity('vb/layout-attr-value', 'error-new'),
+        message:
+          `data-layout-${attr} is not read by the ${layouts.join('/')} layout` +
+          (others.length ? ` (it belongs to ${others.sort().join(', ')})` : '') + '. It does nothing here.',
+      });
+    }
+
     // vb/no-class-for-state — State classes that should be data-* attributes.
     //
     // Token-exact match: we previously used \b boundaries inside a single

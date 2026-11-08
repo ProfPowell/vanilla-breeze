@@ -69,3 +69,47 @@ export function registerInit(selector, enhanceFn) {
     document.addEventListener('DOMContentLoaded', onReady);
   }
 }
+/** @type {WeakMap<Element, Set<Function>>} */
+const resetHandlers = new WeakMap();
+let resetListening = false;
+
+/**
+ * Run `fn` after the form that owns `el` is reset.
+ *
+ * The `reset` event fires BEFORE the browser restores default values, so
+ * enhancers that mirror a control's value (fills, bubbles, swatches, counts,
+ * conditional sections) re-read it one task later, when the reset is done.
+ * A cancelled reset (preventDefault) runs nothing. Works for controls inside
+ * the form and for controls associated through the `form` attribute.
+ * One document-level listener serves every registration; handlers are held
+ * in a WeakMap, so removed elements are collected.
+ *
+ * @example
+ * import { onFormReset } from './_init-registry.js';
+ * onFormReset(input, () => sync(input));
+ *
+ * @param {Element} el - The enhanced control (or a wrapper inside the form)
+ * @param {Function} fn - Called with `el` after the reset has been applied
+ */
+export function onFormReset(el, fn) {
+  let set = resetHandlers.get(el);
+  if (!set) resetHandlers.set(el, set = new Set());
+  set.add(fn);
+  if (resetListening) return;
+  resetListening = true;
+  document.addEventListener('reset', (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    setTimeout(() => {
+      if (event.defaultPrevented) return;
+      const seen = new Set();
+      const candidates = [...form.querySelectorAll('*'), ...Array.from(form.elements)];
+      for (const node of candidates) {
+        if (seen.has(node)) continue;
+        seen.add(node);
+        const handlers = resetHandlers.get(node);
+        if (handlers) for (const handler of handlers) handler(node);
+      }
+    }, 0);
+  }, true);
+}

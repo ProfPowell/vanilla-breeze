@@ -26,24 +26,29 @@ crumbLabel: Data Attributes
   <h2>Two shapes</h2>
 
   <h3>Table mode</h3>
-  <p>Clicking <code>&lt;th data-sort="key"&gt;</code> cycles the column through asc &rarr; desc &rarr; none &rarr; asc. Row sort-value comes from the matching <code>&lt;td&gt;</code> via (in order): <code>data-value</code>, <code>&lt;time datetime&gt;</code> when type is <code>date</code>, otherwise <code>textContent</code>.</p>
+  <p>Each <code>&lt;th data-sort="key"&gt;</code> gets its content wrapped in a native <code>&lt;button data-sort-button&gt;</code>; activating it (click, <kbd>Enter</kbd> or <kbd>Space</kbd>) cycles the column through asc &rarr; desc &rarr; none &rarr; asc. Row sort-value comes from the matching <code>&lt;td&gt;</code> via (in order): <code>data-sort-value</code> (or its alias <code>data-value</code>), <code>&lt;time datetime&gt;</code> when type is <code>date</code>, otherwise <code>textContent</code>.</p>
+  <aside class="note">
+    <strong><code>data-sort</code> means something different on <code>&lt;data-table&gt;</code>.</strong> Here it is the column <em>key</em> and the type comes from <code>data-sort-type</code> (<code>text</code> &middot; <code>number</code> &middot; <code>date</code>). In <a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a> the same attribute holds the sort <em>type</em> (<code>string</code> &middot; <code>number</code> &middot; <code>date</code>). The cell override <code>data-sort-value</code> works in both.
+  </aside>
 
   <code-block language="html" show-lines data-escape><table data-sortable>
+  <caption>Team</caption>
   <thead>
     <tr>
-      <th data-sort="name">Name</th>
-      <th data-sort="score" data-sort-type="number">Score</th>
-      <th data-sort="joined" data-sort-type="date">Joined</th>
+      <th scope="col" data-sort="name">Name</th>
+      <th scope="col" data-sort="score" data-sort-type="number">Score</th>
+      <th scope="col" data-sort="joined" data-sort-type="date">Joined</th>
     </tr>
   </thead>
   <tbody>
-    <tr><td>Alice</td><td>87</td><td><time datetime="2026-03-14">Mar 14</time></td></tr>
+    <tr><td>Alice</td><td data-sort-value="87">87 pts</td><td><time datetime="2026-03-14">Mar 14</time></td></tr>
     ...
   </tbody>
 </table></code-block>
 
   <h3>List mode</h3>
   <p>Items declare <code>data-sort-{key}=value</code> attributes; an external control declares <code>data-sort-target=selector</code> and supplies the active key. A <code>&lt;select&gt;</code>'s value (or a <code>&lt;button&gt;</code>'s <code>data-sort-by</code> attribute) chooses the key. Leading <code>-</code> on the value flips direction.</p>
+  <p>The target is looked up when the control is used, so a control may come before its container in the page or be rendered first (the container loaded later, lazily or by a template). A <code>&lt;select&gt;</code>'s initial value is applied as soon as its container appears.</p>
 
   <code-block language="html" show-lines data-escape><select data-sort-target="#projects">
   <option value="name">Name (A-Z)</option>
@@ -59,7 +64,7 @@ crumbLabel: Data Attributes
 
 <section>
   <h2>Attributes</h2>
-  <table class="prose">
+  <table>
     <thead><tr><th>Attribute</th><th>Default</th><th>Notes</th></tr></thead>
     <tbody>
       <tr><td><code>data-sortable</code></td><td>&mdash;</td><td>Opt-in (boolean) on the container.</td></tr>
@@ -71,7 +76,8 @@ crumbLabel: Data Attributes
       <tr><td><code>data-sort-target</code></td><td>&mdash;</td><td>On external controls: CSS selector for the target container.</td></tr>
       <tr><td><code>data-sort-by</code></td><td>&mdash;</td><td>On a <code>&lt;button&gt;</code> control: the key to apply on click.</td></tr>
       <tr><td><code>data-sort-{key}</code></td><td>&mdash;</td><td>On list children: per-key sort value.</td></tr>
-      <tr><td><code>data-value</code></td><td>&mdash;</td><td>Per-cell override; takes precedence over <code>textContent</code>.</td></tr>
+      <tr><td><code>data-sort-value</code></td><td>&mdash;</td><td>Per-cell override; takes precedence over <code>textContent</code>. Same name as <code>&lt;data-table&gt;</code>. <code>data-value</code> is accepted as an alias.</td></tr>
+      <tr><td><code>data-label-sorted</code></td><td><code>Sorted: {sort}. {count} items</code></td><td>List mode: the announcement after a control sorts. <code>{sort}</code> is the control's text (the selected option, or the button's name); <code>{count}</code> the locale-formatted item count. On the container or any ancestor.</td></tr>
     </tbody>
   </table>
 </section>
@@ -87,8 +93,8 @@ crumbLabel: Data Attributes
 <section>
   <h2>Comparators</h2>
   <ul>
-    <li><strong>text</strong> &mdash; <code>localeCompare</code> with <code>sensitivity: "base"</code> and <code>numeric: true</code>. Case-insensitive; <code>"item 10"</code> sorts after <code>"item 2"</code>.</li>
-    <li><strong>number</strong> &mdash; <code>Number()</code> coercion; non-numeric values sort to the end.</li>
+    <li><strong>text</strong> &mdash; <code>Intl.Collator</code> in the container's language (its closest <code>[lang]</code>) with <code>sensitivity: "base"</code> and <code>numeric: true</code>. Case-insensitive; <code>"item 10"</code> sorts after <code>"item 2"</code>; Swedish "ö" sorts after "z" in a <code>lang="sv"</code> list.</li>
+    <li><strong>number</strong> &mdash; reads formatted text: grouping separators, currency symbols, units and spaces are ignored (<code>"1,234"</code>, <code>"$5"</code>, <code>"12 %"</code>, <code>"1.234,5"</code>, <code>"(4)"</code> as &minus;4). When both <code>,</code> and <code>.</code> appear the last one is the decimal separator; a lone <code>,</code> followed by exactly three digits is grouping. Non-numeric values sort to the end. For anything ambiguous put the raw number in <code>data-sort-value</code> / <code>data-sort-{key}</code>.</li>
     <li><strong>date</strong> &mdash; <code>Date.parse</code>. Use ISO 8601 (<code>YYYY-MM-DD</code>) or <code>&lt;time datetime&gt;</code> for unambiguous parsing.</li>
   </ul>
   <p>Empty / nullish values always sort to the end regardless of direction &mdash; "no value" is treated as "no opinion, put it last."</p>
@@ -97,9 +103,11 @@ crumbLabel: Data Attributes
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li>Table headers in table mode get <code>role="button"</code>, <code>tabindex="0"</code>, and reflected <code>aria-sort</code> (<code>ascending</code> / <code>descending</code> / <code>none</code>).</li>
-    <li>Headers respond to <kbd>Enter</kbd> and <kbd>Space</kbd>.</li>
-    <li>External controls use native <code>&lt;select&gt;</code> / <code>&lt;button&gt;</code> &mdash; native a11y.</li>
+    <li>Follows the <abbr title="ARIA Authoring Practices Guide">APG</abbr> sortable table: each <code>&lt;th&gt;</code> keeps its <code>columnheader</code> role and carries the reflected <a href="/docs/attributes/aria-states/"><code>aria-sort</code></a> (<code>ascending</code> / <code>descending</code> / <code>none</code>), so the column's cells keep their header.</li>
+    <li>The control is a native <code>&lt;button type="button" data-sort-button&gt;</code> inside the header, named by the header text. Focus, <kbd>Enter</kbd> and <kbd>Space</kbd> come from the platform; the header cell itself is not focusable.</li>
+    <li>The ⇅ / ↑ / ↓ glyph is drawn by the native table CSS from <code>aria-sort</code>, with empty alt text, so it is never announced twice. It is the same glyph set <code>&lt;data-table&gt;</code> uses.</li>
+    <li>External controls use native <code>&lt;select&gt;</code> / <code>&lt;button&gt;</code>. Button controls get <code>aria-pressed="true"</code> while their sort is the active one.</li>
+    <li>A list has no <code>aria-sort</code> to read, so after a control sorts a list, a polite announcement says what happened ("Sorted: Newest first. 24 items", localisable with <code>data-label-sorted</code>). Table sorts are not announced: the header's <code>aria-sort</code> already says it.</li>
   </ul>
 </section>
 

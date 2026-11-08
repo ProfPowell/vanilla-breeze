@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>download attribute</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="m">
+    <h1>Team contacts</h1>
+    <table>
+      <thead>
+        <tr><th scope="col">Name</th><th scope="col">Role</th><th scope="col">Email</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Amara Okafor</td><td>Design lead</td><td>amara@example.com</td></tr>
+        <tr><td>Jonas Weber</td><td>Front-end</td><td>jonas@example.com</td></tr>
+        <tr><td>Priya Raman</td><td>Accessibility</td><td>priya@example.com</td></tr>
+      </tbody>
+    </table>
+    <p data-layout="cluster" data-layout-gap="m">
+      <a href="data:text/csv;charset=utf-8,Name%2CRole%2CEmail%0AAmara%20Okafor%2CDesign%20lead%2Camara%40example.com%0AJonas%20Weber%2CFront-end%2Cjonas%40example.com%0APriya%20Raman%2CAccessibility%2Cpriya%40example.com%0A" download="team-contacts.csv">Download CSV</a>
+      <button type="button" id="export-json">Export as JSON</button>
+    </p>
+  </layout-stack>
+
+  <script type="module">
+    document.getElementById('export-json').addEventListener('click', () => {
+      const rows = [...document.querySelectorAll('tbody tr')].map((tr) => {
+        const [name, role, email] = [...tr.cells].map((td) => td.textContent);
+        return { name, role, email };
+      });
+      const blob = new Blob([JSON.stringify(rows, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'team-contacts.json';
+      link.click();
+      // Revoke later: revoking straight after click() can cancel the download.
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

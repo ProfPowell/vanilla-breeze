@@ -38,51 +38,20 @@ markdown-viewer[data-loading] {
   min-block-size: 2em;
 }
 
-/* Error fallback message */
-markdown-viewer[data-error]::after {
-  content: "Failed to load markdown";
-  display: block;
+/* Load-failure message: a real role="alert" element whose text comes from
+   data-label-error (shown only when no <pre> fallback is visible) */
+markdown-viewer > [data-md-error] {
+  margin: 0;
   padding: var(--size-s);
   color: var(--color-text-muted);
   font-size: var(--font-size-s);
   font-style: italic;
 }
 
-/* Hide error message if element has fallback content */
-markdown-viewer[data-error]:not(:empty)::after {
-  display: none;
-}
+/* --- Callout blocks (:::note|info|tip|warning|danger [title] … :::) ---
+   Rendered as <aside data-callout="kind">, the shared primitive in
+   src/shapes/callouts.css. Only the spacing in flowing markdown lives here. */
 
-/* --- Callout blocks (rendered by VB callout extension) --- */
-
-markdown-viewer .callout {
-  padding: var(--size-s) var(--size-m);
-  border-inline-start: var(--border-width-thick, 3px) solid;
-  border-radius: var(--radius-s);
+markdown-viewer [data-callout] {
   margin-block: var(--size-m);
-}
-
-markdown-viewer .callout[data-kind="warning"] {
-  border-color: var(--color-warning, oklch(80% 0.15 85));
-  background: var(--color-warning-subtle, oklch(95% 0.03 85));
-}
-
-markdown-viewer .callout[data-kind="info"] {
-  border-color: var(--color-info, oklch(60% 0.15 250));
-  background: var(--color-info-subtle, oklch(95% 0.03 250));
-}
-
-markdown-viewer .callout[data-kind="tip"] {
-  border-color: var(--color-success, oklch(65% 0.18 145));
-  background: var(--color-success-subtle, oklch(95% 0.03 145));
-}
-
-markdown-viewer .callout[data-kind="danger"] {
-  border-color: var(--color-error, oklch(55% 0.22 25));
-  background: var(--color-error-subtle, oklch(95% 0.03 25));
-}
-
-markdown-viewer .callout[data-kind="note"] {
-  border-color: var(--color-text-muted, oklch(70% 0.02 260));
-  background: var(--color-surface-raised, oklch(96% 0.005 260));
 }

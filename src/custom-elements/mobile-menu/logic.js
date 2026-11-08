@@ -1,57 +1,59 @@
 /**
  * mobile-menu — Responsive breakpoint observer
  *
- * Sets [data-mobile] on the element when the viewport is below the
- * configured breakpoint. Also hides sibling nav and site-tools in the
- * parent header when mobile mode is active.
+ * Sets [data-mobile] on the element while the viewport is at or below the
+ * configured breakpoint. The author supplies the trigger button and the
+ * popover panel; this element only decides when they are shown.
  *
- * Progressive enhancement: without JS, the menu is hidden. With JS,
- * the breakpoint observer activates the toggle + popover behavior.
+ * Sibling nav / nav-bar / site-tools in the parent <header> are hidden by
+ * CSS (`header:has(> mobile-menu[data-mobile])`), not inline styles, so
+ * removing the element restores them. A CSS media query covers the default
+ * 52rem breakpoint before (or without) JS, so there is no layout shift.
+ *
+ * The panel is a native popover: Esc closes it and focus returns to the
+ * trigger. It is NOT modal — no focus trap, no inert page, no scroll lock.
  */
 
 const DEFAULT_BREAKPOINT = '52rem';
 
 class MobileMenu extends HTMLElement {
+  static observedAttributes = ['breakpoint'];
+
   /** @type {MediaQueryList|null} */
   #mql = null;
 
   connectedCallback() {
-    const bp = this.getAttribute('breakpoint') || DEFAULT_BREAKPOINT;
-    this.#mql = matchMedia(`(max-width: ${bp})`);
-    this.#mql.addEventListener('change', this.#onBreakpoint);
-    this.#onBreakpoint(/** @type {any} */ (undefined));
+    this.#observe();
   }
 
   disconnectedCallback() {
+    this.#unobserve();
+  }
+
+  attributeChangedCallback() {
+    if (this.isConnected) this.#observe();
+  }
+
+  #observe() {
+    this.#unobserve();
+    const bp = this.getAttribute('breakpoint') || DEFAULT_BREAKPOINT;
+    this.#mql = matchMedia(`(max-width: ${bp})`);
+    this.#mql.addEventListener('change', this.#onBreakpoint);
+    this.#onBreakpoint();
+  }
+
+  #unobserve() {
     this.#mql?.removeEventListener('change', this.#onBreakpoint);
     this.#mql = null;
   }
 
-  #onBreakpoint = (/** @type {Event | undefined} */ _e) => {
+  #onBreakpoint = () => {
     const mobile = this.#mql?.matches ?? false;
-
-    if (mobile) {
-      this.setAttribute('data-mobile', '');
-    } else {
-      this.removeAttribute('data-mobile');
-      // Close panel if open when switching to desktop
+    this.toggleAttribute('data-mobile', mobile);
+    if (!mobile) {
+      // Close the panel when switching to desktop
       const panel = /** @type {HTMLElement | null} */ (this.querySelector('[popover]'));
-      if (panel?.matches(':popover-open')) {
-        panel.hidePopover?.();
-      }
-    }
-
-    // Toggle sibling visibility in parent header
-    const header = this.closest('header');
-    if (header) {
-      for (const sibling of header.children) {
-        if (sibling === this) continue;
-        // `nav-bar` is the primary-nav wrapper; without it here the desktop nav
-        // stays visible on mobile when authors wrap <nav> in <nav-bar>.
-        if (sibling.matches('nav, nav-bar, site-tools')) {
-          /** @type {HTMLElement} */ (sibling).style.display = mobile ? 'none' : '';
-        }
-      }
+      if (panel?.matches(':popover-open')) panel.hidePopover?.();
     }
   };
 }

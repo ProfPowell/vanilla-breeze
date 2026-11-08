@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>form attribute: controls outside their form</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-stack data-layout-gap="l">
+      <form id="fa-profile" class="stacked">
+        <form-field>
+          <label for="fa-name">Display name</label>
+          <input type="text" id="fa-name" name="display_name" value="Ana Lima" />
+        </form-field>
+      </form>
+
+      <section data-layout="stack" data-layout-gap="s" aria-label="Outside the form element">
+        <p><strong>Outside the form element</strong></p>
+
+        <form-field>
+          <label for="fa-tz">Time zone</label>
+          <select id="fa-tz" name="timezone" form="fa-profile">
+            <option>Europe/Lisbon</option>
+            <option>America/Sao_Paulo</option>
+          </select>
+          <output class="hint" for="fa-tz">form="fa-profile": submitted with the profile.</output>
+        </form-field>
+
+        <fieldset form="fa-profile" data-layout="stack" data-layout-gap="xs">
+          <legend>Notifications (fieldset has form="fa-profile")</legend>
+          <label><input type="checkbox" name="notify_email" checked /> Email</label>
+          <label><input type="checkbox" name="notify_sms" form="fa-profile" checked /> SMS (own form attribute)</label>
+        </fieldset>
+        <p>Only SMS is submitted: a fieldset's <code>form</code> attribute does not pass to its children.</p>
+      </section>
+
+      <footer class="actions">
+        <button type="submit" form="fa-profile">Save profile</button>
+        <button type="reset" form="fa-profile" class="secondary">Reset</button>
+      </footer>
+      <pre><output id="fa-result">Submitted data appears here.</output></pre>
+    </layout-stack>
+  </layout-center>
+
+  <script type="module">
+    const form = document.querySelector('#fa-profile');
+    const result = document.querySelector('#fa-result');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      result.textContent = [...new FormData(form)].map(([name, value]) => `${name} = ${value}`).join('\n');
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

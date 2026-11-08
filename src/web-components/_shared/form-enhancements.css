@@ -21,19 +21,48 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* State colours use the *-text tokens: they are tuned for >= 4.5:1 text
+   contrast in both light and dark mode (the raw --color-warning is ~2.8:1
+   on white). Themes retune the tokens, not this rule. */
 .textarea-counter[data-state="warning"] {
-  color: oklch(75% 0.18 75);
+  color: var(--color-warning-text);
 }
 
 .textarea-counter[data-state="error"] {
-  color: var(--color-error, oklch(55% 0.2 25));
+  color: var(--color-error-text);
+  font-weight: 600;
 }
 
 /* --------------------------------------------------------------------------
    data-grow: Auto-expanding textarea
+   The min-size override (rows) lives with the textarea base rule in
+   native-elements/input/styles.css. Where field-sizing is supported the
+   textarea sizes itself and, past data-max-rows, scrolls normally (the JS
+   writes --grow-max-rows; without JS, browsers with typed attr() read
+   data-max-rows directly, others grow without a cap). Only the JS fallback
+   path hides overflow while it measures — it marks itself
+   data-grow-init="fallback".
    -------------------------------------------------------------------------- */
-textarea[data-grow][data-grow-init] {
+@supports (field-sizing: content) {
+  textarea[data-grow] {
+    field-sizing: content;
+    resize: none;
+  }
+
+  textarea[data-grow][data-max-rows] {
+    /* Rows plus padding and border (border-box), so 8 rows shows 8 lines. */
+    max-block-size: calc(
+      var(--grow-max-rows, attr(data-max-rows type(<number>), 999)) * 1lh
+      + 2 * var(--input-padding-inline, 0.5rem)
+      + 2 * var(--border-width-thin, 1px)
+    );
+    overflow-y: auto;
+  }
+}
+
+textarea[data-grow][data-grow-init="fallback"] {
   overflow: hidden;
+  resize: none;
 }
 
 /* --------------------------------------------------------------------------
@@ -142,12 +171,18 @@ textarea[data-grow][data-grow-init] {
 .range-bubble,
 .range-labels span {
   inset-inline-start: calc(var(--_range-thumb) / 2 + var(--range-frac, 0) * (100% - var(--_range-thumb)));
+  /* Centre on the thumb. translate is physical, so the half-width pull back
+     toward the inline start flips sign under RTL. */
+  translate: var(--_range-centre, -50%) 0;
+}
+
+.range-wrapper:dir(rtl) {
+  --_range-centre: 50%;
 }
 
 .range-bubble {
   position: absolute;
   inset-block-start: 0;
-  translate: -50% 0;
   background: var(--color-surface-raised, #333);
   color: var(--color-text);
   padding: var(--size-3xs) var(--size-xs);
@@ -182,7 +217,6 @@ textarea[data-grow][data-grow-init] {
 
 .range-labels span {
   position: absolute;
-  translate: -50% 0;
   font-size: var(--font-size-xs, 0.75rem);
   color: var(--color-text-muted);
   white-space: nowrap;
@@ -190,10 +224,13 @@ textarea[data-grow][data-grow-init] {
 
 /* --------------------------------------------------------------------------
    data-upload: File upload drop zone
+   The native input is stretched transparently over the zone: it is the one
+   control (click target, tab stop, form value). The zone draws its focus
+   ring because the transparent input cannot show one.
    -------------------------------------------------------------------------- */
 .upload-zone {
   position: relative;
-  border: 2px dashed var(--color-border);
+  border: 2px dashed var(--control-border, var(--color-border-strong));
   border-radius: var(--radius-m);
   padding: var(--size-l);
   text-align: center;
@@ -206,17 +243,28 @@ textarea[data-grow][data-grow-init] {
   border-color: var(--color-interactive);
 }
 
+.upload-zone:has(input[type="file"]:focus-visible) {
+  border-color: var(--color-interactive);
+  outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+  outline-offset: var(--focus-ring-offset, 2px);
+}
+
 .upload-zone[data-dragover] {
   border-color: var(--color-interactive);
   background: color-mix(in oklab, var(--color-interactive) 5%, transparent);
 }
 
-/* Visually hide the native file input */
+.upload-zone:has(input[type="file"]:disabled) {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Transparent native input over the whole zone */
 .upload-zone input[type="file"] {
   position: absolute;
   inset: 0;
   opacity: 0;
-  cursor: var(--cursor-custom-pointer, pointer);
+  cursor: inherit;
   inline-size: 100%;
   block-size: 100%;
 }
@@ -226,28 +274,21 @@ textarea[data-grow][data-grow-init] {
   flex-direction: column;
   align-items: center;
   gap: var(--size-xs);
+  margin: 0;
   color: var(--color-text-muted);
   pointer-events: none;
 }
 
-.upload-prompt svg {
-  color: var(--color-text-muted);
-}
-
 .upload-prompt small {
   font-size: var(--font-size-xs, 0.75rem);
-  color: var(--color-text-muted);
 }
 
 .upload-browse {
-  all: unset;
   color: var(--color-interactive);
   text-decoration: underline;
-  cursor: var(--cursor-custom-pointer, pointer);
-  pointer-events: auto;
 }
 
-.upload-browse:hover {
+.upload-zone:hover .upload-browse {
   text-decoration: none;
 }
 
@@ -289,8 +330,32 @@ textarea[data-grow][data-grow-init] {
   margin-inline-start: var(--size-s);
 }
 
+/* Rejected-file messages (role="status"); empty takes no space */
+.upload-status {
+  margin: 0;
+  font-size: var(--font-size-s);
+  color: var(--color-error-text);
+  text-align: start;
+}
+
+.upload-status:not(:empty) {
+  margin-block-start: var(--size-xs);
+}
+
+@media (forced-colors: active) {
+  .upload-zone:has(input[type="file"]:focus-visible) {
+    outline-color: Highlight;
+  }
+
+  .upload-zone[data-dragover] {
+    border-color: Highlight;
+  }
+}
+
 /* --------------------------------------------------------------------------
    data-toggle-tags: Checkbox pill chips
+   The checkbox is clipped to 1px (not display:none) so it keeps focus,
+   keyboard toggling and form participation; the label draws the chip.
    -------------------------------------------------------------------------- */
 [data-toggle-tags] {
   display: flex;
@@ -301,7 +366,7 @@ textarea[data-grow][data-grow-init] {
 }
 
 [data-toggle-tags] > legend {
-  float: left; /* Intentional physical: float inline-start has limited support */
+  float: inline-start;
   inline-size: 100%;
   margin-block-end: var(--size-xs);
   font-weight: 600;
@@ -311,12 +376,14 @@ textarea[data-grow][data-grow-init] {
   display: inline-flex;
   align-items: center;
   padding: var(--size-2xs) var(--size-s);
-  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border: var(--border-width-thin, 1px) solid var(--control-border, var(--color-border));
   border-radius: var(--radius-pill, 999px);
   cursor: var(--cursor-custom-pointer, pointer);
   font-size: var(--font-size-s);
   user-select: none;
-  transition: all var(--duration-fast, 150ms) var(--ease-default, ease);
+  transition: background-color var(--duration-fast, 150ms) var(--ease-default, ease),
+              border-color var(--duration-fast, 150ms) var(--ease-default, ease),
+              color var(--duration-fast, 150ms) var(--ease-default, ease);
 }
 
 [data-toggle-tags] label:hover {
@@ -334,18 +401,59 @@ textarea[data-grow][data-grow-init] {
 
 [data-toggle-tags] label:has(:checked) {
   background: var(--color-interactive);
-  color: white;
+  color: var(--color-text-on-interactive-auto, var(--color-text-on-primary, white));
   border-color: var(--color-interactive);
 }
 
 [data-toggle-tags] label:has(:focus-visible) {
-  outline: 2px solid var(--color-interactive);
-  outline-offset: 2px;
+  outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+  outline-offset: var(--focus-ring-offset, 2px);
 }
 
-[data-toggle-tags] label:has(:disabled) {
+/* Author-disabled boxes, and boxes data-max blocked (aria-disabled keeps
+   them focusable) */
+[data-toggle-tags] label:has(:disabled),
+[data-toggle-tags] label:has([aria-disabled="true"]) {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* data-max limit message (role="status"). Kept rendered while empty (a live
+   region must exist before its text changes) but out of flow, so it adds
+   no flex row. */
+[data-toggle-tags] > .toggle-tags-status {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+}
+
+[data-toggle-tags] > .toggle-tags-status:empty {
+  position: absolute;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-toggle-tags] label {
+    transition: none;
+  }
+}
+
+/* Forced colours replaces backgrounds and border colours, which would make
+   checked and unchecked chips identical: paint the checked chip with the
+   system selection colours instead. */
+@media (forced-colors: active) {
+  [data-toggle-tags] label:has(:checked) {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+
+  [data-toggle-tags] label:has(:disabled),
+  [data-toggle-tags] label:has([aria-disabled="true"]) {
+    color: GrayText;
+    border-color: GrayText;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -422,6 +530,8 @@ textarea[data-grow][data-grow-init] {
 
 /* --------------------------------------------------------------------------
    data-color: Enhanced color input with swatch and hex
+   The native input is the only control: a transparent layer over the
+   aria-hidden display, so clicks, focus and the keyboard all land on it.
    -------------------------------------------------------------------------- */
 .color-wrapper {
   position: relative;
@@ -431,6 +541,7 @@ textarea[data-grow][data-grow-init] {
 .color-wrapper input[type="color"] {
   position: absolute;
   inset: 0;
+  z-index: 1;
   opacity: 0;
   inline-size: 100%;
   block-size: 100%;
@@ -441,25 +552,31 @@ textarea[data-grow][data-grow-init] {
 }
 
 .color-display {
-  all: unset;
   display: inline-flex;
   align-items: center;
   gap: var(--size-xs);
   padding: var(--size-xs) var(--size-s);
   border: var(--border-width-thin, 1px) solid var(--color-border);
   border-radius: var(--radius-m);
-  cursor: var(--cursor-custom-pointer, pointer);
   font: inherit;
   transition: border-color var(--duration-fast, 150ms);
 }
 
-.color-display:hover {
+.color-wrapper:hover .color-display {
   border-color: var(--color-interactive);
 }
 
-.color-wrapper:focus-within .color-display {
+.color-wrapper:has(input:focus-visible) .color-display {
   border-color: var(--color-interactive);
   box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+}
+
+.color-wrapper:has(input:disabled) {
+  opacity: 0.5;
+
+  & input[type="color"] {
+    cursor: not-allowed;
+  }
 }
 
 .color-swatch {
@@ -471,8 +588,27 @@ textarea[data-grow][data-grow-init] {
   flex-shrink: 0;
 }
 
+.color-display > .color-swatch {
+  background: var(--color-swatch-value, transparent);
+}
+
 .color-hex {
   font-family: var(--font-mono, monospace);
   font-size: var(--font-size-s);
   text-transform: uppercase;
+}
+
+/* Forced colors would repaint the swatch background with a system colour,
+   so it would show no colour at all; keep the chosen colour. The halo is a
+   box-shadow, which forced colors drops: draw an outline instead. */
+@media (forced-colors: active) {
+  .color-display > .color-swatch {
+    forced-color-adjust: none;
+    border-color: CanvasText;
+  }
+
+  .color-wrapper:has(input:focus-visible) .color-display {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
 }

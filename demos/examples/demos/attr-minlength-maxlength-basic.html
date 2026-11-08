@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>minlength and maxlength: length limits with a live counter</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <form data-validate data-submit="event" class="stacked" id="len-form">
+      <form-field>
+        <label for="len-handle">Display name</label>
+        <input type="text" id="len-handle" name="handle" required minlength="3" maxlength="24" autocomplete="nickname"
+               data-message-tooshort="Use at least 3 characters." />
+        <output class="hint" for="len-handle">3 to 24 characters.</output>
+        <output class="error" for="len-handle" aria-live="polite">Check the display name.</output>
+      </form-field>
+
+      <form-field>
+        <label for="len-password">New password</label>
+        <input id="len-password" type="password" name="password" required minlength="12" autocomplete="new-password"
+               data-message-tooshort="Use at least 12 characters."
+               data-message-valuemissing="Choose a password." />
+        <output class="hint" for="len-password">At least 12 characters. A longer passphrase is stronger than symbols.</output>
+        <output class="error" for="len-password" aria-live="polite">Check the password.</output>
+      </form-field>
+
+      <form-field>
+        <label for="len-bio">Bio</label>
+        <textarea id="len-bio" name="bio" rows="3" maxlength="160" data-count></textarea>
+        <output class="hint" for="len-bio">Shown on your public profile.</output>
+      </form-field>
+
+      <button type="submit">Save profile</button>
+      <pre><output id="len-result">Submitted data appears here.</output></pre>
+    </form>
+  </layout-center>
+
+  <script type="module">
+    const result = document.querySelector('#len-result');
+    document.querySelector('#len-form').addEventListener('vb:submit', (e) => {
+      result.textContent = [...e.detail]
+        .map(([name, value]) => (name === 'password' ? `${name} = (${value.length} characters)` : `${name} = ${value}`))
+        .join('\n');
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

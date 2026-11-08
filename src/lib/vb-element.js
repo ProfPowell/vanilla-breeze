@@ -26,6 +26,17 @@ class VBElement extends HTMLElement {
   /** @type {ElementInternals | undefined} */
   #internals;
 
+  constructor() {
+    super();
+    // A fresh instance has never run setup(), so a data-upgraded it already
+    // carries is stale: cloneNode()/importNode() copy it from an upgraded
+    // original (the clone is upgraded with the copied attributes in place),
+    // and saved/serialised markup can carry it too. Left in place it would
+    // make connectedCallback skip setup() and leave the copy inert, and let
+    // attributeChangedCallback guards treat an unwired element as live.
+    if (this.hasAttribute('data-upgraded')) this.removeAttribute('data-upgraded');
+  }
+
   connectedCallback() {
     // Suppresses a repeated connect while still connected. It does NOT survive
     // disconnect (see disconnectedCallback), so setup() still re-runs on every

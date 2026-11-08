@@ -5,59 +5,177 @@ import { updateRelativeTimes } from '../../lib/time-relative.js';
 /**
  * time-index: Interactive changelog/timeline component
  *
- * Enhances a static changelog with relative dates, filtering by
- * year/month/version, sort toggle, and a "recently updated pages" feed.
+ * Enhances a static changelog with relative dates, a sort toggle, a version
+ * filter and an optional "recently updated pages" feed.
  *
- * @attr {string}  group       - 'month' (default) or 'version'
- * @attr {string}  view        - 'date' or 'version' — grouping view
- * @attr {boolean} versions    - Enable version jump select
- * @attr {string}  updates-src - URL for recently updated pages JSON
+ * Entry model:
+ * - One `.changelog-entries` container: its `li` / `article` / `section`
+ *   children are the entries (sorted and filtered).
+ * - Several `.changelog-entries` (one per release): the top-level children of
+ *   the host that hold them are the releases. Sorting reverses the releases
+ *   and the entries inside each; filtering shows or hides whole releases.
+ *
+ * An entry's version is its `data-version`, else the text of its own
+ * `.version-tag`, else an id of the form `v2-1-0` (read as "v2.1.0").
+ *
+ * @attr {boolean} versions                 - Add a version filter select
+ * @attr {string}  updates-src              - URL of a JSON array of { title, href|url, modified|date } for a "recently updated pages" feed
+ * @attr {string}  data-label-controls      - Accessible name of the controls nav (default "Timeline controls")
+ * @attr {string}  data-label-sort          - Sort toggle text (default "Oldest first"); state is aria-pressed
+ * @attr {string}  data-label-filter        - Accessible name of the version select (default "Filter by version")
+ * @attr {string}  data-label-all           - "All" option text (default "All versions")
+ * @attr {string}  data-label-status        - Filter announcement; {count}, {total}, {version} (default "Showing {count} of {total} entries for {version}")
+ * @attr {string}  data-label-status-all    - Unfiltered announcement; {total} (default "Showing all {total} entries")
+ * @attr {string}  data-label-recent        - Feed heading (default "Recently updated pages")
  *
  * @example
- * <time-index group="month" versions>
- *   <!-- static changelog entries -->
+ * <time-index versions>
+ *   <ol class="changelog-entries">
+ *     <li><h3><span class="version-tag">v2.1.0</span> …</h3> …</li>
+ *   </ol>
  * </time-index>
  */
+
+let timeIndexSeq = 0;
+
+/** Allow only http(s) URLs (relative ones resolve against the page). */
+function safeHref(raw) {
+  if (typeof raw !== 'string' || !raw.trim()) return null;
+  try {
+    const url = new URL(raw, document.baseURI);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Absolute, localised date for a datetime attribute. Date-only values are
+ * formatted in UTC so they never shift a day in negative-offset zones.
+ */
+function absoluteDate(dt, lang) {
+  const date = new Date(dt);
+  if (Number.isNaN(date.getTime())) return '';
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(dt);
+  try {
+    return new Intl.DateTimeFormat(lang || undefined, dateOnly
+      ? { dateStyle: 'long', timeZone: 'UTC' }
+      : { dateStyle: 'long', timeStyle: 'short' }).format(date);
+  } catch {
+    return dt;
+  }
+}
+
 class TimeIndex extends VBElement {
+  #uid = `ti${++timeIndexSeq}`;
+  /** @type {boolean} */
+  #isReversed = false;
+  #feedPending = false;
+
   setup() {
+    this.#titleTimes(this);
     updateRelativeTimes(this);
     this.#addControls();
 
     const updatesSrc = this.getAttribute('updates-src');
-    if (updatesSrc) {
+    if (updatesSrc && !this.#feedPending && !this.querySelector(':scope > section[data-recent-pages]')) {
       this.#loadRecentUpdates(updatesSrc);
     }
+  }
+
+  /**
+   * Author-overridable UI string from a data-label-* attribute.
+   * @param {string} key dataset key suffix, e.g. 'Sort' for data-label-sort
+   * @param {string} fallback
+   */
+  #label(key, fallback) {
+    return this.dataset[`label${key}`] || fallback;
+  }
+
+  /** Keep the absolute date reachable once relative text replaces it. */
+  #titleTimes(root) {
+    for (const el of root.querySelectorAll('time[data-relative][datetime]')) {
+      if (el.hasAttribute('title') || el.closest('page-info')) continue;
+      const lang = el.closest('[lang]')?.getAttribute('lang') || '';
+      const abs = absoluteDate(el.getAttribute('datetime'), lang);
+      if (abs) el.setAttribute('title', abs);
+    }
+  }
+
+  /** @returns {HTMLElement[]} every .changelog-entries container */
+  #containers() {
+    return /** @type {HTMLElement[]} */ ([...this.querySelectorAll('.changelog-entries')]);
+  }
+
+  /** Entries of one container: its li / article / section children. */
+  #entriesOf(container) {
+    return /** @type {HTMLElement[]} */ ([...container.children]
+      .filter(el => /^(LI|ARTICLE|SECTION)$/.test(el.tagName)));
+  }
+
+  /** The units the filter acts on (see the entry model above). */
+  #units() {
+    const containers = this.#containers();
+    if (containers.length === 1) return this.#entriesOf(containers[0]);
+    const units = new Set();
+    for (const c of containers) {
+      let top = c;
+      while (top.parentElement && top.parentElement !== this) top = top.parentElement;
+      if (top.parentElement === this) units.add(top);
+    }
+    return /** @type {HTMLElement[]} */ ([...units]);
+  }
+
+  /** @param {HTMLElement} el */
+  #versionOf(el) {
+    if (el.dataset.version) return el.dataset.version.trim();
+    const tag = el.querySelector('.version-tag')?.textContent?.trim();
+    if (tag) return tag;
+    const m = /^v(\d+(?:-[0-9a-z]+)*)$/i.exec(el.id);
+    return m ? `v${m[1].replace(/-/g, '.')}` : '';
   }
 
   #addControls() {
     // Reconnect guard: VBElement re-runs setup() on every reconnect, which
     // would prepend a second controls <nav>. Skip if ours is already in place.
-    if (this.querySelector('[data-timeline-controls]')) return;
+    // The listeners below are plain addEventListener on persisted nodes, so
+    // they survive the reconnect.
+    if (this.querySelector(':scope > [data-timeline-controls]')) return;
 
     const controls = document.createElement('nav');
     controls.setAttribute('data-timeline-controls', '');
-    controls.setAttribute('aria-label', 'Timeline controls');
+    controls.setAttribute('aria-label', this.#label('Controls', 'Timeline controls'));
 
-    /* Sort toggle */
+    /* Sort toggle: stable label, state in aria-pressed */
     const sortBtn = document.createElement('button');
     sortBtn.type = 'button';
-    sortBtn.textContent = 'Oldest first';
+    sortBtn.textContent = this.#label('Sort', 'Oldest first');
+    sortBtn.setAttribute('aria-pressed', 'false');
     sortBtn.addEventListener('click', () => {
       this.#toggleSort();
-      sortBtn.textContent = this.#isReversed ? 'Latest first' : 'Oldest first';
+      sortBtn.setAttribute('aria-pressed', String(this.#isReversed));
     });
     controls.append(sortBtn);
 
     /* Version filter */
     if (this.hasAttribute('versions')) {
-      const versions = this.#collectVersions();
+      const versions = [...new Set(this.#units().map(u => this.#versionOf(u)).filter(Boolean))];
       if (versions.length > 0) {
         const select = document.createElement('select');
-        select.setAttribute('aria-label', 'Filter by version');
-        select.innerHTML = `<option value="">All versions</option>` +
-          versions.map(v => `<option value="${v}">${v}</option>`).join('');
-        select.addEventListener('change', () => this.#filterByVersion(select.value));
-        controls.append(select);
+        select.setAttribute('aria-label', this.#label('Filter', 'Filter by version'));
+        select.append(new Option(this.#label('All', 'All versions'), ''));
+        for (const v of versions) select.append(new Option(v, v));
+
+        const status = document.createElement('output');
+        status.className = 'visually-hidden';
+        status.setAttribute('role', 'status');
+        status.setAttribute('aria-live', 'polite');
+        status.setAttribute('data-timeline-status', '');
+
+        select.addEventListener('change', () => {
+          status.textContent = this.#filterByVersion(select.value);
+        });
+        controls.append(select, status);
       }
     }
 
@@ -70,76 +188,99 @@ class TimeIndex extends VBElement {
     else this.prepend(controls);
   }
 
-  /** @type {boolean} */
-  #isReversed = false;
+  /** Move nodes into each other's slots in reverse order (gaps preserved). */
+  #reverseInPlace(nodes) {
+    if (nodes.length < 2) return;
+    const slots = nodes.map(n => {
+      const mark = document.createComment('');
+      n.before(mark);
+      return mark;
+    });
+    const reversed = [...nodes].reverse();
+    slots.forEach((mark, i) => mark.replaceWith(reversed[i]));
+  }
 
   #toggleSort() {
     this.#isReversed = !this.#isReversed;
-    const container = this.querySelector('.changelog-entries') || this;
-    const sections = [...container.children].filter(el => el.tagName === 'SECTION' || el.tagName === 'ARTICLE');
-    sections.reverse();
-    for (const section of sections) {
-      container.append(section);
-    }
+    const containers = this.#containers();
+    if (containers.length !== 1) this.#reverseInPlace(this.#units());
+    for (const c of containers) this.#reverseInPlace(this.#entriesOf(c));
   }
 
-  #collectVersions() {
-    const tags = this.querySelectorAll('.version-tag');
-    const versions = new Set();
-    for (const tag of tags) {
-      const v = tag.textContent.trim();
-      if (v) versions.add(v);
-    }
-    return [...versions];
-  }
-
+  /**
+   * Show only the units whose version matches; '' shows all.
+   * @returns {string} announcement for the live region
+   */
   #filterByVersion(version) {
-    const sections = /** @type {NodeListOf<HTMLElement>} */ (this.querySelectorAll(':is(section, article)[id^="v"]'));
-    const target = version.replace(/\./g, '-');
-    for (const section of sections) {
-      section.hidden = !!version && section.id !== target;
+    const units = this.#units();
+    let shown = 0;
+    for (const unit of units) {
+      unit.hidden = !!version && this.#versionOf(unit) !== version;
+      if (!unit.hidden) shown++;
     }
-
-    if (!sections.length) {
-      const articles = /** @type {NodeListOf<HTMLElement>} */ (this.querySelectorAll('.changelog-entries article'));
-      for (const article of articles) {
-        const tag = article.querySelector('.version-tag');
-        article.hidden = !!version && tag?.textContent?.trim() !== version;
-      }
+    const total = String(units.length);
+    if (!version) {
+      return this.#label('StatusAll', 'Showing all {total} entries').replaceAll('{total}', total);
     }
+    return this.#label('Status', 'Showing {count} of {total} entries for {version}')
+      .replaceAll('{count}', String(shown))
+      .replaceAll('{total}', total)
+      .replaceAll('{version}', version);
   }
 
   async #loadRecentUpdates(url) {
+    this.#feedPending = true;
     try {
       const res = await fetch(url);
       if (!res.ok) return;
       const pages = await res.json();
       if (!Array.isArray(pages) || !pages.length) return;
+      // A reconnect while the fetch was in flight must not add a second feed.
+      if (this.querySelector(':scope > section[data-recent-pages]')) return;
 
+      const headingId = `${this.#uid}-recent-heading`;
       const section = document.createElement('section');
-      section.setAttribute('aria-labelledby', 'recent-pages-heading');
-      section.innerHTML = `
-        <h2 id="recent-pages-heading">Recently Updated Pages</h2>
-        <ul class="recent-pages">
-          ${pages.slice(0, 10).map(p => `
-            <li>
-              <a href="${p.href || p.url}">${p.title}</a>
-              <time datetime="${p.modified || p.date}" data-relative>${p.modified || p.date}</time>
-            </li>
-          `).join('')}
-        </ul>
-      `;
+      section.setAttribute('data-recent-pages', '');
+      section.setAttribute('aria-labelledby', headingId);
 
-      const entries = this.querySelector('.changelog-entries') || this.querySelector('[data-timeline-controls]');
-      if (entries) {
-        entries.after(section);
-      } else {
-        this.append(section);
+      const heading = document.createElement('h2');
+      heading.id = headingId;
+      heading.textContent = this.#label('Recent', 'Recently updated pages');
+
+      const list = document.createElement('ul');
+      list.className = 'recent-pages';
+      for (const p of pages.slice(0, 10)) {
+        if (!p || typeof p !== 'object') continue;
+        const href = safeHref(p.href ?? p.url);
+        const title = typeof p.title === 'string' ? p.title.trim() : '';
+        if (!href || !title) continue;
+
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = href;
+        a.textContent = title;
+        li.append(a);
+
+        const when = p.modified ?? p.date;
+        if (typeof when === 'string' && !Number.isNaN(new Date(when).getTime())) {
+          const time = document.createElement('time');
+          time.dateTime = when;
+          time.setAttribute('data-relative', '');
+          time.textContent = when;
+          li.append(time);
+        }
+        list.append(li);
       }
+      if (!list.children.length) return;
 
+      section.append(heading, list);
+      this.append(section);
+      this.#titleTimes(section);
       updateRelativeTimes(section);
     } catch {
-      /* Network error — skip */
+      /* Network or JSON error — skip the feed */
+    } finally {
+      this.#feedPending = false;
     }
   }
 }

@@ -7,9 +7,21 @@
      See admin/specs/layout-value-vocabulary-v1.md. */
   --_min: var(--layout-min, var(--_min-token, 15rem));
 
+  /* Private props are unregistered, so they inherit: an outer
+     data-layout-gap="xl" / data-layout-min="xl" would otherwise reach a
+     nested grid that set nothing. Reset the variant-only ones on every host
+     (the variant rules below are more specific and win). Not @property —
+     --_gap is shared with nav, carousel-wc and others that DO rely on
+     inheritance from host to inner element. */
+  --_min-token: initial;
+  --_gap: initial;
+
   display: grid;
   gap: var(--_gap, var(--size-m));
-  grid-template-columns: repeat(auto-fit, minmax(var(--_min), 1fr));
+  /* min(…, 100%) clamps a track to the container: without it a grid
+     narrower than the min (data-layout-min="xl" in a 300px column) gets
+     one track wider than itself and overflows. */
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--_min), 100%), 1fr));
 
   &[data-layout-min="xs"] { --_min-token: 8rem; }
   &[data-layout-min="s"]  { --_min-token: 10rem; }
@@ -29,10 +41,14 @@
   &[data-layout-gap="3xl"]   { --_gap: var(--size-3xl); }
 
   /* Subgrid: align child internals (header/content/footer) across grid
-     siblings. Default spans 3 rows (header + content + footer).
+     siblings. Bare (or "3") spans 3 rows (header + content + footer).
      Use data-layout-subgrid="2" for title+body cards,
-     data-layout-subgrid="4" for header+content+footer+meta. */
-  &[data-layout-subgrid] > * {
+     data-layout-subgrid="4" for header+content+footer+meta. Any other value
+     falls back to the bare 3-row span. The subgridded rows inherit the
+     grid's row gap, so data-layout-gap also spaces the parts inside each
+     child; set row-gap on the children to override. */
+  &[data-layout-subgrid] > *,
+  &[data-layout-subgrid="3"] > * {
     display: grid;
     grid-row: span 3;
     grid-template-rows: subgrid;
@@ -50,10 +66,7 @@
     grid-template-rows: subgrid;
   }
 
-  /* layout-card subgrid: override card's own grid-template in a subgrid parent */
-  &[data-layout-subgrid] > layout-card:has(> :is(header, section, footer)) {
-    grid-template-rows: subgrid;
-  }
+  /* layout-card children: the card owns its subgrid rule (layout-card/styles.css). */
 }
 
 /* Fallback: browsers without subgrid revert to independent sizing */
@@ -63,7 +76,9 @@
   }
 }
 
-/* No hard narrow-container fallback: auto-fit already collapses columns as
-   the container shrinks, and a blanket `1fr` below 400px overrode
+/* No hard narrow-container fallback: auto-fit collapses the column count as
+   the container shrinks and the min(…, 100%) clamp above stops the last
+   track overflowing. A blanket `1fr` below 400px overrode
    data-layout-min="xs|s" on every phone (main/article/section are all
-   containers). The attribute fork used to carry that fallback. */
+   containers), and a `@container card (width < 200px)` micro-card rule in
+   layout-attributes.css never won the cascade — both are gone. */

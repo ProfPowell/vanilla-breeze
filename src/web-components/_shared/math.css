@@ -32,10 +32,12 @@ span[data-math-rendered] {
   display: inline;
 }
 
-/* Numbered equations — grid with equation number */
+/* Numbered equations — math stretches, copy button + number sit at the end */
 [data-math-numbered] {
   display: grid !important;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr;
+  grid-auto-flow: column;
+  grid-auto-columns: auto;
   align-items: center;
   gap: var(--size-l, 1.5rem);
 }
@@ -49,15 +51,22 @@ span[data-math-rendered] {
   white-space: nowrap;
 }
 
-/* Copyable hover affordance */
-[data-math-copyable] {
-  cursor: copy;
-  border-radius: var(--radius-s, 4px);
-  transition: background var(--duration-fast, 150ms);
+/* Copy button (data-math="copyable") — a real <button>, so keyboard and
+   focus work natively; this only sizes it down next to the equation. */
+[data-math-copy] {
+  margin-inline-start: var(--size-s, 0.75rem);
+  padding: var(--size-3xs, 0.125rem) var(--size-xs, 0.5rem);
+  font-size: var(--font-size-xs, 0.75rem);
+  vertical-align: middle;
 }
 
-[data-math-copyable]:hover {
-  background: color-mix(in oklab, var(--color-interactive, oklch(55% 0.2 260)) 8%, transparent);
+[data-math-numbered] > [data-math-copy] {
+  margin-inline-start: 0;
+}
+
+[data-math-copy]:focus-visible {
+  outline: 2px solid var(--color-interactive, oklch(55% 0.2 260));
+  outline-offset: 2px;
 }
 
 /* Target highlighting for equation anchoring */

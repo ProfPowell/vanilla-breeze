@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "user-avatar"
-description: "User profile images with fallback support and optional status indicators. Perfect for user interfaces and comment systems."
+description: "CSS-only avatar: a profile photo, an initials fallback stacked under it, an optional presence dot, sizes, shapes and a ring. No JavaScript."
 elementName: user-avatar
 category: custom
 currentPath: /docs/elements/custom-elements/user-avatar/
@@ -33,7 +33,7 @@ crumbLabel: Custom Elements
           <td><code>data-size</code></td>
           <td><code>xs</code>, <code>sm</code>, <code>md</code>, <code>lg</code>, <code>xl</code>, <code>2xl</code></td>
           <td><code>md</code></td>
-          <td>Avatar size</td>
+          <td>Avatar size, 1.5rem to 8rem. Initials never drop below 0.625rem.</td>
         </tr>
         <tr>
           <td><code>data-shape</code></td>
@@ -45,7 +45,33 @@ crumbLabel: Custom Elements
           <td><code>data-ring</code></td>
           <td>boolean</td>
           <td>-</td>
-          <td>Add border ring</td>
+          <td>Decorative ring. Kept inside overlap groups; drawn as an outline in forced-colours mode.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Child attributes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>On</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-fallback</code></td>
+          <td><code>&lt;span&gt;</code></td>
+          <td>boolean</td>
+          <td>Initials or an icon. Sits under the <code>&lt;img&gt;</code>, so it shows when there is no photo or the photo fails to load.</td>
+        </tr>
+        <tr>
+          <td><code>data-status</code></td>
+          <td><code>&lt;span&gt;</code></td>
+          <td><code>online</code>, <code>away</code>, <code>busy</code>, <code>offline</code></td>
+          <td>Presence dot. Each state has its own colour <em>and</em> shape (solid, crescent, bar, hollow ring). Give it text; see <a href="#accessibility">Accessibility</a>.</td>
         </tr>
       </tbody>
     </table>
@@ -72,7 +98,7 @@ crumbLabel: Custom Elements
 
   <section>
     <h2>With Image</h2>
-    <p>Display a user's profile image.</p>
+    <p>Put the photo in an <code>&lt;img&gt;</code>. The <code>alt</code> names the person when the avatar stands alone; use <code>alt=""</code> when the name is printed right next to it.</p>
 
     <browser-window
       src="/docs/snippets/demos/user-avatar-images.html"
@@ -83,12 +109,16 @@ crumbLabel: Custom Elements
 
     <code-block language="html" show-lines label="Avatar with image" data-escape><user-avatar data-size="lg">
   <img src="user-photo.jpg" alt="Jane Doe" />
-</user-avatar></code-block>
+</user-avatar>
+
+<!-- Name printed beside it: the photo is decorative -->
+<user-avatar><img src="user-photo.jpg" alt="" /></user-avatar> Jane Doe</code-block>
   </section>
 
   <section>
     <h2>Fallback (Initials)</h2>
-    <p>Display initials when no image is available.</p>
+    <p>With no photo, show initials in a <code>[data-fallback]</code> span. Screen readers spell initials letter by letter, so name the avatar on the host with <code>role="img"</code> and <code>aria-label</code>, and hide the initials.</p>
+    <p>The fallback sits <em>under</em> the image in the same grid cell. Put both in the avatar, and if the photo fails to load (or is transparent) the initials show through. The browser's alt text and broken-image icon are suppressed. To hide the icon completely in Chromium, give the image <code>alt=""</code> and put the name on the host.</p>
 
     <browser-window
       src="/docs/snippets/demos/user-avatar-fallback.html"
@@ -97,8 +127,14 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Avatar with initials fallback" data-escape><user-avatar data-size="lg">
-  <span data-fallback>JD</span>
+    <code-block language="html" show-lines label="Avatar with initials fallback" data-escape><user-avatar data-size="lg" role="img" aria-label="Jane Doe">
+  <span data-fallback aria-hidden="true">JD</span>
+</user-avatar>
+
+<!-- Photo with initials behind it (shown if the photo fails) -->
+<user-avatar data-size="lg" role="img" aria-label="Jane Doe">
+  <img src="user-photo.jpg" alt="" />
+  <span data-fallback aria-hidden="true">JD</span>
 </user-avatar></code-block>
   </section>
 
@@ -120,7 +156,7 @@ crumbLabel: Custom Elements
 
   <section>
     <h2>Status Indicator</h2>
-    <p>Show online/offline status with a colored dot.</p>
+    <p>Add a <code>[data-status]</code> span for presence. The four states differ in shape as well as colour, so they still read in forced-colours mode and for colour-blind users. The dot needs text for screen readers: use <code>role="img"</code> with an <code>aria-label</code>, or put the text inside the span, where it is read but clipped visually.</p>
 
     <browser-window
       src="/docs/snippets/demos/user-avatar-status.html"
@@ -130,14 +166,20 @@ crumbLabel: Custom Elements
     </browser-window>
 
     <code-block language="html" show-lines label="Avatar with status" data-escape><user-avatar data-size="lg">
-  <img src="user-photo.jpg" alt="User Name" />
-  <span data-status="online"></span>
+  <img src="user-photo.jpg" alt="Jane Doe" />
+  <span data-status="online" role="img" aria-label="Online"></span>
+</user-avatar>
+
+<!-- or: text content, read but not painted -->
+<user-avatar data-size="lg">
+  <span data-fallback aria-hidden="true">BY</span>
+  <span data-status="busy">Ben Young, busy</span>
 </user-avatar></code-block>
   </section>
 
   <section>
     <h2>Avatar Group</h2>
-    <p>Display multiple avatars in an overlapping stack using <code>layout-cluster</code> with <code>data-layout-overlap</code>.</p>
+    <p>Stack avatars with <code>data-layout="cluster"</code> and <code>data-layout-overlap</code> on a list, so screen readers announce how many people there are. Point the list at a visible heading with <code>aria-labelledby</code>, and label the <q>+N</q> chip with what it stands for.</p>
 
     <browser-window
       src="/docs/snippets/demos/user-avatar-group.html"
@@ -146,17 +188,22 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Avatar group" data-escape><layout-cluster data-layout-overlap>
-  <user-avatar><img src="user1.jpg" alt="User 1" /></user-avatar>
-  <user-avatar><img src="user2.jpg" alt="User 2" /></user-avatar>
-  <user-avatar><img src="user3.jpg" alt="User 3" /></user-avatar>
-  <user-avatar><span data-fallback>+5</span></user-avatar>
-</layout-cluster></code-block>
+    <code-block language="html" show-lines label="Avatar group" data-escape><h3 id="members">Project members</h3>
+<ul class="unstyled" data-layout="cluster" data-layout-overlap aria-labelledby="members">
+  <li><user-avatar><img src="jane.jpg" alt="Jane Doe" /></user-avatar></li>
+  <li><user-avatar><img src="john.jpg" alt="John Smith" /></user-avatar></li>
+  <li><user-avatar><img src="alex.jpg" alt="Alex Johnson" /></user-avatar></li>
+  <li>
+    <user-avatar role="img" aria-label="5 more members">
+      <span data-fallback aria-hidden="true">+5</span>
+    </user-avatar>
+  </li>
+</ul></code-block>
   </section>
 
   <section>
     <h2>With Ring</h2>
-    <p>Add a decorative ring around the avatar.</p>
+    <p>Add a decorative ring around the avatar. The ring is set through a private custom property, so it also survives inside an overlap group, where the cluster gives every item its own separator.</p>
 
     <browser-window
       src="/docs/snippets/demos/user-avatar-ring.html"
@@ -166,14 +213,27 @@ crumbLabel: Custom Elements
     </browser-window>
 
     <code-block language="html" show-lines label="Avatar with ring" data-escape><user-avatar data-size="lg" data-ring>
-  <img src="user-photo.jpg" alt="User" />
+  <img src="user-photo.jpg" alt="Riya Gupta" />
 </user-avatar></code-block>
+  </section>
+
+  <section id="accessibility">
+    <h2>Accessibility</h2>
+    <ul>
+      <li><strong>Photo:</strong> <code>alt</code> is the person's name when the avatar stands alone (a list of reviewers, a profile link). Use <code>alt=""</code> when the name is printed beside it, as <code>&lt;comment-thread&gt;</code> and <code>&lt;activity-feed&gt;</code> do. Don't write <q>avatar</q> or <q>profile picture</q>.</li>
+      <li><strong>Initials:</strong> put <code>role="img" aria-label="Jane Doe"</code> on the host and <code>aria-hidden="true"</code> on the <code>[data-fallback]</code> span. Otherwise <q>JD</q> is read letter by letter.</li>
+      <li><strong>Overflow chip:</strong> label <q>+5</q> with what it counts (<code>aria-label="5 more members"</code>). If it is interactive, use a real button or link inside the list item.</li>
+      <li><strong>Groups:</strong> use a <code>&lt;ul&gt;</code> with one <code>&lt;li&gt;</code> per avatar so the count is announced, labelled by a nearby heading (<code>aria-labelledby</code>).</li>
+      <li><strong>Status:</strong> colour is never the only signal. Each state has a distinct shape, and the dot needs text (<code>role="img" aria-label</code> or text content). When the host is a labelled <code>role="img"</code>, fold the status into that label (<q>Ada Wong, away</q>).</li>
+      <li><strong>Forced colours:</strong> the disc gets a <code>CanvasText</code> border, the ring an outline, and the status dot keeps its shape in system colours.</li>
+      <li><strong>Dark mode:</strong> the initials disc uses <code>light-dark()</code> tokens and keeps its contrast in both schemes.</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related</h2>
     <ul>
-      <li><a href="/docs/elements/custom-elements/cluster/"><code>&lt;layout-cluster&gt;</code></a> — For avatar groups</li>
+      <li><a href="/docs/elements/custom-elements/cluster/"><code>&lt;layout-cluster&gt;</code></a> — <code>data-layout-overlap</code> for avatar groups</li>
       <li><a href="/docs/elements/custom-elements/layout-badge/"><code>&lt;layout-badge&gt;</code></a> — Status indicators</li>
       <li><a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a> — Card layouts with avatars</li>
     </ul>

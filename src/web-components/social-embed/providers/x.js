@@ -1,29 +1,51 @@
 /**
- * X (Twitter) provider — script injection via platform.x.com/widgets.js
- * Builds a blockquote that the widgets.js SDK processes into an iframe embed.
+ * X (Twitter) provider — sandboxed platform.twitter.com/embed/Tweet.html iframe.
+ *
+ * No widgets.js: the post URL is parsed and validated, and the frame URL is
+ * rebuilt from the numeric status id. Themeable (theme=light|dark).
  */
 
-import { SocialEmbed, loadScript } from '../logic.js';
+import { createEmbedFrame, parseHttpsUrl, messageData, POST_SANDBOX } from '../shared.js';
 
-const WIDGETS_SRC = 'https://platform.x.com/widgets.js';
+const HOSTS = new Set(['x.com', 'www.x.com', 'mobile.x.com', 'twitter.com', 'www.twitter.com', 'mobile.twitter.com']);
+const PATH = /^\/([A-Za-z0-9_]{1,15})\/status(?:es)?\/(\d{1,25})\/?$/;
+const FRAME_HOST = 'platform.twitter.com';
 
-const XProvider = {
-  canHandle(url) {
-    return /(?:x\.com|twitter\.com)\/[^/]+\/status\/\d+/.test(url);
+/**
+ * @param {string} url
+ * @returns {{ user: string, id: string } | null}
+ */
+export function parseXUrl(url) {
+  const u = parseHttpsUrl(url, HOSTS);
+  const m = u && PATH.exec(u.pathname);
+  return m ? { user: m[1], id: m[2] } : null;
+}
+
+export const XProvider = {
+  label: 'X',
+  themeable: true,
+  canHandle: (/** @type {string} */ url) => !!parseXUrl(url),
+  frameHost: () => FRAME_HOST,
+
+  /**
+   * @param {HTMLElement} _host
+   * @param {string} url
+   * @param {{ theme: 'light' | 'dark', title: string }} opts
+   */
+  async render(_host, url, { theme, title }) {
+    const post = parseXUrl(url);
+    if (!post) throw new Error('Not an X post URL');
+    const src = new URL(`https://${FRAME_HOST}/embed/Tweet.html`);
+    src.searchParams.set('id', post.id);
+    src.searchParams.set('theme', theme);
+    src.searchParams.set('dnt', 'true');
+    return createEmbedFrame({
+      src, title, sandbox: [...POST_SANDBOX], allow: 'fullscreen', height: 360,
+      // {"twttr.embed":{"method":"twttr.private.resize","params":[{"height":…}]}}
+      measure(data) {
+        const msg = messageData(data)?.['twttr.embed'];
+        return msg?.method === 'twttr.private.resize' ? msg.params?.[0]?.height : null;
+      },
+    });
   },
-
-  async render(host, url, { theme }) {
-    await loadScript(WIDGETS_SRC);
-
-    host.innerHTML = `<blockquote class="twitter-tweet" data-theme="${theme}"><a href="${url}"></a></blockquote>`;
-
-    // twttr.widgets.load() processes blockquotes into iframes
-    const w = /** @type {any} */ (window);
-    if (w.twttr?.widgets?.load) {
-      w.twttr.widgets.load(host);
-    }
-  }
 };
-
-SocialEmbed.register('x', XProvider);
-export { XProvider };

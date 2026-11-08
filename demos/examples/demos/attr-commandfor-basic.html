@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>commandfor and command</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+      min-block-size: 26rem;
+    }
+
+    /* A bare popover gets only browser styles; anchor it to its invoker. */
+    #shortcuts {
+      inset: auto;
+      margin: 0;
+      margin-block-start: var(--size-2xs);
+      position-area: block-end span-inline-end;
+      padding: var(--size-s) var(--size-m);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+      background: var(--color-surface-raised);
+      color: var(--color-text);
+      box-shadow: var(--shadow-l);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+    <h1 class="visually-hidden">Invoker commands</h1>
+    <section>
+      <h2>Dialog</h2>
+      <button type="button" commandfor="delete-dialog" command="show-modal">Delete project</button>
+      <dialog id="delete-dialog" closedby="any" aria-labelledby="delete-title">
+        <header>
+          <h3 id="delete-title">Delete "Spring launch"?</h3>
+        </header>
+        <section>
+          <p>The project and its 12 tasks are removed for everyone. Click the backdrop or press <kbd>Escape</kbd> to keep it.</p>
+        </section>
+        <footer>
+          <button type="button" class="secondary" commandfor="delete-dialog" command="request-close">Keep project</button>
+          <button type="button" commandfor="delete-dialog" command="close" value="delete">Delete</button>
+        </footer>
+      </dialog>
+    </section>
+
+    <section>
+      <h2>Popover</h2>
+      <button type="button" commandfor="shortcuts" command="toggle-popover">Keyboard shortcuts</button>
+      <p id="shortcuts" popover><kbd>Ctrl</kbd> + <kbd>K</kbd> opens search. <kbd>?</kbd> shows this list.</p>
+    </section>
+
+    <section>
+      <h2>Custom command</h2>
+      <p>Guests: <output id="guests">2</output></p>
+      <layout-cluster data-layout-gap="s">
+        <button type="button" commandfor="guests" command="--add">Add guest</button>
+        <button type="button" class="secondary" commandfor="guests" command="--reset">Reset</button>
+      </layout-cluster>
+    </section>
+  </layout-stack>
+
+  <script type="module">
+    const guests = document.getElementById('guests');
+    guests.addEventListener('command', (event) => {
+      if (event.command === '--add') guests.value = String(Number(guests.value) + 1);
+      if (event.command === '--reset') guests.value = '2';
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

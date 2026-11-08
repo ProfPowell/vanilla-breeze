@@ -1,4 +1,6 @@
-/* menu: Toolbar and context menu styling */
+/* menu: Toolbar and context menu styling.
+   <menu> is exposed to assistive technology as a list (HTML-AAM maps it to
+   role="list", exactly like <ul>); these classes are visual only. */
 
 menu {
   display: flex;
@@ -12,9 +14,30 @@ menu {
     margin: 0;
   }
 
+  /* Separators: a vertical rule in row menus, a horizontal rule in column
+     menus (.context, .vertical). Drawn as a border so forced colours keep
+     it visible (backgrounds are flattened to Canvas there). */
+  & > li[role="separator"] {
+    align-self: stretch;
+    inline-size: 0;
+    border-inline-start: var(--border-width-thin) solid var(--color-border);
+    margin-inline: var(--size-2xs);
+  }
+
+  &:is(.context, .vertical) > li[role="separator"] {
+    inline-size: auto;
+    block-size: 0;
+    border-inline-start: none;
+    border-block-start: var(--border-width-thin) solid var(--color-border);
+    margin-inline: 0;
+    margin-block: var(--size-2xs);
+  }
+
   /* --- Menu Variants (use element.class scoping) --- */
 
-  /* Toolbar menu */
+  /* Toolbar menu. No overflow clipping: it cut the focus ring of the
+     first and last items. Buttons keep their own variant fill and
+     aria-pressed state; use .ghost for the flat toolbar look. */
   &.toolbar {
     display: flex;
     align-items: center;
@@ -22,15 +45,14 @@ menu {
     padding: var(--size-2xs);
     background: var(--color-surface-raised);
     border-radius: var(--radius-m);
-    overflow: hidden;
 
     & > li > button {
       padding: var(--size-xs);
       min-inline-size: auto;
-      background: transparent;
-      color: var(--color-text);
+    }
 
-      &:hover {
+    @media (hover: hover) {
+      & > li > button.ghost:hover:not(:disabled, [aria-disabled="true"], [aria-pressed="true"]) {
         background: var(--color-surface);
       }
     }
@@ -42,17 +64,17 @@ menu {
     gap: var(--size-2xs);
   }
 
-  /* Context menu (dropdown style) */
+  /* Context menu (dropdown style). Sizes to its content. */
   &.context {
     flex-direction: column;
     gap: 0;
+    inline-size: fit-content;
+    min-inline-size: 10rem;
     padding: var(--size-2xs);
     background: var(--color-surface-overlay);
     border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-m);
-    box-shadow: 0 4px 12px oklch(0% 0 0 / 0.15);
-    overflow: hidden;
-    min-inline-size: 160px;
+    box-shadow: var(--shadow-m);
 
     & > li > button,
     & > li > a {
@@ -66,16 +88,12 @@ menu {
       color: var(--color-text);
       text-decoration: none;
       cursor: var(--cursor-custom-pointer, pointer);
-
-      &:hover {
-        background: var(--color-hover-bg);
-      }
     }
 
-    & > li[role="separator"] {
-      block-size: 1px;
-      margin-block: var(--size-2xs);
-      background: var(--color-border);
+    @media (hover: hover) {
+      & > li > :is(button, a):hover {
+        background: var(--color-hover-bg);
+      }
     }
   }
 

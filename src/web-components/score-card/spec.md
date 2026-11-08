@@ -26,24 +26,22 @@ A single KPI tile: title, headline value, optional change indicator, optional sp
 
 ## Purpose
 
-Dashboards and analytics surfaces repeatedly need to show a single metric in a uniform tile: a title, a big number, a delta against a prior period, sometimes a small trend chart, sometimes an icon, sometimes a click-through to detail. The current `/docs/patterns/data/stats/` recipe handles this with hand-written `<figure>/<figcaption>/<data>` markup. That works, but every consumer re-implements layout, trend coloring, sparkline sizing, and skeleton loading. `<score-card>` packages that recipe as a single composable element while preserving the semantic figure structure underneath.
+Dashboards and analytics surfaces repeatedly need to show a single metric in a uniform tile: a title, a big number, a delta against a prior period, sometimes a small trend chart, sometimes an icon, sometimes a click-through to detail. The current `/docs/patterns/data/stats/` recipe handles this with hand-written `<figure>/<figcaption>/<data>` markup. That works, but every consumer re-implements layout, trend coloring, sparkline sizing, and skeleton loading. `<score-card>` packages that recipe as a single composable element using the same semantic content elements (`<data>`, `<small>`) slotted directly under the host.
 
 ## Static HTML Form
 
-The pre-upgrade structure is the existing stats pattern, slotted into the host element. It renders correctly without JS or CSS.
+Shadow-DOM slots only assign **direct children** of the host, so every slotted element sits directly under `<score-card>`. A wrapping `<figure>` would land in the default slot (nested inside the value slot's fallback) and render entirely as the headline value. Block-level children keep the pre-upgrade form readable.
 
 ```html
 <score-card trend="up">
-  <figure>
-    <figcaption slot="title">Total Users</figcaption>
-    <data slot="value" value="24521">24,521</data>
-    <small slot="change" data-trend="up">+12.5% vs last month</small>
-    <figcaption slot="description">Active in last 30 days</figcaption>
-  </figure>
+  <p slot="title">Total Users</p>
+  <p slot="value"><data value="24521">24,521</data></p>
+  <p slot="change"><data value="0.125">+12.5%</data> vs last month</p>
+  <p slot="description">Active in last 30 days</p>
 </score-card>
 ```
 
-Without JS the user sees a normal figure with caption and data. With CSS only, host styles apply but slots are not projected — the figure renders inline. With JS, the shadow tree projects each slot into the tile layout.
+Without JS the user sees a stacked list of paragraphs. With JS, the shadow tree projects each slot into the tile layout and resets the slotted margins.
 
 ## Enhanced Form
 
@@ -158,19 +156,19 @@ a:has(score-card):focus-visible { outline: 2px solid var(--color-focus-ring); }
 
 ### No JavaScript
 
-- **Behavior:** Slotted figure renders inline using its native semantics. Trend color comes from `data-trend` on `<small>` (existing stats pattern). Sparkline `<chart-wc>` falls back to its own table.
-- **Implementation:** Static fallback structure mirrors the `/docs/patterns/data/stats/` recipe; no upgrade needed for content to be readable.
+- **Behavior:** Slotted children render in normal flow (block-level `<p>` children stack). Sparkline `<chart-wc>` falls back to its own table.
+- **Implementation:** No upgrade needed for content to be readable.
 - **Acceptable:** Yes. The information is fully available; only the tile chrome (border, padding, sparkline sizing) is absent.
 
 ### No CSS
 
-- **Behavior:** Stacked semantic content — figcaption, data, small, optional sparkline — readable top to bottom.
+- **Behavior:** Stacked semantic content — title, value, change, optional sparkline — readable top to bottom.
 - **Implementation:** No CSS depends on shadow DOM projection. Slots project, but visual layout collapses gracefully.
 - **Acceptable:** Yes.
 
 ### Upgrade Delay
 
-- **Behavior:** Light-DOM children remain visible because the static fallback IS the figure pattern. No layout shift on upgrade beyond grid placement.
+- **Behavior:** Light-DOM children remain visible. No layout shift on upgrade beyond grid placement.
 - **Implementation:** Element's static.html structure matches what the rendered shadow projects.
 - **Acceptable:** Yes. May see a brief moment where padding/border are missing.
 
@@ -182,7 +180,7 @@ a:has(score-card):focus-visible { outline: 2px solid var(--color-focus-ring); }
 
 ### Screen Reader
 
-- **ARIA roles:** None added; semantics come from the slotted `<figure>`, `<figcaption>`, `<data>`, and `<small>`.
+- **ARIA roles:** None added; semantics come from the slotted `<data>`, `<small>`, and paragraph content. `loading` mirrors `aria-busy="true"`.
 - **Live regions:** None by default. If consumers update values dynamically and want announcements, they can wrap the relevant slot content in `aria-live="polite"`.
 - **Announced state changes:** Trend changes are announced when the change-indicator text content updates inside a live region (consumer's choice).
 - **Tested with:** VoiceOver (macOS), NVDA (Windows).

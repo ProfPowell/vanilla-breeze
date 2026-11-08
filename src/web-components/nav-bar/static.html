@@ -13,14 +13,17 @@
     - Without JS: A plain set of anchor links inside <nav-bar>. Native
       navigation works; nothing is broken. The active link is not
       highlighted (no aria-current applied).
-    - With JS: <nav-bar> sets role="navigation" if absent, matches
-      location.pathname against each child link, and sets
-      aria-current="page" on the best match (exact wins; longest
-      prefix breaks ties). Listens for popstate to keep the active
+    - With JS: <nav-bar> sets role="navigation" if absent (unless it
+      wraps a <nav>, which is then the landmark), matches the current
+      URL against each child link, and sets aria-current="page" on the
+      best match (exact wins; longest prefix breaks ties). Listens for
+      popstate and Navigation API entry changes to keep the active
       state fresh after client-side navigation.
 
-    HTML-first authors do not need to do anything special — wrap the
-    existing <nav> in <nav-bar> and active-state sync is automatic.
+    HTML-first authors do not need to do anything special. Either put
+    the links straight in <nav-bar aria-label="..."> (the host becomes
+    the landmark), or wrap an existing <nav aria-label="..."> and tag
+    nested links with data-nav-link.
   -->
 
   <nav-bar aria-label="Main">

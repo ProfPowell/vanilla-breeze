@@ -2,41 +2,88 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "progress-tracker",
   "type": "web-component",
-  "description": "Multi-step progress bar for wizards / checkout / onboarding flows. Distinct from <slide-accept> (slide-to-confirm). Author renders <li data-step> children; component decorates each with circle + connector + status (complete | current | upcoming | error).",
+  "description": "Multi-step progress bar for wizards / checkout / onboarding flows. Distinct from <slide-accept> (slide-to-confirm). Author writes a native <ol> of <li> steps inside the element; the component decorates each with circle + connector + status (complete | current | upcoming | error) and visually hidden status text. With data-clickable, completed steps become native buttons.",
   "attributes": [
     {
       "name": "data-current",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "1-based index OR step id of the active step"
+      "description": "Active step: matched against data-step ids first, then as a 1-based index. Defaults to the first step."
     },
     {
       "name": "data-clickable",
       "kind": "data",
       "purpose": "config",
       "type": "boolean",
-      "description": "Allow clicks on completed steps to navigate back"
+      "description": "Completed steps render their label inside a native <button> (keyboard and pointer) that navigates back. The current and upcoming steps are not activatable."
     },
     {
-      "name": "aria-label",
-      "kind": "aria",
+      "name": "data-direction",
+      "kind": "data",
+      "purpose": "visual-variant",
+      "type": "enum",
+      "values": [
+        "horizontal",
+        "vertical"
+      ],
+      "default": "horizontal",
+      "description": "vertical stacks the steps with a vertical connector (narrow screens, long labels, 5+ steps)."
+    },
+    {
+      "name": "data-label-list",
+      "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "List label (default \"Progress\")"
+      "default": "Progress",
+      "description": "Accessible name set on the <ol> when it has no aria-label / aria-labelledby of its own."
     },
     {
-      "name": "role",
-      "kind": "aria",
+      "name": "data-label-step",
+      "kind": "data",
       "purpose": "config",
-      "description": "Set to \"list\""
+      "type": "string",
+      "default": "Step {n} of {total}:",
+      "description": "Visually hidden position prefix read before each label; {n} and {total}. Empty string removes it."
+    },
+    {
+      "name": "data-label-complete",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "(completed)",
+      "description": "Visually hidden status text for completed steps."
+    },
+    {
+      "name": "data-label-current",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "",
+      "description": "Visually hidden status text for the current step (empty by default: aria-current=\"step\" already conveys it)."
+    },
+    {
+      "name": "data-label-upcoming",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "(not started)",
+      "description": "Visually hidden status text for upcoming steps."
+    },
+    {
+      "name": "data-label-error",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "(error)",
+      "description": "Visually hidden status text for errored steps."
     }
   ],
   "events": [
     {
       "name": "progress-tracker:step",
       "detail": "{ step, previousStep, source: 'attr'|'click' }",
-      "description": "Fires when data-current changes (programmatic) or a completed step is clicked (data-clickable mode)"
+      "description": "Bubbles when data-current changes after upgrade (source 'attr') or a completed step is activated in data-clickable mode (source 'click', one event only). Not fired on upgrade or when the current step is activated."
     }
   ],
   "childAttributes": [
@@ -44,22 +91,73 @@
       "name": "data-step",
       "on": "li",
       "type": "string",
-      "required": true,
-      "description": "Stable step identifier (typically 1-based number, can be any string)"
+      "description": "Stable step id (any string; defaults to the 1-based position). data-current matches it before trying an index, so numeric ids like \"2024\" are safe."
     },
     {
       "name": "data-error",
       "on": "li",
       "type": "boolean",
-      "description": "Marks this step as errored regardless of position"
+      "description": "Marks this step as errored regardless of position."
+    },
+    {
+      "name": "data-status",
+      "on": "li",
+      "type": "enum",
+      "values": [
+        "complete",
+        "current",
+        "upcoming",
+        "error"
+      ],
+      "description": "Set by the component; style hook."
+    },
+    {
+      "name": "aria-current",
+      "on": "li",
+      "type": "string",
+      "description": "Set by the component to \"step\" on the current step."
     }
   ],
-  "structure": [],
+  "structure": [
+    {
+      "element": "ol",
+      "description": "Required native ordered list of steps (renders as a plain numbered list without JS)."
+    }
+  ],
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
-      "li",
-      "@flow"
+      "ol"
     ]
-  }
+  },
+  "cssProperties": [
+    {
+      "name": "--pt-circle-size",
+      "description": "Diameter of the step circle (default 1.75rem)."
+    },
+    {
+      "name": "--pt-line-thickness",
+      "description": "Connector and circle border thickness (default 2px)."
+    },
+    {
+      "name": "--pt-color-complete",
+      "description": "Fill / connector colour for completed steps (default --color-success)."
+    },
+    {
+      "name": "--pt-color-current",
+      "description": "Outline / ring colour for the active step (default --color-interactive)."
+    },
+    {
+      "name": "--pt-color-upcoming",
+      "description": "Outline / connector colour for upcoming steps (default --color-border)."
+    },
+    {
+      "name": "--pt-color-error",
+      "description": "Fill / connector colour for errored steps (default --color-error)."
+    },
+    {
+      "name": "--pt-color-text-on-fill",
+      "description": "Glyph colour on filled (complete / error) circles (default --color-text-on-interactive-auto)."
+    }
+  ]
 }

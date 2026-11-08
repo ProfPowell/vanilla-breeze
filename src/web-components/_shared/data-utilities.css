@@ -12,12 +12,49 @@ input[data-mask][data-mask-init] {
   font-variant-numeric: tabular-nums;
 }
 
-/* data-copy: Clipboard copy button feedback (attribute + programmatic via copyText) */
-[data-copy][data-state="copied"],
-[data-copy-target][data-state="copied"],
-[data-paste-target][data-state="pasted"],
+/* data-copy: Clipboard copy button feedback (attribute + programmatic via copyText).
+   Colour is never the only cue (WCAG 1.4.1): a check / cross mark is added
+   with empty alt text ("/ ''") so it does not change the button's name, and
+   forced-colors mode gets an outline.
+   On a <button> the state feeds the button's own colour input (--btn-color)
+   instead of overriding its text: a filled button turns success / error
+   with its luminance-picked text, outline and ghost buttons take the colour
+   as text. (Success text on a filled interactive-blue button was ~1.5:1.) */
+:is([data-copy], [data-copy-target])[data-state="copied"]:not(button),
+[data-paste-target][data-state="pasted"]:not(button),
 :where(color-picker) button[data-state="copied"] {
   color: var(--color-success, oklch(50% 0.15 145));
+}
+
+:is([data-copy], [data-copy-target], [data-paste-target])[data-state="failed"]:not(button) {
+  color: var(--color-error, oklch(55% 0.2 25));
+}
+
+button:is([data-copy], [data-copy-target])[data-state="copied"],
+button[data-paste-target][data-state="pasted"] {
+  --btn-color: var(--color-success, oklch(50% 0.15 145));
+}
+
+button:is([data-copy], [data-copy-target], [data-paste-target])[data-state="failed"] {
+  --btn-color: var(--color-error, oklch(55% 0.2 25));
+}
+
+:is([data-copy], [data-copy-target])[data-state="copied"]::after,
+[data-paste-target][data-state="pasted"]::after {
+  content: "\2713" / "";
+  margin-inline-start: 0.35em;
+}
+
+:is([data-copy], [data-copy-target], [data-paste-target])[data-state="failed"]::after {
+  content: "\2715" / "";
+  margin-inline-start: 0.35em;
+}
+
+@media (forced-colors: active) {
+  :is([data-copy], [data-copy-target], [data-paste-target])[data-state] {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
 }
 /* data-format-date: Locale-aware date formatting */
 time[data-format-date="relative"] {
@@ -30,19 +67,21 @@ data[data-format-bytes] {
   font-variant-numeric: tabular-nums;
 }
 
-/* data-hotkey: Platform-aware keyboard shortcut display */
-kbd[data-hotkey] {
+/* data-hotkey: Platform-aware keyboard shortcut display.
+   The unboxed wrapper / font-size reset comes from the generic nested-kbd
+   rule (kbd:has(> kbd), native-elements/code), so before hotkey-init runs
+   the fallback text still shows as one ordinary cap. Shortcuts are written
+   left to right in every locale, so the caps keep their order in RTL. */
+kbd[data-hotkey]:has(> kbd) {
   display: inline-flex;
   align-items: center;
   gap: 0.15em;
-  background: none;
-  border: none;
-  box-shadow: none;
-  padding: 0;
   font-family: inherit;
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
-kbd[data-hotkey] kbd {
+kbd[data-hotkey] > kbd {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -145,9 +184,26 @@ kbd[data-hotkey] kbd {
   user-select: auto;
 }
 
+/* Keyboard focus: the generated buttons reset every UA style (all: unset),
+   so the ring is restored here; the revealed content receives focus after
+   a keyboard reveal and shows where reading continues. */
+[data-spoiler][data-spoiler-init] > :is([data-spoiler-trigger], [data-spoiler-hide]):focus-visible,
+[data-spoiler][data-spoiler-init] > [data-spoiler-content]:focus-visible {
+  outline: 2px solid var(--color-interactive, currentColor);
+  outline-offset: 2px;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   [data-spoiler][data-spoiler-init] > [data-spoiler-content] {
     transition-duration: 0s;
+  }
+}
+
+/* Print: spoilers print revealed (print.css); data-spoiler-print="hidden"
+   keeps quiz answers and the like concealed on paper. */
+@media print {
+  [data-spoiler][data-spoiler-print="hidden"]:not([data-spoiler-visible]) > [data-spoiler-content] {
+    visibility: hidden !important;
   }
 }

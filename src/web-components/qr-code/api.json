@@ -2,54 +2,101 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "qr-code",
   "type": "web-component",
-  "description": "QR code generator web component",
+  "description": "QR code generator: black-on-white canvas with quiet zone, author children kept as the caption",
   "attributes": [
     {
       "name": "value",
-      "kind": "native",
+      "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "The text/URL to encode (or uses textContent). Reactive."
+      "description": "The text/URL to encode. Falls back to the element's original text content. Reactive; removing it falls back to the text again."
     },
     {
       "name": "size",
       "kind": "host-api",
       "purpose": "config",
       "type": "number",
-      "description": "Canvas size in pixels (default: 200). Reactive."
+      "default": "200",
+      "description": "Edge of the drawn box in CSS pixels, quiet zone included. Modules are a whole number of device pixels. Reactive."
     },
     {
       "name": "color",
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "Foreground color (default: currentColor). Init-only."
+      "default": "#000",
+      "description": "Module colour (any CSS colour). Opt-in; logs a console warning when the pair is inverted, low-contrast or translucent. Reactive."
     },
     {
       "name": "background",
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "Background color (default: transparent). Init-only."
+      "default": "#fff",
+      "description": "Background colour, always painted, including the 4-module quiet zone. Reactive."
     },
     {
       "name": "error-correction",
       "kind": "host-api",
       "purpose": "config",
-      "type": "number",
-      "description": "Error correction level 0-3 (L/M/Q/H, default: 1/M). Init-only."
+      "type": "enum",
+      "values": ["l", "m", "q", "h", "0", "1", "2", "3"],
+      "default": "m",
+      "description": "Error-correction level: L (7%), M (15%, default), Q (25%), H (30%), or 0-3. Letters are case-insensitive (listed lower-case because html-validate matches enums lower-cased); other values warn and use M. Reactive."
     },
     {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
+      "name": "data-caption",
+      "kind": "data",
+      "purpose": "visual-variant",
+      "type": "enum",
+      "values": ["visible"],
+      "description": "Show the caption (the element's children) under the code. By default it is visually hidden but read by screen readers, and shown while a link inside it has focus."
+    },
+    {
+      "name": "data-label-prefix",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "QR code",
+      "description": "Accessible name of the canvas (role=img). The value itself is read from the caption, so it is not announced twice."
+    },
+    {
+      "name": "data-label-copied",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "QR code copied",
+      "description": "Screen-reader announcement after copy() succeeds."
+    },
+    {
+      "name": "data-error",
+      "kind": "data",
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "enum",
+      "values": ["capacity", "encoding"],
+      "description": "Set when no code could be drawn (the text is longer than the level holds, or cannot be encoded). The caption is then shown."
     }
   ],
   "childAttributes": [],
   "structure": [],
+  "events": [
+    {
+      "name": "qr-code:error",
+      "detail": "{ reason: 'capacity' | 'encoding', value, errorCorrection: 'L' | 'M' | 'Q' | 'H', message }",
+      "description": "Fired when the value cannot be encoded. No code is drawn and the caption (fallback) stays visible."
+    },
+    {
+      "name": "qr-code:upgraded",
+      "description": "Fired once the element has upgraded (canvas and caption in place)."
+    }
+  ],
+  "properties": [
+    { "name": "value", "type": "string", "description": "The encoded text. Setting it sets the value attribute; '' or null removes it." }
+  ],
   "methods": [
-    { "name": "toDataURL(type?)", "returns": "string", "description": "Returns the QR canvas as a data URL (default image/png)." },
-    { "name": "copy(options?)", "returns": "Promise<boolean>", "description": "Copies the QR to the clipboard as text/plain (the encoded value) + image/png (the canvas). Falls back to text-only on browsers without ClipboardItem support." }
+    { "name": "toDataURL(type?)", "returns": "string", "description": "Returns the code as a data URL (default image/png): opaque, quiet zone included. '' when no code is drawn." },
+    { "name": "copy(options?)", "returns": "Promise<boolean>", "description": "Copies the code to the clipboard as text/plain (the encoded value) + image/png. Falls back to text-only without ClipboardItem support. options.button gets data-state=\"copied\" and a copy event. Resolves false when no code is drawn." }
   ],
   "htmlvalidate": {
     "flow": true,

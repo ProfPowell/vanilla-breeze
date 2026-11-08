@@ -2,42 +2,107 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "time-index",
   "type": "web-component",
-  "description": "Interactive changelog/timeline component",
+  "description": "Interactive changelog/timeline component: relative dates, sort toggle, version filter and a recently-updated-pages feed",
   "attributes": [
-    {
-      "name": "group",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "'month' (default) or 'version'"
-    },
-    {
-      "name": "view",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "'date' or 'version' — grouping view"
-    },
     {
       "name": "versions",
       "kind": "host-api",
       "purpose": "config",
       "type": "boolean",
-      "description": "Enable version jump select"
+      "description": "Add a version filter select. Options come from each entry's data-version, own .version-tag text, or a v2-1-0 style id."
     },
     {
       "name": "updates-src",
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "URL for recently updated pages JSON"
+      "description": "URL of a JSON array of { title, href | url, modified | date } rendered as a recently-updated-pages feed. Only http(s) and relative links are kept."
+    },
+    {
+      "name": "data-label-controls",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Timeline controls",
+      "description": "Accessible name of the injected controls nav."
+    },
+    {
+      "name": "data-label-sort",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Oldest first",
+      "description": "Sort toggle text. The label never changes; aria-pressed carries the state."
+    },
+    {
+      "name": "data-label-filter",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Filter by version",
+      "description": "Accessible name of the version select."
+    },
+    {
+      "name": "data-label-all",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "All versions",
+      "description": "Text of the select's show-everything option."
+    },
+    {
+      "name": "data-label-status",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Showing {count} of {total} entries for {version}",
+      "description": "Polite live-region text after filtering; {count}, {total} and {version} are replaced."
+    },
+    {
+      "name": "data-label-status-all",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Showing all {total} entries",
+      "description": "Live-region text when the filter is cleared; {total} is replaced."
+    },
+    {
+      "name": "data-label-recent",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Recently updated pages",
+      "description": "Heading of the recently-updated-pages feed."
     },
     {
       "name": "data-timeline-controls",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "output-state",
+      "direction": "output",
+      "public": false,
+      "description": "Marks the injected controls nav"
+    },
+    {
+      "name": "data-recent-pages",
+      "kind": "data",
+      "purpose": "output-state",
+      "direction": "output",
+      "public": false,
+      "description": "Marks the injected recently-updated-pages section"
     }
   ],
-  "childAttributes": [],
-  "structure": []
+  "childAttributes": [
+    {
+      "name": "data-version",
+      "on": "li, article, section",
+      "type": "string",
+      "description": "Explicit version of an entry or release for the filter (wins over .version-tag text and the id convention)."
+    }
+  ],
+  "structure": [
+    {
+      "element": ".changelog-entries",
+      "description": "One container: its li/article/section children are the entries. One per release: the host's top-level children holding them are the releases."
+    }
+  ]
 }

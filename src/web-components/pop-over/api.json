@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "pop-over",
   "type": "web-component",
-  "description": "General-purpose popover container with CSS Anchor Positioning. Wraps the native Popover API, binds an anchor element, and re-asserts display:none under VB's cascade layers. Trigger via standard popovertarget attribute.",
+  "description": "General-purpose popover container with CSS Anchor Positioning. Wraps the native Popover API, binds an anchor element (appending to its anchor-name list), and re-asserts display:none under VB's cascade layers. Trigger via the standard popovertarget attribute. The host has no role: authors supply the semantics.",
   "attributes": [
     {
       "name": "data-mode",
@@ -14,14 +14,15 @@
         "manual",
         "hint"
       ],
-      "description": "Popover dismissal mode: 'auto' (default, light-dismiss + ESC), 'manual' (script-only), 'hint' (auto with hint-stack semantics)."
+      "description": "Popover type: 'auto' (default, light-dismiss + Escape, closes other auto popovers), 'manual' (script-only), 'hint' (light-dismiss without closing open auto popovers; falls back to 'auto' where popover=\"hint\" is unsupported). Hover opening is not wired (use interestfor or tool-tip). Changes after upgrade re-apply the popover attribute; an authored popover attribute wins at upgrade.",
+      "default": "auto"
     },
     {
       "name": "data-anchor",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "ID (or CSS selector) of the anchor element to position against. If omitted, the component finds the first element with popovertarget pointing at this pop-over."
+      "description": "ID (or CSS selector) of the anchor element to position against. If omitted, the component uses the first element whose popovertarget points at this pop-over. Changes after upgrade re-wire the anchor."
     },
     {
       "name": "data-position",
@@ -42,7 +43,8 @@
         "right-start",
         "right-end"
       ],
-      "description": "Where to place the popover relative to the anchor. Default: 'bottom'."
+      "description": "Where to place the popover relative to the anchor; -start/-end are logical (mirror in RTL). Flips to the opposite side instead of overflowing the viewport. Default: 'bottom'.",
+      "default": "bottom"
     },
     {
       "name": "data-offset",
@@ -56,7 +58,49 @@
         "m",
         "l"
       ],
-      "description": "Gap between popover and anchor, mapped to --size-* tokens. Default: 'xs'."
+      "description": "Gap between popover and anchor, mapped to --size-* tokens. Default: 'xs'.",
+      "default": "xs"
+    },
+    {
+      "name": "data-anchor-name",
+      "kind": "data",
+      "purpose": "output-state",
+      "type": "string",
+      "direction": "output",
+      "description": "Set by the runtime when an anchor is bound with CSS Anchor Positioning: the dashed-ident appended to the anchor's anchor-name and used as this host's position-anchor. Absent when there is no anchor or no anchor-positioning support."
+    }
+  ],
+  "events": [
+    {
+      "name": "pop-over:show",
+      "detail": "{ state: 'open' }",
+      "description": "Fired (bubbles, composed) on beforetoggle as the popover opens, whether by popovertarget, show() or showPopover()."
+    },
+    {
+      "name": "pop-over:hide",
+      "detail": "{ state: 'closed' }",
+      "description": "Fired (bubbles, composed) on beforetoggle as the popover closes, including light-dismiss and Escape."
+    }
+  ],
+  "properties": [
+    {
+      "name": "open",
+      "type": "boolean",
+      "description": "Read-only. True while the popover is open (:popover-open)."
+    }
+  ],
+  "methods": [
+    {
+      "name": "show()",
+      "description": "Open the popover (no-op if already open)."
+    },
+    {
+      "name": "hide()",
+      "description": "Close the popover (no-op if already closed)."
+    },
+    {
+      "name": "toggle()",
+      "description": "Open if closed, close if open."
     }
   ],
   "childAttributes": [],

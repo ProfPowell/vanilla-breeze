@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scoped Hotkeys and the Single-Key Preference</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <main data-layout="stack" data-layout-gap="l">
+    <p>Click inside this window first. <kbd data-hotkey="/">/</kbd> focuses search anywhere on the page. <kbd data-hotkey="b">B</kbd> only works while focus is inside the editor.</p>
+
+    <search>
+      <form-field>
+        <label for="q">Search</label>
+        <input type="search" id="q" data-hotkey="/" data-hotkey-action="focus" data-hotkey-label="Focus search" />
+      </form-field>
+    </search>
+
+    <section id="editor" tabindex="-1" aria-labelledby="editor-title" data-layout="stack" data-layout-gap="s">
+      <h1 id="editor-title">Editor (click here, then press B)</h1>
+      <p data-layout="cluster" data-layout-gap="s">
+        <button type="button" id="bold" data-hotkey="b" data-hotkey-scope="#editor" aria-pressed="false">Bold</button>
+      </p>
+    </section>
+
+    <label><input type="checkbox" id="char-pref" data-switch="s" checked /> Single-key shortcuts</label>
+    <p><small>Turning this off (as the settings panel does) stops <kbd>/</kbd>; the scoped <kbd>B</kbd> keeps working because it is only active while the editor has focus.</small></p>
+  </main>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    import { setCharShortcutsEnabled, charShortcutsEnabled } from '/src/lib/char-shortcuts.js';
+    const bold = document.getElementById('bold');
+    bold.addEventListener('click', () => {
+      bold.setAttribute('aria-pressed', String(bold.getAttribute('aria-pressed') !== 'true'));
+    });
+    const pref = document.getElementById('char-pref');
+    pref.checked = charShortcutsEnabled();
+    pref.addEventListener('change', () => setCharShortcutsEnabled(pref.checked));
+  </script>
+</body>
+</html>

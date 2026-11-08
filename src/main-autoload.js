@@ -42,6 +42,7 @@ import './effects/scramble.js';
 import './effects/ticker.js';
 import './effects/animate-image.js';
 import './effects/flipboard.js';
+import './effects/stamp.js';
 import './effects/rating.js';
 
 // Initialize theme system

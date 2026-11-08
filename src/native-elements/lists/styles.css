@@ -1,7 +1,23 @@
 /* lists: ul, ol, li, dl, dt, dd styling */
 
-ul, ol {
+ul {
   padding-inline-start: var(--size-l);
+}
+
+/* Ordered lists. Markers sit outside the item, in the inline-start padding,
+   so a marker wider than the indent overflows the list edge and is clipped
+   by any overflow container ("VIII.", "100.", "1000."). --ol-indent sets the
+   indent explicitly; otherwise the indent widens to 2.5em for the lists CSS
+   can tell will carry long markers: roman numerals, a custom start, reversed
+   counts, li value jumps, 27+ letter items and 100+ items. CSS cannot measure
+   a marker, so set --ol-indent for wide CSS list-style-types (cjk-ideographic,
+   arabic-indic with long counts) or a large start. */
+ol {
+  padding-inline-start: var(--ol-indent, var(--size-l));
+}
+
+ol:where([type="i"], [start], [reversed], :has(> li[value], > li:nth-child(100)), [type="a"]:has(> li:nth-child(27))) {
+  padding-inline-start: var(--ol-indent, 2.5em);
 }
 
 /* Flow spacing for stacked (block-flow) list items. Wrapped in :where() so it
@@ -54,7 +70,7 @@ ol.inline {
   padding-inline-start: 0;
   list-style: none;
 
-  & li {
+  & > li {
     margin-block-start: 0;
   }
 }
@@ -65,7 +81,7 @@ ol.unstyled {
   padding-inline-start: 0;
   list-style: none;
 
-  & li {
+  & > li {
     margin-block-start: 0;
   }
 }
@@ -97,14 +113,17 @@ dl[data-striped] > dd + dt {
 }
 
 /* Flat pairs: stripe odd dt and the dd run that follows it (up to four dd).
-   Flat striping counts <dt> elements, so a group with several <dt> shifts
-   the parity — wrap multi-term groups in <div> (or <dl-item>) instead. */
-dl[data-striped] > dt:nth-of-type(odd),
-dl[data-striped] > dt:nth-of-type(odd) + dd,
-dl[data-striped] > dt:nth-of-type(odd) + dd + dd,
-dl[data-striped] > dt:nth-of-type(odd) + dd + dd + dd,
-dl[data-striped] > dt:nth-of-type(odd) + dd + dd + dd + dd {
-  background: var(--color-surface-raised);
+   Flat striping counts visible <dt> elements, so a group with several <dt>
+   shifts the parity — wrap multi-term groups in <div> (or <dl-item>)
+   instead. Hidden (filtered) entries are skipped so the alternation holds.
+   The stripe is the shared --color-row-stripe token, the same wash as
+   table[data-striped]. */
+dl[data-striped] > dt:nth-child(odd of dt:not([hidden])),
+dl[data-striped] > dt:nth-child(odd of dt:not([hidden])) + dd,
+dl[data-striped] > dt:nth-child(odd of dt:not([hidden])) + dd + dd,
+dl[data-striped] > dt:nth-child(odd of dt:not([hidden])) + dd + dd + dd,
+dl[data-striped] > dt:nth-child(odd of dt:not([hidden])) + dd + dd + dd + dd {
+  background: var(--color-row-stripe);
 }
 
 /* Wrapped groups (<div> or <dl-item>): stripe odd groups as a whole */
@@ -113,8 +132,8 @@ dl[data-striped] > :is(div, dl-item) {
   padding-block: var(--size-2xs);
 }
 
-dl[data-striped] > :is(div, dl-item):nth-of-type(odd) {
-  background: var(--color-surface-raised);
+dl[data-striped] > :nth-child(odd of :is(div, dl-item):not([hidden])) {
+  background: var(--color-row-stripe);
 }
 
 /* --- Description list variants ---
@@ -235,25 +254,70 @@ ol.meta {
   list-style: none;
   padding: 0;
 
-  & li {
+  & > li {
     margin-block-start: 0;
   }
 
-  & li + li::before {
+  /* Separators are decorative: the "/ ''" alt text keeps screen readers
+     from reading "dot", "vertical line" or "slash" between items (the same
+     silent form as hgroup and nav.breadcrumb). Each rule declares the plain
+     form first as the fallback for engines without content alt text. */
+  & > li + li::before {
     content: var(--sep-list, "\00B7");
+    content: var(--sep-list, "\00B7") / "";
     padding-inline: 0.35em;
   }
 }
 
-/* Separator variants */
-ul.meta[data-separator="pipe"] li + li::before { content: var(--sep-pipe, "|"); }
-ul.meta[data-separator="dash"] li + li::before { content: var(--sep-ndash, "\2013"); }
-ul.meta[data-separator="slash"] li + li::before { content: "/"; }
+/* Separator variants. Child combinators throughout: a nested list keeps its
+   own markers/separators instead of inheriting the parent's. */
+.meta:is(ul, ol)[data-separator="pipe"] > li + li::before {
+  content: var(--sep-pipe, "|");
+  content: var(--sep-pipe, "|") / "";
+}
+
+.meta:is(ul, ol)[data-separator="dash"] > li + li::before {
+  content: var(--sep-ndash, "\2013");
+  content: var(--sep-ndash, "\2013") / "";
+}
+
+.meta:is(ul, ol)[data-separator="slash"] > li + li::before {
+  content: var(--sep-slash, "/");
+  content: var(--sep-slash, "/") / "";
+}
 
 /* --- List Marker Variants --- */
-/* Override list markers using character tokens */
+/* Override list markers using character tokens. The glyphs are decorative:
+   "/ ''" alt text keeps "heavy check mark" or "black star" out of the
+   spoken list item. A data-marker list carries no state; a real task list
+   needs checkboxes. */
 
-ul[data-marker="check"] li::marker { content: var(--marker-check, "\2714") "\2009"; color: var(--color-success, currentColor); }
-ul[data-marker="arrow"] li::marker { content: var(--marker-arrow, "\27A4") "\2009"; color: var(--color-interactive); }
-ul[data-marker="dash"] li::marker  { content: var(--marker-dash, "\2043") "\2009"; }
-ul[data-marker="star"] li::marker  { content: "\2605\2009"; color: var(--color-interactive); }
+ul[data-marker="check"] > li::marker {
+  content: var(--marker-check, "\2714") "\2009";
+  content: var(--marker-check, "\2714") "\2009" / "";
+  color: var(--color-success, currentColor);
+}
+
+ul[data-marker="arrow"] > li::marker {
+  content: var(--marker-arrow, "\25B8") "\2009";
+  content: var(--marker-arrow, "\25B8") "\2009" / "";
+  color: var(--color-interactive);
+}
+
+ul[data-marker="dash"] > li::marker {
+  content: var(--marker-dash, "\2043") "\2009";
+  content: var(--marker-dash, "\2043") "\2009" / "";
+}
+
+ul[data-marker="star"] > li::marker {
+  content: var(--marker-star, "\2605") "\2009";
+  content: var(--marker-star, "\2605") "\2009" / "";
+  color: var(--color-interactive);
+}
+
+/* ::marker cannot be transformed, so RTL swaps in the mirrored glyph of the
+   same pair */
+ul[data-marker="arrow"]:dir(rtl) > li::marker {
+  content: var(--marker-arrow-rtl, "\25C2") "\2009";
+  content: var(--marker-arrow-rtl, "\25C2") "\2009" / "";
+}

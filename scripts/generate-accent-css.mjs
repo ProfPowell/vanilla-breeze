@@ -31,7 +31,24 @@ const DERIVED = `
     --color-secondary-subtle: oklch(from var(--color-secondary) 0.95 0.03 h);
     --color-accent: oklch(var(--lightness-accent) var(--chroma-accent) var(--hue-accent));
     --color-accent-hover: oklch(from var(--color-accent) calc(l - 0.08) c h);
-    --color-accent-subtle: oklch(from var(--color-accent) 0.95 0.03 h);`;
+    --color-accent-subtle: oklch(from var(--color-accent) 0.95 0.03 h);
+    --color-interactive: var(--color-primary);
+    --color-interactive-hover: var(--color-primary-hover);
+    --color-interactive-active: var(--color-primary-active);
+    --color-hover-text: var(--color-interactive);
+    --color-active-text: var(--color-interactive);
+    --color-border-focus: var(--color-primary);
+    --color-focus-ring: var(--color-primary);
+    --focus-ring-color: var(--color-focus-ring);`;
+
+// Mirrors the auto-contrast block in src/tokens/colors.css. Those tokens are
+// computed on :root, so without re-declaring them a scoped accent would keep
+// the page's text-on-brand colour.
+const DERIVED_AUTO = `
+      --color-text-on-primary-auto: contrast-color(var(--color-primary));
+      --color-text-on-secondary-auto: contrast-color(var(--color-secondary));
+      --color-text-on-accent-auto: contrast-color(var(--color-accent));
+      --color-text-on-interactive-auto: contrast-color(var(--color-interactive));`;
 
 const decls = (seeds) => Object.entries(seeds).map(([k, v]) => `    ${k}: ${v};`).join('\n');
 
@@ -54,11 +71,19 @@ export function renderAccentCss() {
  * their own --color-primary keep their palette.
  *
  * Imported after the brand themes so a specificity tie with their seed rules
- * goes to the accent. The derived colours below are re-declared at zero
- * specificity: any theme that sets them concretely still wins.
+ * goes to the accent. The derived colours below (brand, interactive, focus
+ * ring and the text-on-brand auto colours) are re-declared at zero
+ * specificity, so a scoped accent repaints buttons, links and focus rings
+ * inside it; any theme that sets them concretely on the same element still
+ * wins.
  */
 @layer bundle-theme {
   :where([data-accent]) {${DERIVED}
+  }
+
+  @supports (color: contrast-color(red)) {
+    :where([data-accent]) {${DERIVED_AUTO}
+    }
   }
 
 ${blocks.join('\n')}}

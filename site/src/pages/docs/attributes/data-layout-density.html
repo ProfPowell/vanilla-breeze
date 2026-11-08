@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-layout-density"
-description: "Page-wide density variant. Set on <html> or <body> to compress or expand the entire VB spacing scale (--size-3xs through --size-3xl) without touching individual layouts. Compact for dashboards/admin UIs, spacious for marketing/landing pages."
+description: "Region-wide density variant. Set on <html>, <body> or any container to swap the VB spacing scale (--size-3xs through --size-3xl) for a tighter or looser one, without touching individual layouts. Compact for dashboards and admin UIs, spacious for marketing pages."
 attributeName: data-layout-density
 category: layout
 attributeType: data
@@ -13,13 +13,23 @@ crumbLabel: Data Attributes
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>data-layout-density</code> attribute is a single-knob switch over VB's spacing scale. Set it once on <code>&lt;html&gt;</code> (or any ancestor) and every <code>--size-*</code> token in scope shifts in lockstep. Layouts already using <a href="/docs/attributes/data-layout/"><code>data-layout-gap</code></a>, <code>--size-m</code>, <code>--size-l</code>, etc. recompute automatically — no per-component changes.</p>
-  <p>Two values:</p>
+  <p>The <code>data-layout-density</code> attribute is a single switch over VB's spacing scale. Set it on <code>&lt;html&gt;</code>, <code>&lt;body&gt;</code> or any container, and the <code>--size-*</code> tokens inside that subtree are replaced. Layouts and components that read those tokens (<a href="/docs/attributes/data-layout/"><code>data-layout-gap</code></a>, padding, margins, component spacing) recompute automatically &mdash; no per-component changes.</p>
   <ul>
     <li><strong><code>compact</code></strong> &mdash; tighter spacing for dashboards, data tables, admin UIs.</li>
     <li><strong><code>spacious</code></strong> &mdash; generous spacing for marketing pages, hero-heavy landings.</li>
-    <li>Omitting the attribute is the default scale.</li>
+    <li>Omitting the attribute keeps the default scale.</li>
   </ul>
+
+  <aside class="note">
+    <p><strong>Not to be confused with</strong> <code>data-density</code> (<code>compact</code>, plus <code>comfortable</code> on tables), a component attribute on <a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a>, <a href="/docs/elements/native/dl/"><code>&lt;dl&gt;</code></a> and <a href="/docs/elements/native/nav/"><code>nav.tree</code></a> that changes only that component's cell or row padding. <code>data-layout-density</code> rewrites the spacing tokens for everything in its subtree.</p>
+  </aside>
+
+  <browser-window
+    src="/docs/examples/demos/density-basic.html"
+    url="https://vanilla-breeze.com/density"
+    title="Compact, default and spacious"
+    shadow>
+  </browser-window>
 </section>
 
 <section>
@@ -32,8 +42,8 @@ crumbLabel: Data Attributes
 
   <code-block language="html" show-lines label="Density on a single section" data-escape><body>
   <main>...</main>
-  <section data-layout-density="spacious" class="marketing">
-    <h2>Pricing</h2>
+  <section data-layout-density="spacious" aria-labelledby="pricing">
+    <h2 id="pricing">Pricing</h2>
     ...
   </section>
 </body></code-block>
@@ -41,48 +51,61 @@ crumbLabel: Data Attributes
 
 <section>
   <h2>What changes</h2>
-  <p>The attribute redefines the size scale within its subtree. The full <code>--size-3xs</code> through <code>--size-3xl</code> scale is replaced; everything that consumes those tokens (gap, padding, margin, layout primitives, components) shifts by the same factor.</p>
+  <p>Each step of the <code>--size-3xs</code> through <code>--size-3xl</code> scale is replaced with a fixed value from the table below. The steps do not all shift by the same factor: <code>compact</code> halves the three smallest steps, takes <code>s</code> to two thirds and the rest to three quarters; <code>spacious</code> doubles the small steps and adds about a third to a half to the large ones.</p>
 
-  <table class="prose">
+  <table>
     <thead><tr><th>Token</th><th>Default</th><th><code>compact</code></th><th><code>spacious</code></th></tr></thead>
     <tbody>
-      <tr><td><code>--size-3xs</code></td><td>2px</td>      <td>1px</td>  <td>4px</td></tr>
-      <tr><td><code>--size-2xs</code></td><td>4px</td>      <td>2px</td>  <td>8px</td></tr>
-      <tr><td><code>--size-xs</code></td> <td>8px</td>      <td>4px</td>  <td>12px</td></tr>
-      <tr><td><code>--size-s</code></td>  <td>12px</td>     <td>8px</td>  <td>16px</td></tr>
-      <tr><td><code>--size-m</code></td>  <td>16px</td>     <td>12px</td> <td>24px</td></tr>
-      <tr><td><code>--size-l</code></td>  <td>24px</td>     <td>16px</td> <td>32px</td></tr>
-      <tr><td><code>--size-xl</code></td> <td>32px</td>     <td>24px</td> <td>48px</td></tr>
-      <tr><td><code>--size-2xl</code></td><td>48px</td>     <td>32px</td> <td>64px</td></tr>
-      <tr><td><code>--size-3xl</code></td><td>64px</td>     <td>48px</td> <td>96px</td></tr>
+      <tr><td><code>--size-3xs</code></td><td>0.125rem</td><td>0.0625rem</td><td>0.25rem</td></tr>
+      <tr><td><code>--size-2xs</code></td><td>0.25rem</td> <td>0.125rem</td> <td>0.5rem</td></tr>
+      <tr><td><code>--size-xs</code></td> <td>0.5rem</td>  <td>0.25rem</td>  <td>0.75rem</td></tr>
+      <tr><td><code>--size-s</code></td>  <td>0.75rem</td> <td>0.5rem</td>   <td>1rem</td></tr>
+      <tr><td><code>--size-m</code></td>  <td>1rem</td>    <td>0.75rem</td>  <td>1.5rem</td></tr>
+      <tr><td><code>--size-l</code></td>  <td>1.5rem</td>  <td>1rem</td>     <td>2rem</td></tr>
+      <tr><td><code>--size-xl</code></td> <td>2rem</td>    <td>1.5rem</td>   <td>3rem</td></tr>
+      <tr><td><code>--size-2xl</code></td><td>3rem</td>    <td>2rem</td>     <td>4rem</td></tr>
+      <tr><td><code>--size-3xl</code></td><td>4rem</td>    <td>3rem</td>     <td>6rem</td></tr>
     </tbody>
   </table>
-  <p>Density also adjusts reading rhythm: <code>compact</code> sets <code>line-height: 1.4</code> and a smaller <code>--font-size-s</code> (0.8125rem); <code>spacious</code> sets <code>line-height: 1.8</code>. <a href="/docs/examples/demos/density-basic.html">See the density demo</a>.</p>
+  <p>Values are shown at the default <code>--size-unit</code> of 0.25rem. Like the base scale, every density step is a multiple of <code>--size-unit</code>, so it follows the root font size, the <a href="/docs/fluid-scaling/"><code>data-fluid</code></a> profiles and the large-text accessibility theme, all of which work by changing that unit.</p>
 
-  <p>The values are defined in <a href="https://github.com/profpowell/vanilla-breeze/blob/main/src/utils/density.css"><code>src/utils/density.css</code></a> &mdash; consult the source for the canonical scale.</p>
+  <p>Density also adjusts reading rhythm: <code>compact</code> sets <code>line-height: 1.4</code> and a smaller <code>--font-size-s</code> (0.8125rem); <code>spacious</code> sets <code>line-height: 1.8</code>.</p>
+
+  <p>The values are defined in <a href="https://github.com/profpowell/vanilla-breeze/blob/main/src/utils/density.css"><code>src/utils/density.css</code></a>.</p>
 </section>
 
 <section>
   <h2>What does NOT change</h2>
   <ul>
-    <li><strong>Type scale</strong> &mdash; <code>--font-size-*</code> tokens are untouched, except <code>--font-size-s</code> in <code>compact</code> (line-height changes as noted above).</li>
-    <li><strong>Color tokens</strong> &mdash; unaffected.</li>
-    <li><strong>Border-radius / shadow</strong> &mdash; unaffected.</li>
-    <li><strong>Component-specific tokens</strong> like <code>--button-padding-inline</code> &mdash; unaffected unless they reference <code>--size-*</code>.</li>
+    <li><strong>Values already resolved outside the region</strong> &mdash; only tokens <em>used</em> inside the subtree pick up the new scale. A custom property declared on <code>:root</code> as <code>var(--size-m)</code> was resolved at the root, so it keeps the default value inside a density region. Declare derived tokens on the element that uses them, or inside the region.</li>
+    <li><strong>Type scale</strong> &mdash; <code>--font-size-*</code> tokens are untouched, except <code>--font-size-s</code> in <code>compact</code>.</li>
+    <li><strong>Color, border-radius and shadow tokens</strong> &mdash; unaffected.</li>
+    <li><strong>Component-specific tokens</strong> like <code>--button-padding-inline</code> &mdash; unaffected unless they reference <code>--size-*</code> where they are used.</li>
   </ul>
   <p>If you want a denser feel for body text too, layer this attribute with a smaller <code>--font-size-m</code> in your theme.</p>
 </section>
 
 <section>
-  <h2>Composition</h2>
+  <h2>Accessibility</h2>
   <ul>
-    <li><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> &mdash; commonly paired (compact density on a dashboard page-layout).</li>
-    <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> + <code>data-layout-gap</code> &mdash; the gap scale recomputes automatically.</li>
-    <li>VB themes &mdash; orthogonal; density is structural, themes are decorative.</li>
+    <li><code>compact</code> sets <code>--font-size-s</code> to 0.8125rem (13px at the default root size) and <code>line-height: 1.4</code>. Keep small text for secondary information, and check legibility in compact regions.</li>
+    <li>Users who override text spacing (WCAG 1.4.12) or enlarge text must not lose content. Because the density scale is in rem multiples, spacing grows with the root font size; avoid fixed heights in compact regions so content can expand.</li>
+    <li>Compact spacing shrinks the space around controls, not the controls' own minimum target size. Check that buttons and links in dense toolbars and tables still meet the 24&times;24px target size (WCAG 2.5.8).</li>
   </ul>
 </section>
 
 <section>
   <h2>When to use vs theming</h2>
   <p>Pick <code>data-layout-density</code> when the whole information density of a region needs to shift &mdash; admin dashboards, data-heavy tables, signed-in app shells. Pick a custom theme when only the look (colors, typography, shadows) should change. The two compose: an admin section can use <code>data-layout-density="compact"</code> with the standard brand theme above it.</p>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> &mdash; commonly paired (compact density on a dashboard page layout).</li>
+    <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> + <code>data-layout-gap</code> &mdash; the gap scale recomputes automatically.</li>
+    <li><a href="/docs/fluid-scaling/">Fluid Scaling</a> &mdash; viewport-responsive <code>--size-unit</code>; density composes with it.</li>
+    <li><code>data-density</code> on <a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a> &mdash; per-component row density.</li>
+    <li>VB themes &mdash; orthogonal; density is structural, themes are decorative.</li>
+  </ul>
 </section>

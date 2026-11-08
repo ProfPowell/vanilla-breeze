@@ -9,32 +9,64 @@
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "Heading levels to include (default: 'h2,h3')"
+      "default": "h2,h3",
+      "description": "Comma-separated heading levels to include (auto-generated mode)"
     },
     {
-      "name": "title",
-      "kind": "native",
+      "name": "scope",
+      "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "ToC title (default: 'On this page')"
+      "default": "main",
+      "description": "CSS selector for the container whose headings are scanned (first match wins; docs layouts use 'main article')"
     },
     {
-      "name": "href",
-      "kind": "native",
-      "purpose": "config"
+      "name": "data-title",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "On this page",
+      "description": "Summary text and nav aria-label of the generated ToC"
     },
+    {
+      "name": "orientation",
+      "kind": "host-api",
+      "purpose": "visual-variant",
+      "type": "enum",
+      "values": ["horizontal"],
+      "description": "'horizontal' renders an inline, horizontally scrollable bar (summary hidden, nesting flattened). Omit for the default vertical tree"
+    }
+  ],
+  "childAttributes": [
     {
       "name": "data-toc-ignore",
-      "kind": "data",
-      "purpose": "config"
+      "on": "heading (or any ancestor) inside the scope container",
+      "type": "boolean",
+      "description": "Exclude the heading, or every heading inside the marked container, from the generated ToC"
+    }
+  ],
+  "properties": [
+    {
+      "name": "entries",
+      "type": "Array<{ id?: string, text: string, level: number }>",
+      "readonly": true,
+      "description": "Current ToC entries derived from the page headings"
+    }
+  ],
+  "methods": [
+    {
+      "name": "refresh",
+      "returns": "void",
+      "description": "Rebuild the ToC (auto mode) or re-scan authored links (manual mode) after content changes"
     }
   ],
   "events": [
     {
-      "name": "page-toc:navigate"
+      "name": "page-toc:navigate",
+      "detail": "{ id }",
+      "description": "Fired when a ToC link is activated; id is the target heading's id"
     }
   ],
-  "childAttributes": [],
   "structure": [],
   "htmlvalidate": {
     "flow": true,

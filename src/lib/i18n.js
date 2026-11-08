@@ -43,7 +43,8 @@ export const RTL_LANGUAGES = new Set([
   'yi',   // Yiddish
 ]);
 
-// Languages where ruby annotation is conventional
+// Languages where ruby annotation is conventional. Keep in sync with the
+// data-ruby="auto" and rt font rules in src/native-elements/i18n/styles.css.
 export const RUBY_LANGUAGES = new Set(['ja', 'zh', 'ko', 'yue', 'wuu']);
 
 /**
@@ -75,13 +76,16 @@ export function usesRuby(locale) {
 
 /**
  * Get the active locale, in priority order:
- *   1. <html lang> attribute
- *   2. navigator.language
- *   3. 'en' fallback
+ *   1. nearest [lang] ancestor of `el` (when an element is passed)
+ *   2. <html lang> attribute
+ *   3. navigator.language
+ *   4. 'en' fallback
+ * @param {Element} [el] - element whose nearest `[lang]` wins over the document
  * @returns {string}
  */
-export function getLocale() {
+export function getLocale(el) {
   return (
+    (el && /** @type {HTMLElement|null} */ (el.closest('[lang]'))?.lang) ||
     document.documentElement.lang ||
     navigator.language ||
     'en'

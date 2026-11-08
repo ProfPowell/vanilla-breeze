@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>formnovalidate: Publish validates, Save draft does not</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <form class="stacked" id="nv-form">
+      <p>Leave both fields empty. Publish is stopped by the browser; Save draft goes through.</p>
+
+      <form-field>
+        <label for="nv-title">Title</label>
+        <input type="text" id="nv-title" name="title" required />
+      </form-field>
+
+      <form-field>
+        <label for="nv-body">Body</label>
+        <textarea id="nv-body" name="body" rows="3" required minlength="20"></textarea>
+        <output class="hint" for="nv-body">At least 20 characters to publish.</output>
+      </form-field>
+
+      <footer class="actions">
+        <button type="submit" name="intent" value="publish">Publish</button>
+        <button type="submit" name="intent" value="draft" formnovalidate class="secondary">Save draft</button>
+      </footer>
+      <pre><output id="nv-result">Submitted data appears here.</output></pre>
+    </form>
+  </layout-center>
+
+  <script type="module">
+    const form = document.querySelector('#nv-form');
+    const result = document.querySelector('#nv-result');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(form, e.submitter);
+      result.textContent = [...data].map(([name, value]) => `${name} = ${value}`).join('\n');
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

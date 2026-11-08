@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "contenteditable"
-description: "Make any element editable by the user. Supports rich text or plaintext-only modes for inline editing experiences."
+description: "Let users edit an element's content in place, as rich text or plain text only. Covers the roles and labels you must add, sanitising saved HTML, and VB's markdown-editable enhancement."
 attributeName: contenteditable
 attributeType: native
 nativeGroup: Interactivity
@@ -12,112 +12,148 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>contenteditable</code> attribute makes any HTML element editable by the user. It turns the element into a free-form text input without needing a <code>&lt;textarea&gt;</code> or <code>&lt;input&gt;</code>.</p>
-<p>This is the foundation for inline editing, note-taking interfaces, and rich text editors.</p>
-<p><strong>Applies to:</strong> Any HTML element</p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>contenteditable</code> attribute makes an element's content editable in place. The user can click into it, type, delete and paste, and the DOM changes as they do. It is the base of inline editors, note fields and rich-text editors.</p>
+  <p>An editable element is <strong>not a form control</strong>. It has no <code>name</code> or <code>value</code>, isn't submitted with a form, has no built-in validation, and gets no textbox role. You add those parts yourself.</p>
+  <p><strong>Applies to:</strong> any HTML element (it is a global attribute).</p>
 
-<h2>Values</h2>
+  <browser-window
+    src="/docs/examples/demos/attr-contenteditable-basic.html"
+    url="https://vanilla-breeze.com/contenteditable"
+    title="contenteditable"
+    shadow>
+  </browser-window>
 
-<table>
-  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
-  <tbody>
-    <tr><td><code>true</code></td><td>Element is editable with rich text support (bold, italic, links via keyboard shortcuts)</td></tr>
-    <tr><td><code>plaintext-only</code></td><td>Element is editable but strips all formatting. Paste operations lose rich text.</td></tr>
-    <tr><td><code>false</code></td><td>Not editable (the default)</td></tr>
-  </tbody>
-</table>
+  <code-block language="html" show-lines label="A labelled plain-text editing region" data-escape><h2 id="note-label">Meeting note</h2>
+<p contenteditable="plaintext-only" role="textbox" aria-multiline="true" aria-labelledby="note-label">Agreed to move the launch to 14 November. Priya owns the checklist.</p>
+<p>Characters: <span id="note-count">0</span></p>
 
-<code-block language="html" label="Basic usage" data-escape><!-- Make a paragraph editable -->
-<p contenteditable="true">Click to edit this text.</p>
-
-<!-- Editable heading -->
-<h2 contenteditable="true">Editable Title</h2></code-block>
-
-<div class="example">
-  <p contenteditable="true">Click to edit this text. Try typing, selecting, and using keyboard shortcuts.</p>
-</div>
-
-<h2>Plaintext-Only Mode</h2>
-<p>The <code>plaintext-only</code> value is ideal when you want editable text without formatting. Pasted content is stripped of all HTML, and keyboard shortcuts like <kbd>Ctrl+B</kbd> have no effect.</p>
-
-<code-block language="html" label="Plaintext-only editing" data-escape><!-- Plaintext only: strips formatting on paste -->
-<div contenteditable="plaintext-only">
-  Type here. Pasted content loses all formatting.
-</div></code-block>
-
-<div class="example">
-  <div contenteditable="plaintext-only" style="padding: var(--size-s); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-s); min-block-size: 3lh;">Type here. Paste strips formatting.</div>
-</div>
-
-<h2>Rich Text Editing</h2>
-<p>With <code>contenteditable="true"</code>, the browser provides built-in formatting:</p>
-<ul>
-  <li><kbd>Ctrl+B</kbd> / <kbd>Cmd+B</kbd> for bold</li>
-  <li><kbd>Ctrl+I</kbd> / <kbd>Cmd+I</kbd> for italic</li>
-  <li><kbd>Ctrl+U</kbd> / <kbd>Cmd+U</kbd> for underline</li>
-</ul>
-
-<code-block language="html" label="Rich text blockquote" data-escape><!-- Editable blockquote -->
-<blockquote contenteditable="true">
-  Click here to edit this quote. You can use <strong>bold</strong>
-  and <em>italic</em> formatting.
-</blockquote></code-block>
-
-<h2>JavaScript API</h2>
-<p>Listen for <code>input</code> events to react to changes, and read content via <code>textContent</code> or <code>innerHTML</code>.</p>
-
-<code-block language="js" label="Events and reading content" data-escape>const el = document.querySelector('[contenteditable]');
-
-// Fires when content changes
-el.addEventListener('input', (e) => {
-  console.log('New content:', el.textContent);
-});
-
-// Read the content
-const text = el.textContent;       // Plain text
-const html = el.innerHTML;         // With formatting
-
-// Set the content
-el.textContent = 'New plain text';
-el.innerHTML = '<strong>New</strong> formatted text';</code-block>
-
-<h2>Practical Example</h2>
-<p>An editable note card with a plaintext body:</p>
-
-<code-block language="html" label="Editable note" data-escape><article>
-  <h3 contenteditable="true">Note Title</h3>
-  <div contenteditable="plaintext-only">
-    Click to start writing your note...
-  </div>
-</article></code-block>
-
-<div class="example">
-  <article style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-s);">
-    <h3 contenteditable="true" style="margin-block-end: var(--size-s);">Note Title</h3>
-    <div contenteditable="plaintext-only" style="min-block-size: 3lh; color: var(--color-text-muted);">Click to start writing your note...</div>
-  </article>
-</div>
-
-<h2>Accessibility</h2>
-<ul>
-  <li>Contenteditable elements are automatically focusable and receive an implicit <code>role="textbox"</code></li>
-  <li>Screen readers announce them as editable regions</li>
-  <li>Add <code>aria-label</code> or <code>aria-labelledby</code> if the editable region has no visible label</li>
-  <li>Use <code>aria-multiline="true"</code> for multi-line editable regions</li>
-</ul>
-
-<h2>Limitations</h2>
-<ul>
-  <li><strong>No form participation:</strong> contenteditable elements are not form controls. Their content is not included in form submissions. Use a hidden <code>&lt;input&gt;</code> or JavaScript to bridge the gap.</li>
-  <li><strong>No validation:</strong> Unlike <code>&lt;input&gt;</code> and <code>&lt;textarea&gt;</code>, there is no built-in constraint validation.</li>
-  <li><strong>Browser differences:</strong> Rich text editing behavior varies across browsers, especially for line breaks and formatting commands.</li>
-</ul>
+<script type="module">
+  const note = document.querySelector('[contenteditable]');
+  const count = document.getElementById('note-count');
+  const update = () => { count.textContent = String(note.textContent.length); };
+  note.addEventListener('input', update);
+  update();
+</script></code-block>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>true</code>, or empty (<code>contenteditable</code> / <code>contenteditable=""</code>)</td><td>Editable, rich text. Pasted HTML keeps its formatting, and some browsers apply formatting shortcuts.</td></tr>
+      <tr><td><code>plaintext-only</code></td><td>Editable, text only. Pasted content arrives as plain text and formatting shortcuts do nothing.</td></tr>
+      <tr><td><code>false</code></td><td>Not editable, even inside an editable ancestor.</td></tr>
+      <tr><td>Absent, or an invalid value</td><td>Inherit: editable if the parent is.</td></tr>
+    </tbody>
+  </table>
+  <p>Editability is inherited: every descendant of an editable element is editable unless it sets <code>contenteditable="false"</code>. In script, <code>el.contentEditable</code> reads and sets <code>"true"</code>, <code>"false"</code>, <code>"plaintext-only"</code> or <code>"inherit"</code>, and <code>el.isContentEditable</code> reports the result after inheritance.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Inline markdown with data-markdown-editable</h3>
+  <p>VB's <code>data-markdown-editable</code> turns an element into an inline markdown field: raw markdown while focused, rendered and sanitised HTML after blur.</p>
+  <browser-window
+    src="/docs/examples/demos/markdown-editable-basic.html"
+    url="https://vanilla-breeze.com/markdown-editable"
+    title="data-markdown-editable"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="data-markdown-editable" data-escape><p data-markdown-editable>This is **bold**, *italic*, ~~strikethrough~~, and `inline code`.</p>
+
+<script type="module">
+  document.addEventListener('markdown-editable:change', (event) => {
+    const { value, html } = event.detail; // raw markdown and rendered HTML
+    saveNote(value);
+  });
+</script></code-block>
+
+  <h3>Controlling edits with beforeinput</h3>
+  <p><code>document.execCommand()</code> is deprecated. To control what an edit does, listen for <code>beforeinput</code>: its <code>inputType</code> says what is about to happen (<code>insertText</code>, <code>insertParagraph</code>, <code>formatBold</code>, <code>insertFromPaste</code>…), and <code>preventDefault()</code> cancels most of them.</p>
+  <code-block language="javascript" show-lines label="A single-line rich field with no bold or italic" data-escape>const title = document.getElementById('card-title');
+
+title.addEventListener('beforeinput', (event) => {
+  if (event.inputType === 'insertParagraph' ||
+      event.inputType === 'insertLineBreak' ||
+      event.inputType.startsWith('format')) {
+    event.preventDefault();
+  }
+});</code-block>
+
+  <h3>Saving the content</h3>
+  <p>Read <code>textContent</code> (or <code>innerText</code>, which keeps line breaks) for plain text. Only read <code>innerHTML</code> when you need the formatting, and treat it as untrusted (see Security).</p>
+  <code-block language="javascript" show-lines label="Plain text out, plain text in" data-escape>const text = note.innerText;     // what the user typed
+note.textContent = savedText;      // never innerHTML for user text</code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a> for standard multi-line text input</li>
-    <li><a href="/docs/attributes/data-grow/"><code>data-grow</code></a> for auto-expanding textareas</li>
+    <li><strong>No styling.</strong> VB has no <code>[contenteditable]</code> rule, so an editable region looks like the element it is. Give it a visible edge, as the demo's own CSS does. Focus shows the browser's default outline.</li>
+    <li><strong><code>data-markdown-editable</code></strong> (<code>src/utils/markdown-editable-init.js</code>, loaded on demand) sets <code>contenteditable="true"</code>, <code>role="textbox"</code> and <code>aria-multiline="false"</code> on the element. While focused it shows the raw markdown and sets <code>data-md-editing</code> (monospace text and an outline, from <code>src/utils/markdown-editable.css</code>). On blur it renders the inline markdown, sanitises it, and stores the source in <code>data-markdown-value</code>. It fires <code>markdown-editable:change</code> with <code>{ value, html }</code>. On a <code>&lt;textarea&gt;</code> or <code>&lt;input&gt;</code> it adds a preview <code>&lt;output&gt;</code> instead.</li>
+    <li><strong>Sanitising.</strong> Rendered markdown goes through VB's internal sanitiser (<code>src/lib/sanitize-html.js</code>), which inserts nodes rather than re-parsing a string. It isn't a public export; for your own editors see Security.</li>
+    <li><strong>Inserting at the caret.</strong> <a href="/docs/elements/web-components/emoji-picker/"><code>&lt;emoji-picker for="id"&gt;</code></a> inserts into a contenteditable target at the caret and fires an <code>input</code> event.</li>
+    <li><strong>Keyboard shortcuts stay out of the way.</strong> VB's shared hotkey binder ignores keys typed into contenteditable regions (and inputs) unless a binding is global, so <a href="/docs/attributes/data-hotkey/"><code>data-hotkey</code></a> single-key shortcuts don't fire while someone types.</li>
+    <li><strong>For whole documents</strong>, use <a href="/docs/elements/web-components/markdown-editor/"><code>&lt;markdown-editor&gt;</code></a>, which wraps a real <code>&lt;textarea&gt;</code> and so takes part in forms.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>No implicit role.</strong> <code>contenteditable</code> doesn't change an element's role: an editable <code>&lt;p&gt;</code> is still announced as a paragraph, with an editable state. For a field-like region add <code>role="textbox"</code>, plus <code>aria-multiline="true"</code> when <kbd>Enter</kbd> adds a line.</li>
+    <li><strong>Name it.</strong> A textbox needs an accessible name: <code>aria-labelledby</code> pointing at a visible heading or label, or <code>aria-label</code>. A <code>&lt;label for&gt;</code> doesn't work, because the element isn't labelable.</li>
+    <li>Editable regions are focusable and in the tab order. Don't add <code>tabindex</code>.</li>
+    <li>Add <code>aria-required</code>, <code>aria-invalid</code> and <code>aria-describedby</code> yourself if the region acts as a required or validated field.</li>
+    <li>Keep the editing controls keyboard-reachable. Formatting shortcuts differ between browsers and platforms, so offer buttons too.</li>
+    <li>Prefer <code>&lt;textarea&gt;</code> (with <a href="/docs/attributes/data-grow/"><code>data-grow</code></a>) when you don't need rich text: it brings a role, a label, form submission and validation for free.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Security</h2>
+  <ul>
+    <li><strong>Pasted HTML is untrusted.</strong> With <code>contenteditable="true"</code> a user can paste markup from anywhere, and <code>innerHTML</code> hands it back to you. Storing it and rendering it to other people is a cross-site scripting risk.</li>
+    <li>Prefer <code>plaintext-only</code> and <code>textContent</code> / <code>innerText</code> for user text.</li>
+    <li>When you must keep HTML, sanitise it before you store it and again before you render it. <code>Element.setHTML()</code> parses and sanitises in one step (Chrome 146, Firefox 148; not in Safari as of November 2026); elsewhere use a maintained library such as DOMPurify. Never write user HTML back with <code>innerHTML</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <p><code>contenteditable="true"</code> works in every browser. <code>plaintext-only</code>: Baseline 2025 (Chrome 51, Safari 5, Firefox 136).</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Not submitted.</strong> Copy the content into a hidden input on submit, or use a form-associated custom element.</li>
+    <li><strong>Markup varies by browser.</strong> <kbd>Enter</kbd> in rich mode may create a <code>&lt;div&gt;</code>, a <code>&lt;p&gt;</code> or a <code>&lt;br&gt;</code>, and pasted content brings its own elements and styles. Normalise what you save.</li>
+    <li><strong>Empty regions collapse.</strong> An element with no text has no height. Give it a minimum block size.</li>
+    <li><strong>Placeholders aren't built in.</strong> <code>:empty</code> only matches with no child nodes at all, and browsers often leave a <code>&lt;br&gt;</code> behind after deleting.</li>
+    <li><strong>Child components stay editable.</strong> Mark embedded widgets <code>contenteditable="false"</code> so the user can't type into them.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/spellcheck/"><code>spellcheck</code></a>, <a href="/docs/attributes/autocorrect/"><code>autocorrect</code></a>, <a href="/docs/attributes/autocapitalize/"><code>autocapitalize</code></a>, <a href="/docs/attributes/inputmode/"><code>inputmode</code></a> and <a href="/docs/attributes/enterkeyhint/"><code>enterkeyhint</code></a> &mdash; typing hints that also apply to editable regions.</li>
+    <li><a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a> &mdash; the form control for multi-line text.</li>
+    <li><a href="/docs/elements/web-components/markdown-editor/"><code>&lt;markdown-editor&gt;</code></a> &mdash; a full markdown editor with preview.</li>
+    <li><a href="/docs/elements/web-components/selection-menu/"><code>&lt;selection-menu&gt;</code></a> &mdash; a floating toolbar for selected text.</li>
+  </ul>
+
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>&lt;textarea&gt;</code> + <code>data-grow</code></strong> &mdash; plain text in a form. The default choice.</li>
+    <li><strong><code>contenteditable="plaintext-only"</code></strong> &mdash; plain text edited in place, inside the page's own typography (titles, captions, notes).</li>
+    <li><strong><code>data-markdown-editable</code></strong> &mdash; short inline text with bold, italic, code and links, stored as markdown.</li>
+    <li><strong><code>&lt;markdown-editor&gt;</code></strong> &mdash; longer documents, with a toolbar and preview, submitted with a form.</li>
+    <li><strong><code>contenteditable="true"</code></strong> &mdash; real rich text, when you are prepared to normalise and sanitise the HTML.</li>
   </ul>
 </section>

@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-morph"
-description: "Shape morphing animations, evenodd cutouts, and two-layer shaped borders — advanced CSS shape() techniques."
+description: "Animate an element's clip-path between matching shapes: pulse, breathe, wave. One cycle by default; data-morph-loop loops with pause on hover, focus, data-paused and reduced motion."
 attributeName: data-morph
 category: shapes
 attributeType: data
@@ -11,151 +11,98 @@ crumbHref: /docs/attributes/data/
 crumbLabel: Data Attributes
 ---
 
-<nav class="subnav" aria-label="Advanced shape sections">
+<section id="overview">
+  <h2>Overview</h2>
+  <p><code>data-morph</code> animates an element's <code>clip-path</code> between two <code>shape()</code> paths with the same points, so its edges throb, breathe or undulate. It is pure CSS keyframes in the <code>utils</code> layer, behind <code>@supports</code>.</p>
+  <p>By default the animation runs <strong>once</strong> (2.5 to 4 seconds) and the element ends as a plain rectangle. Add <code>data-morph-loop</code> to keep it going.</p>
+</section>
+
+<section id="usage">
+  <h2>Usage</h2>
+  <code-block language="html" label="One cycle, and a loop" data-escape><section data-morph="breathe">
+  <h2>Spring sale</h2>
+  <p>The edges breathe once when the page loads.</p>
+</section>
+
+<p class="promo-tile" data-morph="wave" data-morph-loop>Live now</p></code-block>
+</section>
+
+<section id="options">
+  <h2>Options</h2>
+  <table>
+    <thead>
+      <tr><th>Value</th><th>Motion</th><th>Duration</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>pulse</code></td><td>The edges draw in by half the depth and back out</td><td>3s</td></tr>
+      <tr><td><code>breathe</code></td><td>A curved bottom edge morphs into a curved top edge</td><td>4s</td></tr>
+      <tr><td><code>wave</code></td><td>The top and bottom edges undulate</td><td>2.5s</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead>
+      <tr><th>Attribute</th><th>Effect</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-morph-loop</code></td><td>Repeat forever instead of running once. The loop pauses on hover and while the element or any ancestor has <code>data-paused</code>.</td></tr>
+      <tr><td><code>data-paused</code></td><td>On the element or an ancestor: pauses a loop. The same attribute pauses VB's other effects, so one page-level pause button can stop them all.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="styling">
+  <h2>Styling</h2>
+  <table>
+    <thead>
+      <tr><th>Custom property</th><th>Default</th><th>Effect</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--shape-morph-depth</code></td><td><code>0.75rem</code></td><td>How far the shape cuts into the element. Elements other than media (<code>img</code>, <code>video</code>, <code>canvas</code>, <code>svg</code>, <code>picture</code>, <code>iframe</code>) get this much padding by default, so text is not clipped.</td></tr>
+    </tbody>
+  </table>
+  <p>Your own <code>padding</code> wins over the default; keep it at least <code>--shape-morph-depth</code>. Override <code>animation-duration</code> or <code>animation-timing-function</code> as usual: the <strong>cyber</strong> theme uses <code>steps(8)</code> for a glitchy feel and <strong>kawaii</strong> a bouncy easing.</p>
+  <p>A morph needs the element's <code>clip-path</code> to itself. On an element that also has <code>data-clip</code>, <code>data-cutout</code>, <code>data-border-shape</code>, <code>data-shape-start</code> or <code>data-shape-end</code> the animation is skipped and the static shape stays. Any other <code>clip-path</code> on the element is replaced while the animation runs.</p>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
   <ul>
-    <li><a href="#animation">Animation</a></li>
-    <li><a href="#cutouts">Cutouts</a></li>
-    <li><a href="#shaped-borders">Shaped Borders</a></li>
-    <li><a href="#demos">Demos</a></li>
+    <li><strong>Pause, Stop, Hide (WCAG 2.2.2).</strong> The default single cycle stops within 5 seconds. A <code>data-morph-loop</code> runs indefinitely, so give users a way to stop it: it pauses on hover and stops while focus is inside it, and a toggle that sets <code>data-paused</code> (on the element or the page) pauses it for good.</li>
+    <li><code>prefers-reduced-motion: reduce</code> turns the animation off, as do forced colours mode and print.</li>
+    <li>While focus is inside the element the animation is removed entirely, so the clip never cuts off a focus ring.</li>
+    <li>Use it on decorative surfaces. The motion carries no meaning, and the text inside must be readable without it.</li>
   </ul>
-</nav>
-
-<section id="animation">
-  <h2>Shape Animation</h2>
-  <p>Apply <code>data-morph</code> to any element to animate its <code>clip-path</code> between matching-point shapes using CSS keyframes. All animations respect <code>prefers-reduced-motion</code>.</p>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Value</th>
-        <th>Effect</th>
-        <th>Duration</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><code>pulse</code></td>
-        <td>Subtle inset throb between full and slightly inset rectangles</td>
-        <td>3s</td>
-      </tr>
-      <tr>
-        <td><code>breathe</code></td>
-        <td>Organic morphing between curved top and curved bottom shapes</td>
-        <td>4s</td>
-      </tr>
-      <tr>
-        <td><code>wave</code></td>
-        <td>Horizontal wave undulation on top and bottom edges</td>
-        <td>2.5s</td>
-      </tr>
-    </tbody>
-  </table>
-
-    <code-block language="html" label="Morph animation examples" data-escape><section data-morph="pulse">
-  Pulsing shape
 </section>
 
-<section data-morph="breathe">
-  Breathing shape
+<section id="examples">
+  <h2>Examples</h2>
+  <p>Pulse and breathe run once; the wave card loops (hover it to pause).</p>
+  <browser-window src="/docs/examples/demos/css-shapes-advanced.html" url="https://vanilla-breeze.com/shapes/advanced" title="CSS Shapes: Cutouts, borders and morphing" shadow></browser-window>
+  <code-block language="html" label="A loop with a pause button" data-escape><section id="promo" data-morph="wave" data-morph-loop>
+  <h2>Live now</h2>
+  <button type="button" id="promo-pause" aria-pressed="false">Pause animation</button>
 </section>
 
-<section data-morph="wave">
-  Waving shape
-</section></code-block>
+<script type="module">
+  const promo = document.getElementById('promo');
+  document.getElementById('promo-pause').addEventListener('click', (event) => {
+    const paused = promo.toggleAttribute('data-paused');
+    event.currentTarget.setAttribute('aria-pressed', String(paused));
+  });
+</script></code-block>
 
-  <p>Shape animation works because <code>shape()</code> supports interpolation between matching-point paths. Both keyframe states must have the same number of points for smooth transitions.</p>
-
-  <h3>Theme overrides</h3>
-  <p>The <strong>cyber</strong> theme uses <code>steps(8)</code> timing for a glitchy digital feel. The <strong>kawaii</strong> theme uses bouncy easing for playful motion.</p>
-</section>
-
-<section id="cutouts">
-  <h2>Cutouts</h2>
-  <p>Apply <code>data-cutout</code> to punch a hole through an element using the <code>evenodd</code> fill rule. The outer rectangle stays, the inner shape is removed.</p>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Value</th>
-        <th>Inner Shape</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><code>circle</code></td>
-        <td>Centered circle cutout</td>
-      </tr>
-      <tr>
-        <td><code>diamond</code></td>
-        <td>Centered diamond cutout</td>
-      </tr>
-      <tr>
-        <td><code>arch-window</code></td>
-        <td>Arched window opening</td>
-      </tr>
-      <tr>
-        <td><code>hex</code></td>
-        <td>Centered hexagon cutout</td>
-      </tr>
-      <tr>
-        <td><code>badge-corner</code></td>
-        <td>Quarter-circle in top-right corner</td>
-      </tr>
-    </tbody>
-  </table>
-
-    <code-block language="html" label="Cutout examples" data-escape><section data-cutout="circle"
-  style="background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
-         aspect-ratio: 1;">
-  <!-- Content shows through the gradient; hole reveals whatever is behind -->
-</section></code-block>
-
-  <p>Cutouts work by defining two closed paths in one <code>shape()</code>: the outer rectangle and the inner shape. The <code>evenodd</code> fill rule means the overlapping area (the inner shape) is transparent.</p>
-</section>
-
-<section id="shaped-borders">
-  <h2>Shaped Borders</h2>
-  <p>Apply <code>data-border-shape</code> to a wrapper element for a colored shape outline. Uses a two-layer technique: a <code>::before</code> pseudo-element provides the colored background at full shape, and the inner content clips to the same shape inset by <code>--shape-border</code>.</p>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Value</th>
-        <th>Shape</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><code>hexagon</code></td>
-        <td>Six-sided hexagonal frame</td>
-      </tr>
-      <tr>
-        <td><code>diamond</code></td>
-        <td>Rotated square diamond frame</td>
-      </tr>
-      <tr>
-        <td><code>arch</code></td>
-        <td>Rounded arch frame</td>
-      </tr>
-    </tbody>
-  </table>
-
-    <code-block language="html" label="Shaped border examples" data-escape><span data-border-shape="hexagon">
-  <img src="avatar.jpg" alt="Profile" width="200" height="200">
-</span></code-block>
-
-  <p>Adjust border thickness with <code>--shape-border</code> (default: <code>4px</code>). The border color comes from <code>--color-primary</code> by default.</p>
-</section>
-
-<section id="demos">
-  <h2>Demos</h2>
-
-  <h3>Advanced Shapes</h3>
-  <browser-window src="/docs/examples/demos/css-shapes-advanced.html" url="https://vanilla-breeze.com/shapes/advanced" title="CSS Shapes: Advanced" shadow></browser-window>
-
-  <h3>Cyber Theme Showcase</h3>
+  <h3>Theme showcases</h3>
   <browser-window src="/docs/examples/demos/css-shapes-cyber-showcase.html" url="https://vanilla-breeze.com/shapes/cyber" title="CSS Shapes: Cyber" shadow></browser-window>
-
-  <h3>Kawaii Theme Showcase</h3>
   <browser-window src="/docs/examples/demos/css-shapes-kawaii-showcase.html" url="https://vanilla-breeze.com/shapes/kawaii" title="CSS Shapes: Kawaii" shadow></browser-window>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-shape-start/"><code>data-shape-start</code> / <code>data-shape-end</code></a> &mdash; static shaped section edges.</li>
+    <li><a href="/docs/attributes/data-clip/"><code>data-clip</code></a> &mdash; static image shapes.</li>
+    <li><a href="/docs/attributes/data-cutout/"><code>data-cutout</code></a> &mdash; punch a hole through an element.</li>
+    <li><a href="/docs/attributes/data-border-shape/"><code>data-border-shape</code></a> &mdash; shaped frames around images.</li>
+    <li><a href="/docs/attributes/data-effect/"><code>data-effect</code></a> &mdash; VB's other decorative effects, which also honour <code>data-paused</code>.</li>
+  </ul>
 </section>

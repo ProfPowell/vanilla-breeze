@@ -162,6 +162,11 @@
   --color-interactive-hover: var(--color-primary-hover);
   --color-interactive-active: var(--color-primary-active);
 
+  /* Row stripe — the alternating wash for table[data-striped] and
+     dl[data-striped]. A text-tinted mix, so it shows on any surface in
+     either mode and stays distinct from the row hover colour. */
+  --color-row-stripe: color-mix(in oklch, var(--color-text) 5%, transparent);
+
   /* Interactive state colors — hover/active for list items, menus, nav links, table rows.
      Themes override these 4 tokens to control all interactive surfaces at once. */
   --color-hover-bg: var(--color-surface-raised);
@@ -250,6 +255,41 @@
 
   /* No --page-bg-color here: the page follows --color-background in both
      modes (surfaces.css), so a theme's own dark background is what paints. */
+}
+
+/* System dark mode with no explicit data-mode (CSS-only / no-JS consumers;
+   ThemeManager always writes data-mode when it runs). :root's
+   `color-scheme: light dark` already turns every light-dark() token dark,
+   so this block only has to supply what light-dark() cannot: the dark
+   primary seeds (percentages/numbers, not colours) and the hue-tinted
+   surfaces. It MUST stay identical to the [data-mode="dark"] block above —
+   tests/components/c-system-dark.spec.js compares the two.
+   :not([data-mode="light"]) (not :not([data-mode])) matches the existing
+   theme/accent system-dark rules; data-mode="light" keeps forcing light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mode="light"]) {
+    --lightness-primary: 65%;
+    --chroma-primary: 0.18;
+
+    --chroma-surface-tint: 0.02;
+
+    --color-background: oklch(12% var(--chroma-surface-tint) var(--hue-primary));
+    --color-surface: oklch(16% var(--chroma-surface-tint) var(--hue-primary));
+    --color-surface-raised: oklch(20% var(--chroma-surface-tint) var(--hue-primary));
+    --color-surface-sunken: oklch(10% var(--chroma-surface-tint) var(--hue-primary));
+
+    --color-text: oklch(93% 0.01 var(--hue-primary));
+    --color-text-muted: oklch(70% var(--chroma-surface-tint) var(--hue-primary));
+
+    --color-border: oklch(30% var(--chroma-surface-tint) var(--hue-primary));
+    --color-border-strong: oklch(50% var(--chroma-surface-tint) var(--hue-primary));
+
+    --shadow-xs: 0 1px 2px oklch(0% 0 0 / 0.3);
+    --shadow-s: 0 1px 3px oklch(0% 0 0 / 0.4), 0 1px 2px oklch(0% 0 0 / 0.3);
+    --shadow-m: 0 4px 6px oklch(0% 0 0 / 0.4), 0 2px 4px oklch(0% 0 0 / 0.3);
+    --shadow-l: 0 10px 15px oklch(0% 0 0 / 0.4), 0 4px 6px oklch(0% 0 0 / 0.3);
+    --shadow-xl: 0 20px 25px oklch(0% 0 0 / 0.4), 0 10px 10px oklch(0% 0 0 / 0.3);
+  }
 }
 
 /* ==================== THEME TRANSITIONS ==================== */

@@ -171,7 +171,10 @@ export function readPresenceAttrs(root = DEFAULT_ROOT) {
  * attribute selectors from that compound (host) and from the compounds after
  * it (children). Compounds before the host — `:root[data-sticky]`,
  * `[data-layout-subgrid] > layout-card` — are context, not API, and are
- * ignored. `:is()` / `:has()` groups inside the host compound are stripped
+ * ignored. layout-canvas's attribute form is `[data-canvas]` rather than
+ * `[data-layout="canvas"]`, so a data-canvas compound names layout-canvas and
+ * its values are recorded as that element's API.
+ * `:is()` / `:has()` groups inside the host compound are stripped
  * before reading host attributes so `article[data-measure]` listed as a
  * sibling arm does not leak into layout-text's API.
  *
@@ -226,6 +229,8 @@ export function readLayoutVocabularyByElement(root = DEFAULT_ROOT) {
       const attrForm = `[data-layout="${el.replace(/^layout-/, '')}"]`;
       if (compound.includes(attrForm)) found.add(el);
     }
+    // layout-canvas's attribute form is data-canvas (not data-layout="canvas").
+    if (out.has('layout-canvas') && /\[data-canvas[\]=]/.test(compound)) found.add('layout-canvas');
     return found;
   };
 
@@ -255,7 +260,10 @@ export function readLayoutVocabularyByElement(root = DEFAULT_ROOT) {
             const rec = out.get(el);
             if (!rec) continue;
             for (const [a, v] of attrsIn(stripGroups(comps[hostIdx]))) {
-              if (a === 'data-layout' || a === 'data-canvas') continue;
+              if (a === 'data-layout') continue;
+              // data-canvas is layout-canvas's attribute form; its values
+              // (bare, flush, elevated) are part of that element's API.
+              if (a === 'data-canvas' && el !== 'layout-canvas') continue;
               record(rec.host, a, v);
             }
             for (const c of comps.slice(hostIdx + 1)) {
@@ -334,6 +342,42 @@ export function readLayoutVocabularyByLayout(root = DEFAULT_ROOT) {
   };
   const compounds = (sel) => splitTop(sel.replace(/\s*([>+~])\s*/g, ' $1 '), [' '])
     .filter((c) => !['>', '+', '~'].includes(c));
+  /**
+   * Expand top-level `:is()` / `:where()` groups into one compound per arm,
+   * recursively. Without this, `:is(layout-cluster, layout-reel,
+   * :is(layout-cover)[data-layout-centered])` credited `centered` to cluster
+   * and reel too — the attribute belongs to one arm only. Each returned
+   * alternative is a plain compound whose layout names and attributes go
+   * together.
+   */
+  const expandGroups = (compound) => {
+    const m = /:(is|where)\(/.exec(compound);
+    if (!m) return [compound];
+    const start = m.index + m[0].length;
+    let depth = 1; let i = start;
+    for (; i < compound.length && depth > 0; i++) {
+      if (compound[i] === '(') depth++;
+      else if (compound[i] === ')') depth--;
+    }
+    const inner = compound.slice(start, i - 1);
+    const before = compound.slice(0, m.index);
+    const after = compound.slice(i);
+    return splitTop(inner, [',']).flatMap((arm) => expandGroups(`${before}${arm}${after}`));
+  };
+  /** Remove `:not()` / `:has()` groups (and their contents) from a compound. */
+  const stripNegations = (text) => {
+    let res = '';
+    let depth = 0;
+    for (let i = 0; i < text.length; i++) {
+      const m = /^:(not|has)\(/.exec(text.slice(i));
+      if (depth === 0 && m) { depth = 1; i += m[0].length - 1; continue; }
+      if (depth > 0) { if (text[i] === '(') depth++; else if (text[i] === ')') depth--; continue; }
+      res += text[i];
+    }
+    return res;
+  };
+  /** Layout names a compound's arm actually matches (never inside :not/:has). */
+  const armLayouts = (arm) => layoutsIn(stripNegations(arm));
 
   for (const file of vocabularyFiles(root)) {
     const css = stripComments(readFileSync(file, 'utf8'));
@@ -354,10 +398,12 @@ export function readLayoutVocabularyByLayout(root = DEFAULT_ROOT) {
         stack.push(resolved);
         for (const sel of resolved) {
           const comps = compounds(sel);
-          const hostIdx = comps.findIndex((c) => layoutsIn(c).size);
+          const hostIdx = comps.findIndex((c) => expandGroups(c).some((arm) => armLayouts(arm).size));
           if (hostIdx === -1) continue;
-          for (const layout of layoutsIn(comps[hostIdx])) {
-            for (const [a, v] of layoutAttrsIn(comps[hostIdx])) record(layout, a, v);
+          for (const arm of expandGroups(comps[hostIdx])) {
+            for (const layout of armLayouts(arm)) {
+              for (const [a, v] of layoutAttrsIn(arm)) record(layout, a, v);
+            }
           }
           for (const c of comps.slice(hostIdx + 1)) {
             for (const [a] of layoutAttrsIn(c)) childAttrs.add(a);

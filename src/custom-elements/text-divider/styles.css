@@ -1,4 +1,8 @@
-/* text-divider: Horizontal divider with centered text */
+/* text-divider: Horizontal divider with centered text
+ *
+ * Lines are drawn with borders, not backgrounds, so they survive
+ * forced-colors mode (backgrounds are replaced with Canvas there).
+ */
 
 text-divider {
   display: flex;
@@ -11,7 +15,12 @@ text-divider {
   &::after {
     content: '';
     flex: 1;
-    block-size: 1px;
-    background: var(--color-border);
+    block-size: 0;
+    border-block-start: var(--border-width-thin, 1px) solid var(--color-border);
+  }
+
+  /* No label: one continuous line, no hole in the middle */
+  &:empty {
+    gap: 0;
   }
 }

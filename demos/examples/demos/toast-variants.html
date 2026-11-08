@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Toast Variants, Actions and Positions</title>
+  <link rel="stylesheet" href="/src/main.css" />
+</head>
+<body>
+  <main data-layout="stack" data-layout-gap="m">
+    <fieldset>
+      <legend>Variants</legend>
+      <layout-cluster data-layout-gap="s">
+        <button type="button" data-variant="info">Info</button>
+        <button type="button" data-variant="success">Success</button>
+        <button type="button" data-variant="warning">Warning</button>
+        <button type="button" data-variant="error">Error</button>
+      </layout-cluster>
+    </fieldset>
+    <fieldset>
+      <legend>Behaviour</legend>
+      <layout-cluster data-layout-gap="s">
+        <button type="button" id="undo">Delete with Undo</button>
+        <button type="button" id="sticky">Sticky (duration 0)</button>
+        <button type="button" id="burst">Show 6 (max 3, rest queue)</button>
+        <button type="button" id="clear">dismissAll()</button>
+      </layout-cluster>
+    </fieldset>
+    <form-field>
+      <label for="position">Position</label>
+      <select id="position">
+        <option>top-start</option>
+        <option>top-center</option>
+        <option selected>top-end</option>
+        <option>bottom-start</option>
+        <option>bottom-center</option>
+        <option>bottom-end</option>
+      </select>
+    </form-field>
+    <p>Hover a toast or tab into it: the auto-dismiss timer pauses until you leave. <kbd>Escape</kbd> closes the focused toast.</p>
+  </main>
+  <toast-msg id="toasts" position="top-end" max="3"></toast-msg>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const toasts = document.getElementById('toasts');
+    const messages = {
+      info: 'A new version is available.',
+      success: 'Settings saved.',
+      warning: 'Your session expires in 5 minutes.',
+      error: 'Upload failed. Check your connection.',
+    };
+    document.querySelectorAll('[data-variant]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const variant = button.dataset.variant;
+        toasts.show({ message: messages[variant], variant });
+      });
+    });
+    document.getElementById('undo').addEventListener('click', () => {
+      toasts.show({
+        message: '"Quarterly report" moved to trash.',
+        action: 'Undo',
+        onAction: () => toasts.show({ message: 'Restored.', variant: 'success' }),
+      });
+    });
+    document.getElementById('sticky').addEventListener('click', () => {
+      toasts.show({ message: 'This stays until you dismiss it.', variant: 'warning', duration: 0 });
+    });
+    document.getElementById('burst').addEventListener('click', () => {
+      for (let i = 1; i <= 6; i++) toasts.show({ message: `Notification ${i} of 6`, duration: 3000 });
+    });
+    document.getElementById('clear').addEventListener('click', () => toasts.dismissAll());
+    document.getElementById('position').addEventListener('change', (e) => {
+      toasts.setAttribute('position', e.target.value);
+    });
+  </script>
+</body>
+</html>

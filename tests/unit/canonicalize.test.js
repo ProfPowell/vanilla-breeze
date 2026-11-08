@@ -59,7 +59,7 @@ function el(tagName, attrs = {}, children = []) {
 
 /* Minimal document with querySelector / querySelectorAll for the selectors
    canonicalize.js actually uses: `[data-signable]`, meta[name=...],
-   meta[property=...], meta[itemprop=...], link[rel=...]. */
+   meta[property=...], meta[itemprop=...], link[rel~=... i]. */
 function doc({ head = [], body = [], title = '', url = '' } = {}) {
   const root = el('HTML', {}, [
     el('HEAD', {}, head),
@@ -80,10 +80,17 @@ function doc({ head = [], body = [], title = '', url = '' } = {}) {
       return node.hasAttribute && node.hasAttribute('data-signable')
         && node.getAttribute('data-signable') !== 'false';
     }
-    const m = selector.match(/^([a-z]+)\[([a-z\-:]+)="([^"]+)"\]$/i);
+    // [attr="val"] exact, or [attr~="val" i] — the token-list match
+    // canonicalize uses for link[rel] (rel is a space-separated token list).
+    const m = selector.match(/^([a-z]+)\[([a-z\-:]+)(~?)="([^"]+)"( i)?\]$/i);
     if (!m) return false;
-    const [, tag, attr, val] = m;
-    return node.tagName === tag.toUpperCase() && node.getAttribute(attr) === val;
+    const [, tag, attr, tilde, val, ci] = m;
+    if (node.tagName !== tag.toUpperCase()) return false;
+    const actual = node.getAttribute(attr);
+    if (actual == null) return false;
+    if (!tilde) return actual === val;
+    const norm = (s) => (ci ? s.toLowerCase() : s);
+    return norm(actual).split(/\s+/).includes(norm(val));
   }
 
   return {
@@ -305,6 +312,17 @@ describe('buildCanonicalDocument', () => {
     assert.equal(out.author, '');
     assert.deepEqual(out.keywords, []);
     assert.deepEqual(out.concepts, []);
+  });
+
+  it('matches link rel as a case-insensitive token list', () => {
+    const d = doc({
+      url: 'https://example.com/page/',
+      head: [
+        el('LINK', { rel: 'Author license', href: 'https://example.com/about/' })
+      ]
+    });
+    const out = buildCanonicalDocument(d);
+    assert.equal(out.license, 'https://example.com/about/');
   });
 
   it('reads §G-3 fields from the right meta tags', () => {

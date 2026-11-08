@@ -47,6 +47,12 @@ crumbLabel: Custom Elements
           <td>-</td>
           <td>Reduce padding</td>
         </tr>
+        <tr>
+          <td><code>data-dismiss-focus</code></td>
+          <td>CSS selector</td>
+          <td>next focusable element</td>
+          <td>Where focus goes after the message is dismissed</td>
+        </tr>
       </tbody>
     </table>
   </section>
@@ -63,10 +69,10 @@ crumbLabel: Custom Elements
     </browser-window>
 
     <code-block language="html" show-lines label="Alert variants" data-escape><status-message data-variant="success">
-  <div data-content>
-    <div data-title>Success</div>
-    <div data-description>Your changes have been saved.</div>
-  </div>
+  <section data-content>
+    <strong data-title>Success</strong>
+    <p data-description>Your changes have been saved.</p>
+  </section>
 </status-message></code-block>
   </section>
 
@@ -83,10 +89,10 @@ crumbLabel: Custom Elements
 
     <code-block language="html" show-lines label="Alert with icon" data-escape><status-message data-variant="success">
   <icon-wc name="circle-check" data-icon></icon-wc>
-  <div data-content>
-    <div data-title>Success</div>
-    <div data-description>Your changes have been saved.</div>
-  </div>
+  <section data-content>
+    <strong data-title>Success</strong>
+    <p data-description>Your changes have been saved.</p>
+  </section>
 </status-message></code-block>
   </section>
 
@@ -102,10 +108,10 @@ crumbLabel: Custom Elements
     </browser-window>
 
     <code-block language="html" show-lines label="Filled alerts" data-escape><status-message data-variant="error" data-filled>
-  <div data-content>
-    <div data-title>Critical Error</div>
-    <div data-description>Immediate action required.</div>
-  </div>
+  <section data-content>
+    <strong data-title>Critical Error</strong>
+    <p data-description>Immediate action required.</p>
+  </section>
 </status-message></code-block>
   </section>
 
@@ -121,13 +127,14 @@ crumbLabel: Custom Elements
     </browser-window>
 
     <code-block language="html" show-lines label="Simple compact alerts" data-escape><status-message data-variant="success" data-compact>
-  <div data-content>File uploaded successfully!</div>
+  <p data-content>File uploaded successfully!</p>
 </status-message></code-block>
   </section>
 
   <section>
     <h2>With Dismiss Button</h2>
-    <p>Add a dismiss button for closable alerts.</p>
+    <p>Add a <code>&lt;button data-dismiss&gt;</code> as a direct child to make the message closable. Activating it hides the message with the <code>hidden</code> attribute (use <code>data-dismiss="remove"</code> to remove it from the DOM instead). If focus was inside the message, it moves to the element matched by <code>data-dismiss-focus</code>, or else to the next focusable element after the message, so keyboard users keep their place.</p>
+    <p>Before hiding, the message fires a bubbling, cancelable <code>status-message:dismiss</code> event. Call <code>preventDefault()</code> to keep the message (for example to animate it out yourself).</p>
 
     <browser-window
       src="/docs/snippets/demos/status-message-dismiss.html"
@@ -137,17 +144,18 @@ crumbLabel: Custom Elements
     </browser-window>
 
     <code-block language="html" show-lines label="Alert with dismiss button" data-escape><status-message data-variant="info">
-  <div data-content>
-    <div data-title>Dismissable Alert</div>
-    <div data-description>Click the X to dismiss.</div>
-  </div>
+  <section data-content>
+    <strong data-title>Dismissable Alert</strong>
+    <p data-description>Activate the X to dismiss.</p>
+  </section>
   <button data-dismiss type="button" aria-label="Dismiss">&#x2715;</button>
 </status-message></code-block>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>For important alerts that need to be announced to screen readers, add the appropriate ARIA role.</p>
+    <p>Variant titles and compact text use the <code>--color-*-text</code> tokens, which meet WCAG AA on the subtle backgrounds; filled messages keep a visible border in forced-colours mode.</p>
+    <p>Live regions announce <strong>changes</strong>, not content that is already on the page. A message present at page load with <code>role="status"</code> is usually not announced, and <code>role="alert"</code> on page-load content is announced immediately by some screen readers and not at all by others. For messages that appear in response to an action, keep an empty <code>role="status"</code> (or <code>role="alert"</code>) container in the page from the start and insert the <code>&lt;status-message&gt;</code> into it when the event happens.</p>
 
     <code-block language="html" show-lines label="Accessible alerts" data-escape><!-- For error messages -->
 <status-message data-variant="error" role="alert">
@@ -158,6 +166,18 @@ crumbLabel: Custom Elements
 <status-message data-variant="success" role="status">
   ...
 </status-message></code-block>
+
+    <code-block language="html" show-lines label="Announcing a message after an action" data-escape><!-- Present (and empty) from page load -->
+<section role="status" id="form-status"></section>
+
+<script>
+  form.addEventListener('submit', () => {
+    document.getElementById('form-status').innerHTML = `
+      <status-message data-variant="success" data-compact>
+        <p data-content>Your changes have been saved.</p>
+      </status-message>`;
+  });
+</script></code-block>
   </section>
 
   <section>

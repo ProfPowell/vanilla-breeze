@@ -1,10 +1,10 @@
 ---
 layout: attribute
 title: "ping"
-description: "Send tracking pings to specified URLs when a link is clicked. A transparent, declarative alternative to redirect-based or JavaScript click tracking."
+description: "Hyperlink auditing: when a link is followed, the browser POSTs a small notification to each listed URL while it navigates. Firefox ignores it by default."
 attributeName: ping
 attributeType: native
-nativeGroup: Structure
+nativeGroup: Links & Security
 category: native
 currentPath: /docs/attributes/ping/
 
@@ -12,115 +12,113 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>ping</code> attribute on <code>&lt;a&gt;</code> elements sends background POST requests to one or more URLs when the link is clicked. The user navigates directly to the link's <code>href</code> destination while the tracking requests are sent asynchronously — no redirect delay, no JavaScript required.</p>
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a></p>
-
-<h2>Values</h2>
-<table>
-  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
-  <tbody>
-    <tr><td>Single URL</td><td>Sends one POST request on click</td></tr>
-    <tr><td>Space-separated URLs</td><td>Sends a POST to each URL on click</td></tr>
-  </tbody>
-</table>
-
-<h2>Basic Usage</h2>
-<p>Add one or more tracking URLs to the <code>ping</code> attribute. The browser sends POST requests to each URL when the link is clicked.</p>
-
-<code-block language="html" label="Ping attribute" data-escape><!-- Single tracking URL -->
-<a href="/products/widget" ping="/analytics/click">Widget Product Page</a>
-
-<!-- Multiple tracking URLs (space-separated) -->
-<a href="/products/widget"
-   ping="/analytics/click /third-party/track">
-  Widget Product Page
-</a></code-block>
-
-<h2>Practical Examples</h2>
-<p>Common use cases include tracking outbound links, measuring CTA effectiveness, and notifying analytics services of navigation events.</p>
-
-<code-block language="html" label="Real-world usage" data-escape><!-- Track outbound link clicks -->
-<nav>
-  <a href="https://github.com/example/repo"
-     ping="/track/outbound">
-    GitHub Repository
-  </a>
-  <a href="https://docs.example.com"
-     ping="/track/outbound">
-    Documentation
-  </a>
-</nav>
-
-<!-- Track CTA clicks in a marketing page -->
-<a href="/signup"
-   ping="/analytics/cta-click?source=hero">
-  Start Free Trial
-</a></code-block>
-
-<h2>What the Browser Sends</h2>
-<p>The POST request includes headers that identify both the page the user was on and the destination they are navigating to.</p>
-
-<code-block language="text" label="Ping request details" data-escape><!-- When the user clicks this link: -->
-<a href="/destination" ping="/track">Click me</a>
-
-<!-- The browser sends a POST to /track with these headers:
-     Content-Type: text/ping
-     Ping-From: https://example.com/current-page
-     Ping-To: https://example.com/destination
-
-     The body is the string "PING"
-
-     The user navigates directly to /destination without delay --></code-block>
-
-<h2>Comparison with Other Tracking</h2>
-<p>The <code>ping</code> attribute competes with two established tracking patterns: redirect URLs and JavaScript click handlers. It has advantages over both.</p>
-
-<code-block language="html" label="Tracking approaches" data-escape><!-- Redirect tracking (common but slower) -->
-<a href="/redirect?url=https://example.com&id=123">Example</a>
-<!-- User goes to /redirect first, then gets redirected to example.com -->
-
-<!-- JavaScript tracking (common but fragile) -->
-<a href="https://example.com" onclick="track('click', 123)">Example</a>
-<!-- Depends on JS loading; may miss clicks -->
-
-<!-- ping attribute (fastest, declarative) -->
-<a href="https://example.com" ping="/track?id=123">Example</a>
-<!-- User goes directly to example.com; ping is sent in background --></code-block>
-
-<table>
-  <thead><tr><th>Approach</th><th>User Delay</th><th>Requires JS</th><th>Visible in Source</th><th>Works if JS Fails</th></tr></thead>
-  <tbody>
-    <tr><td>Redirect tracking</td><td>Yes (extra hop)</td><td>No</td><td>URL is obscured</td><td>Yes</td></tr>
-    <tr><td>JS click handler</td><td>Minimal</td><td>Yes</td><td>Buried in scripts</td><td>No</td></tr>
-    <tr><td><code>ping</code> attribute</td><td>None</td><td>No</td><td>Yes (in HTML)</td><td>Yes</td></tr>
-  </tbody>
-</table>
-
-<h2>Transparency Advantage</h2>
-<p>Unlike JavaScript-based tracking, the <code>ping</code> attribute is visible in the page source. Privacy-conscious users, browser extensions, and auditing tools can see exactly which URLs receive tracking pings. This transparency was an intentional design goal of the specification.</p>
-
-<h2>Accessibility</h2>
-<ul>
-  <li>The <code>ping</code> attribute has no effect on accessibility. Screen readers announce the link normally based on its text content and <code>href</code>.</li>
-  <li>The attribute does not change the link's visible destination or behavior from the user's perspective.</li>
-  <li>Keyboard activation (Enter) triggers the ping just as a mouse click does.</li>
-</ul>
-
-<h2>Limitations</h2>
-<ul>
-  <li><strong>Firefox disables <code>ping</code> by default.</strong> The <code>browser.send_pings</code> preference is <code>false</code> in Firefox, making the attribute unreliable for cross-browser analytics.</li>
-  <li>Privacy-focused browsers and extensions (uBlock Origin, Brave) may block ping requests entirely.</li>
-  <li>The POST body is just the string <code>PING</code> — you cannot send custom data. Any context must be encoded in the URL query string.</li>
-  <li>Only works on <code>&lt;a&gt;</code> elements. It does not apply to <code>&lt;button&gt;</code>, <code>&lt;form&gt;</code>, or programmatic navigation.</li>
-  <li>The <code>Ping-From</code> header is omitted in cross-origin requests when the referring page uses HTTPS and the ping URL uses HTTP (downgrade scenario).</li>
-</ul>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>ping</code> attribute lists URLs to notify when the user follows a link. The browser navigates straight to the link's <code>href</code> and, in parallel, sends a <code>POST</code> to each ping URL. There is no redirect hop and no script. Because the tracking URL is in the markup, users and extensions can see it, which was the point of the design.</p>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> and <a href="/docs/elements/native/area/"><code>&lt;area&gt;</code></a> elements that have an <code>href</code>.</p>
+  <p>There is no live demo: the ping is a background request that only shows up in DevTools (Network panel, type "ping"), and it needs a server to receive it. The examples show the markup and what is sent.</p>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Value</th><th>Behaviour</th></tr></thead>
+    <tbody>
+      <tr><td>One URL</td><td>One <code>POST</code> when the link is followed.</td></tr>
+      <tr><td>Space-separated URLs</td><td>One <code>POST</code> to each.</td></tr>
+      <tr><td>Absent or empty</td><td>No pings.</td></tr>
+    </tbody>
+  </table>
+  <p>Relative URLs resolve against the document. URLs that are not <code>http:</code> or <code>https:</code> are skipped, and so is everything if the <code>href</code> cannot be parsed.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Outbound link tracking</h3>
+  <code-block language="html" show-lines label="ping on links" data-escape><a href="https://github.com/profpowell/vanilla-breeze"
+   ping="/api/click?to=github">Source on GitHub</a>
+
+<!-- Several endpoints -->
+<a href="/pricing" ping="/api/click?cta=hero https://stats.example.net/hit">See pricing</a></code-block>
+
+  <h3>Image map areas</h3>
+  <code-block language="html" show-lines label="ping on area" data-escape><img src="/img/campus-map.svg" alt="Campus map" usemap="#campus" width="600" height="400">
+<map name="campus">
+  <area shape="rect" coords="40,60,220,180" href="/visit/library"
+    alt="Library" ping="/api/click?area=library">
+</map></code-block>
+
+  <h3>What the browser sends</h3>
+  <code-block language="text" show-lines label="A ping request" data-escape>POST /api/click?to=github HTTP/1.1
+Content-Type: text/ping
+Ping-To: https://github.com/profpowell/vanilla-breeze
+Ping-From: https://vanilla-breeze.com/docs/        (only in some cases, see below)
+Cookie: ...                                         (credentials are included)
+
+PING</code-block>
+  <table>
+    <thead><tr><th>Situation</th><th>Headers</th></tr></thead>
+    <tbody>
+      <tr><td>Ping URL is same-origin with the page</td><td><code>Ping-From</code> and <code>Ping-To</code></td></tr>
+      <tr><td>Ping URL is cross-origin, page is not HTTPS</td><td><code>Ping-From</code> and <code>Ping-To</code></td></tr>
+      <tr><td>Ping URL is cross-origin, page is HTTPS</td><td><code>Ping-To</code> only</td></tr>
+    </tbody>
+  </table>
+  <p>Pings never carry a <code>Referer</code> header. The body is always the string <code>PING</code>: put any context you need in the ping URL's query string.</p>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> — control what referrer information is sent with requests</li>
-    <li><a href="/docs/attributes/rel/"><code>rel</code></a> — link relationship types including <code>noopener</code> and <code>noreferrer</code></li>
-    <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> — the anchor element</li>
+    <li><strong>Analytics sets it for you.</strong> When <a href="/docs/analytics/">VB analytics</a> is enabled, it adds <code>ping</code> to outbound <code>a[href^="http"]</code> links (pointing at its click endpoint) unless the link already has one or sits inside <code>[data-vb-no-track]</code>, and falls back to <code>navigator.sendBeacon()</code> in Firefox and Brave, where <code>ping</code> is off. See <code>src/lib/analytics.js</code> and <a href="/docs/attributes/data-vb-no-track/"><code>data-vb-no-track</code></a>. Analytics is off inside iframes, so the demos on this site never get it.</li>
+    <li><strong>The sanitiser removes it.</strong> <code>src/lib/sanitize-html.js</code> drops <code>ping</code> from untrusted HTML (markdown, comments, chat) in every profile, so user content cannot add tracking beacons.</li>
+    <li><strong>Not the same as <code>&lt;markdown-viewer ping&gt;</code>.</strong> That is a component attribute: the viewer sends render metadata with <code>sendBeacon</code> after loading. It is unrelated to link auditing.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The attribute does not change how the link is announced or activated. Keyboard activation sends the ping just like a click.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Security</h2>
+  <ul>
+    <li><strong>It is tracking.</strong> Tell users in your privacy policy, and do not add <code>ping</code> for visitors who have opted out: the browser sends it whenever the attribute is present.</li>
+    <li><strong>Cookies are sent.</strong> Ping requests use credentials mode <code>include</code>, so a third-party ping URL receives that site's cookies (subject to the browser's third-party cookie blocking).</li>
+    <li><strong>Strip it from user content.</strong> Untrusted HTML with <code>ping</code> can make your readers notify someone else's server; VB's sanitiser removes it.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <p>Chrome 12 and Safari 6 send pings. Firefox has the attribute but does nothing unless the user enables <code>browser.send_pings</code>; Brave and many content blockers also suppress pings (MDN browser-compat-data, November 2026). Treat <code>ping</code> as best-effort and pair it with <code>navigator.sendBeacon()</code> where counts matter.</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Only followed links.</strong> No ping for <code>&lt;button&gt;</code>, form submissions, <code>window.open()</code> or <code>location</code> changes.</li>
+    <li><strong>Responses are ignored.</strong> The browser discards the response body; the endpoint should reply quickly with <code>204</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> &mdash; how much of the page URL a navigation reveals.</li>
+    <li><a href="/docs/attributes/rel/"><code>rel</code></a> &mdash; <code>noreferrer</code> and other link types.</li>
+    <li><a href="/docs/attributes/data-vb-event/"><code>data-vb-event</code></a> &mdash; VB analytics events for clicks that are not navigations.</li>
+    <li><a href="/docs/analytics/">Analytics</a> &mdash; VB's analytics subsystem.</li>
+    <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> and <a href="/docs/elements/native/area/"><code>&lt;area&gt;</code></a> &mdash; the elements.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong>Counting outbound clicks with no script</strong> &mdash; <code>ping</code>, accepting that Firefox and blockers skip it.</li>
+    <li><strong>Reliable counts or custom data</strong> &mdash; <code>navigator.sendBeacon()</code>, or VB analytics, which uses both.</li>
+    <li><strong>Avoid</strong> redirect URLs (<code>/out?url=...</code>): they add a hop, hide the destination and can become open redirects.</li>
   </ul>
 </section>

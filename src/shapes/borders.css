@@ -1,32 +1,52 @@
 /* Shaped borders
-   [data-border-shape] two-layer technique.
-   ::before pseudo draws colored background at full shape,
-   inner content clips to same shape inset by --shape-border. */
+   [data-border-shape] frames its child (usually an <img>) with a coloured
+   shape outline, in two layers:
+   - ::before paints the border colour across the full shape;
+   - each direct child sits --shape-border inside the wrapper (margin) and
+     is clipped to the same shape in its own box, so the ring of ::before
+     between the two shapes is the border.
+   The wrapper itself is never clipped, so its focus ring and shadows
+   survive. When the wrapper or its child has keyboard focus, the shaped
+   border switches to the focus-ring colour, so focus follows the shape.
+
+   Side effects (documented): the wrapper is inline-block and an isolation
+   root; direct children become display:block. It cannot be combined with
+   data-border-effect (both draw on ::before). The border is the same
+   colour in RTL; all three shapes are symmetric.
+
+   Tokens: --shape-border (thickness, default 4px),
+   --shape-border-color (default --color-primary). */
 
 @supports (clip-path: shape(from 0% 0%, close)) {
 
 [data-border-shape] {
   position: relative;
+  isolation: isolate;
   display: inline-block;
 
   &::before {
     content: "";
     position: absolute;
     inset: 0;
-    background: var(--color-primary);
     z-index: -1;
+    background: var(--shape-border-color, var(--color-primary));
+    clip-path: var(--_border-shape);
   }
 
   & > * {
     display: block;
     margin: var(--shape-border);
+    clip-path: var(--_border-shape);
+  }
+
+  &:is(:focus-visible, :has(> :focus-visible))::before {
+    background: var(--color-focus-ring, var(--color-primary));
   }
 }
 
 /* ── Hexagon ── */
-[data-border-shape="hexagon"],
-[data-border-shape="hexagon"]::before {
-  clip-path: shape(
+[data-border-shape="hexagon"] {
+  --_border-shape: shape(
     from 50% 0%,
     line to 100% 25%,
     line to 100% 75%,
@@ -38,9 +58,8 @@
 }
 
 /* ── Diamond ── */
-[data-border-shape="diamond"],
-[data-border-shape="diamond"]::before {
-  clip-path: shape(
+[data-border-shape="diamond"] {
+  --_border-shape: shape(
     from 50% 0%,
     line to 100% 50%,
     line to 50% 100%,
@@ -50,9 +69,8 @@
 }
 
 /* ── Arch ── */
-[data-border-shape="arch"],
-[data-border-shape="arch"]::before {
-  clip-path: shape(
+[data-border-shape="arch"] {
+  --_border-shape: shape(
     from 0% 100%,
     line to 0% 32%,
     curve to 50% 0% with 0% 0%,
@@ -63,3 +81,23 @@
 }
 
 } /* end @supports */
+
+/* Forced colours repaint backgrounds as Canvas, which would erase the
+   border: draw it in CanvasText (Highlight when focused) instead. */
+@media (forced-colors: active) {
+  [data-border-shape]::before {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  [data-border-shape]:is(:focus-visible, :has(> :focus-visible))::before {
+    background: Highlight;
+  }
+}
+
+/* Browsers drop backgrounds in print; the border is the point, keep it. */
+@media print {
+  [data-border-shape]::before {
+    print-color-adjust: exact;
+  }
+}

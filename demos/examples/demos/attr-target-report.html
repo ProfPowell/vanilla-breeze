@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Link report</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="m">
+    <h1>What this page can see</h1>
+    <p>This page was opened by one of the demo links. It reports what the browser passed along.</p>
+    <dl>
+      <dt>Browsing context name (<code>window.name</code>)</dt>
+      <dd><output id="report-name">(checking)</output></dd>
+      <dt><code>window.opener</code></dt>
+      <dd><output id="report-opener">(checking)</output></dd>
+      <dt>Referrer (<code>document.referrer</code>)</dt>
+      <dd><output id="report-referrer">(checking)</output></dd>
+    </dl>
+    <p><button type="button" id="report-back">Go back</button></p>
+  </layout-stack>
+
+  <script type="module">
+    document.getElementById('report-name').textContent =
+      window.name ? `"${window.name}"` : '(no name)';
+    document.getElementById('report-opener').textContent = window.opener
+      ? 'Set: this page could navigate the tab that opened it.'
+      : 'null: this page has no reference to the page that opened it.';
+    document.getElementById('report-referrer').textContent =
+      document.referrer || '(empty: no referrer was sent)';
+
+    const back = document.getElementById('report-back');
+    if (history.length < 2) back.hidden = true;
+    back.addEventListener('click', () => history.back());
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

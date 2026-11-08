@@ -11,7 +11,8 @@ section.padded {
   padding-block: var(--size-xl);
 }
 
-/* Full-width section */
+/* Spacious section: generous block and inline padding (no breakout —
+   the section stays as wide as its container) */
 section.full {
   padding-block: var(--size-2xl);
   padding-inline: var(--size-l);
@@ -28,6 +29,14 @@ section.contained {
 section.alt {
   background: var(--color-surface-raised);
   padding-block: var(--size-xl);
+}
+
+/* Forced colors flattens backgrounds to Canvas, so the alternation that
+   separates .alt sections disappears — draw a system-colour rule instead. */
+@media (forced-colors: active) {
+  section.alt {
+    border-block: var(--border-width-thin) solid CanvasText;
+  }
 }
 
 /* Bordered section */
@@ -82,15 +91,28 @@ body:has(section.hero[data-bleed]) > header {
   transition: background var(--duration-normal, 0.2s) var(--ease-default, ease);
 }
 
-[data-scrolled] > header {
+/* Once the page sets data-scrolled on <html> (author script, e.g. an
+   IntersectionObserver on the hero) the header gets its surface back. The
+   selector must out-rank the transparent rule above. */
+:root[data-scrolled] body:has(section.hero[data-bleed]) > header {
   background: var(--color-surface);
 }
 
 /* --- Angled Section Transitions (data-angle) --- */
+/* The skewed backdrop pivots on the inline-end edge. Under RTL the origin
+   and the skew sign both flip so the slope mirrors with the text. */
 section[data-angle] {
+  --_angle-dir: 1;
+  --_angle-origin: right;
+
   position: relative;
   isolation: isolate;
   overflow: visible;
+}
+
+section[data-angle]:dir(rtl) {
+  --_angle-dir: -1;
+  --_angle-origin: left;
 }
 
 section[data-angle]::before {
@@ -103,30 +125,32 @@ section[data-angle]::before {
 }
 
 section[data-angle="down"]::before {
-  transform-origin: bottom right;
-  transform: skewY(var(--angle-normal));
+  transform-origin: bottom var(--_angle-origin);
+  transform: skewY(calc(var(--angle-normal) * var(--_angle-dir)));
 }
 
 section[data-angle="up"]::before {
-  transform-origin: top right;
-  transform: skewY(calc(var(--angle-normal) * -1));
+  transform-origin: top var(--_angle-origin);
+  transform: skewY(calc(var(--angle-normal) * var(--_angle-dir) * -1));
 }
 
 section[data-angle="down-strong"]::before {
-  transform-origin: bottom right;
-  transform: skewY(var(--angle-strong));
+  transform-origin: bottom var(--_angle-origin);
+  transform: skewY(calc(var(--angle-strong) * var(--_angle-dir)));
 }
 
 section[data-angle="up-strong"]::before {
-  transform-origin: top right;
-  transform: skewY(calc(var(--angle-strong) * -1));
+  transform-origin: top var(--_angle-origin);
+  transform: skewY(calc(var(--angle-strong) * var(--_angle-dir) * -1));
 }
 
-/* Extra padding to compensate for skew clipping */
-section[data-angle="down"]        { padding-block-start: calc(var(--section-padding-normal) + 100vw * var(--angle-sin)); }
-section[data-angle="up"]          { padding-block-end: calc(var(--section-padding-normal) + 100vw * var(--angle-sin)); }
-section[data-angle="down-strong"] { padding-block-start: calc(var(--section-padding-normal) + 100vw * var(--angle-strong-sin)); }
-section[data-angle="up-strong"]   { padding-block-end: calc(var(--section-padding-normal) + 100vw * var(--angle-strong-sin)); }
+/* Extra padding to compensate for skew clipping. Percentage padding
+   resolves against the containing block's inline size, i.e. the width the
+   backdrop actually skews across (100vw over-padded inside narrow columns). */
+section[data-angle="down"]        { padding-block-start: calc(var(--section-padding-normal) + 100% * var(--angle-sin)); }
+section[data-angle="up"]          { padding-block-end: calc(var(--section-padding-normal) + 100% * var(--angle-sin)); }
+section[data-angle="down-strong"] { padding-block-start: calc(var(--section-padding-normal) + 100% * var(--angle-strong-sin)); }
+section[data-angle="up-strong"]   { padding-block-end: calc(var(--section-padding-normal) + 100% * var(--angle-strong-sin)); }
 
 /* --- Section Hairline Rules --- */
 section:has(> hr[data-position]) { position: relative; }

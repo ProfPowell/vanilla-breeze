@@ -7,18 +7,30 @@
  * <aside> for a right-hand sidebar and set data-layout-side="end". When no
  * nav/aside child exists, the position-based fallback applies: first child
  * is the sidebar, last child the content. The element fork used to be
- * position-based only, so <main><aside> + side="end" mirrored the wrong way. */
+ * position-based only, so <main><aside> + side="end" mirrored the wrong way.
+ *
+ * Private props are namespaced (--_sidebar-*) and never leak into a nested
+ * sidebar. The basis and content floor are read by child rules, so they
+ * must inherit one level; instead of relying on var() fallbacks, every host
+ * re-declares its own defaults, which shadows whatever an outer sidebar set.
+ * (@property { inherits: false } is not used: registrations must live in
+ * src/properties.css, unlayered, and child rules need the values anyway.) */
 
 :is(layout-sidebar, [data-layout="sidebar"]) {
-  --_content-min: var(--layout-content-min, var(--_content-min-token, 50%));
+  /* Host-level defaults: re-declared on every sidebar so a nested one does
+     not inherit an outer sidebar's attribute-driven values. */
+  --_sidebar-gap: var(--size-m);
+  --_sidebar-basis: 16rem;
+  --_sidebar-content-min-token: 50%;
+  --_sidebar-content-min: var(--layout-content-min, var(--_sidebar-content-min-token));
 
   display: flex;
   flex-wrap: wrap;
-  gap: var(--_gap, var(--size-m));
+  gap: var(--_sidebar-gap);
 
   /* --- Semantic sidebar elements --- */
   & > :is(nav, aside) {
-    flex-basis: var(--_sidebar-width, 16rem);
+    flex-basis: var(--_sidebar-basis);
     flex-grow: 1;
   }
 
@@ -29,31 +41,31 @@
   &:has(> :is(nav, aside)) > :not(nav, aside, hr, [role="separator"], template, script, style) {
     flex-basis: 0;
     flex-grow: 999;
-    min-inline-size: var(--_content-min);
+    min-inline-size: var(--_sidebar-content-min);
   }
 
   /* --- Position-based fallback when there is no nav/aside child --- */
   &:not(:has(> :is(nav, aside))) > :first-child {
-    flex-basis: var(--_sidebar-width, 16rem);
+    flex-basis: var(--_sidebar-basis);
     flex-grow: 1;
   }
 
   &:not(:has(> :is(nav, aside))) > :last-child {
     flex-basis: 0;
     flex-grow: 999;
-    min-inline-size: var(--_content-min);
+    min-inline-size: var(--_sidebar-content-min);
   }
 
-  &[data-layout-gap="none"]  { --_gap: 0; }
-  &[data-layout-gap="3xs"]   { --_gap: var(--size-3xs); }
-  &[data-layout-gap="2xs"]   { --_gap: var(--size-2xs); }
-  &[data-layout-gap="xs"]    { --_gap: var(--size-xs); }
-  &[data-layout-gap="s"]     { --_gap: var(--size-s); }
-  &[data-layout-gap="m"]     { --_gap: var(--size-m); }
-  &[data-layout-gap="l"]     { --_gap: var(--size-l); }
-  &[data-layout-gap="xl"]    { --_gap: var(--size-xl); }
-  &[data-layout-gap="2xl"]   { --_gap: var(--size-2xl); }
-  &[data-layout-gap="3xl"]   { --_gap: var(--size-3xl); }
+  &[data-layout-gap="none"]  { --_sidebar-gap: 0; }
+  &[data-layout-gap="3xs"]   { --_sidebar-gap: var(--size-3xs); }
+  &[data-layout-gap="2xs"]   { --_sidebar-gap: var(--size-2xs); }
+  &[data-layout-gap="xs"]    { --_sidebar-gap: var(--size-xs); }
+  &[data-layout-gap="s"]     { --_sidebar-gap: var(--size-s); }
+  &[data-layout-gap="m"]     { --_sidebar-gap: var(--size-m); }
+  &[data-layout-gap="l"]     { --_sidebar-gap: var(--size-l); }
+  &[data-layout-gap="xl"]    { --_sidebar-gap: var(--size-xl); }
+  &[data-layout-gap="2xl"]   { --_sidebar-gap: var(--size-2xl); }
+  &[data-layout-gap="3xl"]   { --_sidebar-gap: var(--size-3xl); }
 
   /* --- Sidebar on the end (right in LTR) --- */
   /* Semantic elements: order keeps natural DOM order */
@@ -66,16 +78,29 @@
     flex-direction: row-reverse;
   }
 
-  &[data-layout-sidebar-width="narrow"] { --_sidebar-width: 12rem; }
-  &[data-layout-sidebar-width="normal"] { --_sidebar-width: 16rem; }
-  &[data-layout-sidebar-width="wide"]   { --_sidebar-width: 20rem; }
+  &[data-layout-sidebar-width="narrow"] { --_sidebar-basis: 12rem; }
+  &[data-layout-sidebar-width="normal"] { --_sidebar-basis: 16rem; }
+  &[data-layout-sidebar-width="wide"]   { --_sidebar-basis: 20rem; }
 
-  &[data-layout-content-min="s"] { --_content-min-token: 40%; }
-  &[data-layout-content-min="m"] { --_content-min-token: 50%; }
-  &[data-layout-content-min="l"] { --_content-min-token: 60%; }
+  &[data-layout-content-min="s"] { --_sidebar-content-min-token: 40%; }
+  &[data-layout-content-min="m"] { --_sidebar-content-min-token: 50%; }
+  &[data-layout-content-min="l"] { --_sidebar-content-min-token: 60%; }
 
   &[data-layout-nowrap] {
     flex-wrap: nowrap;
+  }
+}
+
+/* Inside a narrow page region (the <main> of a data-page-layout, named
+   region-main, under 40rem) the sidebar stacks: every child takes a full
+   row. One rule for both forms — it used to be an attribute-only
+   flex-direction:column in layout-attributes.css, which also overrode
+   data-layout-nowrap and turned the flex-basis into a height. The
+   :not(…) arm skips the same injected helpers as the content rule and
+   lifts specificity above it and the positional fallback. */
+@container region-main (width < 40rem) {
+  :is(layout-sidebar, [data-layout="sidebar"]):not([data-layout-nowrap]) > :not(hr, [role="separator"], template, script, style) {
+    flex-basis: 100%;
   }
 }
 

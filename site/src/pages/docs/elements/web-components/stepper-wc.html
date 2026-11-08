@@ -110,7 +110,9 @@ crumbLabel: Web Components
 <section>
   <h2>Form participation</h2>
   <p>Form-associated via <code>ElementInternals</code>. Set <code>name</code>, drop it inside a
-    <code>&lt;form&gt;</code>, and the value submits like any input.</p>
+    <code>&lt;form&gt;</code>, and the value submits like any input. Resetting the form restores
+    the <em>authored</em> <code>value</code> (captured once, so moving the element does not change
+    the reset target), and a disabled <code>&lt;fieldset&gt;</code> disables the stepper.</p>
 
   <code-block language="html" show-lines label="Inside a form-field" data-escape><form>
   <form-field>
@@ -139,8 +141,11 @@ crumbLabel: Web Components
       <tr><td><code>data-suffix</code></td><td>string</td><td>&mdash;</td><td>Static suffix appended to display.</td></tr>
       <tr><td><code>data-show-label</code></td><td>boolean</td><td><code>false</code></td><td>Token mode: show token name (strips leading <code>--</code>).</td></tr>
       <tr><td><code>data-accelerate</code></td><td>boolean</td><td><code>false</code></td><td>Enable long-press acceleration.</td></tr>
-      <tr><td><code>disabled</code></td><td>boolean</td><td><code>false</code></td><td>Disables the stepper.</td></tr>
-      <tr><td><code>readonly</code></td><td>boolean</td><td><code>false</code></td><td>Locks the value (still focusable).</td></tr>
+      <tr><td><code>data-label-decrease</code></td><td>string</td><td><code>Decrease</code></td><td>Accessible name of the &minus; button (translate it).</td></tr>
+      <tr><td><code>data-label-increase</code></td><td>string</td><td><code>Increase</code></td><td>Accessible name of the + button (translate it).</td></tr>
+      <tr><td><code>aria-label</code> / <code>aria-labelledby</code></td><td>string</td><td>&mdash;</td><td>Forwarded to the inner spinbutton when there is no visible <code>&lt;label&gt;</code>.</td></tr>
+      <tr><td><code>disabled</code></td><td>boolean</td><td><code>false</code></td><td>Disables the stepper and removes it from the tab order. A disabled <code>&lt;fieldset&gt;</code> does the same.</td></tr>
+      <tr><td><code>readonly</code></td><td>boolean</td><td><code>false</code></td><td>Locks the value: still focusable, <code>aria-readonly="true"</code>, +/- buttons disabled.</td></tr>
     </tbody>
   </table>
 </section>
@@ -161,8 +166,8 @@ crumbLabel: Web Components
   <table class="props-table">
     <thead><tr><th>Key</th><th>Action</th></tr></thead>
     <tbody>
-      <tr><td><kbd>&uarr;</kbd> / <kbd>&rarr;</kbd></td><td>Step up (1&times;).</td></tr>
-      <tr><td><kbd>&darr;</kbd> / <kbd>&larr;</kbd></td><td>Step down (1&times;).</td></tr>
+      <tr><td><kbd>&uarr;</kbd> / <kbd>&rarr;</kbd></td><td>Step up (1&times;). In right-to-left pages <kbd>&larr;</kbd> steps up, matching the button order.</td></tr>
+      <tr><td><kbd>&darr;</kbd> / <kbd>&larr;</kbd></td><td>Step down (1&times;). In right-to-left pages <kbd>&rarr;</kbd> steps down.</td></tr>
       <tr><td><kbd>Page Up</kbd></td><td>Step up (10&times;).</td></tr>
       <tr><td><kbd>Page Down</kbd></td><td>Step down (10&times;).</td></tr>
       <tr><td><kbd>Home</kbd></td><td>Jump to min (or first option).</td></tr>
@@ -171,6 +176,53 @@ crumbLabel: Web Components
   </table>
   <p>The +/- buttons take <code>tabindex="-1"</code> by design &mdash; tab focus lands on
     the spinbutton itself, matching the <code>data-stepper</code> convention.</p>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <table class="props-table">
+    <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>.value</code></td><td>string</td><td>Canonical value (number as a string, token, or enum value). Setting it fires <code>input</code> and <code>change</code>.</td></tr>
+      <tr><td><code>.displayText</code></td><td>string (read-only)</td><td>The formatted text the user sees, e.g. <code>$5.00</code>, <code>2.05 KB</code>, <code>Medium</code>.</td></tr>
+      <tr><td><code>.recomputeWidth()</code></td><td>method</td><td>Rebuild the width reserve after changing <code>data-min</code>, <code>data-max</code>, <code>data-values</code>, <code>data-options</code> or <code>data-format</code> after upgrade.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <h3>Labelling</h3>
+  <p>The focusable <code>role="spinbutton"</code> is an inner element, so the stepper forwards
+    its name to it: a <code>&lt;label for&gt;</code> or wrapping <code>&lt;label&gt;</code>
+    (referenced through <code>aria-labelledby</code>), the host&rsquo;s
+    <code>aria-labelledby</code>, or the host&rsquo;s <code>aria-label</code>. Prefer a visible
+    <code>&lt;label&gt;</code>; clicking it focuses the spinbutton. Without any of these the
+    spinbutton has no name.</p>
+  <code-block language="html" show-lines label="Three ways to name it" data-escape><label for="qty">Quantity</label>
+<stepper-wc id="qty" name="qty" data-min="0" data-max="99" data-suffix=" pcs" value="1"></stepper-wc>
+
+<span id="sev-label">Severity</span>
+<stepper-wc aria-labelledby="sev-label" data-options="low,medium,high"></stepper-wc>
+
+<stepper-wc aria-label="Font size" data-values="12,14,16,20" data-suffix="px"></stepper-wc></code-block>
+
+  <h3>Value</h3>
+  <p>The spinbutton exposes <code>aria-valuenow</code>, <code>aria-valuemin</code>,
+    <code>aria-valuemax</code> and an <code>aria-valuetext</code> of the formatted display
+    (&ldquo;$5.00&rdquo;, &ldquo;Medium&rdquo;). Enum and token modes report the position
+    (1&hellip;n) as the value and the label as the text.</p>
+
+  <h3>Buttons, readonly and disabled</h3>
+  <p>The &minus;/+ buttons are pointer conveniences with <code>tabindex="-1"</code>; name them in
+    your language with <code>data-label-decrease</code> / <code>data-label-increase</code>.
+    <code>readonly</code> keeps the spinbutton focusable with <code>aria-readonly="true"</code>
+    and disables the buttons; <code>disabled</code> (or a disabled fieldset) takes it out of the
+    tab order with <code>aria-disabled="true"</code>.</p>
+
+  <h3>Forced colors</h3>
+  <p>In Windows High Contrast the focus ring becomes a <code>Highlight</code> outline on the
+    spinbutton, since the normal border-and-shadow ring is flattened.</p>
 </section>
 
 <section>

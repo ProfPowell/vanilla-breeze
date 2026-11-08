@@ -16,6 +16,8 @@
 @layer bundle-theme {
   :root[data-theme~="nes"],
   [data-theme~="nes"] {
+    color-scheme: light;
+
     /* ===== COLORS ===== */
     /* Classic NES 4-color grayscale base */
     --_nes-color-black: oklch(0% 0 0);
@@ -291,13 +293,25 @@
       align-items: center;
       gap: 0.75rem;
 
-      /* summary is display: flex with the marker hidden in core */
+      justify-content: flex-start;
 
-      /* NES-style arrow indicator */
+      /* summary is display: flex with the marker hidden in core.
+         The NES triangle replaces the core chevron, so drop ::after. */
+      &::after {
+        content: none;
+      }
+
+      /* NES-style arrow indicator. Empty alt text keeps the glyph out
+         of the summary's accessible name. */
       &::before {
-        content: "\25B6"; /* Right-pointing triangle */
+        content: "\25B6" / ""; /* Right-pointing triangle */
         font-size: 0.5rem;
         transition: transform 0.1s steps(2);
+      }
+
+      /* Point toward the inline end in RTL */
+      &:dir(rtl)::before {
+        scale: -1 1;
       }
     }
 
@@ -310,8 +324,9 @@
     }
     }
 
-    /* Menus */
-    & menu,
+    /* Menus: only pop-up menus get the raised panel chrome.
+       Default, .toolbar and .pills menus keep their own layout. */
+    & :is(menu.context, drop-down menu, .menu-bar menu, .nes-menu-bar menu),
     & .nes-menu {
       background: var(--color-surface);
       box-shadow: var(--_nes-border-raised);
@@ -326,9 +341,9 @@
       & button,
       & a {
         display: block;
-        width: 100%;
+        inline-size: 100%;
         padding: 0.75rem 1rem;
-        text-align: left;
+        text-align: start;
         background: transparent;
         border: none;
         box-shadow: none;
@@ -344,7 +359,7 @@
         }
       }
 
-      & hr:not([data-ornament], .decorative, .wave, .zigzag, .scallop, .diamonds, .dots) {
+      & hr:not([data-ornament], [class]) {
         border: none;
         height: 4px;
         background: var(--_nes-color-dark);
@@ -523,30 +538,23 @@
       }
     }
 
-    /* Progress bar */
-    & progress {
+    /* Progress bar — fill comes from --progress-fill (variants apply);
+       enhanced rings keep their own geometry */
+    & progress:not([data-type="ring"][data-enhanced]) {
       appearance: none;
       height: 24px;
       background: var(--color-surface);
       box-shadow: var(--_nes-border-sunken);
       border: none;
 
-      &::-webkit-progress-bar {
+      &:not(:indeterminate)::-webkit-progress-bar {
         background: transparent;
-      }
-
-      &::-webkit-progress-value {
-        background: var(--color-success);
-      }
-
-      &::-moz-progress-bar {
-        background: var(--color-success);
       }
     }
 
     & :is(main, article) {
     /* Horizontal rule */
-    & hr:not([data-ornament], .decorative, .wave, .zigzag, .scallop, .diamonds, .dots) {
+    & hr:not([data-ornament], [class]) {
       border: none;
       height: 4px;
       background: var(--_nes-color-black);
@@ -662,13 +670,20 @@
 
     & :is(main, article) browser-window {
       --browser-window-bg: var(--color-surface);
-      --browser-window-header-bg: var(--color-primary);
+      /* Deep NES blue: dark enough for the status dots and a white focus ring */
+      --browser-window-header-bg: oklch(35% 0.15 250);
       --browser-window-content-bg: var(--_nes-color-white);
       --browser-window-border-color: var(--_nes-color-black);
       --browser-window-text-color: var(--_nes-color-white);
-      --browser-window-text-muted: var(--_nes-color-light);
-      --browser-window-url-bg: var(--color-surface);
-      --browser-window-hover-bg: var(--color-surface-alt);
+      /* White URL field with dark text; hovered icons go white on NES blue */
+      --browser-window-text-muted: var(--_nes-color-dark);
+      --browser-window-url-bg: var(--_nes-color-white);
+      --browser-window-hover-bg: var(--color-primary);
+      --browser-window-active-bg: var(--color-primary);
+      --browser-window-accent-color: var(--_nes-color-white);
+      --browser-window-close-color: oklch(68% 0.22 25);
+      --browser-window-minimize-color: var(--color-warning);
+      --browser-window-maximize-color: oklch(68% 0.18 145);
     }
 
     /* Tables */
@@ -726,6 +741,12 @@
   /* ===== DARK MODE ===== */
   :root[data-theme~="nes"][data-mode="dark"],
   [data-theme~="nes"][data-mode="dark"] {
+    /* Primary buttons: the 90% "white" label on the L65% dark primary was
+       2.41:1; use a deeper NES blue fill under it (4vhi). */
+    & :is(main, article) :is(button, .button):is(.primary, [data-variant="primary"]) {
+      background: oklch(44% 0.17 250);
+    }
+
     color-scheme: dark;
 
     --_nes-color-black: oklch(0% 0 0);
@@ -815,13 +836,19 @@
 
     & :is(main, article) browser-window {
       --browser-window-bg: var(--color-surface);
-      --browser-window-header-bg: linear-gradient(90deg, oklch(30% 0.15 250), oklch(45% 0.08 250));
+      /* Gradient ends at 38% so the dots and focus ring hold 3:1 across it */
+      --browser-window-header-bg: linear-gradient(90deg, oklch(30% 0.15 250), oklch(38% 0.08 250));
       --browser-window-content-bg: var(--color-surface-sunken);
       --browser-window-border-color: var(--_nes-color-light);
       --browser-window-text-color: var(--_nes-color-white);
       --browser-window-text-muted: var(--_nes-color-light);
       --browser-window-url-bg: var(--color-surface-sunken);
       --browser-window-hover-bg: var(--color-surface-alt);
+      --browser-window-active-bg: var(--color-surface-alt);
+      --browser-window-accent-color: var(--_nes-color-white);
+      --browser-window-close-color: oklch(70% 0.2 25);
+      --browser-window-minimize-color: var(--color-warning);
+      --browser-window-maximize-color: oklch(70% 0.18 145);
     }
   }
 }

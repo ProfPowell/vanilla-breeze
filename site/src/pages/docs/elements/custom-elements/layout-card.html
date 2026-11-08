@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "layout-card"
-description: "Container component with background, padding, and visual variants. Simple block mode by default; add header/section/footer children to activate structured grid mode."
+description: "Container component with background, padding, and visual variants. Simple block mode by default; add header/section/footer children to activate structured mode."
 elementName: layout-card
 category: custom
 currentPath: /docs/elements/custom-elements/layout-card/
@@ -18,6 +18,23 @@ crumbLabel: Custom Elements
   </browser-window>
 
   <section>
+    <h2>Overview</h2>
+    <p><code>&lt;layout-card&gt;</code> is a card surface with two modes. In <strong>block mode</strong> (the default) it is a padded block with a background, radius and shadow. Give it a <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code> or <code>&lt;footer&gt;</code> child and it switches to <strong>structured mode</strong>: header pinned on top, footer pinned at the bottom, content stacked between, so footers line up across a row of cards.</p>
+    <p>A card nested in another card gets the raised surface colour automatically, and in forced-colours mode every card except <code>ghost</code> draws a <code>CanvasText</code> border.</p>
+  </section>
+
+  <section>
+    <h2>Element and attribute forms</h2>
+    <p><strong>Element only.</strong> There is no <code>data-layout="card"</code> or <code>data-card</code> attribute. The structured mode depends on the card owning its header, content and footer children, so it is a component, not a layout you can lay over any element.</p>
+    <p>Alternatives when you want a card look on an existing element:</p>
+    <ul>
+      <li>For a surface on a semantic element, use <a href="/docs/attributes/data-canvas/"><code>data-canvas</code></a>: <code>&lt;article data-canvas&gt;</code> gives an article a background, radius, shadow and padding without a wrapper. See <a href="/docs/elements/custom-elements/layout-canvas/"><code>&lt;layout-canvas&gt;</code></a>.</li>
+      <li>For a collection of cards (a grid, a list, a reel), use <a href="/docs/elements/web-components/card-list/"><code>&lt;card-list&gt;</code></a>.</li>
+      <li>To lay out the content inside a card, put a layout on a child: <code>&lt;section data-layout="stack"&gt;</code>. See <a href="/docs/attributes/data-layout/"><code>data-layout</code></a>.</li>
+    </ul>
+  </section>
+
+  <section>
     <h2>Attributes</h2>
     <table class="props-table">
       <thead>
@@ -25,6 +42,7 @@ crumbLabel: Custom Elements
           <th>Attribute</th>
           <th>Values</th>
           <th>Default</th>
+          <th>Applies to</th>
           <th>Description</th>
         </tr>
       </thead>
@@ -33,26 +51,64 @@ crumbLabel: Custom Elements
           <td><code>data-variant</code></td>
           <td><code>elevated</code>, <code>outlined</code>, <code>ghost</code></td>
           <td>&mdash;</td>
+          <td>element</td>
           <td>Visual style: elevated (shadow), outlined (border), ghost (no surface).</td>
         </tr>
         <tr>
           <td><code>data-padding</code></td>
           <td><code>none</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td>
           <td><code>m</code></td>
-          <td>Internal padding (applies to grid-area children in grid mode).</td>
+          <td>element</td>
+          <td>Internal padding. In structured mode the children are padded one step larger (see <a href="#structured-padding">padding scale</a>).</td>
         </tr>
         <tr>
           <td><code>data-max</code></td>
           <td><code>narrow</code>, <code>normal</code>, <code>wide</code>, <code>prose</code></td>
           <td>&mdash;</td>
-          <td>Max inline size, centered: --content-narrow / --content-normal / --content-wide, or prose (65ch). Same keyword set as layout-center and canvas.</td>
+          <td>element</td>
+          <td>Max inline size, centered in normal block flow (<code>margin-inline: auto</code>) and in flex/grid parents: --content-narrow / --content-normal / --content-wide, or prose (65ch). Same keyword set as layout-center and canvas.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Built-in behaviour</h3>
+    <ul>
+      <li><strong>Nested cards:</strong> a card inside another card uses <code>--color-surface-raised</code>, so it stands out from its parent.</li>
+      <li><strong>Forced colours:</strong> every card except <code>ghost</code> gets a <code>CanvasText</code> border, because the system removes the shadow and background that mark its edges.</li>
+      <li><strong>Container queries:</strong> only a structured card is a size container; see <a href="#container-queries">Container queries</a>.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Child attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute or element</th><th>On</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;header&gt;</code>, <code>slot="header"</code></td>
+          <td>a direct child</td>
+          <td>Pinned to the top with a bottom border. Switches the card to structured mode.</td>
+        </tr>
+        <tr>
+          <td><code>&lt;footer&gt;</code>, <code>slot="footer"</code></td>
+          <td>a direct child</td>
+          <td>Pinned to the bottom with a top border and a wrapping row for actions. Switches the card to structured mode.</td>
+        </tr>
+        <tr>
+          <td><code>&lt;section&gt;</code>, <code>slot="content"</code></td>
+          <td>a direct child</td>
+          <td>Content. Switches the card to structured mode; in structured mode every other child is content too.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section>
-    <h2>Block Mode</h2>
+    <h2>Examples</h2>
+
+    <h3>Block mode</h3>
     <p>By default, <code>layout-card</code> is a simple block container with padding. Use it for any content that just needs a card surface.</p>
 
     <browser-window
@@ -77,11 +133,9 @@ crumbLabel: Custom Elements
 <layout-card data-variant="ghost">
   Ghost card with no background
 </layout-card></code-block>
-  </section>
 
-  <section>
-    <h2>Grid Mode (Structured Cards)</h2>
-    <p>Add <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code>, or <code>&lt;footer&gt;</code> children to automatically activate CSS Grid with named areas. No extra attributes needed &mdash; the <code>:has()</code> selector detects semantic children.</p>
+    <h3>Structured mode</h3>
+    <p>Add a <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code>, or <code>&lt;footer&gt;</code> child, or any child with <code>slot="header"</code>, <code>slot="content"</code> or <code>slot="footer"</code>, and the card switches to structured mode. No extra attributes are needed: the <code>:has()</code> selector detects the children.</p>
 
     <browser-window
       src="/docs/snippets/demos/layout-card-grid-basic.html"
@@ -101,18 +155,66 @@ crumbLabel: Custom Elements
   </footer>
 </layout-card></code-block>
 
-    <h3>How it works</h3>
+    <h4>How it works</h4>
     <ul>
-      <li><code>&lt;header&gt;</code> maps to the <code>header</code> grid area with a bottom border</li>
-      <li><code>&lt;section&gt;</code> maps to the <code>content</code> grid area (expands to fill)</li>
-      <li><code>&lt;footer&gt;</code> maps to the <code>footer</code> grid area with a top border and flex layout for actions</li>
-      <li>Non-semantic children without a <code>slot</code> attribute are implicitly placed in the content area</li>
+      <li>The <code>&lt;header&gt;</code> (or <code>slot="header"</code>) is pinned to the top and gets a bottom border.</li>
+      <li>The <code>&lt;footer&gt;</code> (or <code>slot="footer"</code>) is pinned to the bottom, so footers line up when cards in a grid stretch to equal height. It gets a top border and a wrapping flex row for actions.</li>
+      <li>Every other child is content. Content children stack in source order between the header and footer, one body padding apart. A <code>&lt;p&gt;</code> followed by a <code>&lt;section&gt;</code> is fine, and nothing overlaps.</li>
+      <li>In structured mode the card is a size container (<code>container-type: inline-size</code>), which powers the compact rule below. A block-mode card is not a container, so it can shrink to fit its content inside a cluster or a centered stack.</li>
     </ul>
-  </section>
 
+    <h4>Multiple content children and slot-only cards</h4>
+    <browser-window
+      src="/docs/snippets/demos/layout-card-multi-content.html"
+      url="https://vanilla-breeze.com/layout-card/multi-content"
+      title="Multiple content children and slot-only cards"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Multiple content children" data-escape><layout-card>
+  <header><h2>Release notes</h2></header>
+  <p>Version 2.4 ships offline drafts and faster search.</p>
   <section>
-    <h2>Grid Mode Variants</h2>
-    <p>All visual variants work in both block and grid modes.</p>
+    <h3>Fixed</h3>
+    <p>Attachments no longer duplicate after a sync conflict.</p>
+  </section>
+  <footer><button type="button">Read more</button></footer>
+</layout-card>
+
+<layout-card data-variant="outlined">
+  <h2 slot="header">Slot-only card</h2>
+  <p slot="content">The slots alone switch the card to structured mode.</p>
+</layout-card></code-block>
+
+    <h3>Aligning cards with subgrid</h3>
+    <p>Inside <code>&lt;layout-grid data-layout-subgrid&gt;</code>, or its attribute form <code>data-layout="grid" data-layout-subgrid</code>, each structured card spans three parent rows, so headers, content and footers line up across siblings. The header takes the first row, the footer the last, and content fills the rows between. Use one content child per spare row (one for the default span of 3), or wrap several in a <code>&lt;section&gt;</code>. The cards must be direct children of the grid.</p>
+    <browser-window
+      src="/docs/snippets/demos/layout-card-subgrid.html"
+      url="https://vanilla-breeze.com/layout-card/subgrid"
+      title="Cards aligned with subgrid"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Cards aligned with subgrid" data-escape><layout-grid data-layout-min="s" data-layout-gap="m" data-layout-subgrid>
+  <layout-card data-variant="outlined">
+    <header><h2>Starter</h2></header>
+    <section><p>For a single project.</p></section>
+    <footer><button type="button">Choose Starter</button></footer>
+  </layout-card>
+  <layout-card data-variant="outlined">
+    <header><h2>Team plan with a longer name</h2></header>
+    <section><p>Longer copy that takes more lines.</p></section>
+    <footer><button type="button">Choose Team</button></footer>
+  </layout-card>
+</layout-grid>
+
+<!-- Attribute form: the cards stay direct children of the grid -->
+<section data-layout="grid" data-layout-min="s" data-layout-gap="m" data-layout-subgrid aria-label="Plans">
+  <layout-card>...</layout-card>
+  <layout-card>...</layout-card>
+</section></code-block>
+
+    <h3>Structured mode variants</h3>
+    <p>All visual variants work in both block and structured modes.</p>
 
     <browser-window
       src="/docs/snippets/demos/layout-card-grid-variants.html"
@@ -120,11 +222,40 @@ crumbLabel: Custom Elements
       title="Grid mode variants"
       shadow>
     </browser-window>
-  </section>
+    <code-block language="html" show-lines label="Structured mode variants" data-escape><layout-grid data-layout-min="m" data-layout-gap="m">
+  <layout-card>
+    <header><h2>Default</h2></header>
+    <section><p>Subtle shadow, solid background.</p></section>
+  </layout-card>
+  <layout-card data-variant="elevated">
+    <header><h2>Elevated</h2></header>
+    <section><p>Stronger shadow for emphasis.</p></section>
+  </layout-card>
+  <layout-card data-variant="outlined">
+    <header><h2>Outlined</h2></header>
+    <section><p>Border instead of shadow.</p></section>
+  </layout-card>
+  <layout-card data-variant="ghost">
+    <header><h2>Ghost</h2></header>
+    <section><p>Transparent background.</p></section>
+  </layout-card>
+</layout-grid></code-block>
 
-  <section>
-    <h2>Grid Mode Padding Sizes</h2>
-    <p>The <code>data-padding</code> attribute controls spacing in all grid areas.</p>
+    <h3 id="structured-padding">Structured mode padding sizes</h3>
+    <p>In structured mode the card itself has no padding. Each child is padded one step up the scale from the block-mode value, so <code>data-padding="m"</code> (the default) gives the header and footer <code>--size-m</code> block and <code>--size-l</code> inline padding, and content <code>--size-l</code>. <code>none</code> also removes the header and footer dividers.</p>
+    <table class="props-table">
+      <thead>
+        <tr><th><code>data-padding</code></th><th>Block mode</th><th>Header / footer</th><th>Content</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>none</code></td><td>0</td><td>0</td><td>0</td></tr>
+        <tr><td><code>s</code></td><td><code>--size-s</code></td><td><code>--size-xs</code> / <code>--size-s</code></td><td><code>--size-s</code></td></tr>
+        <tr><td><code>m</code> (default)</td><td><code>--size-m</code></td><td><code>--size-m</code> / <code>--size-l</code></td><td><code>--size-l</code></td></tr>
+        <tr><td><code>l</code></td><td><code>--size-l</code></td><td><code>--size-l</code> / <code>--size-xl</code></td><td><code>--size-xl</code></td></tr>
+        <tr><td><code>xl</code></td><td><code>--size-xl</code></td><td><code>--size-xl</code> / <code>--size-2xl</code></td><td><code>--size-2xl</code></td></tr>
+      </tbody>
+    </table>
+    <p>Each card declares its own padding values, so a nested card never inherits its parent's <code>data-padding</code>.</p>
 
     <browser-window
       src="/docs/snippets/demos/layout-card-grid-padding.html"
@@ -137,20 +268,18 @@ crumbLabel: Custom Elements
 <layout-card data-padding="s">
   <header><h3>Compact</h3></header>
   <section><p>Small padding for dense layouts.</p></section>
-  <footer><button>OK</button></footer>
+  <footer><button type="button">OK</button></footer>
 </layout-card>
 
 <!-- Large padding -->
 <layout-card data-padding="l">
   <header><h3>Spacious</h3></header>
   <section><p>Large padding for prominent content.</p></section>
-  <footer><button>OK</button></footer>
+  <footer><button type="button">OK</button></footer>
 </layout-card></code-block>
-  </section>
 
-  <section>
-    <h2>Slot Escape Hatch</h2>
-    <p>Use <code>slot="content"</code> for non-semantic elements that should go in the content grid area.</p>
+    <h3>Slot escape hatch</h3>
+    <p>Use <code>slot="header"</code>, <code>slot="content"</code> or <code>slot="footer"</code> to give any element one of the structured roles. Children without a slot are already content, so <code>slot="content"</code> is mainly useful to switch a card into structured mode when it has no header, section or footer.</p>
 
     <browser-window
       src="/docs/snippets/demos/layout-card-slot.html"
@@ -165,10 +294,8 @@ crumbLabel: Custom Elements
     "The only way to do great work is to love what you do."
   </blockquote>
 </layout-card></code-block>
-  </section>
 
-  <section>
-    <h2>Padding Variants (Block Mode)</h2>
+    <h3>Padding variants (block mode)</h3>
     <p>The <code>data-padding</code> attribute controls the internal spacing.</p>
 
     <browser-window
@@ -177,12 +304,13 @@ crumbLabel: Custom Elements
       title="Block mode padding variants"
       shadow>
     </browser-window>
-  </section>
+    <code-block language="html" show-lines label="Block mode padding variants" data-escape><layout-card data-variant="outlined" data-padding="none">...</layout-card>
+<layout-card data-variant="outlined" data-padding="s">...</layout-card>
+<layout-card data-variant="outlined" data-padding="m">...</layout-card> <!-- default -->
+<layout-card data-variant="outlined" data-padding="l">...</layout-card>
+<layout-card data-variant="outlined" data-padding="xl">...</layout-card></code-block>
 
-  <section>
-    <h2>Usage Examples</h2>
-
-    <h3>Content Card</h3>
+    <h3>Content card</h3>
 
     <browser-window
       src="/docs/snippets/demos/layout-card-content.html"
@@ -193,9 +321,9 @@ crumbLabel: Custom Elements
 
     <code-block language="html" show-lines label="Content card with image" data-escape><layout-card>
   <layout-stack data-layout-gap="m">
-    <div data-media data-ratio="16:9" data-radius="s">
+    <figure data-media data-ratio="16:9" data-radius="s">
       <img src="image.jpg" alt="Card image" loading="lazy" />
-    </div>
+    </figure>
     <layout-stack data-layout-gap="xs">
       <h3>Card Title</h3>
       <p>Brief description of the card content.</p>
@@ -207,7 +335,7 @@ crumbLabel: Custom Elements
   </layout-stack>
 </layout-card></code-block>
 
-    <h3>Product Card</h3>
+    <h3>Product card</h3>
 
     <browser-window
       src="/docs/snippets/demos/layout-card-product.html"
@@ -218,9 +346,9 @@ crumbLabel: Custom Elements
 
     <code-block language="html" show-lines label="Product card with outlined variant" data-escape><layout-card data-variant="outlined">
   <layout-stack data-layout-gap="m">
-    <div data-media data-ratio="1:1" data-radius="s">
+    <figure data-media data-ratio="1:1" data-radius="s">
       <img src="product.jpg" alt="Product image" loading="lazy" />
-    </div>
+    </figure>
     <layout-stack data-layout-gap="xs">
       <small>Category</small>
       <strong>Product Name</strong>
@@ -230,7 +358,7 @@ crumbLabel: Custom Elements
   </layout-stack>
 </layout-card></code-block>
 
-    <h3>Stat Cards</h3>
+    <h3>Stat cards</h3>
 
     <browser-window
       src="/docs/snippets/demos/layout-card-stats.html"
@@ -249,7 +377,7 @@ crumbLabel: Custom Elements
   </layout-card>
 </layout-grid></code-block>
 
-    <h3>Nested Cards</h3>
+    <h3>Nested cards</h3>
 
     <browser-window
       src="/docs/snippets/demos/layout-card-nested.html"
@@ -268,7 +396,7 @@ crumbLabel: Custom Elements
   </layout-stack>
 </layout-card></code-block>
 
-    <h3>Profile Card</h3>
+    <h3>Profile card</h3>
 
     <browser-window
       src="/docs/snippets/demos/layout-card-profile.html"
@@ -296,14 +424,16 @@ crumbLabel: Custom Elements
   </section>
 
   <section>
-    <h2>Container Queries</h2>
-    <p>In grid mode, the card uses <code>container-type: inline-size</code> and automatically adjusts padding and typography when placed in narrow containers (under 300px). Headings shrink and footer actions stack vertically.</p>
+    <h2 id="container-queries">Container queries</h2>
+    <p>Only in structured mode, the card uses <code>container-type: inline-size</code>. When the card is narrower than 300px, every child's padding is capped at <code>--size-s</code>, header headings shrink, and footer actions stack vertically. A structured card is a size container, so give it a width (or <code>data-max</code>) when it is a shrink-to-fit item, for example inside <code>&lt;layout-cluster&gt;</code>.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>In grid mode, use semantic HTML elements (<code>header</code>, <code>section</code>, <code>footer</code>) for proper document structure</li>
+      <li>In structured mode, use semantic HTML elements (<code>header</code>, <code>section</code>, <code>footer</code>) for proper document structure</li>
+      <li>The header and footer are pinned visually with <code>order</code>. Keep them first and last in the source too, so reading and focus order match what is on screen.</li>
+      <li>In forced-colors mode, every card except <code>ghost</code> gets a <code>CanvasText</code> border, because the system removes the shadow and background that mark its edges.</li>
       <li>Include headings in the header area for screen reader navigation</li>
       <li>Footer actions should be keyboard accessible</li>
       <li>Consider wrapping in <code>article</code> if the card represents standalone content</li>
@@ -313,9 +443,13 @@ crumbLabel: Custom Elements
   <section>
     <h2>Related</h2>
     <ul>
+      <li><a href="/docs/attributes/data-canvas/"><code>data-canvas</code></a> — A card-like surface on any semantic element (the card has no attribute form)</li>
+      <li><a href="/docs/elements/custom-elements/layout-canvas/"><code>&lt;layout-canvas&gt;</code></a> — Surface container, element and attribute form</li>
+      <li><a href="/docs/elements/web-components/card-list/"><code>&lt;card-list&gt;</code></a> — Collections of cards</li>
+      <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> — Layouts for the content inside a card</li>
+      <li><a href="/docs/semantic-layouts/">Semantic Layouts</a> — When to use a layout element and when an attribute</li>
       <li><a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a> — Vertical stacking layout</li>
-      <li><a href="/docs/elements/custom-elements/grid/"><code>&lt;layout-grid&gt;</code></a> — Auto-fit grid layout</li>
-      <li><a href="/docs/elements/custom-elements/cluster/"><code>&lt;layout-cluster&gt;</code></a> — Horizontal grouping with wrapping</li>
+      <li><a href="/docs/elements/custom-elements/grid/"><code>&lt;layout-grid&gt;</code></a> — Auto-fit grid layout, with subgrid alignment for cards</li>
       <li><a href="/docs/elements/custom-elements/layout-badge/"><code>&lt;layout-badge&gt;</code></a> — Badge/tag component</li>
       <li><a href="/docs/elements/custom-elements/user-avatar/"><code>&lt;user-avatar&gt;</code></a> — Avatar display component</li>
     </ul>

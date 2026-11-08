@@ -55,4 +55,38 @@ export const FULL_GUARDS = [...CORE_GUARDS, ...EXTRAS_GUARDS];
  */
 export function runFullGuards(root = document) {
   runGuards(FULL_GUARDS, root);
+  watchLate('[data-emoji]', 'data-emoji', () => import('../utils/emoji-init.js'), root);
+}
+
+/**
+ * Guards are boot-time only. For the few modules whose markup is commonly
+ * created after load (data-emoji on chat messages, inputs built by script),
+ * keep one observer until the first match appears, then load and disconnect.
+ * Once loaded, the module's own observers handle everything after that.
+ *
+ * @param {string} selector
+ * @param {string} attr - Attribute whose late addition also counts.
+ * @param {() => Promise<unknown>} load
+ * @param {Document | Element} root
+ * @returns {void}
+ */
+function watchLate(selector, attr, load, root) {
+  if (root.querySelector(selector)) return; // runGuards already loaded it
+  const target = root instanceof Document ? root.documentElement : root;
+  if (!target) return;
+  const observer = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      const nodes = m.type === 'attributes' ? [m.target] : m.addedNodes;
+      for (const node of nodes) {
+        if (node.nodeType !== Node.ELEMENT_NODE) continue;
+        const el = /** @type {Element} */ (node);
+        if (el.matches(selector) || el.querySelector(selector)) {
+          observer.disconnect();
+          load();
+          return;
+        }
+      }
+    }
+  });
+  observer.observe(target, { childList: true, subtree: true, attributes: true, attributeFilter: [attr] });
 }

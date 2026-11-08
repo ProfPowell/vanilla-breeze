@@ -230,3 +230,21 @@ describe('vb/no-inline-style escape hatch', () => {
     assert.match(out, /vb\/no-inline-style/, out);
   });
 });
+
+describe('vb/layout-attr-value checks presence attributes per layout', () => {
+  // data-layout-centered is presence-only (any value is fine), so the value
+  // check skipped it. The by-layout parser also used to credit it to cluster
+  // and reel (one :is() group in the container-type antidote rule).
+  it('flags bare data-layout-centered on a cluster', () => {
+    const out = check('<ul data-layout="cluster" data-layout-centered><li>x</li></ul>');
+    assert.match(out, /data-layout-centered is not read by the cluster layout/, out);
+  });
+  it('flags data-layout-centered on <layout-reel>', () => {
+    const out = check('<layout-reel data-layout-centered=""><p>x</p></layout-reel>');
+    assert.match(out, /data-layout-centered is not read by the reel layout/, out);
+  });
+  it('accepts data-layout-centered on cover', () => {
+    const out = check('<section data-layout="cover" data-layout-centered><p>x</p></section>');
+    assert.ok(!out.includes('vb/layout-attr-value'), out);
+  });
+});

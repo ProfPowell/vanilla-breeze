@@ -38,7 +38,7 @@ share-wc a[data-platform] {
   cursor: var(--cursor-custom-pointer, pointer);
   font: inherit;
   font-size: var(--font-size-s, 0.875rem);
-  color: var(--_brand, var(--color-text, #333));
+  color: var(--color-text, #333);
   background: var(--color-surface, #fff);
   transition: background var(--_transition), border-color var(--_transition), color var(--_transition);
   box-sizing: border-box;
@@ -77,8 +77,19 @@ share-wc[size="l"] a[data-platform] {
   font-size: var(--font-size-m, 1rem);
 }
 
-/* Variant: icon only */
-share-wc[variant="icon"] .share-label { display: none; }
+/* Variant: icon only — the label stays in the accessibility tree
+   (visually hidden) so it names the button. */
+share-wc[variant="icon"] .share-label {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
 share-wc[variant="icon"] button,
 share-wc[variant="icon"] a[data-platform] {
   padding: var(--size-2xs, 0.25rem);
@@ -98,6 +109,11 @@ share-wc[variant="label"] icon-wc { display: none; }
 /*
  * Platform brand colours (opt-in via color attribute).
  *
+ * The brand colour paints the border and the icon only; the label keeps
+ * --color-text so it always meets AA text contrast. Light-mode values for
+ * platforms whose official colour is too pale on white (WhatsApp,
+ * Telegram) are darkened to keep the icon at 3:1 or better.
+ *
  * Platforms with official light/dark logo pairs (X/Twitter — black ↔ white,
  * LinkedIn — official lighter blue for dark backgrounds) use light-dark().
  * Other platforms whose brand colours work on dark surfaces stay single-
@@ -111,12 +127,15 @@ share-wc[color] [data-platform="x"],
 share-wc[color] [data-platform="twitter"]  { --_brand: light-dark(#000,    #fff); }
 share-wc[color] [data-platform="facebook"] { --_brand: light-dark(#1877f2, #4599ff); }
 share-wc[color] [data-platform="linkedin"] { --_brand: light-dark(#0a66c2, #70b5f9); }
-share-wc[color] [data-platform="whatsapp"] { --_brand: light-dark(#25d366, #4ad17a); }
-share-wc[color] [data-platform="telegram"] { --_brand: light-dark(#229ed9, #4ec0e6); }
+share-wc[color] [data-platform="whatsapp"] { --_brand: light-dark(#1a7f4b, #4ad17a); }
+share-wc[color] [data-platform="telegram"] { --_brand: light-dark(#1b7fb0, #4ec0e6); }
 share-wc[color] [data-platform="bluesky"]  { --_brand: light-dark(#0085ff, #4aa9ff); }
 share-wc[color] [data-platform="mastodon"] { --_brand: light-dark(#6364ff, #8a8bff); }
 share-wc[color] [data-platform="email"]    { --_brand: var(--color-text); }
 share-wc[color] [data-platform="copy"]     { --_brand: var(--color-text); }
+
+share-wc[color] [data-platform] { border-color: var(--_brand, var(--color-border)); }
+share-wc[color] [data-platform] icon-wc { color: var(--_brand, currentColor); }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

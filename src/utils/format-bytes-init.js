@@ -2,12 +2,18 @@
  * format-bytes-init: Human-readable file size formatting
  *
  * Enhances <data> elements with data-format-bytes to replace their text
- * with a human-readable file size string. Uses binary math (÷1024) by default
- * with familiar units (KB, MB, GB).
+ * with a human-readable file size string. Uses binary math (÷1024) by default;
+ * data-unit="decimal" divides by 1000. Unit labels come from Intl.NumberFormat's
+ * unit style, so they are localised ("1.5 MB", "1,5 Mo"). Intl has no binary
+ * (KiB) units, so binary sizes use the same labels operating systems show.
  *
- * @attr {string} data-format-bytes - Decimal precision (default "0")
+ * @attr {string} data-format-bytes - Decimal places, 0–20 (default "0")
  * @attr {string} data-unit - "decimal" for ÷1000, default ÷1024
- * @attr {string} data-locale - Locale override (e.g., "de-DE")
+ * @attr {string} data-locale - Locale override (e.g., "de-DE"); else the nearest [lang], else <html lang>
+ *
+ * Negative values keep their sign (size deltas); values below one byte
+ * show in bytes. Re-formats when value, data-format-bytes, data-unit,
+ * data-locale or any lang attribute changes.
  *
  * @example
  * <data value="1048576" data-format-bytes>1 MB</data>
@@ -15,10 +21,16 @@
  * <data value="1000000" data-format-bytes data-unit="decimal">1 MB</data>
  */
 
-import { getLocale } from '../lib/i18n.js';
+import { formatLocale } from '../lib/number-format.js';
 
 const SELECTOR = 'data[data-format-bytes]';
-const UNITS = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+const WATCHED = ['value', 'data-format-bytes', 'data-unit', 'data-locale', 'lang'];
+/** Intl sanctioned single units, smallest first. */
+const UNITS = ['byte', 'kilobyte', 'megabyte', 'gigabyte', 'terabyte', 'petabyte'];
+const FALLBACK_LABELS = ['B', 'kB', 'MB', 'GB', 'TB', 'PB'];
+
+/** @type {WeakSet<Element>} */
+const enhanced = new WeakSet();
 
 /**
  * Initialize format-bytes elements within a root element
@@ -30,52 +42,74 @@ function initFormatBytes(root = document) {
 
 /**
  * Enhance a single <data> element with formatted byte display
- * @param {HTMLElement} el - The data element to enhance
+ * @param {Element} el - The data element to enhance
  */
 function enhanceBytes(el) {
-  if (el.hasAttribute('data-format-bytes-init')) return;
+  if (enhanced.has(el)) return;
+  enhanced.add(el);
+  // State hook only (styling/tests); the WeakSet is the guard.
   el.setAttribute('data-format-bytes-init', '');
   formatBytes(el);
 }
 
 /**
+ * Decimal places from the attribute, clamped to what Intl accepts.
+ * @param {string|null} value
+ * @returns {number}
+ */
+function parsePrecision(value) {
+  const n = parseInt(value ?? '0', 10);
+  return Number.isFinite(n) ? Math.min(20, Math.max(0, n)) : 0;
+}
+
+/**
+ * Format a byte count.
+ * @param {number} bytes - may be negative or fractional
+ * @param {{ precision?: number, decimal?: boolean, locale?: string }} [options]
+ * @returns {string}
+ */
+export function formatByteSize(bytes, { precision = 0, decimal = false, locale } = {}) {
+  const divisor = decimal ? 1000 : 1024;
+  const abs = Math.abs(bytes);
+  // Below one byte (and zero) stays in bytes: log() would go negative.
+  const exp = abs < 1
+    ? 0
+    : Math.min(Math.floor(Math.log(abs) / Math.log(divisor)), UNITS.length - 1);
+  const value = bytes / Math.pow(divisor, exp);
+
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'unit',
+      unit: UNITS[exp],
+      // "512 bytes" reads better than the short "512 byte"; larger units
+      // use the familiar short labels (kB, MB, Mo, Go…).
+      unitDisplay: exp === 0 ? 'long' : 'short',
+      minimumFractionDigits: precision,
+      maximumFractionDigits: precision,
+    }).format(value);
+  } catch {
+    return `${value.toFixed(precision)} ${FALLBACK_LABELS[exp]}`;
+  }
+}
+
+/**
  * Write the formatted value into the element. Runs on enhance and again
- * whenever the value attribute changes. A missing, empty or non-numeric
+ * whenever an input attribute changes. A missing, empty or non-numeric
  * value is invalid: the authored text is left as it is.
- * @param {HTMLElement} el
+ * @param {Element} el
  */
 function formatBytes(el) {
   const raw = el.getAttribute('value');
   if (raw == null || raw.trim() === '') return;
 
   const bytes = Number(raw);
-  if (isNaN(bytes) || bytes < 0) return;
+  if (!Number.isFinite(bytes)) return;
 
-  const precision = parseInt(el.getAttribute('data-format-bytes') ?? '0', 10) || 0;
-  const isDecimal = el.getAttribute('data-unit') === 'decimal';
-  const locale = el.getAttribute('data-locale') || getLocale();
-  const divisor = isDecimal ? 1000 : 1024;
-
-  if (bytes === 0) {
-    el.textContent = '0 B';
-    return;
-  }
-
-  const exp = Math.min(
-    Math.floor(Math.log(bytes) / Math.log(divisor)),
-    UNITS.length - 1
-  );
-  const value = bytes / Math.pow(divisor, exp);
-
-  try {
-    const formatted = new Intl.NumberFormat(locale, {
-      minimumFractionDigits: precision,
-      maximumFractionDigits: precision
-    }).format(value);
-    el.textContent = `${formatted} ${UNITS[exp]}`;
-  } catch {
-    el.textContent = `${value.toFixed(precision)} ${UNITS[exp]}`;
-  }
+  el.textContent = formatByteSize(bytes, {
+    precision: parsePrecision(el.getAttribute('data-format-bytes')),
+    decimal: el.getAttribute('data-unit') === 'decimal',
+    locale: formatLocale(el),
+  });
 }
 
 // Auto-init on DOMContentLoaded
@@ -85,13 +119,17 @@ if (document.readyState === 'loading') {
   initFormatBytes();
 }
 
-// Watch for dynamically added elements, and re-format when a value changes
+// Watch for added elements, and re-format when an input attribute changes
 const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     if (mutation.type === 'attributes') {
-      const target = /** @type {HTMLElement} */ (mutation.target);
-      if (target.hasAttribute('data-format-bytes-init') && target.matches(SELECTOR)) {
-        formatBytes(target);
+      const target = /** @type {Element} */ (mutation.target);
+      if (mutation.attributeName === 'lang') {
+        if (target.matches(SELECTOR) && enhanced.has(target)) formatBytes(target);
+        target.querySelectorAll(SELECTOR).forEach((el) => { if (enhanced.has(el)) formatBytes(el); });
+      } else if (target.matches(SELECTOR)) {
+        if (enhanced.has(target)) formatBytes(target);
+        else if (target.isConnected) enhanceBytes(target);
       }
       continue;
     }
@@ -99,11 +137,8 @@ const observer = new MutationObserver((mutations) => {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
       const el = /** @type {Element} */ (node);
-      if (el.matches(SELECTOR)) {
-        enhanceBytes(/** @type {HTMLElement} */ (el));
-      }
-
-      el.querySelectorAll(SELECTOR).forEach(child => enhanceBytes(/** @type {HTMLElement} */ (child)));
+      if (el.matches(SELECTOR)) enhanceBytes(el);
+      el.querySelectorAll(SELECTOR).forEach(enhanceBytes);
     }
   }
 });
@@ -112,7 +147,7 @@ observer.observe(document.documentElement, {
   childList: true,
   subtree: true,
   attributes: true,
-  attributeFilter: ['value'],
+  attributeFilter: WATCHED,
 });
 
 export { initFormatBytes };

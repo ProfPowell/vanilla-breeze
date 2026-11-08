@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "slot"
-description: "Placeholder inside a web component for projected content."
+description: "A placeholder inside a shadow root that shows the host's light-DOM children. Explains named and default slots, declarative shadow DOM, ::slotted, slotchange, and how VB's mostly light-DOM components use slot= as a styling hook."
 elementName: slot
 category: native
 nativeGroup: Scripting
@@ -13,30 +13,104 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;slot&gt;</code> element is part of the Scripting category in HTML.</p>
+    <p>A <code>&lt;slot&gt;</code> lives inside a <strong>shadow root</strong>. It marks where the host element's own children (its light DOM) are displayed. A child with <code>slot="name"</code> goes to <code>&lt;slot name="name"&gt;</code>; every other child goes to the unnamed default slot. Children are displayed in the slot, but they are not moved: they stay in the light DOM, where page CSS and scripts still reach them.</p>
+    <p>Outside a shadow root, a <code>&lt;slot&gt;</code> does nothing. The browser treats it as <code>display: contents</code>, and its children render as if it were not there.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <p>Slot elements define insertion points in web components.</p>
-    </div>
-    <code-block language="html" label="Basic slot example" data-escape><slot>...</slot></code-block>
+    <h2>Example: Declarative Shadow DOM</h2>
+    <p>A <code>&lt;template shadowrootmode="open"&gt;</code> attaches a shadow root while the HTML is parsed, with no JavaScript. The shadow root's styles are scoped to it. Here, two named slots and a default slot place the light-DOM children, and the <code>role</code> slot shows fallback content when nothing is assigned to it.</p>
+    <browser-window src="/docs/snippets/demos/slot-declarative-shadow.html" url="https://vanilla-breeze.com/slot/declarative-shadow" title="slot with declarative shadow DOM" shadow></browser-window>
+    <code-block language="html" label="Named, default and fallback slots" data-escape><article>
+  <template shadowrootmode="open">
+    <style>
+      :host { display: grid; gap: var(--size-2xs); }
+      ::slotted([slot="name"]) { margin: 0; }
+    </style>
+    <slot name="name"></slot>
+    <slot name="role"><span>No role given</span></slot>
+    <slot></slot>
+  </template>
+  <h2 slot="name">Ada Lovelace</h2>
+  <p slot="role">Analyst</p>
+  <p>Unnamed children go to the default slot.</p>
+</article></code-block>
+    <p>Shadow roots can be attached to custom elements and to a fixed list of native elements, including <code>article</code>, <code>section</code>, <code>aside</code>, <code>header</code>, <code>footer</code>, <code>main</code>, <code>nav</code>, <code>p</code>, <code>span</code>, <code>blockquote</code> and <code>h1</code>-<code>h6</code>.</p>
+  </section>
+
+  <section>
+    <h2>Slots in Vanilla Breeze</h2>
+    <p>Most VB components render into the <strong>light DOM</strong>: no shadow root, so no <code>&lt;slot&gt;</code>. Page CSS, themes and <code>data-*</code> attributes reach every part of them.</p>
+    <h3>slot="…" as a styling hook</h3>
+    <p>Some light-DOM components still read the <code>slot</code> <em>attribute</em>, as a CSS hook rather than for projection. <a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a> switches to its structured layout when it has a <code>slot="header"</code>, <code>slot="content"</code> or <code>slot="footer"</code> child (or a <code>header</code>/<code>section</code>/<code>footer</code> child). It does this with <code>:has()</code> and child selectors; nothing is projected.</p>
+    <code-block language="html" label="slot attribute as a layout-card hook" data-escape><layout-card>
+  <strong slot="header">Plan</strong>
+  <p slot="content">Everything in the free tier, plus sync.</p>
+  <small slot="footer">Billed yearly</small>
+</layout-card></code-block>
+    <h3>Components with a shadow root</h3>
+    <p>A few components use shadow DOM and render real <code>&lt;slot&gt;</code>s for your children:</p>
+    <ul>
+      <li><a href="/docs/elements/web-components/icons/"><code>&lt;icon-wc&gt;</code></a> - default slot: light-DOM content inside the element shows when the icon cannot be loaded</li>
+      <li><a href="/docs/elements/web-components/audio-player/"><code>&lt;audio-player&gt;</code></a> and <a href="/docs/elements/web-components/video-player/"><code>&lt;video-player&gt;</code></a> - default slot for the native media element and its sources/tracks</li>
+      <li><a href="/docs/elements/web-components/score-card/"><code>&lt;score-card&gt;</code></a> - named slots <code>title</code>, <code>value</code>, <code>change</code>, <code>sparkline</code>, <code>description</code>, <code>icon</code></li>
+      <li><a href="/docs/elements/web-components/geo-map/"><code>&lt;geo-map&gt;</code></a> - default slot for the map caption</li>
+    </ul>
+    <p><code>chart-wc</code> and <code>audio-visualizer</code> also attach a shadow root but render no slots.</p>
+  </section>
+
+  <section>
+    <h2>Styling Slotted Content</h2>
+    <p>Slotted children keep their page styles. Inside the shadow root, <code>::slotted(selector)</code> can style them too, but only the top-level slotted elements (not their descendants), and the page's own rules win over it.</p>
+    <code-block language="css" label="::slotted" data-escape>/* inside the shadow root */
+::slotted(img) { border-radius: var(--radius-m); }
+::slotted([slot="name"]) { font-weight: 700; }</code-block>
+  </section>
+
+  <section>
+    <h2>Scripting: slotchange and assigned nodes</h2>
+    <p>A slot fires <code>slotchange</code> when its assigned nodes change. <code>assignedElements()</code> and <code>assignedNodes()</code> return what is currently assigned; pass <code>{ flatten: true }</code> to include fallback content and nested slots.</p>
+    <code-block language="js" label="slotchange" data-escape>const slot = this.shadowRoot.querySelector('slot[name="icon"]');
+slot.addEventListener('slotchange', () => {
+  this.toggleAttribute('data-has-icon', slot.assignedElements().length > 0);
+});</code-block>
   </section>
 
   <section>
     <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/attributes/">global attributes</a>.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>name</code></td>
+          <td>Slot name. Host children with a matching <code>slot</code> attribute are assigned here. Omit it for the default slot.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The element also accepts the <a href="/docs/attributes/">global attributes</a>. The <code>slot</code> attribute that targets a slot is a global attribute set on the host's children.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;slot&gt;</code> element will be documented here.</p>
+    <ul>
+      <li>The accessibility tree follows the <strong>rendered</strong> (flattened) tree: slotted content is read where its slot sits, not where it appears in the light-DOM source. Keep slot order in the shadow root matching a sensible reading order, and avoid CSS reordering on top of it.</li>
+      <li>A <code>&lt;slot&gt;</code> is <code>display: contents</code> and adds no role or name. It does not remove its content from the accessibility tree.</li>
+      <li>Headings, labels and landmarks in slotted content keep their meaning. ID references (<code>aria-labelledby</code>, <code>for</code>) do not cross the shadow boundary, so keep a label and its control on the same side.</li>
+      <li>Fallback content inside a slot is real content: give it the same care as the assigned content it stands in for.</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related</h2>
     <ul>
-      <li><a href="/docs/elements/native/template/"><code>&lt;template&gt;</code></a> - HTML template for JavaScript use</li>
+      <li><a href="/docs/elements/native/template/"><code>&lt;template&gt;</code></a> - Holds declarative shadow roots and inert markup</li>
+      <li><a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a> - Uses <code>slot="header|content|footer"</code> as a light-DOM layout hook</li>
+      <li><a href="/docs/elements/web-components/score-card/"><code>&lt;score-card&gt;</code></a> - Shadow DOM with named slots</li>
+      <li><a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> - Defining custom elements</li>
     </ul>
   </section>

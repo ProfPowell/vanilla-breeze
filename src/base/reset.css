@@ -21,6 +21,28 @@
   display: none !important;
 }
 
+/* A closed popover is not rendered, for the same reason and by the same
+   mechanism as [hidden]: the UA's [popover]:not(:popover-open):not(dialog
+   [open]) { display: none } is a plain declaration, so VB's own element
+   rules (nav, section, article, aside, form, figure, header, footer, menu,
+   dl, search all set display) kept closed popovers on the page. dialog
+   [open] is excluded as in the UA rule, so a <dialog popover> opened with
+   showModal() still shows. Exit transitions still run: a transition of
+   display (allow-discrete) outranks !important.
+   The dashboard nav is the one framework popover that renders closed: it
+   is a grid column at 48rem and up (or with data-layout-nowrap) and an
+   off-canvas drawer that slides out below that (layout-attributes.css). */
+:where([popover]:not(:popover-open, dialog[open], [data-page-layout="dashboard"] > nav)) {
+  display: none !important;
+}
+
+/* Popovers centre in the viewport (UA margin: auto); the * { margin: 0 }
+   above pinned bare ones to the top-left corner. Zero specificity, so any
+   component or anchored placement that sets its own margin wins. */
+:where([popover]) {
+  margin: auto;
+}
+
 html {
   /* 100%, not none: none also blocks the user's own text zoom on some
      mobile browsers. 100% only stops the automatic landscape inflation. */

@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "template"
-description: "Holds HTML that is not rendered but can be cloned via JavaScript."
+description: "Holds inert HTML that is parsed but not rendered. Covers cloning template.content, declarative shadow DOM with shadowrootmode, accessibility, and the VB components that read author templates."
 elementName: template
 category: native
 nativeGroup: Scripting
@@ -13,31 +13,141 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;template&gt;</code> element is part of the Scripting category in HTML.</p>
+    <p>A <code>&lt;template&gt;</code> holds HTML that the browser parses but does not render. Its children go into a separate <code>DocumentFragment</code>, <code>template.content</code>, rather than into the page. Images in it do not load, scripts in it do not run, and its styles do not apply. Nothing happens until script clones the content and inserts the copy.</p>
+    <p>A template can appear almost anywhere, including inside <code>&lt;table&gt;</code>, <code>&lt;select&gt;</code> and <code>&lt;ul&gt;</code>, where most other wrappers are not allowed. That makes it the usual way to ship row, option or list-item markup for script to stamp out.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <p>Template content is not rendered until cloned via JavaScript.</p>
-    </div>
-    <code-block language="html" label="Basic template example" data-escape><template>...</template></code-block>
+    <h2>Example: Clone and Fill</h2>
+    <p>Clone <code>template.content</code> with <code>cloneNode(true)</code>, fill in the copy, then insert it. Each submit below adds a row built from the same template. The template itself never appears.</p>
+    <browser-window src="/docs/snippets/demos/template-clone.html" url="https://vanilla-breeze.com/template/clone" title="Cloning a template" shadow></browser-window>
+    <code-block language="html" label="Template and target list" data-escape><ul id="tasks" aria-live="polite"></ul>
+
+<template id="task-row">
+  <li><span class="task-name"></span> <small>added just now</small></li>
+</template></code-block>
+    <code-block language="js" label="Clone, fill, insert" data-escape>const template = document.getElementById('task-row');
+
+function addTask(name) {
+  const row = template.content.cloneNode(true); // a DocumentFragment
+  row.querySelector('.task-name').textContent = name; // textContent, not innerHTML
+  document.getElementById('tasks').append(row);
+}</code-block>
+    <p>Use <code>document.importNode(template.content, true)</code> instead of <code>cloneNode</code> when the template lives in another document, such as a fetched HTML file. Fill text with <code>textContent</code>, never by concatenating user input into <code>innerHTML</code>.</p>
+  </section>
+
+  <section>
+    <h2>Declarative Shadow DOM</h2>
+    <p>With a <code>shadowrootmode</code> attribute, a template does something different. While the HTML is parsed, it attaches a shadow root to its parent element and moves its content into that root. No JavaScript is needed, and the template element itself disappears.</p>
+    <code-block language="html" label="Declarative shadow root" data-escape><article>
+  <template shadowrootmode="open">
+    <style>:host { display: grid; gap: var(--size-2xs); }</style>
+    <slot name="name"></slot>
+    <slot></slot>
+  </template>
+  <h2 slot="name">Ada Lovelace</h2>
+  <p>Unnamed children go to the default slot.</p>
+</article></code-block>
+    <p>Declarative shadow roots only attach during parsing. A template with <code>shadowrootmode</code> inserted later through <code>innerHTML</code> stays an ordinary, inert template; use <code>setHTMLUnsafe()</code> or <code>Document.parseHTMLUnsafe()</code> for that. The <a href="/docs/elements/native/slot/"><code>&lt;slot&gt;</code> page</a> has a live demo and covers slots and <code>::slotted</code>.</p>
+  </section>
+
+  <section>
+    <h2>Templates Read by VB Components</h2>
+    <p>Several VB components let you author part of their content as a <code>&lt;template&gt;</code> child. The component reads the template; you never clone it yourself. Because the content is inert, nothing in it renders or loads before the component upgrades.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Component</th>
+          <th scope="col">Template</th>
+          <th scope="col">What it holds</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="/docs/elements/web-components/markdown-viewer/"><code>&lt;markdown-viewer&gt;</code></a></td>
+          <td><code>template[data-md]</code></td>
+          <td>Markdown source, read as text and rendered</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/tooltip/"><code>&lt;tool-tip&gt;</code></a></td>
+          <td><code>template[data-tooltip]</code></td>
+          <td>Rich tooltip content (takes priority over <code>content</code> and <code>title</code>)</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/reaction-bar/"><code>&lt;reaction-bar&gt;</code></a></td>
+          <td><code>template[data-palette]</code></td>
+          <td>The reaction picker's palette</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/comment-thread/"><code>&lt;comment-thread&gt;</code></a></td>
+          <td><code>template[data-reply-form]</code></td>
+          <td>The reply form cloned under a comment</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/ai-chat/"><code>&lt;ai-chat&gt;</code></a></td>
+          <td><code>template[data-role="starters"]</code>, <code>template[data-role="system"]</code></td>
+          <td>Starter prompts (one per line) and the system prompt</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/card-list/"><code>&lt;card-list&gt;</code></a></td>
+          <td><code>template</code> (first child template)</td>
+          <td>The card markup stamped for each item, with <code>data-field</code> bindings</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/chart-wc/"><code>&lt;chart-wc&gt;</code></a></td>
+          <td><code>template[data-chart-data]</code></td>
+          <td>Inline chart data</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
     <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/attributes/">global attributes</a>.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Attribute</th>
+          <th scope="col">Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>shadowrootmode</code></td>
+          <td><code>open</code> or <code>closed</code>. Attaches a declarative shadow root to the parent element while parsing.</td>
+        </tr>
+        <tr>
+          <td><code>shadowrootdelegatesfocus</code></td>
+          <td>Focusing the host forwards focus to the first focusable element in the shadow root.</td>
+        </tr>
+        <tr>
+          <td><code>shadowrootclonable</code></td>
+          <td>Shadow roots created from this template are copied by <code>cloneNode()</code>.</td>
+        </tr>
+        <tr>
+          <td><code>shadowrootserializable</code></td>
+          <td>The shadow root is included by <code>getHTML({ serializableShadowRoots: true })</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>This element also supports <a href="/docs/attributes/">global attributes</a>.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;template&gt;</code> element will be documented here.</p>
+    <ul>
+      <li>Template content is not in the accessibility tree. Screen readers do not see it, and nothing in it can take focus until a clone is inserted into the page.</li>
+      <li>Clones are ordinary DOM once inserted. Give them the same headings, labels and names you would write by hand, and use unique <code>id</code> values per clone (a cloned <code>id</code> is duplicated every time).</li>
+      <li>Content added after load is not announced on its own. Insert it into an <code>aria-live</code> region, as the demo's list does, or move focus to it when the user needs to act on it.</li>
+      <li>A declarative shadow root is rendered and exposed to assistive technology like any other content.</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related</h2>
     <ul>
-      <li><a href="/docs/elements/native/slot/"><code>&lt;slot&gt;</code></a> - Content projection in web components</li>
+      <li><a href="/docs/elements/native/slot/"><code>&lt;slot&gt;</code></a> - Content projection in shadow roots, with a declarative shadow DOM demo</li>
       <li><a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> - Execute JavaScript code</li>
+      <li><a href="/docs/elements/web-components/card-list/"><code>&lt;card-list&gt;</code></a> - Template-driven list rendering</li>
     </ul>
   </section>

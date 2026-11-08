@@ -4,8 +4,21 @@
  */
 
 import { test, expect } from 'playwright/test';
+import { join } from 'node:path';
 
+const REPO = join(import.meta.dirname, '..', '..');
 const demo = '/docs/snippets/demos/data-sortable-basic.html';
+
+// Test the working tree, not the build: serve the demo and /src from disk.
+test.beforeEach(async ({ page }) => {
+  await page.route('**/src/**', (route) => route.fulfill({
+    path: join(REPO, decodeURIComponent(new URL(route.request().url()).pathname)),
+  }));
+  await page.route(`**${demo}`, (route) => route.fulfill({
+    path: join(REPO, 'demos/snippets/demos/data-sortable-basic.html'),
+    contentType: 'text/html; charset=utf-8',
+  }));
+});
 
 test.describe('data-sortable — table mode', () => {
   test('clicking a header cycles asc → desc → none and reorders rows', async ({ page }) => {
@@ -54,12 +67,17 @@ test.describe('data-sortable — table mode', () => {
     await expect(rows.first().locator('td').first()).toHaveText('Diana');
   });
 
-  test('keyboard activation: Enter triggers sort', async ({ page }) => {
+  test('keyboard activation: Enter on the injected button triggers sort', async ({ page }) => {
     await page.goto(demo);
     const nameHeader = page.locator('table[data-sortable] th[data-sort="name"]');
-    await nameHeader.focus();
+    // The th stays a columnheader; a native button inside it is the control.
+    await expect(nameHeader).not.toHaveAttribute('role', /.+/);
+    const button = nameHeader.locator('> button[data-sort-button]');
+    await button.focus();
     await page.keyboard.press('Enter');
     await expect(nameHeader).toHaveAttribute('aria-sort', 'ascending');
+    await page.keyboard.press('Space');
+    await expect(nameHeader).toHaveAttribute('aria-sort', 'descending');
   });
 });
 

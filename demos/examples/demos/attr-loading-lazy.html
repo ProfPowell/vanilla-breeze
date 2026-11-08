@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>loading attribute: lazy images</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+    header { position: sticky; inset-block-start: 0; z-index: 1; padding-block: var(--size-xs); background: var(--color-surface); }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="l">
+  <header>
+    <p><output id="loaded-count">Loaded: 0 of 14 images</output>. Scroll down: lazy images load as they come near the viewport.</p>
+  </header>
+
+  <figure>
+    <img src="/src/assets/placeholders/photo-figure-1-600x400.svg"
+         fetchpriority="high" decoding="async"
+         width="600" height="400"
+         alt="First image above the fold, loaded eagerly at high priority" />
+    <figcaption>Eager, <code>fetchpriority="high"</code></figcaption>
+  </figure>
+
+  <figure>
+    <img src="/src/assets/placeholders/photo-figcaption-1-500x300.svg"
+         loading="lazy" decoding="async" width="500" height="300"
+         alt="Lazy image 1" />
+    <figcaption><code>loading="lazy"</code>, image 1</figcaption>
+  </figure>
+  <figure>
+    <img src="/src/assets/placeholders/photo-figcaption-2-500x301.svg"
+         loading="lazy" decoding="async" width="500" height="301"
+         alt="Lazy image 2" />
+    <figcaption><code>loading="lazy"</code>, image 2</figcaption>
+  </figure>
+  <figure>
+    <img src="/src/assets/placeholders/photo-figcaption-3-500x280.svg"
+         loading="lazy" decoding="async" width="500" height="280"
+         alt="Lazy image 3" />
+    <figcaption><code>loading="lazy"</code>, image 3</figcaption>
+  </figure>
+  <figure>
+    <img src="/src/assets/placeholders/photo-figcaption-4-500x281.svg"
+         loading="lazy" decoding="async" width="500" height="281"
+         alt="Lazy image 4" />
+    <figcaption><code>loading="lazy"</code>, image 4</figcaption>
+  </figure>
+  <figure>
+    <img src="/src/assets/placeholders/photo-figcaption-5-500x282.svg"
+         loading="lazy" decoding="async" width="500" height="282"
+         alt="Lazy image 5" />
+    <figcaption><code>loading="lazy"</code>, image 5</figcaption>
+  </figure>
+  <figure>
+    <img src="/src/assets/placeholders/photo-figcaption-6-500x283.svg"
+         loading="lazy" decoding="async" width="500" height="283"
+         alt="Lazy image 6" />
+    <figcaption><code>loading="lazy"</code>, image 6</figcaption>
+  </figure>
+  <figure>
+    <img src="/src/assets/placeholders/photo-figcaption-7-500x300.svg"
+         loading="lazy" decoding="async" width="500" height="300"
+         alt="Lazy image 7" />
+    <figcaption><code>loading="lazy"</code>, image 7</figcaption>
+  </figure>
+  <figure>
+    <img src="/src/assets/placeholders/photo-figcaption-8-500x301.svg"
+         loading="lazy" decoding="async" width="500" height="301"
+         alt="Lazy image 8" />
+    <figcaption><code>loading="lazy"</code>, image 8</figcaption>
+  </figure>
+  <figure>
+    <img src="/src/assets/placeholders/photo-figcaption-9-500x302.svg"
+         loading="lazy" decoding="async" width="500" height="302"
+         alt="Lazy image 9" />
+    <figcaption><code>loading="lazy"</code>, image 9</figcaption>
+  </figure>
+  <figure>
+    <img src="/src/assets/placeholders/photo-figcaption-10-500x303.svg"
+         loading="lazy" decoding="async" width="500" height="303"
+         alt="Lazy image 10" />
+    <figcaption><code>loading="lazy"</code>, image 10</figcaption>
+  </figure>
+  <figure>
+    <img src="/src/assets/placeholders/photo-figcaption-11-500x304.svg"
+         loading="lazy" decoding="async" width="500" height="304"
+         alt="Lazy image 11" />
+    <figcaption><code>loading="lazy"</code>, image 11</figcaption>
+  </figure>
+  <figure>
+    <img src="/src/assets/placeholders/photo-figcaption-12-500x305.svg"
+         loading="lazy" decoding="async" width="500" height="305"
+         alt="Lazy image 12" />
+    <figcaption><code>loading="lazy"</code>, image 12</figcaption>
+  </figure>
+  <figure>
+    <img src="/src/assets/placeholders/photo-figcaption-13-500x280.svg"
+         loading="lazy" decoding="async" width="500" height="280"
+         alt="Lazy image 13" />
+    <figcaption><code>loading="lazy"</code>, image 13</figcaption>
+  </figure>
+
+  <script type="module">
+    const images = [...document.querySelectorAll('img')];
+    const out = document.querySelector('#loaded-count');
+    const update = () => {
+      const done = images.filter((img) => img.complete && img.naturalWidth > 0).length;
+      out.textContent = `Loaded: ${done} of ${images.length} images`;
+    };
+    for (const img of images) img.addEventListener('load', update);
+    update();
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -43,22 +43,23 @@ crumbLabel: Web Components
   <p>Two slots:</p>
   <ol>
     <li><strong>Existing chips</strong> &mdash; direct <code>&lt;button data-reaction data-count [data-mine]&gt;</code> children. The component decorates them with the count, <code>aria-pressed</code>, and a derived <code>aria-label</code>.</li>
-    <li><strong>Available reactions</strong> &mdash; inside a <code>&lt;template data-palette&gt;</code> child. The component clones the buttons into a <a href="/docs/elements/web-components/pop-over/"><code>&lt;pop-over&gt;</code></a> when the trigger opens.</li>
+    <li><strong>Available reactions</strong> &mdash; inside a <code>&lt;template data-palette&gt;</code> child. The component clones the buttons into a <a href="/docs/elements/web-components/pop-over/"><code>&lt;pop-over&gt;</code></a> palette once, when the bar upgrades.</li>
   </ol>
-  <p>The trigger button (<code>😀+</code>) is <em>auto-rendered</em> at the end of the bar &mdash; you do not author it.</p>
+  <p>The trigger button (<code>😀</code>, change it with <code>data-trigger-icon</code>) is <em>auto-rendered</em> at the end of the bar &mdash; you do not author it.</p>
+  <p>Give each reaction a name with <code>data-label</code> (or <code>aria-label</code>) on both the chip and its palette button. Screen readers announce emoji inconsistently &mdash; some say nothing, some read a Unicode name that is not what the reaction means &mdash; so the emoji is only the fallback name. Chips that <code>setCount()</code> creates are cloned from the palette button and keep its label.</p>
 
   <code-block language="html" show-lines label="Basic reaction-bar" data-escape><reaction-bar aria-label="Reactions to comment 482">
-  <button data-reaction="thumbsup" data-count="3" data-mine>👍</button>
-  <button data-reaction="rocket"   data-count="2">🚀</button>
+  <button data-reaction="thumbsup" data-label="Thumbs up" data-count="3" data-mine>👍</button>
+  <button data-reaction="rocket"   data-label="Rocket"    data-count="2">🚀</button>
   <template data-palette>
-    <button data-reaction="thumbsup">👍</button>
-    <button data-reaction="thumbsdown">👎</button>
-    <button data-reaction="laugh">😄</button>
-    <button data-reaction="hooray">🎉</button>
-    <button data-reaction="confused">😕</button>
-    <button data-reaction="heart">❤️</button>
-    <button data-reaction="rocket">🚀</button>
-    <button data-reaction="eyes">👀</button>
+    <button data-reaction="thumbsup"   data-label="Thumbs up">👍</button>
+    <button data-reaction="thumbsdown" data-label="Thumbs down">👎</button>
+    <button data-reaction="laugh"      data-label="Laugh">😄</button>
+    <button data-reaction="hooray"     data-label="Hooray">🎉</button>
+    <button data-reaction="confused"   data-label="Confused">😕</button>
+    <button data-reaction="heart"      data-label="Heart">❤️</button>
+    <button data-reaction="rocket"     data-label="Rocket">🚀</button>
+    <button data-reaction="eyes"       data-label="Eyes">👀</button>
   </template>
 </reaction-bar></code-block>
 </section>
@@ -68,10 +69,12 @@ crumbLabel: Web Components
   <p>The component does not track state. Authors own counts + per-user state + persistence. The flow:</p>
   <ol>
     <li>User clicks a chip <em>or</em> a palette option.</li>
-    <li><code>reaction-bar:toggle</code> fires with <code>{ reaction, action, count, mine }</code>.</li>
+    <li><code>reaction-bar:toggle</code> fires with <code>{ reaction, action, count, mine }</code>. <code>count</code> and <code>mine</code> are the values <em>before</em> the toggle.</li>
+    <li>The chip turns pending (<code>data-pending</code> + <code>aria-busy="true"</code>) and ignores further clicks, so a double click sends one request, not two.</li>
     <li>Author makes the backend call.</li>
-    <li>Author updates the bar via <code>bar.setCount(reaction, count, { mine })</code>.</li>
+    <li>Author updates the bar via <code>bar.setCount(reaction, count, { mine })</code>, which also clears the pending state. If the request fails, call <code>setCount</code> with the old values to roll back.</li>
   </ol>
+  <p>Nothing changes on screen until <code>setCount</code> runs, so the chip shows the server round-trip as its pending state.</p>
 
   <code-block language="javascript" show-lines label="Wiring the backend" data-escape>bar.addEventListener('reaction-bar:toggle', async (e) => {
   const { reaction, action, count, mine } = e.detail;
@@ -85,7 +88,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Read-only mode</h2>
-  <p>Set <code>data-disabled</code> for archived threads or other read-only contexts. Chips don't toggle; the trigger is disabled.</p>
+  <p>Set <code>data-disabled</code> for archived threads or other read-only contexts. Chips get <code>aria-disabled="true"</code> and don't toggle, but stay focusable so their counts can still be read. The trigger is disabled and leaves the arrow-key order. The attribute is observed, so adding or removing it later works too.</p>
 
   <code-block language="html" show-lines label="Read-only" data-escape><reaction-bar data-disabled aria-label="Reactions">
   <button data-reaction="thumbsup" data-count="12">👍</button>
@@ -101,13 +104,32 @@ crumbLabel: Web Components
   <h2>Accessibility</h2>
   <ul>
     <li><strong>Bar:</strong> <code>role="toolbar"</code> with <code>aria-label="Reactions"</code> (override via <code>aria-label</code> on the host).</li>
-    <li><strong>Chips:</strong> <code>role="button"</code>, <code>aria-pressed</code> reflects <code>data-mine</code>. Each chip gets a derived <code>aria-label</code> like <q>👍, 3 reactions, you reacted</q> so AT users hear count + own-state in one announcement.</li>
+    <li><strong>Chips:</strong> native buttons; <code>aria-pressed</code> reflects <code>data-mine</code>, so <q>you reacted</q> is announced as the pressed state. Each chip gets a derived <code>aria-label</code> like <q>Thumbs up, 3 reactions</q> built from its <code>data-label</code> (or the emoji) and the count.</li>
     <li><strong>Trigger:</strong> <code>aria-haspopup="dialog"</code>, <code>aria-expanded</code> tracks open state.</li>
-    <li><strong>Palette:</strong> <code>role="dialog"</code> rendered by <code>&lt;pop-over&gt;</code> in the top layer; Escape closes (handled by pop-over).</li>
-    <li><strong>Keyboard nav</strong> on the bar: Arrow Left / Right cycle between chips and trigger (roving tabindex); Home / End jump to ends; Enter / Space activate.</li>
+    <li><strong>Palette:</strong> <code>role="dialog"</code> rendered by <code>&lt;pop-over&gt;</code> in the top layer, holding a group labelled like the bar; Escape closes (handled by pop-over). Opening it moves focus to the first option.</li>
+    <li><strong>Keyboard nav</strong> on the bar: Arrow Left / Right move between chips and trigger in visual order (mirrored in right-to-left text; roving tabindex); Home / End jump to ends; Enter / Space activate. <code>setCount()</code> keeps your position.</li>
     <li><strong>Keyboard nav</strong> in the palette: Arrow keys cycle through options; Home / End jump to ends; Enter / Space select.</li>
-    <li><strong>Focus return:</strong> after the palette closes, focus returns to the trigger.</li>
+    <li><strong>Focus return:</strong> after a pick, focus returns to the trigger. When <code>setCount(reaction, 0)</code> removes the focused chip, focus moves to the next chip (or the trigger).</li>
+    <li><strong>Forced colors:</strong> a pressed chip is painted with the system <code>Highlight</code> colors, so it stays distinct from unpressed chips.</li>
   </ul>
+</section>
+
+<section>
+  <h2>Localization</h2>
+  <p>Counts are formatted with <code>Intl.NumberFormat</code> and pluralized with <code>Intl.PluralRules</code> for the closest <code>lang</code>. Translate the built-in strings with <code>data-label-*</code> attributes; <code>{count}</code> in a count phrase is replaced by the formatted number.</p>
+
+  <code-block language="html" show-lines label="German labels" data-escape><reaction-bar lang="de"
+  aria-label="Reaktionen"
+  data-trigger-label="Reaktion hinzufügen"
+  data-label-dialog="Reaktion wählen"
+  data-label-count-one="{count} Reaktion"
+  data-label-count-other="{count} Reaktionen">
+  <button data-reaction="thumbsup" data-label="Daumen hoch" data-count="1500">👍</button>
+  <template data-palette>
+    <button data-reaction="thumbsup" data-label="Daumen hoch">👍</button>
+  </template>
+</reaction-bar></code-block>
+  <p>The chip above is announced as <q>Daumen hoch, 1.500 Reaktionen</q>.</p>
 </section>
 
 <section>
@@ -120,7 +142,11 @@ crumbLabel: Web Components
       <tr><td><code>aria-label</code></td><td>string</td><td><code>Reactions</code></td><td>Toolbar label.</td></tr>
       <tr><td><code>data-trigger-icon</code></td><td>string</td><td><code>😀</code></td><td>Text/emoji content of the trigger button.</td></tr>
       <tr><td><code>data-trigger-label</code></td><td>string</td><td><code>Add reaction</code></td><td><code>aria-label</code> for the trigger.</td></tr>
-      <tr><td><code>data-disabled</code></td><td>boolean</td><td><code>false</code></td><td>Read-only mode.</td></tr>
+      <tr><td><code>data-label-toolbar</code></td><td>string</td><td><code>Reactions</code></td><td>Toolbar label used when no <code>aria-label</code> is authored.</td></tr>
+      <tr><td><code>data-label-dialog</code></td><td>string</td><td><code>Choose a reaction</code></td><td>Label of the palette dialog.</td></tr>
+      <tr><td><code>data-label-count-one</code></td><td>string</td><td><code>{count} reaction</code></td><td>Count phrase in chip names for the <code>Intl.PluralRules</code> <q>one</q> category. <code>{count}</code> is the number formatted with <code>Intl.NumberFormat</code>. Other CLDR categories work the same way (<code>data-label-count-few</code>, <code>-many</code>, ...).</td></tr>
+      <tr><td><code>data-label-count-other</code></td><td>string</td><td><code>{count} reactions</code></td><td>Count phrase for every category without its own attribute.</td></tr>
+      <tr><td><code>data-disabled</code></td><td>boolean</td><td><code>false</code></td><td>Read-only mode. Observed.</td></tr>
     </tbody>
   </table>
 
@@ -133,6 +159,8 @@ crumbLabel: Web Components
       <tr><td><code>data-reaction</code></td><td>string</td><td>Stable identifier sent to the backend (e.g. <code>thumbsup</code>, <code>heart</code>).</td></tr>
       <tr><td><code>data-count</code></td><td>number</td><td>Current count (&ge; 1 to show; 0 removes the chip).</td></tr>
       <tr><td><code>data-mine</code></td><td>boolean</td><td>Whether the current user has this reaction.</td></tr>
+      <tr><td><code>data-label</code></td><td>string</td><td>Accessible name of the reaction, on chips and palette buttons (an authored <code>aria-label</code> works too). Defaults to the emoji.</td></tr>
+      <tr><td><code>data-pending</code></td><td>boolean</td><td>Output: a toggle is in flight. Set on click, cleared by <code>setCount()</code>.</td></tr>
     </tbody>
   </table>
 </section>
@@ -142,7 +170,7 @@ crumbLabel: Web Components
   <table class="props-table">
     <thead><tr><th>Event</th><th>Bubbles</th><th>Detail</th></tr></thead>
     <tbody>
-      <tr><td><code>reaction-bar:toggle</code></td><td>yes</td><td><code>{ reaction, action: 'add'|'remove', count, mine }</code></td></tr>
+      <tr><td><code>reaction-bar:toggle</code></td><td>yes</td><td><code>{ reaction, action: 'add'|'remove', count, mine }</code> &mdash; <code>count</code> and <code>mine</code> are the values before the toggle.</td></tr>
       <tr><td><code>reaction-bar:palette-open</code></td><td>yes</td><td>&mdash;</td></tr>
       <tr><td><code>reaction-bar:palette-close</code></td><td>yes</td><td>&mdash;</td></tr>
     </tbody>
@@ -154,8 +182,8 @@ crumbLabel: Web Components
   <table class="props-table">
     <thead><tr><th>Method</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>setCount(reaction, count, { mine })</code></td><td>Update a chip after the server confirms. Creates the chip from the palette template if it doesn't exist yet; removes the chip when <code>count</code> drops to 0.</td></tr>
-      <tr><td><code>openPalette()</code></td><td>Open the palette popover programmatically.</td></tr>
+      <tr><td><code>setCount(reaction, count, { mine })</code></td><td>Update a chip after the server confirms, and clear its pending state. Creates the chip from the palette template button if it doesn't exist yet; removes the chip when <code>count</code> drops to 0.</td></tr>
+      <tr><td><code>openPalette()</code></td><td>Open the palette popover programmatically (no-op while <code>data-disabled</code>).</td></tr>
       <tr><td><code>closePalette()</code></td><td>Close it.</td></tr>
     </tbody>
   </table>

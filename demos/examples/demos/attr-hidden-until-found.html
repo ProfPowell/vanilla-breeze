@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>hidden="until-found"</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="m">
+    <h1 class="visually-hidden">hidden until found</h1>
+    <p>Press <kbd>Ctrl</kbd> + <kbd>F</kbd> (<kbd>Cmd</kbd> + <kbd>F</kbd> on a Mac) and search for <strong>passkey</strong>. The browser reveals the collapsed answer and scrolls to the match.</p>
+
+    <h2 id="q-sign-in">How do I sign in without a password?</h2>
+    <section id="a-sign-in" hidden="until-found" aria-labelledby="q-sign-in">
+      <p>Open Settings, then Security, and choose "Add a passkey". Next time, pick the passkey on the sign-in page instead of typing a password.</p>
+    </section>
+
+    <p>Last reveal: <output id="reveal-log">none yet</output></p>
+  </layout-stack>
+
+  <script type="module">
+    const answer = document.getElementById('a-sign-in');
+    const log = document.getElementById('reveal-log');
+    // Fires before the browser removes the hidden attribute.
+    answer.addEventListener('beforematch', () => {
+      log.textContent = 'revealed by find-in-page';
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

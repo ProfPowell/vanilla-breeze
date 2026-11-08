@@ -2,26 +2,70 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "mobile-menu",
   "type": "custom-element",
-  "description": "Responsive mobile navigation menu with hamburger toggle and popover panel",
+  "description": "Breakpoint observer for a header menu. Sets [data-mobile] at or below the breakpoint, which shows the author's trigger and hides sibling nav, nav-bar and site-tools in the parent header. The author supplies the trigger and the native popover panel.",
   "htmlvalidate": {
     "flow": true,
-    "permittedContent": ["@flow"]
+    "permittedContent": [
+      "@flow"
+    ]
   },
   "attributes": [
-    { "name": "breakpoint", "kind": "host-api", "purpose": "config", "type": "string", "description": "CSS length at which mobile mode activates (default: 52rem)" }
+    {
+      "name": "breakpoint",
+      "kind": "host-api",
+      "purpose": "config",
+      "type": "string",
+      "default": "52rem",
+      "description": "Viewport max-width (CSS length) at or below which mobile mode activates. Observed: changing it re-evaluates. The default 52rem also applies via a CSS media query before upgrade."
+    },
+    {
+      "name": "data-mobile",
+      "kind": "data",
+      "purpose": "output-state",
+      "type": "boolean",
+      "description": "Set by the element while mobile mode is active. Read-only state for styling."
+    }
   ],
   "structure": [
-    { "element": "<button data-trigger>", "description": "Hamburger toggle button (auto-generated or slotted)" },
-    { "element": "<nav popover>", "description": "Popover panel containing mobile navigation" }
+    {
+      "element": "<button data-trigger popovertarget>",
+      "description": "Author-supplied menu toggle; popovertarget names the panel's id. Give it an aria-label."
+    },
+    {
+      "element": "<nav popover class=\"mobile-menu-panel\">",
+      "description": "Author-supplied native popover panel, placed inside <mobile-menu> so the link styles apply. Label it (aria-label). Esc closes and focus returns to the trigger; it is not modal (no focus trap or scroll lock)."
+    },
+    {
+      "element": "<button class=\"mobile-menu-close\" popovertargetaction=\"hide\">",
+      "description": "Optional author-supplied close button inside the panel."
+    }
   ],
   "css": {
     "tokens": [
-      { "name": "--mobile-menu-bg", "description": "Panel background color" },
-      { "name": "--mobile-menu-radius", "description": "Panel border radius" },
-      { "name": "--mobile-menu-shadow", "description": "Panel box shadow" },
-      { "name": "--mobile-menu-padding", "description": "Panel padding" },
-      { "name": "--mobile-menu-max-width", "description": "Panel maximum width" },
-      { "name": "--mobile-menu-backdrop", "description": "Backdrop overlay color" }
+      {
+        "name": "--mobile-menu-bg",
+        "description": "Panel background color"
+      },
+      {
+        "name": "--mobile-menu-radius",
+        "description": "Panel border radius"
+      },
+      {
+        "name": "--mobile-menu-shadow",
+        "description": "Panel box shadow"
+      },
+      {
+        "name": "--mobile-menu-padding",
+        "description": "Panel padding"
+      },
+      {
+        "name": "--mobile-menu-max-width",
+        "description": "Panel maximum width"
+      },
+      {
+        "name": "--mobile-menu-backdrop",
+        "description": "Backdrop overlay color"
+      }
     ]
   }
 }

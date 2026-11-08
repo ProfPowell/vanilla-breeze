@@ -2,119 +2,413 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "video-player",
   "type": "web-component",
-  "description": "Platform video player web component",
+  "description": "Platform video player: custom, keyboard-accessible controls (shadow DOM) over a light-DOM <video>, with optional playlist",
+  "htmlvalidate": {
+    "flow": true,
+    "permittedContent": [
+      "@flow"
+    ]
+  },
   "attributes": [
     {
       "name": "autoplay",
       "kind": "host-api",
       "purpose": "config",
       "type": "boolean",
-      "description": "Start playing on load (subject to browser autoplay policy)"
+      "description": "Start playing on first connect (subject to browser autoplay policy). Skipped under prefers-reduced-motion: reduce (which also cancels a native autoplay on the inner video) and never re-run when the player is moved/reconnected"
     },
     {
       "name": "loop",
       "kind": "host-api",
       "purpose": "config",
       "type": "boolean",
-      "description": "Loop single track or entire playlist"
+      "description": "Single video: sets the native video.loop. Playlist: after the last track, wrap to the first"
+    },
+    {
+      "name": "shuffle",
+      "kind": "host-api",
+      "purpose": "config",
+      "type": "boolean",
+      "description": "Playlist: advance to a random other track when one ends"
     },
     {
       "name": "muted",
       "kind": "host-api",
       "purpose": "config",
       "type": "boolean",
-      "description": "Start muted"
-    },
-    {
-      "name": "controls",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "data-fullscreen",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "state",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "data-video-played",
-      "kind": "data",
-      "purpose": "config"
+      "description": "Start muted. Afterwards reflects the inner video.muted (mute button, M key, an authored <video muted> or script)"
     },
     {
       "name": "captions",
       "kind": "host-api",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "boolean",
+      "description": "Start with the first captions/subtitles track showing. Afterwards reflects whether captions are showing"
     },
     {
-      "name": "aria-pressed",
-      "kind": "aria",
-      "purpose": "config"
-    },
-    {
-      "name": "data-video-active",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-poster",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-captions",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-dynamic",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "shuffle",
+      "name": "state",
       "kind": "host-api",
-      "purpose": "config"
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "enum",
+      "values": [
+        "idle",
+        "playing",
+        "paused",
+        "buffering",
+        "ended"
+      ],
+      "description": "Reflected playback state, derived from the media element (also on reconnect)"
     },
     {
-      "name": "aria-valuetext",
-      "kind": "aria",
-      "purpose": "config"
+      "name": "controls",
+      "kind": "host-api",
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "boolean",
+      "description": "Set while the overlay controls are visible; removed by the auto-hide timer during playback (never while focus is inside the controls). Not the native controls attribute"
+    },
+    {
+      "name": "data-fullscreen",
+      "kind": "data",
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "boolean",
+      "description": "Set while THIS player (or its video) is the fullscreen element"
+    },
+    {
+      "name": "data-label-player",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Video player",
+      "description": "Host accessible name (role=group) unless aria-label/aria-labelledby is authored"
+    },
+    {
+      "name": "data-label-controls",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Video controls",
+      "description": "Name of the controls group"
+    },
+    {
+      "name": "data-label-play-video",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Play video",
+      "description": "Big play overlay button"
+    },
+    {
+      "name": "data-label-play",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Play",
+      "description": "Play/pause button while paused"
+    },
+    {
+      "name": "data-label-pause",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Pause",
+      "description": "Play/pause button while playing"
+    },
+    {
+      "name": "data-label-seek",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Seek",
+      "description": "Seek slider"
+    },
+    {
+      "name": "data-label-skip-back",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Skip back 10 seconds",
+      "description": "Skip-back button"
+    },
+    {
+      "name": "data-label-skip-forward",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Skip forward 10 seconds",
+      "description": "Skip-forward button"
+    },
+    {
+      "name": "data-label-mute",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Mute",
+      "description": "Mute toggle (state is carried by aria-pressed)"
+    },
+    {
+      "name": "data-label-volume",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Volume",
+      "description": "Volume slider"
+    },
+    {
+      "name": "data-label-speed",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Playback speed {rate}",
+      "description": "Speed button; {rate} is the localized rate, e.g. \"1.5x\""
+    },
+    {
+      "name": "data-label-captions",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Captions",
+      "description": "Captions toggle"
+    },
+    {
+      "name": "data-label-fullscreen",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Fullscreen",
+      "description": "Fullscreen button"
+    },
+    {
+      "name": "data-label-exit-fullscreen",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Exit fullscreen",
+      "description": "Fullscreen button while this player is fullscreen"
+    },
+    {
+      "name": "data-label-playing",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Playing",
+      "description": "Live-region announcement"
+    },
+    {
+      "name": "data-label-paused",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Paused",
+      "description": "Live-region announcement"
+    },
+    {
+      "name": "data-label-ended",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Ended",
+      "description": "Live-region announcement"
+    },
+    {
+      "name": "data-label-buffering",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Buffering",
+      "description": "Live-region announcement"
+    },
+    {
+      "name": "data-label-time-of",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "{current} of {duration}",
+      "description": "Seek slider aria-valuetext; {current}/{duration} are locale clock times, e.g. \"0:05 of 3:20\""
+    }
+  ],
+  "properties": [
+    {
+      "name": "src",
+      "type": "string",
+      "description": "Get/set the inner <video> source. Setting loads it and fires video-player:src-changed"
+    },
+    {
+      "name": "currentTime",
+      "type": "number",
+      "description": "Playback position in seconds (proxies video.currentTime)"
     }
   ],
   "events": [
     {
-      "name": "video-player:play"
+      "name": "video-player:play",
+      "detail": "{ currentTime, src }",
+      "description": "Playback started"
     },
     {
-      "name": "video-player:pause"
+      "name": "video-player:pause",
+      "detail": "{ currentTime }",
+      "description": "Playback paused"
     },
     {
-      "name": "video-player:ended"
+      "name": "video-player:ended",
+      "detail": "{ src }",
+      "description": "A video played to the end"
     },
     {
-      "name": "video-player:track-change"
+      "name": "video-player:track-change",
+      "detail": "{ src, title }",
+      "description": "A playlist track was activated (click or auto-advance)"
     },
     {
-      "name": "video-player:fullscreen"
+      "name": "video-player:fullscreen",
+      "detail": "{ active }",
+      "description": "This player entered or left fullscreen"
     },
     {
-      "name": "video-player:speed"
+      "name": "video-player:speed",
+      "detail": "{ rate }",
+      "description": "Playback speed changed (cycles 0.5–2x)"
     },
     {
-      "name": "video-player:captions"
+      "name": "video-player:captions",
+      "detail": "{ active, label }",
+      "description": "Captions toggled by the button or C key"
+    },
+    {
+      "name": "video-player:src-changed",
+      "detail": "{ src, source: 'property' }",
+      "description": "The src property was set"
     }
   ],
-  "childAttributes": [],
-  "structure": [],
-  "htmlvalidate": {
-    "flow": true,
-    "permittedContent": [
-      "@flow"
-    ]
-  }
+  "childAttributes": [
+    {
+      "name": "controls",
+      "on": "video",
+      "type": "boolean",
+      "description": "Native controls for the no-JS fallback. Removed while the component is upgraded, restored when it disconnects"
+    },
+    {
+      "name": "data-video-active",
+      "on": "li",
+      "type": "boolean",
+      "description": "The loaded playlist track. Author sets the initial one; the component moves it"
+    },
+    {
+      "name": "data-video-played",
+      "on": "li",
+      "type": "boolean",
+      "description": "Set by the component when the track plays to the end"
+    },
+    {
+      "name": "data-poster",
+      "on": "a",
+      "type": "string",
+      "description": "Playlist link: poster image to show for that track"
+    },
+    {
+      "name": "data-captions",
+      "on": "a",
+      "type": "string",
+      "description": "Playlist link: WebVTT captions URL; the component swaps in a captions <track> (marked data-dynamic) for that track"
+    }
+  ],
+  "structure": [
+    {
+      "element": "video",
+      "required": true,
+      "description": "The native video element (light DOM), with <source>/<track> children and fallback content"
+    },
+    {
+      "element": "ol.track-list",
+      "required": false,
+      "description": "Optional playlist (usually inside <details>): one <li> per video with an <a href> to the file"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--video-player-accent",
+      "description": "Progress fill, slider thumbs and focus ring fallback"
+    },
+    {
+      "name": "--video-player-controls-text",
+      "description": "Controls icon/text colour"
+    },
+    {
+      "name": "--video-player-radius",
+      "description": "Player border radius"
+    },
+    {
+      "name": "--video-player-border",
+      "description": "Player border (default none)"
+    },
+    {
+      "name": "--video-player-shadow",
+      "description": "Player box shadow (default none)"
+    },
+    {
+      "name": "--video-player-controls-padding",
+      "description": "Controls bar padding"
+    },
+    {
+      "name": "--video-player-overlay-bg",
+      "description": "Big play button disc background"
+    },
+    {
+      "name": "--video-player-timeline-height",
+      "description": "Seek track thickness"
+    },
+    {
+      "name": "--video-player-timeline-buffer",
+      "description": "Buffered-range bar colour"
+    }
+  ],
+  "parts": [
+    {
+      "name": "player",
+      "description": "Outer player container"
+    },
+    {
+      "name": "play-overlay",
+      "description": "Big centered play button (shown idle/ended; inert otherwise)"
+    },
+    {
+      "name": "controls",
+      "description": "Controls overlay (role=group)"
+    },
+    {
+      "name": "timeline",
+      "description": "Seek range input"
+    },
+    {
+      "name": "play-button",
+      "description": "Play/pause button"
+    },
+    {
+      "name": "mute-button",
+      "description": "Mute toggle (aria-pressed)"
+    },
+    {
+      "name": "volume",
+      "description": "Volume range input"
+    },
+    {
+      "name": "time-display",
+      "description": "Current time / duration readout"
+    },
+    {
+      "name": "speed-button",
+      "description": "Playback speed cycle button"
+    },
+    {
+      "name": "captions-button",
+      "description": "Captions toggle (hidden without a captions/subtitles track)"
+    },
+    {
+      "name": "fullscreen-button",
+      "description": "Fullscreen toggle"
+    }
+  ]
 }

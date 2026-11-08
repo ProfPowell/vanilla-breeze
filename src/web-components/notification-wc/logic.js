@@ -20,6 +20,15 @@
  * notifications go through VBService when `src` is a service role, or a
  * plain `fetch` when `src` is an absolute URL.
  *
+ * Lifecycle: setup() is async-tolerant. Every await is followed by a
+ * generation check, so a disconnect (or a move) mid-setup never leaves a
+ * poll interval or document listener behind, and the panel/trigger are
+ * reused on reconnect rather than duplicated.
+ *
+ * Link URLs (static <a href>, feed/setter `url`, watch-list `url`) are
+ * rendered only when they resolve to http(s); anything else (javascript:,
+ * data:, …) renders the row as a plain button.
+ *
  * @attr {string} [mode="panel"] - "banner" or "panel"
  * @attr {string} persist - (banner) VBStore key used for dismiss state
  * @attr {string} [variant="info"] - (banner) info | success | warning | error
@@ -27,8 +36,9 @@
  * @attr {number} [expires] - (banner) days until the banner re-shows after dismiss
  * @attr {string} [src] - (panel) URL or VBService role name for dynamic notifications
  * @attr {number} [poll] - (panel) polling interval in ms
- * @attr {boolean} [toast-new] - (panel) fire a toast on new dynamic notifications
+ * @attr {string} [toast-new] - (panel) fire a toast on new dynamic notifications; value "#id" targets a specific <toast-msg> (bare = first in document)
  * @attr {string} [storage-key="notifications"] - (panel) VBStore namespace for read state
+ * @attr {string} data-label-* - (panel) English string overrides, see LABELS
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
@@ -45,62 +55,169 @@ const TYPE_ICONS = {
   stewardship: 'shield',
 };
 
+/** Default English strings; each is overridable with data-label-<key>. */
+const LABELS = {
+  trigger: 'Notifications',
+  unread: '{n} unread',
+  title: 'Notifications',
+  'mark-all': 'Mark all read',
+  tabs: 'Notification categories',
+  all: 'All',
+  watching: 'Watching',
+  empty: 'No notifications',
+  'watch-empty': 'You aren’t watching any pages yet. Use the “Watch” button on a page to start.',
+  'last-checked': 'Last checked: {date}',
+  never: '—',
+  changed: 'Changed',
+  unwatch: 'Unwatch {title}',
+  new: 'New notification',
+  // Banner: visually hidden prefix so the variant isn't conveyed by colour alone
+  'variant-info': 'Information:',
+  'variant-success': 'Success:',
+  'variant-warning': 'Warning:',
+  'variant-error': 'Error:',
+};
+
 function escapeHtml(str) {
   return String(str ?? '').replace(/[&<>"']/g, (c) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
   }[c]));
 }
 
+/**
+ * Allow only http(s) and relative URLs. Returns the original string when
+ * safe, null otherwise (javascript:, data:, vbscript:, malformed…).
+ * @param {unknown} url
+ * @returns {string|null}
+ */
+function safeHref(url) {
+  if (typeof url !== 'string' || !url.trim()) return null;
+  try {
+    const { protocol } = new URL(url, location.href);
+    return protocol === 'http:' || protocol === 'https:' ? url : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Locale-aware date formatting with the document language. Date-only
+ * strings (YYYY-MM-DD) are formatted in UTC so they don't shift a day
+ * west of Greenwich.
+ * @param {string} value
+ * @param {string|undefined} lang
+ * @returns {string}
+ */
+function formatDate(value, lang) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value);
+  /** @type {Intl.DateTimeFormatOptions} */
+  const opts = dateOnly
+    ? { dateStyle: 'medium', timeZone: 'UTC' }
+    : { dateStyle: 'medium', timeStyle: 'short' };
+  try {
+    return new Intl.DateTimeFormat(lang || undefined, opts).format(d);
+  } catch {
+    return new Intl.DateTimeFormat(undefined, opts).format(d);
+  }
+}
+
+let panelSeq = 0;
+
 class NotificationWc extends VBElement {
+  static observedAttributes = ['variant', 'position'];
+
   /** Mode: "banner" | "panel" */
   #mode = 'panel';
-
-  // ── Banner state ───────────────────────────────────────────────────
-  /** @type {HTMLElement|null} */
-  #dismissBtn = null;
+  /** Setup generation — bumped by teardown so stale async setup bails. */
+  #gen = 0;
 
   // ── Panel state ────────────────────────────────────────────────────
   /** @type {HTMLButtonElement|null} */
   #trigger = null;
+  /** Author trigger's original accessible name (captured once). */
+  #authorLabel = /** @type {string|null} */ (null);
   /** @type {HTMLElement|null} */
   #panel = null;
   /** @type {HTMLElement|null} */
   #badge = null;
   /** @type {Set<string>} Read IDs */
   #readIds = new Set();
-  /** @type {Array<object>} Dynamic notifications (merged over static children) */
+  /** @type {Array<any>} Dynamic notifications (merged over static children) */
   #dynamic = [];
   #isOpen = false;
-  /** @type {number|null} */
   /** @type {ReturnType<typeof setInterval> | null} */
   #pollTimer = null;
   /** @type {Set<string>} Seen notification ids for toast debounce */
   #seenIds = new Set();
   /** "all" | "watching" — which tab is visible */
   #activeTab = 'all';
-  /** @type {Array<{key: string, data: object, timestamp: number}>} Watch list rows */
+  /** @type {Array<{key: string, data: any, timestamp: number}>} Watch list rows */
   #watches = [];
+  /** @type {Array<any>} Notifications ingested from document-level notification-wc:new (page-watch) */
+  #ingested = [];
 
   setup() {
+    const gen = ++this.#gen;
     this.#mode = this.getAttribute('mode') === 'banner' ? 'banner' : 'panel';
-    if (this.#mode === 'banner') this.#setupBanner();
-    else this.#setupPanel();
+    if (this.#mode === 'banner') this.#setupBanner(gen);
+    else this.#setupPanel(gen);
     return true;
   }
 
   teardown() {
+    this.#gen++;
     if (this.#pollTimer != null) {
       clearInterval(this.#pollTimer);
       this.#pollTimer = null;
     }
+    if (this.#isOpen) {
+      this.#isOpen = false;
+      if (this.#panel) this.#panel.hidden = true;
+      this.#trigger?.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue || this.#mode !== 'banner' || !this.hasAttribute('data-upgraded')) return;
+    if (name === 'variant') {
+      this.dataset.variant = newValue || 'info';
+      this.#syncVariantPrefix();
+    }
+    if (name === 'position') this.dataset.position = newValue || 'top';
+  }
+
+  /** True while the setup that started as `gen` is still current. */
+  #alive(gen) {
+    return gen === this.#gen && this.isConnected;
+  }
+
+  #label(key, vars = {}) {
+    let text = this.getAttribute(`data-label-${key}`) ?? LABELS[key] ?? key;
+    for (const [k, v] of Object.entries(vars)) text = text.replaceAll(`{${k}}`, String(v));
+    return text;
+  }
+
+  #toastTarget() {
+    const ref = (this.getAttribute('toast-new') || '').trim();
+    let el = null;
+    if (ref) {
+      try { el = document.querySelector(ref); } catch { el = null; }
+      if (el && el.localName !== 'toast-msg') el = null;
+    }
+    return el ?? document.querySelector('toast-msg');
+  }
+
+  #lang() {
+    return /** @type {HTMLElement|null} */ (this.closest('[lang]'))?.lang || document.documentElement.lang || undefined;
   }
 
   // ── Data API (HTML-first / JS-first dual contract) ──────────────
 
   /**
-   * Read the current notification list (panel mode). Each entry mirrors
-   * what was assigned via the setter or fetched from the configured
-   * source. Banner mode returns an empty array.
+   * Read the current dynamic notification list (panel mode). Each entry
+   * mirrors what was assigned via the setter or fetched from `src`.
    *
    * @returns {any[]} A copy of the notification records.
    */
@@ -110,16 +227,17 @@ class NotificationWc extends VBElement {
 
   /**
    * Replace the dynamic notification list (panel mode only). Each entry:
-   * `{ id, title, body?, timestamp?, variant? }`. Re-renders the panel
-   * and updates the unread badge. Banner mode ignores this setter.
+   * `{ id, title, body?, date?, type?, url?, dismissed? }` — the same shape
+   * as the `src` feed. Entries merge over static <article> children by id.
+   * Re-renders the panel and updates the unread badge. Banner mode ignores
+   * this setter.
    *
    * Emits notification-wc:notifications-changed { notifications, source: 'property' }.
    */
   set notifications(value) {
     if (this.#mode !== 'panel') return;
     this.#dynamic = Array.isArray(value) ? value : [];
-    if (typeof this.#renderList === 'function') this.#renderList();
-    if (typeof this.#updateBadge === 'function') this.#updateBadge();
+    this.#renderList();
     this.dispatchEvent(new CustomEvent('notification-wc:notifications-changed', {
       detail: { notifications: this.#dynamic, source: 'property' },
       bubbles: true,
@@ -130,7 +248,7 @@ class NotificationWc extends VBElement {
   // Banner mode
   // ══════════════════════════════════════════════════════════════════
 
-  async #setupBanner() {
+  async #setupBanner(gen) {
     const persist = this.getAttribute('persist');
     if (!persist) {
       console.warn('[notification-wc] banner mode requires a persist attribute');
@@ -138,6 +256,7 @@ class NotificationWc extends VBElement {
     this.dataset.mode = 'banner';
     this.dataset.variant = this.getAttribute('variant') || 'info';
     this.dataset.position = this.getAttribute('position') || 'top';
+    this.#syncVariantPrefix();
 
     // Hide if previously dismissed (and not yet expired)
     if (persist) {
@@ -146,6 +265,7 @@ class NotificationWc extends VBElement {
         ? expiresDays * 86_400_000
         : undefined;
       const state = /** @type {any} */ (await VBStore.get('notifications', persist, maxAge ? { maxAge } : undefined));
+      if (!this.#alive(gen)) return;
       if (state && state.dismissed) {
         this.hidden = true;
         return;
@@ -154,15 +274,33 @@ class NotificationWc extends VBElement {
 
     // Hook the dismiss button(s)
     const dismiss = this.querySelector('[value="dismiss"], [data-dismiss]');
-    if (dismiss) {
-      this.#dismissBtn = /** @type {HTMLElement} */ (dismiss);
-      this.listen(dismiss, 'click', this.#handleDismiss);
+    if (dismiss) this.listen(dismiss, 'click', this.#handleDismiss);
+  }
+
+  /**
+   * Banner variant is shown by colour; give assistive tech (and forced-colors
+   * users, via the same text) a word for it. One idempotent visually-hidden
+   * span, placed before the banner's first text-bearing child.
+   */
+  #syncVariantPrefix() {
+    const variant = this.dataset.variant || 'info';
+    let prefix = /** @type {HTMLElement|null} */ (this.querySelector(':scope [data-variant-prefix]'));
+    if (!prefix) {
+      prefix = document.createElement('span');
+      prefix.className = 'visually-hidden';
+      prefix.setAttribute('data-variant-prefix', '');
+      const target = this.querySelector(':scope > :is(p, strong, span, h2, h3, h4)') || this;
+      target.prepend(prefix);
     }
+    prefix.textContent = `${this.#label(`variant-${variant}`)} `;
   }
 
   #handleDismiss = async (e) => {
     e.preventDefault();
+    const hadFocus = this.contains(document.activeElement);
     const persist = this.getAttribute('persist');
+    this.hidden = true;
+    if (hadFocus) this.#focusAfterBanner();
     if (persist) {
       await VBStore.set('notifications', persist, { dismissed: true });
     }
@@ -171,31 +309,49 @@ class NotificationWc extends VBElement {
       composed: true,
       detail: { id: persist },
     }));
-    this.hidden = true;
   };
+
+  /** After hiding a focused banner, land focus on <main> (or <body>'s first heading) instead of <body>. */
+  #focusAfterBanner() {
+    const target = /** @type {HTMLElement|null} */ (
+      document.querySelector('main, [role="main"]') || document.querySelector('h1'));
+    if (!target) return;
+    if (!target.hasAttribute('tabindex')) {
+      target.setAttribute('tabindex', '-1');
+      target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true });
+    }
+    target.focus({ preventScroll: true });
+  }
 
   // ══════════════════════════════════════════════════════════════════
   // Panel mode
   // ══════════════════════════════════════════════════════════════════
 
-  async #setupPanel() {
+  async #setupPanel(gen) {
     this.dataset.mode = 'panel';
+    // Attached before the first await so a page-watch change event that
+    // fires right after upgrade is not missed.
+    this.listen(document, 'notification-wc:new', this.#onExternalNew);
     await this.#loadReadState();
+    if (!this.#alive(gen)) return;
     this.#renderTrigger();
     this.#renderPanel();
-    await this.#loadWatches(); // pre-populate the Watching tab so the count badge is accurate before first open
-    this.#updateBadge();
 
     this.listen(document, 'click', this.#handleOutsideClick);
     this.listen(document, 'keydown', this.#handleEscape);
-    this.listen(document, 'page-watch:add', () => this.#loadWatches());
-    this.listen(document, 'page-watch:remove', () => this.#loadWatches());
+    this.listen(this, 'focusout', this.#handleFocusOut);
+    this.listen(document, 'page-watch:add', this.#onWatchesChanged);
+    this.listen(document, 'page-watch:remove', this.#onWatchesChanged);
+
+    await this.#loadWatches(); // pre-populate the Watching tab so its count is accurate before first open
+    if (!this.#alive(gen)) return;
 
     if (this.getAttribute('src')) {
-      await this.#fetchDynamic();
+      await this.#fetchDynamic(gen);
+      if (!this.#alive(gen)) return;
       const poll = Number(this.getAttribute('poll'));
       if (Number.isFinite(poll) && poll > 0) {
-        this.#pollTimer = setInterval(() => this.#fetchDynamic(), poll);
+        this.#pollTimer = setInterval(() => this.#fetchDynamic(gen), poll);
       }
     }
   }
@@ -214,69 +370,77 @@ class NotificationWc extends VBElement {
   // ── Rendering ──────────────────────────────────────────────────────
 
   #renderTrigger() {
-    // Accept an author-supplied trigger; otherwise mint a bell button.
+    // Accept an author-supplied trigger (or our own minted one on reconnect).
     this.#trigger = /** @type {HTMLButtonElement|null} */ (this.querySelector(':scope > [data-trigger]'));
     if (!this.#trigger) {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.setAttribute('data-trigger', '');
       btn.className = 'notification-trigger';
-      btn.setAttribute('aria-label', 'Notifications');
-      btn.innerHTML = `<icon-wc name="bell" size="sm"></icon-wc><span class="notification-badge" hidden>0</span>`;
+      btn.innerHTML = '<icon-wc name="bell" size="sm" aria-hidden="true"></icon-wc><span class="notification-badge" aria-hidden="true" hidden>0</span>';
       this.#trigger = btn;
       this.prepend(btn);
-    } else {
-      // Ensure a badge exists inside the author's trigger
-      let badge = /** @type {HTMLElement | null} */ (this.#trigger.querySelector('.notification-badge'));
-      if (!badge) {
-        badge = document.createElement('span');
-        badge.className = 'notification-badge';
-        badge.hidden = true;
-        this.#trigger.appendChild(badge);
-      }
+    } else if (!this.#trigger.classList.contains('notification-trigger') && this.#authorLabel === null) {
+      const clone = /** @type {HTMLElement} */ (this.#trigger.cloneNode(true));
+      clone.querySelector('.notification-badge')?.remove();
+      this.#authorLabel = (this.#trigger.getAttribute('aria-label') || clone.textContent || '').trim();
     }
-    this.#badge = this.#trigger.querySelector('.notification-badge');
+    let badge = /** @type {HTMLElement | null} */ (this.#trigger.querySelector('.notification-badge'));
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.className = 'notification-badge';
+      badge.setAttribute('aria-hidden', 'true');
+      badge.hidden = true;
+      this.#trigger.appendChild(badge);
+    }
+    this.#badge = badge;
     this.#trigger.setAttribute('aria-haspopup', 'dialog');
     this.#trigger.setAttribute('aria-expanded', 'false');
     this.listen(this.#trigger, 'click', this.#handleTriggerClick);
   }
 
   #renderPanel() {
-    this.#panel = document.createElement('div');
-    this.#panel.className = 'notification-panel';
-    this.#panel.setAttribute('role', 'dialog');
-    this.#panel.setAttribute('aria-label', 'Notifications');
-    this.#panel.hidden = true;
-
-    const panelId = `notification-panel-${crypto.randomUUID().slice(0, 8)}`;
-    this.#panel.id = panelId;
-    this.#trigger?.setAttribute('aria-controls', panelId);
-
-    this.#panel.innerHTML = `
-      <header class="notification-header">
-        <strong>Notifications</strong>
-        <button type="button" class="notification-mark-all">Mark all read</button>
-      </header>
-      <nav class="notification-tabs" role="tablist" aria-label="Notification categories">
-        <button type="button" role="tab" data-tab="all" aria-selected="true">All</button>
-        <button type="button" role="tab" data-tab="watching" aria-selected="false">Watching <span class="notification-tab-count" hidden>0</span></button>
-      </nav>
-      <ul class="notification-list" role="list" data-tab-panel="all"></ul>
-      <ul class="notification-watch-list" role="list" data-tab-panel="watching" hidden></ul>
-      <footer class="notification-footer" hidden>
-        <em>No notifications</em>
-      </footer>
-    `;
-    this.appendChild(this.#panel);
-
-    const markAll = this.#panel.querySelector('.notification-mark-all');
-    if (markAll) this.listen(markAll, 'click', this.#handleMarkAllRead);
-
-    for (const tab of this.#panel.querySelectorAll('[role="tab"]')) {
-      this.listen(tab, 'click', this.#handleTabClick);
+    // Reuse the panel built by a previous setup (reconnect / move).
+    let panel = /** @type {HTMLElement|null} */ (this.querySelector(':scope > .notification-panel'));
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.className = 'notification-panel';
+      panel.id = `notification-panel-${++panelSeq}-${Math.random().toString(36).slice(2, 7)}`;
+      this.appendChild(panel);
     }
+    this.#panel = panel;
+    const id = panel.id;
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-labelledby', `${id}-title`);
+    panel.tabIndex = -1;
+    panel.hidden = true;
+    this.#trigger?.setAttribute('aria-controls', id);
+
+    const all = this.#activeTab === 'all';
+    panel.innerHTML = `
+      <header class="notification-header">
+        <strong id="${id}-title">${escapeHtml(this.#label('title'))}</strong>
+        <button type="button" class="notification-mark-all">${escapeHtml(this.#label('mark-all'))}</button>
+      </header>
+      <div class="notification-tabs" role="tablist" aria-label="${escapeHtml(this.#label('tabs'))}">
+        <button type="button" role="tab" id="${id}-tab-all" data-tab="all" aria-controls="${id}-all" aria-selected="${all}" tabindex="${all ? 0 : -1}">${escapeHtml(this.#label('all'))}</button>
+        <button type="button" role="tab" id="${id}-tab-watching" data-tab="watching" aria-controls="${id}-watching" aria-selected="${!all}" tabindex="${all ? -1 : 0}">${escapeHtml(this.#label('watching'))} <span class="notification-tab-count" hidden>0</span></button>
+      </div>
+      <div class="notification-tabpanel" role="tabpanel" id="${id}-all" aria-labelledby="${id}-tab-all" data-tab-panel="all"${all ? '' : ' hidden'}>
+        <ul class="notification-list" role="list"></ul>
+        <p class="notification-footer" hidden><em>${escapeHtml(this.#label('empty'))}</em></p>
+      </div>
+      <div class="notification-tabpanel" role="tabpanel" id="${id}-watching" aria-labelledby="${id}-tab-watching" data-tab-panel="watching"${all ? ' hidden' : ''}>
+        <ul class="notification-watch-list" role="list"></ul>
+      </div>
+    `;
+
+    // One delegated listener set on the panel (survives list re-renders).
+    this.listen(panel, 'click', this.#handlePanelClick);
+    this.listen(panel, 'keydown', this.#handlePanelKeydown);
 
     this.#renderList();
+    this.#renderWatchList();
   }
 
   /** Produce the ordered list of notifications from static children + dynamic merge. */
@@ -297,15 +461,15 @@ class NotificationWc extends VBElement {
       });
     }
 
-    for (const n of this.#dynamic) {
+    for (const n of [...this.#ingested, ...this.#dynamic]) {
       if (!n || typeof n.id !== 'string') continue;
       if (n.dismissed) { byId.delete(n.id); continue; }
       byId.set(n.id, { ...byId.get(n.id), ...n, source: 'dynamic' });
     }
 
     return Array.from(byId.values()).sort((a, b) => {
-      const da = a.date ? Date.parse(a.date) : 0;
-      const db = b.date ? Date.parse(b.date) : 0;
+      const da = a.date ? Date.parse(a.date) || 0 : 0;
+      const db = b.date ? Date.parse(b.date) || 0 : 0;
       return db - da;
     });
   }
@@ -317,58 +481,81 @@ class NotificationWc extends VBElement {
     if (!list) return;
 
     const items = this.#collectNotifications();
-    list.innerHTML = items.map((n) => this.#renderItem(n)).join('');
+    const lang = this.#lang();
+    list.innerHTML = items.map((n) => this.#renderItem(n, lang)).join('');
     if (footer) footer.hidden = items.length > 0;
-
-    // Click a row to mark read and navigate if it has a URL
-    for (const row of list.querySelectorAll('[data-notification-id]')) {
-      this.listen(row, 'click', this.#handleRowClick);
-    }
-    this.#updateBadge();
+    this.#updateBadge(items);
   }
 
-  #renderItem(n) {
+  #renderItem(n, lang) {
     const iconName = TYPE_ICONS[n.type] || 'bell';
     const read = this.#readIds.has(n.id);
-    const time = n.date ? new Date(n.date).toLocaleString() : '';
+    const time = n.date ? formatDate(n.date, lang) : '';
+    // Row content is phrasing-only (it lives inside <a>/<button>).
     const inner = `
-      <icon-wc class="notification-type-icon" name="${escapeHtml(iconName)}" size="sm"></icon-wc>
-      <div class="notification-body">
-        <h4>${escapeHtml(n.title)}</h4>
-        ${n.body ? `<p>${escapeHtml(n.body)}</p>` : ''}
+      <icon-wc class="notification-type-icon" name="${escapeHtml(iconName)}" size="sm" aria-hidden="true"></icon-wc>
+      <span class="notification-body">
+        <strong class="notification-title">${escapeHtml(n.title)}</strong>
+        ${n.body ? `<span class="notification-text">${escapeHtml(n.body)}</span>` : ''}
         ${time ? `<time datetime="${escapeHtml(n.date)}">${escapeHtml(time)}</time>` : ''}
-      </div>
+      </span>
     `;
-    const tag = n.url ? 'a' : 'button';
-    const extra = n.url ? `href="${escapeHtml(n.url)}"` : 'type="button"';
-    return `<li role="listitem" data-notification-id="${escapeHtml(n.id)}" data-type="${escapeHtml(n.type || 'update')}"${read ? ' data-read' : ''}>
+    const href = safeHref(n.url);
+    const tag = href ? 'a' : 'button';
+    const extra = href ? `href="${escapeHtml(href)}"` : 'type="button"';
+    return `<li data-notification-id="${escapeHtml(n.id)}" data-type="${escapeHtml(n.type || 'update')}"${read ? ' data-read' : ''}>
       <${tag} class="notification-row" ${extra}>${inner}</${tag}>
     </li>`;
   }
 
-  #updateBadge() {
-    if (!this.#badge) return;
-    const items = this.#collectNotifications();
+  #updateBadge(items = this.#collectNotifications()) {
+    if (!this.#badge || !this.#trigger) return;
     const unread = items.filter((n) => !this.#readIds.has(n.id)).length;
+    const icon = this.#trigger.querySelector('icon-wc');
     if (unread > 0) {
       this.#badge.textContent = String(unread);
       this.#badge.hidden = false;
-      this.#trigger?.querySelector('icon-wc')?.setAttribute('name', 'bell-dot');
+      icon?.setAttribute('name', 'bell-dot');
     } else {
       this.#badge.hidden = true;
-      this.#trigger?.querySelector('icon-wc')?.setAttribute('name', 'bell');
+      icon?.setAttribute('name', 'bell');
     }
+    // The badge is aria-hidden; the count lives in the trigger's name.
+    const base = this.#authorLabel || this.#label('trigger');
+    this.#trigger.setAttribute('aria-label',
+      unread > 0 ? `${base}, ${this.#label('unread', { n: unread })}` : base);
   }
 
   // ── Watch list (page-watch surface) ────────────────────────────────
 
+  /**
+   * Ingest a notification dispatched on the document by another script
+   * (page-watch-init's "content changed" record). Events a notification-wc
+   * emits itself for its own fetch path are ignored; ids are deduped.
+   * @param {Event} e
+   */
+  #onExternalNew = (e) => {
+    if (e.target instanceof Element && e.target.localName === 'notification-wc') return;
+    const n = /** @type {CustomEvent} */ (e).detail?.notification;
+    if (!n || typeof n.id !== 'string') return;
+    if (this.#ingested.some((x) => x.id === n.id)) return;
+    this.#ingested.push(n);
+    this.#renderList();
+  };
+
+  #onWatchesChanged = () => { this.#loadWatches(); };
+
   /** Hydrate the in-memory watch list from VBStore namespace `watches`. */
   async #loadWatches() {
+    const gen = this.#gen;
+    let rows;
     try {
-      this.#watches = await VBStore.list('watches');
+      rows = await VBStore.list('watches');
     } catch {
-      this.#watches = [];
+      rows = [];
     }
+    if (!this.#alive(gen)) return;
+    this.#watches = Array.isArray(rows) ? rows : [];
     this.#renderWatchList();
   }
 
@@ -378,78 +565,110 @@ class NotificationWc extends VBElement {
     const tabCount = /** @type {HTMLElement|null} */ (this.#panel.querySelector('.notification-tab-count'));
     if (!list) return;
 
-    list.innerHTML = this.#watches.map((row) => this.#renderWatchItem(row)).join('') ||
-      '<li class="notification-empty"><em>You aren\'t watching any pages yet. Use the &ldquo;Watch&rdquo; button on a page to start.</em></li>';
+    const lang = this.#lang();
+    list.innerHTML = this.#watches.map((row) => this.#renderWatchItem(row, lang)).join('') ||
+      `<li class="notification-empty"><em>${escapeHtml(this.#label('watch-empty'))}</em></li>`;
 
     if (tabCount) {
       const count = this.#watches.length;
-      if (count > 0) {
-        tabCount.textContent = String(count);
-        tabCount.hidden = false;
-      } else {
-        tabCount.hidden = true;
-      }
-    }
-
-    for (const btn of list.querySelectorAll('[data-watch-unwatch]')) {
-      this.listen(btn, 'click', this.#handleUnwatch);
+      tabCount.textContent = String(count);
+      tabCount.hidden = count === 0;
     }
   }
 
-  #renderWatchItem(row) {
-    const data = /** @type {{url: string, title: string, lastChecked?: string, lastChanged?: string|null, watchedAt: string}} */ (row.data || {});
+  #renderWatchItem(row, lang) {
+    const data = /** @type {{url?: string, title?: string, lastChecked?: string, lastChanged?: string|null}} */ (row.data || {});
     const url = data.url || row.key;
     const title = data.title || url;
-    const lastChecked = data.lastChecked ? new Date(data.lastChecked).toLocaleString() : '—';
+    const lastChecked = data.lastChecked ? formatDate(data.lastChecked, lang) : this.#label('never');
     const changed = !!data.lastChanged;
+    const href = safeHref(url);
+    const inner = `
+        <icon-wc class="notification-type-icon" name="eye" size="sm" aria-hidden="true"></icon-wc>
+        <span class="notification-body">
+          <strong class="notification-title">${escapeHtml(title)}${changed ? ` <span class="notification-changed-badge">${escapeHtml(this.#label('changed'))}</span>` : ''}</strong>
+          <span class="notification-text">${escapeHtml(url)}</span>
+          <time>${escapeHtml(this.#label('last-checked', { date: lastChecked }))}</time>
+        </span>`;
+    const rowEl = href
+      ? `<a class="notification-watch-row" href="${escapeHtml(href)}">${inner}</a>`
+      : `<span class="notification-watch-row">${inner}</span>`;
     return `<li class="notification-watch-item"${changed ? ' data-changed' : ''}>
-      <a class="notification-watch-row" href="${escapeHtml(url)}">
-        <icon-wc class="notification-type-icon" name="eye" size="sm"></icon-wc>
-        <div class="notification-body">
-          <h4>${escapeHtml(title)}${changed ? ' <span class="notification-changed-badge">Changed</span>' : ''}</h4>
-          <p>${escapeHtml(url)}</p>
-          <time>Last checked: ${escapeHtml(lastChecked)}</time>
-        </div>
-      </a>
-      <button type="button" class="notification-unwatch" data-watch-unwatch data-watch-key="${escapeHtml(row.key)}" aria-label="Unwatch ${escapeHtml(title)}">
-        <icon-wc name="x" size="xs"></icon-wc>
+      ${rowEl}
+      <button type="button" class="notification-unwatch" data-watch-unwatch data-watch-key="${escapeHtml(row.key)}" aria-label="${escapeHtml(this.#label('unwatch', { title }))}">
+        <icon-wc name="x" size="xs" aria-hidden="true"></icon-wc>
       </button>
     </li>`;
   }
 
-  #handleTabClick = (e) => {
-    const tab = /** @type {HTMLElement} */ (e.currentTarget).dataset.tab;
-    if (!tab || tab === this.#activeTab) return;
-    this.#activeTab = tab;
+  // ── Tabs ───────────────────────────────────────────────────────────
+
+  #selectTab(tab, { focus = false } = {}) {
     if (!this.#panel) return;
+    this.#activeTab = tab;
     for (const t of this.#panel.querySelectorAll('[role="tab"]')) {
       const active = /** @type {HTMLElement} */ (t).dataset.tab === tab;
       t.setAttribute('aria-selected', active ? 'true' : 'false');
+      t.setAttribute('tabindex', active ? '0' : '-1');
+      if (active && focus) /** @type {HTMLElement} */ (t).focus();
     }
-    for (const panel of this.#panel.querySelectorAll('[data-tab-panel]')) {
-      /** @type {HTMLElement} */ (panel).hidden = /** @type {HTMLElement} */ (panel).dataset.tabPanel !== tab;
+    for (const p of this.#panel.querySelectorAll('[data-tab-panel]')) {
+      /** @type {HTMLElement} */ (p).hidden = /** @type {HTMLElement} */ (p).dataset.tabPanel !== tab;
     }
-    const footer = /** @type {HTMLElement|null} */ (this.#panel.querySelector('.notification-footer'));
-    if (footer) footer.hidden = true; // footer is for "no notifications"; watch list has its own empty state
+  }
+
+  #handlePanelKeydown = (e) => {
+    const tab = /** @type {HTMLElement} */ (e.target).closest?.('[role="tab"]');
+    if (!tab || !this.#panel) return;
+    const tabs = /** @type {HTMLElement[]} */ ([...this.#panel.querySelectorAll('[role="tab"]')]);
+    const i = tabs.indexOf(/** @type {HTMLElement} */ (tab));
+    const rtl = getComputedStyle(this.#panel).direction === 'rtl';
+    let next = -1;
+    if (e.key === 'ArrowRight') next = rtl ? i - 1 : i + 1;
+    else if (e.key === 'ArrowLeft') next = rtl ? i + 1 : i - 1;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = tabs.length - 1;
+    else return;
+    e.preventDefault();
+    next = (next + tabs.length) % tabs.length;
+    const name = tabs[next].dataset.tab;
+    if (name) this.#selectTab(name, { focus: true });
   };
 
-  #handleUnwatch = async (e) => {
+  // ── Events ─────────────────────────────────────────────────────────
+
+  #handlePanelClick = (e) => {
+    const target = /** @type {Element} */ (e.target);
+    const tab = /** @type {HTMLElement|null} */ (target.closest('[role="tab"]'));
+    if (tab?.dataset.tab) { this.#selectTab(tab.dataset.tab); return; }
+    if (target.closest('.notification-mark-all')) { this.#handleMarkAllRead(); return; }
+    const unwatch = /** @type {HTMLElement|null} */ (target.closest('[data-watch-unwatch]'));
+    if (unwatch) { this.#handleUnwatch(e, unwatch); return; }
+    const row = target.closest('.notification-list .notification-row');
+    if (row) this.#handleRowClick(/** @type {HTMLElement} */ (row));
+  };
+
+  async #handleUnwatch(e, btn) {
     e.preventDefault();
     e.stopPropagation();
-    const btn = /** @type {HTMLElement} */ (e.currentTarget);
     const key = btn.getAttribute('data-watch-key');
-    if (!key) return;
+    if (!key || !this.#panel) return;
+    const buttons = [...this.#panel.querySelectorAll('[data-watch-unwatch]')];
+    const index = buttons.indexOf(btn);
     const row = this.#watches.find(w => w.key === key);
     await VBStore.remove('watches', key);
     this.#watches = this.#watches.filter(w => w.key !== key);
     this.#renderWatchList();
+    // Keep focus in the list: next row's unwatch button, else the tab.
+    const remaining = /** @type {HTMLElement[]} */ ([...this.#panel.querySelectorAll('[data-watch-unwatch]')]);
+    const focusTarget = remaining[Math.min(index, remaining.length - 1)]
+      || /** @type {HTMLElement|null} */ (this.#panel.querySelector('[role="tab"][data-tab="watching"]'));
+    focusTarget?.focus();
     this.dispatchEvent(new CustomEvent('page-watch:remove', {
       bubbles: true, composed: true,
       detail: { url: row?.data?.url || key, subscriptionId: row?.data?.subscriptionId || null },
     }));
-  };
-
-  // ── Events ─────────────────────────────────────────────────────────
+  }
 
   #handleTriggerClick = (e) => {
     e.stopPropagation();
@@ -462,41 +681,43 @@ class NotificationWc extends VBElement {
     }
   };
 
+  /** Tabbing out of the component closes the (non-modal) panel. */
+  #handleFocusOut = (e) => {
+    const next = /** @type {Node|null} */ (e.relatedTarget);
+    if (this.#isOpen && next && !this.contains(next)) this.#close();
+  };
+
   #handleEscape = (e) => {
     if (e.key === 'Escape' && this.#isOpen) {
       e.preventDefault();
-      this.#close();
-      this.#trigger?.focus();
+      this.#close({ restoreFocus: true });
     }
   };
 
-  #handleRowClick = async (e) => {
-    const li = /** @type {HTMLElement|null} */ ((/** @type {Element} */ (e.currentTarget)).closest('[data-notification-id]'));
-    if (!li) return;
-    const id = li.getAttribute('data-notification-id');
-    if (!id) return;
-    if (!this.#readIds.has(id)) {
-      this.#readIds.add(id);
-      li.setAttribute('data-read', '');
-      await this.#saveReadState();
-      this.#updateBadge();
-      this.dispatchEvent(new CustomEvent('notification-wc:read', {
-        bubbles: true, composed: true, detail: { id },
-      }));
-    }
-  };
+  async #handleRowClick(row) {
+    const li = /** @type {HTMLElement|null} */ (row.closest('[data-notification-id]'));
+    const id = li?.getAttribute('data-notification-id');
+    if (!li || !id || this.#readIds.has(id)) return;
+    this.#readIds.add(id);
+    li.setAttribute('data-read', '');
+    this.#updateBadge();
+    this.dispatchEvent(new CustomEvent('notification-wc:read', {
+      bubbles: true, composed: true, detail: { id },
+    }));
+    await this.#saveReadState();
+  }
 
-  #handleMarkAllRead = async () => {
+  async #handleMarkAllRead() {
     const items = this.#collectNotifications();
     for (const n of items) this.#readIds.add(n.id);
-    await this.#saveReadState();
     this.#renderList();
     for (const n of items) {
       this.dispatchEvent(new CustomEvent('notification-wc:read', {
         bubbles: true, composed: true, detail: { id: n.id },
       }));
     }
-  };
+    await this.#saveReadState();
+  }
 
   // ── Open / close ───────────────────────────────────────────────────
 
@@ -505,21 +726,25 @@ class NotificationWc extends VBElement {
     this.#isOpen = true;
     this.#panel.hidden = false;
     this.#trigger?.setAttribute('aria-expanded', 'true');
+    this.#panel.focus({ preventScroll: true });
     this.#loadWatches(); // refresh watch list each time the panel opens
     this.dispatchEvent(new CustomEvent('notification-wc:open', { bubbles: true, composed: true }));
   }
 
-  #close() {
+  #close({ restoreFocus = false } = {}) {
     if (!this.#panel) return;
+    const focusInside = this.#panel.contains(document.activeElement);
     this.#isOpen = false;
     this.#panel.hidden = true;
     this.#trigger?.setAttribute('aria-expanded', 'false');
+    // Return focus to the trigger when it would otherwise be stranded.
+    if (restoreFocus || focusInside) this.#trigger?.focus();
     this.dispatchEvent(new CustomEvent('notification-wc:close', { bubbles: true, composed: true }));
   }
 
   // ── Dynamic fetch ──────────────────────────────────────────────────
 
-  async #fetchDynamic() {
+  async #fetchDynamic(gen) {
     const src = this.getAttribute('src');
     if (!src) return;
     let payload;
@@ -544,6 +769,7 @@ class NotificationWc extends VBElement {
       console.warn('[notification-wc] failed to fetch', src, label);
       return;
     }
+    if (!this.#alive(gen)) return;
     const list = Array.isArray(payload)
       ? payload
       : Array.isArray(payload?.notifications) ? payload.notifications : [];
@@ -551,8 +777,10 @@ class NotificationWc extends VBElement {
     // Detect new-to-us entries for toast emission
     const prevSeen = this.#seenIds;
     const firstLoad = prevSeen.size === 0;
+    // toast-new="#id" targets a specific <toast-msg>; a bare toast-new
+    // (or a selector that matches nothing) uses the first one in the document.
     const toastEl = this.hasAttribute('toast-new')
-      ? /** @type {{ show?: Function } | null} */ (document.querySelector('toast-msg'))
+      ? /** @type {{ show?: Function } | null} */ (this.#toastTarget())
       : null;
 
     for (const n of list) {
@@ -563,8 +791,8 @@ class NotificationWc extends VBElement {
         }));
         if (!firstLoad && toastEl && typeof toastEl.show === 'function') {
           toastEl.show({
-            message: n.title || n.body || 'New notification',
-            variant: n.type === 'alert' ? 'warning' : n.type === 'stewardship' ? 'warning' : 'info',
+            message: n.title || n.body || this.#label('new'),
+            variant: n.type === 'alert' || n.type === 'stewardship' ? 'warning' : 'info',
             duration: 5000,
           });
         }

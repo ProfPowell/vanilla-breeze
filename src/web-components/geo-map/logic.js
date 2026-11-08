@@ -755,11 +755,12 @@ class GeoMap extends VBElement {
         this.#preconnected = true;
         const origin = this.#tileOrigin();
         if (!origin || origin === location.origin) return;
-        if (document.head.querySelector(`link[rel="preconnect"][href="${CSS.escape(origin)}"]`)) return;
+        if (document.head.querySelector(`link[rel~="preconnect" i][href="${CSS.escape(origin)}"]`)) return;
         const link = document.createElement('link');
         link.rel = 'preconnect';
         link.href = origin;
-        link.crossOrigin = '';
+        // No crossorigin: tiles load as plain no-cors <img>, and a CORS-mode
+        // preconnect opens a connection those fetches cannot reuse.
         document.head.appendChild(link);
     }
 

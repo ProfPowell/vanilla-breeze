@@ -18,6 +18,36 @@ crumbLabel: Custom Elements
   </browser-window>
 
   <section>
+    <h2>Overview</h2>
+    <p>A center caps the width of its content and centres it in the available space, with a gutter on each side so the content never touches the edges. It is a block (<code>display: block</code>) with <code>max-inline-size</code>, <code>margin-inline: auto</code> and inline padding for the gutter.</p>
+    <p>The container uses <code>box-sizing: content-box</code>: the max width applies to the <em>content</em>, and the gutter is added outside it. A <code>narrow</code> center with the default <code>m</code> gutter is therefore 40rem of content plus <code>2 &times; --size-m</code> wide in total, so text measures stay exact whatever the gutter.</p>
+    <p><code>data-layout-intrinsic</code> and <code>data-layout-gap</code> switch the container to a flex column; see <a href="#intrinsic">Intrinsic centering</a> and <a href="#gap">Gap</a>.</p>
+  </section>
+
+  <section>
+    <h2>Element and attribute forms</h2>
+    <p>Any element can be a center with <code>data-layout="center"</code>. The same <code>data-layout-*</code> modifiers work on both forms; the two below produce the same box.</p>
+    <browser-window
+      src="/docs/snippets/demos/center-forms.html"
+      url="https://vanilla-breeze.com/center/forms"
+      title="Center element and attribute forms"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Element form and attribute form" data-escape><layout-center data-layout-max="narrow" data-layout-text>
+  <article>
+    <h3>Release notes</h3>
+    <p>Capped at 40rem and centred.</p>
+  </article>
+</layout-center>
+
+<article data-layout="center" data-layout-max="narrow" data-layout-text>
+  <h3>Release notes</h3>
+  <p>Capped at 40rem and centred.</p>
+</article></code-block>
+    <p><strong>Which to choose:</strong> use the attribute form when a semantic element is already the centred container: an <code>&lt;article&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;form&gt;</code> or <code>&lt;footer&gt;</code>. Use <code>&lt;layout-center&gt;</code> when there is no such element and you would otherwise add a wrapper. In the attribute form, <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code> are also container-query containers, which the element is not, so container queries inside resolve against the centred box. See <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> for the full comparison and <a href="/docs/semantic-layouts/">Semantic Layouts</a> for the approach.</p>
+  </section>
+
+  <section>
     <h2>Attributes</h2>
     <table class="props-table">
       <thead>
@@ -25,6 +55,7 @@ crumbLabel: Custom Elements
           <th>Attribute</th>
           <th>Values</th>
           <th>Default</th>
+          <th>Applies to</th>
           <th>Description</th>
         </tr>
       </thead>
@@ -33,47 +64,50 @@ crumbLabel: Custom Elements
           <td><code>data-layout-max</code></td>
           <td><code>narrow</code>, <code>normal</code>, <code>wide</code>, <code>prose</code></td>
           <td><code>normal</code></td>
-          <td>Max inline size: narrow (--content-narrow, 40rem), normal (--content-normal, 60rem), wide (--content-wide, 80rem) or prose (65ch).</td>
+          <td>both</td>
+          <td>Max inline size of the content box: narrow (--content-narrow, 40rem), normal (--content-normal, 60rem), wide (--content-wide, 80rem) or prose (65ch). See <a href="#max-width">Max width</a>.</td>
         </tr>
         <tr>
           <td><code>data-layout-intrinsic</code></td>
           <td>(boolean)</td>
           <td>&mdash;</td>
+          <td>both</td>
           <td>Center narrower-than-max content intrinsically (flex column, align center).</td>
         </tr>
         <tr>
           <td><code>data-layout-text</code></td>
           <td>(boolean)</td>
           <td>&mdash;</td>
+          <td>both</td>
           <td>Center the text as well.</td>
         </tr>
         <tr>
           <td><code>data-layout-gutter</code></td>
           <td><code>none</code>, <code>s</code>, <code>l</code></td>
-          <td><code>m</code></td>
-          <td>Inline padding: none, s or l (default m).</td>
+          <td><code>--size-m</code> (omit the attribute)</td>
+          <td>both</td>
+          <td>Inline padding on each side: none, s or l. There is no <code>m</code> value; the m gutter is what you get without the attribute.</td>
         </tr>
         <tr>
           <td><code>data-layout-gap</code></td>
           <td>(bare), <code>none</code>, <code>3xs</code>, <code>2xs</code>, <code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code>, <code>2xl</code>, <code>3xl</code></td>
           <td><code>m</code></td>
-          <td>Become a flex column with this gap between children, on the shared size scale. Bare attribute = m.</td>
+          <td>both</td>
+          <td>Become a full-width flex column with this gap between children, on the shared size scale. Bare attribute = m.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section>
-    <h2>Element or Attribute</h2>
-    <p>The same layout is available as <code>data-layout="center"</code>. Prefer the attribute when a semantic element is already the centred container &mdash; an <code>&lt;article&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;form&gt;</code> or <code>&lt;footer&gt;</code> &mdash; so you don't add a wrapper just to centre it. Use <code>&lt;layout-center&gt;</code> when there is no such element. All <code>data-layout-*</code> modifiers work on both forms. See <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> for the full comparison.</p>
-    <code-block language="html" show-lines label="Attribute form on an article" data-escape><article data-layout="center" data-layout-max="prose" data-layout-gap>
-  <h1>Article title</h1>
-  <p>Readable line length without an extra wrapper.</p>
-</article></code-block>
+    <h2>Child attributes</h2>
+    <p>None. The center holds any content; children are laid out normally (or as a flex column with <code>data-layout-intrinsic</code> or <code>data-layout-gap</code>).</p>
   </section>
 
   <section>
-    <h2>Max Width Variants</h2>
+    <h2>Examples</h2>
+
+    <h3 id="max-width">Max width</h3>
     <p>The <code>data-layout-max</code> attribute controls the maximum width of the container. Widths come from the content tokens, so a theme can retune them.</p>
     <table class="props-table">
       <thead>
@@ -87,6 +121,7 @@ crumbLabel: Custom Elements
       </tbody>
     </table>
     <p>Fluid-scaling themes redefine <code>--content-normal</code> as a <code>clamp()</code>, so its width varies with the viewport there.</p>
+    <p>These widths are for the content box; the gutter is added on each side (see <a href="#gutter">Gutter</a>). Note that <code>narrow</code> means 40rem here, while <code>data-layout-max="narrow"</code> on text containers such as <a href="/docs/elements/custom-elements/layout-text/"><code>&lt;layout-text&gt;</code></a> means a 45ch measure. Use <code>prose</code> (65ch) when you want a character-based reading measure on a center.</p>
 
     <browser-window
       src="/docs/snippets/demos/center-max-width.html"
@@ -106,10 +141,8 @@ crumbLabel: Custom Elements
 <layout-center data-layout-max="wide">
   <!-- Dashboard or data table -->
 </layout-center></code-block>
-  </section>
 
-  <section>
-    <h2>Intrinsic Centering</h2>
+    <h3 id="intrinsic">Intrinsic centering</h3>
     <p>The <code>data-layout-intrinsic</code> attribute centers content that is narrower than the max-width.</p>
 
     <browser-window
@@ -131,11 +164,9 @@ crumbLabel: Custom Elements
     <code-block language="css" label="Card width rule" data-escape>.card-constrained {
   max-inline-size: 20rem;
 }</code-block>
-  </section>
 
-  <section>
-    <h2>Text Centering</h2>
-    <p>The <code>data-layout-text</code> attribute adds <code>text-align: center</code> for centered text content.</p>
+    <h3>Text centering</h3>
+    <p>The <code>data-layout-text</code> attribute adds <code>text-align: center</code>. Keep it for short text such as headings and hero lines; long centred paragraphs are harder to read.</p>
 
     <browser-window
       src="/docs/snippets/demos/center-text.html"
@@ -152,11 +183,9 @@ crumbLabel: Custom Elements
 <layout-center data-layout-intrinsic data-layout-text>
   <!-- Both container and text centered -->
 </layout-center></code-block>
-  </section>
 
-  <section>
-    <h2>Gutter Variants</h2>
-    <p>The <code>data-layout-gutter</code> attribute controls horizontal padding (useful for nested centers).</p>
+    <h3 id="gutter">Gutter</h3>
+    <p>The <code>data-layout-gutter</code> attribute sets the inline padding on each side (useful for nested centers). The default gutter is <code>--size-m</code>; there is no <code>m</code> value, so leave the attribute off for it. Because the box is <code>content-box</code>, a larger gutter makes the whole box wider rather than the content narrower.</p>
 
     <browser-window
       src="/docs/snippets/demos/center-gutter.html"
@@ -169,11 +198,17 @@ crumbLabel: Custom Elements
 <layout-center data-layout-gutter="s">...</layout-center>    <!-- --size-s -->
 <layout-center>...</layout-center>                           <!-- --size-m (default) -->
 <layout-center data-layout-gutter="l">...</layout-center>    <!-- --size-l --></code-block>
-  </section>
 
-  <section>
-    <h2>Gap</h2>
-    <p>Adding <code>data-layout-gap</code> turns the container into a flex column with space between its children. The bare attribute uses the default <code>m</code> gap; give a size for anything else.</p>
+    <h3 id="gap">Gap</h3>
+    <p>Adding <code>data-layout-gap</code> turns the container into a flex column with space between its children. It is the one modifier that also changes the box: the center takes the full available width (up to its max), so it does not shrink to its content when it sits inside another flex layout such as a cover. The bare attribute uses the default <code>m</code> gap; give a size for anything else.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/center-gap.html"
+      url="https://vanilla-breeze.com/center/gap"
+      title="Center with gap"
+      shadow>
+    </browser-window>
+
     <code-block language="html" show-lines label="Center with gap" data-escape><layout-center data-layout-max="narrow" data-layout-gap>
   <h2>Default gap (m)</h2>
   <p>Children are spaced with --size-m.</p>
@@ -183,12 +218,8 @@ crumbLabel: Custom Elements
   <h2>Larger gap</h2>
   <p>Children are spaced with --size-xl.</p>
 </layout-center></code-block>
-  </section>
 
-  <section>
-    <h2>Usage Examples</h2>
-
-    <h3>Page Layout</h3>
+    <h3>Page layout</h3>
 
     <browser-window
       src="/docs/snippets/demos/center-page-layout.html"
@@ -211,7 +242,7 @@ crumbLabel: Custom Elements
   </layout-stack>
 </layout-center></code-block>
 
-    <h3>Hero Section</h3>
+    <h3>Hero section</h3>
 
     <browser-window
       src="/docs/snippets/demos/center-hero.html"
@@ -231,7 +262,7 @@ crumbLabel: Custom Elements
   </layout-stack>
 </layout-center></code-block>
 
-    <h3>Article Content</h3>
+    <h3>Article content</h3>
 
     <browser-window
       src="/docs/snippets/demos/center-article.html"
@@ -248,7 +279,7 @@ crumbLabel: Custom Elements
   </layout-text>
 </layout-center></code-block>
 
-    <h3>Form Container</h3>
+    <h3>Form container</h3>
 
     <browser-window
       src="/docs/snippets/demos/center-form.html"
@@ -276,8 +307,20 @@ crumbLabel: Custom Elements
   </section>
 
   <section>
+    <h2 id="accessibility">Accessibility</h2>
+    <ul>
+      <li>The center only limits width and adds a gutter; it never reorders content. <code>&lt;layout-center&gt;</code> has no role, so use the attribute form on <code>&lt;main&gt;</code>, <code>&lt;article&gt;</code> or <code>&lt;form&gt;</code> to keep their semantics without an extra wrapper.</li>
+      <li>A capped measure helps reading: <code>prose</code> (65ch) keeps lines under 80 characters (<a href="https://www.w3.org/WAI/WCAG22/Understanding/visual-presentation.html">WCAG 1.4.8 Visual Presentation</a>).</li>
+      <li><code>data-layout-text</code> centres every line. Use it for short headings and calls to action, not for paragraphs of body text.</li>
+      <li>The max width is a cap, not a fixed width: the box shrinks with its container, so content reflows at high zoom (<a href="https://www.w3.org/WAI/WCAG22/Understanding/reflow.html">WCAG 1.4.10 Reflow</a>).</li>
+    </ul>
+  </section>
+
+  <section>
     <h2>Related</h2>
     <ul>
+      <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> — The attribute form (<code>data-layout="center"</code>) and every layout modifier</li>
+      <li><a href="/docs/semantic-layouts/">Semantic Layouts</a> — When to use a layout element and when an attribute</li>
       <li><a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a> — Vertical stacking layout</li>
       <li><a href="/docs/elements/custom-elements/cover/"><code>&lt;layout-cover&gt;</code></a> — Full-height vertically centered layout</li>
       <li><a href="/docs/elements/custom-elements/layout-text/"><code>&lt;layout-text&gt;</code></a> — Typography container</li>

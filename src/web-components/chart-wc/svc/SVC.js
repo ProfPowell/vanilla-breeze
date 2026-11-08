@@ -196,7 +196,9 @@ class SVC {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // Revoking in the same task can cancel the download (Safari, Firefox):
+    // the browser fetches the blob URL asynchronously after click().
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
   }
 
   /**

@@ -2,76 +2,196 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "site-index",
   "type": "web-component",
-  "description": "Interactive site keyword index",
+  "description": "Interactive keyword index: filter, A–Z jump strip, entry counts, display limit and sort over a hand-authored (or src JSON) index",
   "attributes": [
     {
       "name": "placeholder",
-      "kind": "native",
+      "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "Search input placeholder (default \"Filter index…\")"
+      "default": "Filter index…",
+      "description": "Placeholder and accessible name of the filter input"
     },
     {
       "name": "letters",
       "kind": "host-api",
       "purpose": "config",
-      "type": "string",
-      "description": "Jump nav mode: \"entries\" (default) | \"all\" | \"none\""
+      "type": "enum",
+      "values": [
+        "entries",
+        "all",
+        "none"
+      ],
+      "default": "entries",
+      "description": "Jump strip: letters that have entries, the full A–Z plus any other letters present (É, Å…), or none"
     },
     {
       "name": "filter",
       "kind": "host-api",
       "purpose": "config",
-      "type": "string",
-      "description": "Search scope: \"topic\" (default) | \"all\""
+      "type": "enum",
+      "values": [
+        "topic",
+        "all"
+      ],
+      "default": "topic",
+      "description": "Initial filter scope: match terms only, or terms and page titles"
     },
     {
       "name": "sort",
       "kind": "host-api",
       "purpose": "config",
-      "type": "string",
-      "description": "Sort mode: \"alpha\" (default) | \"count\""
+      "type": "enum",
+      "values": [
+        "alpha",
+        "count"
+      ],
+      "default": "alpha",
+      "description": "Initial sort: authored (alphabetical) order, or sections with most entries first"
     },
     {
       "name": "limit",
       "kind": "host-api",
       "purpose": "config",
       "type": "number",
-      "description": "Max entries per letter before \"Show more\" toggle"
+      "description": "Max entries per letter before a \"Show N more\" toggle"
     },
     {
       "name": "src",
-      "kind": "native",
+      "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "URL to load index data from (optional)"
+      "description": "URL of index JSON ([{ term, refs: [{ href, label, type? }] }]) that replaces the authored nav. Strings render as text; only http(s), relative and fragment hrefs become links."
     },
     {
-      "name": "data-index-controls",
+      "name": "data-label-controls",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Filter the index",
+      "description": "Accessible name of the controls search landmark"
     },
     {
-      "name": "data-index-search",
+      "name": "data-label-scope",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Search scope",
+      "description": "Accessible name of the scope select"
     },
     {
-      "name": "href",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "data-index-overflow",
+      "name": "data-label-scope-topic",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "By Topic",
+      "description": "Scope option: match terms only"
     },
     {
-      "name": "data-index-expand",
+      "name": "data-label-scope-all",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "All",
+      "description": "Scope option: match terms and page titles"
+    },
+    {
+      "name": "data-label-sort",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Sort order",
+      "description": "Accessible name of the sort select"
+    },
+    {
+      "name": "data-label-sort-alpha",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Alphabetical",
+      "description": "Sort option"
+    },
+    {
+      "name": "data-label-sort-count",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Most entries",
+      "description": "Sort option"
+    },
+    {
+      "name": "data-label-jump",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Jump to letter",
+      "description": "Accessible name of the letter strip"
+    },
+    {
+      "name": "data-label-more",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Show {count} more",
+      "description": "Show-more button ({count} is replaced)"
+    },
+    {
+      "name": "data-label-less",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Show less",
+      "description": "Show-less button"
+    },
+    {
+      "name": "data-label-matches",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "{count} terms match",
+      "description": "Live filter count ({count} is replaced)"
+    },
+    {
+      "name": "data-label-matches-one",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "1 term matches",
+      "description": "Live filter count for one match"
+    },
+    {
+      "name": "data-label-no-matches",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "No matches",
+      "description": "Live status when the filter matches nothing"
     }
   ],
-  "childAttributes": [],
-  "structure": []
+  "structure": [
+    {
+      "element": "<nav>",
+      "description": "The index: a direct-child <nav> of <section id=\"index-x\"> letter groups (or any <nav data-index>). Any aria-label works."
+    },
+    {
+      "element": "<section id=\"index-x\">",
+      "description": "One letter group — <h2> plus <ul> of terms. The letter comes from the id, so index-é gives É."
+    },
+    {
+      "element": "<span class=\"index-term\">",
+      "description": "The term text inside each <li>"
+    },
+    {
+      "element": "<ul class=\"index-refs\">",
+      "description": "Page references for a term"
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "data-index",
+      "on": "nav",
+      "type": "boolean",
+      "description": "Explicitly marks the index nav (otherwise the direct-child nav holding sections is used)"
+    }
+  ]
 }

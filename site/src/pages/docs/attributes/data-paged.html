@@ -37,11 +37,14 @@ crumbLabel: Data Attributes
     <dt><code>infinite</code></dt>
     <dd><code>IntersectionObserver</code> sentinel auto-loads more when scrolled into view. Best for endless feeds where users scroll without thinking about pages.</dd>
   </dl>
+  <aside class="note">
+    <strong>Prefer <code>load-more</code> over <code>infinite</code>.</strong> Infinite scroll keeps pushing content under the reader: anything after the list (the page footer, contact links) becomes hard or impossible to reach, keyboard users have no control over when more loads, and there is no way back to a known position. <code>load-more</code> gives the same feed feel with an explicit, keyboard-operable button. Use <code>infinite</code> only when nothing important follows the list.
+  </aside>
 </section>
 
 <section>
   <h2>Attributes</h2>
-  <table class="prose">
+  <table>
     <thead>
       <tr><th>Attribute</th><th>Default</th><th>Notes</th></tr>
     </thead>
@@ -51,17 +54,36 @@ crumbLabel: Data Attributes
       <tr><td><code>data-paged-page</code></td><td><code>1</code></td><td>Initial page (1-based, user-facing).</td></tr>
       <tr><td><code>data-paged-style</code></td><td><code>numbered</code></td><td><code>numbered</code> &middot; <code>prev-next</code> &middot; <code>load-more</code> &middot; <code>infinite</code></td></tr>
       <tr><td><code>data-paged-window</code></td><td><code>2</code></td><td>For <code>numbered</code>: page numbers shown around current before ellipsis kicks in.</td></tr>
-      <tr><td><code>data-paged-controls</code></td><td><code>after</code></td><td><code>before</code> &middot; <code>after</code> &middot; <code>both</code> &middot; <code>none</code></td></tr>
-      <tr><td><code>data-paged-url</code></td><td>&mdash;</td><td>Opt-in URL search-param name (e.g. <code>page</code>). When set, page state syncs to the address bar via the History API and back/forward navigates.</td></tr>
+      <tr><td><code>data-paged-controls</code></td><td><code>after</code></td><td><code>before</code> &middot; <code>after</code> &middot; <code>both</code> &middot; <code>none</code>. <code>none</code> also drops the load-more button (pair it with <code>&lt;pager-wc data-style="load-more"&gt;</code>); the infinite-scroll sentinel is not a control and always renders.</td></tr>
+      <tr><td><code>data-paged-url</code></td><td>&mdash;</td><td>Opt-in URL search-param name (e.g. <code>page</code>). When set, page state syncs to the address bar via the History API; back/forward re-render the matching page, and a URL without the parameter shows page 1.</td></tr>
+      <tr><td><code>data-label-nav</code></td><td><code>Pagination</code></td><td>Nav landmark name.</td></tr>
+      <tr><td><code>data-label-prev</code> / <code>data-label-next</code></td><td><code>Previous</code> / <code>Next</code></td><td>Button text.</td></tr>
+      <tr><td><code>data-label-page</code></td><td><code>Page {page}</code></td><td>Accessible name of a page-number button.</td></tr>
+      <tr><td><code>data-label-status</code></td><td><code>Page {page} of {total}</code></td><td>The <code>prev-next</code> status, and the announcement after a numbered page change.</td></tr>
+      <tr><td><code>data-label-load-more</code></td><td><code>Load more ({n})</code></td><td>Load-more text; <code>{n}</code> = items remaining.</td></tr>
+      <tr><td><code>data-label-no-more</code></td><td><code>No more</code></td><td>Exhausted load-more text.</td></tr>
+      <tr><td><code>data-label-showing</code></td><td><code>Showing {visible} of {total}</code></td><td>Announced after load-more / infinite reveal more items.</td></tr>
     </tbody>
   </table>
 </section>
 
 <section>
+  <h2>Localisation</h2>
+  <p>The <code>data-label-*</code> strings are the same set <a href="/docs/elements/web-components/pager-wc/"><code>&lt;pager-wc&gt;</code></a> reads. They are read from the container <em>or any ancestor</em>, so one set on <code>&lt;html&gt;</code> or <code>&lt;main&gt;</code> translates every paged list; numbers are formatted for the container's closest <code>[lang]</code>.</p>
+  <code-block language="html" show-lines label="German labels" data-escape><main lang="de"
+      data-label-nav="Seiten" data-label-prev="Zurück" data-label-next="Weiter"
+      data-label-page="Seite {page}" data-label-status="Seite {page} von {total}"
+      data-label-load-more="Mehr laden ({n})" data-label-no-more="Keine weiteren"
+      data-label-showing="{visible} von {total} angezeigt">
+  <ul data-paged data-paged-size="10">…</ul>
+</main></code-block>
+</section>
+
+<section>
   <h2>Events</h2>
-  <p>The container emits <code>paged:change</code> after each render. Use it for analytics, scroll-restoration, or driving a sibling component.</p>
+  <p>The container emits <code>paged:change</code> (bubbles) after each render. <code>visible</code> is the number of items currently shown (it grows for <code>load-more</code> / <code>infinite</code>); <code>style</code> is the container's <code>data-paged-style</code>. Use it for analytics, scroll-restoration, or driving a sibling component such as <a href="/docs/elements/web-components/pager-wc/"><code>&lt;pager-wc&gt;</code></a>.</p>
   <code-block language="js" show-lines data-escape>list.addEventListener('paged:change', (e) => {
-  const { page, size, total, totalPages } = e.detail;
+  const { page, size, total, totalPages, visible, style } = e.detail;
   console.log(`Page ${page} of ${totalPages}`);
 });</code-block>
 </section>
@@ -87,10 +109,13 @@ crumbLabel: Data Attributes
   <h2>Accessibility</h2>
   <ul>
     <li>The injected nav uses <code>&lt;nav aria-label="Pagination"&gt;</code> with native <code>&lt;button&gt;</code>s &mdash; keyboard-navigable by default.</li>
-    <li>The active page button gets <code>aria-current="page"</code>.</li>
-    <li>Disabled prev/next buttons get the native <code>disabled</code> attribute (focusable but not actionable per WAI-ARIA pagination guidance &mdash; use <code>aria-disabled</code> if you need them focusable).</li>
+    <li>The active page button gets <code>aria-current="page"</code>; page-number buttons are named <q>Page N</q>. In forced-colors mode the current page keeps a <code>Highlight</code> fill and a thicker border.</li>
+    <li>The nav is swapped in place on each render, and focus returns to the equivalent control (Next stays on Next; on the last page it moves to the current page).</li>
+    <li>Prev/next on the first/last page get the native <code>disabled</code> attribute, so they are skipped by Tab and not actionable. (If you need them to stay focusable, drive the controls yourself with <code>aria-disabled</code> instead.)</li>
     <li>Ellipsis markers (<code>&hellip;</code>) get <code>aria-hidden="true"</code> so screen readers don't announce them.</li>
-    <li><code>prev-next</code> style includes a live status (<code>"Page N of M"</code>) with <code>aria-live="polite"</code>.</li>
+    <li><code>prev-next</code> style includes a live status (<code>"Page N of M"</code>) with <code>aria-live="polite"</code>. The same node is kept across renders so the change is announced (with <code>both</code>, only the copy after the container is live).</li>
+    <li><code>numbered</code> page changes are announced ("Page 2 of 5") through the shared polite live region; <code>load-more</code> and <code>infinite</code> announce how many items are shown ("Showing 20 of 54"). Focus stays on the Load more button, ready to load again.</li>
+    <li>See the note under Styles: <code>infinite</code> can make content after the list unreachable &mdash; prefer <code>load-more</code>.</li>
     <li>Honours <code>prefers-reduced-motion</code>: no transitions on page change.</li>
   </ul>
 </section>

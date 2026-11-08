@@ -4,7 +4,7 @@ title: "search"
 description: "Semantic landmark element for search functionality. Wraps search forms and controls to provide accessibility and structural meaning."
 elementName: search
 category: native
-nativeGroup: Sectioning
+nativeGroup: Forms
 currentPath: /docs/elements/native/search/
 
 crumbHref: /docs/elements/native/
@@ -30,7 +30,6 @@ crumbLabel: Native Elements
     <ul>
       <li>For login forms - use <code>&lt;form&gt;</code> with appropriate labels</li>
       <li>For general data input - use standard form elements</li>
-      <li>Multiple search landmarks on one page (generally use only one)</li>
     </ul>
   </section>
 
@@ -59,48 +58,71 @@ crumbLabel: Native Elements
   <section>
     <h2>Variants</h2>
 
+    <p>Every variant styles the input and button as children of <code>&lt;search&gt;</code> <em>or</em> of its direct <code>&lt;form&gt;</code> child (<code>:is(search, search &gt; form) &gt; input</code>). Use the form version whenever there is a submit button: a <code>&lt;button type="submit"&gt;</code> does nothing without a form.</p>
+
     <h3>.inline</h3>
     <p>Search input with button side-by-side using flexbox.</p>
     <browser-window src="/docs/snippets/demos/search-inline.html" url="https://vanilla-breeze.com/search/inline" title="Inline search" shadow></browser-window>
     <code-block language="html" label="Inline search" data-escape><search class="inline">
-  <input type="search" placeholder="Search..."
-         aria-label="Search" />
-  <button type="submit">Search</button>
+  <form action="/search" method="get">
+    <input type="search" name="q" placeholder="Search..."
+           aria-label="Search" />
+    <button type="submit">Search</button>
+  </form>
 </search></code-block>
 
     <h3>.compact</h3>
     <p>Smaller search for headers or sidebars.</p>
     <browser-window src="/docs/snippets/demos/search-compact.html" url="https://vanilla-breeze.com/search/compact" title="Compact search" shadow></browser-window>
     <code-block language="html" label="Compact search" data-escape><search class="compact inline">
-  <input type="search" placeholder="Quick search..."
-         aria-label="Search" />
-  <button type="submit">Find</button>
+  <form action="/search" method="get">
+    <input type="search" name="q" placeholder="Quick search..."
+           aria-label="Search" />
+    <button type="submit">Find</button>
+  </form>
 </search></code-block>
 
     <h3>.rounded</h3>
     <p>Pill-shaped search input.</p>
     <browser-window src="/docs/snippets/demos/search-rounded.html" url="https://vanilla-breeze.com/search/rounded" title="Rounded search" shadow></browser-window>
     <code-block language="html" label="Rounded search" data-escape><search class="inline rounded">
-  <input type="search" placeholder="Search..."
-         aria-label="Search" />
-  <button type="submit">Go</button>
+  <form action="/search" method="get">
+    <input type="search" name="q" placeholder="Search..."
+           aria-label="Search" />
+    <button type="submit">Go</button>
+  </form>
 </search></code-block>
 
     <h3>.expanded</h3>
     <p>Full-width search input.</p>
     <browser-window src="/docs/snippets/demos/search-expanded.html" url="https://vanilla-breeze.com/search/expanded" title="Expanded search" shadow></browser-window>
     <code-block language="html" label="Expanded search" data-escape><search class="expanded">
-  <input type="search"
-         placeholder="Search the entire site..."
-         aria-label="Search" />
+  <form action="/search" method="get">
+    <input type="search" name="q"
+           placeholder="Search the entire site..."
+           aria-label="Search" />
+  </form>
 </search></code-block>
 
     <h3>.header</h3>
     <p>Constrained width for header placement.</p>
     <code-block language="html" label="Header search" data-escape><search class="header inline">
-  <input type="search" placeholder="Search..."
-         aria-label="Search" />
-  <button type="submit" class="small">Go</button>
+  <form action="/search" method="get">
+    <input type="search" name="q" placeholder="Search..."
+           aria-label="Search" />
+    <button type="submit" class="small">Go</button>
+  </form>
+</search></code-block>
+
+    <h3>.with-icon</h3>
+    <p>A decorative icon positioned at the inline start of the input. The icon is a sibling placed before the input (<code>svg</code>, <code>.icon</code> or <code>&lt;icon-wc&gt;</code>), and the input gets extra start padding. Combine with <code>.rounded</code> for a pill field.</p>
+    <browser-window src="/docs/snippets/demos/search-with-icon.html" url="https://vanilla-breeze.com/search/with-icon" title="Search with icon" shadow></browser-window>
+    <code-block language="html" label="Search with icon" data-escape><search class="with-icon rounded">
+  <form action="/search" method="get">
+    <icon-wc name="search" size="sm"></icon-wc>
+    <input type="search" name="q" placeholder="Search..."
+           aria-label="Search" />
+  </form>
 </search></code-block>
 
     <h3>Variant Classes Summary</h3>
@@ -142,38 +164,67 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Styling</h2>
+    <p>Each variant matches controls that are direct children of <code>&lt;search&gt;</code> or of its direct <code>&lt;form&gt;</code>. Abridged from <code>src/native-elements/search/styles.css</code>:</p>
     <code-block language="css" label="CSS implementation" data-escape>search {
   display: block;
 }
 
-/* Inline variant */
+/* Inline variant: the search, or its form, lays out in a row */
 search.inline {
-  display: flex;
-  gap: var(--size-xs);
-
-  & > input { flex: 1; }
+  &, & > form { display: flex; gap: var(--size-xs); }
+  & > form { flex: 1; }
+  & > input, & > form > input { flex: 1; }
 }
 
 /* Expanded variant */
 search.expanded {
   inline-size: 100%;
-
-  & > input { inline-size: 100%; }
+  & > input, & > form > input { inline-size: 100%; }
 }
 
 /* Compact variant */
 search.compact {
-  & > input, & > button {
+  &, & > form { display: flex; gap: var(--size-2xs); }
+  & > input, & > form > input {
     padding-block: var(--size-xs);
+    font-size: var(--font-size-s);
+  }
+  & > button, & > form > button {
+    padding-block: var(--size-xs);
+    padding-inline: var(--size-s);
     font-size: var(--font-size-s);
   }
 }
 
+/* With icon: icon sits over the input's inline-start padding */
+search.with-icon {
+  position: relative;
+  & > form { position: relative; }
+  & > input, & > form > input { padding-inline-start: var(--size-xl); }
+  & > :is(svg, .icon, icon-wc),
+  & > form > :is(svg, .icon, icon-wc) {
+    position: absolute;
+    inset-inline-start: var(--size-s);
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+}
+
 /* Rounded variant */
-search.rounded > input {
-  border-radius: var(--radius-full);
-  padding-inline: var(--size-m);
-}</code-block>
+search.rounded {
+  & > input, & > form > input {
+    border-radius: var(--radius-full);
+    padding-inline-end: var(--size-m);
+  }
+  &:not(.with-icon) > input,
+  &:not(.with-icon) > form > input {
+    padding-inline-start: var(--size-m);
+  }
+}
+
+/* Header variant */
+search.header { max-inline-size: 300px; }</code-block>
   </section>
 
   <section>
@@ -181,8 +232,8 @@ search.rounded > input {
 
     <h3>GET Form for Server Search</h3>
     <p>Use GET method so search queries appear in the URL and can be bookmarked/shared.</p>
-    <code-block language="html" label="GET form search" data-escape><search>
-  <form action="/search" method="get" class="inline">
+    <code-block language="html" label="GET form search" data-escape><search class="inline">
+  <form action="/search" method="get">
     <label for="search-products"
            class="visually-hidden">Search products</label>
     <input type="search" id="search-products" name="q"
@@ -243,7 +294,7 @@ search.rounded > input {
     </ul>
 
     <h3>Multiple Search Landmarks</h3>
-    <p>If a page has multiple search regions, use <code>aria-label</code> to distinguish them:</p>
+    <p>A page can have more than one search landmark, for example a site search in the header and a filter above a table. Give each one an <code>aria-label</code> so landmark lists can tell them apart:</p>
     <code-block language="html" label="Multiple search landmarks" data-escape><!-- Main site search -->
 <search aria-label="Site search">
   ...
@@ -276,8 +327,14 @@ search.rounded > input {
   </section>
 
   <section>
+    <h2>Site Search Component</h2>
+    <p><a href="/docs/elements/web-components/site-search/"><code>&lt;site-search&gt;</code></a> builds a full search experience (dialog, keyboard shortcut, results) on top of this element. For its no-JavaScript fallback, use a plain <code>&lt;search&gt;&lt;form action="/search" method="get"&gt;</code> that submits to your search page, so the landmark and the form work before the component upgrades (not the older <code>&lt;form role="search"&gt;</code>). Use <code>&lt;search&gt;</code> on its own for simple GET forms and filters; use <code>&lt;site-search&gt;</code> when you want the instant-results dialog.</p>
+  </section>
+
+  <section>
     <h2>Related</h2>
     <ul>
+      <li><a href="/docs/elements/web-components/site-search/"><code>&lt;site-search&gt;</code></a> - Site-wide search dialog that uses a search landmark as its fallback</li>
       <li><a href="/docs/elements/native/input/"><code>&lt;input type="search"&gt;</code></a> - The search input element inside the search landmark</li>
       <li><a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> - For wrapping search with server submission</li>
       <li><a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> - Submit button for search forms</li>

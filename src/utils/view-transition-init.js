@@ -13,10 +13,16 @@
 
 const SELECTOR = '[data-vt-name]';
 
+/**
+ * Apply (or clear) the name. Idempotent: no "already done" flag, so clones,
+ * re-inserted elements and changed values all end up with the current name.
+ * @param {Element} el
+ */
 function enhance(el) {
-  if (el.hasAttribute('data-vt-name-init')) return;
-  el.setAttribute('data-vt-name-init', '');
-  el.style.viewTransitionName = el.dataset.vtName;
+  const htmlEl = /** @type {HTMLElement} */ (el);
+  // Strip the pre-2026-11 marker attribute if a stale copy is present.
+  htmlEl.removeAttribute('data-vt-name-init');
+  htmlEl.style.viewTransitionName = htmlEl.dataset.vtName || '';
 }
 
 function init(root = document) {
@@ -31,6 +37,10 @@ if (document.readyState === 'loading') {
 
 const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
+    if (mutation.type === 'attributes') {
+      enhance(/** @type {Element} */ (mutation.target));
+      continue;
+    }
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
       const el = /** @type {Element} */ (node);
@@ -40,6 +50,11 @@ const observer = new MutationObserver((mutations) => {
   }
 });
 
-observer.observe(document.documentElement, { childList: true, subtree: true });
+observer.observe(document.documentElement, {
+  childList: true,
+  subtree: true,
+  attributes: true,
+  attributeFilter: ['data-vt-name'],
+});
 
 export { init as initViewTransitions };

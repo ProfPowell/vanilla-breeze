@@ -68,8 +68,8 @@ test('focus moving into a hidden header reveals it', async ({ page }) => {
   await expect(header).toHaveAttribute('data-hidden', '');
   await page.locator('#home').focus();
   await expect(header).not.toHaveAttribute('data-hidden', '');
-  const top = await page.locator('#home').evaluate((el) => el.getBoundingClientRect().top);
-  expect(top).toBeGreaterThanOrEqual(0);
+  // The reveal transitions transform over 0.3s; a slow runner can sample mid-slide.
+  await expect.poll(() => page.locator('#home').evaluate((el) => el.getBoundingClientRect().top)).toBeGreaterThanOrEqual(0);
 });
 
 test('CSS keeps a focused link in a hidden header on screen', async ({ page }) => {

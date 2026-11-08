@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>pattern attribute: username, postcode and product code</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <form data-validate data-submit="event" class="stacked">
+      <form-field>
+        <label for="pat-user">Username</label>
+        <input type="text" id="pat-user" name="username" autocomplete="username" required
+               pattern="[a-zA-Z][a-zA-Z0-9_\-]{2,15}"
+               data-message-patternmismatch="Start with a letter, then 2 to 15 letters, digits, hyphens or underscores." />
+        <output class="hint" for="pat-user">3 to 16 characters. Starts with a letter; letters, digits, - and _ after that.</output>
+        <output class="error" for="pat-user" aria-live="polite">Check the username format.</output>
+      </form-field>
+
+      <form-field>
+        <label for="pat-zip">US ZIP code</label>
+        <input type="text" id="pat-zip" name="zip" autocomplete="postal-code" inputmode="numeric"
+               pattern="[0-9]{5}(-[0-9]{4})?"
+               data-message-patternmismatch="Use 5 digits, or ZIP+4 like 94107-1234." />
+        <output class="hint" for="pat-zip">12345 or 12345-6789. Optional, so an empty field is valid.</output>
+        <output class="error" for="pat-zip" aria-live="polite">Check the ZIP code.</output>
+      </form-field>
+
+      <form-field>
+        <label for="pat-sku">Product code</label>
+        <input type="text" id="pat-sku" name="sku" required
+               pattern="[A-Z]{3}-[0-9]{4}"
+               data-message-patternmismatch="Three capital letters, a hyphen, then four digits."
+               data-message-valuemissing="Enter the code printed on the box." />
+        <output class="hint" for="pat-sku">Printed on the box, for example ABC-1234.</output>
+        <output class="error" for="pat-sku" aria-live="polite">Check the product code.</output>
+      </form-field>
+
+      <button type="submit">Register product</button>
+      <pre><output id="pat-result">Submitted data appears here.</output></pre>
+    </form>
+  </layout-center>
+
+  <script type="module">
+    const result = document.querySelector('#pat-result');
+    document.querySelector('form').addEventListener('vb:submit', (e) => {
+      result.textContent = [...e.detail].map(([name, value]) => `${name} = ${value}`).join('\n');
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

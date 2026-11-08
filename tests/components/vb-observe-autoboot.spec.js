@@ -24,7 +24,8 @@ test('a data-effect element inserted after load activates on a core-only page', 
     el.textContent = 'late';
     document.querySelector('main').append(el);
     await new Promise((r) => setTimeout(r, 200));
-    return el.hasAttribute('data-effect-processed');
+    // Processed state lives in a WeakSet (an attribute was copied by clones).
+    return /** @type {any} */ (globalThis).__vbEffectsRuntime._processed.has(el);
   });
   expect(processed).toBe(true);
 });
@@ -57,6 +58,9 @@ test('an effect that wraps its element keeps its control after the observer sees
   await page.goto('/docs/examples/demos/animate-image-basic.html');
   await page.waitForFunction(() => Boolean(window.VB?._effects?.has('animate-image')));
   await page.waitForTimeout(200);
-  await expect(page.locator('.animate-image-toggle')).toHaveCount(2);
-  await expect(page.locator('.animate-image-wrapper > img[data-effect~="animate-image"]')).toHaveCount(2);
+  // Three images: two plain <img> and one inside a <picture> (the wrapper
+  // then holds the whole <picture>, so its <source>s stay its children).
+  await expect(page.locator('.animate-image-toggle')).toHaveCount(3);
+  await expect(page.locator('.animate-image-wrapper img[data-effect~="animate-image"]')).toHaveCount(3);
+  await expect(page.locator('.animate-image-wrapper > picture > img')).toHaveCount(1);
 });

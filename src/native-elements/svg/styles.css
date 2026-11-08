@@ -6,7 +6,9 @@ svg {
   overflow: visible;
 }
 
-/* Block-level SVG */
+/* Unclassed SVG: never wider than its container, height follows the
+   viewBox. Still inline-block (from the rule above) — this is a fluid cap,
+   not a block-level switch. */
 svg:not([class]) {
   max-inline-size: 100%;
   block-size: auto;
@@ -46,34 +48,39 @@ svg.xxl {
 
 /* --- SVG Colors --- */
 
+/* Each colour class sets `color` on the svg, so stroke="currentColor"
+   (Lucide-style outline icons) follows it, and fills with currentColor
+   unless the root says fill="none". Author CSS beats presentation
+   attributes, so an unscoped `fill` here would paint every outline icon
+   as a solid blob. Fill-style icons get the fill; stroke icons keep their
+   outlines. currentColor also tracks forced-colors system colours. */
+
 /* Inherit text color */
-svg.currentcolor {
+svg.currentcolor:not([fill="none"]) {
   fill: currentColor;
 }
 
 /* Interactive color */
 svg.interactive {
-  fill: var(--color-interactive);
+  color: var(--color-interactive);
 }
 
 /* Muted color */
 svg.muted {
-  fill: var(--color-text-muted);
+  color: var(--color-text-muted);
+}
+
+svg:is(.interactive, .muted):not([fill="none"]) {
+  fill: currentColor;
 }
 
 /* --- SVG Variants --- */
 
-/* Full-width SVG (diagrams, illustrations) */
+/* Full-width SVG (diagrams, illustrations): fills the container's inline
+   size; the viewBox sets the aspect ratio. */
 svg.full {
   inline-size: 100%;
   block-size: auto;
-}
-
-/* Responsive SVG container */
-svg.responsive {
-  inline-size: 100%;
-  block-size: auto;
-  aspect-ratio: auto;
 }
 
 /* Spin animation (loading icons) */
@@ -102,4 +109,18 @@ svg.pulse {
   50% {
     opacity: 0.5;
   }
+}
+
+/* Reduced motion — the OS preference or VB's own switch
+   (data-motion-reduced on <html>, set by settings-panel). Infinite
+   decorative loops stop; pair a spinner with visible "Loading…" text so
+   the state is still conveyed. */
+@media (prefers-reduced-motion: reduce) {
+  svg:is(.spin, .pulse) {
+    animation: none;
+  }
+}
+
+:root[data-motion-reduced] svg:is(.spin, .pulse) {
+  animation: none;
 }

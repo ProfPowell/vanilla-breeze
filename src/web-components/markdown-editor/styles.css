@@ -4,8 +4,8 @@ markdown-editor:not(:defined) {
 }
 
 markdown-editor:not(:defined) textarea {
-  width: 100%;
-  min-height: 12em;
+  inline-size: 100%;
+  min-block-size: 12em;
   font-family: var(--font-mono, monospace);
   font-size: var(--font-size-s);
   padding: var(--size-s);
@@ -15,30 +15,30 @@ markdown-editor:not(:defined) textarea {
 
 /* markdown-editor: Side-by-side markdown editor with live preview */
 
+/*
+ * Two columns when the editor itself is wide enough, one stacked column when
+ * it is not — sized by the editor's own inline size (a narrow editor in a
+ * wide page stacks), not the viewport. Each pane needs at least 20em.
+ */
 markdown-editor {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20em), 1fr));
+  grid-auto-rows: minmax(0, 1fr);
   gap: var(--size-s);
-  min-height: 20em;
+  min-block-size: 20em;
 }
 
-/* Stack vertically on narrow viewports */
-@media (max-width: 40em) {
-  markdown-editor {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr;
-  }
-}
-
-/* Editor pane */
-markdown-editor .md-editor-pane {
+/* Source pane: optional authored label, then the textarea filling the rest */
+markdown-editor > .md-editor-pane {
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  gap: var(--size-2xs);
+  min-block-size: 0;
 }
 
-markdown-editor .md-editor-input {
+markdown-editor > .md-editor-pane > textarea {
   flex: 1;
+  inline-size: 100%;
   resize: vertical;
   font-family: var(--font-mono, monospace);
   font-size: var(--font-size-s);
@@ -51,16 +51,16 @@ markdown-editor .md-editor-input {
   tab-size: 2;
 }
 
-markdown-editor .md-editor-input:focus {
+markdown-editor > .md-editor-pane > textarea:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: -1px;
   border-color: var(--color-primary);
 }
 
 /* Preview pane */
-markdown-editor .md-preview-pane {
+markdown-editor > .md-preview-pane {
   overflow-y: auto;
-  min-height: 0;
+  min-block-size: 0;
   padding: var(--size-s);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-s);
@@ -76,8 +76,8 @@ markdown-editor[data-theme],
 }
 
 /* Editing state — subtle visual indicator */
-markdown-editor[data-editing] .md-editor-pane {
-  outline: 2px solid var(--color-primary, oklch(55% 0.2 260));
+markdown-editor[data-editing] > .md-editor-pane {
+  outline: 2px solid var(--color-primary);
   outline-offset: -2px;
   border-radius: var(--radius-s);
 }

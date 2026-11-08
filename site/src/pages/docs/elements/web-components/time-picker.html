@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;time-picker&gt;</code> component wraps a native <code>&lt;input type="time"&gt;</code> and provides a combobox text input with an optional spinbutton dropdown panel. Users can type a time directly (e.g. &ldquo;2:30pm&rdquo;, &ldquo;14:30&rdquo;, &ldquo;3pm&rdquo;) or click the clock icon to adjust via spinbuttons. It supports 12-hour and 24-hour formats, respects <code>min</code>, <code>max</code>, and <code>step</code> constraints from the native input, and participates in form submission via <code>ElementInternals</code>.</p>
+    <p>The <code>&lt;time-picker&gt;</code> component wraps a native <code>&lt;input type="time"&gt;</code> and provides a combobox text input with an optional spinbutton dropdown panel. Users can type a time directly (e.g. &ldquo;2:30pm&rdquo;, &ldquo;14:30&rdquo;, &ldquo;3pm&rdquo;) or click the clock icon to adjust via spinbuttons. It supports 12-hour and 24-hour formats (localised through <code>Intl</code>), enforces <code>min</code>, <code>max</code> and <code>step</code> from the native input, can be left empty, and participates in form submission and validation via <code>ElementInternals</code>.</p>
 
     <browser-window
       src="/docs/examples/demos/time-picker-basic.html"
@@ -23,13 +23,13 @@ crumbLabel: Web Components
 
     <code-block language="html" show-lines label="Basic time picker" data-escape><form-field>
   <label for="meeting">Meeting time</label>
-  <time-picker name="meeting">
+  <time-picker name="meeting" data-format="24h">
     <input type="time" id="meeting" value="14:30">
   </time-picker>
 </form-field></code-block>
 
     <aside class="note">
-      <strong>Progressive enhancement:</strong> Without JavaScript, the native <code>&lt;input type="time"&gt;</code> is fully functional. The spinbutton UI only appears after the component upgrades.
+      <strong>Progressive enhancement:</strong> Without JavaScript, the native <code>&lt;input type="time"&gt;</code> is fully functional and submits under its own <code>name</code>. On upgrade a <code>name</code> or <code>disabled</code> on the inner input moves to the host, so exactly one value is submitted.
     </aside>
   </section>
 
@@ -55,19 +55,19 @@ crumbLabel: Web Components
           <td><code>data-format</code></td>
           <td>string</td>
           <td><em>locale</em></td>
-          <td>Force <code>12h</code> or <code>24h</code> display. Defaults to the user&rsquo;s locale preference.</td>
+          <td>Force <code>12h</code> or <code>24h</code> display. Defaults to the hour cycle of the nearest <code>[lang]</code> (else the browser locale).</td>
         </tr>
         <tr>
           <td><code>disabled</code></td>
           <td>boolean</td>
           <td><code>false</code></td>
-          <td>Disables the picker.</td>
+          <td>Disables the text input and clock button and drops the value from submission. Observed live; a disabled ancestor <code>&lt;fieldset&gt;</code> has the same effect.</td>
         </tr>
         <tr>
           <td><code>required</code></td>
           <td>boolean</td>
           <td><code>false</code></td>
-          <td>Marks the field as required for form validation.</td>
+          <td>Requires a time (<code>valueMissing</code> while empty). A <code>required</code> on the inner input works too.</td>
         </tr>
       </tbody>
     </table>
@@ -84,27 +84,48 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><code>value</code></td>
-          <td>Initial time in <code>HH:MM</code> or <code>HH:MM:SS</code> format.</td>
+          <td>Initial time in <code>HH:MM</code> or <code>HH:MM:SS</code>. It is also the form-reset target. Omit it for an empty field.</td>
         </tr>
         <tr>
           <td><code>min</code></td>
-          <td>Earliest allowed time (e.g. <code>09:00</code>).</td>
+          <td>Earliest valid time (e.g. <code>09:00</code>). Spinners stop at it; a typed earlier time is kept and flagged <code>rangeUnderflow</code>.</td>
         </tr>
         <tr>
           <td><code>max</code></td>
-          <td>Latest allowed time (e.g. <code>17:00</code>).</td>
+          <td>Latest valid time (e.g. <code>17:00</code>). Spinners stop at it; a typed later time is flagged <code>rangeOverflow</code>. A <code>min</code> later than <code>max</code> is an overnight range (e.g. 22:00&ndash;06:00).</td>
         </tr>
         <tr>
           <td><code>step</code></td>
-          <td>Step increment in seconds. Use <code>900</code> for 15-minute intervals. Values under 60 show a seconds spinner.</td>
+          <td>Step in seconds, counted from <code>min</code> (default 60; <code>any</code> turns step checks off). Use <code>900</code> for 15-minute intervals. Values that are not whole minutes show a seconds spinner; whole hours (<code>3600</code>, <code>7200</code>) step the hours spinner.</td>
         </tr>
+      </tbody>
+    </table>
+
+    <h3>Labels</h3>
+    <p>Every UI string can be overridden with a <code>data-label-*</code> attribute on the host. Validation messages can also come from a <code>data-message-*</code> attribute on the inner input, which wins.</p>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Default</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-label-input</code></td><td>Time (accessible name when there is no label)</td></tr>
+        <tr><td><code>data-label-placeholder</code></td><td>Type a time&hellip;</td></tr>
+        <tr><td><code>data-label-toggle</code></td><td>Toggle time spinners</td></tr>
+        <tr><td><code>data-label-dialog</code></td><td>Choose time</td></tr>
+        <tr><td><code>data-label-hours</code> / <code>-minutes</code> / <code>-seconds</code></td><td>Hours / Minutes / Seconds</td></tr>
+        <tr><td><code>data-label-period</code></td><td>AM/PM</td></tr>
+        <tr><td><code>data-label-empty</code></td><td>Not set</td></tr>
+        <tr><td><code>data-label-required</code></td><td>Please select a time</td></tr>
+        <tr><td><code>data-label-range-underflow</code></td><td>Choose a time at or after {time}</td></tr>
+        <tr><td><code>data-label-range-overflow</code></td><td>Choose a time at or before {time}</td></tr>
+        <tr><td><code>data-label-step-mismatch</code></td><td>Choose a valid time. The nearest are {lower} and {upper}</td></tr>
       </tbody>
     </table>
   </section>
 
   <section>
     <h2>12-Hour Format</h2>
-    <p>Set <code>data-format="12h"</code> to display an AM/PM toggle alongside the hour and minute spinners.</p>
+    <p>Set <code>data-format="12h"</code> to display an AM/PM toggle alongside the hour and minute spinners. The display text and the AM/PM words come from <code>Intl.DateTimeFormat</code> for the nearest <code>[lang]</code>, so <code>lang="ja"</code> shows &ldquo;午後2:30&rdquo; with the period toggle first. Typed input accepts the localised words as well as <code>am</code>/<code>pm</code>.</p>
 
     <code-block language="html" show-lines label="12-hour format" data-escape><time-picker name="alarm" data-format="12h">
   <input type="time" value="07:30">
@@ -113,7 +134,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Step Intervals</h2>
-    <p>The <code>step</code> attribute on the native input controls minute increments. For example, <code>step="900"</code> restricts minutes to 15-minute intervals (0, 15, 30, 45).</p>
+    <p>The <code>step</code> attribute on the native input sets the grid, counted from <code>min</code>. With <code>step="900"</code> the spinners move in 15-minute steps and snap an off-grid value onto the grid. A typed off-grid time such as 10:07 is kept as typed and flagged <code>stepMismatch</code>, like a native input. With an hour-scale step such as <code>7200</code> the hours spinner moves two hours at a time and the minutes spinner is read-only.</p>
 
     <code-block language="html" show-lines label="15-minute intervals" data-escape><time-picker name="slot">
   <input type="time" min="09:00" max="17:00" step="900">
@@ -122,7 +143,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Form Integration</h2>
-    <p>The component is form-associated via <code>ElementInternals</code> and works inside <code>&lt;form-field&gt;</code> for validation messaging.</p>
+    <p>The component is form-associated via <code>ElementInternals</code> and works inside <code>&lt;form-field&gt;</code> for validation messaging. The host owns validity (<code>valueMissing</code>, <code>rangeUnderflow</code>, <code>rangeOverflow</code>, <code>stepMismatch</code>) and anchors it on the text input. An empty picker submits nothing. Clearing the text and pressing <kbd>Enter</kbd> (or leaving the field), or setting <code>.value = ''</code>, clears it. Form reset restores the authored <code>value</code> attribute, even after the element has been moved.</p>
 
     <code-block language="html" show-lines label="With validation" data-escape><form>
   <form-field>
@@ -161,7 +182,7 @@ crumbLabel: Web Components
         </tr>
         <tr>
           <td><kbd>Tab</kbd></td>
-          <td>Close the panel and move focus to the next element.</td>
+          <td>Move focus to the next element. The panel closes whenever focus leaves the component.</td>
         </tr>
       </tbody>
     </table>
@@ -216,8 +237,8 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><code>time-picker:change</code></td>
-          <td><code>{ value, hours, minutes, seconds }</code></td>
-          <td>Fired when the time value changes.</td>
+          <td><code>{ value, hours, minutes, seconds, source }</code></td>
+          <td>Fired when the value actually changes (not on form reset or restore). <code>value</code> is <code>''</code> when cleared, with <code>hours</code>/<code>minutes</code>/<code>seconds</code> <code>null</code>. <code>source</code> is <code>'api'</code>, <code>'pointer'</code> or <code>'keyboard'</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -225,5 +246,16 @@ crumbLabel: Web Components
 
   <section>
     <h2>Accessibility</h2>
-    <p>The text input uses <code>role="combobox"</code> with <code>aria-expanded</code> and <code>aria-controls</code> linked to the spinbutton panel. Each time segment in the panel uses <code>role="spinbutton"</code> with <code>aria-valuenow</code>, <code>aria-valuemin</code>, <code>aria-valuemax</code>, and <code>aria-valuetext</code>. The increment/decrement buttons are <code>aria-hidden</code> since keyboard interaction is handled on the spinbutton element itself.</p>
+    <ul>
+      <li>The text input is a <code>role="combobox"</code> with <code>aria-haspopup="dialog"</code>, <code>aria-expanded</code> and <code>aria-controls</code> pointing at the spinner popup, which is a non-modal <code>role="dialog"</code>.</li>
+      <li>The combobox is named by the inner input&rsquo;s <code>&lt;label for&gt;</code> (forwarded with <code>aria-labelledby</code>, since the native input is hidden), a <code>&lt;label for&gt;</code> on the host, or an <code>aria-label</code>.</li>
+      <li>Each segment is a <code>role="spinbutton"</code> with <code>aria-valuenow</code>, <code>aria-valuemin</code>, <code>aria-valuemax</code> and a localised <code>aria-valuetext</code> (&ldquo;2 PM&rdquo;, &ldquo;30 minutes&rdquo;, or &ldquo;Not set&rdquo; while empty). The increment/decrement buttons are <code>aria-hidden</code>; the keyboard works on the spinbutton itself.</li>
+      <li><code>aria-invalid</code> and <code>aria-required</code> are set on the combobox.</li>
+      <li>Focus rings use <code>outline</code>, so they stay visible in forced-colors mode.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Touch devices and the native picker</h2>
+    <p>The picker keeps its own UI on every device: the text field accepts typing from any on-screen keyboard and the spinners work with taps. It does not swap in the native <code>&lt;input type="time"&gt;</code> on coarse pointers, so a form looks and validates the same everywhere. If you want the operating system&rsquo;s time wheel on phones, use a bare <code>&lt;input type="time"&gt;</code> without the <code>&lt;time-picker&gt;</code> wrapper. That is the same markup the component enhances, so nothing else changes.</p>
   </section>

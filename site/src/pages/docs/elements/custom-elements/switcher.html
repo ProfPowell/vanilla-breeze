@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "layout-switcher"
-description: "A flexbox container that automatically switches from horizontal to vertical layout based on available space. Ideal for responsive layouts without media queries."
+description: "A flexbox container that switches from a row to a column when it gets narrower than a threshold. Ideal for responsive layouts without media or container queries."
 elementName: layout-switcher
 category: custom
 currentPath: /docs/elements/custom-elements/switcher/
@@ -18,6 +18,33 @@ crumbLabel: Custom Elements
   </browser-window>
 
   <section>
+    <h2>Overview</h2>
+    <p>A switcher puts its children side by side, all in one row, until the switcher itself gets narrower than its threshold; then every child takes a full line. There is no in-between state where some items wrap and others don't.</p>
+    <p>The threshold is compared with the <strong>switcher's own width</strong>, not the viewport and not a container query. Each child gets <code>flex-basis: calc((threshold - 100%) * 999)</code>: when the switcher is wider than the threshold the basis is hugely negative and the items share the row; when it is narrower the basis is hugely positive and each item wraps onto its own line. So a switcher in a narrow sidebar stacks even on a wide screen, and it needs no query container around it.</p>
+  </section>
+
+  <section>
+    <h2>Element and attribute forms</h2>
+    <p>Any element can be a switcher with <code>data-layout="switcher"</code>. The same <code>data-layout-*</code> modifiers work on both forms; the two below are identical.</p>
+    <browser-window
+      src="/docs/snippets/demos/switcher-forms.html"
+      url="https://vanilla-breeze.com/switcher/forms"
+      title="Switcher element and attribute forms"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Element form and attribute form" data-escape><layout-switcher data-layout-gap="s" data-layout-threshold="l">
+  <article>One</article>
+  <article>Two</article>
+</layout-switcher>
+
+<section data-layout="switcher" data-layout-gap="s" data-layout-threshold="l">
+  <article>One</article>
+  <article>Two</article>
+</section></code-block>
+    <p><strong>Which to choose:</strong> use the attribute form when a semantic element is already the row: a <code>&lt;footer&gt;</code> of form actions, a <code>&lt;section&gt;</code> of cards, a <code>&lt;menu&gt;</code>. Use <code>&lt;layout-switcher&gt;</code> when there is no such element and you would otherwise add a wrapper. In the attribute form, <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code> are also container-query containers, which the element is not; the switch itself never depends on that. See <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> for the full comparison.</p>
+  </section>
+
+  <section>
     <h2>Attributes</h2>
     <table class="props-table">
       <thead>
@@ -25,124 +52,163 @@ crumbLabel: Custom Elements
           <th>Attribute</th>
           <th>Values</th>
           <th>Default</th>
+          <th>Applies to</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
         <tr>
+          <td><code>data-layout-threshold</code></td>
+          <td><code>s</code>, <code>m</code>, <code>l</code></td>
+          <td><code>m</code></td>
+          <td>both</td>
+          <td>The switcher's own width below which the row becomes a column: 25 / 30 / 40rem. No container query is involved. One-off: <code>style="--layout-threshold: 35rem"</code>.</td>
+        </tr>
+        <tr>
           <td><code>data-layout-gap</code></td>
           <td><code>none</code>, <code>3xs</code>, <code>2xs</code>, <code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code>, <code>2xl</code>, <code>3xl</code></td>
           <td><code>m</code></td>
+          <td>both</td>
           <td>Gap between items, on the shared size scale.</td>
-        </tr>
-        <tr>
-          <td><code>data-layout-threshold</code></td>
-          <td>(bare), <code>s</code>, <code>m</code>, <code>l</code></td>
-          <td><code>m</code></td>
-          <td>Container width at which the row becomes a column: 25 / 30 / 40rem. One-off: style=&quot;--layout-threshold: 35rem&quot;.</td>
         </tr>
         <tr>
           <td><code>data-layout-limit</code></td>
           <td><code>2</code>, <code>3</code>, <code>4</code></td>
           <td>&mdash;</td>
-          <td>Force the column layout once there are more than this many items.</td>
+          <td>both</td>
+          <td>Force the column layout once there are more than this many items, whatever the width.</td>
         </tr>
         <tr>
           <td><code>data-layout-reverse</code></td>
           <td>(boolean)</td>
           <td>&mdash;</td>
-          <td>Reverse the visual order when stacked.</td>
+          <td>both</td>
+          <td>Reverse the visual order when stacked: the last item goes on top. The row keeps DOM order. Visual only; see <a href="#accessibility">Accessibility</a>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Custom properties</h3>
+    <table class="props-table">
+      <thead>
+        <tr><th>Property</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--layout-threshold</code></td>
+          <td>(unset)</td>
+          <td>A threshold length that beats <code>data-layout-threshold</code>. Registered with <code>inherits: false</code>, so a nested switcher does not pick it up.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section>
-    <h2>Basic Usage</h2>
-    <p>Items display side-by-side when space allows, then stack vertically.</p>
+    <h2>Child attributes</h2>
+    <p>None. Every direct child is an item; items grow to share the row equally.</p>
+  </section>
 
+  <section>
+    <h2>Examples</h2>
+
+    <h3>Basic usage</h3>
+    <p>Items display side by side when the switcher is wide enough, then stack.</p>
     <browser-window
       src="/docs/snippets/demos/switcher-basic.html"
       url="https://vanilla-breeze.com/switcher/basic"
       title="Basic switcher usage"
       shadow>
     </browser-window>
-
     <code-block language="html" show-lines label="Basic layout-switcher usage" data-escape><layout-switcher data-layout-gap="m">
-  <div>Item 1</div>
-  <div>Item 2</div>
+  <layout-card data-variant="outlined" data-padding="m">
+    <p><strong>Item 1</strong></p>
+    <p>Content that shares space horizontally when there's room.</p>
+  </layout-card>
+  <layout-card data-variant="outlined" data-padding="m">
+    <p><strong>Item 2</strong></p>
+    <p>Stacks vertically when the switcher is narrow.</p>
+  </layout-card>
 </layout-switcher></code-block>
-  </section>
 
-  <section>
-    <h2>Threshold Variants</h2>
-    <p>The <code>data-layout-threshold</code> attribute controls when the switch happens.</p>
-
+    <h3>Threshold</h3>
+    <p>The <code>data-layout-threshold</code> attribute sets the switcher width at which the switch happens.</p>
     <browser-window
       src="/docs/snippets/demos/switcher-threshold.html"
       url="https://vanilla-breeze.com/switcher/threshold"
       title="Threshold variants"
       shadow>
     </browser-window>
-
-    <code-block language="html" show-lines label="Threshold variants" data-escape><!-- Lower threshold - stays horizontal longer -->
+    <code-block language="html" show-lines label="Threshold variants" data-escape><!-- Lower threshold: stays a row down to 25rem -->
 <layout-switcher data-layout-threshold="s">
-  <div>Card A</div>
-  <div>Card B</div>
+  <article>Card A</article>
+  <article>Card B</article>
 </layout-switcher>
 
-<!-- Higher threshold - stacks earlier -->
+<!-- Higher threshold: stacks below 40rem -->
 <layout-switcher data-layout-threshold="l">
-  <div>Card A</div>
-  <div>Card B</div>
+  <article>Card A</article>
+  <article>Card B</article>
 </layout-switcher></code-block>
-  </section>
+    <p>For a value off the scale, set <code>--layout-threshold</code>. An inline custom property is the documented one-off escape hatch for layout values; it beats the token and is not inherited by nested switchers. A stylesheet rule works the same way.</p>
+    <code-block language="html" show-lines label="One-off threshold" data-escape><layout-switcher style="--layout-threshold: 35rem">
+  <article>Card A</article>
+  <article>Card B</article>
+</layout-switcher></code-block>
 
-  <section>
-    <h2>Item Limit</h2>
-    <p>The <code>data-layout-limit</code> attribute forces vertical layout when there are more items than the limit.</p>
-
+    <h3>Item limit</h3>
+    <p>The <code>data-layout-limit</code> attribute forces the column layout when there are more items than the limit, so a row never gets too crowded. It works alongside the threshold: below the threshold the items stack anyway.</p>
     <browser-window
       src="/docs/snippets/demos/switcher-limit.html"
       url="https://vanilla-breeze.com/switcher/limit"
       title="Item limit forcing vertical layout"
       shadow>
     </browser-window>
-
     <code-block language="html" show-lines label="Item limit forcing vertical layout" data-escape><!-- Forces vertical when more than 2 items -->
 <layout-switcher data-layout-gap="m" data-layout-limit="2">
-  <div>Item 1</div>
-  <div>Item 2</div>
-  <div>Item 3</div> <!-- This causes stack -->
+  <p>Item 1</p>
+  <p>Item 2</p>
+  <p>Item 3</p> <!-- This causes stack -->
 </layout-switcher></code-block>
-  </section>
 
-  <section>
-    <h2>Usage Examples</h2>
+    <h3 id="reverse">Reverse when stacked</h3>
+    <p><code>data-layout-reverse</code> flips the order of the stacked items, so the last item ends up on top. Side by side, the items keep their DOM order. It works with or without <code>data-layout-threshold</code> and with <code>data-layout-limit</code>. A common use: put the text first in the DOM so it is read first, and show the image above it on narrow screens.</p>
+    <browser-window
+      src="/docs/snippets/demos/switcher-reverse.html"
+      url="https://vanilla-breeze.com/switcher/reverse"
+      title="Reverse when stacked"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Reverse when stacked" data-escape><layout-switcher data-layout-reverse>
+  <article>Text (first in DOM, read first)</article>
+  <figure>Image (on top when stacked)</figure>
+</layout-switcher></code-block>
 
-    <h3>Form Actions</h3>
-
+    <h3>Form actions</h3>
+    <p>The attribute form on the form's <code>&lt;footer&gt;</code>: the buttons sit side by side and stack in a narrow form, with no wrapper element.</p>
     <browser-window
       src="/docs/snippets/demos/switcher-form-actions.html"
       url="https://vanilla-breeze.com/switcher/form-actions"
       title="Form action buttons"
       shadow>
     </browser-window>
+    <code-block language="html" show-lines label="Form action buttons" data-escape><form data-layout="stack" data-layout-gap="m" action="/projects" method="post">
+  <form-field>
+    <label for="project-name">Project name</label>
+    <input type="text" id="project-name" name="project-name" />
+  </form-field>
+  <footer data-layout="switcher" data-layout-gap="s" data-layout-threshold="s">
+    <button type="reset" class="secondary">Cancel</button>
+    <button type="submit">Save Changes</button>
+  </footer>
+</form></code-block>
 
-    <code-block language="html" show-lines label="Form action buttons" data-escape><layout-switcher data-layout-gap="s" data-layout-threshold="s">
-  <button type="button" class="secondary">Cancel</button>
-  <button type="submit">Save Changes</button>
-</layout-switcher></code-block>
-
-    <h3>Card Header</h3>
-
+    <h3>Card header</h3>
     <browser-window
       src="/docs/snippets/demos/switcher-card-header.html"
       url="https://vanilla-breeze.com/switcher/card-header"
       title="Card with header switcher"
       shadow>
     </browser-window>
-
     <code-block language="html" show-lines label="Card with header switcher" data-escape><layout-card data-variant="outlined" data-padding="m">
   <layout-switcher data-layout-gap="m" data-layout-threshold="m">
     <layout-stack data-layout-gap="xs">
@@ -156,15 +222,13 @@ crumbLabel: Custom Elements
   </layout-switcher>
 </layout-card></code-block>
 
-    <h3>Feature Comparison</h3>
-
+    <h3>Feature comparison</h3>
     <browser-window
       src="/docs/snippets/demos/switcher-pricing.html"
       url="https://vanilla-breeze.com/switcher/pricing"
       title="Pricing comparison cards"
       shadow>
     </browser-window>
-
     <code-block language="html" show-lines label="Pricing comparison cards" data-escape><layout-switcher data-layout-gap="l" data-layout-threshold="l">
   <layout-card data-variant="outlined" data-padding="l">
     <layout-stack data-layout-gap="m" data-layout-align="center">
@@ -184,8 +248,19 @@ crumbLabel: Custom Elements
   </section>
 
   <section>
+    <h2 id="accessibility">Accessibility</h2>
+    <ul>
+      <li>The switcher changes layout only. Reading order and focus order always follow the DOM, so write the source in the order it should be read.</li>
+      <li><code>data-layout-reverse</code> is visual only. When stacked, focus moves from the lower item up to the upper one (<a href="https://www.w3.org/WAI/WCAG22/Understanding/focus-order.html">WCAG 2.4.3 Focus Order</a>). Use it only when the stacked order is presentational, for example a decorative image above text, and not when the items contain focusable controls in a meaningful sequence.</li>
+      <li>Because the switch depends on the switcher's width, it also happens when users zoom in or enlarge text: content reflows into a single column instead of overflowing (<a href="https://www.w3.org/WAI/WCAG22/Understanding/reflow.html">WCAG 1.4.10 Reflow</a>).</li>
+    </ul>
+  </section>
+
+  <section>
     <h2>Related</h2>
     <ul>
+      <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> — The attribute form (<code>data-layout="switcher"</code>) and every layout modifier</li>
+      <li><a href="/docs/semantic-layouts/">Semantic Layouts</a> — When to use a layout element and when an attribute</li>
       <li><a href="/docs/elements/custom-elements/sidebar/"><code>&lt;layout-sidebar&gt;</code></a> — Two-column layout with sidebar</li>
       <li><a href="/docs/elements/custom-elements/grid/"><code>&lt;layout-grid&gt;</code></a> — Auto-fit grid layout</li>
       <li><a href="/docs/elements/custom-elements/cluster/"><code>&lt;layout-cluster&gt;</code></a> — Horizontal grouping with wrapping</li>

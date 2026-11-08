@@ -1,110 +1,266 @@
 /**
  * Unit tests for sanitize-html module
  *
- * Tests the pure function contract. Uses minimal DOM mock since the project
- * doesn't use jsdom. Full XSS vector testing belongs in Playwright component tests.
+ * The HTML-string API is exercised against a spec-compliant parser: a thin
+ * DOM adapter over parse5 (the WHATWG parsing algorithm, foreign content
+ * included), so the mXSS corpus checks real parse → sanitize → serialise →
+ * re-parse round trips. sanitizeSVG keeps its hand-built element-tree mock.
+ * Real insertion (handlers must not fire) is covered in the browser by
+ * tests/components/mn-sanitizer.spec.js.
  *
  * Run with: node --test tests/unit/sanitize-html.test.js
  */
 
-import { describe, it, beforeEach } from 'node:test';
+import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { MXSS_CORPUS } from './fixtures/mxss-corpus.js';
 
-// --- Minimal DOM mock for template-based sanitizer ---
+// --- parse5-backed DOM adapter (only what the sanitizer touches) ---
 
-class MockAttribute {
-  constructor(name, value) {
-    this.name = name;
-    this.value = value;
-  }
+/** @type {any} */
+let parse5 = null;
+try { parse5 = await import('parse5'); } catch { /* optional: skip parser tests */ }
+
+const HTML_NS = 'http://www.w3.org/1999/xhtml';
+const wrappers = new WeakMap();
+const TYPE = { '#text': 3, '#comment': 8, '#document-fragment': 11 };
+
+/** @param {any} node */
+function wrap(node) {
+  if (!node) return null;
+  let w = wrappers.get(node);
+  if (!w) { w = new P5Node(node); wrappers.set(node, w); }
+  return w;
 }
 
-class MockElement {
-  constructor(tagName) {
-    this.tagName = tagName;
-    this._attributes = new Map();
-    this._children = [];
-    this.innerHTML = '';
-  }
+/** @param {any} a */
+const qname = (a) => (a.prefix ? `${a.prefix}:${a.name}` : a.name);
 
-  get attributes() {
-    return [...this._attributes.values()];
+class P5Node {
+  /** @param {any} node */
+  constructor(node) { this.n = node; }
+  get nodeType() { return TYPE[this.n.nodeName] ?? 1; }
+  get localName() { return this.nodeType === 1 ? this.n.tagName : undefined; }
+  get tagName() { return this.localName; }
+  get namespaceURI() { return this.n.namespaceURI; }
+  get parentNode() { return wrap(this.n.parentNode); }
+  get childNodes() { return this.n.childNodes ? this.n.childNodes.map(wrap) : []; }
+  get children() { return this.childNodes.filter((c) => c.nodeType === 1); }
+  get content() { return this.n.content ? wrap(this.n.content) : undefined; }
+  get attributes() { return (this.n.attrs || []).map((a) => ({ name: qname(a), value: a.value })); }
+  get textContent() {
+    if (this.nodeType === 3) return this.n.value;
+    if (this.nodeType === 8) return this.n.data;
+    return this.childNodes.map((c) => c.textContent).join('');
   }
-
-  getAttribute(name) {
-    return this._attributes.get(name)?.value ?? null;
-  }
-
+  /** @param {string} name */
+  #find(name) { return (this.n.attrs || []).find((a) => qname(a).toLowerCase() === name.toLowerCase()); }
+  /** @param {string} name */
+  getAttribute(name) { return this.#find(name)?.value ?? null; }
+  /** @param {string} name @param {string} value */
   setAttribute(name, value) {
-    this._attributes.set(name, new MockAttribute(name, String(value)));
+    const a = this.#find(name);
+    if (a) a.value = String(value); else this.n.attrs.push({ name, value: String(value) });
   }
-
+  /** @param {string} name */
   removeAttribute(name) {
-    this._attributes.delete(name);
+    const a = this.#find(name);
+    if (a) this.n.attrs.splice(this.n.attrs.indexOf(a), 1);
   }
-
+  /** @param {P5Node} child @param {P5Node} ref */
+  insertBefore(child, ref) {
+    child.remove();
+    const kids = this.n.childNodes;
+    kids.splice(kids.indexOf(ref.n), 0, child.n);
+    child.n.parentNode = this.n;
+  }
   remove() {
-    // Mark as removed
-    this._removed = true;
+    const parent = this.n.parentNode;
+    if (!parent) return;
+    parent.childNodes.splice(parent.childNodes.indexOf(this.n), 1);
+    this.n.parentNode = null;
   }
-
-  querySelectorAll() {
-    return [];
+  /** @returns {P5Node[]} */
+  #descendants() {
+    const out = [];
+    const walk = (/** @type {P5Node} */ w) => { for (const c of w.children) { out.push(c); walk(c); } };
+    walk(this);
+    return out;
+  }
+  /** @param {string} sel */
+  querySelectorAll(sel) { return sel === '*' ? this.#descendants() : this.#descendants().filter((e) => e.localName === sel); }
+  /** @param {string} sel */
+  querySelector(sel) { return this.querySelectorAll(sel)[0] ?? null; }
+  /** @param {P5Node} other */
+  contains(other) {
+    for (let n = other; n; n = n.parentNode) if (n === this) return true;
+    return false;
+  }
+  /** @param {...P5Node} nodes */
+  append(...nodes) {
+    for (const w of nodes) {
+      const moving = w.nodeType === 11 ? [...w.n.childNodes] : [w.n];
+      if (w.nodeType === 11) w.n.childNodes = [];
+      else w.remove();
+      for (const m of moving) { m.parentNode = this.n.content || this.n; (this.n.content || this.n).childNodes.push(m); }
+    }
+  }
+  get innerHTML() { return parse5.serialize(this.n); }
+  set innerHTML(html) {
+    const frag = parse5.parseFragment(html);
+    const target = this.n.content || this.n;
+    target.childNodes = frag.childNodes;
+    for (const c of target.childNodes) c.parentNode = target;
   }
 }
 
-class MockDocumentFragment {
-  constructor() {
-    this._children = [];
-  }
-
-  querySelectorAll() {
-    return [];
-  }
+if (parse5) {
+  globalThis.document = /** @type {any} */ ({
+    createElement(tag) {
+      return wrap({
+        nodeName: tag, tagName: tag, attrs: [], namespaceURI: HTML_NS, childNodes: [], parentNode: null,
+        content: tag === 'template' ? { nodeName: '#document-fragment', childNodes: [] } : undefined,
+      });
+    },
+  });
 }
-
-class MockTemplate {
-  constructor() {
-    this.content = new MockDocumentFragment();
-    this._innerHTML = '';
-  }
-
-  get innerHTML() {
-    return this._innerHTML;
-  }
-
-  set innerHTML(val) {
-    this._innerHTML = val;
-  }
-}
-
-// Install minimal globals
-globalThis.document = globalThis.document ?? {
-  createElement(tag) {
-    if (tag === 'template') return new MockTemplate();
-    return new MockElement(tag);
-  }
-};
 
 const { sanitizeHTML, sanitizeSVG, isDangerousUrl } = await import('../../src/lib/sanitize-html.js');
 
+/**
+ * Re-parse sanitized markup with the spec parser and list anything that
+ * could execute or carry an mXSS payload.
+ * @param {string} html
+ */
+function findDanger(html) {
+  const bad = [];
+  const walk = (/** @type {any} */ n) => {
+    for (const c of n.childNodes || []) {
+      if (c.tagName) {
+        if (/^(script|style|iframe|noscript|xmp|noembed|noframes|plaintext|mglyph|malignmark|foreignobject|title)$/i.test(c.tagName)
+          && !(c.tagName === 'title' && c.namespaceURI === 'http://www.w3.org/2000/svg')) bad.push(c.tagName);
+        for (const a of c.attrs) if (/^on/i.test(a.name)) bad.push(`${c.tagName}[${a.name}]`);
+      }
+      if (c.nodeName === '#comment') bad.push('#comment');
+      walk(c);
+      if (c.content) walk(c.content);
+    }
+  };
+  walk(parse5.parseFragment(html));
+  return bad;
+}
+
 describe('sanitizeHTML', () => {
-  it('returns empty string for falsy input', () => {
+  it('returns empty string for falsy / non-string input', () => {
     assert.equal(sanitizeHTML(''), '');
     assert.equal(sanitizeHTML(/** @type {*} */ (null)), '');
     assert.equal(sanitizeHTML(/** @type {*} */ (undefined)), '');
-  });
-
-  it('returns empty string for non-string input', () => {
     assert.equal(sanitizeHTML(/** @type {*} */ (42)), '');
     assert.equal(sanitizeHTML(/** @type {*} */ ({})), '');
   });
 
-  it('returns string for valid HTML input (mock passes through innerHTML)', () => {
-    // In the mock, template.innerHTML round-trips — real sanitization
-    // is tested in Playwright component tests with a real browser DOM
-    const result = sanitizeHTML('<p>Hello</p>');
-    assert.equal(typeof result, 'string');
+  it('keeps ordinary markup', { skip: !parse5 }, () => {
+    assert.equal(sanitizeHTML('<p class="c"><a href="/ok">ok</a> <em>x</em></p>'), '<p class="c"><a href="/ok">ok</a> <em>x</em></p>');
+  });
+
+  it('kills the confirmed MathML mglyph/style mXSS', { skip: !parse5 }, () => {
+    const out = sanitizeHTML('<math><mtext><table><mglyph><style><img src=x onerror=alert(1)>');
+    assert.doesNotMatch(out, /<style|<img|onerror|mglyph/i);
+  });
+
+  for (const [name, payload] of MXSS_CORPUS) {
+    it(`mXSS corpus: ${name}`, { skip: !parse5 }, () => {
+      const out = sanitizeHTML(payload);
+      assert.deepEqual(findDanger(out), [], out);
+      // Stable under re-parse: the round trip cannot mutate into something new
+      assert.equal(sanitizeHTML(out), out);
+    });
+  }
+
+  it('drops <style>, style attributes and form-hijack attributes', { skip: !parse5 }, () => {
+    assert.equal(sanitizeHTML('<style>body{display:none}</style><p style="position:fixed;inset:0">x</p>'), '<p>x</p>');
+    assert.equal(
+      sanitizeHTML('<button form="f" formaction="https://evil.example" formmethod="post" formtarget="_top" popovertarget="m" commandfor="d" command="close">b</button>'),
+      '<button type="button">b</button>',
+    );
+    assert.equal(sanitizeHTML('<input type="submit" autofocus>'), '<input type="button">');
+  });
+
+  it('prefixes id/name and rewrites in-fragment references only', { skip: !parse5 }, () => {
+    assert.equal(
+      sanitizeHTML('<h2 id="x">X</h2><a href="#x">in</a><a href="#top">page</a><label for="x">l</label><p aria-labelledby="x outside">p</p><input name="q">'),
+      '<h2 id="user-content-x">X</h2><a href="#user-content-x">in</a><a href="#top">page</a><label for="user-content-x">l</label><p aria-labelledby="user-content-x">p</p><input name="user-content-q">',
+    );
+  });
+
+  it('fragment profile keeps ids and safe style attributes', { skip: !parse5 }, () => {
+    assert.equal(
+      sanitizeHTML('<p id="a" style="color: red">x</p><p style="position: fixed">y</p>', { keepIds: true, keepStyle: true }),
+      '<p id="a" style="color: red">x</p><p>y</p>',
+    );
+  });
+
+  it('removes comments', { skip: !parse5 }, () => {
+    assert.equal(sanitizeHTML('<p>a<!-- hidden --></p>'), '<p>a</p>');
+  });
+
+  it('unwraps third-party embed elements to their fallback content', { skip: !parse5 }, () => {
+    assert.equal(
+      sanitizeHTML('<social-embed url="https://x.com/a/status/1" activate="eager"><a href="https://x.com/a/status/1">View post</a></social-embed>'),
+      '<a href="https://x.com/a/status/1">View post</a>',
+    );
+    assert.equal(
+      sanitizeHTML('<p>v</p><youtube-player video-id="dQw4w9WgXcQ" autoplay=""></youtube-player>'),
+      '<p>v</p>',
+    );
+    assert.equal(
+      sanitizeHTML('<geo-map lat="1" lng="2" tile-url="https://evil.example/{z}/{x}/{y}.png"><address>Main St</address></geo-map>'),
+      '<address>Main St</address>',
+    );
+  });
+
+  it('sanitizes the fallback children of an unwrapped embed', { skip: !parse5 }, () => {
+    const out = sanitizeHTML('<social-embed url="https://bsky.app/x"><a href="javascript:__hit()" onclick="__hit()">x</a><img src=x onerror=__hit()><social-embed url="u"><b id="n">n</b></social-embed></social-embed>');
+    assert.equal(out, '<a>x</a><img src="x"><b id="user-content-n">n</b>');
+  });
+
+  it('strips fetch / post attributes from other custom elements', { skip: !parse5 }, () => {
+    assert.equal(
+      sanitizeHTML('<card-list src="https://evil.example/data.json" data-src="/x"></card-list><chat-window endpoint="https://evil.example/collect" model="m"></chat-window><site-map url="https://evil.example"></site-map>'),
+      '<card-list></card-list><chat-window model="m"></chat-window><site-map></site-map>',
+    );
+    assert.equal(sanitizeHTML('<browser-window src="https://evil.example/" url="https://evil.example/"></browser-window>'), '<browser-window></browser-window>');
+  });
+
+  it('strips inline version-switcher entries (data-versions carries navigation URLs)', { skip: !parse5 }, () => {
+    assert.equal(
+      sanitizeHTML('<version-switcher data-versions=\'[{"id":"a","url":"javascript:__hit()"}]\' data-src="/v.json" data-action="swap" aria-label="API version"></version-switcher>'),
+      '<version-switcher data-action="swap" aria-label="API version"></version-switcher>',
+    );
+    // the <script data-versions> child form is removed with every <script>
+    assert.equal(
+      sanitizeHTML('<version-switcher><script type="application/json" data-versions>[{"id":"a","url":"javascript:__hit()"}]</script></version-switcher>'),
+      '<version-switcher></version-switcher>',
+    );
+    // fragment profile (include-file partials are author content) keeps it
+    const authored = '<version-switcher data-versions="[]"></version-switcher>';
+    assert.equal(sanitizeHTML(authored, { keepIds: true }), authored);
+  });
+
+  it('keeps media src on native-equivalent wrappers (still URL-checked)', { skip: !parse5 }, () => {
+    assert.equal(sanitizeHTML('<audio-player src="/a.mp3"></audio-player>'), '<audio-player src="/a.mp3"></audio-player>');
+    assert.equal(sanitizeHTML('<image-map src="/m.png" alt="m"></image-map>'), '<image-map src="/m.png" alt="m"></image-map>');
+    assert.equal(sanitizeHTML('<video-player src="javascript:__hit()"></video-player>'), '<video-player></video-player>');
+  });
+
+  it('custom-element policy is untrusted-profile only (fragment profile keeps embeds)', { skip: !parse5 }, () => {
+    const html = '<social-embed url="https://bsky.app/profile/bsky.app/post/3l6oveex3ii2l"><a href="https://bsky.app/">p</a></social-embed><card-list src="/data.json"></card-list>';
+    assert.equal(sanitizeHTML(html, { keepIds: true }), html);
+  });
+
+  it('include-file keeps its own src rule', { skip: !parse5 }, () => {
+    assert.equal(sanitizeHTML('<include-file src="/p.html"></include-file>'), '<include-file></include-file>');
+    assert.equal(sanitizeHTML('<include-file src="/p.html"></include-file>', { allowIncludeFile: true }), '<include-file src="/p.html"></include-file>');
   });
 });
 

@@ -17,6 +17,8 @@
  * dynamically added form-fields.
  */
 
+import { onFormReset } from '../utils/_init-registry.js';
+
 const EYE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>`;
 
 const EYE_OFF_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>`;
@@ -257,23 +259,42 @@ function enhanceOtpField(formField) {
 }
 
 /**
- * Enhance a form-field with password strength indicator and rules checklist
+ * Enhance a form-field with password strength indicator and rules checklist.
+ *
+ * Builds a native <meter> (aria-valuetext = the level name), a visible level
+ * label, a rules list linked to the input with aria-describedby (each rule
+ * carries visually hidden "met"/"not met" text) and a polite, debounced
+ * live region that announces level changes. The value is evaluated at
+ * setup (prefilled or restored values), on every input and after a form
+ * reset. Advisory by default; data-strength-min="fair|good|strong" makes a
+ * weaker non-empty password invalid through setCustomValidity.
  */
+const STRENGTH_ORDER = ['weak', 'fair', 'good', 'strong'];
+let strengthSeq = 0;
+
 function enhancePasswordStrength(formField) {
-  const input = formField.querySelector('input[data-strength]');
-  if (!input || ENHANCED.strength.has(formField) || formField.querySelector('.strength-meter')) return;
+  const found = /** @type {HTMLInputElement|null} */ (formField.querySelector('input[data-strength]'));
+  if (!found || ENHANCED.strength.has(formField)) return;
+  const input = found;
   ENHANCED.strength.add(formField);
 
-  const rulesStr = input.dataset.rules || 'length:8';
-  const rules = parseRules(rulesStr, formField);
+  // A clone carries the built markup without listeners: rebuild it.
+  formField.querySelectorAll('.strength-meter, .strength-rules, .strength-status').forEach(n => n.remove());
+
+  const rules = parseRules(input.dataset.rules || 'length:8', formField);
   const levels = {
     weak: labelFor(formField, 'strength-weak', 'Weak'),
     fair: labelFor(formField, 'strength-fair', 'Fair'),
     good: labelFor(formField, 'strength-good', 'Good'),
     strong: labelFor(formField, 'strength-strong', 'Strong'),
   };
+  const strengthName = labelFor(formField, 'strength', 'Password strength');
+  const emptyText = labelFor(formField, 'strength-empty', 'No password entered');
+  const metText = labelFor(formField, 'rule-met', 'met');
+  const unmetText = labelFor(formField, 'rule-unmet', 'not met');
+  const id = `strength-${++strengthSeq}`;
 
-  // Create strength meter (native <meter> inherits VB meter CSS)
+  // Meter (native <meter>, styled by the VB meter rules)
   const meterWrap = document.createElement('div');
   meterWrap.className = 'strength-meter';
 
@@ -284,99 +305,145 @@ function enhancePasswordStrength(formField) {
   meter.high = Math.ceil(rules.length * 0.75);
   meter.optimum = rules.length;
   meter.value = 0;
-  meter.className = 'xs';
-  meter.setAttribute('aria-label', labelFor(formField, 'strength', 'Password strength'));
+  meter.className = 's';
+  meter.setAttribute('aria-label', strengthName);
 
+  // Visible level; the meter's valuetext and the live region carry it for AT
   const label = document.createElement('span');
   label.className = 'strength-label';
-  label.textContent = '';
+  label.setAttribute('aria-hidden', 'true');
 
-  meterWrap.appendChild(meter);
-  meterWrap.appendChild(label);
+  meterWrap.append(meter, label);
 
-  // Create rules checklist
+  // Rules list
   const checklist = document.createElement('ul');
   checklist.className = 'strength-rules';
+  checklist.id = `${id}-rules`;
   checklist.setAttribute('aria-label', labelFor(formField, 'requirements', 'Password requirements'));
 
-  rules.forEach(rule => {
+  const states = rules.map(rule => {
     const li = document.createElement('li');
     li.dataset.rule = rule.type;
-    li.textContent = rule.label;
-    checklist.appendChild(li);
+    const state = document.createElement('span');
+    state.className = 'visually-hidden';
+    li.append(rule.label, state);
+    checklist.append(li);
+    return { li, state };
   });
 
-  // Insert after password wrapper or input
-  const wrapper = formField.querySelector('.password-wrapper') || input;
-  wrapper.insertAdjacentElement('afterend', meterWrap);
-  meterWrap.insertAdjacentElement('afterend', checklist);
+  // Polite announcer, debounced so typing doesn't chatter
+  const status = document.createElement('span');
+  status.className = 'strength-status visually-hidden';
+  status.setAttribute('role', 'status');
 
-  // Evaluate on input
-  input.addEventListener('input', () => {
+  const anchor = formField.querySelector('.password-wrapper') || input;
+  anchor.insertAdjacentElement('afterend', meterWrap);
+  meterWrap.insertAdjacentElement('afterend', checklist);
+  checklist.insertAdjacentElement('afterend', status);
+
+  // Drop a stale rules id copied by a clone, then link this list
+  const described = new Set((input.getAttribute('aria-describedby') || '').split(/\s+/)
+    .filter(ref => ref && !/^strength-\d+-rules$/.test(ref)));
+  described.add(checklist.id);
+  input.setAttribute('aria-describedby', [...described].join(' '));
+
+  const minLevel = STRENGTH_ORDER.indexOf(input.dataset.strengthMin ?? '');
+  const tooWeak = labelFor(formField, 'strength-too-weak', 'Choose a stronger password. Meet more of the requirements.');
+  let announceTimer = 0;
+  let lastLevel = '';
+
+  function evaluate({ announce = true } = {}) {
     const value = input.value;
     let passed = 0;
 
     rules.forEach((rule, i) => {
       const met = evaluateRule(rule, value);
-      const li = /** @type {HTMLElement} */ (checklist.children[i]);
-      if (met) {
-        li.setAttribute('data-met', '');
-        passed++;
-      } else {
-        li.removeAttribute('data-met');
-      }
+      const { li, state } = states[i];
+      li.toggleAttribute('data-met', met);
+      state.textContent = `: ${met ? metText : unmetText}`;
+      if (met) passed++;
     });
 
     meter.value = passed;
 
-    // Strength label
     const ratio = passed / rules.length;
     const level = value.length === 0 ? ''
       : ratio < 0.4 ? 'weak'
       : ratio < 0.75 ? 'fair'
       : ratio < 1 ? 'good'
       : 'strong';
-    label.textContent = level ? levels[level] : '';
+    const levelText = level ? levels[level] : '';
+    label.textContent = levelText;
     meterWrap.dataset.level = level;
-  });
+    meter.setAttribute('aria-valuetext', levelText || emptyText);
+
+    if (minLevel >= 0) {
+      const weak = level !== '' && STRENGTH_ORDER.indexOf(level) < minLevel;
+      input.setCustomValidity(weak ? tooWeak : '');
+    }
+
+    if (level !== lastLevel) {
+      lastLevel = level;
+      clearTimeout(announceTimer);
+      if (announce && level) {
+        announceTimer = window.setTimeout(() => {
+          status.textContent = `${strengthName}: ${levelText}`;
+        }, 600);
+      } else {
+        status.textContent = '';
+      }
+    }
+  }
+
+  input.addEventListener('input', () => evaluate());
+  onFormReset(input, () => evaluate({ announce: false }));
+  evaluate({ announce: false });
 }
 
 /**
- * Parse rules string into structured rules
+ * Parse rules string into structured rules. Unknown tokens are skipped
+ * with a warning (they could never be met, so "strong" would be
+ * unreachable).
  * @param {string} str - e.g. "length:8,uppercase,lowercase,number,special"
  * @param {Element} formField - source of data-label-rule-* overrides
  * @returns {Array<{type: string, param?: number, label: string}>}
  */
 function parseRules(str, formField) {
-  return str.split(',').map(r => {
-    const [type, param] = r.trim().split(':');
+  const rules = [];
+  for (const token of str.split(',')) {
+    const [type, param] = token.trim().split(':');
     switch (type) {
       case 'length': {
         const n = parseInt(param) || 8;
-        return { type, param: n, label: labelFor(formField, 'rule-length', 'At least {n} characters').replace('{n}', String(n)) };
+        rules.push({ type, param: n, label: labelFor(formField, 'rule-length', 'At least {n} characters').replace('{n}', String(n)) });
+        break;
       }
-      case 'uppercase': return { type, label: labelFor(formField, 'rule-uppercase', 'One uppercase letter') };
-      case 'lowercase': return { type, label: labelFor(formField, 'rule-lowercase', 'One lowercase letter') };
-      case 'number': return { type, label: labelFor(formField, 'rule-number', 'One number') };
-      case 'special': return { type, label: labelFor(formField, 'rule-special', 'One special character') };
-      default: return { type, label: type };
+      case 'uppercase': rules.push({ type, label: labelFor(formField, 'rule-uppercase', 'One uppercase letter') }); break;
+      case 'lowercase': rules.push({ type, label: labelFor(formField, 'rule-lowercase', 'One lowercase letter') }); break;
+      case 'number': rules.push({ type, label: labelFor(formField, 'rule-number', 'One number') }); break;
+      case 'special': rules.push({ type, label: labelFor(formField, 'rule-special', 'One special character') }); break;
+      case '': break;
+      default: console.warn(`[data-strength] Unknown rule "${type}" ignored.`, formField);
     }
-  });
+  }
+  return rules.length ? rules : parseRules('length:8', formField);
 }
 
 /**
- * Evaluate a single rule against a password value
+ * Evaluate a single rule against a password value. Unicode-aware: length
+ * counts code points; letters, case and digits use Unicode properties, so
+ * "É" is uppercase and "Пароль" holds no special character.
  * @param {{type: string, param?: number}} rule
  * @param {string} value
  * @returns {boolean}
  */
 function evaluateRule(rule, value) {
   switch (rule.type) {
-    case 'length': return value.length >= (rule.param || 8);
-    case 'uppercase': return /[A-Z]/.test(value);
-    case 'lowercase': return /[a-z]/.test(value);
-    case 'number': return /\d/.test(value);
-    case 'special': return /[^A-Za-z0-9]/.test(value);
+    case 'length': return [...value].length >= (rule.param || 8);
+    case 'uppercase': return /\p{Lu}/u.test(value);
+    case 'lowercase': return /\p{Ll}/u.test(value);
+    case 'number': return /\p{N}/u.test(value);
+    case 'special': return /[^\p{L}\p{N}]/u.test(value);
     default: return false;
   }
 }

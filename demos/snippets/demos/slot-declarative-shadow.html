@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>slot with declarative shadow DOM</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <h1>slot with declarative shadow DOM</h1>
+  <layout-stack data-layout-gap="m">
+    <article>
+      <template shadowrootmode="open">
+        <style>
+          :host {
+            display: grid;
+            gap: var(--size-2xs);
+            padding: var(--size-m);
+            border: var(--border-width-thin) solid var(--color-border);
+            border-radius: var(--radius-m);
+          }
+          ::slotted([slot="name"]) { font-weight: var(--font-weight-bold, 700); margin: 0; }
+          .fallback { color: var(--color-text-muted); }
+        </style>
+        <slot name="name"></slot>
+        <slot name="role"><span class="fallback">No role given</span></slot>
+        <slot></slot>
+      </template>
+      <h2 slot="name">Ada Lovelace</h2>
+      <p slot="role">Analyst</p>
+      <p>Unnamed children go to the default slot.</p>
+    </article>
+    <article>
+      <template shadowrootmode="open">
+        <style>
+          :host {
+            display: grid;
+            gap: var(--size-2xs);
+            padding: var(--size-m);
+            border: var(--border-width-thin) solid var(--color-border);
+            border-radius: var(--radius-m);
+          }
+          ::slotted([slot="name"]) { font-weight: var(--font-weight-bold, 700); margin: 0; }
+          .fallback { color: var(--color-text-muted); }
+        </style>
+        <slot name="name"></slot>
+        <slot name="role"><span class="fallback">No role given</span></slot>
+        <slot></slot>
+      </template>
+      <h2 slot="name">Grace Hopper</h2>
+    </article>
+  </layout-stack>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

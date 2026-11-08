@@ -10,6 +10,10 @@
  *     the original submitter, so its name/value/formaction/formmethod apply)
  *   - "event": validate then dispatch cancelable `vb:submit` with FormData
  *   - "fetch": validate then send via fetch with loading/success/error states
+ *     (honours the submitter's formaction, formmethod and formenctype; not
+ *     formtarget: the response is handled in the page)
+ *
+ * A submitter with `formnovalidate` skips validation in every mode.
  *
  * Error summary supports two authored patterns:
  *   - <section data-form-summary role="alert" tabindex="-1" hidden>
@@ -300,10 +304,10 @@ function updateSummary(form, summary, { focus = false } = {}) {
       const heading = summary.el.querySelector('[data-summary-heading]');
       if (heading) heading.textContent = summaryHeading(form, errors.length);
     }
-    if (summary.el.hidden || !summary.el.hasAttribute('data-visible')) {
+    if (summary.el.hidden || !summary.el.hasAttribute('data-state-visible')) {
       summary.el.hidden = false;
       void summary.el.offsetHeight; // start the expand transition from the collapsed state
-      summary.el.dataset.visible = '';
+      summary.el.dataset.stateVisible = '';
     }
   } else if (changed) {
     const p = document.createElement('p');
@@ -330,9 +334,9 @@ function clearSummary(summary) {
   summary.signature = '';
   if (summary.type === 'authored') {
     const el = summary.el;
-    delete el.dataset.visible;
+    delete el.dataset.stateVisible;
     const done = () => {
-      if (el.hasAttribute('data-visible')) return; // re-shown meanwhile
+      if (el.hasAttribute('data-state-visible')) return; // re-shown meanwhile
       el.hidden = true;
       el.querySelector('[data-summary-list]')?.replaceChildren();
     };
@@ -450,6 +454,34 @@ function formData(form, submitter) {
   }
 }
 
+/**
+ * The authored encoding: the submitter's formenctype, else the form's
+ * enctype attribute. Neither authored means multipart (fetch mode's
+ * default, so file inputs keep working), not the native urlencoded.
+ * @param {HTMLFormElement} form
+ * @param {HTMLElement|null} submitter
+ */
+function enctype(form, submitter) {
+  if (submitter?.hasAttribute('formenctype')) return /** @type {HTMLButtonElement} */ (submitter).formEnctype;
+  return form.hasAttribute('enctype') ? form.enctype : 'multipart/form-data';
+}
+
+/**
+ * Fetch body for an encoding. urlencoded and text/plain send a file's name,
+ * as native submission does; fetch sets the matching Content-Type.
+ * @param {FormData} data
+ * @param {string} type
+ * @returns {FormData|URLSearchParams|string}
+ */
+function encodeBody(data, type) {
+  if (type === 'multipart/form-data') return data;
+  const pairs = [...data].map(([k, v]) => [k, typeof v === 'string' ? v : v.name]);
+  if (type === 'text/plain') {
+    return pairs.map(([k, v]) => `${k}=${v}\r\n`).join('');
+  }
+  return new URLSearchParams(pairs);
+}
+
 async function fetchSubmit(form, submitter) {
   const button = submitter ?? defaultButton(form);
   const rawMethod = (submitter?.getAttribute('formmethod') || form.getAttribute('method') || 'post').toLowerCase();
@@ -477,7 +509,7 @@ async function fetchSubmit(form, submitter) {
       }
       response = await fetch(url, { method });
     } else {
-      response = await fetch(action, { method, body: data });
+      response = await fetch(action, { method, body: encodeBody(data, enctype(form, submitter)) });
     }
 
     finish();
@@ -584,12 +616,18 @@ function enhanceForm(form) {
     const submitter = /** @type {HTMLElement|null} */ (/** @type {SubmitEvent} */ (e).submitter ?? null);
     resetStatus(form);
 
-    for (const ff of getFormFields(form)) ff.validate();
-    for (const field of getMatchFields(form)) checkMatch(field, form);
-    for (const fs of groupFieldsets(form)) checkFieldset(form, fs);
-    markBareControls(form);
+    // formnovalidate on the submitter skips validation, as it does natively
+    // (the form itself carries novalidate, so the browser can't do it).
+    const skip = !!submitter?.hasAttribute('formnovalidate');
 
-    const valid = form.checkValidity() && !form.querySelector('fieldset[data-invalid]');
+    if (!skip) {
+      for (const ff of getFormFields(form)) ff.validate();
+      for (const field of getMatchFields(form)) checkMatch(field, form);
+      for (const fs of groupFieldsets(form)) checkFieldset(form, fs);
+      markBareControls(form);
+    }
+
+    const valid = skip || (form.checkValidity() && !form.querySelector('fieldset[data-invalid]'));
 
     if (!valid) {
       if (summary) {

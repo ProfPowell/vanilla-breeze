@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "layout-imposter"
-description: "A positioning helper for overlays, modals, and fixed UI elements. Uses CSS transforms for centering without requiring JavaScript calculations."
+description: "A positioning helper for overlays, badges and fixed UI elements. Centres or pins content to an edge or corner of its container with logical CSS, no JavaScript."
 elementName: layout-imposter
 category: custom
 currentPath: /docs/elements/custom-elements/imposter/
@@ -18,6 +18,26 @@ crumbLabel: Custom Elements
   </browser-window>
 
   <section>
+    <h2>Overview</h2>
+    <p><code>&lt;layout-imposter&gt;</code> lifts its content out of the flow and places it over its containing block: centred by default, or pinned to an edge or a corner. Use it for badges, image captions, status chips and loading overlays.</p>
+    <p><strong>Prerequisite:</strong> the element it should sit over needs <code>position: relative</code> (or any other non-static position). The imposter is absolutely positioned, so without a positioned ancestor it lands on the nearest positioned box further out, often the page itself. With <code>data-layout-fixed</code> it positions against the viewport instead and needs no positioned ancestor.</p>
+    <code-block language="css" label="The positioned ancestor" data-escape>.stage {
+  position: relative;
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Element and attribute forms</h2>
+    <p><strong>Element only.</strong> There is no <code>data-layout="imposter"</code> form. The imposter is the box that gets positioned: it has to be a separate element between the positioned ancestor and the overlaid content, so an attribute on the ancestor or on the content could not do the same job. Wrap the overlaid content in <code>&lt;layout-imposter&gt;</code>.</p>
+    <p>Alternatives:</p>
+    <ul>
+      <li>For modal or dismissible overlays, use <a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> or the <a href="/docs/attributes/popover/"><code>popover</code></a> attribute. They render in the top layer and bring focus and Escape handling.</li>
+      <li>To centre content in the flow rather than over something, use <a href="/docs/elements/custom-elements/center/"><code>&lt;layout-center&gt;</code></a> or <a href="/docs/elements/custom-elements/cover/"><code>&lt;layout-cover&gt;</code></a>, which both have a <code>data-layout</code> form.</li>
+    </ul>
+    <p>See <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> for the layouts that do have an attribute form.</p>
+  </section>
+
+  <section>
     <h2>Attributes</h2>
     <table class="props-table">
       <thead>
@@ -25,42 +45,72 @@ crumbLabel: Custom Elements
           <th>Attribute</th>
           <th>Values</th>
           <th>Default</th>
+          <th>Applies to</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>data-layout-fixed</code></td>
-          <td>(boolean)</td>
-          <td>&mdash;</td>
-          <td>Position relative to the viewport instead of the containing block.</td>
+          <td><code>data-layout-position</code></td>
+          <td><code>center</code>, <code>top</code>, <code>bottom</code>, <code>start</code>, <code>end</code>, <code>top-start</code>, <code>top-end</code>, <code>bottom-start</code>, <code>bottom-end</code></td>
+          <td><code>center</code></td>
+          <td>element</td>
+          <td>Where to place the overlay. <code>start</code> and <code>end</code> follow the writing direction.</td>
         </tr>
         <tr>
           <td><code>data-layout-margin</code></td>
           <td><code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td>
           <td>&mdash;</td>
-          <td>Inset from the edges when pinned to one.</td>
+          <td>element</td>
+          <td>Inset from the edges when pinned to one (and the inset used by <code>data-layout-contain</code>).</td>
         </tr>
         <tr>
-          <td><code>data-layout-position</code></td>
-          <td><code>center</code>, <code>top</code>, <code>bottom</code>, <code>start</code>, <code>end</code>, <code>top-start</code>, <code>top-end</code>, <code>bottom-start</code>, <code>bottom-end</code></td>
-          <td><code>center</code></td>
-          <td>Where to place the overlay.</td>
+          <td><code>data-layout-fixed</code></td>
+          <td>(boolean)</td>
+          <td>&mdash;</td>
+          <td>element</td>
+          <td>Position relative to the viewport instead of the containing block.</td>
         </tr>
         <tr>
           <td><code>data-layout-contain</code></td>
           <td>(boolean)</td>
           <td>&mdash;</td>
-          <td>Keep the overlay within the viewport, minus the margin, when fixed.</td>
+          <td>element</td>
+          <td>Never larger than the containing block (the positioned ancestor, or the viewport when fixed) minus the margin on each side; scrolls inside when the content is bigger.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Custom properties</h3>
+    <table class="props-table">
+      <thead>
+        <tr><th>Property</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--imposter-z</code></td>
+          <td><code>1</code> (absolute), <code>var(--z-float)</code> (fixed)</td>
+          <td>Stacking order, so the overlay paints above later positioned siblings.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section>
-    <h2>Basic Usage</h2>
-    <p>The imposter positions itself within a positioned ancestor (or viewport when fixed).</p>
+    <h2>Child attributes</h2>
+    <p>None. The imposter reads no attributes on its children; style the overlaid content as usual.</p>
+  </section>
 
+  <section>
+    <h2>How it positions</h2>
+    <p>The containing block must be positioned: give the element the imposter sits over <code>position: relative</code>. Every position then uses the same mechanism: the imposter is stretched to its containing block with <code>inset: 0</code>, shrinks to fit its content, and is placed with auto margins. Pinned edges swap the auto margin on that side for the <code>data-layout-margin</code> value. Because nothing is translated by a physical offset, positions are logical (<code>start</code> is the right edge in RTL) and a centred overlay can use the full width of its container before it wraps.</p>
+    <p>Nested imposters start from their own defaults; an inner imposter never inherits an outer one's position or margin.</p>
+  </section>
+
+  <section>
+    <h2>Examples</h2>
+
+    <h3>Basic usage</h3>
     <browser-window
       src="/docs/snippets/demos/imposter-basic.html"
       url="https://vanilla-breeze.com/imposter/basic"
@@ -68,19 +118,18 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Basic centered imposter" data-escape><div style="position: relative; height: 200px;">
+    <code-block language="html" show-lines label="Basic centered imposter" data-escape><section class="stage">
   <layout-imposter>
-    <div>Centered content</div>
+    <layout-card>Centered content</layout-card>
   </layout-imposter>
-</div></code-block>
-  </section>
+</section>
 
-  <section>
-    <h2>Position Variants</h2>
+<style>
+  .stage { position: relative; block-size: 200px; }
+</style></code-block>
+
+    <h3>Edge positions</h3>
     <p>The <code>data-layout-position</code> attribute controls placement within the container.</p>
-
-    <h3>Edge Positions</h3>
-
     <browser-window
       src="/docs/snippets/demos/imposter-edge-positions.html"
       url="https://vanilla-breeze.com/imposter/edge-positions"
@@ -93,8 +142,7 @@ crumbLabel: Custom Elements
 <layout-imposter data-layout-position="start" data-layout-margin="s">...</layout-imposter>
 <layout-imposter data-layout-position="end" data-layout-margin="s">...</layout-imposter></code-block>
 
-    <h3>Corner Positions</h3>
-
+    <h3>Corner positions</h3>
     <browser-window
       src="/docs/snippets/demos/imposter-corner-positions.html"
       url="https://vanilla-breeze.com/imposter/corner-positions"
@@ -106,13 +154,9 @@ crumbLabel: Custom Elements
 <layout-imposter data-layout-position="top-end" data-layout-margin="s">...</layout-imposter>
 <layout-imposter data-layout-position="bottom-start" data-layout-margin="s">...</layout-imposter>
 <layout-imposter data-layout-position="bottom-end" data-layout-margin="s">...</layout-imposter></code-block>
-  </section>
 
-  <section>
-    <h2>Usage Examples</h2>
-
-    <h3>Notification Badge</h3>
-
+    <h3>Notification badge</h3>
+    <p>The badge is decoration: the count belongs in the button's accessible name, so screen reader users hear it when they reach the button. Hide the visual badge from the accessibility tree so the count is not read twice. The wrapper only provides the positioned box, so a plain layout element with <code>position: relative</code> is enough.</p>
     <browser-window
       src="/docs/snippets/demos/imposter-notification-badge.html"
       url="https://vanilla-breeze.com/imposter/notification-badge"
@@ -120,15 +164,19 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Button with notification badge" data-escape><div style="position: relative; display: inline-block;">
-  <button type="button">Notifications</button>
+    <code-block language="html" show-lines label="Button with notification badge" data-escape><layout-cluster class="badge-anchor">
+  <button type="button" aria-label="Notifications, 3 unread">Notifications</button>
   <layout-imposter data-layout-position="top-end">
-    <span class="badge">3</span>
+    <span class="badge" aria-hidden="true">3</span>
   </layout-imposter>
-</div></code-block>
+</layout-cluster>
 
-    <h3>Image Overlay</h3>
+<style>
+  .badge-anchor { position: relative; inline-size: fit-content; }
+  .badge { translate: 50% -50%; }
+</style></code-block>
 
+    <h3>Image overlay</h3>
     <browser-window
       src="/docs/snippets/demos/imposter-image-overlay.html"
       url="https://vanilla-breeze.com/imposter/image-overlay"
@@ -136,15 +184,19 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Image with overlay caption" data-escape><div style="position: relative;">
+    <code-block language="html" show-lines label="Image with overlay caption" data-escape><figure class="image-wrapper">
   <img src="image.jpg" alt="Photo" />
   <layout-imposter data-layout-position="bottom-start" data-layout-margin="m">
     <span class="caption">Photo caption</span>
   </layout-imposter>
-</div></code-block>
+</figure>
 
-    <h3>Card with Status Badge</h3>
+<style>
+  .image-wrapper { position: relative; display: inline-block; }
+</style></code-block>
 
+    <h3>Card with status badge</h3>
+    <p>The card itself can be the positioned box: put the imposter inside it.</p>
     <browser-window
       src="/docs/snippets/demos/imposter-card-status.html"
       url="https://vanilla-breeze.com/imposter/card-status"
@@ -152,31 +204,110 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Card with positioned status badge" data-escape><div style="position: relative;">
-  <layout-card data-variant="outlined" data-padding="l">
+    <code-block language="html" show-lines label="Card with positioned status badge" data-escape><layout-card data-variant="outlined" data-padding="l" class="status-card">
+  <layout-stack data-layout-gap="s">
     <strong>Project Alpha</strong>
     <p>Last updated yesterday</p>
-  </layout-card>
+  </layout-stack>
   <layout-imposter data-layout-position="top-end" data-layout-margin="m">
     <span class="status-badge">Active</span>
   </layout-imposter>
-</div></code-block>
+</layout-card>
 
-    <h3>Loading Overlay</h3>
+<style>
+  .status-card { position: relative; inline-size: 16rem; }
+</style></code-block>
 
+    <h3>Loading overlay</h3>
     <browser-window
       src="/docs/snippets/demos/imposter-loading-overlay.html"
       url="https://vanilla-breeze.com/imposter/loading-overlay"
       title="Centered loading overlay"
       shadow>
     </browser-window>
+
+    <code-block language="html" show-lines label="Loading overlay with a status region" data-escape><section class="stage">
+  <layout-imposter data-layout-contain data-layout-margin="s">
+    <layout-stack data-layout-align="center" role="status">
+      <loading-spinner aria-hidden="true"></loading-spinner>
+      <span>Loading&hellip;</span>
+    </layout-stack>
+  </layout-imposter>
+</section></code-block>
+
+    <h3>Fixed to the viewport</h3>
+    <p><code>data-layout-fixed</code> positions against the viewport and raises the default stacking order to <code>--z-float</code>.</p>
+    <browser-window
+      src="/docs/snippets/demos/imposter-fixed.html"
+      url="https://vanilla-breeze.com/imposter/fixed"
+      title="Fixed imposter"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Fixed imposter" data-escape><layout-imposter data-layout-fixed data-layout-position="bottom-end" data-layout-margin="m">
+  <layout-card role="status">Draft saved</layout-card>
+</layout-imposter></code-block>
+
+    <h3>Contained</h3>
+    <p><code>data-layout-contain</code> caps the overlay at its containing block minus the margin, for absolute and fixed imposters alike, and lets it scroll inside.</p>
+    <browser-window
+      src="/docs/snippets/demos/imposter-contain.html"
+      url="https://vanilla-breeze.com/imposter/contain"
+      title="Contained imposter"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Contained imposter" data-escape><section class="stage">
+  <layout-imposter data-layout-contain data-layout-margin="m">
+    <layout-card data-variant="elevated" data-padding="m">
+      <strong>Terms of service</strong>
+      <p>More text than the stage can show. The card stays inside and scrolls.</p>
+    </layout-card>
+  </layout-imposter>
+</section>
+
+<style>
+  .stage { position: relative; block-size: 180px; }
+</style></code-block>
+
+    <h3>Right to left</h3>
+    <p>Positions are logical: <code>start</code> and <code>end</code> follow the writing direction, and centred overlays stay centred.</p>
+    <browser-window
+      src="/docs/snippets/demos/imposter-rtl.html"
+      url="https://vanilla-breeze.com/imposter/rtl"
+      title="Imposter in a right-to-left page"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Imposter in a right-to-left page" data-escape><html lang="ar" dir="rtl">
+  ...
+  <section class="stage">
+    <layout-imposter>...</layout-imposter>
+    <!-- top-start is the top-right corner in RTL -->
+    <layout-imposter data-layout-position="top-start" data-layout-margin="s">...</layout-imposter>
+    <!-- bottom-end is the bottom-left corner in RTL -->
+    <layout-imposter data-layout-position="bottom-end" data-layout-margin="s">...</layout-imposter>
+  </section>
+</html></code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <p><code>&lt;layout-imposter&gt;</code> does visual positioning only. It does not trap focus, make the rest of the page inert, close on <kbd>Escape</kbd>, or give the content dialog semantics. For modal or dismissible UI, use the platform:</p>
+    <ul>
+      <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> with <code>showModal()</code> for modal dialogs (focus containment, inert background, Escape).</li>
+      <li>The <a href="/docs/attributes/popover/"><code>popover</code></a> attribute for light-dismiss overlays such as menus and toasts.</li>
+    </ul>
+    <p>The overlay stays where it is in the DOM, so screen readers and keyboard focus reach it in source order, not in the order it appears on screen. Put it next to the content it describes.</p>
+    <p>Badges that repeat information (a count, a status) should not be the only place that information lives: name it on the control (<code>aria-label="Notifications, 3 unread"</code>) and hide the badge with <code>aria-hidden="true"</code>, or connect the badge with <code>aria-describedby</code>.</p>
+    <p>Status overlays (loading, saved) should carry <code>role="status"</code> so screen readers announce them. Keep a decorative spinner out of the accessibility tree with <code>aria-hidden="true"</code> when visible text sits next to it.</p>
   </section>
 
   <section>
     <h2>Related</h2>
     <ul>
+      <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> - The attribute forms of the layout elements (the imposter has none)</li>
+      <li><a href="/docs/semantic-layouts/">Semantic Layouts</a> - When to use a layout element and when an attribute</li>
       <li><a href="/docs/elements/custom-elements/cover/"><code>&lt;layout-cover&gt;</code></a> - Full-height vertically centered layout</li>
       <li><a href="/docs/elements/custom-elements/center/"><code>&lt;layout-center&gt;</code></a> - Horizontally centered container</li>
       <li><a href="/docs/elements/custom-elements/layout-badge/"><code>&lt;layout-badge&gt;</code></a> - Badge component</li>
+      <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> and <a href="/docs/attributes/popover/"><code>popover</code></a> - Overlays with focus and dismissal behaviour</li>
     </ul>
   </section>

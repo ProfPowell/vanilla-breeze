@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>is Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-m);
+      background: var(--color-surface);
+    }
+  </style>
+</head>
+<body>
+  <main data-layout="stack" data-layout-gap="m">
+    <p>Support in this browser: <output id="is-support">checking…</output></p>
+
+    <p data-layout="cluster" data-layout-gap="s">
+      <button type="button" is="press-counter" id="counter">Add to basket</button>
+      <output for="counter" id="counter-status">Basket is empty</output>
+    </p>
+
+    <p><small>Without support (Safari), the element is still an ordinary, working button; only the counting behaviour is missing.</small></p>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    class PressCounter extends HTMLButtonElement {
+      #count = 0;
+      connectedCallback() {
+        this.addEventListener('click', () => {
+          this.#count += 1;
+          document.getElementById('counter-status').textContent =
+            `${this.#count} item${this.#count === 1 ? '' : 's'} in basket`;
+        });
+      }
+    }
+
+    let supported = false;
+    try {
+      customElements.define('press-counter', PressCounter, { extends: 'button' });
+      supported = document.getElementById('counter') instanceof PressCounter;
+    } catch {
+      supported = false;
+    }
+    document.getElementById('is-support').textContent = supported
+      ? 'customized built-in elements work'
+      : 'customized built-in elements are not supported';
+  </script>
+</body>
+</html>

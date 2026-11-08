@@ -378,7 +378,7 @@ crumbLabel: Native Elements
 
     <code-block language="html" show-lines label="Toggle switch sizes" data-escape><!-- Small -->
 <label>
-  <input type="checkbox" data-switch="sm" name="compact">
+  <input type="checkbox" data-switch="s" name="compact">
   Compact mode
 </label>
 
@@ -390,7 +390,7 @@ crumbLabel: Native Elements
 
 <!-- Large -->
 <label>
-  <input type="checkbox" data-switch="lg" name="feature">
+  <input type="checkbox" data-switch="l" name="feature">
   Large switch
 </label></code-block>
 
@@ -405,8 +405,8 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>data-switch</code></td>
-          <td><code>""</code>, <code>"sm"</code>, <code>"lg"</code></td>
-          <td>Enable switch styling with optional size variant. Track sizes: <code>sm</code> 2&times;1.125rem, default 2.75&times;1.5rem, <code>lg</code> 3.5&times;2rem. The knob slides toward the inline end, so it mirrors under <code>dir="rtl"</code>. Colours come from <code>--switch-track-bg</code>, <code>--switch-track-checked-bg</code> and <code>--switch-knob-bg</code>.</td>
+          <td><code>""</code>, <code>"s"</code>, <code>"l"</code></td>
+          <td>Enable switch styling with optional size variant. Track sizes: <code>s</code> 2&times;1.125rem, default 2.75&times;1.5rem, <code>l</code> 3.5&times;2rem. The knob slides toward the inline end, so it mirrors under <code>dir="rtl"</code>. Colours come from <code>--switch-track-bg</code>, <code>--switch-track-checked-bg</code> and <code>--switch-knob-bg</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -555,7 +555,7 @@ crumbLabel: Native Elements
 <input type="text" data-mask="ssn" placeholder="123-45-6789">
 <input type="text" data-mask="zip" placeholder="12345">
 
-<!-- Custom mask: # = digit, A = letter, * = any -->
+<!-- Custom mask: # = digit, A = letter, * = letter or digit -->
 <input type="text" data-mask="custom" data-pattern="AA-####" placeholder="AB-1234"></code-block>
 
     <h3>Preset Masks</h3>
@@ -599,7 +599,9 @@ crumbLabel: Native Elements
     <ul>
       <li>Auto-sets <code>inputmode="numeric"</code> for digit-only masks</li>
       <li>Auto-sets <code>maxlength</code> from the pattern length</li>
-      <li>Stores the unformatted value in <code>dataset.rawValue</code> for form processing</li>
+      <li>Stores the unformatted value in <code>data-raw-value</code> for scripts; the form submits the formatted value</li>
+      <li>An incomplete value is invalid (<code>setCustomValidity</code>), so <code>required</code> works</li>
+      <li>Presets are US formats; see <a href="/docs/attributes/data-mask/">data-mask</a> for details</li>
       <li>Without JS, the input works as a standard text field</li>
     </ul>
   </section>
@@ -608,15 +610,18 @@ crumbLabel: Native Elements
     <h2>Range Markers (data-markers)</h2>
     <p>Add <code>data-markers</code> to a <code>data-range</code> input to display tick marks at each step value. Combines with <code>data-bubble</code> and <code>&lt;datalist&gt;</code> labels.</p>
 
-    <div class="example">
-      <form-field>
-        <label for="demo-markers">Rating (1-5)</label>
-        <input type="range" id="demo-markers" min="1" max="5" step="1" value="3" data-range data-bubble data-markers>
-      </form-field>
-    </div>
+    <browser-window
+      src="/docs/snippets/demos/data-range-markers.html"
+      url="https://vanilla-breeze.com/range-markers"
+      title="Range with tick markers"
+      shadow>
+    </browser-window>
 
-    <code-block language="html" show-lines label="Range with tick markers" data-escape><input type="range" min="1" max="5" step="1" value="3"
-  data-range data-bubble data-markers></code-block>
+    <code-block language="html" show-lines label="Range with tick markers" data-escape><form-field>
+  <label for="temp">Temperature</label>
+  <input type="range" id="temp" name="temp" data-range data-bubble data-markers
+    data-suffix="°F" min="60" max="90" step="5" value="70" />
+</form-field></code-block>
 
     <table class="props-table">
       <thead>
@@ -870,5 +875,25 @@ input[type="number"][data-stepper-init] { appearance: textfield; }</code-block>
       <li><a href="/docs/elements/web-components/combobox/">combo-box</a> - Searchable dropdown with filtering</li>
       <li><a href="/docs/elements/web-components/data-table/">data-table</a> - Sortable, filterable data with input controls</li>
       <li><a href="/docs/elements/native/dialog/">dialog</a> - Modal forms via <code>method="dialog"</code></li>
+      <li><a href="/docs/attributes/minlength-maxlength/"><code>minlength</code> / <code>maxlength</code></a> - Text length limits and their validity states</li>
+      <li><a href="/docs/attributes/min-max-step/"><code>min</code> / <code>max</code> / <code>step</code></a> - Range and increment constraints for numeric and date inputs</li>
+      <li><a href="/docs/attributes/accept/"><code>accept</code></a> - Which file types a file input offers</li>
+      <li><a href="/docs/attributes/pattern/"><code>pattern</code></a> - Regular-expression validation for text inputs</li>
+      <li><a href="/docs/attributes/readonly/"><code>readonly</code></a> - Not editable, but still focusable and submitted</li>
+      <li><a href="/docs/attributes/list/"><code>list</code></a> - Connect an input to a datalist of suggestions</li>
+    </ul>
+    <h3>Input enhancement attributes</h3>
+    <ul>
+      <li><a href="/docs/attributes/data-switch/"><code>data-switch</code></a> - Checkbox as a sliding switch (<code>type="checkbox"</code>)</li>
+      <li><a href="/docs/attributes/data-range/"><code>data-range</code></a> - Styled range with value bubble and markers (<code>type="range"</code>)</li>
+      <li><a href="/docs/attributes/data-stepper/"><code>data-stepper</code></a> - Increment and decrement buttons (<code>type="number"</code>)</li>
+      <li><a href="/docs/attributes/data-color/"><code>data-color</code></a> - Swatch and hex readout (<code>type="color"</code>)</li>
+      <li><a href="/docs/attributes/data-mask/"><code>data-mask</code></a> - Format as you type: phone, card, date (text-like types)</li>
+      <li><a href="/docs/attributes/data-accept/"><code>data-accept</code></a> - Filter allowed characters without a fixed format (text-like types)</li>
+      <li><a href="/docs/attributes/data-upload/"><code>data-upload</code></a> - Drag-and-drop zone and file list (<code>type="file"</code>)</li>
+      <li><a href="/docs/attributes/data-strength/"><code>data-strength</code></a> - Password strength meter and rules (<code>type="password"</code>)</li>
+      <li><a href="/docs/attributes/data-toggle-tags/"><code>data-toggle-tags</code></a> - Checkboxes as selectable chips (on the <code>&lt;fieldset&gt;</code>)</li>
+      <li><a href="/docs/attributes/data-show-when/"><code>data-show-when</code></a> - Show a section only when an input has a given value</li>
+      <li><a href="/docs/attributes/data-autosave/"><code>data-autosave</code></a> - Draft persistence for the whole form; mark an input <code>data-autosave-ignore</code> to keep it out</li>
     </ul>
   </section>

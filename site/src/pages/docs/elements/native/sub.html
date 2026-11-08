@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "sub"
-description: "Represents subscript text for chemical formulas, mathematical notation, and variable subscripts. Uses font-variant-position for proper OpenType rendering."
+description: "Represents subscript text for chemical formulas, mathematical notation, and variable subscripts. Rendered smaller and below the baseline in any font."
 elementName: sub
 category: native
 nativeGroup: Text Semantics
@@ -13,7 +13,7 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;sub&gt;</code> element displays inline text as subscript. VB uses <code>font-variant-position: sub</code> for proper OpenType rendering in fonts that support it, with a fallback to reduced font-size and vertical offset for older browsers. This avoids disrupting line height.</p>
+    <p>The <code>&lt;sub&gt;</code> element displays inline text as subscript. VB always renders it at <code>0.75em</code>, shifted below the baseline with a relative offset and <code>line-height: 0</code>, so the subscript does not push the line taller. This works in every font. Fonts with designed OpenType subscript glyphs can opt in to them with <code>data-variant="opentype"</code>.</p>
   </section>
 
   <section>
@@ -21,12 +21,12 @@ crumbLabel: Native Elements
     <ul>
       <li><strong>Chemical formulas:</strong> H<sub>2</sub>O, CO<sub>2</sub></li>
       <li><strong>Mathematical subscripts:</strong> Variable indices like a<sub>n</sub></li>
-      <li><strong>Footnote numbers:</strong> Inline reference markers</li>
     </ul>
     <h3>When NOT to Use</h3>
     <ul>
       <li>For purely visual positioning &mdash; use CSS <code>vertical-align: sub</code></li>
       <li>For complex math &mdash; consider MathML</li>
+      <li>For footnote markers &mdash; those are superscripts; use <a href="/docs/elements/native/sup/"><code>&lt;sup&gt;</code></a></li>
     </ul>
   </section>
 
@@ -43,26 +43,33 @@ crumbLabel: Native Elements
 
   <section>
     <h2>CSS Reference</h2>
-    <code-block language="css" show-lines label="sub CSS (progressive enhancement)" data-escape>sub {
-  font-variant-position: sub;
+    <code-block language="css" show-lines label="sub and sup CSS" data-escape>sub,
+sup {
   font-size: 0.75em;
-  line-height: 0;
+  line-height: 0;          /* keeps the line box from growing */
   position: relative;
   vertical-align: baseline;
-  inset-block-end: -0.25em;
 }
 
-/* When font-variant-position works, let it handle everything */
-@supports (font-variant-position: super) {
-  sub, sup {
-    vertical-align: inherit;
-    font-size: inherit;
-    position: static;
-    inset-block-end: unset;
-    line-height: inherit;
-  }
-}</code-block>
-    <p>The <code>@supports</code> block resets the manual positioning when <code>font-variant-position</code> is available, letting the font handle subscript rendering natively. This produces better results with OpenType fonts that have designed subscript glyphs.</p>
+sub { inset-block-end: -0.25em; }
+sup { inset-block-end: 0.5em; }
+
+/* Opt-in: the font's own OpenType subs/sups glyphs */
+:is(sub, sup)[data-variant~="opentype"] {
+  font-size: inherit;
+  position: static;
+  inset-block-end: auto;
+}
+sub[data-variant~="opentype"] { font-variant-position: sub; }
+sup[data-variant~="opentype"] { font-variant-position: super; }</code-block>
+    <p>The size and offset always apply. An earlier version reset them inside <code>@supports (font-variant-position: sub)</code>, but that check only shows the browser understands the property, not that the font has subscript glyphs. In most fonts, subscripts then rendered at full size on the baseline.</p>
+  </section>
+
+  <section>
+    <h2>OpenType glyphs (opt-in)</h2>
+    <p>Some fonts include designed subscript glyphs. Add <code>data-variant="opentype"</code> to use them with <code>font-variant-position: sub</code>. VB then removes its own size and offset, because the glyphs are already small and positioned.</p>
+    <code-block language="html" show-lines label="OpenType subscript" data-escape><p>H<sub data-variant="opentype">2</sub>O</p></code-block>
+    <p>Only use this when you know the current font has the glyphs. Browsers do not synthesise them, and <code>@supports</code> cannot detect them. In a font without them (Georgia, Verdana, Courier New and most display fonts), opted-in text renders at full size on the baseline. That is why the default reduced size and offset are always applied.</p>
   </section>
 
   <section>

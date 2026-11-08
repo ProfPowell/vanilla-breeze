@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "script"
-description: "Contains or references executable JavaScript code."
+description: "Loads or embeds JavaScript, or carries a data block such as JSON-LD or an import map. Covers classic vs module scripts, async/defer, render blocking, CSP nonces and integrity."
 elementName: script
 category: native
 nativeGroup: Scripting
@@ -13,31 +13,188 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;script&gt;</code> element is part of the Scripting category in HTML.</p>
+    <p>The <code>&lt;script&gt;</code> element either runs JavaScript or holds a <strong>data block</strong>. The <code>type</code> attribute decides which:</p>
+    <ul>
+      <li>No <code>type</code> (or a JavaScript MIME type): a <strong>classic script</strong>.</li>
+      <li><code>type="module"</code>: an <strong>ES module</strong>. Modules are deferred by default, run in strict mode, have their own scope and can use <code>import</code>.</li>
+      <li><code>type="importmap"</code>: an <strong>import map</strong> that tells the browser how to resolve bare specifiers such as <code>import 'vanilla-breeze'</code>.</li>
+      <li>Any other type, such as <code>application/ld+json</code>: a <strong>data block</strong>. The browser never executes it.</li>
+    </ul>
+    <p>Vanilla Breeze is HTML-first: pages render and work without JavaScript, and scripts enhance them. The framework itself ships as one ES module.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <p>Script elements execute JavaScript code.</p>
-    </div>
-    <code-block language="html" label="Basic script example" data-escape><script>...</script></code-block>
+    <h2>Loading Vanilla Breeze</h2>
+    <p>Load the framework as a module. A module never blocks HTML parsing, so it can go in the <code>&lt;head&gt;</code> or at the end of <code>&lt;body&gt;</code>.</p>
+    <code-block language="html" label="VB's script pattern" data-escape><head>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+</head></code-block>
+    <p>From the CDN, use the bundled entry instead. See <a href="/docs/quick-start/">Quick start</a>.</p>
+    <code-block language="html" label="CDN module" data-escape><script type="module"
+  src="https://unpkg.com/vanilla-breeze@0.4/dist/cdn/vanilla-breeze.js"></script></code-block>
+  </section>
+
+  <section>
+    <h2>Execution Order</h2>
+    <p>Classic scripts without <code>async</code> or <code>defer</code> block the parser and run immediately. Modules and <code>defer</code> scripts wait until the document is parsed, then run in document order before <code>DOMContentLoaded</code>. <code>async</code> scripts run as soon as they arrive, in no fixed order.</p>
+    <browser-window src="/docs/snippets/demos/script-order.html" url="https://vanilla-breeze.com/script/order" title="Script execution order" shadow></browser-window>
+    <code-block language="html" label="Execution order" data-escape><head>
+  <script>/* 1. classic: runs now, body not parsed */</script>
+  <script type="module">/* 3. module: deferred until parsing ends */</script>
+  <script type="application/ld+json">{ "@type": "WebPage" }</script>
+</head>
+<body>
+  …
+  <script>/* 2. classic at end of body: runs during parsing */</script>
+</body></code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Form</th>
+          <th>Blocks parsing</th>
+          <th>Runs</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;script src&gt;</code></td>
+          <td>Yes, while it downloads and runs</td>
+          <td>Immediately, in order</td>
+        </tr>
+        <tr>
+          <td><code>&lt;script defer src&gt;</code></td>
+          <td>No</td>
+          <td>After parsing, in document order</td>
+        </tr>
+        <tr>
+          <td><code>&lt;script async src&gt;</code></td>
+          <td>No (runs when ready, pausing the parser briefly)</td>
+          <td>As soon as downloaded, any order</td>
+        </tr>
+        <tr>
+          <td><code>&lt;script type="module"&gt;</code></td>
+          <td>No</td>
+          <td>After parsing, in document order (like <code>defer</code>)</td>
+        </tr>
+        <tr>
+          <td><code>&lt;script type="module" async&gt;</code></td>
+          <td>No</td>
+          <td>As soon as it and its imports are ready</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Import Maps</h2>
+    <p>An import map must come before any module that uses the mapped names. It lets hand-written modules import VB by name without a bundler.</p>
+    <code-block language="html" label="Import map" data-escape><script type="importmap">
+{
+  "imports": {
+    "vanilla-breeze": "/dist/cdn/vanilla-breeze.js"
+  }
+}
+</script>
+<script type="module">
+  import 'vanilla-breeze';
+</script></code-block>
+  </section>
+
+  <section>
+    <h2>Structured Data</h2>
+    <p>A <code>type="application/ld+json"</code> block carries schema.org metadata for search engines. It is inert: the browser does not run it.</p>
+    <code-block language="html" label="JSON-LD" data-escape><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Getting started with Vanilla Breeze"
+}
+</script></code-block>
+  </section>
+
+  <section>
+    <h2>Security: CSP, Integrity and CORS</h2>
+    <p>With a strict Content Security Policy, give every script the per-response <code>nonce</code> named in the policy's <code>script-src</code>. For scripts from a CDN, add <code>integrity</code> so the browser refuses a file whose hash has changed, and <code>crossorigin</code> so the integrity check can run on a cross-origin response.</p>
+    <code-block language="html" label="Nonce and subresource integrity" data-escape><!-- Content-Security-Policy: script-src 'nonce-r4nd0m' -->
+<script type="module" nonce="r4nd0m" src="/src/main.js"></script>
+
+<script type="module"
+  src="https://cdn.example.com/lib.js"
+  integrity="sha384-…"
+  crossorigin="anonymous"></script></code-block>
   </section>
 
   <section>
     <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/attributes/">global attributes</a>.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>src</code></td>
+          <td>URL of an external script. Without it, the element's text is the script.</td>
+        </tr>
+        <tr>
+          <td><code>type</code></td>
+          <td>Omit for classic; <code>module</code>, <code>importmap</code>, <code>speculationrules</code>, or a data MIME type such as <code>application/ld+json</code>.</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/async-defer/"><code>async</code> / <code>defer</code></a></td>
+          <td>Download without blocking the parser. <code>defer</code> only applies to classic scripts with <code>src</code>; <code>async</code> works on modules too.</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/blocking/"><code>blocking="render"</code></a></td>
+          <td>Hold the first render until this script has run. Use it sparingly, for scripts that must run before paint.</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/nonce/"><code>nonce</code></a></td>
+          <td>One-time token matching the CSP <code>script-src</code> directive.</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/integrity/"><code>integrity</code></a></td>
+          <td>Subresource Integrity hash; the script is refused if the file does not match.</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/crossorigin/"><code>crossorigin</code></a></td>
+          <td>CORS mode for the request. Needed for integrity checks and full error details on cross-origin scripts.</td>
+        </tr>
+        <tr>
+          <td><code>nomodule</code></td>
+          <td>Skip this classic script in browsers that support modules. Every browser VB supports runs modules, so VB pages do not need it.</td>
+        </tr>
+        <tr>
+          <td><code>referrerpolicy</code>, <code>fetchpriority</code></td>
+          <td>Referrer sent with the request, and a download-priority hint (<code>high</code>, <code>low</code>, <code>auto</code>).</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The element also accepts the <a href="/docs/attributes/">global attributes</a>.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;script&gt;</code> element will be documented here.</p>
+    <ul>
+      <li>Script content is never rendered or announced. What matters is the result: content a script adds or changes must stay keyboard-operable and announced (use native controls, and live regions for status changes).</li>
+      <li>Do not make core content depend on a script. If it is missing or fails, the page should still read and work; provide a <a href="/docs/elements/native/noscript/"><code>&lt;noscript&gt;</code></a> message only where an enhancement really has no HTML fallback.</li>
+      <li>Avoid <code>blocking="render"</code> on slow scripts: a blank screen is a barrier for everyone, not only for assistive technology users.</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related</h2>
     <ul>
+      <li><a href="/docs/attributes/async-defer/"><code>async</code> / <code>defer</code></a> - Non-blocking script loading</li>
+      <li><a href="/docs/attributes/blocking/"><code>blocking</code></a> - Render-blocking scripts and styles</li>
+      <li><a href="/docs/attributes/nonce/"><code>nonce</code></a> - CSP nonces for inline and external scripts</li>
       <li><a href="/docs/elements/native/noscript/"><code>&lt;noscript&gt;</code></a> - Fallback content when scripts are disabled</li>
-      <li><a href="/docs/elements/native/template/"><code>&lt;template&gt;</code></a> - HTML template for JavaScript use</li>
+      <li><a href="/docs/elements/native/template/"><code>&lt;template&gt;</code></a> - Inert HTML for scripts to clone</li>
+      <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> - <code>rel="modulepreload"</code> for module dependencies</li>
+      <li><a href="/docs/quick-start/">Quick start</a> - Adding VB's CSS and JS to a page</li>
     </ul>
   </section>

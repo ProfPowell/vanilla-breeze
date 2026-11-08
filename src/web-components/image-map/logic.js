@@ -561,7 +561,7 @@ class ImageMapWc extends VBElement {
     // Keep reading/tab order: tooltip follows its anchor.
     if (data.anchor.nextSibling !== tooltip) data.anchor.after(tooltip);
     tooltip.hidden = false;
-    tooltip.setAttribute('data-visible', '');
+    tooltip.setAttribute('data-state-visible', '');
     this.#positionTooltip(data.svgShape);
   }
 
@@ -578,7 +578,7 @@ class ImageMapWc extends VBElement {
     if (data.mode === 'click' && data.anchor.hasAttribute('aria-expanded')) {
       data.anchor.setAttribute('aria-expanded', 'false');
     }
-    tooltip.removeAttribute('data-visible');
+    tooltip.removeAttribute('data-state-visible');
     tooltip.hidden = true;
     tooltip.replaceChildren();
     if (restoreFocus || hadFocus) data.anchor.focus();

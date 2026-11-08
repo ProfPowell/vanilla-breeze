@@ -244,8 +244,6 @@ class ActivityFeed extends VBElement {
         // (decorative here — the rail is aria-hidden and the actor is named
         // in the entry text).
         const av = document.createElement('user-avatar');
-        const actor = body.querySelector('[data-activity-actor]')?.textContent?.trim() || '';
-        if (actor) av.setAttribute('name', actor);
         const img = document.createElement('img');
         img.src = avatar;
         img.alt = '';

@@ -1,18 +1,25 @@
 /* Image & media clip shapes
-   data-clip on <img> and <figure> for responsive shape masking.
-   All shapes use % coordinates for responsiveness.
-   Enforces object-fit: cover on clipped images. */
+   data-clip on an <img>, or on a <figure> to clip its direct image
+   (<img> or <picture><img>) while the <figcaption> stays rectangular.
+   All shapes use % coordinates, so they scale with the image.
+   Enforces object-fit: cover on clipped images.
+
+   swoosh, diagonal-frame and torn are asymmetric and mirror under
+   :dir(rtl); hexagon, arch and leaf are symmetric. Images keep their clip
+   in forced colours and print (images are not repainted there). */
 
 img[data-clip],
-figure[data-clip] img {
+figure[data-clip] > img,
+figure[data-clip] > picture > img {
   object-fit: cover;
 }
 
 @supports (clip-path: shape(from 0% 0%, close)) {
 
 /* ── Hexagon ── */
-:is(img, figure > img)[data-clip="hexagon"],
-figure[data-clip="hexagon"] > img {
+img[data-clip="hexagon"],
+figure[data-clip="hexagon"] > img,
+figure[data-clip="hexagon"] > picture > img {
   clip-path: shape(
     from 50% 0%,
     line to 100% 25%,
@@ -25,8 +32,9 @@ figure[data-clip="hexagon"] > img {
 }
 
 /* ── Arch ── */
-:is(img, figure > img)[data-clip="arch"],
-figure[data-clip="arch"] > img {
+img[data-clip="arch"],
+figure[data-clip="arch"] > img,
+figure[data-clip="arch"] > picture > img {
   clip-path: shape(
     from 0% 100%,
     line to 0% 35%,
@@ -37,9 +45,10 @@ figure[data-clip="arch"] > img {
   );
 }
 
-/* ── Swoosh ── */
-:is(img, figure > img)[data-clip="swoosh"],
-figure[data-clip="swoosh"] > img {
+/* ── Swoosh ── curve sweeps down to the inline-end corner */
+img[data-clip="swoosh"],
+figure[data-clip="swoosh"] > img,
+figure[data-clip="swoosh"] > picture > img {
   clip-path: shape(
     from 0% 0%,
     line to 100% 0%,
@@ -50,8 +59,9 @@ figure[data-clip="swoosh"] > img {
 }
 
 /* ── Leaf ── */
-:is(img, figure > img)[data-clip="leaf"],
-figure[data-clip="leaf"] > img {
+img[data-clip="leaf"],
+figure[data-clip="leaf"] > img,
+figure[data-clip="leaf"] > picture > img {
   clip-path: shape(
     from 50% 0%,
     curve to 100% 50% with 100% 0%,
@@ -63,8 +73,9 @@ figure[data-clip="leaf"] > img {
 }
 
 /* ── Diagonal Frame ── */
-:is(img, figure > img)[data-clip="diagonal-frame"],
-figure[data-clip="diagonal-frame"] > img {
+img[data-clip="diagonal-frame"],
+figure[data-clip="diagonal-frame"] > img,
+figure[data-clip="diagonal-frame"] > picture > img {
   clip-path: shape(
     from 8% 0%,
     line to 100% 0%,
@@ -75,8 +86,9 @@ figure[data-clip="diagonal-frame"] > img {
 }
 
 /* ── Torn Edge ── */
-:is(img, figure > img)[data-clip="torn"],
-figure[data-clip="torn"] > img {
+img[data-clip="torn"],
+figure[data-clip="torn"] > img,
+figure[data-clip="torn"] > picture > img {
   clip-path: shape(
     from 0% 0%,
     line to 100% 0%,
@@ -96,6 +108,58 @@ figure[data-clip="torn"] > img {
     line to 8% 94%,
     line to 12% 100%,
     line to 0% 95%,
+    close
+  );
+}
+
+/* ── RTL: mirror the asymmetric shapes (x → 100% - x) ── */
+
+img[data-clip="swoosh"]:dir(rtl),
+figure[data-clip="swoosh"]:dir(rtl) > img,
+figure[data-clip="swoosh"]:dir(rtl) > picture > img {
+  clip-path: shape(
+    from 100% 0%,
+    line to 0% 0%,
+    line to 0% 80%,
+    curve to 100% 100% with 45% 62%,
+    close
+  );
+}
+
+img[data-clip="diagonal-frame"]:dir(rtl),
+figure[data-clip="diagonal-frame"]:dir(rtl) > img,
+figure[data-clip="diagonal-frame"]:dir(rtl) > picture > img {
+  clip-path: shape(
+    from 92% 0%,
+    line to 0% 0%,
+    line to 8% 100%,
+    line to 100% 100%,
+    close
+  );
+}
+
+img[data-clip="torn"]:dir(rtl),
+figure[data-clip="torn"]:dir(rtl) > img,
+figure[data-clip="torn"]:dir(rtl) > picture > img {
+  clip-path: shape(
+    from 100% 0%,
+    line to 0% 0%,
+    line to 0% 78%,
+    line to 12% 85%,
+    line to 8% 91%,
+    line to 22% 88%,
+    line to 18% 96%,
+    line to 35% 90%,
+    line to 30% 98%,
+    line to 50% 92%,
+    line to 45% 100%,
+    line to 65% 94%,
+    line to 60% 100%,
+    line to 80% 92%,
+    line to 75% 98%,
+    line to 92% 94%,
+    line to 88% 100%,
+    line to 100% 95%,
     close
   );
 }

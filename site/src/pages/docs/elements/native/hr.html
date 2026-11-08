@@ -74,7 +74,8 @@ crumbLabel: Native Elements
     <h2 id="ornament">Custom Ornament</h2>
     <p>The <code>data-ornament</code> attribute lets you specify any text or symbol as the divider content. This is more flexible than the <code>.decorative</code> class, which always uses dots.</p>
 
-    <p>Themes restyle plain <code>&lt;hr&gt;</code> rules, but they leave <code>data-ornament</code>, <code>.decorative</code> and the shape variants alone, so your chosen symbol always renders as specified.</p>
+    <p>A bare <code>data-ornament</code> (no value) shows the <code>--hr-ornament</code> custom property, which defaults to <code>⁂</code> (asterism). Set it on <code>:root</code> or a section to choose the default glyph.</p>
+    <p>Themes restyle only plain <code>&lt;hr&gt;</code> rules: an <code>hr</code> with <code>data-ornament</code> or any <code>class</code> (<code>.decorative</code>, the shape variants, or your own) is left alone, so your chosen symbol always renders as specified. The one exception is a value a <a href="/docs/packs/">pack</a> defines: the journal pack turns <code>data-ornament="doodle"</code> into a hand-drawn squiggle. That value only means something with the journal theme active; under any other theme it prints the word "doodle", so use it only on journal pages.</p>
     <p>The ornament is visual only. It is rendered with empty alternative text (<code>content: attr(data-ornament) / ""</code>), so screen readers announce a separator, not "section sign" or "asterism". The same applies to the <code>.decorative</code> dots.</p>
 
     <browser-window src="/docs/snippets/demos/hr-ornaments.html" url="https://vanilla-breeze.com/hr/ornaments" title="Custom ornament horizontal rules" shadow></browser-window>
@@ -86,7 +87,13 @@ crumbLabel: Native Elements
 
 <hr data-ornament="✦ ✦ ✦" />
 
-<hr data-ornament="⁂" /></code-block>
+<hr data-ornament="⁂" />
+
+<!-- No value: shows --hr-ornament (default ⁂) -->
+<hr data-ornament /></code-block>
+    <code-block language="css" label="Changing the default ornament">:root {
+  --hr-ornament: "❦";
+}</code-block>
 
     <h3>Common Ornament Characters</h3>
     <table class="props-table">
@@ -130,7 +137,7 @@ crumbLabel: Native Elements
   <!-- Shape Variants Section -->
   <section>
     <h2 id="shapes">Shape Variants</h2>
-    <p>Five classes turn the rule into a shaped divider: <code>.wave</code>, <code>.zigzag</code>, <code>.scallop</code>, <code>.diamonds</code> and <code>.dots</code>. The first four use CSS <code>shape()</code> and fall back to the plain line where it isn't supported. <code>.dots</code> uses a radial gradient and works everywhere. See <a href="/docs/attributes/data-shape/#hr-dividers">data-shape: HR Dividers</a> for the full shapes system.</p>
+    <p>Five classes turn the rule into a shaped divider: <code>.wave</code>, <code>.zigzag</code>, <code>.scallop</code>, <code>.diamonds</code> and <code>.dots</code>. The first four use CSS <code>shape()</code> and fall back to the plain line where it isn't supported. <code>.dots</code> uses a radial gradient and works everywhere. For shaped section edges see <a href="/docs/attributes/data-shape-start/">data-shape-start / data-shape-end</a>.</p>
     <browser-window src="/docs/snippets/demos/hr-shapes.html" url="https://vanilla-breeze.com/hr/shapes" title="Shape dividers" shadow></browser-window>
     <code-block language="html" label="Shape dividers" data-escape><hr class="wave" />
 <hr class="zigzag" />
@@ -205,6 +212,11 @@ hr[data-ornament] {
     color: var(--color-text-muted);
     letter-spacing: 0.25em;
   }
+
+  /* Bare attribute: default glyph */
+  &[data-ornament=""]::before {
+    content: var(--hr-ornament, "\2042") / "";
+  }
 }
 
 /* Forced colors: background-painted rules would vanish */
@@ -223,7 +235,7 @@ hr[data-ornament] {
       <li><strong>Logical properties</strong> - Uses <code>border-block-start</code> for RTL support</li>
       <li><strong>Generous spacing</strong> - <code>margin-block: var(--size-xl)</code> for clear separation</li>
       <li><strong>Decorative content</strong> - Uses a <code>::before</code> pseudo-element for the dots, with empty alt text so they aren't read aloud</li>
-      <li><strong>Custom ornament</strong> - Uses <code>attr(data-ornament)</code> for user-defined symbols, also silent</li>
+      <li><strong>Custom ornament</strong> - Uses <code>attr(data-ornament)</code> for user-defined symbols, also silent; an empty value falls back to <code>--hr-ornament</code></li>
       <li><strong>Forced colors</strong> - Always a visible <code>CanvasText</code> line, even when a theme paints the rule with a background</li>
     </ul>
 
@@ -323,7 +335,7 @@ hr.compact {
   <section>
     <h2 id="related">Related</h2>
     <ul>
-      <li><a href="/docs/attributes/data-shape/#hr-dividers">data-shape</a> - Shape dividers and section edges</li>
+      <li><a href="/docs/attributes/data-shape-start/">data-shape-start / data-shape-end</a> - Shaped section edges</li>
       <li><a href="/docs/elements/native/headings/"><code>&lt;h1&gt;-&lt;h6&gt;</code></a> - Headings that introduce new sections</li>
       <li><a href="/docs/elements/native/section/"><code>&lt;section&gt;</code></a> - Semantic sectioning element</li>
       <li><a href="/docs/elements/native/article/"><code>&lt;article&gt;</code></a> - Self-contained content sections</li>

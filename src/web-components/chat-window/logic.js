@@ -14,7 +14,7 @@
  *
  * Content trust: user-typed text is always inserted as text (never parsed
  * as HTML). Agent/system content and endpoint replies are HTML, passed
- * through sanitizeHTML().
+ * through sanitizeToFragment() (nodes inserted, never re-parsed).
  *
  * Participants: the `data-participants` JSON map uses arbitrary string IDs.
  * The local user's messages are always created with `data-from="user"`.
@@ -59,7 +59,7 @@
  * </chat-window>
  */
 
-import { sanitizeHTML } from '../../lib/sanitize-html.js';
+import { sanitizeToFragment } from '../../lib/sanitize-html.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { diffByKey } from '../../lib/diff-by-key.js';
@@ -265,7 +265,7 @@ class ChatWindow extends VBElement {
       p.textContent = str;
       bubble.replaceChildren(p);
     } else {
-      bubble.innerHTML = sanitizeHTML(str);
+      bubble.replaceChildren(sanitizeToFragment(str));
     }
   }
 

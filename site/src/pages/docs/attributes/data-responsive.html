@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-responsive"
-description: "Simplified responsive image API with auto-calculated sizes, srcset shorthand generation, and optional dev overlay showing the selected source."
+description: "Responsive image helper: measures an image's rendered width into sizes, generates srcset from a widths shorthand, and shows an optional dev badge naming the selected source."
 attributeName: data-responsive
 category: media
 attributeType: data
@@ -13,7 +13,7 @@ crumbLabel: Data Attributes
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>data-responsive</code> attribute upscales native <code>srcset</code> and <code>sizes</code> with two features developers frequently get wrong: automatic <code>sizes</code> calculation from rendered layout width, and a compact shorthand for generating <code>srcset</code> from a list of widths.</p>
+    <p><code>data-responsive</code> on an <code>&lt;img&gt;</code> helps with the two parts of responsive images that are easy to get wrong: a <code>sizes</code> value that matches the real layout, and a long <code>srcset</code>. It measures the image's rendered width and writes it to <code>sizes</code>, and a list of widths (<code>data-responsive="400,800,1200"</code>) generates the <code>srcset</code> from the <code>src</code> file name.</p>
 
     <browser-window
       src="/docs/examples/demos/responsive-basic.html"
@@ -22,46 +22,31 @@ crumbLabel: Data Attributes
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Auto-sizes (srcset already provided)" data-escape><img data-responsive
-     src="hero.jpg"
-     srcset="hero-400.jpg 400w, hero-800.jpg 800w, hero-1200.jpg 1200w"
-     alt="Hero image"></code-block>
-
     <aside class="note">
-      <strong>Progressive enhancement:</strong> Without JavaScript, the image loads normally using the native <code>src</code>. The enhancement only adds <code>sizes</code> calculation and performance defaults.
+      <p><strong>Also on tables:</strong> <code>table[data-responsive="card"]</code> is a different feature with the same attribute name &mdash; it turns table rows into stacked cards on narrow screens. See <a href="/docs/elements/native/table/#responsive">&lt;table&gt;</a>.</p>
     </aside>
   </section>
 
   <section>
-    <h2>How It Works</h2>
-    <p>The enhancement does three things:</p>
-    <ol>
-      <li><strong>Auto-sizes</strong> &mdash; A <code>ResizeObserver</code> measures the image&rsquo;s rendered CSS pixel width and sets <code>sizes</code> to match. This ensures the browser always picks the closest source for the actual layout.</li>
-      <li><strong>Srcset shorthand</strong> &mdash; If <code>data-responsive</code> has a value (comma-separated widths), it generates <code>srcset</code> from the <code>src</code> by inserting <code>-{width}</code> before the file extension.</li>
-      <li><strong>Performance defaults</strong> &mdash; Sets <code>loading="lazy"</code> and <code>decoding="async"</code> if not already specified.</li>
-    </ol>
-  </section>
-
-  <section>
-    <h2>Srcset Shorthand</h2>
-    <p>Instead of writing verbose <code>srcset</code> attributes, provide the widths and the enhancement generates sources from your <code>src</code> filename:</p>
-
-    <code-block language="html" show-lines label="Shorthand: generate srcset from widths" data-escape><img data-responsive="400,800,1200"
-     src="hero.jpg"
-     alt="Hero image">
-
-<!-- Generates:
+    <h2>Usage</h2>
+    <p>The best baseline needs no JavaScript at all: write the <code>srcset</code> in markup and, for lazy images, let the browser measure with <code>sizes="auto"</code> (Chromium 126+; the value after the comma is the fallback for other browsers).</p>
+    <code-block language="html" show-lines label="No-JS baseline" data-escape><img src="hero-800.jpg"
      srcset="hero-400.jpg 400w, hero-800.jpg 800w, hero-1200.jpg 1200w"
-     sizes="[auto-calculated]px"
+     sizes="auto, 100vw"
      loading="lazy"
-     decoding="async"
---></code-block>
+     width="1200" height="600"
+     alt="Hero image"></code-block>
 
-    <p>The naming convention inserts <code>-{width}</code> before the extension. So <code>photo.jpg</code> with widths <code>400,800</code> produces <code>photo-400.jpg 400w, photo-800.jpg 800w</code>.</p>
+    <p>Add <code>data-responsive</code> when the image is eager (above the fold, where <code>sizes="auto"</code> is not allowed) or when you want a measured <code>sizes</code> in every browser:</p>
+    <code-block language="html" show-lines label="Measured sizes" data-escape><img data-responsive
+     src="hero-800.jpg"
+     srcset="hero-400.jpg 400w, hero-800.jpg 800w, hero-1200.jpg 1200w"
+     width="1200" height="600"
+     alt="Hero image"></code-block>
   </section>
 
   <section>
-    <h2>Attributes</h2>
+    <h2>Options</h2>
     <table class="props-table">
       <thead>
         <tr>
@@ -73,84 +58,93 @@ crumbLabel: Data Attributes
       <tbody>
         <tr>
           <td><code>data-responsive</code></td>
-          <td>empty or widths</td>
-          <td>Enable auto-sizes. Optionally provide comma-separated widths (e.g. <code>"400,800,1200"</code>) to generate <code>srcset</code>.</td>
+          <td>empty, or comma-separated widths</td>
+          <td>Empty: measure <code>sizes</code> only. Widths (e.g. <code>"400,800,1200"</code>): also generate <code>srcset</code> from <code>src</code>.</td>
         </tr>
         <tr>
           <td><code>data-responsive-debug</code></td>
           <td>boolean</td>
-          <td>Show a dev overlay badge on the image displaying the current source filename and natural width.</td>
+          <td>Show a dev badge beside the image with the selected file name and its natural width. Remove it for production.</td>
         </tr>
       </tbody>
     </table>
-  </section>
 
-  <section>
-    <h2>Dev Overlay</h2>
-    <p>Add <code>data-responsive-debug</code> to see which source the browser selected. The overlay shows the filename and natural pixel width, updating on each load.</p>
+    <h3>Measured sizes</h3>
+    <ul>
+      <li>Only images whose <code>srcset</code> uses width descriptors (<code>400w</code>) are measured; <code>x</code> descriptors do not use <code>sizes</code>.</li>
+      <li>An authored <code>sizes</code> is respected. The exception is <code>auto</code>: on a <code>loading="lazy"</code> image it is left to the browser; on an eager image (where <code>auto</code> is invalid) the width is measured instead.</li>
+      <li><code>sizes</code> only grows. When the slot gets narrower the larger candidate is already downloaded, and re-selecting on every resize could feed back into the layout (a new source changes the box, which changes the width again).</li>
+      <li>An image that fails to load is no longer measured.</li>
+    </ul>
 
-    <code-block language="html" show-lines label="Debug overlay" data-escape><img data-responsive data-responsive-debug
+    <h3>Srcset shorthand</h3>
+    <p>The shorthand inserts <code>-{width}</code> before the extension of the last path segment; the query string and hash are kept. <code>/img/photo.jpg?v=2</code> with <code>400,800</code> produces <code>/img/photo-400.jpg?v=2 400w, /img/photo-800.jpg?v=2 800w</code> (as absolute URLs).</p>
+    <ul>
+      <li>An authored <code>srcset</code> wins: the shorthand is ignored.</li>
+      <li>A file name without an extension (<code>https://images.example.com/photos/abc</code>) is left alone, with a console warning.</li>
+      <li>Every generated file must exist. The shorthand cannot check, and a missing candidate is a broken image.</li>
+    </ul>
+    <code-block language="html" show-lines label="Shorthand" data-escape><img data-responsive="400,800,1200"
      src="hero.jpg"
-     srcset="hero-400.jpg 400w, hero-800.jpg 800w, hero-1200.jpg 1200w"
+     width="1200" height="600"
      alt="Hero image">
-<!-- Shows badge: "hero-800.jpg (800px)" --></code-block>
+<!-- srcset="…/hero-400.jpg 400w, …/hero-800.jpg 800w, …/hero-1200.jpg 1200w" --></code-block>
 
-    <p>Remove the <code>data-responsive-debug</code> attribute for production.</p>
+    <h3>What it cannot do</h3>
+    <p>The script runs after the HTML parser has already requested <code>src</code>. So:</p>
+    <ul>
+      <li>The shorthand costs a second request when the chosen candidate differs from <code>src</code>. Write the <code>srcset</code> in markup when that matters.</li>
+      <li><code>loading</code> and <code>fetchpriority</code> must be in the markup to have any effect. The script only adds <code>decoding="async"</code> when it is missing.</li>
+    </ul>
   </section>
 
   <section>
-    <h2>Performance Defaults</h2>
-    <p>The enhancement auto-sets these attributes if not already present:</p>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Default</th>
-          <th>Override</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>loading</code></td>
-          <td><code>lazy</code></td>
-          <td>Set <code>loading="eager"</code> for above-the-fold images.</td>
-        </tr>
-        <tr>
-          <td><code>decoding</code></td>
-          <td><code>async</code></td>
-          <td>Set <code>decoding="sync"</code> if you need synchronous decode.</td>
-        </tr>
-      </tbody>
-    </table>
+    <h2>Events</h2>
+    <p>None.</p>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>The debug badge is a <code>span[data-responsive-badge]</code> inserted before the image (or before its <code>&lt;picture&gt;</code>, never inside it). It is absolutely positioned at the inline-start corner; its parent gets <code>position: relative</code> through CSS while the badge is present.</p>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The attribute changes which file loads, not what the image means: write the same <code>alt</code> you would without it.</li>
+      <li>Give images <code>width</code> and <code>height</code> attributes so space is reserved before they load (no layout shift).</li>
+      <li>The debug badge is <code>aria-hidden</code>.</li>
+    </ul>
   </section>
 
   <section>
     <h2>Examples</h2>
 
-    <h3>Auto-sizes only</h3>
-    <p>When you already have a correct <code>srcset</code> but want auto-calculated <code>sizes</code>:</p>
-    <code-block language="html" show-lines label="Auto-sizes" data-escape><img data-responsive
-     src="photo.jpg"
-     srcset="photo-sm.jpg 480w, photo-md.jpg 960w, photo-lg.jpg 1440w"
-     alt="Photo with auto-calculated sizes"></code-block>
-
-    <h3>Full shorthand</h3>
-    <p>Let the enhancement build everything from a single <code>src</code>:</p>
-    <code-block language="html" show-lines label="Full shorthand" data-escape><img data-responsive="480,960,1440"
-     src="product.jpg"
-     alt="Product photo"></code-block>
-
     <h3>Above-the-fold hero</h3>
-    <p>Override <code>loading</code> for critical images:</p>
-    <code-block language="html" show-lines label="Eager loading for hero" data-escape><img data-responsive="640,1280,1920"
-     src="hero.jpg"
-     loading="eager"
+    <p>Eager images cannot use <code>sizes="auto"</code>, so this is where measuring helps most. Put <code>fetchpriority</code> in the markup:</p>
+    <code-block language="html" show-lines label="Eager hero" data-escape><img data-responsive
+     src="hero-1280.jpg"
+     srcset="hero-640.jpg 640w, hero-1280.jpg 1280w, hero-1920.jpg 1920w"
      fetchpriority="high"
+     width="1920" height="800"
      alt="Hero banner"></code-block>
+
+    <h3>Dev badge</h3>
+    <code-block language="html" show-lines label="Debug badge" data-escape><img data-responsive data-responsive-debug
+     src="hero-800.jpg"
+     srcset="hero-400.jpg 400w, hero-800.jpg 800w, hero-1200.jpg 1200w"
+     alt="Hero image">
+<!-- Badge: "hero-800.jpg (800px)" --></code-block>
   </section>
 
   <section>
-    <h2>How Sizes Auto-Calculation Works</h2>
-    <p>The enhancement uses a <code>ResizeObserver</code> to measure the image&rsquo;s rendered width in CSS pixels. As the layout changes (viewport resize, container queries), the observer updates <code>sizes</code> so the browser can make optimal source selections.</p>
-    <p>This replaces manually-written <code>sizes</code> like <code>(max-width: 600px) 100vw, 50vw</code> with an accurate measurement of the actual layout. The browser&rsquo;s built-in <code>sizes="auto"</code> proposal works similarly but has limited support &mdash; this enhancement provides the same behavior in all modern browsers.</p>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/picture/"><code>&lt;picture&gt;</code></a> &mdash; art direction and format fallbacks; <code>data-responsive</code> works on the <code>&lt;img&gt;</code> inside it.</li>
+      <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> &mdash; the native <code>srcset</code>, <code>sizes</code> and <code>loading</code> attributes.</li>
+      <li><a href="/docs/elements/native/table/#responsive"><code>table[data-responsive="card"]</code></a> &mdash; the unrelated table card layout that shares this attribute name.</li>
+      <li><a href="/docs/attributes/data-visible/"><code>data-visible</code></a> &mdash; showing and hiding content by viewport width.</li>
+      <li><a href="/docs/attributes/srcset/"><code>srcset</code></a> &mdash; the native attribute <code>data-responsive</code> generates.</li>
+      <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy loading and fetchpriority for the same images.</li>
+    </ul>
   </section>

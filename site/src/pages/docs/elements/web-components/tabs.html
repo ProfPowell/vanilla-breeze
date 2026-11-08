@@ -24,15 +24,15 @@ crumbLabel: Web Components
     <code-block language="html" show-lines label="Basic tabs usage" data-escape><tab-set aria-label="Feature tabs">
   <details name="feature-tabs" open>
     <summary>Overview</summary>
-    <div>Content for Overview tab</div>
+    <section>Content for Overview tab</section>
   </details>
   <details name="feature-tabs">
     <summary>Features</summary>
-    <div>Content for Features tab</div>
+    <section>Content for Features tab</section>
   </details>
   <details name="feature-tabs">
     <summary>Usage</summary>
-    <div>Content for Usage tab</div>
+    <section>Content for Usage tab</section>
   </details>
 </tab-set></code-block>
   </section>
@@ -58,7 +58,7 @@ crumbLabel: Web Components
         <tr>
           <td><code>name</code></td>
           <td>string</td>
-          <td>Shared name for exclusive behavior. All tabs should have the same name.</td>
+          <td>Shared name for exclusive behavior. All tabs should have the same name. On upgrade, a missing, mixed, or page-shared name (another <code>&lt;details&gt;</code> outside this set uses it) is replaced with a per-instance <code>tab-set-N</code>, so two tab-sets never close each other's tabs.</td>
         </tr>
         <tr>
           <td><code>open</code></td>
@@ -67,6 +67,9 @@ crumbLabel: Web Components
         </tr>
       </tbody>
     </table>
+
+    <h3>Panels</h3>
+    <p>Each <code>&lt;details&gt;</code> holds one <code>&lt;summary&gt;</code> and <strong>exactly one</strong> panel element after it. Wrap the panel content in a <code>&lt;section&gt;</code>: the component names it from its tab with <code>aria-labelledby</code>, which makes it a region. A <code>&lt;div&gt;</code> panel can't carry that name, and two or more loose children would each be laid out as a separate panel.</p>
   </section>
 
   <section>
@@ -74,7 +77,7 @@ crumbLabel: Web Components
     <p>The component is built on the native <code>&lt;details&gt;</code> element, which provides built-in expand/collapse functionality. The shared <code>name</code> attribute (supported in modern browsers) ensures only one panel is open at a time.</p>
 
     <h3>Without JavaScript</h3>
-    <p>When JavaScript is disabled or fails to load, the tabs degrade gracefully to an accordion-style interface where each panel can be expanded independently.</p>
+    <p>When JavaScript is disabled or fails to load, the tabs fall back to an exclusive accordion: the panels stack under their summaries, and the shared <code>name</code> still keeps only one open at a time. When the element is defined, the summaries move into the tab row.</p>
 
     <h3>With JavaScript</h3>
     <ul>
@@ -83,6 +86,7 @@ crumbLabel: Web Components
       <li><code>aria-expanded</code> state is managed on each summary</li>
       <li><code>tabindex</code> is managed for roving focus</li>
       <li>Keyboard navigation (arrow keys, Home, End) is enabled</li>
+      <li>A labelled host gets <code>role="group"</code></li>
     </ul>
   </section>
 
@@ -100,11 +104,15 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><kbd>ArrowRight</kbd></td>
-          <td>Move to and activate the next tab</td>
+          <td>Move to and activate the next tab (the previous one in right-to-left text)</td>
         </tr>
         <tr>
           <td><kbd>ArrowLeft</kbd></td>
-          <td>Move to and activate the previous tab</td>
+          <td>Move to and activate the previous tab (the next one in right-to-left text)</td>
+        </tr>
+        <tr>
+          <td><kbd>ArrowDown</kbd> / <kbd>ArrowUp</kbd></td>
+          <td>Next / previous tab, with <code>data-orientation="vertical"</code> only</td>
         </tr>
         <tr>
           <td><kbd>Home</kbd></td>
@@ -117,82 +125,60 @@ crumbLabel: Web Components
       </tbody>
     </table>
 
-    <div class="example">
-      <p>Try using arrow keys to navigate between tabs:</p>
-      <tab-set aria-label="Keyboard demo tabs">
-        <details name="keyboard-demo" open>
-          <summary>First</summary>
-          <div>
-            <p>Press <kbd>ArrowRight</kbd> to move to the next tab.</p>
-          </div>
-        </details>
-        <details name="keyboard-demo">
-          <summary>Second</summary>
-          <div>
-            <p>Press <kbd>ArrowLeft</kbd> to move to the previous tab, or <kbd>End</kbd> to jump to the last.</p>
-          </div>
-        </details>
-        <details name="keyboard-demo">
-          <summary>Third</summary>
-          <div>
-            <p>Press <kbd>Home</kbd> to jump back to the first tab.</p>
-          </div>
-        </details>
-      </tab-set>
-    </div>
+    <p>Try using arrow keys to navigate between tabs:</p>
+    <browser-window
+      src="/docs/examples/demos/tabs-keyboard.html"
+      url="https://vanilla-breeze.com/tabs-keyboard"
+      title="Keyboard navigation"
+      shadow>
+    </browser-window>
   </section>
 
   <section>
     <h2>Rich Tab Content</h2>
     <p>Tabs can contain any HTML content, including forms, images, and other components.</p>
 
-    <div class="example">
-      <tab-set aria-label="Content types">
-        <details name="content-types" open>
-          <summary>Text Content</summary>
-          <div>
-            <layout-text>
-              <p>Tabs can contain rich text content with proper typography.</p>
-              <blockquote>Including blockquotes, lists, and other typographic elements.</blockquote>
-            </layout-text>
-          </div>
-        </details>
-        <details name="content-types">
-          <summary>Form Content</summary>
-          <div>
-            <form class="stacked" style="max-inline-size: 20rem;">
-              <form-field>
-                <label for="tab-name">Name</label>
-                <input type="text" id="tab-name" placeholder="Your name" />
-              </form-field>
-              <form-field>
-                <label for="tab-email">Email</label>
-                <input type="email" id="tab-email" placeholder="you@example.com" />
-              </form-field>
-              <div class="actions">
-                <button type="submit">Submit</button>
-              </div>
-            </form>
-          </div>
-        </details>
-        <details name="content-types">
-          <summary>Card Grid</summary>
-          <div>
-            <layout-grid data-layout-min="s" data-layout-gap="m">
-              <layout-card data-variant="outlined" data-padding="s">
-                <strong>Card 1</strong>
-              </layout-card>
-              <layout-card data-variant="outlined" data-padding="s">
-                <strong>Card 2</strong>
-              </layout-card>
-              <layout-card data-variant="outlined" data-padding="s">
-                <strong>Card 3</strong>
-              </layout-card>
-            </layout-grid>
-          </div>
-        </details>
-      </tab-set>
-    </div>
+    <browser-window
+      src="/docs/examples/demos/tabs-rich-content.html"
+      url="https://vanilla-breeze.com/tabs-rich-content"
+      title="Rich tab content"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Vertical Tabs</h2>
+    <p>Add <code>data-orientation="vertical"</code> to put the tabs in a column at the inline start with the panel beside them. <kbd>ArrowDown</kbd> and <kbd>ArrowUp</kbd> move between tabs, as well as the left and right arrows.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/tabs-vertical.html"
+      url="https://vanilla-breeze.com/tabs-vertical"
+      title="Vertical tabs"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Vertical tabs" data-escape><tab-set aria-label="Account settings" data-orientation="vertical">
+  <details name="settings" open>
+    <summary>General</summary>
+    <section><p>General settings and preferences.</p></section>
+  </details>
+  <details name="settings">
+    <summary>Security</summary>
+    <section><p>Security and privacy options.</p></section>
+  </details>
+</tab-set></code-block>
+  </section>
+
+  <section>
+    <h2>Many Tabs and Right-to-Left</h2>
+    <p>When the tabs don't fit on one line they wrap onto another row, so a narrow screen never scrolls sideways. In right-to-left text the row runs from the right, and the arrow keys follow what you see: <kbd>ArrowLeft</kbd> moves to the next tab.</p>
+
+    <browser-window
+      src="/docs/examples/demos/tabs-wrap-rtl.html"
+      url="https://vanilla-breeze.com/tabs-wrap-rtl"
+      title="Wrapping and RTL tabs"
+      shadow>
+    </browser-window>
   </section>
 
   <section>
@@ -210,8 +196,13 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><code>tab-set:change</code></td>
-          <td><code>{ index: number }</code></td>
-          <td>Fired when a tab is activated. <code>index</code> is the 0-based tab index.</td>
+          <td><code>{ index, previousIndex, tab, panel }</code></td>
+          <td>Fired once each time a tab is activated (click, arrow key, or setting <code>details.open</code>), from the newly opened tab. <code>index</code> is the new 0-based tab index, <code>previousIndex</code> the tab it replaced, <code>tab</code> its <code>&lt;details&gt;</code> and <code>panel</code> its panel. Not fired during setup or when the open tab is selected again.</td>
+        </tr>
+        <tr>
+          <td><code>tab-set:tabs-changed</code></td>
+          <td><code>{ tabs, source: 'property' }</code></td>
+          <td>Fired after the <code>tabs</code> property rebuilds the set.</td>
         </tr>
       </tbody>
     </table>
@@ -220,7 +211,10 @@ crumbLabel: Web Components
 const tabs = document.querySelector('tab-set');
 
 tabs.addEventListener('tab-set:change', (event) => {
-  console.log('Tab changed to:', event.detail.index);
+  const { index, previousIndex, tab } = event.detail;
+  // The event bubbles: with nested tab-sets, check which set it came from.
+  if (tab.parentElement !== tabs) return;
+  console.log(`Tab changed from ${previousIndex} to ${index}`);
 });
 </script></code-block>
   </section>
@@ -235,12 +229,14 @@ tabs.addEventListener('tab-set:change', (event) => {
       <li><code>aria-labelledby</code> on each panel points back to its summary</li>
       <li><code>aria-expanded</code> reflects which tab is currently open</li>
       <li><code>tabindex</code> is managed via the roving tabindex pattern (active tab gets <code>0</code>, others get <code>-1</code>)</li>
+      <li>A host with <code>aria-label</code> or <code>aria-labelledby</code> (and no role of its own) gets <code>role="group"</code>, so the name is announced. An unlabelled tab-set gets no role: <code>aria-label</code> on a role-less element is ignored.</li>
+      <li>In forced-colors mode the selected tab's border uses the system <code>Highlight</code> colour.</li>
     </ul>
 
     <h3>Screen Reader Behavior</h3>
     <p>Screen readers will recognize the native disclosure widgets and allow users to navigate between tabs using the roving tabindex pattern.</p>
 
-    <code-block language="html" show-lines label="Accessibility" data-escape><!-- Always include an aria-label on tab-set -->
+    <code-block language="html" show-lines label="Accessibility" data-escape><!-- Label the set: the host becomes a named group -->
 <tab-set aria-label="Product information">
   ...
 </tab-set></code-block>
@@ -248,7 +244,7 @@ tabs.addEventListener('tab-set:change', (event) => {
 
   <section>
     <h2>JavaScript API</h2>
-    <p>The component manages its state internally but you can programmatically control tabs by manipulating the underlying <code>&lt;details&gt;</code> elements.</p>
+    <p>Control tabs by setting <code>open</code> on the underlying <code>&lt;details&gt;</code> elements, or replace the whole set with the <code>tabs</code> property.</p>
 
     <code-block language="javascript" show-lines label="JavaScript API" data-escape>const tabs = document.querySelector('tab-set');
 
@@ -265,7 +261,18 @@ console.log('Open tab index:', openIndex);
 // Listen for changes
 tabs.addEventListener('tab-set:change', (e) => {
   console.log('New tab:', e.detail.index);
-});</code-block>
+});
+
+// Read the tabs as data, or assign an array to rebuild the set
+console.log(tabs.tabs); // [{ id, label, content, active }, ...]
+tabs.tabs = [
+  { label: 'Overview', content: '<p>Overview</p>' },
+  { label: 'Pricing', content: '<p>Pricing</p>', active: true },
+];</code-block>
+
+    <aside class="note">
+      <strong>Trusted HTML only:</strong> <code>content</code> is written with <code>innerHTML</code>. Never pass unsanitised user input. Each entry becomes a <code>&lt;details&gt;</code> with a <code>&lt;section&gt;</code> panel, and the set gets its own <code>name</code>.
+    </aside>
   </section>
 
   <section>
@@ -283,35 +290,25 @@ tabs.addEventListener('tab-set:change', (e) => {
       </tbody>
     </table>
 
-    <div class="example">
-      <tab-set transition="slide" aria-label="Feature tour">
-        <details name="vt-demo" open>
-          <summary>Design</summary>
-          <div><p>Slides forward to the next tab, backward to previous.</p></div>
-        </details>
-        <details name="vt-demo">
-          <summary>Build</summary>
-          <div><p>Direction is computed automatically from tab index.</p></div>
-        </details>
-        <details name="vt-demo">
-          <summary>Ship</summary>
-          <div><p>Works with both mouse clicks and keyboard navigation.</p></div>
-        </details>
-      </tab-set>
-    </div>
+    <browser-window
+      src="/docs/examples/demos/tabs-transitions.html"
+      url="https://vanilla-breeze.com/tabs-transitions"
+      title="Tab view transitions"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Tabs with slide transition" data-escape><tab-set transition="slide" aria-label="Feature tour">
   <details name="tour" open>
     <summary>Design</summary>
-    <div><p>Slides forward to the next tab, backward to previous.</p></div>
+    <section><p>Slides forward to the next tab, backward to previous.</p></section>
   </details>
   <details name="tour">
     <summary>Build</summary>
-    <div><p>Direction is computed automatically from tab index.</p></div>
+    <section><p>Direction is computed automatically from tab index.</p></section>
   </details>
   <details name="tour">
     <summary>Ship</summary>
-    <div><p>Works with both mouse clicks and keyboard navigation.</p></div>
+    <section><p>Works with both mouse clicks and keyboard navigation.</p></section>
   </details>
 </tab-set></code-block>
 
@@ -322,25 +319,34 @@ tabs.addEventListener('tab-set:change', (e) => {
 
   <section>
     <h2>Styling</h2>
-    <p>The tabs component can be styled using CSS. The component adds ARIA attributes that can be used for styling.</p>
+    <p>Restyle the tabs and panels, but leave the host's <code>display</code> alone: the tab row and panel placement depend on it. Style the selected tab with <code>details[open] &gt; summary</code>, the same selector the component uses.</p>
 
-    <code-block language="css" show-lines theme="dark" label="Styling tabs" data-escape>/* Style the tab list */
-tab-set {
-  display: block;
+    <code-block language="css" show-lines label="Styling tabs" data-escape>/* Individual tabs */
+tab-set > details > summary {
+  padding-inline: var(--size-l);
 }
 
-/* Style individual tabs */
-tab-set summary {
-  /* Tab styling */
-}
-
-/* Active tab */
-tab-set summary[aria-expanded="true"] {
-  border-color: var(--color-interactive);
+/* Selected tab */
+tab-set > details[open] > summary {
+  color: var(--color-primary);
+  border-block-end-color: var(--color-primary);
 }
 
 /* Tab panels */
-tab-set details > div {
-  padding: var(--size-m);
+tab-set > details > section {
+  padding: var(--size-l);
 }</code-block>
+
+    <h3>Dark mode</h3>
+    <p>Tabs use theme tokens, so <code>data-mode="dark"</code> on the page (or any ancestor) is all a dark set needs.</p>
+
+    <browser-window
+      src="/docs/examples/demos/tabs-dark.html"
+      url="https://vanilla-breeze.com/tabs-dark"
+      title="Tabs in dark mode"
+      shadow>
+    </browser-window>
+
+    <h3>Print</h3>
+    <p>With the print utilities loaded, a printed tab-set shows every panel in order, each under its tab label as a heading.</p>
   </section>

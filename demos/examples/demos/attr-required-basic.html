@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>required attribute: text, select, radio group and checkbox</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <form data-validate data-submit="event" class="stacked">
+      <p>Leave a field empty and tab away, or press Create account. Each required control gets its asterisk from <code>&lt;form-field&gt;</code>.</p>
+
+      <form-field>
+        <label for="req-name">Full name</label>
+        <input type="text" id="req-name" name="name" autocomplete="name" required
+               data-message-valuemissing="Enter your name as it appears on your ID." />
+        <output class="error" for="req-name" aria-live="polite">Enter your name.</output>
+      </form-field>
+
+      <form-field>
+        <label for="req-country">Country</label>
+        <select id="req-country" name="country" autocomplete="country" required
+                data-message-valuemissing="Choose the country you ship to.">
+          <option value="">Choose a country</option>
+          <option value="CA">Canada</option>
+          <option value="DE">Germany</option>
+          <option value="JP">Japan</option>
+          <option value="US">United States</option>
+        </select>
+        <output class="error" for="req-country" aria-live="polite">Choose a country.</output>
+      </form-field>
+
+      <form-field>
+        <fieldset>
+          <legend>Plan</legend>
+          <label><input type="radio" name="plan" value="free" required
+                        data-message-valuemissing="Pick a plan to continue." /> Free</label>
+          <label><input type="radio" name="plan" value="pro" /> Pro</label>
+          <label><input type="radio" name="plan" value="team" /> Team</label>
+        </fieldset>
+        <output class="error" aria-live="polite">Pick a plan.</output>
+      </form-field>
+
+      <form-field>
+        <label for="req-bio">Bio</label>
+        <textarea id="req-bio" name="bio" rows="2"></textarea>
+        <output class="hint" for="req-bio">Optional. No asterisk, no error.</output>
+      </form-field>
+
+      <form-field data-type="checkbox">
+        <label><input type="checkbox" id="req-terms" name="terms" required
+                      data-message-valuemissing="Accept the terms to create an account." /> I accept the terms of service</label>
+        <output class="error" for="req-terms" aria-live="polite">Accept the terms.</output>
+      </form-field>
+
+      <button type="submit">Create account</button>
+      <pre><output id="req-result">Submitted data appears here.</output></pre>
+    </form>
+  </layout-center>
+
+  <script type="module">
+    const form = document.querySelector('form');
+    const result = document.querySelector('#req-result');
+    form.addEventListener('vb:submit', (e) => {
+      result.textContent = [...e.detail].map(([name, value]) => `${name} = ${value}`).join('\n');
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

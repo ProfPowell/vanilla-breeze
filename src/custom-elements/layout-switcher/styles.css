@@ -5,6 +5,11 @@
 :is(layout-switcher, [data-layout="switcher"]) {
   --_threshold: var(--layout-threshold, var(--_threshold-token, 30rem));
 
+  /* Reset variant-only private props so an outer layout's values don't
+     inherit into a nested host that set nothing (see layout-grid/styles.css). */
+  --_threshold-token: initial;
+  --_gap: initial;
+
   display: flex;
   flex-wrap: wrap;
   gap: var(--_gap, var(--size-m));
@@ -46,12 +51,14 @@
     flex-basis: 100%;
   }
 
-  /* Reverse order when stacked */
+  /* Reverse the order when stacked. wrap-reverse stacks the wrapped lines
+     bottom-up, so once each item is on its own line the last item is on
+     top; the row itself keeps DOM order. Independent of the threshold —
+     it used to need data-layout-threshold present, and the bare attribute
+     did row-reverse (reversing the row, not the stack). Visual-only: the
+     focus and reading order stay in DOM order (WCAG 2.4.3), so use it only
+     where the stacked order is presentational. */
   &[data-layout-reverse] {
-    flex-direction: row-reverse;
-  }
-
-  &[data-layout-reverse][data-layout-threshold] {
     flex-wrap: wrap-reverse;
   }
 }

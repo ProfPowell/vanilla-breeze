@@ -16,24 +16,40 @@ star-rating[readonly] {
   cursor: default;
 }
 
-/* --- Readonly star presentation (CSS-first, not inline JS) --- */
+/* --- Readonly star presentation (CSS-first, not inline JS) ---
+ * Same shape cue as the interactive stars (native-elements/rating):
+ * empty = outline, filled = solid. --_rating-filled / --_rating-empty come
+ * from [data-rating] (forced-colours mapping included). */
 
-star-rating[readonly] .star-filled {
-  color: var(--color-warning, oklch(75% 0.15 85));
+star-rating[readonly] [data-rating-readonly] > span {
+  --_ink: var(--_rating-empty);
+  --_fill: transparent;
+  color: var(--_ink);
+  -webkit-text-fill-color: var(--_fill);
+  -webkit-text-stroke: 0.06em var(--_ink);
 }
 
-star-rating[readonly] .star-empty {
-  color: var(--color-border, oklch(75% 0 0));
+star-rating[readonly] [data-rating-readonly] > .star-filled {
+  --_ink: var(--_rating-filled);
+  --_fill: var(--_rating-filled);
 }
 
 star-rating[readonly] .star-partial {
   position: relative;
-  color: var(--color-border, oklch(75% 0 0));
 }
 
 star-rating[readonly] .star-partial-fill {
+  --_ink: var(--_rating-filled);
+  --_fill: var(--_rating-filled);
   position: absolute;
   inset: 0;
+  color: var(--_ink);
+  -webkit-text-fill-color: var(--_fill);
+  -webkit-text-stroke: 0.06em var(--_ink);
+  /* Keep the inline-START fraction: left in LTR, right in RTL. */
   clip-path: inset(0 calc(100% - var(--_star-fill, 50%)) 0 0);
-  color: var(--color-warning, oklch(75% 0.15 85));
+}
+
+star-rating[readonly] .star-partial-fill:dir(rtl) {
+  clip-path: inset(0 0 0 calc(100% - var(--_star-fill, 50%)));
 }

@@ -41,10 +41,26 @@ tool-tip > pop-over.tooltip {
   word-wrap: break-word;
 }
 
+/* tool-tip places itself with anchor() insets (or JS pixel insets in the
+   no-anchor fallback, where data-position is set for pop-over's JS). A
+   position-area from pop-over's [data-position] rules would turn those
+   insets into offsets inside the area grid. */
+@supports (position-area: bottom) {
+  tool-tip > pop-over.tooltip[popover] {
+    position-area: none;
+  }
+}
+
 /* CSS anchor positioning: re-apply the centered placements that pop-over's
    data-anchor-name block clobbers. position-anchor is already set on the
    element by pop-over's JS, so anchor() reads from that anchor. */
 @supports (anchor-name: --x) {
+  /* tool-tip places itself with anchor() insets; a non-none position-area
+     (pop-over's default for anchored hosts) would zero those insets. */
+  tool-tip > pop-over.tooltip[data-anchor-name] {
+    position-area: none;
+  }
+
   tool-tip > pop-over.tooltip[data-anchor-name]:not([data-tooltip-position]),
   tool-tip > pop-over.tooltip[data-anchor-name][data-tooltip-position="top"] {
     position: fixed;
@@ -79,7 +95,29 @@ tool-tip > pop-over.tooltip {
   }
 }
 
+/* left/right placements are physical (right: anchor(left)), so the arrow
+   must be physical too — the logical inset-inline-* from the native
+   tooltip cascade points away from the trigger in RTL. */
+tool-tip > pop-over.tooltip[data-tooltip-position="left"] > .tooltip-arrow {
+  inset-inline: auto;
+  right: -4px;
+}
+
+tool-tip > pop-over.tooltip[data-tooltip-position="right"] > .tooltip-arrow {
+  inset-inline: auto;
+  left: -4px;
+}
+
 /* --- Card variant (variant="card") -------------------------------- */
+
+/* Card timing (the JS fallback's 300ms / 200ms) on the interestfor path.
+   Native interest invokers and the polyfill read it from the trigger;
+   [interestfor] carries the 200ms / 100ms tooltip timing otherwise
+   (native-elements/tooltip/styles.css). */
+tool-tip[variant="card"] > [data-trigger][interestfor] {
+  interest-delay: 300ms 200ms;
+  --interest-delay: 300ms 200ms;
+}
 
 /* Cards keep pop-over's corner-aligned positioning via data-position;
    we just override the visual chrome since the card content carries its
@@ -133,5 +171,21 @@ tool-tip > pop-over.hover-card .text-muted {
   tool-tip > pop-over.hover-card {
     transition: none;
     transform: none;
+  }
+}
+
+/* Forced colors: the surface is background-only, which becomes Canvas on
+   Canvas. Give the tooltip, its arrow and the card a real edge. */
+@media (forced-colors: active) {
+  tool-tip > pop-over.tooltip {
+    border: 1px solid CanvasText;
+  }
+
+  tool-tip > pop-over.tooltip > .tooltip-arrow {
+    background: CanvasText;
+  }
+
+  tool-tip > pop-over.hover-card > * {
+    border-color: CanvasText;
   }
 }

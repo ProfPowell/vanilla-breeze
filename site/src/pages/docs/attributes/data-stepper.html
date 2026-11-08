@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-stepper"
-description: "Add custom increment and decrement buttons to number inputs. Respects min, max, and step attributes with automatic button disabling at boundaries."
+description: "Visible − and + buttons for a native number input. Steps exactly like the arrow keys, follows disabled and readonly, and re-syncs after a form reset."
 attributeName: data-stepper
 category: form-controls
 attributeType: data
@@ -12,245 +12,227 @@ crumbLabel: Data Attributes
 ---
 
 <section>
-    <h2>Overview</h2>
-    <p>The <code>data-stepper</code> attribute enhances a native <code>&lt;input type="number"&gt;</code> with visible increment and decrement buttons. Just add the attribute &mdash; the script reads <code>min</code>, <code>max</code>, and <code>step</code> from the input and builds the controls automatically.</p>
+  <h2>Overview</h2>
+  <p><code>data-stepper</code> adds decrease and increase buttons around a native <code>&lt;input type="number"&gt;</code>. The buttons call the input's own <code>stepDown()</code> and <code>stepUp()</code>, so <code>min</code>, <code>max</code>, <code>step</code> and the step base behave exactly as they do for the arrow keys, and the value the buttons produce is always valid.</p>
+  <p>The input stays the control: it keeps focus, submits with the form and validates as usual. The buttons are mouse and touch helpers outside the tab order.</p>
 
-    <browser-window
-      src="/docs/examples/demos/number-basic.html"
-      url="https://vanilla-breeze.com/stepper"
-      title="Number Stepper"
+  <browser-window
+    src="/docs/examples/demos/number-basic.html"
+    url="https://vanilla-breeze.com/stepper"
+    title="Number Stepper"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>Usage</h2>
+  <code-block language="html" show-lines label="Basic number stepper" data-escape><form-field>
+  <label for="qty">Quantity</label>
+  <input type="number" id="qty" name="qty" min="0" max="50" value="1" data-stepper>
+</form-field></code-block>
+  <p>The script wraps the input in a <code>.number-wrapper</code> with a <code>.number-dec</code> button before it and a <code>.number-inc</code> button after it, and hides the browser's spinners. Without JavaScript the input is a normal number field with the browser spinners.</p>
+</section>
+
+<section>
+  <h2>Options</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Default</th><th>Effect</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-stepper</code></td>
+        <td>boolean</td>
+        <td>&mdash;</td>
+        <td>Adds the buttons to <code>input[type="number"]</code>.</td>
+      </tr>
+      <tr>
+        <td><code>data-label-decrease</code></td>
+        <td>string</td>
+        <td><code>Decrease</code></td>
+        <td>Accessible name of the &minus; button. Same attribute as on <code>&lt;stepper-wc&gt;</code>.</td>
+      </tr>
+      <tr>
+        <td><code>data-label-increase</code></td>
+        <td>string</td>
+        <td><code>Increase</code></td>
+        <td>Accessible name of the + button.</td>
+      </tr>
+      <tr>
+        <td><code>min</code>, <code>max</code></td>
+        <td>native</td>
+        <td>none</td>
+        <td>The &minus; button is disabled at <code>min</code>, the + button at <code>max</code>. Without them neither button ever disables.</td>
+      </tr>
+      <tr>
+        <td><code>step</code></td>
+        <td>native</td>
+        <td><code>1</code></td>
+        <td>The amount per press, counted from the step base (<code>min</code>, else the initial value). With <code>min="1" step="5"</code>, 2 steps up to 6, not 7. With <code>step="any"</code> the buttons move by 1.</td>
+      </tr>
+      <tr>
+        <td><code>disabled</code>, <code>readonly</code></td>
+        <td>native</td>
+        <td>&mdash;</td>
+        <td>Both buttons are disabled and ignore presses, including inside a disabled <code>&lt;fieldset&gt;</code>. Changes after load are picked up.</td>
+      </tr>
+      <tr>
+        <td><code>data-stepper-init</code></td>
+        <td>boolean</td>
+        <td>&mdash;</td>
+        <td>Set by the script. The spinner hiding is keyed on it, so a number field keeps its spinners until the buttons exist.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <p>A button press that changes the value fires <code>input</code> and then <code>change</code> on the input, as a keyboard step would. A press that changes nothing (at a bound) fires nothing. The button states also update on the input's own <code>input</code> and <code>change</code> events and after the form is reset.</p>
+
+  <code-block language="javascript" show-lines label="Listening for value changes" data-escape>const qty = document.getElementById('qty');
+
+qty.addEventListener('change', () => {
+  console.log('Quantity:', qty.valueAsNumber);
+});</code-block>
+</section>
+
+<section>
+  <h2>Styling</h2>
+  <p>There are no public custom properties. The wrapper uses the same edge as text fields, <code>--input-border</code> (which falls back to <code>--control-border</code>), and the buttons use <code>--color-surface-raised</code>. Style the generated classes for anything else:</p>
+  <ul>
+    <li><code>.number-wrapper</code> &mdash; the inline-flex frame; shows a <code>--color-interactive</code> border and halo while the input has focus (an outline in forced-colours mode).</li>
+    <li><code>.number-dec</code>, <code>.number-inc</code> &mdash; the buttons; <code>:disabled</code> buttons are dimmed.</li>
+  </ul>
+
+  <code-block language="css" show-lines label="Wider buttons" data-escape>.number-wrapper button {
+  inline-size: 3rem;
+}</code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The input keeps focus and is announced as a spin button with its value. <kbd>&uarr;</kbd>/<kbd>&darr;</kbd> step it.</li>
+    <li>The buttons have <code>tabindex="-1"</code>, so the field is one tab stop. They are named "Decrease" and "Increase" (override with <code>data-label-*</code> for other languages); their icons are <code>aria-hidden</code>.</li>
+    <li>Disabled buttons use the native <code>disabled</code> attribute, at a bound and whenever the input is disabled or read-only.</li>
+    <li>The field needs a visible <code>&lt;label&gt;</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Decimal steps</h3>
+  <browser-window
+      src="/docs/snippets/demos/data-stepper-decimal.html"
+      url="data-stepper-decimal"
+      title="Stepper with decimal steps"
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Basic number stepper" data-escape><form-field>
-  <label for="qty">Quantity</label>
-  <input type="number" id="qty" min="0" max="50" step="1" value="1" data-stepper>
-</form-field></code-block>
-  </section>
-
-  <section>
-    <h2>How It Works</h2>
-    <p>Add <code>data-stepper</code> to any <code>&lt;input type="number"&gt;</code>. The init script:</p>
-    <ol>
-      <li>Wraps the input in a <code>.number-wrapper</code> container</li>
-      <li>Inserts a decrease button (with <code>aria-label="Decrease"</code>) before the input</li>
-      <li>Inserts an increase button (with <code>aria-label="Increase"</code>) after the input</li>
-      <li>Sets both buttons to <code>tabindex="-1"</code> so the input itself keeps keyboard focus</li>
-      <li>Reads <code>min</code>, <code>max</code>, and <code>step</code> attributes for boundary logic</li>
-      <li>Disables the decrease button when at <code>min</code>, the increase button when at <code>max</code></li>
-      <li>Sets <code>data-stepper-init</code> to prevent double-binding</li>
-    </ol>
-    <p>The underlying input remains a real form control. It submits with the form, supports validation, and native keyboard arrows still increment and decrement as expected.</p>
-  </section>
-
-  <section>
-    <h2>Attributes</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Values</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>data-stepper</code></td>
-          <td>boolean</td>
-          <td>Enables the stepper enhancement on a number input.</td>
-        </tr>
-        <tr>
-          <td><code>data-stepper-init</code></td>
-          <td>boolean</td>
-          <td>Set automatically to prevent double-binding. Do not set manually.</td>
-        </tr>
-        <tr>
-          <td><code>min</code></td>
-          <td>number</td>
-          <td>Standard HTML attribute. The decrease button is disabled at this value.</td>
-        </tr>
-        <tr>
-          <td><code>max</code></td>
-          <td>number</td>
-          <td>Standard HTML attribute. The increase button is disabled at this value.</td>
-        </tr>
-        <tr>
-          <td><code>step</code></td>
-          <td>number</td>
-          <td>Standard HTML attribute. Controls the increment/decrement amount per click.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section>
-    <h2>Decimal Steps</h2>
-    <p>When <code>step</code> is a decimal value, the stepper uses <code>toFixed()</code> to maintain precision. No floating-point drift &mdash; values stay clean.</p>
-
-    <div class="example">
-      <form-field>
-        <label for="weight-demo">Weight (kg)</label>
-        <input type="number" id="weight-demo" min="0" max="10" step="0.5" value="1.0" data-stepper>
-      </form-field>
-    </div>
-
-    <code-block language="html" show-lines label="Decimal step values" data-escape><form-field>
+    <code-block language="html" show-lines label="Stepper with decimal steps" data-escape><form-field>
   <label for="weight">Weight (kg)</label>
-  <input type="number" id="weight" min="0" max="10" step="0.5" value="1.0" data-stepper>
+  <input type="number" id="weight" name="weight" min="0" max="10" step="0.5" value="1.5" data-stepper />
 </form-field></code-block>
-  </section>
 
-  <section>
-    <h2>Custom Ranges</h2>
-    <p>Combine <code>min</code>, <code>max</code>, and <code>step</code> for any numeric range. Buttons disable automatically at boundaries.</p>
+  <h3>Bounds and step base</h3>
+  <p>The seats field counts in fours from 1 (1, 5, 9&hellip;). The offset field has no bounds.</p>
+  <browser-window
+      src="/docs/snippets/demos/data-stepper-bounds.html"
+      url="data-stepper-bounds"
+      title="Stepper bounds and step base"
+      shadow>
+    </browser-window>
 
-    <div class="example">
-      <form-field>
-        <label for="temp-demo">Temperature (&deg;C)</label>
-        <input type="number" id="temp-demo" min="-20" max="45" step="5" value="20" data-stepper>
-      </form-field>
-    </div>
-
-    <code-block language="html" show-lines label="Custom range with step=5" data-escape><form-field>
-  <label for="temp">Temperature (°C)</label>
-  <input type="number" id="temp" min="-20" max="45" step="5" value="20" data-stepper>
-</form-field></code-block>
-  </section>
-
-  <section>
-    <h2>No Min/Max</h2>
-    <p>Without <code>min</code> or <code>max</code>, neither button ever disables. The stepper allows unbounded incrementing and decrementing.</p>
-
-    <div class="example">
-      <form-field>
-        <label for="offset-demo">Offset</label>
-        <input type="number" id="offset-demo" step="1" value="0" data-stepper>
-      </form-field>
-    </div>
-
-    <code-block language="html" show-lines label="Stepper without boundaries" data-escape><form-field>
-  <label for="offset">Offset</label>
-  <input type="number" id="offset" step="1" value="0" data-stepper>
-</form-field></code-block>
-  </section>
-
-  <section>
-    <h2>Button State at Boundaries</h2>
-    <p>The stepper automatically manages button states based on the current value:</p>
-    <ul>
-      <li>When the value equals <code>min</code>, the decrease button gets <code>disabled</code></li>
-      <li>When the value equals <code>max</code>, the increase button gets <code>disabled</code></li>
-      <li>Button states update on every step, keyboard change, and manual input</li>
-      <li>Disabled buttons use reduced opacity and <code>cursor: not-allowed</code></li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>Events</h2>
-    <p>Clicking a stepper button fires both <code>input</code> and <code>change</code> events on the underlying input, matching the behavior of native keyboard arrows.</p>
-
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Event</th>
-          <th>Target</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>input</code></td>
-          <td>The <code>&lt;input&gt;</code></td>
-          <td>Fired immediately when a stepper button is clicked.</td>
-        </tr>
-        <tr>
-          <td><code>change</code></td>
-          <td>The <code>&lt;input&gt;</code></td>
-          <td>Fired after the value changes, matching native behavior.</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <code-block language="javascript" show-lines label="Listening for value changes" data-escape>const input = document.querySelector('[data-stepper]');
-
-input.addEventListener('change', (e) => {
-  console.log('New value:', e.target.value);
-});
-
-input.addEventListener('input', (e) => {
-  console.log('Stepping to:', e.target.value);
-});</code-block>
-  </section>
-
-  <section>
-    <h2>In a Form</h2>
-    <p>Steppers work naturally inside forms. Combine multiple steppers for booking or quantity selection interfaces.</p>
-
-    <code-block language="html" show-lines label="Multiple steppers in a form" data-escape><form class="stacked">
+    <code-block language="html" show-lines label="Stepper bounds and step base" data-escape><layout-stack data-layout-gap="m">
   <form-field>
-    <label for="adults">Adults</label>
-    <input type="number" id="adults" min="1" max="10" step="1" value="2" data-stepper>
+    <label for="temp-c">Temperature (°C)</label>
+    <input type="number" id="temp-c" name="temp" min="-20" max="45" step="5" value="20" data-stepper />
   </form-field>
   <form-field>
-    <label for="children">Children</label>
-    <input type="number" id="children" min="0" max="8" step="1" value="0" data-stepper>
+    <label for="seats">Seats (blocks of 4 from 1)</label>
+    <input type="number" id="seats" name="seats" min="1" step="4" value="5" data-stepper />
   </form-field>
-  <button type="submit">Search</button>
+  <form-field>
+    <label for="offset">Offset (unbounded)</label>
+    <input type="number" id="offset" name="offset" step="1" value="0" data-stepper />
+  </form-field>
+</layout-stack></code-block>
+
+  <h3>Read-only and disabled</h3>
+  <browser-window
+      src="/docs/snippets/demos/data-stepper-states.html"
+      url="data-stepper-states"
+      title="Stepper disabled and readonly"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Stepper disabled and readonly" data-escape><layout-stack data-layout-gap="m">
+  <form-field>
+    <label for="ro">Included seats (read-only)</label>
+    <input type="number" id="ro" name="included" value="2" readonly data-stepper />
+  </form-field>
+  <form-field>
+    <label for="dis">Extra seats (disabled)</label>
+    <input type="number" id="dis" name="extra" value="0" disabled data-stepper />
+  </form-field>
+</layout-stack></code-block>
+
+  <h3>Translated button names</h3>
+  <browser-window
+      src="/docs/snippets/demos/data-stepper-labels.html"
+      url="data-stepper-labels"
+      title="Stepper with translated button names"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Stepper with translated button names" data-escape><form-field lang="fr">
+  <label for="invites">Invités</label>
+  <input type="number" id="invites" name="invites" min="1" max="12" value="2" data-stepper
+    data-label-decrease="Moins d’invités" data-label-increase="Plus d’invités" />
+</form-field></code-block>
+
+  <h3>In a form, with reset</h3>
+  <p>Step the adults up, then press Reset: the &minus; button disables again at the restored minimum.</p>
+  <browser-window
+      src="/docs/snippets/demos/data-stepper-form.html"
+      url="data-stepper-form"
+      title="Steppers in a booking form"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Steppers in a booking form" data-escape><form>
+  <layout-stack data-layout-gap="m">
+    <form-field>
+      <label for="adults">Adults</label>
+      <input type="number" id="adults" name="adults" min="1" max="10" step="1" value="2" data-stepper />
+    </form-field>
+    <form-field>
+      <label for="children">Children</label>
+      <input type="number" id="children" name="children" min="0" max="8" step="1" value="0" data-stepper />
+    </form-field>
+    <layout-cluster data-layout-gap="s">
+      <button type="submit">Search</button>
+      <button type="reset" class="secondary">Reset</button>
+    </layout-cluster>
+  </layout-stack>
 </form></code-block>
-  </section>
+</section>
 
-  <section>
-    <h2>Styling</h2>
-    <p>The <code>.number-wrapper</code> container and its buttons are styled via CSS. All styles are gated on <code>[data-stepper-init]</code> so the input renders normally without JavaScript.</p>
-
-    <code-block language="css" show-lines label="Stepper CSS structure" data-escape>/* Wrapper around input and buttons */
-.number-wrapper {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-m);
-}
-
-/* Stepper buttons */
-.number-wrapper button {
-  background: var(--color-surface-raised);
-  border: none;
-  cursor: pointer;
-  padding: var(--size-xs) var(--size-s);
-}
-
-/* Disabled state at boundaries */
-.number-wrapper button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}</code-block>
-
-    <p>The wrapper uses <code>inline-flex</code> for alignment and rounds the outer corners. Button disabled states reduce opacity for clear visual feedback.</p>
-  </section>
-
-  <section>
-    <h2>Dynamic Elements</h2>
-    <p>Inputs added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
-
-    <code-block language="javascript" show-lines label="Dynamically added steppers" data-escape>// Dynamically added steppers are auto-enhanced via MutationObserver
-const input = document.createElement('input');
-input.type = 'number';
-input.min = '0';
-input.max = '100';
-input.value = '50';
-input.dataset.stepper = '';
-document.body.appendChild(input);
-// input is wrapped and ready — no manual init needed</code-block>
-  </section>
-
-  <section>
-    <h2>Accessibility</h2>
-    <ul>
-      <li>Stepper buttons have <code>aria-label="Decrease"</code> and <code>aria-label="Increase"</code> for screen readers</li>
-      <li>Buttons use <code>tabindex="-1"</code> &mdash; the input itself retains keyboard focus, avoiding extra tab stops</li>
-      <li>Native keyboard arrows (Up/Down) still work for stepping, preserving expected input behavior</li>
-      <li>The input remains a real <code>&lt;input type="number"&gt;</code>, so screen readers announce it correctly</li>
-      <li>Disabled buttons are conveyed to assistive technology via the native <code>disabled</code> attribute</li>
-      <li>Without JavaScript, the input renders as a standard number field (progressive enhancement)</li>
-    </ul>
-  </section>
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/stepper-wc/"><code>&lt;stepper-wc&gt;</code></a> &mdash; the component version, for values a number input cannot hold.</li>
+    <li><a href="/docs/concepts/numeric-inputs/">Numeric inputs guide</a> &mdash; which numeric control to use when.</li>
+    <li><a href="/docs/elements/native/input/#number-stepper-data-stepper"><code>&lt;input&gt;</code>: number stepper</a> &mdash; the native element and the other input enhancements.</li>
+    <li><a href="/docs/elements/web-components/form-field/"><code>&lt;form-field&gt;</code></a> &mdash; label, hint and error layout.</li>
+    <li><a href="/docs/attributes/data-range/"><code>data-range</code></a> &mdash; a slider when the position matters more than the exact number.</li>
+    <li><a href="/docs/attributes/min-max-step/"><code>min</code> / <code>max</code> / <code>step</code></a> &mdash; the native constraints the stepper respects.</li>
+  </ul>
+  <h3>data-stepper or stepper-wc</h3>
+  <ul>
+    <li><strong><code>data-stepper</code></strong> &mdash; a plain number (quantity, guests, weight). The value is a native number input, so validation, autofill and form submission are the browser's.</li>
+    <li><strong><code>&lt;stepper-wc&gt;</code></strong> &mdash; formatted units or currency, durations, a fixed list of values or tokens, or long-press acceleration.</li>
+  </ul>
+</section>

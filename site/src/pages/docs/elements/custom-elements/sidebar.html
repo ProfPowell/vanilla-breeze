@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "layout-sidebar"
-description: "Sidebar layout with a fixed-width sidebar and flexible main content area. Automatically stacks on narrow viewports."
+description: "Sidebar layout with a fixed-basis sidebar and a flexible content column that wraps below it when its container is too narrow."
 elementName: layout-sidebar
 category: custom
 currentPath: /docs/elements/custom-elements/sidebar/
@@ -18,6 +18,36 @@ crumbLabel: Custom Elements
   </browser-window>
 
   <section>
+    <h2>Overview</h2>
+    <p>A sidebar layout puts a fixed-basis sidebar next to a flexible content column, and drops the content below the sidebar when there is no longer room for both. It is a wrapping flex row (<code>display: flex; flex-wrap: wrap</code>): the sidebar takes its basis and the content grows into the rest.</p>
+    <p><strong>How the sidebar is chosen.</strong> The layout is semantic-aware. <code>&lt;nav&gt;</code> and <code>&lt;aside&gt;</code> children are the sidebar; every other child is content. That lets you write children in their natural DOM order and pick the visual side with <code>data-layout-side</code>. Injected helpers are never content: <code>hr</code>, <code>[role="separator"]</code> (the <code>data-splitter</code> divider), <code>template</code>, <code>script</code> and <code>style</code> children are skipped, so an <code>&lt;hr&gt;</code> between the columns does not become a third column.</p>
+    <p>When there is no <code>nav</code> or <code>aside</code> child, a positional fallback applies: the first child is the sidebar and the last child is the content.</p>
+    <p><strong>When it wraps.</strong> Wrapping depends on the width of the <em>container</em>, not the viewport. The sidebar takes its basis (<code>16rem</code> by default) and the content column takes the rest; when the content would drop below its floor (<code>data-layout-content-min</code>, 50% by default) it wraps underneath. A sidebar inside a narrow card wraps even on a wide screen. Inside the <code>&lt;main&gt;</code> of a <a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> page, once that <code>&lt;main&gt;</code> is narrower than 40rem, every child of the sidebar takes a full row (in both forms) unless the sidebar has <code>data-layout-nowrap</code>.</p>
+  </section>
+
+  <section>
+    <h2>Element and attribute forms</h2>
+    <p>Any element can be a sidebar layout with <code>data-layout="sidebar"</code>. The same rules and <code>data-layout-*</code> modifiers apply to both forms; the two below are identical, at every width.</p>
+    <browser-window
+      src="/docs/snippets/demos/sidebar-forms.html"
+      url="https://vanilla-breeze.com/sidebar/forms"
+      title="Sidebar element and attribute forms"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Element form and attribute form" data-escape><layout-sidebar data-layout-gap="m">
+  <nav aria-label="Sections">...</nav>
+  <article>...</article>
+</layout-sidebar>
+
+<section data-layout="sidebar" data-layout-gap="m" aria-label="Settings">
+  <nav aria-label="Sections">...</nav>
+  <article>...</article>
+</section></code-block>
+    <p><strong>Which to choose:</strong> use the attribute form when a semantic element is already the two-column region: a <code>&lt;section&gt;</code> of the page, or a <code>&lt;main&gt;</code> that holds its own navigation. Use <code>&lt;layout-sidebar&gt;</code> when there is no such element and you would otherwise add a wrapper. In the attribute form, <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code> are also container-query containers, which the element is not, so container queries inside the layout resolve against it. See <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> for the full comparison and <a href="/docs/semantic-layouts/">Semantic Layouts</a> for the approach.</p>
+    <p>Nested sidebars start from their own defaults: an inner sidebar never inherits the outer one's gap or width settings.</p>
+  </section>
+
+  <section>
     <h2>Attributes</h2>
     <table class="props-table">
       <thead>
@@ -25,6 +55,7 @@ crumbLabel: Custom Elements
           <th>Attribute</th>
           <th>Values</th>
           <th>Default</th>
+          <th>Applies to</th>
           <th>Description</th>
         </tr>
       </thead>
@@ -33,45 +64,82 @@ crumbLabel: Custom Elements
           <td><code>data-layout-gap</code></td>
           <td><code>none</code>, <code>3xs</code>, <code>2xs</code>, <code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code>, <code>2xl</code>, <code>3xl</code></td>
           <td><code>m</code></td>
+          <td>both</td>
           <td>Gap between the columns, on the shared size scale.</td>
         </tr>
         <tr>
           <td><code>data-layout-side</code></td>
           <td><code>end</code></td>
-          <td>&mdash;</td>
-          <td>end: put the sidebar on the end side. nav/aside children keep DOM order (order: 1); the positional fallback reverses the row.</td>
+          <td>start (omit the attribute)</td>
+          <td>both</td>
+          <td>end: put the sidebar on the end side. There is no <code>start</code> value; the start side is what you get without the attribute. nav/aside children keep DOM order (order: 1); the positional fallback reverses the row (see <a href="#accessibility">Accessibility</a>).</td>
         </tr>
         <tr>
           <td><code>data-layout-sidebar-width</code></td>
           <td><code>narrow</code>, <code>normal</code>, <code>wide</code></td>
           <td><code>normal</code></td>
+          <td>both</td>
           <td>Sidebar basis: 12 / 16 / 20rem (the same three values in every sidebar context).</td>
         </tr>
         <tr>
           <td><code>data-layout-content-min</code></td>
           <td><code>s</code>, <code>m</code>, <code>l</code></td>
           <td><code>m</code></td>
-          <td>Content column floor before wrapping: 40 / 50 / 60%. One-off: style=&quot;--layout-content-min: 45%&quot;.</td>
+          <td>both</td>
+          <td>Content column floor before wrapping: 40 / 50 / 60%. One-off: <code>style="--layout-content-min: 45%"</code>.</td>
         </tr>
         <tr>
           <td><code>data-layout-nowrap</code></td>
           <td>(boolean)</td>
           <td>&mdash;</td>
-          <td>Never wrap; the sidebar stays beside the content.</td>
+          <td>both</td>
+          <td>Never wrap; the sidebar stays beside the content, also in a narrow page region.</td>
         </tr>
+      </tbody>
+    </table>
+
+    <h3>Custom properties</h3>
+    <table class="props-table">
+      <thead>
+        <tr><th>Property</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
         <tr>
-          <td><code>data-layout-sticky</code> <small>(on nav, aside)</small></td>
-          <td>(boolean)</td>
-          <td>&mdash;</td>
-          <td>Sticky sidebar with its own scroll, active when the page opts into the smart sticky system (:root[data-sticky]).</td>
+          <td><code>--layout-content-min</code></td>
+          <td>(unset)</td>
+          <td>A content floor that beats <code>data-layout-content-min</code>, set inline: <code>style="--layout-content-min: 45%"</code>. Registered with <code>inherits: false</code>, so a nested sidebar does not pick it up.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section>
-    <h2>Side Variants</h2>
-    <p>The <code>data-layout-side</code> attribute controls which side the sidebar appears on.</p>
+    <h2>Child attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>On</th>
+          <th>Applies to</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-layout-sticky</code></td>
+          <td><code>nav</code>, <code>aside</code></td>
+          <td>both</td>
+          <td>Sticky sidebar with its own scroll, active when the page opts into the smart sticky system (<a href="/docs/attributes/data-sticky/"><code>&lt;html data-sticky&gt;</code></a>). See <a href="#sticky">Sticky sidebar</a>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Examples</h2>
+
+    <h3>Side</h3>
+    <p>The sidebar sits on the start side by default (left in a left-to-right page). <code>data-layout-side="end"</code> moves it to the end side; there is no <code>start</code> value, so omit the attribute for the start side. With <code>nav</code>/<code>aside</code> children, write the content first and the sidebar second so the DOM order matches what is on screen.</p>
 
     <browser-window
       src="/docs/snippets/demos/sidebar-side.html"
@@ -80,21 +148,19 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Sidebar side variants" data-escape><!-- Sidebar on start -->
+    <code-block language="html" show-lines label="Sidebar side variants" data-escape><!-- Sidebar on start (default) -->
 <layout-sidebar data-layout-gap="m">
-  <aside>Sidebar content</aside>
-  <main>Main content</main>
+  <aside aria-label="Start sidebar">Sidebar content</aside>
+  <article>Main content</article>
 </layout-sidebar>
 
-<!-- Sidebar on end -->
+<!-- Sidebar on end: content first in the source -->
 <layout-sidebar data-layout-gap="m" data-layout-side="end">
-  <main>Main content</main>
-  <aside>Sidebar content</aside>
+  <article>Main content</article>
+  <aside aria-label="End sidebar">Sidebar content</aside>
 </layout-sidebar></code-block>
-  </section>
 
-  <section>
-    <h2>Width Variants</h2>
+    <h3>Width</h3>
     <p>The <code>data-layout-sidebar-width</code> attribute controls the sidebar width.</p>
 
     <browser-window
@@ -107,24 +173,97 @@ crumbLabel: Custom Elements
     <code-block language="html" show-lines label="Sidebar width variants" data-escape><!-- Narrow sidebar (12rem) -->
 <layout-sidebar data-layout-sidebar-width="narrow">
   <aside>Sidebar content</aside>
-  <main>Main content</main>
+  <article>Main content</article>
 </layout-sidebar>
 
-<!-- Normal sidebar (15rem) - default -->
+<!-- Normal sidebar (16rem) - default -->
 <layout-sidebar data-layout-sidebar-width="normal">
   <aside>Sidebar content</aside>
-  <main>Main content</main>
+  <article>Main content</article>
 </layout-sidebar>
 
 <!-- Wide sidebar (20rem) -->
 <layout-sidebar data-layout-sidebar-width="wide">
   <aside>Sidebar content</aside>
-  <main>Main content</main>
+  <article>Main content</article>
 </layout-sidebar></code-block>
-  </section>
 
-  <section>
-    <h2>Gap Variants</h2>
+    <h3>Content minimum</h3>
+    <p><code>data-layout-content-min</code> sets how narrow the content column may get (40 / 50 / 60%) before it wraps below the sidebar. For a one-off value, set <code>--layout-content-min</code> inline, for example <code>style="--layout-content-min: 45%"</code>; it beats the attribute and does not reach nested sidebars.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/sidebar-content-min.html"
+      url="https://vanilla-breeze.com/sidebar/content-min"
+      title="Sidebar content minimum"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Content minimum" data-escape><layout-sidebar data-layout-content-min="s">
+  <aside>Sidebar</aside>
+  <section>Content may shrink to 40% before wrapping</section>
+</layout-sidebar></code-block>
+
+    <h3>No wrap</h3>
+    <p><code>data-layout-nowrap</code> keeps the sidebar beside the content at every width, including inside a narrow page region. Use it when the sidebar is small, such as an icon rail.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/sidebar-nowrap.html"
+      url="https://vanilla-breeze.com/sidebar/nowrap"
+      title="Sidebar no-wrap"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="No wrap" data-escape><layout-sidebar data-layout-sidebar-width="narrow" data-layout-nowrap>
+  <nav aria-label="Tools">...</nav>
+  <section>...</section>
+</layout-sidebar></code-block>
+
+    <h3 id="sticky">Sticky sidebar</h3>
+    <p>Add <code>data-layout-sticky</code> to the <code>nav</code> or <code>aside</code> to pin it while the content scrolls. It has two prerequisites:</p>
+    <ul>
+      <li>The page opts into the smart sticky system with <a href="/docs/attributes/data-sticky/"><code>&lt;html data-sticky&gt;</code></a>. Without it the attribute does nothing.</li>
+      <li>The sticky child must be a <code>nav</code> or <code>aside</code> that is a direct child of the sidebar layout.</li>
+    </ul>
+    <p>The sidebar is limited to the remaining viewport height and scrolls on its own when its content is taller.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/sidebar-sticky.html"
+      url="https://vanilla-breeze.com/sidebar/sticky"
+      title="Sticky sidebar"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Sticky sidebar" data-escape><html data-sticky>
+...
+<layout-sidebar>
+  <nav aria-label="Sections" data-layout-sticky>...</nav>
+  <main>...</main>
+</layout-sidebar></code-block>
+
+    <h3>Resizable panels</h3>
+    <p>Add <a href="/docs/attributes/data-splitter/"><code>data-splitter</code></a> to make the sidebar resizable with a draggable, keyboard-accessible divider. The splitter switches the layout to no-wrap and lets the content column shrink freely.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/sidebar-splitter.html"
+      url="https://vanilla-breeze.com/sidebar/splitter"
+      title="Resizable sidebar"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Resizable sidebar" data-escape><section data-layout="sidebar" data-splitter aria-label="Resizable file browser">
+  <nav aria-label="Files">
+    <ul class="unstyled">
+      <li><a href="#">index.html</a></li>
+      <li><a href="#">styles.css</a></li>
+      <li><a href="#">main.js</a></li>
+    </ul>
+  </nav>
+  <main>
+    <p>Drag the divider, or focus it and use the arrow keys, to resize the navigation.</p>
+  </main>
+</section></code-block>
+
+    <h3>Gap</h3>
     <p>The <code>data-layout-gap</code> attribute controls spacing between sidebar and main content.</p>
 
     <browser-window
@@ -135,16 +274,10 @@ crumbLabel: Custom Elements
     </browser-window>
 
     <code-block language="html" show-lines label="Sidebar gap variants" data-escape><layout-sidebar data-layout-gap="xs">...</layout-sidebar>
-<layout-sidebar data-layout-gap="s">...</layout-sidebar>
-<layout-sidebar data-layout-gap="m">...</layout-sidebar>
-<layout-sidebar data-layout-gap="l">...</layout-sidebar>
-<layout-sidebar data-layout-gap="xl">...</layout-sidebar></code-block>
-  </section>
+<layout-sidebar data-layout-gap="m">...</layout-sidebar> <!-- default -->
+<layout-sidebar data-layout-gap="l">...</layout-sidebar></code-block>
 
-  <section>
-    <h2>Usage Examples</h2>
-
-    <h3>Dashboard Layout</h3>
+    <h3>Dashboard layout</h3>
 
     <browser-window
       src="/docs/snippets/demos/sidebar-dashboard.html"
@@ -174,7 +307,7 @@ crumbLabel: Custom Elements
   </main>
 </layout-sidebar></code-block>
 
-    <h3>Article with Related Content</h3>
+    <h3>Article with related content</h3>
 
     <browser-window
       src="/docs/snippets/demos/sidebar-article.html"
@@ -197,7 +330,7 @@ crumbLabel: Custom Elements
   </aside>
 </layout-sidebar></code-block>
 
-    <h3>Filters Layout</h3>
+    <h3>Filters layout</h3>
 
     <browser-window
       src="/docs/snippets/demos/sidebar-filters.html"
@@ -228,10 +361,26 @@ crumbLabel: Custom Elements
   </section>
 
   <section>
+    <h2 id="accessibility">Accessibility</h2>
+    <ul>
+      <li>Keep DOM order the same as the visual order. For a sidebar on the end, write the content first and the <code>&lt;aside&gt;</code> after it, then set <code>data-layout-side="end"</code>. If the aside comes first in the source, the layout still moves it to the end visually, but focus and reading order then differ from what is on screen (<a href="https://www.w3.org/WAI/WCAG22/Understanding/meaningful-sequence.html">WCAG 1.3.2</a>, <a href="https://www.w3.org/WAI/WCAG22/Understanding/focus-order.html">2.4.3</a>).</li>
+      <li>In the positional fallback (no <code>nav</code> or <code>aside</code> child), <code>data-layout-side="end"</code> reverses the whole row with <code>flex-direction: row-reverse</code>, so the visual order <em>always</em> differs from the DOM order. Prefer <code>nav</code>/<code>aside</code> children, which keep DOM order.</li>
+      <li>Give a <code>nav</code> sidebar an accessible name (<code>aria-label</code> or <code>aria-labelledby</code>) when the page has more than one navigation region.</li>
+      <li>A sticky sidebar scrolls on its own when it is taller than the viewport. Keep focusable content (links) in it, so keyboard users can scroll it by moving focus.</li>
+      <li>The <a href="/docs/attributes/data-splitter/"><code>data-splitter</code></a> divider is a focusable separator that resizes with the arrow keys.</li>
+    </ul>
+  </section>
+
+  <section>
     <h2>Related</h2>
     <ul>
-      <li><a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a> - Vertical stacking layout</li>
-      <li><a href="/docs/elements/custom-elements/grid/"><code>&lt;layout-grid&gt;</code></a> - Auto-fit grid layout</li>
-      <li><a href="/docs/elements/custom-elements/switcher/"><code>&lt;layout-switcher&gt;</code></a> - Responsive row/column switcher</li>
+      <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> — The attribute form (<code>data-layout="sidebar"</code>) and every layout modifier</li>
+      <li><a href="/docs/semantic-layouts/">Semantic Layouts</a> — When to use a layout element and when an attribute</li>
+      <li><a href="/docs/attributes/data-sticky/"><code>data-sticky</code></a> — The smart sticky system a sticky sidebar needs</li>
+      <li><a href="/docs/attributes/data-splitter/"><code>data-splitter</code></a> — Resizable panels</li>
+      <li><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> — Page templates with nav, main and aside regions</li>
+      <li><a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a> — Vertical stacking layout</li>
+      <li><a href="/docs/elements/custom-elements/grid/"><code>&lt;layout-grid&gt;</code></a> — Auto-fit grid layout</li>
+      <li><a href="/docs/elements/custom-elements/switcher/"><code>&lt;layout-switcher&gt;</code></a> — Responsive row/column switcher</li>
     </ul>
   </section>

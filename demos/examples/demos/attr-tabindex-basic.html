@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tabindex Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-m);
+      background: var(--color-surface);
+    }
+
+    /* The skip-link recipe from /docs/accessibility-utilities/#skip-link */
+    .skip-link {
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      padding: var(--size-s) var(--size-m);
+      background: var(--color-surface);
+      color: var(--color-text);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-s);
+      box-shadow: var(--shadow-m);
+      z-index: 1000;
+      transform: translateY(-120%);
+      transition: transform var(--duration-fast, 150ms) var(--ease-out);
+    }
+
+    .skip-link:focus-visible {
+      transform: translateY(0);
+      outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+      outline-offset: var(--focus-ring-offset, 2px);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .skip-link { transition-duration: 0s; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#tasks-heading" class="skip-link">Skip to tasks</a>
+
+  <header>
+    <nav class="horizontal" aria-label="Project">
+      <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#files">Files</a></li>
+        <li><a href="#settings">Settings</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main data-layout="stack" data-layout-gap="l">
+    <h1 class="visually-hidden">Project tasks</h1>
+    <p><small>Click here, then press Tab: the skip link appears first. Delete a task and focus moves to the next one, or to the heading when the list is empty.</small></p>
+
+    <section data-layout="stack" data-layout-gap="s" aria-labelledby="tasks-heading">
+      <h2 id="tasks-heading" tabindex="-1">Tasks</h2>
+      <ul class="unstyled" id="tasks" data-layout="stack" data-layout-gap="xs">
+        <li data-layout="cluster" data-layout-gap="s">Write release notes <button type="button" class="ghost small">Delete <span class="visually-hidden">Write release notes</span></button></li>
+        <li data-layout="cluster" data-layout-gap="s">Review pull request <button type="button" class="ghost small">Delete <span class="visually-hidden">Review pull request</span></button></li>
+        <li data-layout="cluster" data-layout-gap="s">Book venue <button type="button" class="ghost small">Delete <span class="visually-hidden">Book venue</span></button></li>
+      </ul>
+    </section>
+
+    <section data-table-scroll tabindex="0" aria-labelledby="schedule-caption">
+      <table>
+        <caption id="schedule-caption">Sprint schedule (scrolls sideways; focus it and use the arrow keys)</caption>
+        <thead>
+          <tr><th scope="col">Task</th><th scope="col">Owner</th><th scope="col">Mon</th><th scope="col">Tue</th><th scope="col">Wed</th><th scope="col">Thu</th><th scope="col">Fri</th><th scope="col">Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Release notes</td><td>Priya Raman</td><td>Draft</td><td>Draft</td><td>Review</td><td>Edit</td><td>Publish</td><td>On track</td></tr>
+          <tr><td>Venue booking</td><td>Marcus Lee</td><td>Calls</td><td>Visits</td><td>Visits</td><td>Contract</td><td>Deposit</td><td>At risk</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const list = document.getElementById('tasks');
+    const heading = document.getElementById('tasks-heading');
+
+    list.addEventListener('click', (event) => {
+      const button = event.target.closest('button');
+      if (!button) return;
+      const item = button.closest('li');
+      const next = item.nextElementSibling || item.previousElementSibling;
+      item.remove();
+      // Move focus somewhere sensible: the next task's button, or the
+      // heading (tabindex="-1" lets script focus it without adding a tab stop).
+      (next?.querySelector('button') ?? heading).focus();
+    });
+  </script>
+</body>
+</html>

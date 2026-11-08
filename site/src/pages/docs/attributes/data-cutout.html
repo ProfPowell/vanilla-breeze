@@ -1,0 +1,86 @@
+---
+layout: attribute
+title: "data-cutout"
+description: "Punch a circle, diamond, arch window or hexagon hole through an element, or bite its top corner, with an evenodd CSS shape()."
+attributeName: data-cutout
+category: shapes
+attributeType: data
+currentPath: /docs/attributes/data-cutout/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section id="overview">
+  <h2>Overview</h2>
+  <p><code>data-cutout</code> punches a hole through an element so whatever is behind it shows through. It draws two paths in one <code>clip-path: shape()</code>, the outer rectangle and the inner shape, with the <code>evenodd</code> fill rule, so the inner shape is removed. Use it on decorative surfaces: gradient tiles, cards over a photo, hero panels.</p>
+  <p>The hole removes <strong>everything</strong> the element paints there, its own text and children included. Keep content out of the middle of the element (or out of the corner, for <code>badge-corner</code>).</p>
+</section>
+
+<section id="usage">
+  <h2>Usage</h2>
+  <code-block language="html" label="A gradient tile with a circular hole, label in the caption" data-escape><figure>
+  <p class="tile" data-cutout="circle"></p>
+  <figcaption>Circle cutout</figcaption>
+</figure>
+
+<style>
+  .tile {
+    aspect-ratio: 1;
+    margin: 0;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  }
+</style></code-block>
+</section>
+
+<section id="options">
+  <h2>Options</h2>
+  <table>
+    <thead>
+      <tr><th>Value</th><th>Hole</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>circle</code></td><td>Centred circle, 60% across. A true circle on a square element; an ellipse otherwise, because the radius is a percentage of each axis.</td></tr>
+      <tr><td><code>diamond</code></td><td>Centred diamond</td></tr>
+      <tr><td><code>arch-window</code></td><td>Arched window opening, open to the lower part of the element</td></tr>
+      <tr><td><code>hex</code></td><td>Centred hexagon</td></tr>
+      <tr><td><code>badge-corner</code></td><td>A concave quarter-circle bite out of the top inline-end corner (top right; top left in right-to-left pages). Room for a badge or avatar that overlaps the corner.</td></tr>
+    </tbody>
+  </table>
+  <p>The centred holes are symmetric; only <code>badge-corner</code> mirrors under <code>:dir(rtl)</code>. The element gets <code>position: relative</code> so you can place an overlapping badge in the bite.</p>
+</section>
+
+<section id="styling">
+  <h2>Styling</h2>
+  <p>There are no custom properties. Give the element a background (the hole is invisible on a transparent element) and a size; <code>aspect-ratio: 1</code> keeps <code>circle</code> round.</p>
+  <p>Do not combine it with another clip on the same element (<code>data-shape-start</code>, <code>data-border-shape</code>): only one <code>clip-path</code> applies. <code>data-morph</code> is skipped on a cutout element for the same reason.</p>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The hole hides content without hiding it from screen readers: text under the hole is still read aloud but cannot be seen. Never put text, links or controls where the hole is.</li>
+    <li>The outer edge of the clip runs past the element's box, so the element's own focus ring, outline and shadow stay visible when it is focusable.</li>
+    <li>In forced colours mode and in print the clip is removed. Backgrounds are flattened there, so the hole would only hide content.</li>
+  </ul>
+</section>
+
+<section id="examples">
+  <h2>Examples</h2>
+  <p>All five cutouts on gradient tiles, with the labels in the captions.</p>
+  <browser-window src="/docs/examples/demos/css-shapes-advanced.html" url="https://vanilla-breeze.com/shapes/advanced" title="CSS Shapes: Cutouts, borders and morphing" shadow></browser-window>
+  <code-block language="html" label="Corner bite" data-escape><article class="tile" data-cutout="badge-corner">
+  <h3>New arrivals</h3>
+  <p>Text stays in the lower-left of the card, away from the bite.</p>
+</article></code-block>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-clip/"><code>data-clip</code></a> &mdash; clip an image into a shape.</li>
+    <li><a href="/docs/attributes/data-border-shape/"><code>data-border-shape</code></a> &mdash; shaped frames around images.</li>
+    <li><a href="/docs/attributes/data-shape-start/"><code>data-shape-start</code> / <code>data-shape-end</code></a> &mdash; shaped section edges.</li>
+    <li><a href="/docs/attributes/data-morph/"><code>data-morph</code></a> &mdash; animated clip shapes.</li>
+  </ul>
+</section>

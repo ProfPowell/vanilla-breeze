@@ -37,7 +37,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
-import { sanitizeHTML } from '../../lib/sanitize-html.js';
+import { sanitizeToFragment } from '../../lib/sanitize-html.js';
 // Compose the reply-form (when the author's <template data-reply-form> uses it).
 import '../comment-box/logic.js';
 
@@ -165,7 +165,6 @@ class CommentThread extends VBElement {
       // <user-avatar> is CSS-only: the picture is a child <img>. It is
       // decorative — the author is named in the text right after it.
       const av = document.createElement('user-avatar');
-      av.setAttribute('name', author);
       const img = document.createElement('img');
       img.src = avatar;
       img.alt = '';
@@ -404,7 +403,7 @@ class CommentThread extends VBElement {
   /** Fill a body element from `bodyText` (as text) or `bodyHtml` (sanitized). */
   #fillBody(body, data) {
     if (data.bodyText != null) body.textContent = String(data.bodyText);
-    else if (data.bodyHtml != null) body.innerHTML = sanitizeHTML(String(data.bodyHtml));
+    else if (data.bodyHtml != null) body.replaceChildren(sanitizeToFragment(String(data.bodyHtml)));
     if ('body' in data) console.warn('[VB] comment-thread: `body` was removed — pass `bodyText` (plain text) or `bodyHtml` (sanitized HTML).');
   }
 

@@ -86,7 +86,7 @@ slide-accept[transitioning] .slide-handle {
 
 /* --- Focus visible --- */
 slide-accept .slide-handle:focus-visible {
-  outline: 3px solid var(--color-focus, oklch(60% 0.2 260));
+  outline: 3px solid var(--color-focus-ring);
   outline-offset: 2px;
 }
 
@@ -189,4 +189,56 @@ slide-accept[attention="shimmer"]:not([data-activated]):not([data-dragging]) .sl
 :root[data-motion-reduced] slide-accept[transitioning] .slide-handle,
 :root[data-motion-reduced] slide-accept[transitioning] .slide-track::before {
   transition-duration: 0s;
+}
+
+/* --- RTL: the handle travels towards inline-end, so the chevrons point left --- */
+slide-accept:dir(rtl) .slide-handle icon-wc {
+  scale: -1 1;
+}
+
+/* --- Disabled (disabled attribute or a disabled fieldset) --- */
+slide-accept:disabled .slide-handle,
+slide-accept[disabled] .slide-handle {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* --- Forced colors: the handle and fill are background-only, so give them
+   system-colour borders and fills; activation also changes border style. --- */
+@media (forced-colors: active) {
+  slide-accept .slide-handle {
+    border: 2px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+    forced-color-adjust: none;
+  }
+
+  slide-accept .slide-handle:focus-visible {
+    outline-color: Highlight;
+  }
+
+  @scope (slide-accept) {
+    .slide-track::before {
+      background: Highlight;
+      forced-color-adjust: none;
+      opacity: 0.35;
+    }
+  }
+
+  slide-accept[data-activated] .slide-track {
+    border-style: double;
+    border-width: 3px;
+  }
+
+  slide-accept[data-activated] .slide-handle {
+    background: Highlight;
+    color: HighlightText;
+    border-color: HighlightText;
+  }
+
+  slide-accept:disabled .slide-handle,
+  slide-accept[disabled] .slide-handle {
+    border-color: GrayText;
+    color: GrayText;
+  }
 }

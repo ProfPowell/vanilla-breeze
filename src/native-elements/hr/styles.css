@@ -1,6 +1,7 @@
 @import "./shapes.css";
 
-/* hr: Horizontal rule divider */
+/* hr: Horizontal rule divider. Themes restyle only plain rules,
+   hr:not([data-ornament], [class]); any class or ornament opts out. */
 
 hr {
   border: none;
@@ -21,7 +22,10 @@ hr.decorative {
   }
 }
 
-/* Ornament variant — customizable via data attribute or token */
+/* Ornament variant — the glyph is the attribute value. A bare
+   data-ornament (or "") would otherwise print nothing on a borderless,
+   0px-tall rule, so it falls back to --hr-ornament (default ⁂ asterism).
+   Packs may give a value its own look (journal: "doodle"). */
 hr[data-ornament] {
   border: none;
   text-align: center;
@@ -30,6 +34,10 @@ hr[data-ornament] {
     content: attr(data-ornament) / "";
     color: var(--color-text-muted);
     letter-spacing: 0.25em;
+  }
+
+  &[data-ornament=""]::before {
+    content: var(--hr-ornament, "\2042") / "";
   }
 }
 
