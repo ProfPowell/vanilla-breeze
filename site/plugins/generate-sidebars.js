@@ -132,15 +132,22 @@ export class GenerateSidebars {
     const attrs = this.nav.attributes;
     let html = '';
 
-    // Native Attributes (nested: native > groups > items)
+    // Native Attributes (nested: native > groups > items). The groups come
+    // from each page's frontmatter `nativeGroup` via the attribute index
+    // (site/data/nativeAttributes.js), not from navigation.json, so the
+    // sidebar and the index cannot disagree. Alias rows (attributes covered
+    // on another page, e.g. fetchpriority) stay in the index only.
+    const nativeGroups = Object.values(this.data.attributeIndex?.nativeCategories ?? {})
+      .map((cat) => ({ label: cat.label, items: cat.items.filter((item) => !item.alias) }))
+      .filter((group) => group.items.length);
     html += `<details data-sidebar-section="native">\n`;
     html += `  <summary>${attrs.native.label}</summary>\n`;
-    for (const group of attrs.native.groups) {
+    for (const group of nativeGroups) {
       html += `  <details data-sidebar-group="${group.label}">\n`;
       html += `    <summary>${group.label}</summary>\n`;
       html += `    <ul>\n`;
       for (const item of group.items) {
-        html += `      <li><a href="${item.href}">${item.name}</a></li>\n`;
+        html += `      <li><a href="${item.href}">${escapeHtml(item.name)}</a></li>\n`;
       }
       html += `    </ul>\n`;
       html += `  </details>\n`;
