@@ -69,10 +69,17 @@
    --color-hover-bg, etc., and data-mode="light" inside a dark page gets
    the light ones (light-dark() resolves against the element's own
    color-scheme). Concrete dark surfaces come from the dark-mode rule
-   further down, which wins on source order. */
+   further down, which wins on source order.
+   :where([data-theme]) does the same for a theme scoped to an element
+   (<article data-theme="amber"> on a swiss page): seed-only themes set
+   just --hue-* / --lightness-* / --chroma-*, so the element must derive
+   its own colours from them. Zero specificity, and this is @layer tokens:
+   a theme's own literal --color-* (@layer bundle-theme, or unlayered)
+   always wins over these derivations. */
 :root,
 [data-mode="light"],
-[data-mode="dark"] {
+[data-mode="dark"],
+:where([data-theme]) {
   /* ==================== BRAND COLORS ==================== */
   /* Derived from seeds + hues — themes set seeds, core derives states */
   --color-primary: oklch(var(--lightness-primary) var(--chroma-primary) var(--hue-primary));
@@ -201,7 +208,8 @@
 @supports (color: contrast-color(red)) {
   :root,
   [data-mode="light"],
-  [data-mode="dark"] {
+  [data-mode="dark"],
+  :where([data-theme]) {
     --color-text-on-primary-auto:     contrast-color(var(--color-primary));
     --color-text-on-secondary-auto:   contrast-color(var(--color-secondary));
     --color-text-on-accent-auto:      contrast-color(var(--color-accent));
@@ -222,9 +230,15 @@
   color-scheme: light;
 }
 
-/* Force dark mode */
+/* Force dark mode. The :where() line is a themed element inside a dark
+   region (<html data-mode="dark"> … <article data-theme="amber">): the
+   derived rule above re-declares its surfaces from light-dark(), so the
+   hue-tinted dark surfaces must be re-derived there too, from the
+   element's own --hue-primary. Skipped when the element or any ancestor
+   is data-mode="light" (same approximation as the accent rules). */
 :root[data-mode="dark"],
-[data-mode="dark"] {
+[data-mode="dark"],
+:where([data-mode="dark"] [data-theme]:not([data-mode="light"], [data-mode="light"] [data-theme])) {
   color-scheme: dark;
 
   /* Brand seeds shift for dark mode contrast */
@@ -267,7 +281,8 @@
    :not([data-mode="light"]) (not :not([data-mode])) matches the existing
    theme/accent system-dark rules; data-mode="light" keeps forcing light. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-mode="light"]) {
+  :root:not([data-mode="light"]),
+  :where([data-theme]:not([data-mode="light"], [data-mode="light"] [data-theme])) {
     --lightness-primary: 65%;
     --chroma-primary: 0.18;
 
