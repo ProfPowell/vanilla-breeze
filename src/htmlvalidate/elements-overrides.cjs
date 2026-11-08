@@ -129,6 +129,8 @@ module.exports = {
   "code-playground": { flow: true, permittedContent: ["@flow"] },
   "epub-reader":     { flow: true, permittedContent: ["@flow"] },
   "bg-wc":           { flow: true, permittedContent: ["@flow"] },
+  // External @profpowell/marquee-wc (light DOM; credits mode wraps block content).
+  "marquee-wc":      { flow: true, permittedContent: ["@flow"] },
   // External @profpowell/border-wc (decorative edge effect), loaded from CDN in demos.
   "border-wc":       { flow: true, phrasing: true, permittedContent: ["@flow"] },
 

@@ -1,0 +1,100 @@
+---
+layout: docs
+title: marquee-wc integration
+description: "Drop a marquee-wc element into a Vanilla Breeze page — an accessible, constant-velocity successor to the marquee tag whose themed modes read VB tokens directly."
+currentSection: explore
+currentPath: /docs/integrations/web-components/marquee-wc/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/integrations/">Integrations</a></li>
+    <li><a href="/docs/integrations/web-components/">Web Components</a></li>
+    <li><span aria-current="page">marquee-wc</span></li>
+  </ol>
+</nav>
+
+<h1>marquee-wc</h1>
+<p class="lead">The <code>&lt;marquee&gt;</code> tag reborn as an accessible, constant-velocity web component — tickers, breaking-news bars, credit rolls, dot-matrix boards, and 15 per-letter motion modes. It renders in light DOM and reads VB <code>--color-*</code>, <code>--font-*</code>, <code>--size-*</code> and <code>--radius-*</code> tokens directly, so no bridge is needed.</p>
+
+<section>
+  <h2>Where to find it</h2>
+  <ul>
+    <li>npm: <a href="https://www.npmjs.com/package/@profpowell/marquee-wc"><code>@profpowell/marquee-wc</code></a></li>
+    <li>GitHub: <a href="https://github.com/ProfPowell/marquee-wc">ProfPowell/marquee-wc</a></li>
+    <li>Live demos: <a href="https://profpowell.github.io/marquee-wc/">profpowell.github.io/marquee-wc</a></li>
+    <li>License: MIT</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Install</h2>
+  <p>Via CDN — the component is light DOM, so load its stylesheet as well as the script:</p>
+  <code-block language="html" data-escape><link rel="stylesheet" href="https://unpkg.com/@profpowell/marquee-wc@1.7.1/dist/marquee-wc.css">
+<script type="module" src="https://unpkg.com/@profpowell/marquee-wc@1.7.1/dist/marquee-wc.js"></script></code-block>
+  <p>Or via npm:</p>
+  <code-block language="bash" data-escape>npm install @profpowell/marquee-wc</code-block>
+  <code-block language="javascript" data-escape>import '@profpowell/marquee-wc';
+import '@profpowell/marquee-wc/style.css';</code-block>
+  <p>Not currently bundled into Vanilla Breeze. There is no build coupling between the two repos; the interface is purely CSS custom properties.</p>
+</section>
+
+<section>
+  <h2>Demo</h2>
+  <p>A Vanilla Breeze page with a handful of <code>&lt;marquee-wc&gt;</code> modes. Surfaces, text, fonts and spacing all resolve from VB tokens, and text on coloured fills (<code>breaking-news</code>, <code>ransom</code> chips) uses <code>--color-text-on-*-auto</code> to stay readable. Switch the site theme to see them re-skin.</p>
+  <browser-window url="marquee-wc-basic" src="/docs/integrations/web-components/demos/marquee-wc-basic.html"></browser-window>
+</section>
+
+<section>
+  <h2>Quick reference</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute / API</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>mode</code></td><td>Surface theme (<code>ticker</code>, <code>breaking-news</code>, <code>code-block</code>, <code>screen-saver</code>, <code>credits</code>, <code>dot-matrix</code>) or per-letter motion (<code>bounce</code>, <code>wave</code>, <code>ransom</code>, <code>decode</code>, …).</td></tr>
+      <tr><td><code>direction</code></td><td><code>left</code> (default), <code>right</code>, <code>up</code>, <code>down</code>.</td></tr>
+      <tr><td><code>behavior</code></td><td><code>loop</code> (default), <code>slide</code>, <code>alternate</code>.</td></tr>
+      <tr><td><code>speed</code></td><td>Pixels per second (default 50). Velocity stays constant whatever the content length.</td></tr>
+      <tr><td><code>unit</code></td><td><code>letter</code> (default) or <code>word</code> — granularity for motion modes.</td></tr>
+      <tr><td><code>pause-on-hover</code></td><td>Pause on hover and on keyboard focus.</td></tr>
+      <tr><td><code>fade</code></td><td>Mask the leading and trailing edges.</td></tr>
+      <tr><td><code>reduced-motion</code></td><td><code>respect</code> (default) or <code>ignore</code>.</td></tr>
+      <tr><td><code>.start() / .stop() / .toggle()</code></td><td>Legacy <code>&lt;marquee&gt;</code>-compatible playback control.</td></tr>
+      <tr><td><code>--marquee-gap</code>, <code>--marquee-fade-size</code></td><td>Spacing overrides. Default to VB <code>--size-*</code> tokens.</td></tr>
+      <tr><td><code>--marquee-bg</code>, <code>--marquee-fg</code></td><td>Colour overrides for the themed modes. Beat the VB tokens.</td></tr>
+    </tbody>
+  </table>
+  <p>Fires <code>marquee-start</code>, <code>marquee-pause</code> and <code>marquee-cycle</code>. See the <a href="https://profpowell.github.io/marquee-wc/api.html">API reference</a> for everything else.</p>
+</section>
+
+<section>
+  <h2>VB integration</h2>
+  <ul>
+    <li><strong>Tokens:</strong> themed modes read <code>--color-surface</code>, <code>--color-background</code>, <code>--color-text</code>, <code>--color-accent</code>, <code>--color-error</code>, <code>--font-mono</code>/<code>-sans</code>/<code>-serif</code>, <code>--radius-m</code>, and the <code>--size-*</code> scale. A <code>--marquee-*</code> override wins; otherwise the VB token applies; otherwise a built-in fallback.</li>
+    <li><strong>Cascade layer:</strong> all styles live in <code>@layer web-components</code>, so they slot into VB's layer order and theme packs can restyle marquees.</li>
+    <li><strong>Spacing:</strong> because gaps and paddings use <code>--size-*</code>, <code>data-fluid</code> and the <code>a11y-large-text</code> theme scale marquees along with the rest of the page.</li>
+    <li><strong>Reduced motion:</strong> both <code>prefers-reduced-motion</code> and VB's <code>&lt;html data-motion-reduced&gt;</code> toggle stop all motion, including the JS-driven <code>decode</code> scramble.</li>
+  </ul>
+  <p>Requires marquee-wc 1.7.0 or later; earlier versions predate the layer, spacing-token and motion-toggle support.</p>
+</section>
+
+<section>
+  <h2>marquee-wc or <code>data-effect="marquee"</code>?</h2>
+  <p>VB's built-in <a href="/docs/attributes/data-effect/#marquee"><code>data-effect="marquee"</code></a> is a CSS-only scroll for a simple strip of content. Reach for marquee-wc when you need constant velocity regardless of content length, vertical or alternating motion, auto-fill clones, off-screen pausing, playback events, or the themed and per-letter modes.</p>
+</section>
+
+<section>
+  <h2>Usage</h2>
+  <code-block language="html" data-escape>
+<html data-theme="nord">
+  <body>
+    <marquee-wc mode="ticker" speed="60" pause-on-hover>
+      VB +1.2% · CSS +0.8% · HTML +2.4%
+    </marquee-wc>
+
+    <marquee-wc direction="up" mode="credits">
+      <p>Directed by Vanilla Breeze</p>
+    </marquee-wc>
+  </body>
+</html></code-block>
+  <p>The original content stays in the accessibility tree; the clones added for seamless looping are <code>aria-hidden</code>, <code>inert</code>, and stripped of ids.</p>
+</section>
