@@ -152,8 +152,10 @@ form-field:not([data-no-icon], [data-type="checkbox"], [data-type="radio"]):is(:
   padding-inline-end: var(--_icon-pad, 2.5rem);
 }
 
-/* Shared icon box */
-form-field:not([data-no-icon], [data-type="checkbox"], [data-type="radio"], :has(:is([type="checkbox"], [type="radio"]))):is(:has(:user-valid:required), [data-valid], :has(:user-invalid), [data-invalid])::after {
+/* Shared icon box. The state list is :where() so it adds no specificity:
+   with :is(), :has(:user-valid:required) outranked the invalid rule below,
+   and a [data-invalid] field showed the green check. */
+form-field:not([data-no-icon], [data-type="checkbox"], [data-type="radio"], :has(:is([type="checkbox"], [type="radio"]))):where(:has(:user-valid:required), [data-valid], :has(:user-invalid), [data-invalid])::after {
   content: '';
   position: absolute;
   inset-inline-end: var(--_icon-inset, var(--size-s));

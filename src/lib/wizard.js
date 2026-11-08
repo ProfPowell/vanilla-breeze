@@ -10,7 +10,10 @@
  *   are disabled (marked data-conditional-disabled, same contract as
  *   data-show-when), so they neither block validation nor get submitted.
  * - On a submit attempt, an invalid control in another step takes the user
- *   to that step and reports it (covers data-wizard-validate="none").
+ *   to that step and reports it (covers data-wizard-validate="none"). The
+ *   novalidate that data-validate sets doesn't turn this off; with
+ *   data-validate, wizard:complete fires on the coordinator's
+ *   vb:beforesubmit (once, and only for a submission that goes ahead).
  * - Validation, conditions and the summary read form-associated custom
  *   elements through form.elements.
  * - After a step change, focus moves to the new step's <legend>.
@@ -195,6 +198,7 @@ class WizardController {
     this.#form.addEventListener('keydown', (e) => this.#handleKeydown(e));
     this.#form.addEventListener('click', (e) => this.#handleSubmitClick(e));
     this.#form.addEventListener('submit', (e) => this.#handleSubmit(e));
+    this.#form.addEventListener('vb:beforesubmit', (e) => this.#handleBeforeSubmit(e));
 
     // Native form.reset(): runs after the browser restored the defaults;
     // a cancelled reset runs nothing.
@@ -414,7 +418,7 @@ class WizardController {
       this.next();
       return;
     }
-    if (!this.#form.noValidate && this.#routeToInvalidStep()) e.preventDefault();
+    if (!this.#validationOff() && this.#routeToInvalidStep()) e.preventDefault();
   }
 
   /**
@@ -426,8 +430,17 @@ class WizardController {
     const btn = /** @type {Element} */ (e.target)?.closest?.('button, input');
     if (!btn || /** @type {HTMLButtonElement} */ (btn).type !== 'submit') return;
     if (/** @type {HTMLButtonElement} */ (btn).form !== this.#form) return;
-    if (this.#form.noValidate || btn.hasAttribute('formnovalidate')) return;
+    if (this.#validationOff() || btn.hasAttribute('formnovalidate')) return;
     if (this.#routeToInvalidStep()) e.preventDefault();
+  }
+
+  /**
+   * Is submit-time validation off? An authored novalidate turns it off; the
+   * novalidate that data-validate's coordinator sets does not (it moves
+   * validation into JS, it doesn't drop it).
+   */
+  #validationOff() {
+    return this.#form.noValidate && !this.#form.hasAttribute('data-validate');
   }
 
   /**
@@ -460,6 +473,26 @@ class WizardController {
       this.next();
       return;
     }
+    // data-validate: the coordinator cancels every first-pass submit and
+    // may block it; completion waits for its vb:beforesubmit instead.
+    if (this.#form.hasAttribute('data-validate')) return;
+    this.#complete();
+  }
+
+  /**
+   * The coordinator let a submission through (vb:beforesubmit). Check once
+   * the event has finished dispatching, so a later listener's cancel
+   * (bot protection) counts.
+   * @param {Event} e
+   */
+  #handleBeforeSubmit(e) {
+    if (!this.#form.hasAttribute('data-validate')) return;
+    queueMicrotask(() => {
+      if (!e.defaultPrevented && this.#isLastStep()) this.#complete();
+    });
+  }
+
+  #complete() {
     cancelAnimationFrame(this.#saveRafId);
     this.#dispatchEvent('wizard:complete');
     this.#clearState();

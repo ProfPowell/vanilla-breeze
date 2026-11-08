@@ -398,3 +398,22 @@ test('forced colors: state icons use system colours', async ({ page }) => {
   expect(r.adjust).toBe('none');
   expect(r.bg).not.toBe('rgba(0, 0, 0, 0)');
 });
+
+test('data-invalid (server-side error) shows the error icon, not the check', async ({ page }) => {
+  // :is() takes the specificity of its most specific argument whether it
+  // matches or not, so :has(:user-valid:required) in the shared icon rule
+  // outranked the invalid rule and a static data-invalid showed the check.
+  await load(page, `<form-field id="bad" data-invalid><label for="n">Name</label><input id="n" value="Ada">
+    <output class="error">That name is taken</output></form-field>
+    <form-field id="good" data-valid><label for="m">Name</label><input id="m" value="Ada"></form-field>`);
+  const icon = (sel) => page.locator(sel).evaluate((el) => {
+    const s = getComputedStyle(el, '::after');
+    return { bg: s.backgroundColor, mask: s.maskImage };
+  });
+  await expect(page.locator('#bad')).toHaveAttribute('data-invalid', '');
+  const bad = await icon('#bad');
+  const good = await icon('#good');
+  expect(bad.mask).toContain('M18');
+  expect(good.mask).toContain('M20');
+  expect(bad.bg).not.toBe(good.bg);
+});

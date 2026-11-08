@@ -14,7 +14,8 @@
  * Text is localizable with data-label-* on the input: prompt ("Drag a file
  * here or" / "Drag files here or" with `multiple`), browse ("browse"),
  * files ("Selected files"), rejected ("Not accepted: {files}"),
- * single ("Only one file allowed. Kept {file}."). Sizes use Intl with the
+ * single ("Only one file allowed. Kept {file}."), and the accept hint's
+ * wildcard words images / audio / video. Sizes use Intl with the
  * closest [lang].
  *
  * @attr {string} data-upload - Enable drop zone enhancement
@@ -93,14 +94,27 @@ export function matchesAccept(file, tokens) {
   });
 }
 
+const WILDCARD_LABELS = /** @type {Record<string, string>} */ ({ image: 'images', audio: 'audio', video: 'video' });
+
 /**
- * Human-readable list of accept tokens: ".pdf,.doc" -> "PDF, DOC".
+ * Human-readable list of accept tokens: ".pdf,.doc" -> "PDF, DOC";
+ * "image/*" -> "images" (data-label-images / -audio / -video); an exact
+ * MIME type shows its subtype ("application/pdf" -> "PDF") when that is a
+ * plain word, else the type as written. Duplicates collapse.
+ * @param {HTMLInputElement} input
  * @param {string} accept
  */
-function acceptHint(accept) {
-  return acceptTokens(accept)
-    .map(t => (t.startsWith('.') ? t.slice(1) : t).toUpperCase())
-    .join(', ');
+function acceptHint(input, accept) {
+  const labels = acceptTokens(accept).map((t) => {
+    if (t.startsWith('.')) return t.slice(1).toUpperCase();
+    const [type, sub = ''] = t.split('/');
+    if (sub === '*') {
+      const word = WILDCARD_LABELS[type];
+      return word ? labelFor(input, word, word) : t;
+    }
+    return /^[a-z0-9]+$/.test(sub) ? sub.toUpperCase() : t;
+  });
+  return [...new Set(labels)].join(', ');
 }
 
 /**
@@ -146,7 +160,7 @@ function enhanceUpload(input) {
     const accept = input.getAttribute('accept') || '';
     if (accept) {
       const small = document.createElement('small');
-      small.textContent = acceptHint(accept);
+      small.textContent = acceptHint(input, accept);
       prompt.append(small);
     }
 

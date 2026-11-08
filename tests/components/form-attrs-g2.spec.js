@@ -110,7 +110,7 @@ test.describe('data-upload', () => {
     expect(outline).toBe('solid');
 
     const promptId = await page.locator('#doc').getAttribute('aria-describedby');
-    await expect(page.locator(`#${promptId}`)).toHaveText(/Drag a file here or\s*browse\s*PDF, IMAGE\/\*/);
+    await expect(page.locator(`#${promptId}`)).toHaveText(/Drag a file here or\s*browse\s*PDF, images/);
     await expect(page.locator('#many').locator('xpath=..').locator('.upload-prompt')).toContainText('Drag files here or');
   });
 
