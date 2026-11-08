@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-08
+
+0.6.0 adds themes set by the site (`<html data-theme-source="site">`: the page's brand wins over a visitor's stored brand, and the theme manager keeps the ids it did not write) and scoped themes (a theme on an `<article>` or `<main>` gets its own derived colors, fonts and content rules). It also carries the element and attribute reviews listed below.
+
 ### Security
 
 - **Native attributes review.**
