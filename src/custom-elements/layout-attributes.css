@@ -714,8 +714,15 @@ main[data-layout="sidebar-right"] > aside  { container-name: region-main-aside; 
 
 /* Enable container queries on semantic sections
    Exclude floated aside variants — container-type: inline-size
-   breaks float shrink-to-fit width calculation */
-main, article, section, aside:not(.float):not(.sidenote) {
+   breaks float shrink-to-fit width calculation — and popovers: a popover
+   is shrink-to-fit too, and size containment collapsed an open
+   <section popover> to its padding (~20px wide). The :where() keeps each
+   selector's specificity unchanged, so the container-type: normal
+   antidotes below still win where they did. */
+main:not(:where([popover])),
+article:not(:where([popover])),
+section:not(:where([popover])),
+aside:not(.float):not(.sidenote):not(:where([popover])) {
   container-type: inline-size;
 }
 

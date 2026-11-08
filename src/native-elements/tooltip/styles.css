@@ -5,10 +5,25 @@
  * <button aria-describedby="tip1">Hover me</button>
  * <div id="tip1" popover="hint" role="tooltip">Tooltip content</div>
  *
- * For click-triggered (no JS needed):
+ * For click-triggered (no JS needed where anchor positioning is
+ * supported: the invoker is the popover's implicit anchor):
  * <button popovertarget="tip2">Click me</button>
  * <div id="tip2" popover="auto" role="tooltip">Click tooltip</div>
  */
+
+/* --- Interest timing ---
+   Native interest invokers and VB's polyfill (utils/interest-polyfill.js)
+   both read the delays from the INVOKER, not the popover, so VB's
+   tooltip timing sits on [interestfor]. The standard properties are for
+   native support (Chrome 142+); the custom properties are what the
+   polyfill reads where they are not. Set as shorthands so an author's
+   shorthand or longhand (the polyfill reads its longhands first) both
+   override them. Override both on the invoker:
+   [interestfor] { interest-delay: 0s 300ms; --interest-delay: 0s 300ms } */
+[interestfor] {
+  interest-delay: 200ms 100ms;
+  --interest-delay: 200ms 100ms;
+}
 
 [role="tooltip"][popover] {
   /* Reset popover defaults */
@@ -65,6 +80,20 @@
   inset: auto;
 }
 
+/* Anything else (a click tooltip opened by popovertarget, an authored
+   interestfor tip) anchors to its invoker: a popover shown by an invoker
+   has it as its implicit anchor, and the interest polyfill writes an
+   inline position-anchor (which wins over auto). position-anchor: auto is
+   set explicitly because Chromium 144-150 made the initial value none.
+   tool-tip's pop-over (data-anchor-name) places itself. Without anchor
+   positioning, tooltip-init.js positions click tooltips with top/left. */
+@supports (anchor-name: --x) {
+  [role="tooltip"][popover]:not([data-anchor], [data-anchor-name]) {
+    position-anchor: auto;
+    inset: auto;
+  }
+}
+
 /* anchor() and the centring translate only make sense with anchor
    positioning. Unguarded, the translate still applied on the JS
    fallback path (pixel insets) and shifted the tip twice; tool-tip
@@ -72,26 +101,26 @@
    outside the guard so the UA popover inset:0 never fights the
    fallback's pixel insets. */
 @supports (anchor-name: --x) {
-  [role="tooltip"][popover][data-anchor]:not([data-tooltip-position]),
-  [role="tooltip"][popover][data-anchor][data-tooltip-position="top"] {
+  [role="tooltip"][popover]:not([data-anchor-name]):not([data-tooltip-position]),
+  [role="tooltip"][popover]:not([data-anchor-name])[data-tooltip-position="top"] {
     bottom: anchor(top);
     left: anchor(center);
     translate: -50% calc(-1 * var(--size-xs));
   }
 
-  [role="tooltip"][popover][data-anchor][data-tooltip-position="bottom"] {
+  [role="tooltip"][popover]:not([data-anchor-name])[data-tooltip-position="bottom"] {
     top: anchor(bottom);
     left: anchor(center);
     translate: -50% var(--size-xs);
   }
 
-  [role="tooltip"][popover][data-anchor][data-tooltip-position="left"] {
+  [role="tooltip"][popover]:not([data-anchor-name])[data-tooltip-position="left"] {
     right: anchor(left);
     top: anchor(center);
     translate: calc(-1 * var(--size-xs)) -50%;
   }
 
-  [role="tooltip"][popover][data-anchor][data-tooltip-position="right"] {
+  [role="tooltip"][popover]:not([data-anchor-name])[data-tooltip-position="right"] {
     left: anchor(right);
     top: anchor(center);
     translate: var(--size-xs) -50%;
@@ -138,7 +167,8 @@
 
 /* --- Content inside tooltips --- */
 
-[role="tooltip"][popover] {
+/* Plain hints share the inverted surface, so they share the overlays. */
+:is([role="tooltip"][popover], [popover="hint"]) {
   /* The tooltip surface is always dark (in light mode) / always light
      (in dark mode) regardless of theme, so kbd / code overlays can't
      use the light-dark() overlay tokens — those flip with the page mode,
@@ -191,10 +221,6 @@
   position-area: block-start;
   margin-block-end: 8px;
   position-try-fallbacks: flip-block;
-
-  /* Polyfill timing */
-  --interest-delay-start: 200ms;
-  --interest-delay-end: 100ms;
 
   /* Animation */
   opacity: 0;

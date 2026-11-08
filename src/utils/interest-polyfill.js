@@ -468,7 +468,7 @@ if (!nativeSupported) {
 }
 
 // ---- Positioning for native interestfor (CSS Anchor Positioning) ----
-// When interestfor is native (Chrome 133+), the polyfill skips show/hide.
+// When interestfor is native (Chrome 142+), the polyfill skips show/hide.
 // But we still need CSS anchor names for positioning.
 
 if (nativeSupported && supportsAnchor) {

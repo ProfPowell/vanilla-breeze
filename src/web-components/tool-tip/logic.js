@@ -207,6 +207,7 @@ class ToolTip extends VBElement {
 
     if (this.#useInterestFor) {
       this.#trigger.setAttribute('interestfor', tip.id);
+      this.#applyInterestDelay();
     } else {
       // JS-fallback hover/focus listeners
       this.listen(this.#trigger, 'mouseenter', this.#scheduleShow);
@@ -268,6 +269,7 @@ class ToolTip extends VBElement {
 
     if (this.#useInterestFor) {
       this.#trigger.setAttribute('interestfor', card.id);
+      this.#applyInterestDelay();
     } else {
       this.listen(this.#trigger, 'mouseenter', this.#scheduleShow);
       this.listen(this.#trigger, 'mouseleave', this.#scheduleHide);
@@ -299,7 +301,14 @@ class ToolTip extends VBElement {
     clearTimeout(this.#hideTimer);
     const trigger = this.#trigger;
     if (trigger) {
-      if (this.#useInterestFor) trigger.removeAttribute('interestfor');
+      if (this.#useInterestFor) {
+        trigger.removeAttribute('interestfor');
+        if (this.#delayApplied) {
+          trigger.style.removeProperty('interest-delay-start');
+          trigger.style.removeProperty('--interest-delay-start');
+          this.#delayApplied = false;
+        }
+      }
       for (const [attr, id] of this.#addedRefs) removeIdRef(trigger, attr, id);
       if (this.#addedLabel !== undefined && trigger.getAttribute('aria-label') === this.#addedLabel) {
         trigger.removeAttribute('aria-label');
@@ -374,6 +383,24 @@ class ToolTip extends VBElement {
     } else {
       tip.style.left = `${Math.round(clamp(r.left + (r.width - tip.offsetWidth) / 2, tip.offsetWidth, vw))}px`;
     }
+  }
+
+  #delayApplied = false;
+
+  /**
+   * On the interestfor path the browser (or VB's polyfill) does the timing
+   * and reads it from the invoker, so an authored `delay` is written there
+   * as both the standard and the polyfill property.
+   */
+  #applyInterestDelay() {
+    const raw = this.getAttribute('delay');
+    const trigger = this.#trigger;
+    if (raw === null || !trigger) return;
+    const ms = parseInt(raw, 10);
+    if (!Number.isFinite(ms) || ms < 0) return;
+    trigger.style.setProperty('interest-delay-start', `${ms}ms`);
+    trigger.style.setProperty('--interest-delay-start', `${ms}ms`);
+    this.#delayApplied = true;
   }
 
   #scheduleShow = () => {

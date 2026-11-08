@@ -3,6 +3,26 @@
 // per-component api.json manifests.
 
 module.exports = {
+  // Global attribute values newer than html-validate's html5 element data
+  // (8.x): hidden="until-found" (collapsed but searchable; find-in-page
+  // reveals it and fires beforematch) and contenteditable="plaintext-only"
+  // (Baseline 2025). Arrays replace the base enum, so it is restated. hidden
+  // drops its boolean flag: a boolean attribute rejects every value but its
+  // own name, and attribute-boolean-style flags any value at all.
+  "*": {
+    attributes: {
+      contenteditable: {
+        omit: true,
+        enum: ["true", "false", "plaintext-only"],
+      },
+      hidden: {
+        boolean: false,
+        omit: true,
+        enum: ["hidden", "until-found"],
+      },
+    },
+  },
+
   // <dl-item> is VB's named alternative to the spec's <div> group
   // wrapper. It is only meaningful as a direct child of <dl> (the HTML
   // spec itself does not list it among <dl>'s permitted children — see

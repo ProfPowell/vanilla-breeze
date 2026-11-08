@@ -333,8 +333,12 @@ function initTooltips(root = document) {
  * @param {Element} tooltip - The tooltip element
  */
 function positionTooltip(trigger, tooltip) {
-  // Skip if anchor positioning is handling it
-  if (tooltip.hasAttribute('data-anchor')) return;
+  /* Skip where CSS anchor positioning places it: [data-anchor] tips use
+     the anchor-name pair from setupAnchor(), and the rest (click tips
+     opened by popovertarget) use the invoker as their implicit anchor
+     (native-elements/tooltip/styles.css). Inline top/left would fight
+     the anchor() insets. */
+  if (supportsAnchor || tooltip.hasAttribute('data-anchor')) return;
 
   const triggerRect = trigger.getBoundingClientRect();
   const position = /** @type {HTMLElement} */ (tooltip).dataset.tooltipPosition || 'top';
