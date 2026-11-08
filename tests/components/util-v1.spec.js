@@ -104,6 +104,19 @@ test.describe('data-format-date', () => {
     await expect(page.locator('#p')).toHaveText(/2:30\s?PM/);
     await expect(page.locator('#bad')).toHaveText('February 9, 2026');
   });
+
+  test('yearless dates, times and durations are left as written', async ({ page }) => {
+    await load(page, `
+      <time id="md" datetime="09-22" data-format-date="long">22 September</time>
+      <time id="t" datetime="14:30" data-format-date="long">2:30 pm</time>
+      <time id="dur" datetime="PT2H" data-format-date="long">2 hours</time>
+      <time id="ok" datetime="2026-09-22" data-format-date="long">x</time>`,
+    { modules: [DATE] });
+    await expect(page.locator('#ok')).toHaveText('September 22, 2026');
+    await expect(page.locator('#md')).toHaveText('22 September');
+    await expect(page.locator('#t')).toHaveText('2:30 pm');
+    await expect(page.locator('#dur')).toHaveText('2 hours');
+  });
 });
 
 /* ---------------------------------------------------------- format-number */

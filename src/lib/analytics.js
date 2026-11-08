@@ -314,7 +314,18 @@ function instrumentOutboundLinks() {
 
     const siteId = encodeURIComponent(state.config?.siteId ?? 'default');
     const pingUrl = `${getEndpoint('click')}?site=${siteId}&from=${encodeURIComponent(location.pathname)}`;
-    if (!link.hasAttribute('ping')) link.setAttribute('ping', pingUrl);
+    // The ping is added (or removed) at activation time, not when the link
+    // is wired: opt-out signals (consent, GPC, DNT, vb_optout) can change
+    // after load, and an opted-out visitor must not send a hyperlink audit.
+    // An authored ping attribute is the page's own and is left alone.
+    const ownPing = !link.hasAttribute('ping');
+    const syncPing = () => {
+      if (!ownPing) return;
+      if (isOptedOut(state.config)) link.removeAttribute('ping');
+      else link.setAttribute('ping', pingUrl);
+    };
+    link.addEventListener('click', syncPing, { capture: true });
+    link.addEventListener('auxclick', syncPing, { capture: true });
 
     link.addEventListener('click', () => {
       if (isOptedOut(state.config)) return;

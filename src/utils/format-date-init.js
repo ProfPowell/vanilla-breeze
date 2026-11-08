@@ -115,6 +115,10 @@ function formatDate(el) {
   clearTimer(el);
   const raw = el.getAttribute('datetime')?.trim();
   if (!raw) return;
+  // Only dates and date-times (they start with the year). Yearless dates
+  // ("09-22"), times ("14:30"), weeks and durations are left as written:
+  // V8's lenient Date parser turns "09-22" into 22 Sep 2001.
+  if (!/^\d{4}/.test(raw)) return;
 
   const datetime = new Date(raw);
   if (isNaN(datetime.getTime())) return;
