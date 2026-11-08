@@ -118,3 +118,24 @@ test('a scoped theme sets its own text font (body resolves --font-sans on body)'
   const css = readFileSync(join(repo, 'src/base/reset.css'), 'utf8');
   assert.match(css, /:where\(\[data-theme\]:not\(:root\)\) \{\s+font-family: var\(--font-sans\);/);
 });
+
+test('theme content rules under :is(main, article) also match the themed main/article itself', () => {
+  // Cook's "Article only" scope puts data-theme on the <article>, VP's editor
+  // on <main>: `[data-theme~=x] :is(main, article) h1` alone needs a main or
+  // article INSIDE the themed element. Each must be
+  // `:is(& :is(main, article), &:is(main, article))` (same specificity).
+  const dir = join(repo, 'src/tokens/themes');
+  const bare = [];
+  let fixed = 0;
+  for (const f of readdirSync(dir).filter((x) => x.startsWith('_') && x.endsWith('.css'))) {
+    parse(`src/tokens/themes/${f}`).walkRules((rule) => {
+      for (const s of items(rule.selector)) {
+        if (s.startsWith(':root[')) continue; // root-only selectors
+        if (/:is\(& :is\(main, article\), &:is\(main, article\)\)|:is\(\[data-theme~="[\w-]+"\] :is\(main, article\), :is\(main, article\)\[data-theme~="[\w-]+"\]\)/.test(s)) { fixed++; continue; }
+        if (/:is\(main, article\)/.test(s) && /^(&|\[data-theme)/.test(s)) bare.push(`${f}: ${s}`);
+      }
+    });
+  }
+  assert.ok(fixed > 200, `only ${fixed} rewritten selectors found`);
+  assert.deepEqual(bare, []);
+});
