@@ -45,16 +45,9 @@ function walk(dir) {
 }
 
 /**
- * Known, deliberate gaps. package.json "files" excludes dist/cdn/packs/icons/fonts/
- * (3.7 MB Material Symbols font, commit bc6bb9bcd) but the icons pack CSS still
- * declares an @font-face for it, so npm/jsDelivr consumers get a 404 for that face.
- * Resolve by shipping the font, or by dropping the @font-face from the published
- * pack CSS; then delete the entries here (a stale entry fails the test).
+ * Known, deliberate gaps: "<file>|<url>" -> reason. A stale entry fails the test.
  */
-const KNOWN_UNSHIPPED = new Map([
-  ['dist/cdn/packs/icons.full.css|./icons/fonts/material-symbols-outlined.woff2', 'excluded from "files"'],
-  ['dist/cdn/packs/icons.theme.css|./icons/fonts/material-symbols-outlined.woff2', 'excluded from "files"'],
-]);
+const KNOWN_UNSHIPPED = new Map([]);
 
 /** Relative url() targets in CSS text (comments stripped). */
 function relativeUrls(css) {
@@ -98,5 +91,18 @@ describe('dist/cdn CSS url() targets', () => {
       if (!seenKnown.has(key)) missing.push(`stale KNOWN_UNSHIPPED entry (no longer referenced): ${key}`);
     }
     assert.deepEqual(missing, [], `Unresolved url() targets:\n${missing.join('\n')}`);
+  });
+
+  it('icons pack CSS loads Material Symbols from Google Fonts, first, with no local font url()', () => {
+    const GF = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap';
+    // esbuild minifies `@import url("x");` to `@import"x";`; accept either form.
+    const IMPORT = new RegExp(`^@import\\s*(?:url\\(\\s*)?["']${GF.replace(/[.+?^${}()|[\]\\]/g, '\\$&')}["']\\s*\\)?\\s*;`);
+    for (const name of ['icons.theme.css', 'icons.full.css']) {
+      const css = readFileSync(join(cdn, 'packs', name), 'utf8');
+      const body = css.replace(/^@charset[^;]*;\s*/i, '').replace(/^(?:\/\*[\s\S]*?\*\/\s*)+/, '');
+      assert.ok(IMPORT.test(body), `${name} must start with the Google Fonts @import (after @charset)`);
+      assert.ok(!/url\([^)]*material-symbols/i.test(css.replace(IMPORT, '')), `${name} must not reference a local material-symbols file`);
+      assert.ok(!/@font-face\s*\{[^}]*Material Symbols/i.test(css), `${name} must not declare a local Material Symbols @font-face`);
+    }
   });
 });

@@ -703,6 +703,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Icons pack font** — The icons pack (`icons.theme.css` / `icons.full.css`, the `./icons-css` export) loads Material Symbols Outlined from Google Fonts through an `@import` at the top of the file. The self-hosted file was never in the npm package, so icons failed to load from npm/CDN. To self-host, replace the `@import` with your own `@font-face` (see the comment in `src/packs/icons/icons.theme.css`).
 - **Native attributes review.**
   - **integrity** — Corrected the claim that SRI is "silently skipped" without `crossorigin`: a cross-origin no-cors load with `integrity` is blocked (fails closed). Corrected multiple-hash guidance (only the strongest algorithm's hashes count). Replaced the malformed 63-character sample hash with the real SHA-384 hashes of the VB 0.5.0 CDN entry files and the `openssl dgst -sha384 -binary file | openssl base64 -A` command. Added `rel=preload`/`modulepreload`, import-map `integrity`, and what SRI on VB's entry tags does not cover (packs, themes, autoload chunks, Mermaid).
   - **nonce** — Corrected "nonces do not protect external scripts": nonces apply to `<script src>` too, and the recommended strict CSP is a nonce on every script plus `'strict-dynamic'`, `object-src 'none'`, `base-uri 'none'`. Replaced the caching rationale with the real risk (nonce reuse), noted that nonce hiding needs a header-delivered policy, and fixed the Express sample (valid JS). Added a "VB under CSP" section and a live meta-CSP demo.
