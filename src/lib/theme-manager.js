@@ -114,9 +114,15 @@ function authoredRoot() {
   const root = document.documentElement;
   const boot = /** @type {any} */ (window).__vbAuthoredRoot;
   /** @param {string} attr */
-  const read = (attr) => (boot && typeof boot === 'object' && attr in boot)
-    ? (boot[attr] ?? null)
-    : root.getAttribute(attr);
+  const read = (attr) => {
+    if (boot && typeof boot === 'object') {
+      if (attr in boot) return boot[attr] ?? null;
+      // A boot script may have written data-mode itself: a live value the
+      // snapshot lacks was not authored by the page.
+      if (attr === 'data-mode') return null;
+    }
+    return root.getAttribute(attr);
+  };
   /** @type {Record<string, string|null>} */
   const snap = { theme: read('data-theme'), mode: read('data-mode'), themeSource: read('data-theme-source') };
   for (const [key, attr] of Object.entries(ROOT_ATTRS)) snap[key] = read(attr);
@@ -150,10 +156,16 @@ function toHexColor(color) {
  * modifiers. Empty string when nothing is pinned. Pure (no DOM).
  *
  * @param {string} [domTheme] - the authored `data-theme` attribute value
+ * @param {string|null} [source] - the `data-theme-source` value
  * @returns {string}
  */
-export function pinnedBrandFrom(domTheme) {
-  return (domTheme || '').split(/\s+/).find((t) => t && !t.startsWith('a11y-')) || '';
+export function pinnedBrandFrom(domTheme, source) {
+  const tokens = (domTheme || '').split(/\s+/).filter(Boolean);
+  // A site page (data-theme-source="site") lists the brand first, and
+  // "default" is a valid brand there: `default vp-site` is brand default
+  // plus the extra id vp-site.
+  if (source === 'site') return tokens[0] && !tokens[0].startsWith('a11y-') ? tokens[0] : '';
+  return tokens.find((t) => !t.startsWith('a11y-')) || '';
 }
 
 /**
@@ -165,11 +177,14 @@ export function pinnedBrandFrom(domTheme) {
  * @param {string} current - the live `data-theme` value
  * @param {string} managed - the brand the manager last wrote ('' if none)
  * @param {string} brand - the brand to apply
+ * @param {boolean} [keepDefault] - site pages: write `default` first when
+ *   other ids remain, so they are not mistaken for the brand
  * @returns {string}
  */
-export function mergeThemeTokens(current, managed, brand) {
+export function mergeThemeTokens(current, managed, brand, keepDefault = false) {
   const rest = (current || '').split(/\s+/).filter((t) => t && t !== managed && t !== brand);
-  return (brand !== 'default' ? [brand, ...rest] : rest).join(' ');
+  if (brand !== 'default') return [brand, ...rest].join(' ');
+  return (keepDefault && rest.length ? ['default', ...rest] : rest).join(' ');
 }
 
 /**
@@ -217,9 +232,10 @@ export function effectiveModeFor(prefMode, pageMode, systemDark) {
  * @returns {string} the brand id to apply
  */
 export function resolveInitialBrand(stored, domTheme, source) {
-  if (source === 'site' && pinnedBrandFrom(domTheme)) return pinnedBrandFrom(domTheme);
+  const pin = pinnedBrandFrom(domTheme, source);
+  if (source === 'site' && pin) return pin;
   if (stored?.brand && stored.brand !== DEFAULTS.brand) return stored.brand;
-  return pinnedBrandFrom(domTheme) || DEFAULTS.brand;
+  return pin || DEFAULTS.brand;
 }
 
 const SEED_PROPERTIES = [
@@ -265,13 +281,15 @@ export const ThemeManager = {
       // default; only an explicit, different stored brand replaces it.
       // Read from the authored snapshot: the boot script may already have
       // written the stored brand onto <html>.
-      _pinnedBrand = pinnedBrandFrom(authoredRoot().theme ?? '');
-      _appliedBrand = _pinnedBrand;
       _themeSource = authoredRoot().themeSource ?? null;
+      _pinnedBrand = pinnedBrandFrom(authoredRoot().theme ?? '', _themeSource);
+      // The brand token really in the live attribute: the authored pin, or
+      // whatever a boot script wrote over it.
+      _appliedBrand = pinnedBrandFrom(document.documentElement.dataset.theme || '', _themeSource);
       // _state.mode stays the stored preference, never the page's, so
       // save() cannot persist a page-forced mode.
       _pageMode = pageModeFrom(authoredRoot().mode);
-      _state.brand = resolveInitialBrand(stored, _pinnedBrand, _themeSource);
+      _state.brand = resolveInitialBrand(stored, authoredRoot().theme ?? '', _themeSource);
 
       // Load saved brand CSS before applying
       try {
@@ -324,10 +342,12 @@ export const ThemeManager = {
       }
       if (!next) return;
 
+      // A mode change from another tab does not show while this page forces
+      // its own mode (_pageMode wins in effectiveModeFor); setMode() here does.
       const merged = { ...DEFAULTS, ..._state, ...next };
       // Same precedence as init(): this document's pinned brand beats a
       // sibling's `default` or a mode-only change.
-      merged.brand = resolveInitialBrand(next, _pinnedBrand, _themeSource);
+      merged.brand = resolveInitialBrand(next, authoredRoot().theme ?? '', _themeSource);
 
       /* Brand CSS pack may not be loaded in this document yet — fetch
          before applying so the new tokens land before the data-theme
@@ -389,13 +409,14 @@ export const ThemeManager = {
 
     // Brand — replace only the token the manager wrote; a11y ids and any
     // ids the page set (a site's adjustment theme) survive.
-    const merged = mergeThemeTokens(root.dataset.theme || '', _appliedBrand, brand);
+    const keepDefault = _themeSource === 'site';
+    const merged = mergeThemeTokens(root.dataset.theme || '', _appliedBrand, brand, keepDefault);
     if (merged) {
       root.dataset.theme = merged;
     } else {
       delete root.dataset.theme;
     }
-    _appliedBrand = brand === 'default' ? '' : brand;
+    _appliedBrand = brand === 'default' && !merged.startsWith('default') ? '' : brand;
 
     // Border style / icon set — a chosen value, else the page's authored
     // attribute, else the theme's CSS hint. 'clean' / 'lucide' are the
@@ -750,7 +771,7 @@ export const ThemeManager = {
     if (!_state) return;
     const raw = document.documentElement.dataset.theme || '';
     const tokens = raw.split(/\s+/).filter(Boolean);
-    const brand = tokens.find(t => !t.startsWith('a11y-')) || 'default';
+    const brand = pinnedBrandFrom(raw, _themeSource) || 'default';
     if (brand === _state.brand) return; // our own write or a no-op edit
     _state.brand = brand;
     // Fire-and-forget lazy-load. A bogus brand ("made-up") 404s and the
