@@ -118,7 +118,7 @@ function authoredRoot() {
     ? (boot[attr] ?? null)
     : root.getAttribute(attr);
   /** @type {Record<string, string|null>} */
-  const snap = { theme: read('data-theme') };
+  const snap = { theme: read('data-theme'), mode: read('data-mode'), themeSource: read('data-theme-source') };
   for (const [key, attr] of Object.entries(ROOT_ATTRS)) snap[key] = read(attr);
   _authored = snap;
   return snap;
@@ -157,6 +157,49 @@ export function pinnedBrandFrom(domTheme) {
 }
 
 /**
+ * Rebuild the `data-theme` token list for a brand change. Removes the token
+ * the manager last wrote (`managed`) and the new brand, keeps every other
+ * token (a11y ids, a site's adjustment id, …) in order, and puts the brand
+ * first unless it is `'default'`. Pure.
+ *
+ * @param {string} current - the live `data-theme` value
+ * @param {string} managed - the brand the manager last wrote ('' if none)
+ * @param {string} brand - the brand to apply
+ * @returns {string}
+ */
+export function mergeThemeTokens(current, managed, brand) {
+  const rest = (current || '').split(/\s+/).filter((t) => t && t !== managed && t !== brand);
+  return (brand !== 'default' ? [brand, ...rest] : rest).join(' ');
+}
+
+/**
+ * A page-authored `data-mode` that forces a scheme: only light/dark count.
+ * Pure.
+ *
+ * @param {string|null|undefined} authoredMode
+ * @returns {'light'|'dark'|null}
+ */
+export function pageModeFrom(authoredMode) {
+  return authoredMode === 'light' || authoredMode === 'dark' ? authoredMode : null;
+}
+
+/**
+ * The scheme to show: a page-forced mode wins unless the visitor chose a
+ * mode this session (setMode clears the page mode); else the stored
+ * preference, with `auto` following the system. Pure.
+ *
+ * @param {'auto'|'light'|'dark'} prefMode
+ * @param {'light'|'dark'|null} pageMode
+ * @param {boolean} systemDark
+ * @returns {'light'|'dark'}
+ */
+export function effectiveModeFor(prefMode, pageMode, systemDark) {
+  if (pageMode) return pageMode;
+  if (prefMode === 'light' || prefMode === 'dark') return prefMode;
+  return systemDark ? 'dark' : 'light';
+}
+
+/**
  * Resolve the brand to apply on init(). A brand the page pinned via
  * `<html data-theme="…">` (theme-showcase demos, a site built on one theme)
  * is that page's default: it is replaced only by a stored preference that
@@ -165,11 +208,16 @@ export function pinnedBrandFrom(domTheme) {
  * or a pick made on another page of the same origin) falls through to the
  * pin, then to the framework default. Pure (no DOM) for unit testing.
  *
+ * With `source === 'site'` (`<html data-theme-source="site">`: the site
+ * owner chose the theme) a pinned brand wins over any stored brand.
+ *
  * @param {Partial<VBThemePrefs>|null} stored - persisted prefs, or null if none
  * @param {string} [domTheme] - the authored `data-theme` attribute value
+ * @param {string|null} [source] - the authored `data-theme-source` value
  * @returns {string} the brand id to apply
  */
-export function resolveInitialBrand(stored, domTheme) {
+export function resolveInitialBrand(stored, domTheme, source) {
+  if (source === 'site' && pinnedBrandFrom(domTheme)) return pinnedBrandFrom(domTheme);
   if (stored?.brand && stored.brand !== DEFAULTS.brand) return stored.brand;
   return pinnedBrandFrom(domTheme) || DEFAULTS.brand;
 }
@@ -186,6 +234,15 @@ let _state = null;
 
 /** Brand the page pinned via `<html data-theme>` before init() rewrote it. */
 let _pinnedBrand = '';
+
+/** Brand token the manager last wrote into `data-theme` ('' = none). */
+let _appliedBrand = '';
+
+/** @type {'light'|'dark'|null} Scheme the page forced via an authored `data-mode`. */
+let _pageMode = null;
+
+/** @type {string|null} The authored `data-theme-source` ('site' = the site owner chose the theme). */
+let _themeSource = null;
 
 export const ThemeManager = {
   /**
@@ -209,7 +266,12 @@ export const ThemeManager = {
       // Read from the authored snapshot: the boot script may already have
       // written the stored brand onto <html>.
       _pinnedBrand = pinnedBrandFrom(authoredRoot().theme ?? '');
-      _state.brand = resolveInitialBrand(stored, _pinnedBrand);
+      _appliedBrand = _pinnedBrand;
+      _themeSource = authoredRoot().themeSource ?? null;
+      // _state.mode stays the stored preference, never the page's, so
+      // save() cannot persist a page-forced mode.
+      _pageMode = pageModeFrom(authoredRoot().mode);
+      _state.brand = resolveInitialBrand(stored, _pinnedBrand, _themeSource);
 
       // Load saved brand CSS before applying
       try {
@@ -265,7 +327,7 @@ export const ThemeManager = {
       const merged = { ...DEFAULTS, ..._state, ...next };
       // Same precedence as init(): this document's pinned brand beats a
       // sibling's `default` or a mode-only change.
-      merged.brand = resolveInitialBrand(next, _pinnedBrand);
+      merged.brand = resolveInitialBrand(next, _pinnedBrand, _themeSource);
 
       /* Brand CSS pack may not be loaded in this document yet — fetch
          before applying so the new tokens land before the data-theme
@@ -322,18 +384,18 @@ export const ThemeManager = {
 
     // Apply mode — always set data-mode to effective value so theme
     // light/dark selectors match even in auto mode (OS-preference-driven)
-    root.dataset.mode = mode === 'auto' ? this.getEffectiveMode() : mode;
+    const effectiveMode = effectiveModeFor(/** @type {'auto'|'light'|'dark'} */ (mode), _pageMode, window.matchMedia('(prefers-color-scheme: dark)').matches);
+    root.dataset.mode = effectiveMode;
 
-    // Brand — preserve a11y theme suffixes
-    const current = root.dataset.theme || '';
-    const a11yParts = current.split(' ').filter(t => t.startsWith('a11y-'));
-    const parts = brand !== 'default' ? [brand, ...a11yParts] : [...a11yParts];
-
-    if (parts.length) {
-      root.dataset.theme = parts.join(' ');
+    // Brand — replace only the token the manager wrote; a11y ids and any
+    // ids the page set (a site's adjustment theme) survive.
+    const merged = mergeThemeTokens(root.dataset.theme || '', _appliedBrand, brand);
+    if (merged) {
+      root.dataset.theme = merged;
     } else {
       delete root.dataset.theme;
     }
+    _appliedBrand = brand === 'default' ? '' : brand;
 
     // Border style / icon set — a chosen value, else the page's authored
     // attribute, else the theme's CSS hint. 'clean' / 'lucide' are the
@@ -376,7 +438,7 @@ export const ThemeManager = {
 
     // Dispatch event for listeners
     window.dispatchEvent(new CustomEvent('vb:theme-change', {
-      detail: { mode, brand, accent, borderStyle: borderPref, iconSet: iconPref, fluid: fluidVal, backdrop: backdropVal, backdropChrome: chromeVal, pageBgType, effectiveMode: this.getEffectiveMode() }
+      detail: { mode, brand, accent, borderStyle: borderPref, iconSet: iconPref, fluid: fluidVal, backdrop: backdropVal, backdropChrome: chromeVal, pageBgType, effectiveMode }
     }));
   },
 
@@ -450,6 +512,7 @@ export const ThemeManager = {
    * @param {'auto' | 'light' | 'dark'} mode
    */
   setMode(mode) {
+    _pageMode = null; // the visitor's choice beats the page's forced mode
     const updated = this.save({ mode });
     this.apply(updated);
   },
@@ -545,8 +608,7 @@ export const ThemeManager = {
    */
   getEffectiveMode() {
     const { mode } = this.load();
-    if (mode !== 'auto') return /** @type {'light' | 'dark'} */ (mode);
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return effectiveModeFor(/** @type {'auto'|'light'|'dark'} */ (mode), _pageMode, window.matchMedia('(prefers-color-scheme: dark)').matches);
   },
 
   /**
@@ -596,6 +658,7 @@ export const ThemeManager = {
    */
   reset() {
     _state = { ...DEFAULTS, brand: _pinnedBrand || DEFAULTS.brand };
+    _pageMode = pageModeFrom(authoredRoot().mode);
     VBStore.remove(NS, KEY).catch(() => { /* ignore */ });
     const root = document.documentElement;
     root.style.removeProperty('--page-bg-color');
@@ -706,8 +769,9 @@ export const ThemeManager = {
   _syncFromDataMode() {
     if (!_state) return;
     const raw = document.documentElement.dataset.mode || 'auto';
-    const effective = _state.mode === 'auto' ? this.getEffectiveMode() : _state.mode;
+    const effective = this.getEffectiveMode();
     if (raw === effective) return; // our own write or a no-op edit
+    _pageMode = null; // an outside write is an explicit override
     // Treat the attribute as an explicit session-scoped override. 'auto'
     // can't be expressed directly on the attribute (we always write the
     // effective value), so we only see concrete 'light'/'dark' here.

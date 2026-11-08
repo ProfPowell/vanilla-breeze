@@ -107,7 +107,7 @@
     // Snapshot the page's authored root attributes before writing stored
     // prefs over them: ThemeManager treats these as the page defaults
     // (reset() restores them; no preference never strips them).
-    const ROOT_ATTRS = ['data-theme', 'data-accent', 'data-border-style', 'data-icon-set', 'data-fluid', 'data-backdrop', 'data-backdrop-chrome'];
+    const ROOT_ATTRS = ['data-theme', 'data-accent', 'data-border-style', 'data-icon-set', 'data-fluid', 'data-backdrop', 'data-backdrop-chrome', 'data-mode', 'data-theme-source'];
     window.__vbAuthoredRoot = Object.fromEntries(ROOT_ATTRS.map((a) => [a, root.getAttribute(a)]));
 
     const stored = vbRead('theme', 'current') || {};
@@ -126,7 +126,10 @@
     };
     const mode = stored.mode || 'auto';
     const pinned = (root.getAttribute('data-theme') || '').split(/\s+/).find((t) => t && !t.startsWith('a11y-')) || '';
-    const brand = stored.brand && stored.brand !== 'default' ? stored.brand : (pinned || 'default');
+    const siteOwned = root.dataset.themeSource === 'site' && pinned;
+    const brand = siteOwned ? pinned : (stored.brand && stored.brand !== 'default' ? stored.brand : (pinned || 'default'));
+    const authoredMode = window.__vbAuthoredRoot['data-mode'];
+    const pageMode = authoredMode === 'light' || authoredMode === 'dark';
     const isDev = document.currentScript?.dataset.vbIsDev === 'true';
     const coreThemes = new Set([
       'default',
@@ -138,7 +141,9 @@
       'classic'
     ]);
     const packThemes = new Set(['kawaii', 'memphis']);
-    if (mode !== 'auto') {
+    if (pageMode) {
+      // The page forces its scheme; leave its authored data-mode alone.
+    } else if (mode !== 'auto') {
       root.dataset.mode = mode;
     } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       root.dataset.mode = 'dark';
