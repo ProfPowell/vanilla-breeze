@@ -15,16 +15,28 @@ input[data-mask][data-mask-init] {
 /* data-copy: Clipboard copy button feedback (attribute + programmatic via copyText).
    Colour is never the only cue (WCAG 1.4.1): a check / cross mark is added
    with empty alt text ("/ ''") so it does not change the button's name, and
-   forced-colors mode gets an outline. */
-[data-copy][data-state="copied"],
-[data-copy-target][data-state="copied"],
-[data-paste-target][data-state="pasted"],
+   forced-colors mode gets an outline.
+   On a <button> the state feeds the button's own colour input (--btn-color)
+   instead of overriding its text: a filled button turns success / error
+   with its luminance-picked text, outline and ghost buttons take the colour
+   as text. (Success text on a filled interactive-blue button was ~1.5:1.) */
+:is([data-copy], [data-copy-target])[data-state="copied"]:not(button),
+[data-paste-target][data-state="pasted"]:not(button),
 :where(color-picker) button[data-state="copied"] {
   color: var(--color-success, oklch(50% 0.15 145));
 }
 
-:is([data-copy], [data-copy-target], [data-paste-target])[data-state="failed"] {
+:is([data-copy], [data-copy-target], [data-paste-target])[data-state="failed"]:not(button) {
   color: var(--color-error, oklch(55% 0.2 25));
+}
+
+button:is([data-copy], [data-copy-target])[data-state="copied"],
+button[data-paste-target][data-state="pasted"] {
+  --btn-color: var(--color-success, oklch(50% 0.15 145));
+}
+
+button:is([data-copy], [data-copy-target], [data-paste-target])[data-state="failed"] {
+  --btn-color: var(--color-error, oklch(55% 0.2 25));
 }
 
 :is([data-copy], [data-copy-target])[data-state="copied"]::after,
