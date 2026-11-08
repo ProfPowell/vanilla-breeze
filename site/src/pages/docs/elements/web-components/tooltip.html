@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
     <h2>Overview</h2>
-    <p>Tooltips use a <strong>title-first progressive enhancement</strong> approach. The <code>title</code> attribute provides a no-JS fallback (native browser tooltip). When JavaScript loads, the init script reads the title, removes it, and creates a styled popover with arrows and positioning.</p>
+    <p>Tooltips use a <strong>title-first progressive enhancement</strong> approach. The <a href="/docs/attributes/title/"><code>title</code></a> attribute provides a no-JS fallback (native browser tooltip). When JavaScript loads, the init script reads the title, removes it, and creates a styled popover with arrows and positioning.</p>
 
     <browser-window
       src="/docs/examples/demos/tooltip-basic.html"
@@ -123,20 +123,20 @@ crumbLabel: Web Components
   <icon-wc name="save" size="sm"></icon-wc>
   Save
 </button>
-<section id="save-tip" popover="hint" role="tooltip">
+<p id="save-tip" popover="hint" role="tooltip">
   <strong>Save document</strong><br>
   <kbd>Ctrl</kbd> + <kbd>S</kbd>
   <span class="tooltip-arrow" aria-hidden="true"></span>
-</section></code-block>
+</p></code-block>
 
     <code-block language="html" show-lines label="Tooltip with secondary info" data-escape><button type="button" title="Copy to clipboard" data-tooltip="copy-tip">
   Copy
 </button>
-<section id="copy-tip" popover="hint" role="tooltip">
+<p id="copy-tip" popover="hint" role="tooltip">
   Copy to clipboard<br>
   <small>Copied items expire after 24 hours</small>
   <span class="tooltip-arrow" aria-hidden="true"></span>
-</section></code-block>
+</p></code-block>
   </section>
 
   <section>
@@ -252,7 +252,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Pure HTML Tooltips — <code>interestfor</code> (Tier 0)</h2>
-    <p>For simple tooltips that don't need arrows, custom positioning, or rich content, you can skip the init script entirely. The <code>interestfor</code> attribute (native in Chrome 133+, polyfilled in other browsers) handles hover/focus timing and popover show/hide declaratively.</p>
+    <p>For simple tooltips that don't need arrows, custom positioning, or rich content, you can skip the init script entirely. The <a href="/docs/attributes/interestfor/"><code>interestfor</code></a> attribute (native in Chrome 142+, polyfilled in other browsers) handles hover/focus timing and <a href="/docs/attributes/popover/">popover</a> show/hide declaratively.</p>
 
     <browser-window
       src="/docs/examples/demos/interestfor-basic.html"
@@ -268,9 +268,11 @@ crumbLabel: Web Components
 </span></code-block>
 
     <h3>Custom Timing</h3>
-    <p>Control show/hide delays with CSS custom properties:</p>
-    <code-block language="css" show-lines label="Custom timing" data-escape>/* Custom timing via CSS custom properties */
-#my-tooltip {
+    <p>The delays belong on the <em>invoker</em> (the element with <code>interestfor</code>), not on the popover: that is where native interest invokers and VB's polyfill read them. VB sets 200ms to show and 100ms to hide on every <code>[interestfor]</code>. Set the standard <code>interest-delay-start</code> / <code>interest-delay-end</code> properties for native support, and the <code>--interest-delay-*</code> custom properties the polyfill reads in other browsers:</p>
+    <code-block language="css" show-lines label="Custom timing" data-escape>/* Timing goes on the invoker, not the popover */
+[interestfor="wai-def"] {
+  interest-delay-start: 300ms;
+  interest-delay-end: 150ms;
   --interest-delay-start: 300ms;
   --interest-delay-end: 150ms;
 }</code-block>

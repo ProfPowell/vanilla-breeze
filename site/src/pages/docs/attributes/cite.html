@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "cite"
-description: "Provide a source URL for quoted or edited content. A semantic attribute on blockquote, del, and ins that is invisible to users but available to machines."
+description: "A machine-readable source URL for quotations and edits on blockquote, q, del and ins. Browsers never show it, so pair it with visible attribution."
 attributeName: cite
 attributeType: native
 nativeGroup: Structure
@@ -12,113 +12,115 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>cite</code> <strong>attribute</strong> provides a URL pointing to the source document for quoted or edited content. It is a purely semantic annotation — browsers do not display the URL, and no link is created. The value is intended for search engines, content scrapers, and other tooling that processes structured content.</p>
-<p><strong>Important:</strong> This page documents the <code>cite</code> <em>attribute</em>, not the <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code> element</a>. They serve different purposes.</p>
-<p><strong>Applies to:</strong></p>
-<ul>
-  <li><code>&lt;blockquote&gt;</code> — URL of the original source being quoted</li>
-  <li><code>&lt;del&gt;</code> — URL of the document explaining the deletion</li>
-  <li><code>&lt;ins&gt;</code> — URL of the document explaining the insertion</li>
-</ul>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>cite</code> <strong>attribute</strong> gives the URL of the source a quotation came from, or of a document explaining an edit. Browsers do not display it and do not make it a link. It is there for tools that process the markup: scrapers, search engines, reading-mode and citation tools, and your own scripts.</p>
+  <p>This page is about the <code>cite</code> <em>attribute</em>. The <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code> element</a> is different: it marks up the visible title of a work.</p>
+  <p><strong>Applies to:</strong></p>
+  <ul>
+    <li><a href="/docs/elements/native/blockquote/"><code>&lt;blockquote&gt;</code></a> and <a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a> &mdash; the source of the quotation.</li>
+    <li><a href="/docs/elements/native/del/"><code>&lt;del&gt;</code></a> and <a href="/docs/elements/native/ins/"><code>&lt;ins&gt;</code></a> &mdash; a document explaining the change.</li>
+  </ul>
 
-<h2>Values</h2>
-<table>
-  <thead><tr><th>Element</th><th>cite Value</th><th>Purpose</th></tr></thead>
-  <tbody>
-    <tr><td><code>&lt;blockquote&gt;</code></td><td>URL</td><td>The source of the quoted text</td></tr>
-    <tr><td><code>&lt;del&gt;</code></td><td>URL</td><td>A document explaining the removal</td></tr>
-    <tr><td><code>&lt;ins&gt;</code></td><td>URL</td><td>A document explaining the addition</td></tr>
-  </tbody>
-</table>
+  <browser-window
+    src="/docs/examples/demos/attr-cite-basic.html"
+    url="https://vanilla-breeze.com/cite"
+    title="cite on blockquote, q, del and ins"
+    shadow>
+  </browser-window>
 
-<h2>Blockquote Attribution</h2>
-<p>Use the <code>cite</code> attribute to record where a quote came from. Since browsers do not display it, always pair it with visible attribution for human readers.</p>
-
-<code-block language="html" label="Blockquote with cite" data-escape><!-- cite attribute: machine-readable source URL -->
-<blockquote cite="https://www.w3.org/TR/html52/grouping-content.html#the-blockquote-element">
-  <p>Content inside a blockquote must be quoted from another source,
-  whose address, if it has one, may be cited in the cite attribute.</p>
-</blockquote>
-
-<!-- Pair with visible attribution for humans -->
-<figure>
-  <blockquote cite="https://example.com/article">
-    <p>The only way to do great work is to love what you do.</p>
+  <code-block language="html" show-lines label="Quote with visible attribution" data-escape><figure class="quote">
+  <blockquote cite="https://html.spec.whatwg.org/multipage/grouping-content.html#the-blockquote-element">
+    <p>The blockquote element represents a section that is quoted from another source.</p>
   </blockquote>
-  <figcaption>
-    — Steve Jobs,
-    <cite><a href="https://example.com/article">Stanford Commencement Speech</a></cite>
-  </figcaption>
+  <figcaption><cite><a href="https://html.spec.whatwg.org/multipage/grouping-content.html#the-blockquote-element">HTML Living Standard</a></cite>, section 4.4.4</figcaption>
 </figure></code-block>
-
-<p>The <code>&lt;figure&gt;</code> + <code>&lt;figcaption&gt;</code> pattern is the recommended way to add visible attribution to a blockquote, with the <code>&lt;cite&gt;</code> element wrapping the work title inside the caption.</p>
-
-<h2>Edit Documentation</h2>
-<p>On <code>&lt;del&gt;</code> and <code>&lt;ins&gt;</code>, the <code>cite</code> attribute points to a changelog, ticket, or document explaining why the edit was made. Pair it with <a href="/docs/attributes/datetime/"><code>datetime</code></a> for a complete edit record.</p>
-
-<code-block language="html" label="Edit sources" data-escape><!-- Source explaining why the change was made -->
-<p>Our hours are
-  <del cite="https://example.com/changelog#hours-update"
-       datetime="2024-06-01">9 AM to 5 PM</del>
-  <ins cite="https://example.com/changelog#hours-update"
-       datetime="2024-06-01">8 AM to 6 PM</ins>.
-</p></code-block>
-
-<h2>Visible vs Hidden Attribution</h2>
-<p>The <code>cite</code> attribute is not rendered by any browser. If attribution matters to your users, you must provide it as visible content. The attribute alone is not enough for humans.</p>
-
-<code-block language="html" label="Visible attribution" data-escape><!-- The cite ATTRIBUTE is hidden; make attribution visible too -->
-<blockquote cite="https://example.com/interview">
-  <p>Simplicity is the ultimate sophistication.</p>
-</blockquote>
-<p>
-  — Attributed to Leonardo da Vinci, from
-  <a href="https://example.com/interview">The Design of Everyday Things</a>
-</p></code-block>
-
-<h2>Attribute vs Element</h2>
-<p>HTML has both a <code>cite</code> attribute and a <code>&lt;cite&gt;</code> element. They are related but different.</p>
-
-<table>
-  <thead><tr><th>Feature</th><th><code>cite</code> Attribute</th><th><code>&lt;cite&gt;</code> Element</th></tr></thead>
-  <tbody>
-    <tr><td>What it holds</td><td>A URL</td><td>The title of a work</td></tr>
-    <tr><td>Visible</td><td>No</td><td>Yes (rendered in italics by default)</td></tr>
-    <tr><td>Used on</td><td><code>&lt;blockquote&gt;</code>, <code>&lt;del&gt;</code>, <code>&lt;ins&gt;</code></td><td>Inline, anywhere</td></tr>
-    <tr><td>Purpose</td><td>Machine-readable source link</td><td>Human-readable work title</td></tr>
-  </tbody>
-</table>
-
-<code-block language="html" label="Attribute vs element" data-escape><!-- cite ATTRIBUTE: invisible URL on blockquote -->
-<blockquote cite="https://example.com/paper.pdf">
-  <p>Research indicates a 40% improvement in outcomes.</p>
-</blockquote>
-
-<!-- cite ELEMENT: visible reference to a creative work -->
-<p>As discussed in <cite>The Design of Everyday Things</cite>,
-affordances shape user behavior.</p></code-block>
-
-<h2>Accessibility</h2>
-<ul>
-  <li>Screen readers do not announce the <code>cite</code> attribute. It provides no direct benefit to assistive technology users.</li>
-  <li>Always include visible attribution (a link, author name, or work title) alongside the <code>cite</code> attribute so all users can identify the source.</li>
-  <li>The <code>&lt;cite&gt;</code> element is announced by screen readers as part of the normal text flow, making it the better choice for user-facing attribution.</li>
-</ul>
-
-<h2>Limitations</h2>
-<ul>
-  <li>No browser renders the <code>cite</code> attribute value. It is completely invisible in the default rendering.</li>
-  <li>There is no built-in way for users to access the URL without inspecting the source code.</li>
-  <li>The value is not validated — any string is accepted, even invalid URLs.</li>
-  <li>The <code>cite</code> attribute is rarely used in practice because most developers are unaware of it or find its invisibility unhelpful.</li>
-</ul>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <table class="props-table">
+    <thead><tr><th>Element</th><th>Value</th><th>Points to</th></tr></thead>
+    <tbody>
+      <tr><td><code>&lt;blockquote&gt;</code>, <code>&lt;q&gt;</code></td><td>A valid URL</td><td>The source of the quoted text</td></tr>
+      <tr><td><code>&lt;del&gt;</code>, <code>&lt;ins&gt;</code></td><td>A valid URL</td><td>A changelog entry, ticket or document explaining the change</td></tr>
+      <tr><td>Absent (the default)</td><td>&nbsp;</td><td>No source recorded</td></tr>
+    </tbody>
+  </table>
+  <p>Relative URLs resolve against the document. The DOM properties (<code>blockquote.cite</code>, <code>q.cite</code>, <code>del.cite</code>, <code>ins.cite</code>) return the resolved absolute URL.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Inline quotation</h3>
+  <p><code>&lt;q&gt;</code> takes <code>cite</code> just like <code>&lt;blockquote&gt;</code>. Do not type quotation marks around it; the browser adds them.</p>
+  <code-block language="html" show-lines label="q with cite" data-escape><p>The spec is blunt about inline quotes:
+  <q cite="https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-q-element">Quotation
+  punctuation (such as quotation marks) that is quoting the contents of the element must
+  not appear immediately before, after, or inside q elements</q>.</p></code-block>
+
+  <h3>Recording why an edit was made</h3>
+  <p>On <code>&lt;del&gt;</code> and <code>&lt;ins&gt;</code>, pair <code>cite</code> with <a href="/docs/attributes/datetime/"><code>datetime</code></a> for a full edit record.</p>
+  <code-block language="html" show-lines label="Edit with a source" data-escape><p>Support hours are
+  <del cite="https://example.com/changelog#support-hours" datetime="2026-10-01">9 AM to 5 PM</del>
+  <ins cite="https://example.com/changelog#support-hours" datetime="2026-10-01">8 AM to 6 PM</ins>,
+  Monday to Friday.</p></code-block>
+
+  <h3>Attribute or element?</h3>
+  <table class="props-table">
+    <thead><tr><th>&nbsp;</th><th><code>cite</code> attribute</th><th><code>&lt;cite&gt;</code> element</th></tr></thead>
+    <tbody>
+      <tr><td>Holds</td><td>A URL</td><td>The title of a work</td></tr>
+      <tr><td>Visible</td><td>No</td><td>Yes (italic by default)</td></tr>
+      <tr><td>Used on</td><td><code>blockquote</code>, <code>q</code>, <code>del</code>, <code>ins</code></td><td>Anywhere phrasing content is allowed</td></tr>
+      <tr><td>For</td><td>Tools and scripts</td><td>Readers</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
+  <p>VB does not style or read the <code>cite</code> attribute. It styles the visible attribution that should go with it:</p>
   <ul>
-    <li><a href="/docs/elements/native/blockquote/"><code>&lt;blockquote&gt;</code></a> — block-level quotations</li>
-    <li><a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code> element</a> — visible title of a creative work</li>
-    <li><a href="/docs/attributes/datetime/"><code>datetime</code></a> — machine-readable timestamps on del and ins</li>
+    <li><strong><code>figure.quote</code></strong> (<code>src/native-elements/figure/styles.css</code>) is the preferred pattern. The <code>&lt;figcaption&gt;</code> sits outside the quotation, as the spec requires, and gets a "&mdash; " prefix that screen readers skip (<code>content: "— " / ""</code>).</li>
+    <li><strong><code>blockquote &gt; footer</code></strong> and <strong><code>blockquote &gt; cite</code></strong> (direct children only) get the same dash prefix (<code>src/native-elements/blockquote/styles.css</code>). This is kept for existing content; prefer <code>figure.quote</code>.</li>
+    <li><strong><code>&lt;q&gt;</code></strong> gets locale-correct quotation marks from <code>:lang()</code> rules in <code>src/native-elements/i18n/styles.css</code> (&ldquo;&hellip;&rdquo; in English, &bdquo;&hellip;&ldquo; in German, &laquo;&nbsp;&hellip;&nbsp;&raquo; in French).</li>
+    <li><strong><code>&lt;del&gt;</code> / <code>&lt;ins&gt;</code></strong> accept VB's <code>data-author</code>, <code>data-reason</code> and <code>data-announce</code> annotations (<code>src/native-elements/inline-semantics/styles.css</code>); see the <a href="/docs/elements/native/del/"><code>&lt;del&gt;</code></a> page.</li>
+    <li><strong>Untrusted HTML.</strong> VB's HTML sanitizer (<code>src/lib/sanitize-html.js</code>) and <code>&lt;card-list&gt;</code> field binding treat <code>cite</code> as a URL attribute and check its scheme, so a <code>javascript:</code> value is dropped.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Screen readers do not announce the <code>cite</code> attribute, and browsers do not expose it. It does nothing for readers on its own.</li>
+    <li>Always give visible attribution: a <code>&lt;figcaption&gt;</code> with the author, the work in <code>&lt;cite&gt;</code>, and a real link if the source is online.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li>No browser renders the URL, and users cannot reach it without viewing the source.</li>
+    <li>Browsers do not validate it. A typo goes unnoticed; an HTML validator will catch an invalid URL.</li>
+    <li>Attribution belongs outside the <code>&lt;blockquote&gt;</code>. A <code>&lt;footer&gt;</code> inside it makes the attribution part of the quotation.</li>
+    <li>Check quotes before you publish. Many popular quotations are misattributed; if you cannot find the original source, say "attributed to".</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/native/blockquote/"><code>&lt;blockquote&gt;</code></a>, <a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a>, <a href="/docs/elements/native/del/"><code>&lt;del&gt;</code></a> and <a href="/docs/elements/native/ins/"><code>&lt;ins&gt;</code></a> &mdash; the elements that take <code>cite</code>.</li>
+    <li><a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a> &mdash; <code>figure.quote</code> attribution.</li>
+    <li><a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code> element</a> &mdash; the visible title of a work.</li>
+    <li><a href="/docs/attributes/datetime/"><code>datetime</code></a> &mdash; when an edit was made.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>cite</code> attribute</strong> &mdash; always, when the source has a URL. It costs nothing and helps tools.</li>
+    <li><strong><code>figure.quote</code> + <code>&lt;figcaption&gt;</code></strong> &mdash; the visible attribution for block quotations.</li>
+    <li><strong><code>&lt;cite&gt;</code> element</strong> &mdash; the title of the book, article or talk inside that caption.</li>
   </ul>
 </section>

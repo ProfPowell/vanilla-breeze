@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>contenteditable attribute</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    /* VB does not style [contenteditable]; give editable regions a field edge. */
+    [contenteditable] {
+      padding: var(--size-xs) var(--size-s);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-s);
+      min-block-size: 2lh;
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="m">
+    <h1 class="visually-hidden">contenteditable</h1>
+    <h2 id="note-label">Meeting note</h2>
+    <!-- [html-validate-disable-next prefer-native-element: the demo shows the role an author must add to a contenteditable element] -->
+    <p contenteditable="plaintext-only" role="textbox" aria-multiline="true" aria-labelledby="note-label">Agreed to move the launch to 14 November. Priya owns the checklist.</p>
+    <p>Characters: <span id="note-count">0</span></p>
+  </layout-stack>
+
+  <script type="module">
+    const note = document.querySelector('[contenteditable]');
+    const count = document.getElementById('note-count');
+    const update = () => { count.textContent = String(note.textContent.length); };
+    note.addEventListener('input', update);
+    update();
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

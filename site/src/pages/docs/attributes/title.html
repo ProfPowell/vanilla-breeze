@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "title"
-description: "Advisory text shown as a tooltip on hover. Often misused — understand when it helps and when visible text or ARIA attributes are better alternatives."
+description: "Advisory text shown as a mouse-hover tooltip and used as an accessible name or description. Good for abbr and iframe; never the only place for important text."
 attributeName: title
 attributeType: native
 nativeGroup: Global
@@ -12,122 +12,136 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>title</code> attribute provides advisory text about an element. On desktop browsers, hovering the mouse over the element displays a tooltip after a short delay. This is the <code>title</code> <em>attribute</em> on HTML elements — not the <code>&lt;title&gt;</code> element used in <code>&lt;head&gt;</code> for the page title.</p>
-<p><strong>Applies to:</strong> Any HTML element (it is a global attribute)</p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>title</code> attribute holds advisory text about an element. Desktop browsers show it as a tooltip after the mouse rests on the element. Assistive technology uses it too: as the element's name when nothing else names it, otherwise as its description. This is the <code>title</code> <em>attribute</em>, not the <code>&lt;title&gt;</code> element in <code>&lt;head&gt;</code>.</p>
+  <p><strong>Applies to:</strong> every element (it is a global attribute). On <code>&lt;link&gt;</code>, <code>&lt;style&gt;</code>, <code>&lt;abbr&gt;</code> and <code>&lt;dfn&gt;</code> it has extra meaning (see Values).</p>
 
-<h2>Values</h2>
+  <browser-window
+    src="/docs/examples/demos/attr-title-basic.html"
+    url="https://vanilla-breeze.com/title"
+    title="title"
+    shadow>
+  </browser-window>
 
-<table>
-  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
-  <tbody>
-    <tr><td>Any string</td><td>Displayed as a tooltip on mouse hover. Inherited by child elements unless they have their own <code>title</code>.</td></tr>
-    <tr><td><code>""</code> (empty string)</td><td>Explicitly suppresses an inherited tooltip. The element shows no tooltip.</td></tr>
-    <tr><td>(not set)</td><td>Inherits the nearest ancestor's <code>title</code> value, if any.</td></tr>
-  </tbody>
-</table>
+  <code-block language="html" show-lines label="Abbreviations and icon-only buttons" data-escape><p>The <abbr title="World Health Organization">WHO</abbr> published joint guidance.</p>
 
-<code-block language="html" label="Basic usage" data-escape><!-- Tooltip on hover (mouse only) -->
-<button title="Save the current document">Save</button>
+<!-- title alone: mouse-only tooltip, also the button's name -->
+<button type="button" title="Print this page"><icon-wc name="printer"></icon-wc></button>
 
-<!-- Abbreviation expansion — the best use case -->
-<p>The <abbr title="World Health Organization">WHO</abbr> published new guidelines.</p>
-
-<!-- Tooltip on any element -->
-<p title="This paragraph has advisory text">Hover over this text.</p></code-block>
-
-<h2>Good Uses</h2>
-
-<h3>Abbreviation Expansion</h3>
-<p>The strongest use case for <code>title</code> is on <code>&lt;abbr&gt;</code> elements. It provides the full expansion of an abbreviation, which browsers display on hover and screen readers may announce.</p>
-
-<code-block language="html" label="Abbreviation expansion" data-escape><p>
-  Use <abbr title="Cascading Style Sheets">CSS</abbr> for styling and
-  <abbr title="Hypertext Markup Language">HTML</abbr> for structure.
-  The <abbr title="World Wide Web Consortium">W3C</abbr> maintains both standards.
-</p></code-block>
-
-<h3>iframe Labeling</h3>
-<p>The <code>title</code> attribute on <code>&lt;iframe&gt;</code> provides an accessible name for the embedded content. Screen readers announce this title so users know what the iframe contains without entering it.</p>
-
-<code-block language="html" label="iframe accessible name" data-escape><!-- title on iframes provides an accessible name -->
-<iframe
-  src="https://example.com/map"
-  title="Interactive map showing office locations"
-  width="600"
-  height="400">
-</iframe></code-block>
-
-<h3>Alternate Stylesheets</h3>
-<p>On <code>&lt;link rel="stylesheet"&gt;</code> and <code>&lt;link rel="alternate stylesheet"&gt;</code>, the <code>title</code> attribute names the stylesheet for the browser's style-switching UI. This is a different behavior from the tooltip — it identifies the stylesheet rather than providing advisory text.</p>
-
-<code-block language="html" label="Alternate stylesheets" data-escape><!-- title on <link> designates alternate stylesheets -->
-<link rel="stylesheet" href="default.css" title="Default Theme" />
-<link rel="alternate stylesheet" href="high-contrast.css" title="High Contrast" />
-<link rel="alternate stylesheet" href="large-text.css" title="Large Text" /></code-block>
-
-<h2>Why title Is Usually the Wrong Choice</h2>
-<p>Despite being a global attribute available on every element, <code>title</code> has significant usability problems that make it unsuitable for important information:</p>
-<ul>
-  <li><strong>Keyboard users never see it.</strong> The tooltip only appears on mouse hover. Keyboard-only users have no way to trigger it.</li>
-  <li><strong>Touch devices never show it.</strong> There is no hover on phones and tablets. The text is completely hidden from mobile users.</li>
-  <li><strong>Screen reader support is inconsistent.</strong> Some screen readers announce the <code>title</code>, some ignore it, and some require specific settings to read it.</li>
-  <li><strong>Tooltips disappear.</strong> The tooltip vanishes when the mouse moves away, making it hard to read long text or refer back to it.</li>
-  <li><strong>No styling control.</strong> You cannot change the font, size, position, or timing of the native tooltip.</li>
-</ul>
-
-<h2>Better Alternatives</h2>
-<p>For any information users need to see, use visible text or ARIA attributes instead of <code>title</code>.</p>
-
-<code-block language="html" label="Alternatives to title" data-escape><!-- Instead of title, use visible text -->
-<button>
-  <span aria-hidden="true">&#x1f4be;</span>
-  Save Document
-</button>
-
-<!-- Or use aria-label for icon-only buttons -->
-<button aria-label="Save document">
-  <span aria-hidden="true">&#x1f4be;</span>
-</button>
-
-<!-- Or use aria-describedby for supplementary info -->
-<label for="tax-id">Tax ID</label>
-<input type="text" id="tax-id" aria-describedby="tax-help" />
-<p id="tax-help">Your 9-digit federal tax identification number.</p></code-block>
-
-<table>
-  <thead><tr><th>Need</th><th>Use Instead of title</th></tr></thead>
-  <tbody>
-    <tr><td>Button description</td><td>Visible label text or <code>aria-label</code></td></tr>
-    <tr><td>Field help text</td><td>Visible helper text with <code>aria-describedby</code></td></tr>
-    <tr><td>Supplementary info</td><td>Visible text, a tooltip component, or a <code>&lt;details&gt;</code> element</td></tr>
-    <tr><td>Image description</td><td>The <code>alt</code> attribute (always preferred over <code>title</code> on images)</td></tr>
-    <tr><td>Abbreviation</td><td><code>&lt;abbr title="..."&gt;</code> is acceptable, or spell it out on first use</td></tr>
-  </tbody>
-</table>
-
-<h2>Accessibility</h2>
-<ul>
-  <li><strong>Never put essential information in <code>title</code>.</strong> If users need the text to understand or use the interface, make it visible.</li>
-  <li><strong>The <code>title</code> on <code>&lt;iframe&gt;</code> is an accessibility requirement.</strong> WCAG requires iframes to have an accessible name, and <code>title</code> is the standard way to provide one.</li>
-  <li><strong>Redundant titles create noise.</strong> If an element already has visible text, adding a <code>title</code> with the same text causes screen readers to announce it twice.</li>
-  <li><strong>Keep it short.</strong> If you must use <code>title</code>, keep the text brief. Long tooltips are cut off or disappear before the user finishes reading.</li>
-</ul>
-
-<h2>Limitations</h2>
-<ul>
-  <li><strong>Not keyboard-accessible:</strong> No keyboard shortcut triggers the tooltip. Only mouse hover works.</li>
-  <li><strong>Not touch-accessible:</strong> Mobile browsers do not display <code>title</code> tooltips at all.</li>
-  <li><strong>Hover delay is browser-controlled:</strong> You cannot change how long the user must hover before the tooltip appears.</li>
-  <li><strong>No HTML in tooltips:</strong> The <code>title</code> value is plain text only. Line breaks work with <code>&#10;</code> in some browsers, but no rich formatting.</li>
-  <li><strong>Inheritance can surprise:</strong> A <code>title</code> on a parent element creates tooltips on all descendants, which may not be intended.</li>
-</ul>
+<!-- tool-tip shows the same text on keyboard focus -->
+<tool-tip>
+  <button type="button" title="Copy link to this page"><icon-wc name="link"></icon-wc></button>
+</tool-tip></code-block>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Any text</td><td>Advisory text for this element. Line feeds (<code>&amp;#10;</code>) start new lines in the tooltip.</td></tr>
+      <tr><td><code>""</code> (empty)</td><td>No advisory text, and stops an ancestor's <code>title</code> from applying here.</td></tr>
+      <tr><td>Absent</td><td>Inherits the nearest ancestor's <code>title</code> for the tooltip.</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Special meanings:</strong></p>
   <ul>
-    <li><a href="/docs/attributes/tabindex/"><code>tabindex</code></a> — make elements keyboard-focusable</li>
-    <li><a href="/docs/accessibility/">Accessibility Guide</a> — overview of VB's accessibility patterns</li>
-    <li><a href="/docs/elements/native/details/"><code>&lt;details&gt;</code></a> — a native disclosure widget for supplementary information</li>
+    <li><code>&lt;abbr title&gt;</code> and <code>&lt;dfn title&gt;</code>: the expansion or the term being defined, and nothing else.</li>
+    <li><code>&lt;link rel="stylesheet" title&gt;</code> and <code>&lt;style title&gt;</code>: names a stylesheet set; <code>rel="alternate stylesheet"</code> makes it switchable.</li>
+    <li><code>&lt;iframe title&gt;</code>: the frame's accessible name, announced before the user enters it.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Abbreviations</h3>
+  <code-block language="html" show-lines label="Expand on first use" data-escape><p>
+  Use <abbr title="Cascading Style Sheets">CSS</abbr> for presentation and
+  <abbr title="HyperText Markup Language">HTML</abbr> for structure.
+</p></code-block>
+  <p>The tooltip is mouse-only, so also write the expansion out in the text the first time an abbreviation appears.</p>
+
+  <h3>Naming an iframe</h3>
+  <code-block language="html" show-lines label="iframe title" data-escape><iframe
+  src="https://www.openstreetmap.org/export/embed.html?bbox=-0.13,51.50,-0.12,51.51"
+  title="Map of the office location near Trafalgar Square"
+  loading="lazy"></iframe></code-block>
+
+  <h3>Alternatives</h3>
+  <p>For anything the user needs, use visible text or a proper name and description.</p>
+  <code-block language="html" show-lines label="Instead of title" data-escape><!-- Visible text -->
+<button type="button"><icon-wc name="printer"></icon-wc> Print</button>
+
+<!-- Icon-only: a name every user gets, plus a tooltip -->
+<tool-tip content="Print this page">
+  <button type="button" aria-label="Print this page"><icon-wc name="printer"></icon-wc></button>
+</tool-tip>
+
+<!-- Help text: visible, and wired to the field by form-field -->
+<form-field>
+  <label for="tax-id">Tax ID</label>
+  <input type="text" id="tax-id" name="tax-id">
+  <output class="hint" for="tax-id">Your 9-digit federal tax identification number.</output>
+</form-field></code-block>
+
+  <table>
+    <thead><tr><th>Need</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td>Name for an icon-only button</td><td><code>aria-label</code>, or visible text with <code>.visually-hidden</code></td></tr>
+      <tr><td>Tooltip that works with keyboard</td><td><a href="/docs/elements/web-components/tooltip/"><code>&lt;tool-tip&gt;</code></a>, or a <a href="/docs/attributes/popover/"><code>popover="hint"</code></a> tooltip</td></tr>
+      <tr><td>Field help</td><td><code>&lt;output class="hint"&gt;</code> inside <code>&lt;form-field&gt;</code></td></tr>
+      <tr><td>Optional detail</td><td><a href="/docs/elements/native/details/"><code>&lt;details&gt;</code></a></td></tr>
+      <tr><td>Image description</td><td><code>alt</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
+  <ul>
+    <li><strong><code>abbr[title]</code></strong> gets a dotted underline and a help cursor; the underline turns the interactive colour on hover. An <code>&lt;abbr&gt;</code> without <code>title</code> stays plain (<code>src/native-elements/inline-semantics/styles.css</code>).</li>
+    <li><strong>Print expands abbreviations.</strong> VB's print stylesheet appends the expansion after each <code>abbr[title]</code>, for example "WHO (World Health Organization)" (<code>src/utils/print.css</code>).</li>
+    <li><strong>Icon-only buttons.</strong> A button whose only child is an <code>&lt;icon-wc&gt;</code> and that has <code>aria-label</code>, <code>aria-labelledby</code> or <code>title</code> gets square padding (<code>src/native-elements/button/styles.css</code>).</li>
+    <li><strong><code>&lt;tool-tip&gt;</code> upgrades <code>title</code>.</strong> When it has no <code>&lt;template data-tooltip&gt;</code> or <code>content</code>, it uses the trigger's <code>title</code> as its text. It removes the <code>title</code> while upgraded to prevent a double tooltip, copies it to <code>aria-label</code> if it was the trigger's only name, and puts it back when removed (<code>src/web-components/tool-tip/logic.js</code>).</li>
+    <li><strong>Shortcut labels.</strong> <code>data-hotkey</code> action bindings name themselves from the element's text, then <code>placeholder</code>, then <code>title</code>, unless you set <code>data-hotkey-label</code> (<code>src/utils/hotkey-action-init.js</code>).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Name or description.</strong> In the accessible-name calculation <code>title</code> is the last resort: if nothing else names the element (content, <code>aria-label</code>, a <code>&lt;label&gt;</code>), <code>title</code> becomes its name. Otherwise it becomes its description and is read after the name.</li>
+    <li><strong>The real problem is who can see it.</strong> The tooltip needs a mouse. Keyboard and touch users never see it, so text that only lives in <code>title</code> is missing for them.</li>
+    <li><strong>Never the only label for a form field.</strong> A field named only by <code>title</code> has a name for screen readers but no visible label (WCAG 3.3.2 Labels or Instructions).</li>
+    <li><strong>Do not repeat visible text.</strong> A <code>title</code> equal to the element's text adds nothing and may be read twice.</li>
+    <li><strong>Every iframe needs a name.</strong> <code>title</code> is the usual way (WCAG 4.1.2).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Inheritance surprises.</strong> A <code>title</code> on a container shows on every descendant. Use <code>title=""</code> on a child to stop it.</li>
+    <li><strong>Timing and style are fixed.</strong> You cannot change the delay, position or appearance of the browser tooltip.</li>
+    <li><strong>Plain text only.</strong> No markup; line feeds work.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/tooltip/"><code>&lt;tool-tip&gt;</code></a> &mdash; keyboard-accessible tooltips; uses <code>title</code> as a fallback.</li>
+    <li><a href="/docs/elements/native/abbr/"><code>&lt;abbr&gt;</code></a> &mdash; abbreviations and their expansion.</li>
+    <li><a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> &mdash; embedded documents need a title.</li>
+    <li><a href="/docs/attributes/popover/"><code>popover</code></a> &mdash; <code>popover="hint"</code> tooltips.</li>
+    <li><a href="/docs/accessibility-utilities/">Accessibility utilities</a> &mdash; <code>.visually-hidden</code> text.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>title</code></strong> &mdash; abbreviation expansions, iframe names, and optional hover hints that repeat information available elsewhere.</li>
+    <li><strong><code>&lt;tool-tip&gt;</code></strong> &mdash; a tooltip that keyboard users also get.</li>
+    <li><strong><code>aria-label</code> / visible text</strong> &mdash; the name of a control.</li>
   </ul>
 </section>

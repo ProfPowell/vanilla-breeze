@@ -1,0 +1,209 @@
+---
+layout: attribute
+title: "ARIA states"
+description: "The ARIA state attributes Vanilla Breeze styles or sets: aria-current, aria-pressed, aria-expanded, aria-disabled, aria-busy, aria-invalid, aria-sort, aria-selected and aria-keyshortcuts."
+attributeName: ARIA states
+attributeType: native
+nativeGroup: Accessibility
+category: native
+currentPath: /docs/attributes/aria-states/
+
+crumbHref: /docs/attributes/native/
+crumbLabel: Native Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>ARIA state attributes tell assistive technology what state an element is in: the current page, a pressed toggle, an open menu. Vanilla Breeze styles the visible state from the same attributes, so what users see and what screen readers announce cannot drift apart. Many VB components and <code>data-*</code> enhancers also set these attributes for you.</p>
+  <p><strong>Rule one: use the native element or attribute first.</strong> <code>disabled</code> before <code>aria-disabled</code>, <code>&lt;details&gt;</code> before <code>aria-expanded</code>, <code>&lt;select&gt;</code> before <code>aria-selected</code>, <code>:user-invalid</code> before <code>aria-invalid</code>. Reach for ARIA when no native feature expresses the state.</p>
+  <p><strong>Applies to:</strong> each attribute is allowed on the roles listed in the <a href="https://www.w3.org/TR/wai-aria-1.2/">WAI-ARIA 1.2</a> specification. The tables below give the elements VB styles.</p>
+
+  <browser-window
+    src="/docs/examples/demos/attr-aria-states.html"
+    url="https://vanilla-breeze.com/aria-states"
+    title="ARIA states VB styles"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Current page, toggles, busy and disabled buttons, an invalid field, a sorted column" data-escape><nav class="horizontal pills" aria-label="Account sections">
+  <ul>
+    <li><a href="/account/profile" aria-current="page">Profile</a></li>
+    <li><a href="/account/billing">Billing</a></li>
+  </ul>
+</nav>
+
+<form method="dialog">
+  <button type="button" data-toggle="aria-pressed" aria-pressed="true">Mute alerts</button>
+  <button type="submit" data-loading="Saving…">Save changes</button>
+  <button type="button" aria-disabled="true" aria-describedby="publish-why">Publish</button>
+  <output id="publish-why" class="hint">Publishing unlocks once a reviewer approves.</output>
+</form>
+
+<form-field data-invalid>
+  <label for="email">Work email</label>
+  <input type="email" id="email" name="email" value="priya@">
+  <output class="error" for="email">Enter a full address, like priya@example.com.</output>
+</form-field>
+
+<table data-sortable data-sortable-default="name">
+  <thead>
+    <tr>
+      <th scope="col" data-sort="name">Name</th>
+      <th scope="col" data-sort="joined" data-sort-type="date">Joined</th>
+    </tr>
+  </thead>
+  …
+</table></code-block>
+</section>
+
+<section>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Attribute</th><th>Values</th><th>Default</th><th>Native first</th></tr></thead>
+    <tbody>
+      <tr><td><code>aria-current</code></td><td><code>page</code>, <code>step</code>, <code>location</code>, <code>date</code>, <code>time</code>, <code>true</code>, <code>false</code></td><td><code>false</code></td><td>No native equivalent</td></tr>
+      <tr><td><code>aria-pressed</code></td><td><code>true</code>, <code>false</code>, <code>mixed</code></td><td>absent: not a toggle</td><td>A checkbox or switch (<code>input[data-switch]</code>) when it is a setting rather than an action</td></tr>
+      <tr><td><code>aria-expanded</code></td><td><code>true</code>, <code>false</code></td><td>absent: not expandable</td><td><code>&lt;details&gt;</code>, <code>popovertarget</code> (the browser exposes the state)</td></tr>
+      <tr><td><code>aria-disabled</code></td><td><code>true</code>, <code>false</code></td><td><code>false</code></td><td><code>disabled</code></td></tr>
+      <tr><td><code>aria-busy</code></td><td><code>true</code>, <code>false</code></td><td><code>false</code></td><td>No native equivalent</td></tr>
+      <tr><td><code>aria-invalid</code></td><td><code>true</code>, <code>false</code>, <code>grammar</code>, <code>spelling</code></td><td><code>false</code></td><td>Constraint validation (<code>required</code>, <code>pattern</code>, <code>:user-invalid</code>)</td></tr>
+      <tr><td><code>aria-sort</code></td><td><code>ascending</code>, <code>descending</code>, <code>none</code>, <code>other</code></td><td><code>none</code></td><td>No native equivalent</td></tr>
+      <tr><td><code>aria-selected</code></td><td><code>true</code>, <code>false</code></td><td>absent: not selectable</td><td><code>&lt;select&gt;</code> / <code>&lt;option selected&gt;</code>, radio buttons</td></tr>
+      <tr><td><code>aria-keyshortcuts</code></td><td>Space-separated key combinations, e.g. <code>Control+S Meta+S</code></td><td>none</td><td>No native equivalent (<code>accesskey</code> creates a shortcut but does not describe one)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>aria-current</h3>
+  <p>Marks the current item in a set: the page in navigation, the step in a process, today in a calendar. Use the most specific value. VB styles it on navigation links, so the current item is highlighted and announced from one attribute.</p>
+  <code-block language="html" show-lines label="Navigation and steps" data-escape><nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/">Home</a></li>
+    <li><span aria-current="page">Settings</span></li>
+  </ol>
+</nav>
+
+<nav class="steps" aria-label="Checkout progress">
+  <ol>
+    <li>Basket</li>
+    <li aria-current="step">Delivery</li>
+    <li>Payment</li>
+  </ol>
+</nav></code-block>
+  <p>Styled in VB: <code>nav a[aria-current="page"]</code> and <code>nav [aria-current="page"] &gt; a</code> (fill, colour and a locked underline as the non-colour cue), plus the <code>.tabs</code>, <code>.breadcrumb</code>, <code>.pagination</code>, <code>.tree</code> and <code>.steps</code> (<code>aria-current="step"</code>) variants (<code>src/native-elements/nav/styles.css</code>); <code>data-paged</code> page buttons (<code>src/utils/data-paged.css</code>); <code>&lt;page-toc&gt;</code> (<code>aria-current="true"</code>), <code>&lt;bread-crumb&gt;</code>, <code>&lt;nav-bar&gt;</code>, <code>&lt;date-picker&gt;</code>, <code>&lt;week-view&gt;</code> and <code>&lt;data-table&gt;</code> (their <code>styles.css</code>).</p>
+  <p>Set for you by: <code>&lt;nav-bar&gt;</code> (the link matching the URL), <code>&lt;bread-crumb&gt;</code> (the last crumb), <code>&lt;page-toc&gt;</code> (the section in view), <code>data-paged</code> controls (<code>src/lib/data-paged-controls.js</code>), the form wizard step list (<code>src/lib/wizard.js</code>), <code>&lt;carousel-wc&gt;</code>, <code>&lt;calendar-wc&gt;</code> and <code>&lt;date-picker&gt;</code>.</p>
+
+  <h3>aria-pressed</h3>
+  <p>Turns a <code>&lt;button&gt;</code> into a toggle button. Keep the label constant ("Mute alerts") and let the state change; do not also change the label to "Unmute".</p>
+  <code-block language="html" show-lines label="Toggle button without custom script" data-escape><button type="button" data-toggle="aria-pressed" aria-pressed="false">Show archived</button></code-block>
+  <p>Styled in VB: <code>button[aria-pressed="true"]</code> gets the active fill and an inner shadow; <code>.secondary</code> fills with the button colour, <code>.ghost</code> with the subtle tint, and forced-colours mode uses <code>SelectedItem</code> (<code>src/native-elements/button/styles.css</code>). <code>menu.toolbar</code> keeps pressed ghost buttons from losing their state on hover (<code>src/native-elements/menu/styles.css</code>).</p>
+  <p>Set for you by: <a href="/docs/attributes/data-toggle/"><code>data-toggle="aria-pressed"</code></a> (flips <code>true</code>/<code>false</code>), list-mode <a href="/docs/attributes/data-sortable/"><code>data-sortable</code></a> buttons (the active sort), and many components' toolbar buttons (<code>&lt;video-player&gt;</code>, <code>&lt;audio-player&gt;</code>, <code>&lt;reader-view&gt;</code>, <code>&lt;text-reader&gt;</code>, <code>&lt;highlight-wc&gt;</code>…).</p>
+
+  <h3>aria-expanded</h3>
+  <p>Says whether the thing a control opens is open. Put it on the control, not on the panel.</p>
+  <code-block language="html" show-lines label="Native first: the browser exposes the expanded state" data-escape><details>
+  <summary>Filters</summary>
+  …
+</details>
+
+<button type="button" popovertarget="sort-menu">Sort</button>
+<menu id="sort-menu" popover>…</menu>
+
+<!-- Your own script-driven disclosure: you keep aria-expanded in step -->
+<button type="button" aria-expanded="false" aria-controls="map-panel">Show map</button></code-block>
+  <p>Styled in VB: dropdown triggers inside <code>&lt;nav&gt;</code> keep their hover fill while open and rotate their chevron (<code>src/native-elements/nav/styles.css</code>); <code>&lt;drop-down&gt;</code>, <code>&lt;bread-crumb&gt;</code>, <code>&lt;glossary-wc&gt;</code> and <code>&lt;version-switcher&gt;</code> style their own triggers.</p>
+  <p>Set for you by: <code>data-toggle</code> (when its target is a popover, or when it toggles <code>data-state</code> to an open value), <code>data-spoiler</code>, <code>&lt;tool-tip&gt;</code>, <code>&lt;accordion-wc&gt;</code>, <code>&lt;drop-down&gt;</code>, <code>&lt;combo-box&gt;</code>, <code>&lt;site-search&gt;</code>, <code>&lt;context-menu&gt;</code>, <code>&lt;command-palette&gt;</code> and other menu and picker components.</p>
+
+  <h3>aria-disabled</h3>
+  <p>Looks and is announced as disabled, but stays focusable, so users can find the control and read why it is unavailable. The browser does not block activation: your script must ignore clicks. Prefer <code>disabled</code> when nobody needs to discover the control.</p>
+  <code-block language="html" show-lines label="Focusable but unavailable" data-escape><button type="button" aria-disabled="true" aria-describedby="publish-why">Publish</button>
+<output id="publish-why" class="hint">Publishing unlocks once a reviewer approves.</output></code-block>
+  <p>Styled in VB: <code>button:is(:disabled, [aria-disabled="true"])</code> gets half opacity and a not-allowed cursor, and hover and active fills are suppressed (<code>src/native-elements/button/styles.css</code>); disabled wizard steps (<code>src/native-elements/form/wizard.css</code>) and many component items.</p>
+  <p>Set for you by: <a href="/docs/attributes/data-loading/"><code>data-loading</code></a> (with <code>aria-busy</code>, instead of <code>disabled</code>, so the submitter's name and value still reach the form data, <code>src/utils/loading-button-init.js</code>), the form coordinator on the submit button while a fetch submission runs (<code>src/lib/form-coordinator.js</code>), and the form wizard's step list.</p>
+
+  <h3>aria-busy</h3>
+  <p>Says an element is being updated. On a button it marks work in progress; on a region it asks screen readers to wait before announcing changes.</p>
+  <code-block language="html" show-lines label="Busy submit button" data-escape><button type="submit" data-loading="Saving…">Save changes</button>
+<!-- while saving, data-loading adds aria-busy="true", aria-disabled="true" and a spinner --></code-block>
+  <p>Styled in VB: <code>button[aria-busy="true"]</code> and <code>.button[aria-busy="true"]</code> get a wait cursor, ignore pointer events and dim slightly (<code>src/native-elements/button/styles.css</code>); <code>&lt;theme-picker&gt;</code> and <code>&lt;popularity-index&gt;</code> style their busy states.</p>
+  <p>Set for you by: <code>data-loading</code>, the ticker effect, and components that fetch or stream content (<code>&lt;include-file&gt;</code>, <code>&lt;card-list&gt;</code>, <code>&lt;activity-feed&gt;</code>, <code>&lt;ai-chat&gt;</code>, <code>&lt;poll-wc&gt;</code>…).</p>
+
+  <h3>aria-invalid</h3>
+  <p>Marks a field whose value failed validation. Native constraint validation already exposes invalid state to assistive technology; VB adds <code>aria-invalid</code> where the browser's state is not enough, such as server-side errors.</p>
+  <code-block language="html" show-lines label="A server-side error" data-escape><form-field data-invalid>
+  <label for="username">Username</label>
+  <input type="text" id="username" name="username" value="priya">
+  <output class="error" for="username">That username is taken.</output>
+</form-field></code-block>
+  <p>Styled in VB: inputs, selects and textareas with <code>[aria-invalid="true"]</code> get the same treatment as <code>:user-invalid</code>, an error-coloured border with a thicker inline-start edge (a double border in forced-colours mode) (<code>src/native-elements/input/styles.css</code>); switches too (<code>src/native-elements/input/switch.css</code>).</p>
+  <p>Set for you by: <a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a>, which mirrors its invalid state (including an authored <code>data-invalid</code>) onto the control, and the form coordinator, which marks bare controls (outside <code>&lt;form-field&gt;</code>) on submit (<code>src/lib/form-coordinator.js</code>); also <code>&lt;combo-box&gt;</code>, <code>&lt;date-picker&gt;</code> and <code>&lt;time-picker&gt;</code>.</p>
+
+  <h3>aria-sort</h3>
+  <p>Put it on the one column header that the table is currently sorted by. Other headers have no <code>aria-sort</code> or <code>none</code>.</p>
+  <code-block language="html" show-lines label="A table sorted on the server" data-escape><th scope="col" data-sort aria-sort="descending">Joined</th></code-block>
+  <p>Styled in VB: <code>th[data-sort]</code> draws ⇅, ↑ or ↓ from <code>aria-sort</code>, with empty alternative text so the arrow is not announced twice. With a sort button inside (added by <code>data-sortable</code> or <code>&lt;data-table&gt;</code>) the neutral ⇅ shows on unsorted columns; a bare server-sorted header shows only ↑ or ↓ (<code>src/native-elements/table/styles.css</code>).</p>
+  <p>Set for you by: <a href="/docs/attributes/data-sortable/"><code>data-sortable</code></a> and <a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a>.</p>
+
+  <h3>aria-selected</h3>
+  <p>The selected item in a listbox, grid, tab list or tree. VB styles it only inside its own components (<code>&lt;combo-box&gt;</code>, <code>&lt;date-picker&gt;</code>, <code>&lt;site-map&gt;</code>, <code>&lt;notification-wc&gt;</code>), which also set it, as do <code>&lt;command-palette&gt;</code>, <code>&lt;site-search&gt;</code> and <code>&lt;calendar-wc&gt;</code>. For your own markup, a <code>&lt;select&gt;</code> or a group of radio buttons is almost always the right element.</p>
+
+  <h3>aria-keyshortcuts</h3>
+  <p>Describes a keyboard shortcut that script handles, so screen readers can announce it. It creates nothing by itself. VB does not style it.</p>
+  <code-block language="html" show-lines label="Set by data-hotkey" data-escape><input type="search" id="search" data-hotkey="/" data-hotkey-action="focus">
+<!-- data-hotkey adds aria-keyshortcuts="/" unless you set your own --></code-block>
+  <p>Set for you by: <a href="/docs/attributes/data-hotkey/"><code>data-hotkey</code></a> action bindings (<code>src/utils/hotkey-action-init.js</code>; your own value wins), <code>&lt;context-menu&gt;</code> items, <code>&lt;command-palette&gt;</code> commands, <code>&lt;selection-menu&gt;</code>, <code>&lt;video-player&gt;</code> and <code>&lt;audio-player&gt;</code>.</p>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
+  <ul>
+    <li><strong>State styles read the attribute.</strong> VB never uses a class for these states, so there is one source of truth. The one exception is <code>nav a.active</code>, accepted for site generators that cannot add attributes.</li>
+    <li><strong>Only <code>"true"</code> counts.</strong> Selectors test <code>[aria-pressed="true"]</code>, <code>[aria-busy="true"]</code> and so on, so <code>aria-pressed="false"</code> is styled as unpressed. <code>aria-current</code> rules match <code>"page"</code>, <code>"step"</code> or <code>"true"</code> as listed above.</li>
+    <li><strong>Forced colours.</strong> Pressed and disabled buttons switch to system colours (<code>SelectedItem</code>, <code>GrayText</code>) so the state survives Windows High Contrast.</li>
+    <li><strong>Companions.</strong> <a href="/docs/attributes/data-toggle/"><code>data-toggle</code></a> flips two-state ARIA attributes without custom script; <a href="/docs/attributes/data-loading/"><code>data-loading</code></a> manages busy and disabled on submit buttons; <code>&lt;form-field&gt;</code> manages <code>aria-invalid</code> and <code>aria-describedby</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Native first.</strong> A native element or attribute gives you the state, the keyboard behaviour and the announcement together. ARIA only changes the announcement.</li>
+    <li><strong><code>disabled</code> or <code>aria-disabled</code>?</strong> <code>disabled</code> removes the control from the Tab order and blocks activation. <code>aria-disabled="true"</code> keeps it focusable so its reason can be read; you must block activation yourself.</li>
+    <li><strong>A <code>&lt;button&gt;</code>, not a <code>role="button"</code>.</strong> <code>aria-pressed</code> and <code>aria-expanded</code> belong on a real <code>&lt;button&gt;</code>, which brings focus and <kbd>Enter</kbd>/<kbd>Space</kbd> for free.</li>
+    <li><strong>Keep state and visuals in step.</strong> Set the attribute and let CSS follow it, as VB does. Do not toggle a class and an attribute separately.</li>
+    <li><strong>Colour is not enough.</strong> VB pairs state colours with a second cue: an underline for the current nav item, an inner shadow for pressed buttons, a thicker border for invalid fields, arrows for sorted columns.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong><code>aria-pressed</code> and <code>aria-expanded</code> on the same button</strong> conflict. A toggle is pressed; a disclosure is expanded.</li>
+    <li><strong><code>aria-current</code> on more than one item</strong> in the same set is a bug.</li>
+    <li><strong><code>aria-busy</code> on a large region</strong> can silence its live updates until you clear it. Always set it back to <code>false</code> or remove it.</li>
+    <li><strong><code>aria-sort</code> on several columns</strong> is allowed by the spec but confuses users; mark only the primary sort.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-toggle/"><code>data-toggle</code></a> &mdash; flip <code>aria-pressed</code>, <code>aria-expanded</code> and others on click.</li>
+    <li><a href="/docs/attributes/data-loading/"><code>data-loading</code></a> &mdash; busy submit buttons.</li>
+    <li><a href="/docs/attributes/data-sortable/"><code>data-sortable</code></a> and <a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a> &mdash; <code>aria-sort</code>.</li>
+    <li><a href="/docs/attributes/data-hotkey/"><code>data-hotkey</code></a> &mdash; <code>aria-keyshortcuts</code>.</li>
+    <li><a href="/docs/attributes/disabled/"><code>disabled</code></a> &mdash; the native alternative to <code>aria-disabled</code>.</li>
+    <li><a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a> &mdash; validation state and messages.</li>
+    <li><a href="/docs/elements/native/nav/"><code>&lt;nav&gt;</code></a>, <a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a>, <a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a></li>
+    <li><a href="/docs/accessibility/">Accessibility guide</a></li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong>Native attribute</strong> (<code>disabled</code>, <code>open</code>, <code>selected</code>, <code>required</code>) &mdash; whenever one exists.</li>
+    <li><strong>ARIA state</strong> &mdash; states HTML has no attribute for: current, pressed, busy, sort.</li>
+    <li><strong>VB enhancer</strong> (<code>data-toggle</code>, <code>data-loading</code>, <code>data-sortable</code>, <code>&lt;form-field&gt;</code>) &mdash; when you want the ARIA state managed for you.</li>
+  </ul>
+</section>

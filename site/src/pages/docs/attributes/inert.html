@@ -1,0 +1,136 @@
+---
+layout: attribute
+title: "inert"
+description: "Make a subtree unusable: no focus, no clicks, no text selection and hidden from screen readers, while it stays on screen. Covers what inert does not do, and how it differs from hidden and disabled."
+attributeName: inert
+attributeType: native
+nativeGroup: Interactivity
+category: native
+currentPath: /docs/attributes/inert/
+
+crumbHref: /docs/attributes/native/
+crumbLabel: Native Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>inert</code> attribute switches off an element and everything inside it. Inert content can't be focused or clicked (pointer events pass through as if it had <code>pointer-events: none</code>), is removed from the accessibility tree, and may be skipped by find-in-page and text selection. It is still rendered: <strong>the browser adds no visual change at all</strong>.</p>
+  <p>It is what a modal <code>&lt;dialog&gt;</code> does to the rest of the page, made available for any subtree: off-screen drawer panels, collapsed regions, content behind your own overlay.</p>
+  <p><strong>Applies to:</strong> any HTML element (it is a global attribute).</p>
+
+  <browser-window
+    src="/docs/examples/demos/attr-inert-basic.html"
+    url="https://vanilla-breeze.com/inert"
+    title="inert"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="An inert fieldset and table row" data-escape><button type="button" data-toggle="inert" data-toggle-target="#shipping">Toggle inert</button>
+<fieldset id="shipping" inert>
+  <legend>Shipping address</legend>
+  <form-field>
+    <label for="ship-street">Street</label>
+    <input type="text" id="ship-street" name="street" autocomplete="shipping address-line1" value="221B Baker Street" />
+  </form-field>
+  …
+</fieldset>
+
+<table>
+  <caption>Team members</caption>
+  …
+  <tr inert><td>Marcus Chen (owner)</td><td>Owner</td><td><button type="button" class="ghost">Remove</button></td></tr>
+</table></code-block>
+</section>
+
+<section>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Present (<code>inert</code>, <code>inert=""</code>, or any value)</td><td>The element and all its descendants are inert.</td></tr>
+      <tr><td>Absent</td><td>Not inert (the default), unless an ancestor is inert or a modal dialog is open elsewhere.</td></tr>
+    </tbody>
+  </table>
+  <p>It is a boolean attribute, so <code>inert="false"</code> still makes the element inert. Remove the attribute, or set the <code>inert</code> property to <code>false</code>. A descendant can't opt back out of an inert ancestor.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Style it yourself</h3>
+  <p>Because nothing changes on screen, sighted users see controls that ignore them. Give inert regions a visual cue. Muted text keeps contrast readable; <code>opacity</code> usually drops it below WCAG AA.</p>
+  <code-block language="css" show-lines label="A visual cue for inert regions" data-escape>fieldset[inert] {
+  color: var(--color-text-muted);
+  border-style: dashed;
+}</code-block>
+
+  <h3>Off-screen panels</h3>
+  <p>A drawer or slide that is moved out of view with a transform is still focusable. Make it inert while it is out of view, and remove the attribute when it slides in.</p>
+  <code-block language="javascript" show-lines label="Inert while closed" data-escape>const drawer = document.getElementById('filters');
+
+function setDrawerOpen(open) {
+  drawer.toggleAttribute('data-open', open);
+  drawer.inert = !open;
+}</code-block>
+
+  <h3>Behind a modal: nothing to do</h3>
+  <p><code>showModal()</code> and <code>command="show-modal"</code> already make everything outside the dialog inert, and restore it on close. Adding <code>inert</code> to <code>&lt;main&gt;</code> yourself is only needed for a home-made overlay that isn't a modal <code>&lt;dialog&gt;</code>.</p>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
+  <ul>
+    <li><strong>No global styling.</strong> VB has no <code>[inert]</code> rule, matching the browser.</li>
+    <li><strong>Table rows.</strong> <code>tr:is([data-disabled], [inert])</code> gets muted text and no hover highlight, and <code>GrayText</code> in forced-colours mode (<code>src/native-elements/table/styles.css</code>). Use <code>data-disabled</code> for the look alone and <code>inert</code> when the row's controls must also stop working.</li>
+    <li><strong><a href="/docs/attributes/data-show-when/"><code>data-show-when</code></a> / <code>data-hide-when</code></strong> give a hidden section <code>hidden</code> and <code>inert</code>, and disable its controls (<code>src/utils/conditional-init.js</code>).</li>
+    <li><strong><a href="/docs/attributes/data-spoiler/"><code>data-spoiler</code></a></strong> keeps concealed content inert until it is revealed (<code>src/utils/spoiler-init.js</code>).</li>
+    <li><strong><a href="/docs/elements/web-components/splitter/"><code>&lt;split-surface&gt;</code></a></strong> makes a collapsed panel inert so its controls leave the tab order.</li>
+    <li><strong><a href="/docs/attributes/data-hotkey/"><code>data-hotkey</code></a></strong> doesn't fire a shortcut whose target is inside an inert or hidden subtree.</li>
+    <li><strong><a href="/docs/attributes/data-toggle/"><code>data-toggle="inert"</code></a></strong> flips the attribute from a button, as in the demo.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Inert content is hidden from screen readers.</strong> Only use it on content nobody needs to read right now. For a form section that should stay readable but can't be changed, use <code>readonly</code>, <code>disabled</code> or <code>aria-disabled="true"</code>, which are announced.</li>
+    <li>Pair inert regions with a visible cue and, where it isn't obvious, a reason ("Owner can't be removed"). Otherwise the screen shows content that keyboard and screen reader users can't reach and mouse users can't use.</li>
+    <li>If the focused element becomes inert, focus is lost and falls back to the document. Move focus somewhere useful first.</li>
+    <li>Prefer the platform's own modality: a modal <code>&lt;dialog&gt;</code> manages inertness, focus and <kbd>Escape</kbd> together.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <p><code>inert</code>: Baseline 2023 (Chrome 102, Firefox 112, Safari 15.5). Skipping inert text in find-in-page: Chrome 124 and Firefox 120; Safari still finds it (as of November 2026).</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>No visual change.</strong> An inert form looks fully usable. Style it.</li>
+    <li><strong>Not the same as <code>disabled</code>.</strong> Inert form controls are still submitted with the form and still take part in validation, so a <code>required</code> inert field can block submit. Disable controls you want left out, as <code>data-show-when</code> does.</li>
+    <li><strong>Boolean.</strong> <code>inert="false"</code> is inert.</li>
+    <li><strong>It blocks the user, not your code.</strong> <code>element.click()</code> from script still dispatches a click on inert content. Only <code>focus()</code> fails, because inert elements can't take focus.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/hidden/"><code>hidden</code></a> &mdash; remove content from rendering instead.</li>
+    <li><a href="/docs/attributes/disabled/"><code>disabled</code></a> and <a href="/docs/attributes/readonly/"><code>readonly</code></a> &mdash; form-control states that stay announced.</li>
+    <li><a href="/docs/attributes/open/"><code>open</code></a> and <a href="/docs/attributes/commandfor/"><code>commandfor</code></a> &mdash; modal dialogs, which apply inertness for you.</li>
+    <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> and <a href="/docs/elements/native/tr/"><code>&lt;tr&gt;</code></a> &mdash; element references.</li>
+  </ul>
+
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>hidden</code></strong> &mdash; the content shouldn't be shown at all right now.</li>
+    <li><strong><code>inert</code></strong> &mdash; visible for context, but nobody should use it and screen readers should skip it.</li>
+    <li><strong><code>disabled</code></strong> &mdash; a form control that can't be used and shouldn't be submitted; announced as unavailable.</li>
+    <li><strong><code>aria-disabled="true"</code></strong> &mdash; a control that stays focusable so users can find it and learn why it's unavailable; you block the action in script or with <a href="/docs/attributes/data-loading/"><code>data-loading</code></a>.</li>
+    <li><strong><code>readonly</code></strong> &mdash; a field whose value can be read, focused and submitted, but not changed.</li>
+    <li><strong>A modal <code>&lt;dialog&gt;</code></strong> &mdash; the whole page except one task should be unavailable.</li>
+  </ul>
+</section>

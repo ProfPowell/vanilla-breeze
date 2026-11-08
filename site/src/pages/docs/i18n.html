@@ -11,7 +11,7 @@ toc: true
 
 <h2>Philosophy</h2>
 <p>Internationalization is not a feature you add — it is a constraint you respect from the start. VB treats i18n the same way it treats semantic HTML: build it in, don't bolt it on.</p>
-<p>The web platform already has most of what you need: the <code>lang</code> attribute, CSS <code>:lang()</code>, logical properties, the <code>Intl</code> API, the <code>translate</code> attribute, and ruby HTML elements. VB uses them correctly and consistently.</p>
+<p>The web platform already has most of what you need: the <a href="/docs/attributes/lang/"><code>lang</code></a> attribute, CSS <code>:lang()</code>, the <a href="/docs/attributes/dir/"><code>dir</code></a> attribute and <code>:dir()</code>, logical properties, the <code>Intl</code> API, the <a href="/docs/attributes/translate/"><code>translate</code></a> attribute, and ruby HTML elements. VB uses them correctly and consistently.</p>
 
 <h2>Script-Specific Typography</h2>
 <p>Set <code>lang</code> on any element and VB automatically applies the right font family, line height, letter spacing, and word-breaking rules. This works via CSS <code>:lang()</code> which inherits through the subtree.</p>
@@ -114,20 +114,27 @@ toc: true
 <pre translate="no"><code>const greeting = 'Hello';</code></pre></code-block>
 
 <h2>Locale Resolution (JS)</h2>
-<p>VB provides a centralized <code>getLocale()</code> function that all format utilities share. The priority chain:</p>
+<p>VB provides a centralized <code>getLocale(el)</code> function that the format utilities and components share. For an element, the priority chain is:</p>
 <ol>
-  <li><code>&lt;html lang&gt;</code> attribute</li>
+  <li><code>data-locale</code> on the element itself (format utilities such as <a href="/docs/attributes/data-format-number/"><code>data-format-number</code></a>, <a href="/docs/attributes/data-format-date/"><code>data-format-date</code></a> and <a href="/docs/attributes/data-format-bytes/"><code>data-format-bytes</code></a>)</li>
+  <li>the nearest ancestor with a <a href="/docs/attributes/lang/"><code>lang</code></a> attribute (<code>el.closest('[lang]')</code>)</li>
+  <li><code>&lt;html lang&gt;</code></li>
   <li><code>navigator.language</code></li>
   <li><code>'en'</code> fallback</li>
 </ol>
-<p>Individual elements can override via <code>data-locale</code>:</p>
+<p>So a <code>&lt;section lang="de"&gt;</code> formats its numbers and dates in German even on an English page, and <code>data-locale</code> overrides a single element:</p>
 
-<code-block language="html" label="Locale fallback chain" data-escape><html lang="de">
-  <!-- All format utilities use German locale by default -->
-  <data value="1234.56" data-format-number>1.234,56</data>
+<code-block language="html" label="Locale fallback chain" data-escape><html lang="en">
+  <!-- Uses <html lang>: en -->
+  <data value="1234.56" data-format-number>1,234.56</data>
 
-  <!-- Override for this specific element -->
-  <data value="1234.56" data-format-number data-locale="en-US">1,234.56</data>
+  <!-- Nearest [lang] wins: de -->
+  <section lang="de">
+    <data value="1234.56" data-format-number>1.234,56</data>
+  </section>
+
+  <!-- data-locale overrides this one element -->
+  <data value="1234.56" data-format-number data-locale="fr">1 234,56</data>
 </html></code-block>
 
 <h3>JS Utilities</h3>
@@ -136,6 +143,7 @@ toc: true
 <code-block language="js" label="Locale utility functions" data-escape>import { getLocale, isRTL, usesRuby, primarySubtag } from './lib/i18n.js';
 
 getLocale();           // 'en-US' (from html[lang] or navigator)
+getLocale(el);         // nearest [lang] of el, then html[lang], then navigator
 isRTL('ar');           // true
 usesRuby('ja');        // true
 primarySubtag('zh-TW'); // 'zh'</code-block>
@@ -183,6 +191,15 @@ i18n.watch();</code-block>
 <p><a href="/docs/examples/demos/i18n-typography.html">i18n Typography Demo</a> — live examples of all features on this page.</p>
 
 <h2>Related</h2>
+<h3>Attributes</h3>
+<ul>
+  <li><a href="/docs/attributes/lang/"><code>lang</code></a> &mdash; Declare the language; drives script typography, quotes, hyphenation and formatting</li>
+  <li><a href="/docs/attributes/dir/"><code>dir</code></a> &mdash; Text direction; VB mirrors direction-specific UI with <code>:dir(rtl)</code></li>
+  <li><a href="/docs/attributes/translate/"><code>translate</code></a> &mdash; Keep code, brand names and identifiers out of machine translation</li>
+  <li><a href="/docs/attributes/dirname/"><code>dirname</code></a> &mdash; Submit a field's text direction with the form</li>
+  <li><a href="/docs/attributes/data-format-number/"><code>data-format-number</code></a>, <a href="/docs/attributes/data-format-date/"><code>data-format-date</code></a>, <a href="/docs/attributes/data-format-bytes/"><code>data-format-bytes</code></a> &mdash; Locale-aware formatting from the nearest <code>lang</code></li>
+</ul>
+
 <h3>Ruby Annotations</h3>
 <ul>
   <li><a href="/docs/elements/native/ruby/"><code>&lt;ruby&gt;</code></a> &mdash; Container for ruby annotations (furigana, pinyin)</li>

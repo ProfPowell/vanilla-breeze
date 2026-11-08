@@ -1,0 +1,137 @@
+---
+layout: attribute
+title: "formaction"
+description: "Per-button submission overrides: formaction, formmethod, formenctype, formtarget and formnovalidate let one form send to different URLs, in different ways, depending on the button pressed."
+attributeName: formaction
+attributeType: native
+nativeGroup: Forms
+category: native
+currentPath: /docs/attributes/formaction/
+
+crumbHref: /docs/attributes/native/
+crumbLabel: Native Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>A submit button can override how its form is submitted. <code>formaction</code> replaces the form's <code>action</code> URL, and four siblings replace the other submission settings for that button only. One form can then have Publish, Save draft and Preview buttons that go to different endpoints, with no script.</p>
+  <p><strong>Applies to:</strong> submit buttons: <a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> (type <code>submit</code>, the default), <code>&lt;input type="submit"&gt;</code> and <code>&lt;input type="image"&gt;</code>. The button may sit outside the form and point at it with <a href="/docs/attributes/form/"><code>form="id"</code></a>.</p>
+
+  <browser-window
+    src="/docs/examples/demos/attr-formaction-basic.html"
+    url="https://vanilla-breeze.com/attributes/formaction"
+    title="formaction"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Three buttons, three submissions" data-escape><form action="/articles" method="post">
+  <form-field>
+    <label for="title">Title</label>
+    <input type="text" id="title" name="title" required />
+  </form-field>
+  <form-field>
+    <label for="body">Body</label>
+    <textarea id="body" name="body" rows="6" required></textarea>
+  </form-field>
+
+  <footer class="actions">
+    <button type="submit">Publish</button>
+    <button type="submit" formaction="/articles/drafts" formnovalidate class="secondary">Save draft</button>
+    <button type="submit" formaction="/articles/preview" formmethod="get" formtarget="_blank" formnovalidate class="ghost">Preview</button>
+  </footer>
+</form></code-block>
+</section>
+
+<section>
+  <h2>Values</h2>
+  <table class="props-table">
+    <thead><tr><th>Button attribute</th><th>Overrides</th><th>Values</th><th>When absent</th></tr></thead>
+    <tbody>
+      <tr><td><code>formaction</code></td><td><code>action</code></td><td>A URL, resolved against the document</td><td>The form's <code>action</code>; a form without one submits to the current page</td></tr>
+      <tr><td><code>formmethod</code></td><td><code>method</code></td><td><code>get</code>, <code>post</code>, <code>dialog</code></td><td>The form's method (default <code>get</code>)</td></tr>
+      <tr><td><code>formenctype</code></td><td><code>enctype</code></td><td><code>application/x-www-form-urlencoded</code>, <code>multipart/form-data</code>, <code>text/plain</code></td><td>The form's encoding (default URL-encoded)</td></tr>
+      <tr><td><code>formtarget</code></td><td><code>target</code></td><td><code>_self</code>, <code>_blank</code>, <code>_parent</code>, <code>_top</code>, or a window or iframe name</td><td>The form's target (default <code>_self</code>)</td></tr>
+      <tr><td><code>formnovalidate</code></td><td><code>novalidate</code></td><td>Boolean</td><td>The form's setting (validate unless <code>novalidate</code>)</td></tr>
+    </tbody>
+  </table>
+  <p>Invalid <code>formmethod</code> or <code>formenctype</code> values fall back to <code>get</code> and URL-encoded, not to the form's setting. The button's own <code>name</code> and <code>value</code> are submitted along with the fields, which is another way to tell the server which action was chosen.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>One endpoint, an intent field</h3>
+  <p>If the server prefers one URL, send the choice as the button's value instead.</p>
+  <code-block language="html" label="name/value on the buttons" data-escape><form action="/orders/1042" method="post">
+  <button type="submit" name="intent" value="approve">Approve</button>
+  <button type="submit" name="intent" value="reject" class="secondary">Reject</button>
+</form></code-block>
+
+  <h3>Closing a dialog</h3>
+  <p><code>formmethod="dialog"</code> on a button in a form inside a <code>&lt;dialog&gt;</code> closes the dialog instead of sending a request, and sets <code>dialog.returnValue</code> to the button's <code>value</code>.</p>
+  <code-block language="html" label="Cancel without submitting" data-escape><dialog id="rename">
+  <form action="/files/rename" method="post">
+    <form-field>
+      <label for="new-name">New name</label>
+      <input type="text" id="new-name" name="name" required />
+    </form-field>
+    <footer class="actions end">
+      <button type="submit" formmethod="dialog" formnovalidate value="cancel" class="secondary">Cancel</button>
+      <button type="submit">Rename</button>
+    </footer>
+  </form>
+</dialog></code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
+  <ul>
+    <li><strong><code>data-validate</code>, native mode</strong> (the default). After its checks pass, the form coordinator resubmits with <code>form.requestSubmit(submitter)</code>, so every override on the pressed button applies: action, method, encoding, target, and its <code>name</code>/<code>value</code> (<code>src/lib/form-coordinator.js</code>).</li>
+    <li><strong><code>data-submit="fetch"</code></strong> uses the button's <code>formaction</code>, <code>formmethod</code> (<code>get</code> sends a query string; anything else is a POST) and <code>formenctype</code>, and includes its <code>name</code>/<code>value</code>. The POST body follows <code>formenctype</code>, else the form's <code>enctype</code> attribute; with neither authored it is <code>multipart/form-data</code> (not the native urlencoded default), so file inputs work. It ignores <code>formtarget</code>: the response is handled in the page, so there is no window to target. Use a native-mode form for a "Preview in new tab" button.</li>
+    <li><strong><code>data-submit="event"</code></strong> passes <code>new FormData(form, submitter)</code> in the <code>vb:submit</code> event, so the button's <code>name</code>/<code>value</code> is in the data. The other overrides are up to your handler.</li>
+    <li><strong><code>formnovalidate</code> in a <code>data-validate</code> form</strong> skips the coordinator's checks in every submit mode, so a Save-draft button gets past empty required fields.</li>
+    <li><strong>Wizard.</strong> A <a href="/docs/attributes/data-wizard/"><code>data-wizard</code></a> form checks <code>formnovalidate</code> on the clicked submit button and skips its jump to the step with the first error (<code>src/lib/wizard.js</code>).</li>
+    <li><strong><a href="/docs/attributes/data-loading/"><code>data-loading</code></a></strong> shows the spinner on the button that actually submitted, using the event's <code>submitter</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Each button's text must say what it does ("Save draft", "Preview in new tab"). The overrides are invisible.</li>
+    <li>Warn when a button opens a new window or tab (<code>formtarget="_blank"</code>), in its text or with an icon that has a text alternative.</li>
+    <li>The first submit button in the form is the default for Enter. Put the primary action first in the DOM, or Enter may trigger "Save draft".</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Security</h2>
+  <p>A <code>formaction</code> on an injected button sends the whole form, including passwords and CSRF tokens, to another site. Never allow these attributes in user-supplied HTML. VB's HTML sanitizer, used by <code>&lt;markdown-viewer&gt;</code>, comments and other user-content components, strips <code>form</code>, <code>formaction</code>, <code>formmethod</code>, <code>formtarget</code>, <code>formenctype</code> and <code>formnovalidate</code>, and turns submit buttons into plain buttons (<code>src/lib/sanitize-html.js</code>). A <code>Content-Security-Policy</code> with <code>form-action</code> also limits where forms may submit.</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><code>button.formAction</code> returns the document URL when the attribute is absent, not the form's action. Check <code>button.hasAttribute('formaction')</code> first.</li>
+    <li><code>form.submit()</code> ignores every button override. Use <code>form.requestSubmit(button)</code>.</li>
+    <li>The overrides do nothing on <code>type="button"</code> or <code>type="reset"</code> buttons.</li>
+    <li><code>formenctype="multipart/form-data"</code> is needed for file uploads with <code>post</code>; with <code>get</code>, only file names are sent.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/novalidate/"><code>novalidate</code></a> &mdash; the form-level switch behind <code>formnovalidate</code></li>
+    <li><a href="/docs/attributes/form/"><code>form</code></a> &mdash; buttons outside their form</li>
+    <li><a href="/docs/attributes/data-loading/"><code>data-loading</code></a> &mdash; busy state on the submitting button</li>
+    <li><a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a>, <a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a>, <a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a></li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>formaction</code></strong> &mdash; each action has its own endpoint.</li>
+    <li><strong><code>name</code>/<code>value</code> on the buttons</strong> &mdash; one endpoint decides by the submitted intent.</li>
+    <li><strong><code>formmethod="dialog"</code></strong> &mdash; a button that should close a dialog without sending anything.</li>
+    <li><strong><code>data-submit="fetch"</code></strong> &mdash; submit without leaving the page; it keeps <code>formaction</code>, <code>formmethod</code> and <code>formenctype</code>.</li>
+  </ul>
+</section>

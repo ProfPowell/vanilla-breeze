@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "reversed"
-description: "Control ordered list numbering direction and start value. Covers reversed, start, and value attributes on ol and li elements."
+description: "Ordered-list numbering: reversed counts down, start sets the first number, li value jumps the count, and type picks the marker. VB widens the indent for long markers."
 attributeName: reversed
 attributeType: native
 nativeGroup: Structure
@@ -12,128 +12,132 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>reversed</code> attribute on <code>&lt;ol&gt;</code> reverses the numbering direction so the list counts down instead of up. Combined with <code>start</code> (on <code>&lt;ol&gt;</code>) and <code>value</code> (on <code>&lt;li&gt;</code>), you have full control over ordered list numbering.</p>
-<p><strong>Applies to:</strong></p>
-<ul>
-  <li><code>reversed</code> — <code>&lt;ol&gt;</code> only</li>
-  <li><code>start</code> — <code>&lt;ol&gt;</code> only</li>
-  <li><code>value</code> — <code>&lt;li&gt;</code> within an <code>&lt;ol&gt;</code></li>
-</ul>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>reversed</code> attribute makes an <code>&lt;ol&gt;</code> count down instead of up. Three companions complete the numbering controls: <code>start</code> sets the first number, <code>value</code> on an <code>&lt;li&gt;</code> jumps the count, and <code>type</code> picks the marker style. Because these are HTML attributes, the numbers are part of the document, not just its styling.</p>
+  <p><strong>Applies to:</strong></p>
+  <ul>
+    <li><code>reversed</code>, <code>start</code>, <code>type</code> &mdash; <a href="/docs/elements/native/ol/"><code>&lt;ol&gt;</code></a></li>
+    <li><code>value</code> &mdash; <a href="/docs/elements/native/li/"><code>&lt;li&gt;</code></a> whose parent is an <code>&lt;ol&gt;</code></li>
+  </ul>
 
-<h2>Values</h2>
-<table>
-  <thead><tr><th>Attribute</th><th>Element</th><th>Value</th><th>Effect</th></tr></thead>
-  <tbody>
-    <tr><td><code>reversed</code></td><td><code>&lt;ol&gt;</code></td><td>Boolean (no value)</td><td>Numbers count down from the total number of items</td></tr>
-    <tr><td><code>start</code></td><td><code>&lt;ol&gt;</code></td><td>Integer</td><td>Sets the starting number for the first item</td></tr>
-    <tr><td><code>value</code></td><td><code>&lt;li&gt;</code></td><td>Integer</td><td>Overrides the counter for that specific item; subsequent items continue from this value</td></tr>
-  </tbody>
-</table>
+  <browser-window
+    src="/docs/examples/demos/attr-reversed-basic.html"
+    url="https://vanilla-breeze.com/ol-numbering"
+    title="reversed, start, value and type"
+    shadow>
+  </browser-window>
 
-<h2>Reversed Lists</h2>
-<p>A reversed list counts down from the number of items. A list with 5 items numbers them 5, 4, 3, 2, 1.</p>
-
-<code-block language="html" label="Reversed list" data-escape><!-- Countdown list: 5, 4, 3, 2, 1 -->
-<ol reversed>
-  <li>Launch the application</li>
+  <code-block language="html" show-lines label="Countdown list" data-escape><ol reversed>
+  <li>Ship the release</li>
   <li>Run final checks</li>
-  <li>Load test data</li>
-  <li>Configure the server</li>
-  <li>Set up the environment</li>
-</ol></code-block>
-
-<h2>Custom Start Value</h2>
-<p>The <code>start</code> attribute sets the first number. This is useful when a list is split across sections and the second part should continue the numbering.</p>
-
-<code-block language="html" label="Start attribute" data-escape><!-- Start numbering from 6 (continuing a split list) -->
-<h3>Steps 1-5</h3>
-<ol>
-  <li>Open your terminal</li>
-  <li>Navigate to the project directory</li>
-  <li>Install dependencies</li>
-  <li>Copy the example config</li>
-  <li>Edit the config file</li>
+  <li>Freeze the branch</li>
 </ol>
+<!-- 3, 2, 1 --></code-block>
+</section>
 
-<h3>Steps 6-10</h3>
+<section>
+  <h2>Values</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Value</th><th>Default</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>reversed</code></td><td>Boolean</td><td>Absent: counts up</td><td>Counts down. Without <code>start</code>, the first item gets the number of items.</td></tr>
+      <tr><td><code>start</code></td><td>Integer (may be 0 or negative)</td><td>1, or the item count when <code>reversed</code>; an invalid value uses the default</td><td>The number of the first item.</td></tr>
+      <tr><td><code>value</code></td><td>Integer</td><td>Absent: the next number in sequence</td><td>This item's number. Following items continue from it.</td></tr>
+      <tr><td><code>type</code></td><td><code>1</code>, <code>a</code>, <code>A</code>, <code>i</code>, <code>I</code></td><td><code>1</code> (decimal)</td><td>Decimal, lower or upper letters, lower or upper Roman numerals. Case matters.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Continue a split list</h3>
+  <code-block language="html" show-lines label="start" data-escape><h3>Steps 6 to 8</h3>
 <ol start="6">
   <li>Start the dev server</li>
   <li>Open the browser</li>
-  <li>Log in with test credentials</li>
-  <li>Verify the dashboard loads</li>
-  <li>Run the test suite</li>
+  <li>Run the tests</li>
 </ol></code-block>
 
-<h2>Combined: Countdown from a Number</h2>
-<p>Use <code>reversed</code> and <code>start</code> together for top-N countdown lists. Set <code>start</code> to the highest number you want.</p>
+  <h3>Top-ten countdown</h3>
+  <p>Use <code>reversed</code> with <code>start</code> when the list shows only part of the count.</p>
+  <code-block language="html" show-lines label="reversed with start" data-escape><ol reversed start="10">
+  <li>Lisbon</li>
+  <li>Kyoto</li>
+  <li>Oaxaca</li>
+</ol>
+<!-- 10, 9, 8 --></code-block>
 
-<code-block language="html" label="Top 10 countdown" data-escape><!-- Top 10 countdown starting at 10 -->
-<h3>Top 10 Programming Languages</h3>
-<ol reversed start="10">
-  <li>Ruby</li>
-  <li>Go</li>
-  <li>Swift</li>
-  <li>TypeScript</li>
-  <li>Rust</li>
-  <li>C++</li>
-  <li>C#</li>
-  <li>Java</li>
-  <li>JavaScript</li>
-  <li>Python</li>
-</ol></code-block>
-
-<h2>Overriding Individual Items</h2>
-<p>The <code>value</code> attribute on a <code>&lt;li&gt;</code> overrides the counter for that item. Subsequent items continue incrementing (or decrementing, if reversed) from the new value.</p>
-
-<code-block language="html" label="Value override" data-escape><!-- Override specific item numbers -->
-<ol>
+  <h3>Jump the count</h3>
+  <code-block language="html" show-lines label="li value" data-escape><ol>
   <li>Introduction</li>
   <li>Background</li>
-  <li value="5">Main argument</li>
-  <li>Supporting evidence</li>
-  <li>Conclusion</li>
+  <li value="10">Appendix</li>
+  <li>Index</li>
 </ol>
-<!-- Renders as: 1, 2, 5, 6, 7 --></code-block>
+<!-- 1, 2, 10, 11 --></code-block>
+  <p>To change one number without moving the rest, set <code>value</code> on the next item too.</p>
 
-<h2>List Style Types</h2>
-<p>The <code>reversed</code> and <code>start</code> attributes work with any <code>list-style-type</code> — Roman numerals, letters, and other numbering systems all reverse correctly.</p>
-
-<code-block language="html" label="Styled list types" data-escape><!-- reversed works with any list-style-type -->
-<ol reversed style="list-style-type: upper-roman;">
+  <h3>Roman numerals and letters</h3>
+  <p>Use the <code>type</code> attribute, not an inline <code>list-style-type</code>. The marker type is part of the content (a legal clause "iv" is referred to as "iv"), and VB's indent rule recognises it.</p>
+  <code-block language="html" show-lines label="type with reversed" data-escape><ol type="I" reversed>
   <li>Final act</li>
   <li>Intermission</li>
   <li>Opening act</li>
 </ol>
-<!-- Renders as: III, II, I -->
-
-<ol reversed style="list-style-type: lower-alpha;">
-  <li>Third choice</li>
-  <li>Second choice</li>
-  <li>First choice</li>
-</ol>
-<!-- Renders as: c, b, a --></code-block>
-
-<h2>Accessibility</h2>
-<ul>
-  <li>Screen readers announce the list item numbers correctly, regardless of <code>reversed</code> or <code>start</code> values.</li>
-  <li>The semantic ordering is communicated to assistive technology — a reversed list is read in its visual order (top to bottom), with the descending numbers.</li>
-  <li>Do not use CSS <code>counter-reset</code>/<code>counter-increment</code> to fake reversed numbering — it does not communicate the correct semantics to assistive technology.</li>
-</ul>
-
-<h2>Limitations</h2>
-<ul>
-  <li>The <code>reversed</code> attribute only applies to <code>&lt;ol&gt;</code>. It has no effect on <code>&lt;ul&gt;</code>.</li>
-  <li>The <code>start</code> attribute accepts only integers. It does not accept Roman numerals or letters even when <code>list-style-type</code> uses them.</li>
-  <li>When <code>reversed</code> is used without <code>start</code>, the count begins at the total number of <code>&lt;li&gt;</code> elements. Dynamically adding items changes the starting number, which can be unexpected.</li>
-  <li>The <code>value</code> attribute on <code>&lt;li&gt;</code> resets the counter, which affects all subsequent items. There is no way to override a single item without affecting the ones after it.</li>
-</ul>
+<!-- III, II, I --></code-block>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>In Vanilla Breeze</h2>
+  <p>List markers sit in the list's inline-start padding. A marker wider than the padding ("VIII.", "100.") overflows the list edge and can be clipped. VB widens the indent from <code>var(--size-l)</code> to <code>2.5em</code> for the lists that CSS can tell will have long markers (<code>src/native-elements/lists/styles.css</code>):</p>
+  <code-block language="css" show-lines label="VB's ordered-list indent rule">ol {
+  padding-inline-start: var(--ol-indent, var(--size-l));
+}
+
+ol:where([type="i"], [start], [reversed],
+         :has(> li[value], > li:nth-child(100)),
+         [type="a"]:has(> li:nth-child(27))) {
+  padding-inline-start: var(--ol-indent, 2.5em);
+}</code-block>
   <ul>
-    <li><a href="/docs/elements/native/ol/"><code>&lt;ol&gt;</code></a> — the ordered list element</li>
-    <li><a href="/docs/elements/native/li/"><code>&lt;li&gt;</code></a> — list item element</li>
-    <li><a href="/docs/elements/native/ul/"><code>&lt;ul&gt;</code></a> — unordered list element</li>
+    <li>Any list with <code>reversed</code>, <code>start</code>, an <code>li[value]</code>, Roman numerals (<code>type="i"</code> or <code>"I"</code>; attribute selectors on <code>type</code> ignore case in HTML), 27 or more lettered items, or 100 or more items gets the wider indent.</li>
+    <li>CSS cannot measure a marker. For very large <code>start</code> values or wide CSS list styles (<code>cjk-ideographic</code>, long <code>arabic-indic</code> counts), set <code>--ol-indent</code> in your stylesheet, for example <code>ol.chapters { --ol-indent: 4em; }</code>.</li>
+    <li>The rule uses <code>:where()</code>, so it has zero specificity and any class of yours overrides it.</li>
+    <li>The dyslexia accessibility theme (<code>src/tokens/themes/_access-dyslexia.css</code>) uses the same <code>--ol-indent</code> hook.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The items are read in document order (top to bottom); the numbers come from the attributes, not the order.</li>
+    <li>Whether a screen reader announces the actual number (for example "10" in a <code>start="10"</code> list) or only the position ("1 of 3") differs between screen readers and browsers. If the number carries meaning, such as a ranking, also put it in the item text, and test with the combinations your audience uses.</li>
+    <li>CSS counters (<code>counter-reset</code>, <code>counter()</code>) only change what is drawn. Numbering that matters should come from these attributes, so it is in the document.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><code>reversed</code>, <code>start</code> and <code>type</code> do nothing on <code>&lt;ul&gt;</code>.</li>
+    <li><code>start</code> and <code>value</code> take integers even when <code>type</code> shows letters or Roman numerals: <code>start="4"</code> with <code>type="a"</code> starts at "d".</li>
+    <li>A reversed list without <code>start</code> renumbers every item when items are added or removed. Set <code>start</code> if the numbers must not change.</li>
+    <li>An inline <code>style="list-style-type: …"</code> overrides <code>type</code> visually but VB's indent rule cannot see it.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/native/ol/"><code>&lt;ol&gt;</code></a> and <a href="/docs/elements/native/li/"><code>&lt;li&gt;</code></a> &mdash; element references and VB list styles.</li>
+    <li><a href="/docs/elements/native/ul/"><code>&lt;ul&gt;</code></a> &mdash; unordered lists.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>reversed</code> / <code>start</code> / <code>value</code> / <code>type</code></strong> &mdash; whenever the numbers mean something: steps, rankings, legal clauses, chapters.</li>
+    <li><strong><code>--ol-indent</code></strong> &mdash; when markers are wider than VB's indent rule can predict.</li>
+    <li><strong>CSS counters</strong> &mdash; decorative numbering only, such as numbered headings in a stylesheet.</li>
   </ul>
 </section>

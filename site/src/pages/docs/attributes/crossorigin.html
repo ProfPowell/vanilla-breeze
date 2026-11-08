@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "crossorigin"
-description: "Controls CORS mode for external resources. Required for fonts, enables full error reporting for scripts, and prevents canvas tainting from cross-origin images."
+description: "Fetches a script, stylesheet, image or media file in CORS mode, which SRI, font preloads, canvas pixel access and full script error details all depend on."
 attributeName: crossorigin
 attributeType: native
 nativeGroup: Links & Security
@@ -12,98 +12,114 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>crossorigin</code> attribute sets the CORS (Cross-Origin Resource Sharing) mode for requests to external origins. It controls whether the browser sends credentials with the request and whether the response data is accessible to JavaScript.</p>
-<p>Without this attribute, cross-origin resources load in "no-cors" mode: the browser fetches them but restricts access to their contents. With it, the browser makes a CORS request and the remote server must respond with appropriate <code>Access-Control-Allow-Origin</code> headers.</p>
-
-<h2>Values</h2>
-<table>
-  <thead><tr><th>Value</th><th>Credentials Sent</th><th>Behavior</th></tr></thead>
-  <tbody>
-    <tr><td><code>anonymous</code></td><td>No</td><td>CORS request without cookies, client certs, or auth headers</td></tr>
-    <tr><td><code>use-credentials</code></td><td>Yes</td><td>CORS request with cookies and auth headers. Server must respond with <code>Access-Control-Allow-Credentials: true</code>.</td></tr>
-    <tr><td><code>""</code> (empty / boolean)</td><td>No</td><td>Same as <code>anonymous</code>. Writing just <code>crossorigin</code> is equivalent.</td></tr>
-  </tbody>
-</table>
-
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a>, <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a>, <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a>, <code>&lt;audio&gt;</code>, <code>&lt;video&gt;</code></p>
-
-<h2>Why Fonts Require crossorigin</h2>
-<p>The CSS <code>@font-face</code> specification requires CORS for cross-origin font files. Unlike images or scripts, fonts <strong>will not load at all</strong> from another origin unless the request uses CORS mode. This means <code>crossorigin="anonymous"</code> is mandatory on any <code>&lt;link rel="preload" as="font"&gt;</code> or stylesheet that loads cross-origin fonts.</p>
-
-<code-block language="html" label="Font preloading requires crossorigin" data-escape><!-- Fonts MUST have crossorigin="anonymous" to load cross-origin -->
-<link rel="preload" href="https://fonts.gstatic.com/s/inter/v13/Inter.woff2"
-  as="font" type="font/woff2" crossorigin="anonymous" />
-
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter" /></code-block>
-
-<p>If you forget <code>crossorigin</code>, the preloaded font and the stylesheet's font request will be treated as separate fetches (one CORS, one no-cors), wasting bandwidth and delaying text rendering.</p>
-
-<h2>Error Reporting for Scripts</h2>
-<p>Cross-origin scripts loaded without <code>crossorigin</code> report errors as the generic message <code>"Script error."</code> with no filename, line number, or stack trace. This is a browser security measure to prevent information leakage. Adding <code>crossorigin="anonymous"</code> unlocks full error details.</p>
-
-<code-block language="html" label="Script error reporting" data-escape><!-- Without crossorigin: errors from this script show as "Script error." -->
-<script src="https://cdn.example.com/app.js"></script>
-
-<!-- With crossorigin: full stack traces are available in window.onerror -->
-<script src="https://cdn.example.com/app.js" crossorigin="anonymous"></script></code-block>
-
-<h2>Canvas Tainting</h2>
-<p>When a cross-origin image is drawn onto a <code>&lt;canvas&gt;</code>, the canvas becomes "tainted" and you can no longer read its pixel data. Adding <code>crossorigin="anonymous"</code> to the image prevents tainting, provided the server sends the correct CORS headers.</p>
-
-<code-block language="html" label="Cross-origin images on canvas" data-escape><!-- Without crossorigin: drawing this image taints the canvas -->
-<img src="https://cdn.example.com/photo.jpg" alt="Photo" />
-
-<!-- With crossorigin: canvas can read pixel data from this image -->
-<img src="https://cdn.example.com/photo.jpg" alt="Photo"
-  crossorigin="anonymous" /></code-block>
-<code-block language="html" label="Canvas pixel access" data-escape><img id="photo" src="https://cdn.example.com/photo.jpg"
-  alt="Photo" crossorigin="anonymous" />
-
-<script>
-const img = document.getElementById('photo');
-img.addEventListener('load', () => {
-  const canvas = document.createElement('canvas');
-  canvas.width = img.naturalWidth;
-  canvas.height = img.naturalHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(img, 0, 0);
-
-  // Without crossorigin, this line throws a SecurityError
-  const dataUrl = canvas.toDataURL('image/png');
-});
-</script></code-block>
-
-<h2>anonymous vs use-credentials</h2>
-<p>Almost all use cases call for <code>anonymous</code>. Use <code>use-credentials</code> only when the server requires authentication (cookies, client certificates) to serve the resource and is configured to accept credentialed CORS requests.</p>
-
-<code-block language="html" label="Credential modes" data-escape><!-- Public CDN: no cookies or auth needed -->
-<script src="https://cdn.example.com/lib.js"
-  crossorigin="anonymous"></script>
-
-<!-- Authenticated CDN: send cookies with the request -->
-<script src="https://private-cdn.example.com/internal.js"
-  crossorigin="use-credentials"></script>
-
-<!-- Boolean shorthand: equivalent to crossorigin="anonymous" -->
-<img src="https://cdn.example.com/photo.jpg" alt="Photo" crossorigin /></code-block>
-
-<h2>Security Considerations</h2>
-<p>The <code>crossorigin</code> attribute does not bypass the same-origin policy on its own. The remote server must opt in by sending <code>Access-Control-Allow-Origin</code> headers. If the server does not support CORS, adding <code>crossorigin</code> will cause the resource to fail to load entirely — the browser blocks the response rather than falling back to no-cors mode.</p>
-
-<h2>Limitations</h2>
-<ul>
-  <li><strong>Server must support CORS:</strong> Adding <code>crossorigin</code> to a resource whose server does not send CORS headers will break the load, not fix it.</li>
-  <li><strong>Caching mismatch:</strong> A resource fetched with and without CORS mode produces different cache entries. Preloading a font with <code>crossorigin</code> but loading the stylesheet without it causes a double fetch.</li>
-  <li><strong>use-credentials is strict:</strong> The server cannot respond with <code>Access-Control-Allow-Origin: *</code> when credentials are used — it must echo the exact origin.</li>
-  <li><strong>Same-origin resources ignore it:</strong> The attribute has no effect on resources served from the same origin.</li>
-</ul>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>crossorigin</code> attribute switches an element's request from "no-cors" mode to CORS mode and says whether credentials (cookies, HTTP auth, client certificates) go with it. In no-cors mode a cross-origin file can still be used (a script runs, an image shows), but the page cannot inspect it. In CORS mode the server must opt in with <code>Access-Control-Allow-Origin</code>, and in return the page gets full access: integrity checks, readable canvas pixels, full error details.</p>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a>, <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a>, <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a>, <a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> and <a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a>. Module scripts (<code>type="module"</code>) and <code>rel="modulepreload"</code> are always fetched in CORS mode; the attribute only chooses their credentials mode.</p>
+  <p>There is no live demo on this page: what the attribute changes is a request header and a server response, which only show up with a second origin and in DevTools. The examples below show each case.</p>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Value</th><th>Request mode</th><th>Credentials</th></tr></thead>
+    <tbody>
+      <tr><td>Attribute absent</td><td>no-cors (classic scripts, styles, images, media)</td><td>Included</td></tr>
+      <tr><td><code>anonymous</code>, <code>""</code> or any invalid value</td><td>CORS</td><td>Same-origin only: sent to your own origin, not to others</td></tr>
+      <tr><td><code>use-credentials</code></td><td>CORS</td><td>Always sent. The server must answer with <code>Access-Control-Allow-Credentials: true</code> and echo the exact origin, not <code>*</code></td></tr>
+    </tbody>
+  </table>
+  <p>Writing just <code>crossorigin</code> is the same as <code>crossorigin="anonymous"</code>.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Font preloads</h3>
+  <p>Fonts are always fetched in CORS mode, even from your own origin. A preload must match the real request's mode to be reused, so a font preload needs <code>crossorigin</code> <strong>even for same-origin fonts</strong>. Without it the browser fetches the font twice. The stylesheet that declares the <code>@font-face</code> does not need it.</p>
+  <code-block language="html" show-lines label="Font preload" data-escape><link rel="preload" href="/fonts/inter-var.woff2"
+  as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/main.css"></code-block>
+
+  <h3>Third-party scripts with SRI</h3>
+  <p>A cross-origin classic script with <a href="/docs/attributes/integrity/"><code>integrity</code></a> but no <code>crossorigin</code> is blocked, because a no-cors response cannot be checked.</p>
+  <code-block language="html" show-lines label="Script with integrity" data-escape><script src="https://cdn.example.com/lib@3.2.1/lib.min.js"
+  integrity="sha384-..."
+  crossorigin="anonymous"></script></code-block>
+
+  <h3>Script error details</h3>
+  <p>Errors thrown by a cross-origin no-cors script reach <code>window.onerror</code> as just <code>"Script error."</code>, with no file, line or stack. In CORS mode the details are available, which error trackers need.</p>
+  <code-block language="html" show-lines label="Error reporting" data-escape><!-- Errors arrive as "Script error." -->
+<script src="https://cdn.example.com/app.js"></script>
+
+<!-- Full message, file, line and stack -->
+<script src="https://cdn.example.com/app.js" crossorigin></script></code-block>
+
+  <h3>Reading pixels from a cross-origin image</h3>
+  <p>Drawing a no-cors cross-origin image onto a canvas "taints" it: <code>toDataURL()</code> and <code>getImageData()</code> then throw a <code>SecurityError</code>. Load the image with <code>crossorigin</code> from a server that sends CORS headers.</p>
+  <code-block language="html" show-lines label="Canvas-safe image" data-escape><img id="swatch" src="https://images.example.com/fabric/indigo.jpg"
+  alt="Indigo linen swatch" crossorigin>
+
+<script type="module">
+  const img = document.getElementById('swatch');
+  await img.decode();
+  const canvas = new OffscreenCanvas(img.naturalWidth, img.naturalHeight);
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data; // throws without crossorigin
+</script></code-block>
+
+  <h3>Vanilla Breeze from a CDN</h3>
+  <p>VB's CDN entry is a module script, so it is already a CORS request; unpkg and jsDelivr send <code>Access-Control-Allow-Origin: *</code>. Add <code>crossorigin</code> to the stylesheet link when you use SRI.</p>
+  <code-block language="html" show-lines label="VB with SRI" data-escape><link rel="stylesheet" crossorigin="anonymous"
+  href="https://unpkg.com/vanilla-breeze@0.5.0/dist/cdn/vanilla-breeze.css"
+  integrity="sha384-gQwnTZMGbiu+eGWq8Z8Hwj4Ds6/b/baYpNiLzZupXkRzh7JZKSp8aqD2Ndc4qkgN">
+<script type="module" crossorigin="anonymous"
+  src="https://unpkg.com/vanilla-breeze@0.5.0/dist/cdn/vanilla-breeze.js"
+  integrity="sha384-uZ2nKtKxACqlcJEEjavnf+D7QdWK23BYOIzSpbqD5Ej6Qh6ZmfNsuI/BV/fbDWRG"></script></code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/attributes/integrity/"><code>integrity</code></a> &mdash; SRI requires <code>crossorigin</code> on cross-origin resources</li>
-    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> &mdash; control referrer information sent with requests</li>
-    <li><a href="/docs/attributes/rel/"><code>rel</code></a> &mdash; preload and preconnect resource hints</li>
+    <li>VB has no styling hook for this attribute.</li>
+    <li>VB's runtime adds same-origin <code>&lt;link&gt;</code> elements for themes and packs (<code>src/lib/theme-loader.js</code>, <code>src/lib/bundle-registry.js</code>) without <code>crossorigin</code>. If you host <code>dist/cdn/</code> on another origin, those requests are no-cors; that is fine for applying CSS but rules out SRI on them.</li>
+    <li>See <a href="/docs/attributes/integrity/"><code>integrity</code></a> for which VB files an SRI hash covers.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Security</h2>
+  <ul>
+    <li><code>crossorigin</code> does not bypass the same-origin policy; the other server decides by sending (or not sending) CORS headers.</li>
+    <li><strong>Prefer <code>anonymous</code>.</strong> <code>use-credentials</code> sends the user's cookies to the other origin and requires it to trust yours explicitly. Use it only for authenticated assets on your own infrastructure.</li>
+    <li>If the server does not support CORS, adding the attribute makes the load <em>fail</em>; the browser does not fall back to no-cors.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Mismatched modes mean double downloads.</strong> A preload and the real request must agree on <code>crossorigin</code> (and its value).</li>
+    <li><strong>Caches and <code>Vary: Origin</code>.</strong> If a server only sends CORS headers to some requests, a cached no-cors copy can be served to a CORS request and fail. Servers that answer CORS should send <code>Vary: Origin</code> or a constant <code>Access-Control-Allow-Origin</code>.</li>
+    <li><strong>Same origin is not "ignored".</strong> For same-origin URLs the request still changes mode; it matters for font preload matching and for redirects to other origins.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/integrity/"><code>integrity</code></a> &mdash; SRI requires CORS for cross-origin files.</li>
+    <li><a href="/docs/attributes/rel/"><code>rel</code></a> &mdash; <code>preload</code>, <code>modulepreload</code> and <code>preconnect</code> (which also takes <code>crossorigin</code>).</li>
+    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> &mdash; the other per-request privacy control.</li>
+    <li><a href="/docs/attributes/nonce/"><code>nonce</code></a> &mdash; CSP for the scripts you load.</li>
+    <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a>, <a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a>, <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a>, <a href="/docs/elements/native/canvas/"><code>&lt;canvas&gt;</code></a> &mdash; the elements.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong>Public CDN file with SRI, error tracking or canvas use</strong> &mdash; <code>crossorigin</code> (anonymous).</li>
+    <li><strong>Any font preload</strong> &mdash; <code>crossorigin</code>, always.</li>
+    <li><strong>Private asset that needs the user's cookies on another origin</strong> &mdash; <code>use-credentials</code>, with a server configured for it.</li>
+    <li><strong>Plain images and media you only display</strong> &mdash; leave it off.</li>
   </ul>
 </section>

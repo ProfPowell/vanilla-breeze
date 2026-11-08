@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>formaction and related submit-button overrides</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <form class="stacked" id="fa-form" action="/articles" method="post">
+      <form-field>
+        <label for="fa-title">Title</label>
+        <input type="text" id="fa-title" name="title" required value="Quarterly update" />
+      </form-field>
+
+      <form-field>
+        <label for="fa-body">Body</label>
+        <textarea id="fa-body" name="body" rows="3" required></textarea>
+        <output class="hint" for="fa-body">Leave it empty: only Save draft gets through.</output>
+      </form-field>
+
+      <footer class="actions">
+        <button type="submit">Publish</button>
+        <button type="submit" formaction="/articles/drafts" formnovalidate class="secondary">Save draft</button>
+        <button type="submit" formaction="/articles/preview" formmethod="get" formtarget="_blank" formnovalidate class="ghost">Preview</button>
+      </footer>
+      <pre><output id="fa-result">The request each button would send appears here.</output></pre>
+    </form>
+  </layout-center>
+
+  <script type="module">
+    const form = document.querySelector('#fa-form');
+    const result = document.querySelector('#fa-result');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const button = e.submitter;
+      const action = new URL(button?.hasAttribute('formaction') ? button.formAction : form.action).pathname;
+      const method = (button?.formMethod || form.method).toUpperCase();
+      const target = button?.formTarget || form.target || '_self';
+      const skipped = button?.formNoValidate || form.noValidate;
+      result.textContent = `${method} ${action}\ntarget: ${target}\nvalidation: ${skipped ? 'skipped' : 'passed'}`;
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

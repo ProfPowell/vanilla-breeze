@@ -1,10 +1,10 @@
 ---
 layout: attribute
 title: "dir"
-description: "Set the text direction for content. Required for right-to-left languages like Arabic, Hebrew, Persian, and Urdu."
+description: "Sets the base text direction (ltr, rtl or auto). Needed for Arabic, Hebrew, Persian and Urdu; VB mirrors direction-specific UI through :dir(rtl)."
 attributeName: dir
 attributeType: native
-nativeGroup: Accessibility
+nativeGroup: Internationalization
 category: native
 currentPath: /docs/attributes/dir/
 
@@ -12,175 +12,162 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>dir</code> attribute sets the text direction for an element's content. It is essential for right-to-left (RTL) languages including Arabic, Hebrew, Persian (Farsi), and Urdu. Without the correct <code>dir</code> value, text, punctuation, and layout will render incorrectly for these languages.</p>
-<p>Set <code>dir</code> on the <a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a> element for the page's overall direction, and on inline elements when direction changes within the page.</p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>dir</code> attribute sets the base direction of an element's text: left to right, right to left, or worked out from the content. Right-to-left languages such as Arabic, Hebrew, Persian and Urdu need it; without it punctuation lands at the wrong end and mixed text reorders. Direction is inherited, so set it on <a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a> for the page and on any element whose direction differs.</p>
+  <p><strong>Applies to:</strong> every element (it is a global attribute). <a href="/docs/elements/native/bdi/"><code>&lt;bdi&gt;</code></a> defaults to <code>auto</code>, and <a href="/docs/elements/native/bdo/"><code>&lt;bdo&gt;</code></a> requires <code>ltr</code> or <code>rtl</code>.</p>
 
-<h2>Values</h2>
+  <browser-window
+    src="/docs/examples/demos/attr-dir-rtl.html"
+    url="https://vanilla-breeze.com/dir"
+    title="dir and RTL"
+    shadow>
+  </browser-window>
 
-<table>
-  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
-  <tbody>
-    <tr><td><code>ltr</code></td><td>Left-to-right. The default for most languages. Text flows from left to right.</td></tr>
-    <tr><td><code>rtl</code></td><td>Right-to-left. Text flows from right to left. Layout mirrors accordingly.</td></tr>
-    <tr><td><code>auto</code></td><td>Browser detects direction from the first strong directional character in the content. Ideal for user-generated content.</td></tr>
-  </tbody>
-</table>
+  <code-block language="html" show-lines label="Isolated names, auto direction, and an RTL section" data-escape><p>User <bdi>إيمان</bdi> left 3 comments.</p>
 
-<h2>RTL Page</h2>
-<p>For a fully right-to-left page, set both <code>dir="rtl"</code> and the appropriate <a href="/docs/attributes/lang/"><code>lang</code></a> on <code>&lt;html&gt;</code>.</p>
+<form-field>
+  <label for="dir-message">Message</label>
+  <input type="text" id="dir-message" name="message" dir="auto">
+</form-field>
 
-<code-block language="html" label="RTL page" data-escape><html lang="ar" dir="rtl">
+<section lang="ar" dir="rtl" aria-labelledby="rtl-heading">
+  <h2 id="rtl-heading">واجهة من اليمين إلى اليسار</h2>
+  <nav class="breadcrumb" data-separator="chevron" aria-label="مسار التنقل">
+    <ol>
+      <li><a href="/">الرئيسية</a></li>
+      <li><a href="/docs/">المستندات</a></li>
+      <li><span aria-current="page">السمات</span></li>
+    </ol>
+  </nav>
+  <details>
+    <summary>تفاصيل الطلب</summary>
+    <p>تم شحن الطلب رقم <bdi>1042</bdi> يوم الثلاثاء.</p>
+  </details>
+  <label><input type="checkbox" data-switch checked> الإشعارات</label>
+  <button type="button">التالي <icon-wc name="arrow-right" data-flip-rtl></icon-wc></button>
+  <pre><code>npm install vanilla-breeze</code></pre>
+</section></code-block>
+</section>
+
+<section>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>ltr</code></td><td>Left to right.</td></tr>
+      <tr><td><code>rtl</code></td><td>Right to left.</td></tr>
+      <tr><td><code>auto</code></td><td>The browser picks the direction from the first strong directional character in the content. For text inputs and textareas it looks at the value.</td></tr>
+      <tr><td>Absent, <code>""</code> or an unknown value</td><td>Inherited from the parent. On <code>&lt;html&gt;</code> with no value, <code>ltr</code>.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>An RTL page</h3>
+  <p>Set direction and language together on the root.</p>
+  <code-block language="html" show-lines label="RTL page" data-escape><html lang="ar" dir="rtl">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8">
     <title>صفحة عربية</title>
   </head>
   <body>
     <h1>مرحبا بالعالم</h1>
-    <p>هذه الصفحة تُعرض من اليمين إلى اليسار.</p>
   </body>
 </html></code-block>
 
-<h2>Mixed LTR and RTL Content</h2>
-<p>When a page mixes left-to-right and right-to-left content, use <code>dir</code> on individual elements to set the correct direction for each section.</p>
-
-<code-block language="html" label="Mixed directions" data-escape><article dir="ltr">
-  <h2>International Greetings</h2>
-  <p>In English, we say "Hello".</p>
-  <p>In Arabic: <span dir="rtl" lang="ar">مرحبا</span></p>
-  <p>In Hebrew: <span dir="rtl" lang="he">שלום</span></p>
+  <h3>Text of unknown direction</h3>
+  <p>Wrap user-supplied names, labels and numbers in <code>&lt;bdi&gt;</code>. Without isolation, an Arabic or Hebrew name in an English sentence can pull the following words and numbers into its direction: "User إيمان left 3 comments" can display with the "3" in the wrong place.</p>
+  <code-block language="html" show-lines label="bdi for user content" data-escape><p>User <bdi>إيمان</bdi> left 3 comments.</p>
+<p>User <bdi>Alice</bdi> left 3 comments.</p></code-block>
+  <p>For a whole block of user content, use <code>dir="auto"</code> on its container:</p>
+  <code-block language="html" show-lines label="dir=auto on a comment" data-escape><article dir="auto">
+  <p>شكراً على المساعدة!</p>
 </article></code-block>
 
-<div class="example">
-  <article dir="ltr">
-    <p>In English, we say "Hello".</p>
-    <p>In Arabic: <span dir="rtl" lang="ar">مرحبا</span></p>
-    <p>In Hebrew: <span dir="rtl" lang="he">שלום</span></p>
-  </article>
-</div>
+  <h3>Overriding the algorithm</h3>
+  <p><code>&lt;bdo&gt;</code> forces characters into one order regardless of their own direction. It is rarely needed; use it to show text exactly as stored, such as a part number.</p>
+  <code-block language="html" show-lines label="bdo" data-escape><p>Part number: <bdo dir="ltr">AB-12345-أب</bdo></p></code-block>
 
-<h2>The bdi Element</h2>
-<p>The <a href="/docs/elements/native/bdi/"><code>&lt;bdi&gt;</code></a> element (Bidirectional Isolate) isolates a span of text from its surrounding content so the bidirectional algorithm treats it independently. This is essential when inserting user-generated content with unknown direction into a sentence.</p>
+  <h3>Styling by direction: <code>:dir()</code>, not <code>[dir]</code></h3>
+  <p>The <code>:dir(rtl)</code> pseudo-class matches every element whose resolved direction is right to left, including elements that inherit it and <code>dir="auto"</code> elements that resolve to RTL. The attribute selector <code>[dir="rtl"]</code> only matches the element that carries the attribute.</p>
+  <code-block language="css" show-lines label=":dir() follows inheritance" data-escape>/* Matches the element and everything inside it that is RTL */
+.step-arrow:dir(rtl) {
+  transform: scaleX(-1);
+}
 
-<code-block language="html" label="bdi for user-generated names" data-escape><!-- Without bdi: usernames can break sentence order -->
-<p>User <bdi>إيمان</bdi> left a comment.</p>
-<p>User <bdi>Alice</bdi> left a comment.</p>
-<p>User <bdi>מירב</bdi> left a comment.</p></code-block>
-
-<div class="example">
-  <p>User <bdi>Alice</bdi> left a comment.</p>
-  <p>User <bdi>إيمان</bdi> left a comment.</p>
-  <p>User <bdi>מירב</bdi> left a comment.</p>
-</div>
-
-<h3>Why bdi Matters</h3>
-<p>Without <code>&lt;bdi&gt;</code>, an RTL name in an LTR sentence can cause the browser's bidirectional algorithm to reorder the surrounding text. The result is broken, unreadable sentences.</p>
-
-<code-block language="html" label="The bdi problem" data-escape><!-- Without bdi, RTL names can reorder the sentence -->
-<p>User إيمان left 3 comments.</p>
-
-<!-- With bdi, the name is isolated from surrounding text -->
-<p>User <bdi>إيمان</bdi> left 3 comments.</p></code-block>
-
-<p><strong>Rule of thumb:</strong> Always wrap user-provided names, labels, or any text of unknown direction in <code>&lt;bdi&gt;</code>.</p>
-
-<h2>The bdo Element</h2>
-<p>The <a href="/docs/elements/native/bdo/"><code>&lt;bdo&gt;</code></a> element (Bidirectional Override) forces a specific direction on its content, overriding the browser's bidirectional algorithm entirely. Use it sparingly — it is meant for cases where the algorithm produces the wrong result.</p>
-
-<code-block language="html" label="bdo direction override" data-escape><!-- Force left-to-right rendering regardless of content -->
-<p><bdo dir="ltr">مرحبا</bdo></p>
-
-<!-- Force right-to-left rendering -->
-<p><bdo dir="rtl">Hello</bdo></p>
-
-<!-- Useful for displaying reversed text, reference numbers, etc. -->
-<p>Order number: <bdo dir="ltr">12345-أب</bdo></p></code-block>
-
-<h2>dir="auto"</h2>
-<p>The <code>auto</code> value tells the browser to detect direction from the first strong directional character in the content. This is the best choice for user-generated content where you do not know the language in advance.</p>
-
-<code-block language="html" label="Automatic direction detection" data-escape><!-- Let the browser detect direction from content -->
-<input type="text" dir="auto" placeholder="Type in any language..." />
-
-<!-- Useful for user-generated content with unknown direction -->
-<div dir="auto">${userComment}</div></code-block>
-
-<div class="example">
-  <label for="demo-input">Type in any language:</label>
-  <input type="text" id="demo-input" dir="auto" placeholder="Try English or Arabic..." />
-</div>
-
-<h2>CSS direction vs the dir Attribute</h2>
-<p>CSS has a <code>direction</code> property, but the <code>dir</code> HTML attribute is almost always the correct choice.</p>
-
-<table>
-  <thead><tr><th>Approach</th><th>Affects CSS</th><th>Affects Copy/Paste</th><th>Affects Accessibility</th><th>Semantic</th></tr></thead>
-  <tbody>
-    <tr><td><code>dir="rtl"</code> (attribute)</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
-    <tr><td><code>direction: rtl</code> (CSS)</td><td>Yes</td><td>No</td><td>No</td><td>No</td></tr>
-  </tbody>
-</table>
-
-<code-block language="css" label="Attribute vs CSS property" data-escape><style>
-  /* Attribute vs property: prefer the attribute */
-
-  /* This only affects CSS rendering */
-  .rtl-css { direction: rtl; }
-
-  /* This affects everything: CSS, copy-paste order,
-     form submission, screen readers */
-  /* <div dir="rtl"> is always the better choice */
-</style></code-block>
-
-<p>The <code>dir</code> attribute affects the browser's bidirectional algorithm, text selection order, copy-paste behavior, form submission, and assistive technology. The CSS property only changes visual rendering.</p>
-
-<h2>CSS Logical Properties</h2>
-<p>When building layouts that need to work in both LTR and RTL, use CSS logical properties instead of physical ones. VB uses logical properties throughout so that components work correctly regardless of text direction.</p>
-
-<code-block language="css" label="Logical properties" data-escape><style>
-  /* These work correctly in both LTR and RTL */
-  .card {
-    margin-inline-start: 1rem;    /* not margin-left */
-    padding-inline-end: 1rem;     /* not padding-right */
-    border-inline-start: 3px solid blue; /* not border-left */
-    text-align: start;            /* not text-align: left */
-  }
-
-  .icon-label {
-    display: flex;
-    gap: 0.5rem;
-    /* flex-direction: row works in both directions automatically */
-  }
-
-  /* Float to the "end" side of the text */
-  .pull-end {
-    float: inline-end;  /* not float: right */
-  }
-</style></code-block>
-
-<table>
-  <thead><tr><th>Physical (LTR-only)</th><th>Logical (works in both)</th></tr></thead>
-  <tbody>
-    <tr><td><code>margin-left</code></td><td><code>margin-inline-start</code></td></tr>
-    <tr><td><code>margin-right</code></td><td><code>margin-inline-end</code></td></tr>
-    <tr><td><code>padding-left</code></td><td><code>padding-inline-start</code></td></tr>
-    <tr><td><code>padding-right</code></td><td><code>padding-inline-end</code></td></tr>
-    <tr><td><code>border-left</code></td><td><code>border-inline-start</code></td></tr>
-    <tr><td><code>text-align: left</code></td><td><code>text-align: start</code></td></tr>
-    <tr><td><code>text-align: right</code></td><td><code>text-align: end</code></td></tr>
-    <tr><td><code>float: left</code></td><td><code>float: inline-start</code></td></tr>
-    <tr><td><code>float: right</code></td><td><code>float: inline-end</code></td></tr>
-    <tr><td><code>width</code></td><td><code>inline-size</code></td></tr>
-    <tr><td><code>height</code></td><td><code>block-size</code></td></tr>
-  </tbody>
-</table>
+/* Only matches elements with the attribute itself: avoid */
+[dir="rtl"] .step-arrow {
+  transform: scaleX(-1);
+}</code-block>
+  <p>Better still, write direction-neutral CSS with logical properties (<code>margin-inline-start</code>, <code>padding-inline-end</code>, <code>inset-inline-start</code>, <code>text-align: start</code>, <code>float: inline-end</code>) so nothing needs flipping.</p>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/attributes/lang/"><code>lang</code></a> — declare the language of content</li>
-    <li><a href="/docs/attributes/translate/"><code>translate</code></a> — control whether content should be translated</li>
-    <li><a href="/docs/elements/native/bdi/"><code>&lt;bdi&gt;</code></a> — bidirectional isolate element</li>
-    <li><a href="/docs/elements/native/bdo/"><code>&lt;bdo&gt;</code></a> — bidirectional override element</li>
+    <li><strong>Logical properties throughout.</strong> Spacing, borders, alignment and positioning follow the inline direction, so layouts mirror with no extra CSS.</li>
+    <li><strong>Mirroring with <code>:dir(rtl)</code>.</strong> Where a logical property is not enough, VB flips direction-specific details with <code>:dir(rtl)</code> rules, for example:
+      <ul>
+        <li>breadcrumb separators, <code>nav.breadcrumb</code> and <code>&lt;bread-crumb&gt;</code> (<code>src/native-elements/nav/styles.css</code>, <code>src/web-components/bread-crumb/styles.css</code>)</li>
+        <li>the <code>&lt;summary&gt;</code> disclosure marker (<code>src/native-elements/details/styles.css</code>)</li>
+        <li>side sheets, <code>dialog[data-position="start|end"]</code> (<code>src/native-elements/dialog/styles.css</code>)</li>
+        <li>the range fill and the switch knob (<code>src/native-elements/input/range.css</code>, <code>input/switch.css</code>)</li>
+        <li><code>ul[data-marker="arrow"]</code> markers (<code>src/native-elements/lists/styles.css</code>)</li>
+        <li>table edge and row-highlight bars, drawn with physical box-shadows (<code>src/native-elements/table/styles.css</code>), shapes, callouts and speech bubbles (<code>src/shapes/</code>), <code>data-float</code> (<code>src/utils/float.css</code>)</li>
+        <li>slide view transitions: <code>data-vt-class="slide-forward"</code> moves content toward the start of the line, which is the left in LTR and the right in RTL (<code>src/utils/view-transitions.css</code>)</li>
+      </ul>
+    </li>
+    <li><strong>Icons opt in.</strong> Icons are not mirrored automatically, because checkmarks, clocks and logos must not flip. Add <code>data-flip-rtl</code> to directional glyphs: <code>&lt;icon-wc name="arrow-right" data-flip-rtl&gt;</code> (<code>src/web-components/icon-wc/styles.js</code>). See <a href="/docs/elements/web-components/icons/">icons</a>.</li>
+    <li><strong>Code stays left to right.</strong> <code>pre</code> blocks that contain <code>code</code> or <code>samp</code> are forced to <code>direction: ltr</code> inside RTL pages, unless the <code>pre</code> has its own <code>dir</code> (<code>src/native-elements/code/styles.css</code>).</li>
+    <li><strong>Keyboard arrows follow direction.</strong> Components with arrow-key navigation, such as <a href="/docs/elements/web-components/tabs/"><code>&lt;tab-set&gt;</code></a>, splitters and carousels, swap Left and Right in RTL.</li>
+    <li><strong>No <code>[dir]</code> rules on purpose.</strong> The browser already gives <code>[dir]</code> elements bidi isolation, and <code>&lt;bdi&gt;</code> / <code>&lt;bdo&gt;</code> their behaviour. Re-declaring them weakened isolation, so VB leaves them alone (<code>src/native-elements/i18n/styles.css</code>, section 5).</li>
+    <li><strong>Script helpers.</strong> <code>isRTL(locale)</code> in <code>src/lib/i18n.js</code> reports whether a language is written right to left.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Pair <code>dir</code> with <code>lang</code>.</strong> <code>dir</code> sets the layout direction; <a href="/docs/attributes/lang/"><code>lang</code></a> tells screen readers which voice and pronunciation to use.</li>
+    <li><strong>Use the attribute, not CSS <code>direction</code>.</strong> The CSS specification asks authors not to set <code>direction</code> for document text. The attribute is part of the content: it drives <code>:dir()</code>, bidi isolation and form submission through <code>dirname</code>, and it survives without CSS.</li>
+    <li><strong>Mirror meaning, not everything.</strong> Arrows that mean "next" flip; media controls, clocks and numbers do not.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <p>The <code>dir</code> attribute is supported everywhere. The <code>:dir()</code> pseudo-class is Baseline widely available since 2026 (Chrome 120, Firefox 49, Safari 16.4).</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong><code>dir="auto"</code> looks only at the first strong character.</strong> A message that starts with an English brand name and continues in Arabic resolves to LTR.</li>
+    <li><strong>Physical CSS does not mirror.</strong> <code>margin-left</code>, <code>left: 0</code> and <code>text-align: left</code> stay on the left in RTL. Use the logical forms.</li>
+    <li><strong>Background gradients and transforms are physical.</strong> <code>linear-gradient(to right, …)</code> and <code>translateX()</code> need a <code>:dir(rtl)</code> override, as VB does for the range fill and side sheets.</li>
+    <li><strong>Submitting direction.</strong> The text direction of a field is not sent with the form unless you add <a href="/docs/attributes/dirname/"><code>dirname</code></a>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/i18n/">Internationalization guide</a> &mdash; logical properties, script typography and locale handling in VB.</li>
+    <li><a href="/docs/attributes/lang/"><code>lang</code></a> &mdash; the language of the content.</li>
+    <li><a href="/docs/attributes/translate/"><code>translate</code></a> &mdash; keeping text out of machine translation.</li>
+    <li><a href="/docs/attributes/dirname/"><code>dirname</code></a> &mdash; submit a field's text direction.</li>
+    <li><a href="/docs/elements/native/bdi/"><code>&lt;bdi&gt;</code></a> and <a href="/docs/elements/native/bdo/"><code>&lt;bdo&gt;</code></a> &mdash; isolation and override.</li>
+    <li><a href="/docs/elements/web-components/icons/"><code>&lt;icon-wc&gt;</code></a> &mdash; <code>data-flip-rtl</code>.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>dir="rtl"</code></strong> on <code>&lt;html&gt;</code> or a section &mdash; content you know is right to left.</li>
+    <li><strong><code>dir="auto"</code></strong> &mdash; a block or field of user content in an unknown language.</li>
+    <li><strong><code>&lt;bdi&gt;</code></strong> &mdash; an inline name or value of unknown direction inside a sentence.</li>
+    <li><strong><code>&lt;bdo&gt;</code></strong> &mdash; forcing a character order; rarely right.</li>
+    <li><strong><code>:dir(rtl)</code></strong> in CSS &mdash; the few styles that logical properties cannot express.</li>
   </ul>
 </section>

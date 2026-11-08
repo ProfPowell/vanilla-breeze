@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>enterkeyhint attribute: next, done, search and send</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-stack data-layout-gap="xl">
+      <p>Open this page on a phone. The label on the keyboard's Enter key changes per field; on a desktop nothing changes.</p>
+
+      <form class="stacked" id="ekh-signup">
+        <form-field>
+          <label for="ekh-first">First name</label>
+          <input type="text" id="ekh-first" name="given" autocomplete="given-name" enterkeyhint="next" />
+        </form-field>
+        <form-field>
+          <label for="ekh-last">Last name</label>
+          <input type="text" id="ekh-last" name="family" autocomplete="family-name" enterkeyhint="next" />
+        </form-field>
+        <form-field>
+          <label for="ekh-email">Email</label>
+          <input id="ekh-email" type="email" name="email" autocomplete="email" enterkeyhint="done" />
+        </form-field>
+        <button type="submit">Sign up</button>
+      </form>
+
+      <form class="stacked" id="ekh-chat">
+        <form-field>
+          <label for="ekh-message">Message to support</label>
+          <input type="text" id="ekh-message" name="message" autocomplete="off" enterkeyhint="send" />
+          <output class="hint" for="ekh-message">Enter submits a one-line form natively; the hint only changes the key label.</output>
+        </form-field>
+        <button type="submit">Send</button>
+        <ul id="ekh-log" aria-live="polite"></ul>
+      </form>
+    </layout-stack>
+  </layout-center>
+
+  <script type="module">
+    document.querySelector('#ekh-signup').addEventListener('submit', (e) => e.preventDefault());
+
+    const chat = document.querySelector('#ekh-chat');
+    const log = document.querySelector('#ekh-log');
+    chat.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const field = chat.elements.message;
+      if (!field.value.trim()) return;
+      const item = document.createElement('li');
+      item.textContent = field.value;
+      log.append(item);
+      field.value = '';
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

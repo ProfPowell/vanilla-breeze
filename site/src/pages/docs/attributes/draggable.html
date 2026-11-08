@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "draggable"
-description: "Enable native drag-and-drop on any element via the HTML Drag and Drop API. Images and links are draggable by default."
+description: "Make an element draggable with the HTML Drag and Drop API. Covers the default auto state, the event lifecycle, VB's drag state styling hooks, and the keyboard and single-pointer alternatives every drag needs."
 attributeName: draggable
 attributeType: native
 nativeGroup: Interactivity
@@ -12,294 +12,190 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>draggable</code> attribute enables native drag-and-drop on any HTML element using the browser's built-in Drag and Drop API. When set to <code>"true"</code>, the user can click and drag the element to a valid drop target.</p>
-<p>Drag-and-drop requires JavaScript to handle the events — the <code>draggable</code> attribute only makes the element draggable. Drop targets need event listeners to accept dropped items.</p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>draggable</code> attribute controls whether the user can pick an element up with the pointer and drag it, using the browser's Drag and Drop API. It only starts the drag: you write the event listeners that accept a drop and do something with it.</p>
+  <p>Dragging is a pointer gesture. Every drag-and-drop interface also needs a keyboard way and a single-click way to do the same thing. For reordering lists, VB's <a href="/docs/elements/web-components/drag-surface/"><code>&lt;drag-surface&gt;</code></a> provides all three.</p>
+  <p><strong>Applies to:</strong> any HTML element (it is a global attribute).</p>
 
-<h2>Values</h2>
+  <browser-window
+    src="/docs/examples/demos/attr-draggable-hooks.html"
+    url="https://vanilla-breeze.com/draggable"
+    title="draggable with VB's drag hooks"
+    shadow>
+  </browser-window>
 
-<table>
-  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
-  <tbody>
-    <tr><td><code>"true"</code></td><td>Element can be dragged by the user</td></tr>
-    <tr><td><code>"false"</code></td><td>Element cannot be dragged (the default for most elements)</td></tr>
-  </tbody>
-</table>
-
-<p><strong>Default draggable elements:</strong> Images (<code>&lt;img&gt;</code>) and links (<code>&lt;a href&gt;</code>) are draggable by default without the attribute. Set <code>draggable="false"</code> to prevent this.</p>
-
-<code-block language="html" label="Basic usage" data-escape><!-- Make a div draggable -->
-<div draggable="true">Drag me</div>
-
-<!-- Prevent an image from being dragged (images are draggable by default) -->
-<img src="logo.png" alt="Logo" draggable="false" />
-
-<!-- Prevent a link from being dragged (links are draggable by default) -->
-<a href="/home" draggable="false">Home</a></code-block>
-
-<h2>The Drag-and-Drop Event Lifecycle</h2>
-<p>The Drag and Drop API fires a sequence of events across the dragged element and the drop target. Understanding this lifecycle is essential for implementing drag-and-drop.</p>
-
-<table>
-  <thead><tr><th>Event</th><th>Fires On</th><th>When</th></tr></thead>
-  <tbody>
-    <tr><td><code>dragstart</code></td><td>Dragged element</td><td>User begins dragging</td></tr>
-    <tr><td><code>drag</code></td><td>Dragged element</td><td>Continuously while dragging</td></tr>
-    <tr><td><code>dragenter</code></td><td>Drop target</td><td>Dragged item enters the target</td></tr>
-    <tr><td><code>dragover</code></td><td>Drop target</td><td>Continuously while over the target</td></tr>
-    <tr><td><code>dragleave</code></td><td>Drop target</td><td>Dragged item leaves the target</td></tr>
-    <tr><td><code>drop</code></td><td>Drop target</td><td>Item is dropped on the target</td></tr>
-    <tr><td><code>dragend</code></td><td>Dragged element</td><td>Dragging ends (drop or cancel)</td></tr>
-  </tbody>
-</table>
-
-<p><strong>Critical:</strong> You must call <code>e.preventDefault()</code> in the <code>dragover</code> event handler. By default, the browser does not allow drops — preventing the default enables it.</p>
-
-<code-block language="js" label="Full event lifecycle" data-escape><div id="source" draggable="true">Drag me</div>
-<div id="target">Drop here</div>
-
-<script>
-const source = document.getElementById('source');
-const target = document.getElementById('target');
-
-// 1. dragstart — fired on the dragged element when dragging begins
-source.addEventListener('dragstart', (e) => {
-  e.dataTransfer.setData('text/plain', source.textContent);
-  e.dataTransfer.effectAllowed = 'move';
-});
-
-// 2. dragenter — fired on a drop target when a dragged item enters it
-target.addEventListener('dragenter', (e) => {
-  e.preventDefault();
-  target.classList.add('drag-over');
-});
-
-// 3. dragover — fired continuously while a dragged item is over a target
-//    You MUST call preventDefault() to allow dropping
-target.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
-});
-
-// 4. dragleave — fired when a dragged item leaves a drop target
-target.addEventListener('dragleave', () => {
-  target.classList.remove('drag-over');
-});
-
-// 5. drop — fired when the item is dropped on a valid target
-target.addEventListener('drop', (e) => {
-  e.preventDefault();
-  target.classList.remove('drag-over');
-  const data = e.dataTransfer.getData('text/plain');
-  target.textContent = data;
-});
-
-// 6. dragend — fired on the dragged element when dragging ends (drop or cancel)
-source.addEventListener('dragend', () => {
-  // Clean up any drag state
-});
-</script></code-block>
-
-<h2>DataTransfer API</h2>
-<p>The <code>dataTransfer</code> object on drag events carries data from the drag source to the drop target. You can set multiple MIME types so different targets can read the format they understand.</p>
-
-<code-block language="js" label="DataTransfer basics" data-escape>// Setting data during dragstart
-element.addEventListener('dragstart', (e) => {
-  // Set multiple formats — the drop target picks the one it understands
-  e.dataTransfer.setData('text/plain', 'Simple text');
-  e.dataTransfer.setData('text/html', '<strong>Rich text</strong>');
-  e.dataTransfer.setData('application/json', JSON.stringify({ id: 42 }));
-
-  // Control the drag cursor
-  e.dataTransfer.effectAllowed = 'copyMove'; // 'copy', 'move', 'link', 'all', etc.
-
-  // Custom drag image
-  const ghost = document.createElement('div');
-  ghost.textContent = 'Moving...';
-  document.body.appendChild(ghost);
-  e.dataTransfer.setDragImage(ghost, 0, 0);
-  setTimeout(() => ghost.remove(), 0);
-});
-
-// Reading data during drop
-target.addEventListener('drop', (e) => {
-  e.preventDefault();
-  const text = e.dataTransfer.getData('text/plain');
-  const json = JSON.parse(e.dataTransfer.getData('application/json'));
-  const files = e.dataTransfer.files; // Dropped files from the OS
-});</code-block>
-
-<h3>Common MIME Types</h3>
-<table>
-  <thead><tr><th>Type</th><th>Use Case</th></tr></thead>
-  <tbody>
-    <tr><td><code>text/plain</code></td><td>Simple text, IDs, labels</td></tr>
-    <tr><td><code>text/html</code></td><td>Rich HTML fragments</td></tr>
-    <tr><td><code>text/uri-list</code></td><td>URLs</td></tr>
-    <tr><td><code>application/json</code></td><td>Structured data (custom)</td></tr>
-  </tbody>
-</table>
-
-<h2>Example: Reorder List</h2>
-<p>A sortable list where items can be reordered by dragging. The <code>dragover</code> handler calculates whether to insert before or after the target based on cursor position.</p>
-
-<code-block language="html" label="Sortable list" data-escape><ul id="sortable-list">
-  <li draggable="true">Item 1</li>
-  <li draggable="true">Item 2</li>
-  <li draggable="true">Item 3</li>
-  <li draggable="true">Item 4</li>
+  <code-block language="html" show-lines label="Drag or click to complete a task" data-escape><ul id="todo">
+  <li draggable="true" id="task-1">Write release notes <button type="button" class="ghost" data-done="task-1">Mark done</button></li>
+  <li draggable="true" id="task-2">Update screenshots <button type="button" class="ghost" data-done="task-2">Mark done</button></li>
 </ul>
+<ul id="done"></ul>
+<p aria-live="polite" id="status"></p>
 
-<script>
-const list = document.getElementById('sortable-list');
-let draggedItem = null;
+<script type="module">
+  const done = document.getElementById('done');
+  const status = document.getElementById('status');
 
-list.addEventListener('dragstart', (e) => {
-  draggedItem = e.target;
-  e.target.style.opacity = '0.4';
-  e.dataTransfer.effectAllowed = 'move';
-});
-
-list.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  const target = e.target.closest('li');
-  if (target && target !== draggedItem) {
-    const rect = target.getBoundingClientRect();
-    const midY = rect.top + rect.height / 2;
-    if (e.clientY < midY) {
-      list.insertBefore(draggedItem, target);
-    } else {
-      list.insertBefore(draggedItem, target.nextSibling);
-    }
+  function complete(item) {
+    item.removeAttribute('draggable');
+    item.querySelector('button')?.remove();
+    done.append(item);
+    status.textContent = `${item.textContent.trim()} moved to Done.`;
   }
-});
 
-list.addEventListener('dragend', (e) => {
-  e.target.style.opacity = '1';
-  draggedItem = null;
-});
+  document.addEventListener('dragstart', (e) => {
+    const item = e.target.closest?.('[draggable="true"]');
+    if (!item) return;
+    e.dataTransfer.setData('text/plain', item.id);
+    e.dataTransfer.effectAllowed = 'move';
+    item.toggleAttribute('data-dragging', true);   // VB styles this
+  });
+
+  document.addEventListener('dragend', (e) => {
+    e.target.removeAttribute?.('data-dragging');
+  });
+
+  done.addEventListener('dragover', (e) => {
+    e.preventDefault();                            // allow the drop
+    e.dataTransfer.dropEffect = 'move';
+    done.toggleAttribute('data-drag-over', true);  // VB styles this
+  });
+
+  done.addEventListener('dragleave', () => done.removeAttribute('data-drag-over'));
+
+  done.addEventListener('drop', (e) => {
+    e.preventDefault();
+    done.removeAttribute('data-drag-over');
+    const item = document.getElementById(e.dataTransfer.getData('text/plain'));
+    if (item) complete(item);
+  });
+
+  // The same result without dragging
+  document.addEventListener('click', (e) => {
+    const button = e.target.closest('[data-done]');
+    if (button) complete(document.getElementById(button.dataset.done));
+  });
 </script></code-block>
-
-<div class="example">
-  <ul id="demo-sortable" style="list-style: none; padding: 0;">
-    <li draggable="true" style="padding: var(--size-xs) var(--size-s); margin-block-end: var(--size-xs); background: var(--color-surface-raised); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-s); cursor: grab;">Item 1 — Drag to reorder</li>
-    <li draggable="true" style="padding: var(--size-xs) var(--size-s); margin-block-end: var(--size-xs); background: var(--color-surface-raised); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-s); cursor: grab;">Item 2 — Drag to reorder</li>
-    <li draggable="true" style="padding: var(--size-xs) var(--size-s); margin-block-end: var(--size-xs); background: var(--color-surface-raised); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-s); cursor: grab;">Item 3 — Drag to reorder</li>
-    <li draggable="true" style="padding: var(--size-xs) var(--size-s); margin-block-end: var(--size-xs); background: var(--color-surface-raised); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-s); cursor: grab;">Item 4 — Drag to reorder</li>
-  </ul>
-  <script>
-  (function() {
-    const list = document.getElementById('demo-sortable');
-    let draggedItem = null;
-    list.addEventListener('dragstart', (e) => {
-      draggedItem = e.target;
-      e.target.style.opacity = '0.4';
-      e.dataTransfer.effectAllowed = 'move';
-    });
-    list.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      const target = e.target.closest('li');
-      if (target && target !== draggedItem) {
-        const rect = target.getBoundingClientRect();
-        const midY = rect.top + rect.height / 2;
-        if (e.clientY < midY) {
-          list.insertBefore(draggedItem, target);
-        } else {
-          list.insertBefore(draggedItem, target.nextSibling);
-        }
-      }
-    });
-    list.addEventListener('dragend', (e) => {
-      e.target.style.opacity = '1';
-      draggedItem = null;
-    });
-  })();
-  </script>
-</div>
-
-<h2>Example: Drag to Delete</h2>
-<p>Items can be dragged to a trash zone to remove them. Visual feedback on the drop zone helps the user understand where to drop.</p>
-
-<code-block language="html" label="Drag to delete" data-escape><style>
-  .drop-zone-active { outline: 2px dashed var(--color-error); background: var(--color-error-subtle); }
-</style>
-
-<ul id="card-list">
-  <li draggable="true">Draft blog post</li>
-  <li draggable="true">Meeting notes</li>
-  <li draggable="true">Old todo list</li>
-</ul>
-
-<div id="trash-zone" role="region" aria-label="Drop here to delete">
-  <p>🗑 Drop here to delete</p>
-</div>
-
-<script>
-const cards = document.getElementById('card-list');
-const trash = document.getElementById('trash-zone');
-let draggedCard = null;
-
-cards.addEventListener('dragstart', (e) => {
-  draggedCard = e.target;
-  e.dataTransfer.setData('text/plain', e.target.textContent);
-  e.dataTransfer.effectAllowed = 'move';
-});
-
-trash.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
-  trash.classList.add('drop-zone-active');
-});
-
-trash.addEventListener('dragleave', () => {
-  trash.classList.remove('drop-zone-active');
-});
-
-trash.addEventListener('drop', (e) => {
-  e.preventDefault();
-  trash.classList.remove('drop-zone-active');
-  if (draggedCard) {
-    draggedCard.remove();
-    draggedCard = null;
-  }
-});
-</script></code-block>
-
-<h2>Accessibility</h2>
-<p><strong>Drag-and-drop is mouse-only by default.</strong> The native Drag and Drop API does not work with keyboard or touch (touch support varies across browsers and devices). This is the single biggest limitation of the API.</p>
-
-<p>To make drag-and-drop interfaces accessible, always provide keyboard alternatives:</p>
-<ul>
-  <li><strong>Reorder lists:</strong> Add "Move up" and "Move down" buttons (visually hidden or alongside each item)</li>
-  <li><strong>Drag to delete:</strong> Add a "Delete" button for each item</li>
-  <li><strong>Drag between zones:</strong> Provide a <code>&lt;select&gt;</code> or button to move items between containers</li>
-  <li><strong>Use <code>aria-grabbed</code> and <code>aria-dropeffect</code>:</strong> These ARIA attributes communicate drag state to screen readers (note: they are deprecated in ARIA 1.1, but no replacement exists yet)</li>
-  <li><strong>Live regions:</strong> Announce drag actions to screen readers using <code>aria-live="polite"</code> regions</li>
-</ul>
-
-<p>A pattern that works for mouse users but fails for keyboard-only users violates <a href="https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html">WCAG 2.1.1 (Keyboard)</a>. The keyboard alternative does not need to be drag-and-drop — it just needs to achieve the same result.</p>
-
-<aside>
-  <h3>VB Enhancement</h3>
-  <p>The <a href="/docs/elements/web-components/drag-surface/"><code>&lt;drag-surface&gt;</code></a> web component wraps the raw Drag and Drop API with keyboard accessibility, live region announcements, and clean custom events. It supports single-surface reorder and cross-surface transfer, all driven by <code>draggable="true"</code> on children.</p>
-  <p>Just wrap your draggable items in <code>&lt;drag-surface&gt;</code> and the component handles all seven drag events, keyboard reorder via <kbd>Space</kbd>/arrow keys, and screen reader position announcements.</p>
-</aside>
-
-<h2>Limitations</h2>
-<ul>
-  <li><strong>No keyboard support:</strong> The native API is pointer-only. Always provide a keyboard alternative.</li>
-  <li><strong>Touch inconsistency:</strong> Mobile browsers handle drag events differently. For mobile drag-and-drop, consider the Pointer Events API or a dedicated library.</li>
-  <li><strong>Styling constraints:</strong> You cannot fully style the drag ghost image via CSS. Use <code>dataTransfer.setDragImage()</code> for custom visuals.</li>
-  <li><strong>No drop animation:</strong> The browser does not animate the drop. You must implement visual transitions yourself.</li>
-  <li><strong>Cross-origin restrictions:</strong> Data set via <code>dataTransfer.setData()</code> is not readable during <code>dragover</code> for security reasons — only during <code>drop</code>.</li>
-</ul>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>true</code></td><td>The element can be dragged.</td></tr>
+      <tr><td><code>false</code></td><td>The element can't be dragged. Use it to stop images and links being dragged.</td></tr>
+      <tr><td>Absent, empty or any other value</td><td><code>auto</code> (the default): the browser decides. Images, links with an <code>href</code> and selected text are draggable; other elements are not.</td></tr>
+    </tbody>
+  </table>
+  <p>It isn't inherited: an element inside a <code>draggable="true"</code> parent moves with the parent but isn't draggable on its own. It is an enumerated attribute, so write <code>draggable="true"</code>; a bare <code>draggable</code> means <code>auto</code>.</p>
+
+  <h3>The event lifecycle</h3>
+  <table>
+    <thead><tr><th>Event</th><th>Fires on</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>dragstart</code></td><td>Dragged element</td><td>The drag begins. Put data in <code>dataTransfer</code> here.</td></tr>
+      <tr><td><code>drag</code></td><td>Dragged element</td><td>Repeatedly while dragging.</td></tr>
+      <tr><td><code>dragenter</code></td><td>Element under the pointer</td><td>The drag enters it.</td></tr>
+      <tr><td><code>dragover</code></td><td>Element under the pointer</td><td>Repeatedly while over it. Call <code>preventDefault()</code> to allow a drop.</td></tr>
+      <tr><td><code>dragleave</code></td><td>Element under the pointer</td><td>The drag leaves it.</td></tr>
+      <tr><td><code>drop</code></td><td>Drop target</td><td>The user drops on an element that allowed it. Read the data here.</td></tr>
+      <tr><td><code>dragend</code></td><td>Dragged element</td><td>The drag ends, by a drop or a cancel (<kbd>Escape</kbd>). Clean up here.</td></tr>
+    </tbody>
+  </table>
+  <p>The browser refuses drops by default. Without <code>preventDefault()</code> in <code>dragover</code>, <code>drop</code> never fires.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Reorder with &lt;drag-surface&gt;</h3>
+  <p>Children with <code>draggable="true"</code> inside a <code>&lt;drag-surface&gt;</code> can be dragged, moved with the keyboard (<kbd>Space</kbd> or <kbd>Enter</kbd> to grab, arrow keys to move, again to drop), and with <code>data-move-controls</code>, moved with per-item buttons. Every move is announced in a live region.</p>
+  <browser-window
+    src="/docs/examples/demos/drag-surface-move-controls.html"
+    url="https://vanilla-breeze.com/drag-surface"
+    title="drag-surface with move controls"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="drag-surface" data-escape><h3 id="col-backlog">Backlog</h3>
+<drag-surface group="sprint" aria-labelledby="col-backlog" data-move-controls data-layout="stack" data-layout-gap="xs">
+  <article draggable="true" data-id="story-1">Password reset flow</article>
+  <article draggable="true" data-id="story-2">Export to CSV</article>
+  <article draggable="true" data-id="story-3">Dark mode audit</article>
+</drag-surface></code-block>
+
+  <h3>Carrying data</h3>
+  <p><code>dataTransfer</code> can hold several formats at once; a target reads the one it understands. Files dragged in from the operating system arrive in <code>dataTransfer.files</code>.</p>
+  <code-block language="javascript" show-lines label="DataTransfer" data-escape>item.addEventListener('dragstart', (e) => {
+  e.dataTransfer.setData('text/plain', 'Write release notes');
+  e.dataTransfer.setData('application/json', JSON.stringify({ id: 42 }));
+  e.dataTransfer.effectAllowed = 'move';     // copy, move, link, copyMove, all…
+});
+
+target.addEventListener('drop', (e) => {
+  e.preventDefault();
+  const task = JSON.parse(e.dataTransfer.getData('application/json'));
+  const files = e.dataTransfer.files;        // from the desktop
+});</code-block>
+
+  <h3>Stopping default drags</h3>
+  <code-block language="html" show-lines label="draggable=false" data-escape><img src="/images/logo.svg" alt="Acme" draggable="false">
+<a href="/pricing" draggable="false">Pricing</a></code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
+  <p><code>src/native-elements/draggable/styles.css</code> styles drag state for every page, not only inside <code>&lt;drag-surface&gt;</code>. Set the same attributes from your own drag code to get the same look:</p>
+  <table>
+    <thead><tr><th>Selector</th><th>Style</th><th>Set by</th></tr></thead>
+    <tbody>
+      <tr><td><code>[draggable="true"]</code></td><td><code>cursor: grab</code> (<code>grabbing</code> while pressed), <code>user-select: none</code>, a 2px <code>--color-interactive</code> <code>:focus-visible</code> outline</td><td>You</td></tr>
+      <tr><td><code>[data-dragging]</code></td><td>Faded to 40% and scaled down slightly</td><td>The item being dragged</td></tr>
+      <tr><td><code>[data-drag-over]</code></td><td>Dashed <code>--color-interactive</code> outline and a light tint</td><td>A drop target under the pointer</td></tr>
+      <tr><td><code>[data-drop-target="before|after"]</code></td><td>A 3px insertion bar on that edge</td><td>The item next to the drop position</td></tr>
+      <tr><td><code>[data-just-dropped]</code></td><td>A brief ring flash</td><td>The item that just landed</td></tr>
+      <tr><td><code>[data-reorder-mode] [data-grabbed]</code></td><td>Outline and shadow</td><td>The item grabbed with the keyboard</td></tr>
+    </tbody>
+  </table>
+  <p>Under reduced motion the scale and the flash are switched off. <code>&lt;drag-surface&gt;</code> sets all of these itself, makes each item focusable (<code>tabindex="0"</code>), supports drag handles (<code>data-drag-handle</code>), horizontal lists and transfers between surfaces that share a <code>group</code>, and fires <code>drag-surface:reorder</code> and <code>drag-surface:transfer</code> events.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
   <ul>
-    <li><a href="/docs/elements/web-components/drag-surface/"><code>&lt;drag-surface&gt;</code></a> — accessible drag-and-drop reorder with keyboard support</li>
-    <li><a href="/docs/attributes/hidden/"><code>hidden</code></a> — hide elements removed by drag-to-delete actions</li>
-    <li><a href="/docs/attributes/tabindex/"><code>tabindex</code></a> — manage focus for keyboard alternatives to drag-and-drop</li>
-    <li><a href="/docs/accessibility/">Accessibility Guide</a> — overview of VB's accessibility patterns</li>
+    <li><strong>Drag and drop is pointer-only.</strong> The API has no keyboard support, so provide another way to do the same thing (WCAG 2.1.1 Keyboard). It doesn't have to be dragging: a "Move to" button or menu is fine.</li>
+    <li><strong>Offer a single-pointer alternative</strong> too, for people who can click but can't hold and drag (WCAG 2.5.7 Dragging Movements). <code>&lt;drag-surface data-move-controls&gt;</code> renders one per item.</li>
+    <li><strong><code>draggable</code> doesn't make an element focusable.</strong> If items take keyboard commands, add <code>tabindex="0"</code> (drag-surface does) or put a button inside each.</li>
+    <li><strong>Announce the result</strong> in an <code>aria-live="polite"</code> region: what moved and where it ended up ("Export to CSV, moved to position 2 of 3").</li>
+    <li><strong>Don't use <code>aria-grabbed</code> or <code>aria-dropeffect</code>.</strong> Both were deprecated in ARIA 1.1 and screen readers don't support them. Use the live region instead.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Protected drag data.</strong> Outside <code>dragstart</code> and <code>drop</code> (so during <code>dragenter</code> and <code>dragover</code> too) <code>getData()</code> returns nothing, for every drag. Only <code>dataTransfer.types</code> is available, so decide whether to accept a drop from the types. The data itself is readable in <code>drop</code>.</li>
+    <li><strong><code>dragleave</code> fires when entering a child.</strong> Moving from a drop zone onto an element inside it fires <code>dragleave</code> on the zone. Check <code>e.relatedTarget</code> or count enters and leaves before removing your highlight.</li>
+    <li><strong>Touch is unreliable.</strong> Mobile browsers differ in whether and how a long press starts an HTML drag. Don't let touch users depend on it; the button alternative covers them.</li>
+    <li><strong>The drag image is a snapshot.</strong> CSS can't style it while it moves. Use <code>dataTransfer.setDragImage()</code> for a custom one.</li>
+    <li><strong><code>user-select: none</code></strong> on <code>[draggable="true"]</code> means the text in a draggable item can't be selected. Put selectable text outside it, or use a drag handle.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/drag-surface/"><code>&lt;drag-surface&gt;</code></a> &mdash; accessible reordering and transfer between lists.</li>
+    <li><a href="/docs/attributes/data-upload/"><code>data-upload</code></a> &mdash; drop files from the desktop onto a file input.</li>
+    <li><a href="/docs/attributes/data-sortable/"><code>data-sortable</code></a> &mdash; sort a list or table by a field instead of by hand.</li>
+    <li><a href="/docs/attributes/tabindex/"><code>tabindex</code></a> &mdash; make items reachable by keyboard.</li>
+  </ul>
+
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>&lt;drag-surface&gt;</code></strong> &mdash; any list or board the user rearranges. Keyboard, move buttons and announcements are built in.</li>
+    <li><strong><code>draggable="true"</code> with your own listeners</strong> &mdash; other drag interactions (drag to a bin, to a folder, onto a canvas). Reuse VB's state attributes for styling, and build the keyboard and button paths yourself.</li>
+    <li><strong><code>data-upload</code></strong> &mdash; files dragged in from outside the page.</li>
+    <li><strong><code>data-sortable</code></strong> &mdash; when the order follows a field (date, name, price), let users pick the field rather than drag.</li>
   </ul>
 </section>

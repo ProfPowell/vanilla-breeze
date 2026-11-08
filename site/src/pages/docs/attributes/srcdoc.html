@@ -1,10 +1,10 @@
 ---
 layout: attribute
 title: "srcdoc"
-description: "Embed inline HTML content in an iframe without a separate document. Useful for sandboxed previews, user-generated content isolation, and self-contained examples."
+description: "Gives an iframe an inline HTML document instead of a URL. Without sandbox the document runs with your page's origin, so untrusted HTML always needs sandbox."
 attributeName: srcdoc
 attributeType: native
-nativeGroup: Structure
+nativeGroup: Embeds
 category: native
 currentPath: /docs/attributes/srcdoc/
 
@@ -12,137 +12,127 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>srcdoc</code> attribute on <code>&lt;iframe&gt;</code> lets you embed inline HTML content directly in the attribute value, without pointing to a separate URL. The iframe renders the provided HTML as a complete document in its own browsing context.</p>
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a></p>
-<p>When both <code>srcdoc</code> and <code>src</code> are present, <code>srcdoc</code> takes priority. The <code>src</code> serves as a fallback for browsers that do not support <code>srcdoc</code> (all modern browsers do).</p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>srcdoc</code> attribute gives an <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> its document as a string of HTML, with no separate URL. The frame loads it as <code>about:srcdoc</code>. If both <code>srcdoc</code> and <code>src</code> are present, <code>srcdoc</code> wins.</p>
+  <p><strong>The most important fact about <code>srcdoc</code>:</strong> on its own it isolates nothing. An unsandboxed srcdoc document <strong>inherits your page's origin</strong> (and its Content Security Policy). Its scripts can read your cookies and storage and reach into your page through <code>parent</code>. Isolation comes only from adding <a href="/docs/attributes/sandbox/"><code>sandbox</code></a> without <code>allow-same-origin</code>.</p>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a></p>
 
-<h2>Values</h2>
-<table>
-  <thead><tr><th>Attribute</th><th>Value</th><th>Behavior</th></tr></thead>
-  <tbody>
-    <tr><td><code>srcdoc</code></td><td>HTML string (escaped)</td><td>Renders the HTML as the iframe's content</td></tr>
-    <tr><td><code>src</code></td><td>URL</td><td>Fallback if <code>srcdoc</code> is absent or unsupported</td></tr>
-  </tbody>
-</table>
+  <browser-window
+    src="/docs/examples/demos/attr-srcdoc-origin.html"
+    url="https://vanilla-breeze.com/demos/srcdoc-origin"
+    title="srcdoc origin"
+    shadow>
+  </browser-window>
 
-<h2>Basic Usage</h2>
-<p>Provide HTML content as the attribute value. All HTML special characters must be escaped since they are inside an attribute.</p>
-
-<code-block language="html" label="Inline iframe content" data-escape><!-- Inline HTML content inside an iframe -->
-<iframe srcdoc="&lt;h1&gt;Hello&lt;/h1&gt;&lt;p&gt;This is inline content.&lt;/p&gt;"
-  title="Inline content example"
-  width="400" height="200"></iframe></code-block>
-
-<h2>Escaping Requirements</h2>
-<p>Because <code>srcdoc</code> content lives inside an HTML attribute, you must escape HTML entities. This is the most common pain point with <code>srcdoc</code>.</p>
-
-<code-block language="html" label="Escaped HTML content" data-escape><!-- HTML must be escaped in the attribute value -->
-<iframe srcdoc="
-  &lt;style&gt;
-    body { font-family: system-ui; padding: 1rem; }
-    h1 { color: #333; }
-  &lt;/style&gt;
-  &lt;h1&gt;Styled Content&lt;/h1&gt;
-  &lt;p&gt;This includes its own &lt;code&gt;style&lt;/code&gt; block.&lt;/p&gt;
-" title="Styled inline content" width="400" height="200"></iframe>
-
-<!-- Character escaping rules:
-     < becomes &lt;
-     > becomes &gt;
-     & becomes &amp;
-     " becomes &quot; (if using double-quoted attribute)
---></code-block>
-
-<h2>Sandboxed Content</h2>
-<p>Pair <code>srcdoc</code> with the <a href="/docs/attributes/sandbox/"><code>sandbox</code></a> attribute for secure content isolation. The content runs in a unique origin, completely separated from the parent page.</p>
-
-<code-block language="html" label="Sandboxed srcdoc" data-escape><!-- Sandboxed preview: no scripts, no forms, no navigation -->
-<iframe srcdoc="&lt;h2&gt;User Post&lt;/h2&gt;&lt;p&gt;This content is isolated.&lt;/p&gt;"
-  sandbox
-  title="User post preview"
-  width="100%" height="150"></iframe>
-
-<!-- Allow scripts but nothing else -->
-<iframe srcdoc="&lt;script&gt;document.write('Dynamic content')&lt;/script&gt;"
-  sandbox="allow-scripts"
-  title="Scripted preview"
-  width="100%" height="100"></iframe></code-block>
-
-<h2>Priority over src</h2>
-<p>When both attributes are present, <code>srcdoc</code> wins. This originally allowed for graceful degradation to a server-rendered URL in older browsers.</p>
-
-<code-block language="html" label="srcdoc takes priority" data-escape><!-- srcdoc takes priority over src -->
-<iframe src="https://example.com"
-  srcdoc="&lt;p&gt;This content is shown instead of example.com.&lt;/p&gt;"
-  title="srcdoc priority demo"
-  width="400" height="100"></iframe>
-
-<!-- The src acts as a fallback for browsers that don't support srcdoc
-     (all modern browsers support it, so this is mainly historical) --></code-block>
-
-<h2>Live Preview Pattern</h2>
-<p>A common use case is a live HTML preview that updates as the user types. Set the iframe's <code>srcdoc</code> property via JavaScript for dynamic content.</p>
-
-<code-block language="html" label="Live HTML preview" data-escape><label for="html-input">Enter HTML:</label>
-<textarea id="html-input" rows="6" cols="50">&lt;h1&gt;Hello&lt;/h1&gt;
-&lt;p&gt;Edit me!&lt;/p&gt;</textarea>
-
-<iframe id="preview" sandbox="allow-scripts" title="Live preview"
-  width="100%" height="200"></iframe>
-
-<script>
-const textarea = document.getElementById('html-input');
-const preview = document.getElementById('preview');
-
-textarea.addEventListener('input', () => {
-  preview.srcdoc = textarea.value;
-});
-
-// Initial render
-preview.srcdoc = textarea.value;
-</script></code-block>
-
-<h2>Email Rendering</h2>
-<p>Email clients often render HTML emails in iframes to isolate the email's styles and scripts from the application UI. The <code>srcdoc</code> + <code>sandbox</code> combination is ideal for this.</p>
-
-<code-block language="html" label="Safe email rendering" data-escape><!-- Render email HTML safely in an isolated context -->
-<iframe srcdoc="&lt;!-- email HTML content here --&gt;"
-  sandbox
-  title="Email preview"
-  width="100%" height="400"
-  style="border: 1px solid #ccc;"></iframe>
-
-<!-- The sandbox attribute without any allow-* tokens prevents:
-     - JavaScript execution
-     - Form submission
-     - Link navigation to parent
-     - Popups
-     - Plugin content
---></code-block>
-
-<h2>Accessibility</h2>
-<ul>
-  <li>Always provide a <code>title</code> attribute on iframes using <code>srcdoc</code>. Screen readers announce the title to help users understand the iframe's purpose.</li>
-  <li>The content inside the iframe is a separate document with its own accessibility tree. Ensure the inline HTML is well-structured with headings and landmarks.</li>
-  <li>Sandboxed iframes that prevent keyboard navigation can trap focus. Test keyboard flow into and out of the iframe.</li>
-</ul>
-
-<h2>Limitations</h2>
-<ul>
-  <li>HTML escaping makes complex content hard to read in source code. For longer content, setting <code>iframe.srcdoc</code> via JavaScript avoids the escaping burden.</li>
-  <li>The content has a unique, opaque origin. It cannot access the parent page's cookies, localStorage, or DOM (and the parent cannot access the iframe's DOM when sandboxed).</li>
-  <li>There is no way to link to a specific anchor within a <code>srcdoc</code> iframe from the parent page.</li>
-  <li>Very large <code>srcdoc</code> values can bloat the HTML document size, since the content is inline rather than loaded on demand.</li>
-  <li>The <code>srcdoc</code> content does not have a URL, so it cannot be bookmarked, shared, or opened in a new tab.</li>
-</ul>
+  <p>The page saves a value in <code>localStorage</code>. The unsandboxed frame reports the page's own origin and reads the value; the sandboxed frame has origin <code>null</code> and cannot.</p>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <table>
+    <thead><tr><th>Value</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>An HTML string</td><td>Parsed as a complete document in the frame. A missing doctype is fine: srcdoc documents never enter quirks mode.</td></tr>
+      <tr><td><code>""</code> (empty)</td><td>An empty document. <code>src</code> is still ignored while the attribute is present.</td></tr>
+      <tr><td>Attribute absent</td><td>The frame loads <code>src</code> (or <code>about:blank</code>).</td></tr>
+    </tbody>
+  </table>
+  <p>Setting the <code>srcdoc</code> property from script (<code>frame.srcdoc = html</code>) reloads the frame with the new document.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Live preview of user-written HTML</h3>
+  <browser-window
+    src="/docs/examples/demos/attr-srcdoc-preview.html"
+    url="https://vanilla-breeze.com/demos/srcdoc-preview"
+    title="srcdoc live preview"
+    shadow>
+  </browser-window>
+  <p>The preview frame has an empty <code>sandbox</code>, so the <code>&lt;script&gt;</code> in the sample never runs, and anything it did run could not reach the page.</p>
+  <code-block language="html" show-lines label="Sandboxed live preview" data-escape><form-field>
+  <label for="preview-source">HTML to preview</label>
+  <textarea id="preview-source" rows="6"></textarea>
+</form-field>
+<iframe id="preview-frame" class="bordered" title="Preview" sandbox></iframe>
+
+<script type="module">
+  const source = document.getElementById('preview-source');
+  const frame = document.getElementById('preview-frame');
+  const render = () => { frame.srcdoc = source.value; };
+  source.addEventListener('input', render);
+  render();
+</script></code-block>
+
+  <h3>Writing srcdoc in markup</h3>
+  <p>Inside a double-quoted attribute you must escape <code>"</code> as <code>&amp;quot;</code> and <code>&amp;</code> as <code>&amp;amp;</code>. Literal <code>&lt;</code> and <code>&gt;</code> are allowed in attribute values, so escaping them is optional. Single quotes inside the HTML avoid most of the escaping.</p>
+  <code-block language="html" show-lines label="Static srcdoc" data-escape><iframe sandbox title="Order confirmation preview" class="bordered"
+  srcdoc="<style>body { font-family: system-ui; }</style>
+<h1>Thanks, Amara</h1>
+<p>Order <strong>#4821</strong> ships Friday. Questions? Reply to this email &amp; we'll help.</p>
+<p><a href='https://shop.example.com/orders/4821'>Track your order</a></p>"></iframe></code-block>
+
+  <h3>Rendering an HTML email</h3>
+  <p>An empty sandbox stops scripts, forms and popups in the message. It does not stop remote images, which are how emails track opens. To block them, put a CSP <code>&lt;meta&gt;</code> at the start of the string you build, or rewrite image URLs on the server.</p>
+  <code-block language="html" show-lines label="Email with remote loads blocked" data-escape><iframe sandbox class="bordered" title="Message from Northwind Travel"
+  srcdoc="<meta http-equiv='Content-Security-Policy' content=&quot;default-src 'none'; img-src data:; style-src 'unsafe-inline'&quot;>
+...sanitised email HTML..."></iframe></code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/attributes/sandbox/"><code>sandbox</code></a> — restrict iframe capabilities for security</li>
-    <li><a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> — the iframe element</li>
-    <li><a href="/docs/attributes/loading/"><code>loading</code></a> — lazy-load iframes below the fold</li>
-    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> — control referrer for iframe requests</li>
+    <li><strong>VB treats <code>srcdoc</code> as a script sink.</strong> The sanitiser (<code>src/lib/sanitize-html.js</code>) drops <code>srcdoc</code> in every profile, and <code>&lt;card-list&gt;</code> refuses to write it from data through <code>data-field-attr</code> (<code>src/web-components/card-list/logic.js</code>, alongside <code>style</code> and <code>is</code>).</li>
+    <li><a href="/docs/attributes/data-mock/"><code>data-mock</code></a> fills an empty <code>iframe[data-mock]</code> (no <code>src</code>, no <code>srcdoc</code>) with a placeholder <code>srcdoc</code> showing the frame's <code>title</code> (<code>src/utils/mock-init.js</code>).</li>
+    <li>Style the frame with <code>iframe.bordered</code>, <code>iframe.rounded</code> or <code>data-ratio</code> from <code>src/native-elements/iframe/styles.css</code>. VB's CSS does not reach inside the srcdoc document; link a stylesheet from the string if you need it.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Give the iframe a <code>title</code> that names its content.</li>
+    <li>The srcdoc document has its own accessibility tree: include a <code>lang</code> attribute, headings and real structure in the string, as you would for any page.</li>
+    <li>Set a fixed height or use <code>data-ratio</code>; a frame that clips its content hides it from sighted keyboard users.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Security</h2>
+  <ul>
+    <li><strong>Unsandboxed srcdoc is your origin.</strong> Treat its HTML exactly as if you inserted it into your page with <code>innerHTML</code>.</li>
+    <li><strong>For untrusted HTML, use <code>sandbox</code></strong> with no tokens, or with <code>allow-scripts</code> only. Never add <code>allow-same-origin</code> as well: the frame would get your origin back and could remove its own sandbox.</li>
+    <li><strong>Escape when you build the attribute in a template.</strong> An unescaped <code>"</code> in user HTML ends the attribute and injects markup into <em>your</em> page. Setting the <code>srcdoc</code> property from script avoids this.</li>
+    <li><strong>Sanitise as well as sandbox</strong> when the content can link out: a sandboxed frame can still show phishing links and load tracking images.</li>
+    <li>The srcdoc document inherits your page's CSP. A policy that blocks inline scripts or styles blocks them inside the frame too.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Relative URLs resolve against your page.</strong> The srcdoc document's base URL is the parent's, so <code>href="next.html"</code> points next to your page, not anywhere special.</li>
+    <li><strong>No URL of its own.</strong> The content cannot be bookmarked, opened in a new tab or linked to from outside.</li>
+    <li><strong>Size.</strong> Long strings bloat the page HTML and are parsed even if the frame is never seen; <code>loading="lazy"</code> defers rendering, not the bytes.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/sandbox/"><code>sandbox</code></a> &mdash; required for isolation; explains the <code>allow-scripts allow-same-origin</code> escape.</li>
+    <li><a href="/docs/attributes/allow/"><code>allow</code></a> &mdash; grant powerful APIs to the frame.</li>
+    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy-load frames below the fold.</li>
+    <li><a href="/docs/attributes/data-mock/"><code>data-mock</code></a> &mdash; placeholder content for empty frames.</li>
+    <li><a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> &mdash; the element and its VB styles.</li>
+    <li><a href="/docs/elements/web-components/markdown-viewer/"><code>&lt;markdown-viewer&gt;</code></a> &mdash; renders untrusted markdown inline through VB's sanitiser.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong>Your own trusted HTML snippet</strong> &mdash; plain markup in the page, or <code>srcdoc</code> without sandbox if you need style isolation.</li>
+    <li><strong>Untrusted HTML that must keep its own styles</strong> (emails, previews) &mdash; <code>srcdoc</code> with an empty <code>sandbox</code>.</li>
+    <li><strong>Untrusted text or markdown shown in the page</strong> &mdash; <code>&lt;markdown-viewer&gt;</code> or the sanitiser; no frame needed.</li>
   </ul>
 </section>

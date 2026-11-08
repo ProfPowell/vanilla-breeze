@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "readonly"
-description: "Makes form controls non-editable while keeping them focusable and included in form submission. The polite alternative to disabled."
+description: "Makes a text-like field non-editable while keeping it focusable, selectable and submitted. Vanilla Breeze gives read-only fields a sunken fill and a dashed border."
 attributeName: readonly
 attributeType: native
 nativeGroup: Forms
@@ -12,158 +12,111 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>readonly</code> attribute makes a form control non-editable while keeping it focusable, tabbable, and included in form submission. The user can see the value, select and copy the text, and tab through it — but cannot change it.</p>
-<p>Use <code>readonly</code> when a value must be submitted with the form but should not be modified by the user. Common examples: order IDs, calculated totals, server-assigned values, and confirmation screens.</p>
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> (text-like types only), <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a></p>
+<section>
+  <h2>Overview</h2>
+  <p><code>readonly</code> is a boolean attribute that stops the user from changing a field's value. Unlike <a href="/docs/attributes/disabled/"><code>disabled</code></a>, the field stays in the tab order, its text can be selected and copied, and its value is submitted with the form. Use it for values the user should see and send but not edit: order numbers, computed totals, a confirmed email address.</p>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a> and <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> of type <code>text</code>, <code>search</code>, <code>url</code>, <code>tel</code>, <code>email</code>, <code>password</code>, <code>number</code>, <code>date</code>, <code>month</code>, <code>week</code>, <code>time</code> and <code>datetime-local</code>. It has no effect on <code>&lt;select&gt;</code>, checkboxes, radios, <code>range</code>, <code>color</code>, <code>file</code> or buttons.</p>
 
-<h2>Values</h2>
-<table>
-  <thead><tr><th>Attribute</th><th>Focusable</th><th>Editable</th><th>Submitted</th><th>Works On</th></tr></thead>
-  <tbody>
-    <tr><td><code>readonly</code></td><td>Yes</td><td>No</td><td>Yes</td><td>Text inputs, textarea</td></tr>
-    <tr><td><a href="/docs/attributes/disabled/"><code>disabled</code></a></td><td>No</td><td>No</td><td>No</td><td>All form controls</td></tr>
-  </tbody>
-</table>
+  <browser-window
+    src="/docs/examples/demos/attr-readonly-basic.html"
+    url="https://vanilla-breeze.com/attributes/readonly"
+    title="readonly"
+    shadow>
+  </browser-window>
 
-<p>The key difference: <code>readonly</code> keeps the value in the form payload. <code>disabled</code> removes it entirely.</p>
+  <code-block language="html" show-lines label="readonly and disabled side by side" data-escape><form-field>
+  <label for="order">Order number</label>
+  <input type="text" id="order" name="order" value="ORD-2026-00482" readonly />
+</form-field>
 
-<code-block language="html" label="Readonly form fields" data-escape><form class="stacked">
-  <label for="order-id">Order ID</label>
-  <input type="text" id="order-id" name="order_id"
-    value="ORD-2025-00482" readonly />
+<form-field>
+  <label for="total">Total (USD)</label>
+  <input type="number" id="total" name="total" value="149.99" readonly />
+</form-field>
 
-  <label for="notes">Notes</label>
-  <textarea id="notes" name="notes" rows="3">Delivered to front door.</textarea>
-
-  <label for="amount">Amount</label>
-  <input type="number" id="amount" name="amount" value="149.99" readonly />
-
-  <button type="submit">Update Notes</button>
-</form></code-block>
-
-<h2>Readonly vs Disabled</h2>
-<p>These two attributes look similar but behave very differently. Choosing the wrong one is a common source of bugs.</p>
-
-<code-block language="html" label="Readonly vs disabled" data-escape><!-- readonly: focusable, submitted, not editable -->
-<label for="ro-field">Readonly</label>
-<input type="text" id="ro-field" value="Submitted with form" readonly />
-
-<!-- disabled: not focusable, NOT submitted, not editable -->
-<label for="dis-field">Disabled</label>
-<input type="text" id="dis-field" value="Excluded from form" disabled /></code-block>
-
-<table>
-  <thead><tr><th>Behavior</th><th><code>readonly</code></th><th><code>disabled</code></th></tr></thead>
-  <tbody>
-    <tr><td>User can edit</td><td>No</td><td>No</td></tr>
-    <tr><td>User can focus/tab</td><td>Yes</td><td>No</td></tr>
-    <tr><td>User can select/copy text</td><td>Yes</td><td>Varies by browser</td></tr>
-    <tr><td>Value submitted with form</td><td>Yes</td><td>No</td></tr>
-    <tr><td>Constraint validation runs</td><td>No</td><td>No</td></tr>
-    <tr><td>Visual appearance</td><td>Subtle (your CSS)</td><td>Grayed out</td></tr>
-  </tbody>
-</table>
-
-<h2>Form Submission</h2>
-<p>This is the primary reason to choose <code>readonly</code> over <code>disabled</code>. Readonly fields are included in <code>FormData</code> and submitted to the server.</p>
-
-<code-block language="js" label="FormData includes readonly" data-escape>const form = document.querySelector('form');
-form.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const data = new FormData(form);
-
-  // readonly fields ARE included:
-  console.log(data.get('order_id'));  // "ORD-2025-00482"
-
-  // disabled fields are NOT included:
-  // data.get('disabled_field') → null
-});</code-block>
-
-<h2>Elements That Ignore readonly</h2>
-<p>The <code>readonly</code> attribute only works on text-like inputs and <code>&lt;textarea&gt;</code>. It has <strong>no effect</strong> on:</p>
-<ul>
-  <li><code>&lt;select&gt;</code> — the user can still change the selection</li>
-  <li><code>&lt;input type="checkbox"&gt;</code> — the user can still toggle it</li>
-  <li><code>&lt;input type="radio"&gt;</code> — the user can still change the selection</li>
-  <li><code>&lt;input type="range"&gt;</code> — the slider is still draggable</li>
-  <li><code>&lt;input type="color"&gt;</code> — the picker still opens</li>
-</ul>
-
-<code-block language="html" label="Readonly does not work on select" data-escape><!-- readonly does NOT work on these elements -->
-<label for="color">Color</label>
-<select id="color" readonly>
-  <option>Red</option>
-  <option selected>Blue</option>
-  <option>Green</option>
-</select>
-<!-- The user CAN still change the selection! -->
-
-<!-- Workaround: use disabled + hidden input -->
-<label for="color-display">Color</label>
-<select id="color-display" disabled>
-  <option selected>Blue</option>
-</select>
-<input type="hidden" name="color" value="Blue" /></code-block>
-
-<p>For these elements, use <code>disabled</code> paired with a <code>&lt;input type="hidden"&gt;</code> to carry the value, or use JavaScript to prevent changes.</p>
-
-<h2>Styling</h2>
-<p>Use the <code>:read-only</code> and <code>:read-write</code> pseudo-classes to style readonly fields distinctly from editable ones.</p>
-
-<code-block language="css" label="Readonly styling" data-escape>/* Style readonly inputs differently from editable ones */
-input:read-only,
-textarea:read-only {
-  background: var(--color-surface-raised);
-  border-color: var(--color-border);
-  color: var(--color-text);
-  cursor: default;
-}
-
-/* Editable fields get the normal interactive style */
-input:read-write,
-textarea:read-write {
-  background: var(--color-surface);
-  border-color: var(--color-border);
-}</code-block>
-
-<p><strong>Note:</strong> The <code>:read-only</code> pseudo-class also matches elements that are not editable by nature (like <code>&lt;p&gt;</code> or <code>&lt;div&gt;</code>). For precise targeting, combine it with an element selector: <code>input:read-only</code>.</p>
-
-<h2>JavaScript API</h2>
-<p>The <code>readOnly</code> property (camelCase) reflects the attribute.</p>
-
-<code-block language="js" label="Toggle readonly" data-escape>// Toggle readonly programmatically
-const field = document.querySelector('#order-id');
-field.readOnly = true;   // make readonly
-field.readOnly = false;  // make editable
-
-// Check state
-if (field.readOnly) {
-  console.log('Field is read-only');
-}</code-block>
-
-<h2>Accessibility</h2>
-<ul>
-  <li>Screen readers announce readonly fields as "read-only" or "not editable". The value is still read aloud.</li>
-  <li>Because readonly fields are focusable, keyboard users encounter them during tab navigation. This is usually the desired behavior — the user can review the value in context.</li>
-  <li>If a field is readonly because the user lacks permission, consider adding a visible explanation (e.g., "This field is managed by your administrator").</li>
-</ul>
-
-<h2>Limitations</h2>
-<ul>
-  <li><code>readonly</code> is a boolean attribute. Writing <code>readonly="false"</code> still makes the field readonly. Remove the attribute entirely to make it editable again.</li>
-  <li>Constraint validation is skipped for readonly fields. A readonly field with <a href="/docs/attributes/pattern/"><code>pattern</code></a> or <a href="/docs/attributes/required/"><code>required</code></a> will not trigger validation errors.</li>
-  <li>Users can still submit the form with modified values via devtools or by removing the attribute. Always validate on the server.</li>
-  <li>There is no <code>:read-only</code> support for <code>&lt;select&gt;</code> in any useful way, since the attribute itself has no effect on selects.</li>
-</ul>
+<form-field>
+  <label for="region">Data region</label>
+  <input type="text" id="region" name="region" value="eu-west" disabled />
+</form-field></code-block>
+  <p>Submitting that form sends <code>order</code> and <code>total</code> but not <code>region</code>.</p>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <p>Boolean: present means read-only. <code>readonly="false"</code> is still read-only; remove the attribute or set <code>el.readOnly = false</code> (capital O).</p>
+  <table class="props-table">
+    <thead><tr><th>Behaviour</th><th><code>readonly</code></th><th><code>disabled</code></th></tr></thead>
+    <tbody>
+      <tr><td>User can edit</td><td>No</td><td>No</td></tr>
+      <tr><td>Focusable, in tab order</td><td>Yes</td><td>No</td></tr>
+      <tr><td>Text can be selected and copied</td><td>Yes</td><td>Varies by browser</td></tr>
+      <tr><td>Value submitted</td><td>Yes</td><td>No</td></tr>
+      <tr><td>Constraint validation</td><td>Skipped</td><td>Skipped</td></tr>
+      <tr><td>Script can change <code>.value</code></td><td>Yes</td><td>Yes</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Styling read-only fields yourself</h3>
+  <p><code>:read-only</code> matches every element the user can't edit, including checkboxes, radios, range sliders and plain paragraphs. Scope it to text-like fields, as VB does.</p>
+  <code-block language="css" label="Scoped :read-only rule" data-escape>:is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]), textarea):read-only:not(:disabled) {
+  background: var(--input-readonly-bg);
+  border-style: var(--input-readonly-border-style);
+}</code-block>
+  <p>In VB you rarely need this: set the two tokens instead (see below).</p>
+
+  <h3>Locking a select, checkbox or radio</h3>
+  <p>These controls ignore <code>readonly</code>. Show the value as text, or disable the control and carry the value in a hidden input.</p>
+  <code-block language="html" label="Fixed choice, value still submitted" data-escape><label for="plan">Plan</label>
+<select id="plan" disabled>
+  <option selected>Team (set by your administrator)</option>
+</select>
+<input type="hidden" name="plan" value="team" /></code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/attributes/disabled/"><code>disabled</code></a> — fully deactivates a control (no focus, no submission)</li>
-    <li><a href="/docs/attributes/hidden/"><code>inert</code></a> — makes visible content non-interactive</li>
-    <li><a href="/docs/attributes/pattern/"><code>pattern</code></a> — validation constraints (skipped on readonly fields)</li>
-    <li><a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> element reference</li>
-    <li><a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a> element reference</li>
+    <li><strong>Styling.</strong> Text fields and textareas that are <code>:read-only</code> (and not disabled, and not a <code>select</code>) get <code>--input-readonly-bg</code> as their fill and <code>--input-readonly-border-style</code> as their border style (<code>src/native-elements/input/styles.css</code>). The dashed border is the non-colour cue that the field isn't open for editing.</li>
+    <li><strong>Tokens</strong> (<code>src/tokens/forms.css</code>): <code>--input-readonly-bg</code> defaults to <code>var(--color-surface-raised)</code>, <code>--input-readonly-border-style</code> to <code>dashed</code>. Themes override the tokens, not the selector.</li>
+    <li><strong><a href="/docs/attributes/data-stepper/"><code>data-stepper</code></a></strong> disables its +/&minus; buttons while the input is read-only.</li>
+    <li><strong><a href="/docs/attributes/data-autosave/"><code>data-autosave</code></a></strong> never restores a saved draft into a read-only field, so a server-provided value wins.</li>
+    <li><strong><a href="/docs/attributes/data-switch/"><code>data-switch</code></a></strong> is a checkbox, so <code>readonly</code> does not stop it toggling. Use <code>disabled</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Screen readers announce read-only fields as "read only" and still read the value. Because the field is focusable, keyboard users can review it in context.</li>
+    <li>If the field is read-only because of permissions, say so in a hint (<code>&lt;output class="hint" for&gt;</code> inside <code>&lt;form-field&gt;</code>), for example "Managed by your administrator".</li>
+    <li>Don't make a field read-only just to show a value. If nothing is submitted, plain text or a <a href="/docs/elements/native/output/"><code>&lt;output&gt;</code></a> is simpler and isn't a tab stop.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><code>required</code>, <code>pattern</code> and the other constraints are ignored on read-only fields, because they are barred from validation.</li>
+    <li>The value can still be changed with devtools or by script. Never trust a read-only value on the server; recompute totals and look up IDs again.</li>
+    <li><code>&lt;select readonly&gt;</code> is not an error in the browser but does nothing; the user can still change it.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/disabled/"><code>disabled</code></a> &mdash; off, not focusable, not submitted</li>
+    <li><a href="/docs/attributes/required/"><code>required</code></a> &mdash; ignored on read-only fields</li>
+    <li><a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a>, <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a>, <a href="/docs/elements/native/output/"><code>&lt;output&gt;</code></a></li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>readonly</code></strong> &mdash; the value is fixed, must be submitted, and the user may want to select or copy it.</li>
+    <li><strong><code>disabled</code></strong> &mdash; the control does not apply and its value must not be sent.</li>
+    <li><strong><code>&lt;output&gt;</code> or text</strong> &mdash; the value is only for display.</li>
   </ul>
 </section>

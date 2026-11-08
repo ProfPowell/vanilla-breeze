@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "rel"
-description: "Defines the relationship between the current document and a linked resource. Controls security, performance, SEO, and resource loading."
+description: "Says how a linked resource relates to the page: stylesheets and resource hints on link, opener and referrer control on links and forms, and meaning that VB styles."
 attributeName: rel
 attributeType: native
 nativeGroup: Links & Security
@@ -12,231 +12,174 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>rel</code> attribute defines the relationship between the current document and a linked resource. It is used on <a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a>, <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a>, <a href="/docs/elements/native/area/"><code>&lt;area&gt;</code></a>, and <a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> elements.</p>
-<p>The value is a space-separated list of link types. Multiple values can be combined: <code>rel="noopener noreferrer"</code>.</p>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>rel</code> attribute is a space-separated list of link types describing how the target relates to the current document. On <code>&lt;link&gt;</code> it loads things (stylesheets, icons, preloads). On <code>&lt;a&gt;</code>, <code>&lt;area&gt;</code> and <code>&lt;form&gt;</code> it annotates a navigation: whether the new page gets <code>window.opener</code> and a referrer, and what the link means (<code>help</code>, <code>tag</code>, <code>next</code>, <code>external</code>).</p>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a>, <a href="/docs/elements/native/area/"><code>&lt;area&gt;</code></a>, <a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> and <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a>. Each link type is allowed on some of these and not others.</p>
 
-<h2>Security</h2>
-<p>Two values protect your site when linking to external origins.</p>
+  <browser-window
+    src="/docs/examples/demos/attr-rel-styles.html"
+    url="https://vanilla-breeze.com/demos/rel"
+    title="rel styling hooks"
+    shadow>
+  </browser-window>
 
-<table>
-  <thead><tr><th>Value</th><th>Effect</th><th>Why it matters</th></tr></thead>
-  <tbody>
-    <tr>
-      <td><code>noopener</code></td>
-      <td>The opened page cannot access <code>window.opener</code></td>
-      <td>Prevents the external page from navigating your tab to a phishing page or reading properties of your window</td>
-    </tr>
-    <tr>
-      <td><code>noreferrer</code></td>
-      <td>The browser does not send a <code>Referer</code> header</td>
-      <td>Prevents leaking the current page URL (which may contain tokens, user IDs, or private paths) to the external site</td>
-    </tr>
-  </tbody>
-</table>
-
-<p><strong>Best practice:</strong> Always use <code>rel="noopener noreferrer"</code> on external links with <code>target="_blank"</code>. Modern browsers apply <code>noopener</code> by default for <code>target="_blank"</code>, but adding it explicitly ensures consistent behavior across all browsers and clearly communicates intent.</p>
-
-<code-block language="html" label="Secure external links" data-escape><!-- External link: prevent window.opener and Referer leaks -->
-<a href="https://example.com" rel="noopener noreferrer" target="_blank">
-  Visit Example
-</a>
-
-<!-- Multiple external links with security defaults -->
-<nav>
-  <a href="https://github.com/you" rel="noopener noreferrer" target="_blank">GitHub</a>
-  <a href="https://twitter.com/you" rel="noopener noreferrer" target="_blank">Twitter</a>
-</nav></code-block>
-
-<h2>Resource Hints</h2>
-<p>Resource hints tell the browser to prepare for future navigations or fetch critical resources early. They go on <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> elements in the <code>&lt;head&gt;</code>.</p>
-
-<table>
-  <thead><tr><th>Value</th><th>What it does</th><th>When to use</th></tr></thead>
-  <tbody>
-    <tr>
-      <td><code>preload</code></td>
-      <td>Fetches a resource with high priority for the current page. Requires the <code>as</code> attribute.</td>
-      <td>Fonts, hero images, critical scripts that the browser would discover late</td>
-    </tr>
-    <tr>
-      <td><code>prefetch</code></td>
-      <td>Fetches a resource at low priority for a future navigation</td>
-      <td>Next page the user is likely to visit, non-critical assets</td>
-    </tr>
-    <tr>
-      <td><code>preconnect</code></td>
-      <td>Performs DNS lookup, TCP handshake, and TLS negotiation to an origin</td>
-      <td>Third-party APIs, font providers, CDNs you will fetch from soon</td>
-    </tr>
-    <tr>
-      <td><code>dns-prefetch</code></td>
-      <td>Performs only the DNS lookup for an origin</td>
-      <td>Origins you might connect to. Lighter than preconnect, broader browser support.</td>
-    </tr>
-    <tr>
-      <td><code>modulepreload</code></td>
-      <td>Preloads an ES module and its dependencies, parsing the module graph</td>
-      <td>JavaScript modules critical to page rendering</td>
-    </tr>
-  </tbody>
-</table>
-
-<code-block language="html" label="Resource hints" data-escape><!-- Preload a critical font (must be fetched before first paint) -->
-<link rel="preload" href="/fonts/body.woff2" as="font"
-  type="font/woff2" crossorigin />
-
-<!-- Preload the LCP image -->
-<link rel="preload" href="/images/hero.webp" as="image" />
-
-<!-- Prefetch a page the user is likely to visit next -->
-<link rel="prefetch" href="/checkout" />
-
-<!-- Preconnect to a third-party origin (DNS + TCP + TLS) -->
-<link rel="preconnect" href="https://api.example.com" />
-
-<!-- DNS-prefetch only (lighter than preconnect) -->
-<link rel="dns-prefetch" href="https://analytics.example.com" />
-
-<!-- Modulepreload for ES modules -->
-<link rel="modulepreload" href="/js/app.js" /></code-block>
-
-<h3>preload vs prefetch</h3>
-<ul>
-  <li><strong>preload</strong> is for resources needed on <em>this</em> page. The browser fetches them with high priority immediately.</li>
-  <li><strong>prefetch</strong> is for resources needed on a <em>future</em> page. The browser fetches them at idle time with low priority.</li>
-  <li>Do not preload resources you will not use on the current page. The browser logs a console warning if a preloaded resource goes unused within a few seconds.</li>
-</ul>
-
-<h2>SEO and Navigation</h2>
-<p>Search engines use these values to understand site structure and content relationships.</p>
-
-<table>
-  <thead><tr><th>Value</th><th>Purpose</th><th>Used on</th></tr></thead>
-  <tbody>
-    <tr><td><code>canonical</code></td><td>Declares the authoritative URL when a page is accessible at multiple URLs</td><td><code>&lt;link&gt;</code></td></tr>
-    <tr><td><code>alternate</code></td><td>Points to an alternative version (different language, format, or media)</td><td><code>&lt;link&gt;</code></td></tr>
-    <tr><td><code>prev</code></td><td>Previous page in a paginated series</td><td><code>&lt;link&gt;</code></td></tr>
-    <tr><td><code>next</code></td><td>Next page in a paginated series</td><td><code>&lt;link&gt;</code></td></tr>
-    <tr><td><code>nofollow</code></td><td>Tells search engines not to follow the link for ranking purposes</td><td><code>&lt;a&gt;</code></td></tr>
-    <tr><td><code>ugc</code></td><td>Marks a link as user-generated content</td><td><code>&lt;a&gt;</code></td></tr>
-    <tr><td><code>sponsored</code></td><td>Marks a link as paid or sponsored</td><td><code>&lt;a&gt;</code></td></tr>
-  </tbody>
-</table>
-
-<code-block language="html" label="Canonical and alternate URLs" data-escape><!-- Canonical URL: tell search engines which URL is authoritative -->
-<link rel="canonical" href="https://example.com/blog/my-post" />
-
-<!-- Alternate language versions -->
-<link rel="alternate" hreflang="es" href="https://example.com/es/blog/mi-post" />
-<link rel="alternate" hreflang="fr" href="https://example.com/fr/blog/mon-article" />
-<link rel="alternate" hreflang="x-default" href="https://example.com/blog/my-post" />
-
-<!-- RSS/Atom feed -->
-<link rel="alternate" type="application/rss+xml" title="Blog Feed"
-  href="/feed.xml" /></code-block>
-<code-block language="html" label="Pagination" data-escape><!-- Pagination hints for search engines -->
-<link rel="prev" href="/blog/page/2" />
-<link rel="next" href="/blog/page/4" /></code-block>
-<code-block language="html" label="Nofollow and UGC links" data-escape><!-- Tell search engines not to follow this link -->
-<a href="https://example.com/promo" rel="nofollow">Sponsored link</a>
-
-<!-- User-generated content: nofollow prevents SEO spam -->
-<a href="https://user-submitted-link.com" rel="nofollow ugc">
-  User's website
-</a>
-
-<!-- Sponsored/paid link -->
-<a href="https://advertiser.com" rel="sponsored">Our sponsor</a></code-block>
-
-<h2>Stylesheets and Icons</h2>
-<p>The most common <code>rel</code> values you will use daily.</p>
-
-<table>
-  <thead><tr><th>Value</th><th>Purpose</th></tr></thead>
-  <tbody>
-    <tr><td><code>stylesheet</code></td><td>Links an external CSS file. The most common <code>rel</code> value.</td></tr>
-    <tr><td><code>icon</code></td><td>Favicon for the browser tab. SVG favicons support dark mode via <code>prefers-color-scheme</code>.</td></tr>
-    <tr><td><code>apple-touch-icon</code></td><td>Home screen icon on iOS devices</td></tr>
-    <tr><td><code>manifest</code></td><td>Web app manifest for PWA metadata</td></tr>
-  </tbody>
-</table>
-
-<code-block language="html" label="Stylesheets and icons" data-escape><!-- Standard stylesheet -->
-<link rel="stylesheet" href="/css/main.css" />
-
-<!-- Print-only stylesheet -->
-<link rel="stylesheet" href="/css/print.css" media="print" />
-
-<!-- Favicon -->
-<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-<link rel="icon" href="/favicon.ico" sizes="32x32" />
-
-<!-- Apple touch icon -->
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-
-<!-- Web app manifest -->
-<link rel="manifest" href="/site.webmanifest" /></code-block>
-
-<h2>rel on Forms</h2>
-<p>The <code>rel</code> attribute also works on <a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> elements. When a form submits to an external origin, <code>rel="noopener noreferrer"</code> provides the same security protections as on links.</p>
-
-<code-block language="html" label="Form with rel" data-escape><!-- Form with rel for security -->
-<form action="https://external-service.com/submit"
-  method="post"
-  rel="noopener noreferrer">
-  <label for="feedback">Feedback</label>
-  <textarea id="feedback" name="feedback" rows="3"></textarea>
-  <button type="submit">Send</button>
-</form></code-block>
-
-<h2>Combining Values</h2>
-<p>The <code>rel</code> attribute accepts multiple space-separated values. This is how you combine security, SEO, or other relationship types on a single element.</p>
-
-<table>
-  <thead><tr><th>Combination</th><th>When to use</th></tr></thead>
-  <tbody>
-    <tr><td><code>rel="noopener noreferrer"</code></td><td>External links with <code>target="_blank"</code></td></tr>
-    <tr><td><code>rel="nofollow ugc"</code></td><td>User-generated external links</td></tr>
-    <tr><td><code>rel="nofollow sponsored"</code></td><td>Paid or sponsored external links</td></tr>
-    <tr><td><code>rel="noopener noreferrer nofollow"</code></td><td>Untrusted external links (open in new tab, no referrer, no SEO value)</td></tr>
-  </tbody>
-</table>
-
-<h2>Practical Head Example</h2>
-<p>A well-structured <code>&lt;head&gt;</code> uses several <code>rel</code> values together to handle performance, styling, SEO, and icons.</p>
-
-<code-block language="html" label="Complete head example" data-escape><!-- A typical <head> using multiple rel values -->
-<head>
-  <meta charset="utf-8" />
-  <title>My Page</title>
-
-  <!-- Security & performance -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preload" href="/fonts/heading.woff2" as="font"
-    type="font/woff2" crossorigin />
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="/css/main.css" />
-
-  <!-- SEO -->
-  <link rel="canonical" href="https://example.com/current-page" />
-  <link rel="alternate" type="application/rss+xml" href="/feed.xml" />
-
-  <!-- Icons -->
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-  <link rel="manifest" href="/site.webmanifest" />
-</head></code-block>
+  <p>VB styles links by their <code>rel</code>: <code>tag</code> links become chips, <code>external</code> gets an arrow, <code>help</code> a dotted underline, <code>prev</code>/<code>next</code> get arrows, and legal links are muted.</p>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <p>Tokens are case-insensitive and unordered; unknown tokens are ignored. There is no default: without <code>rel</code> a link is a plain hyperlink, and a <code>&lt;link&gt;</code> does nothing.</p>
+
+  <h3>Opener and referrer (a, area, form)</h3>
+  <table>
+    <thead><tr><th>Value</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>noopener</code></td><td>The new page's <code>window.opener</code> is <code>null</code>, so it cannot navigate your tab. Implied for <code>target="_blank"</code>.</td></tr>
+      <tr><td><code>noreferrer</code></td><td>No <code>Referer</code> header and an empty <code>document.referrer</code>. Also implies <code>noopener</code>.</td></tr>
+      <tr><td><code>opener</code></td><td>Opts back in: a <code>_blank</code> page keeps <code>window.opener</code>. Use only for trusted, cooperating pages.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Resources (link)</h3>
+  <table>
+    <thead><tr><th>Value</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>stylesheet</code></td><td>Load and apply CSS.</td></tr>
+      <tr><td><code>icon</code>, <code>manifest</code></td><td>Favicon; web app manifest.</td></tr>
+      <tr><td><code>preload</code></td><td>Fetch a resource this page needs, early. Requires <code>as</code>; fonts also need <code>crossorigin</code>.</td></tr>
+      <tr><td><code>modulepreload</code></td><td>Fetch and parse an ES module early.</td></tr>
+      <tr><td><code>preconnect</code></td><td>Open a connection (DNS, TCP, TLS) to an origin you will use soon.</td></tr>
+      <tr><td><code>dns-prefetch</code></td><td>Resolve an origin's DNS only.</td></tr>
+      <tr><td><code>prefetch</code></td><td>Fetch something a <em>later</em> page will need, at low priority.</td></tr>
+      <tr><td><code>expect</code></td><td>With <code>blocking="render"</code>, hold first render until the element with the given <code>id</code> has been parsed.</td></tr>
+      <tr><td><code>canonical</code>, <code>alternate</code></td><td>The preferred URL; translations, feeds and other versions (<code>hreflang</code>, <code>type</code>).</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Meaning (a, area; some also on link)</h3>
+  <table>
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>external</code></td><td>Leads to a different site.</td></tr>
+      <tr><td><code>help</code>, <code>license</code>, <code>author</code></td><td>Context help; the content's license; the author.</td></tr>
+      <tr><td><code>privacy-policy</code>, <code>terms-of-service</code></td><td>The site's legal pages.</td></tr>
+      <tr><td><code>tag</code>, <code>bookmark</code></td><td>A topic tag for this content; a permalink to the nearest article.</td></tr>
+      <tr><td><code>prev</code>, <code>next</code></td><td>Previous and next documents in a series.</td></tr>
+      <tr><td><code>search</code></td><td>A search interface for this site.</td></tr>
+      <tr><td><code>nofollow</code></td><td>The site does not endorse the target (search engines).</td></tr>
+      <tr><td><code>ugc</code>, <code>sponsored</code></td><td>User-generated and paid links; search-engine conventions, not in the HTML standard.</td></tr>
+      <tr><td><code>me</code></td><td>Another profile of the same person (used for Mastodon verification); a microformats convention.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>New tabs, openers and referrers</h3>
+  <browser-window
+    src="/docs/examples/demos/attr-rel-opener.html"
+    url="https://vanilla-breeze.com/demos/rel-opener"
+    title="noopener, opener and noreferrer"
+    shadow>
+  </browser-window>
+  <p>Each link opens a report page that prints <code>window.opener</code> and <code>document.referrer</code>. A bare <code>target="_blank"</code> already has no opener; only <code>rel="opener"</code> brings it back; <code>noreferrer</code> removes the referrer as well.</p>
+  <code-block language="html" show-lines label="Opener control" data-escape><!-- noopener is implied by _blank -->
+<a href="https://developer.mozilla.org/" target="_blank">MDN</a>
+
+<!-- Also hide this page's URL from the destination -->
+<a href="https://partner.example.com/" target="_blank" rel="noreferrer">Partner</a>
+
+<!-- A trusted popup that needs to talk back to this tab -->
+<a href="/help/shortcuts" target="_blank" rel="opener">Keyboard shortcuts</a></code-block>
+
+  <h3>Resource hints in the head</h3>
+  <code-block language="html" show-lines label="Head" data-escape><link rel="preconnect" href="https://cdn.example.com" crossorigin>
+<link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="modulepreload" href="/js/app.js">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="canonical" href="https://example.com/blog/container-queries">
+<link rel="alternate" type="application/atom+xml" title="Blog feed" href="/feed.xml">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"></code-block>
+
+  <h3>Hold rendering for above-the-fold content</h3>
+  <p><code>rel="expect"</code> plus <code>blocking="render"</code> tells the browser not to paint until an element has been parsed, which avoids a flash of half-rendered content on long pages. Browsers that do not support it ignore it.</p>
+  <code-block language="html" show-lines label="rel=expect" data-escape><link rel="expect" href="#main-content" blocking="render"></code-block>
+
+  <h3>Links in user-generated content</h3>
+  <code-block language="html" show-lines label="UGC and sponsored" data-escape><a href="https://commenter.example.net" rel="ugc nofollow">Ana's site</a>
+<a href="https://advertiser.example.com" rel="sponsored">Our sponsor</a></code-block>
+
+  <h3>Forms</h3>
+  <p><code>rel</code> on a form matters only when the form opens a new browsing context, for example with <code>target="_blank"</code>.</p>
+  <code-block language="html" show-lines label="Form opening a new tab" data-escape><form action="https://search.example.com/" target="_blank" rel="noreferrer">
+  <form-field>
+    <label for="site-q">Search the archive</label>
+    <input id="site-q" type="search" name="q">
+  </form-field>
+  <button type="submit">Search</button>
+</form></code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> element reference</li>
-    <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> element reference</li>
-    <li><a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> element reference</li>
-    <li><a href="/docs/elements/native/area/"><code>&lt;area&gt;</code></a> element reference</li>
-    <li><a href="/docs/attributes/loading/"><code>loading</code></a> for lazy loading and fetch priority</li>
+    <li><strong>Styling hooks</strong> (<code>src/utils/links.css</code>): <code>a[rel~="external"]</code> arrow, <code>help</code> dotted underline, <code>tag</code> pill, <code>prev</code>/<code>next</code> arrows, muted <code>license</code>/<code>privacy-policy</code>/<code>terms-of-service</code>. Decorations are suppressed inside <code>nav</code>, <code>header</code> and <code>footer</code>, and with <code>data-no-icon</code>. All selectors use <code>:where()</code>, so themes override them easily.</li>
+    <li><strong><code>hgroup.byline a[rel~="author"]</code></strong> gets byline styling (<code>src/native-elements/hgroup/styles.css</code>).</li>
+    <li><strong>Automatic <code>noopener</code>.</strong> When a page contains <code>a[target="_blank"]</code>, VB loads <code>src/utils/links-init.js</code>, which adds <code>rel="noopener"</code> to any such link without <code>opener</code>, <code>noopener</code> or <code>noreferrer</code>. With <code>&lt;html data-link-privacy="strict"&gt;</code> it also adds <code>noreferrer</code>. Browsers already imply <code>noopener</code>; the explicit token makes intent visible in the DOM.</li>
+    <li>VB components that open external links set <code>rel="noopener noreferrer"</code> themselves (<code>&lt;nav-bar&gt;</code>, <code>&lt;geo-map&gt;</code>, <code>&lt;share-wc&gt;</code>, <code>&lt;ai-summary&gt;</code>).</li>
+    <li>The full vocabulary and philosophy: <a href="/docs/concepts/link-relations/">Link relations</a>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><code>rel</code> is not announced by screen readers. If a link opens a new tab or leaves the site, say so in the link text or with visually hidden text; VB's arrow glyphs are decorative (empty alt text).</li>
+    <li><code>rel="prev"</code>/<code>next</code> do not create keyboard shortcuts; keep visible pagination links.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Security</h2>
+  <ul>
+    <li><strong><code>noopener</code> is the default for <code>target="_blank"</code></strong> on links, areas and forms. Writing it is harmless and documents intent. It does not cover <code>window.open()</code>: pass <code>'noopener'</code> in the features string.</li>
+    <li><strong><code>noreferrer</code> is a privacy choice, not a security requirement.</strong> It hides your URL from the destination, but it also removes referral data that partners and your own analytics use. The default referrer policy already sends only your origin to other sites.</li>
+    <li><strong>Avoid <code>rel="opener"</code></strong> for third-party pages: they could navigate your tab to a look-alike page (reverse tabnabbing).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <p>Implicit <code>noopener</code> for <code>_blank</code>: Chrome 88, Firefox 79, Safari 12.1. <code>modulepreload</code>: Chrome 66, Firefox 115, Safari 17. <code>expect</code>: Chrome 124 and Safari 18.2, not Firefox (MDN browser-compat-data, November 2026).</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Unused preloads</strong> waste bandwidth and log a console warning a few seconds after load.</li>
+    <li><strong><code>prev</code>/<code>next</code> are not an SEO signal.</strong> Google said in 2019 it no longer uses them for indexing; they remain valid navigation hints.</li>
+    <li><strong><code>rel="prerender"</code> is obsolete.</strong> Chromium offers speculation rules (<code>&lt;script type="speculationrules"&gt;</code>) instead.</li>
+    <li><strong>Font preloads without <code>crossorigin</code></strong> are fetched twice. See <a href="/docs/attributes/crossorigin/"><code>crossorigin</code></a>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/target/"><code>target</code></a> &mdash; where a link opens; <code>_blank</code> implies <code>noopener</code>.</li>
+    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> &mdash; finer control than <code>noreferrer</code>.</li>
+    <li><a href="/docs/attributes/crossorigin/"><code>crossorigin</code></a> &mdash; required on font preloads.</li>
+    <li><a href="/docs/attributes/blocking/"><code>blocking</code></a> &mdash; <code>blocking="render"</code> for <code>rel="expect"</code> and stylesheets.</li>
+    <li><a href="/docs/attributes/integrity/"><code>integrity</code></a> &mdash; also valid on <code>preload</code> and <code>modulepreload</code>.</li>
+    <li><a href="/docs/concepts/link-relations/">Link relations</a> &mdash; VB's rel vocabulary.</li>
+    <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a>, <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a>, <a href="/docs/elements/native/area/"><code>&lt;area&gt;</code></a>, <a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> &mdash; the elements.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong>External link in a new tab</strong> &mdash; <code>target="_blank"</code> alone is safe; add <code>noreferrer</code> only to hide your URL, or set <code>data-link-privacy="strict"</code> site-wide.</li>
+    <li><strong>Mark a link's meaning</strong> &mdash; <code>rel</code> (<code>external</code>, <code>help</code>, <code>tag</code>…) and let VB style it, rather than a class.</li>
+    <li><strong>Speed up a critical resource</strong> &mdash; <code>preload</code> for this page, <code>prefetch</code> for the next, <code>preconnect</code> for an origin.</li>
   </ul>
 </section>

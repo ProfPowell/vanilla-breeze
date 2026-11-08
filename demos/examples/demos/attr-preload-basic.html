@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>preload attribute: none, metadata and auto</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="l">
+  <h1>preload</h1>
+
+  <p>Each player loads the same track. The status line shows what the browser knew before anyone pressed play.</p>
+
+  <section data-layout="stack" data-layout-gap="xs">
+    <h2>preload="none"</h2>
+    <audio controls preload="none" src="assets/track.mp3"></audio>
+    <output class="hint" data-preload-status>Duration: not loaded</output>
+  </section>
+
+  <section data-layout="stack" data-layout-gap="xs">
+    <h2>preload="metadata"</h2>
+    <audio controls preload="metadata" src="assets/track.mp3"></audio>
+    <output class="hint" data-preload-status>Duration: not loaded</output>
+  </section>
+
+  <section data-layout="stack" data-layout-gap="xs">
+    <h2>preload="auto"</h2>
+    <audio controls preload="auto" src="assets/track.mp3"></audio>
+    <output class="hint" data-preload-status>Duration: not loaded</output>
+  </section>
+
+  <script type="module">
+    for (const section of document.querySelectorAll('section')) {
+      const audio = section.querySelector('audio');
+      const status = section.querySelector('[data-preload-status]');
+      const report = () => {
+        const seconds = Math.round(audio.duration);
+        const buffered = audio.buffered.length ? Math.round(audio.buffered.end(audio.buffered.length - 1)) : 0;
+        status.textContent = `Duration: ${seconds}s, buffered: ${buffered}s`;
+      };
+      audio.addEventListener('loadedmetadata', report);
+      audio.addEventListener('progress', report);
+      // Metadata may have arrived before this module ran.
+      if (audio.readyState >= HTMLMediaElement.HAVE_METADATA) report();
+    }
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

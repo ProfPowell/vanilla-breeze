@@ -12,113 +12,139 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>blocking</code> attribute holds the first paint until a resource has loaded. Its only value is <code>render</code>.</p>
-<p>Many resources already block rendering without it. A stylesheet that the parser finds in <code>&lt;head&gt;</code> (when its <code>media</code> matches), a <code>&lt;style&gt;</code> in <code>&lt;head&gt;</code>, and a classic <code>&lt;script&gt;</code> in <code>&lt;head&gt;</code> without <code>async</code>, <code>defer</code> or <code>type="module"</code> all block. Adding <code>blocking="render"</code> to them changes nothing.</p>
-<p>The attribute matters for resources that would <em>not</em> block on their own:</p>
-<ul>
-  <li><code>&lt;script type="module"&gt;</code>, which is deferred by default</li>
-  <li><code>&lt;script async&gt;</code> and <code>&lt;script defer&gt;</code></li>
-  <li><code>&lt;link&gt;</code>, <code>&lt;style&gt;</code> and <code>&lt;script&gt;</code> elements inserted into <code>&lt;head&gt;</code> by script</li>
-  <li><code>&lt;link rel="preload"&gt;</code> and <code>&lt;link rel="modulepreload"&gt;</code></li>
-</ul>
+<section>
+  <h2>Overview</h2>
+  <p>The <code>blocking</code> attribute holds the first paint until a resource has loaded. Its only value is <code>render</code>.</p>
+  <p>Many resources already block rendering without it: a stylesheet that the parser finds in <code>&lt;head&gt;</code> (when its <code>media</code> matches), a <code>&lt;style&gt;</code> in <code>&lt;head&gt;</code>, and a classic <code>&lt;script&gt;</code> in <code>&lt;head&gt;</code> without <code>async</code>, <code>defer</code> or <code>type="module"</code>. Adding <code>blocking="render"</code> to them changes nothing.</p>
+  <p>The attribute matters for resources that would <em>not</em> block on their own:</p>
+  <ul>
+    <li><code>&lt;script type="module"&gt;</code>, which is deferred by default</li>
+    <li><code>&lt;script async&gt;</code> and <code>&lt;script defer&gt;</code></li>
+    <li><code>&lt;link&gt;</code>, <code>&lt;style&gt;</code> and <code>&lt;script&gt;</code> elements inserted into <code>&lt;head&gt;</code> by script</li>
+    <li><code>&lt;link rel="preload"&gt;</code>, <code>&lt;link rel="modulepreload"&gt;</code> and <code>&lt;link rel="expect"&gt;</code></li>
+  </ul>
+  <p><strong>Applies to:</strong> <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a>, <a href="/docs/elements/native/style/"><code>&lt;style&gt;</code></a>, <a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a>.</p>
 
-<h2>Values</h2>
-<table>
-  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
-  <tbody>
-    <tr><td><code>render</code></td><td>Do not paint until this resource has loaded (for scripts: loaded and run)</td></tr>
-  </tbody>
-</table>
+  <browser-window
+    src="/docs/examples/demos/attr-blocking-support.html"
+    url="https://vanilla-breeze.com/blocking"
+    title="blocking support check"
+    shadow>
+  </browser-window>
 
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a>, <code>&lt;style&gt;</code>, <a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> (in <code>&lt;head&gt;</code>)</p>
+  <code-block language="html" show-lines label="Render-blocking module script" data-escape><script type="module" src="/js/theme-init.js" blocking="render"></script></code-block>
+</section>
 
-<h2>Examples</h2>
-<h3>A module that must run before first paint</h3>
-<p>Module scripts are deferred, so the page normally paints before they run. <code>blocking="render"</code> holds the paint until the module has run, without blocking the HTML parser the way a classic script does:</p>
-<code-block language="html" label="Render-blocking module script" data-escape><script type="module" src="/js/theme-init.js" blocking="render"></script></code-block>
+<section>
+  <h2>Values</h2>
+  <table class="props-table">
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>render</code></td><td>Do not paint until this resource has loaded (for scripts: loaded and run).</td></tr>
+      <tr><td>Absent, empty or unknown tokens (the default)</td><td>The element's normal blocking behaviour.</td></tr>
+    </tbody>
+  </table>
+  <p>The value is a space-separated token list, so <code>element.blocking</code> is a <code>DOMTokenList</code>. Feature-detect with <code>element.blocking?.supports('render')</code>, as the demo does.</p>
+</section>
 
-<h3>An async script</h3>
-<code-block language="html" label="Render-blocking async script" data-escape><!-- Downloads in parallel, runs as soon as it arrives, and the page waits for it -->
+<section>
+  <h2>Examples</h2>
+
+  <h3>A module that must run before first paint</h3>
+  <p>Module scripts are deferred, so the page normally paints before they run. <code>blocking="render"</code> holds the paint until the module has run, without blocking the HTML parser the way a classic script does.</p>
+  <code-block language="html" show-lines label="Render-blocking module script" data-escape><script type="module" src="/js/theme-init.js" blocking="render"></script></code-block>
+
+  <h3>An async script</h3>
+  <code-block language="html" show-lines label="Render-blocking async script" data-escape><!-- Downloads in parallel, runs as soon as it arrives, and the page waits for it -->
 <script src="/js/experiment.js" async blocking="render"></script></code-block>
 
-<h3>A stylesheet inserted by script</h3>
-<p>Stylesheets that script adds to <code>&lt;head&gt;</code> do not block rendering. Set the attribute when the page must not paint without them, for example a theme chosen from saved preferences:</p>
-<code-block language="js" label="Render-blocking script-inserted stylesheet">const link = document.createElement('link');
+  <h3>A stylesheet inserted by script</h3>
+  <p>Stylesheets that script adds to <code>&lt;head&gt;</code> do not block rendering. Set the attribute when the page must not paint without them, for example a theme chosen from saved preferences:</p>
+  <code-block language="js" show-lines label="Render-blocking script-inserted stylesheet">const link = document.createElement('link');
 link.rel = 'stylesheet';
 link.href = `/themes/${savedTheme}.css`;
 link.blocking = 'render';
 document.head.append(link);</code-block>
-<p>This only helps while the browser is still before its first paint, so the script has to run early: a classic or <code>blocking="render"</code> script in <code>&lt;head&gt;</code>.</p>
+  <p>This only helps before the first paint, so the script has to run early: a classic or <code>blocking="render"</code> script in <code>&lt;head&gt;</code>.</p>
 
-<h3>When to use blocking="render"</h3>
-<ul>
-  <li><strong>Theme initialization:</strong> a module or async script that applies the user's theme or color scheme, so they never see one frame of the defaults.</li>
-  <li><strong>Script-inserted critical CSS:</strong> a stylesheet chosen at runtime that the page cannot be shown without.</li>
-  <li><strong>A/B tests and personalization:</strong> async scripts that change above-the-fold content, to avoid a visible swap.</li>
-</ul>
+  <h3>Wait for an element: rel="expect"</h3>
+  <p><code>&lt;link rel="expect" href="#id" blocking="render"&gt;</code> holds the first paint until the parser has reached the element with that id. It is mostly used with cross-document view transitions, so the new page does not paint before the elements that animate exist.</p>
+  <code-block language="html" show-lines label="Hold rendering until the main content is parsed" data-escape><head>
+  <link rel="expect" href="#main-content" blocking="render">
+</head>
+<body>
+  <header>…</header>
+  <main id="main-content">…</main>
+</body></code-block>
 
-<h2>blocking vs async/defer</h2>
-<p>These attributes control different things. <code>async</code> and <code>defer</code> control <em>when a script runs</em> relative to HTML parsing. <code>blocking</code> controls <em>whether the browser may paint</em> before the resource is ready. They combine:</p>
-
-<code-block language="html" label="blocking vs async/defer" data-escape><!-- Classic script in head: already blocks parsing and rendering -->
+  <h3>blocking with async and defer</h3>
+  <p><code>async</code> and <code>defer</code> control <em>when a script runs</em> relative to parsing. <code>blocking</code> controls <em>whether the browser may paint</em> before the resource is ready. They combine:</p>
+  <code-block language="html" show-lines label="blocking vs async/defer" data-escape><!-- Classic script in head: already blocks parsing and rendering -->
 <script src="/js/legacy.js"></script>
 
-<!-- DEFER: runs after parsing; the page CAN paint first -->
+<!-- defer: runs after parsing; the page can paint first -->
 <script src="/js/app.js" defer></script>
 
-<!-- ASYNC: runs as soon as it downloads; the page CAN paint first -->
-<script src="/js/analytics.js" async></script>
-
-<!-- DEFER + blocking: the parser keeps going, but no paint until it has run -->
+<!-- defer + blocking: the parser keeps going, but no paint until it has run -->
 <script src="/js/framework.js" defer blocking="render"></script></code-block>
 
-<h2>Loading CSS Without Blocking</h2>
-<p>The reverse question comes up more often: how do you load CSS that the first paint does <em>not</em> need? A plain <code>&lt;link rel="stylesheet"&gt;</code> in <code>&lt;head&gt;</code> always blocks, so leaving <code>blocking</code> off is not enough. These patterns avoid blocking:</p>
-<ul>
-  <li><strong>A non-matching <code>media</code>:</strong> stylesheets whose media query does not match are downloaded at low priority and do not block. This suits print styles and styles for viewports the reader is not using.</li>
-  <li><strong>Insert it from script:</strong> a stylesheet that your module script adds after load does not block. Pair it with <code>rel="preload"</code> so the download starts early.</li>
-  <li><strong>Link it in <code>&lt;body&gt;</code>:</strong> a stylesheet linked just before the content that needs it blocks only the content after it in Chromium and Firefox, not the content above it.</li>
-</ul>
+  <h3>Render-blocking preload</h3>
+  <p>A <code>rel="preload"</code> hint starts a download early but never blocks. Add <code>blocking="render"</code> when the page must wait for a resource that is used late, such as a font only a script-inserted stylesheet asks for:</p>
+  <code-block language="html" show-lines label="Render-blocking preload" data-escape><link rel="preload" href="/fonts/heading.woff2" as="font"
+  type="font/woff2" crossorigin blocking="render"></code-block>
 
-<code-block language="html" label="Non-blocking CSS patterns" data-escape><head>
-  <!-- Critical CSS: blocks rendering by default, no attribute needed -->
+  <h3>The opposite: loading CSS without blocking</h3>
+  <p>A plain <code>&lt;link rel="stylesheet"&gt;</code> in <code>&lt;head&gt;</code> always blocks, so leaving <code>blocking</code> off is not enough to make CSS non-blocking. These patterns avoid blocking:</p>
+  <ul>
+    <li><strong>A non-matching <code>media</code>:</strong> stylesheets whose media query does not match download at low priority and do not block. This suits print styles.</li>
+    <li><strong>Insert it from script:</strong> a stylesheet your module adds after load does not block. Pair it with <code>rel="preload"</code> so the download starts early. Without JavaScript it never loads, so only use this for CSS the page works without.</li>
+    <li><strong>Link it in <code>&lt;body&gt;</code>:</strong> a stylesheet linked just before the content that needs it blocks only the content after it in Chromium and Firefox, not the content above it.</li>
+  </ul>
+  <code-block language="html" show-lines label="Non-blocking CSS patterns" data-escape><head>
   <link rel="stylesheet" href="/css/main.css">
-
-  <!-- Only applies when printing: does not block on screen -->
   <link rel="stylesheet" href="/css/print.css" media="print">
-
-  <!-- Start the download now; app.js inserts the stylesheet itself -->
   <link rel="preload" href="/css/comments.css" as="style">
   <script type="module" src="/js/app.js"></script>
 </head></code-block>
-<code-block language="js" label="app.js — insert the non-critical stylesheet">const link = document.createElement('link');
-link.rel = 'stylesheet';
-link.href = '/css/comments.css';
-document.head.append(link);</code-block>
-<p>Without JavaScript the inserted stylesheet never loads, so only use this for CSS the page works without.</p>
-
-<h2>Combining with Preload</h2>
-<p>A <code>rel="preload"</code> hint starts a download early but never blocks. Add <code>blocking="render"</code> to the preload when the page must wait for a resource that is used late, such as a font only a script-inserted stylesheet asks for:</p>
-
-<code-block language="html" label="Render-blocking preload" data-escape><link rel="preload" href="/fonts/heading.woff2" as="font"
-  type="font/woff2" crossorigin blocking="render"></code-block>
-
-<h2>Limitations</h2>
-<ul>
-  <li><strong>Browser support:</strong> Chromium-based browsers support <code>blocking</code> since version 105. Check current support for Firefox and Safari. Browsers that do not support it ignore the attribute, so the resource loads with its default behavior.</li>
-  <li><strong>Only "render" is defined:</strong> the spec allows for future tokens, but <code>render</code> is the only one today.</li>
-  <li><strong>Performance tradeoff:</strong> every render-blocking resource delays first paint. Overusing <code>blocking="render"</code> hurts Core Web Vitals (FCP, LCP).</li>
-  <li><strong>Does not change execution order:</strong> for scripts it holds the paint, not the parser. Use <code>defer</code> or <code>type="module"</code> if you also need ordered execution after parsing.</li>
-  <li><strong>Head only:</strong> render-blocking applies to elements in <code>&lt;head&gt;</code>. Once the first paint has happened, the attribute has no effect.</li>
-</ul>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>In Vanilla Breeze</h2>
+  <p>VB itself does not use <code>blocking</code>, because it is not in Firefox. The docs site avoids a theme flash in every browser with two older tools (<code>site/src/includes/head.html</code>):</p>
   <ul>
-    <li><a href="/docs/attributes/async-defer/"><code>async / defer</code></a> &mdash; control script execution timing</li>
-    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy loading and fetch priority</li>
-    <li><a href="/docs/attributes/rel/"><code>rel</code></a> &mdash; preload and preconnect resource hints</li>
-    <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> &mdash; stylesheets, preloads and other external resources</li>
+    <li>A small classic inline script in <code>&lt;head&gt;</code> reads the saved theme and writes the theme <code>&lt;link rel="stylesheet"&gt;</code> while the parser is still in <code>&lt;head&gt;</code>, so the stylesheet is parser-inserted and render-blocking on its own.</li>
+    <li>A <code>html:has(link[data-vb-theme-state="loading"]) body { visibility: hidden; }</code> rule keeps the page hidden until that stylesheet's <code>load</code> handler flips the state to <code>ready</code> (or <code>error</code>).</li>
+  </ul>
+  <p>If you only target Chromium and Safari, a script-inserted theme link with <code>link.blocking = 'render'</code> does the same job. See <a href="/docs/themes/">themes</a> for VB's theme loading, and <a href="/docs/attributes/async-defer/">async / defer</a> for how VB's bundles load.</p>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <p><code>blocking="render"</code> on <code>&lt;link&gt;</code>, <code>&lt;script&gt;</code> and <code>&lt;style&gt;</code>: Chrome 105, Safari 18.2; not in Firefox. <code>rel="expect"</code>: Chrome 124, Safari 18.2; not in Firefox (November 2026). Browsers without support ignore the attribute, and the resource keeps its default behaviour, so it is safe to add.</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong>Every render-blocking resource delays first paint.</strong> Overusing <code>blocking="render"</code> hurts First Contentful Paint and Largest Contentful Paint.</li>
+    <li><strong>It holds the paint, not the parser.</strong> For scripts it does not change execution order. Use <code>defer</code> or modules for ordered execution after parsing.</li>
+    <li><strong>It only matters before the first paint.</strong> A resource marked render-blocking after the page has painted has no visible effect.</li>
+    <li><strong>Only <code>render</code> is defined.</strong> The token list leaves room for future values.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/async-defer/"><code>async / defer</code></a> &mdash; when scripts run.</li>
+    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy loading and <code>fetchpriority</code>.</li>
+    <li><a href="/docs/attributes/rel/"><code>rel</code></a> &mdash; <code>preload</code>, <code>modulepreload</code> and <code>expect</code>.</li>
+    <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a>, <a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> and <a href="/docs/elements/native/style/"><code>&lt;style&gt;</code></a> &mdash; element references.</li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong>Parser-inserted CSS or a classic inline script in <code>&lt;head&gt;</code></strong> &mdash; already render-blocking in every browser; no attribute needed. This is what VB's theme boot uses.</li>
+    <li><strong><code>blocking="render"</code></strong> &mdash; a module, async, deferred or script-inserted resource that must be ready before first paint, when a Firefox flash is acceptable.</li>
+    <li><strong><code>rel="expect"</code></strong> &mdash; holding the paint until key markup is parsed, typically for view transitions.</li>
   </ul>
 </section>

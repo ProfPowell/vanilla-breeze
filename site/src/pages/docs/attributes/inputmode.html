@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "inputmode"
-description: "Controls which virtual keyboard appears on mobile devices. Critical for fields where the input type doesn't match the keyboard you need."
+description: "Chooses which on-screen keyboard a touch device shows for a field (numeric, decimal, tel, email, url, search or none) without changing the field's type or validation."
 attributeName: inputmode
 attributeType: native
 nativeGroup: Forms
@@ -12,131 +12,111 @@ crumbHref: /docs/attributes/native/
 crumbLabel: Native Attributes
 ---
 
-<h2>Overview</h2>
-<p>The <code>inputmode</code> attribute controls which virtual keyboard appears on mobile devices. It is essential for fields where the <code>type</code> attribute doesn't match the keyboard you want.</p>
-<p>The key distinction: <code>type</code> controls <em>validation and behavior</em> (spinners, step arrows, format enforcement), while <code>inputmode</code> controls <em>only the keyboard</em>. You can combine them independently.</p>
-<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a>, <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a>, and any element with <a href="/docs/attributes/contenteditable/"><code>contenteditable</code></a></p>
+<section>
+  <h2>Overview</h2>
+  <p><code>inputmode</code> tells the browser which virtual keyboard to show. It changes nothing else: no validation, no spinners, no value parsing. That makes it the right tool when the data is digits but not a number, such as a PIN, a postal code or a card number, where <code>type="number"</code> would add behaviour you don't want.</p>
+  <p><strong>Applies to:</strong> any editable element: <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a>, <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a> and elements with <a href="/docs/attributes/contenteditable/"><code>contenteditable</code></a>. It is a global attribute, so it is allowed anywhere but only has an effect where text can be entered.</p>
 
-<h2>Values</h2>
+  <browser-window
+    src="/docs/examples/demos/attr-inputmode-basic.html"
+    url="https://vanilla-breeze.com/attributes/inputmode"
+    title="inputmode"
+    shadow>
+  </browser-window>
 
-<table>
-  <thead><tr><th>Value</th><th>Keyboard</th><th>Use When</th></tr></thead>
-  <tbody>
-    <tr><td><code>text</code></td><td>Standard text keyboard</td><td>Default. General text input.</td></tr>
-    <tr><td><code>numeric</code></td><td>Number keys only (0-9)</td><td>PINs, ZIP codes, OTPs, credit card numbers — numeric data that isn't a "number" you'd increment.</td></tr>
-    <tr><td><code>decimal</code></td><td>Numbers with a decimal point key</td><td>Prices, measurements, percentages — numbers that may contain a decimal.</td></tr>
-    <tr><td><code>tel</code></td><td>Telephone keypad (0-9, *, #, +)</td><td>Phone numbers. Similar to <code>numeric</code> but includes phone-specific characters.</td></tr>
-    <tr><td><code>email</code></td><td>Text keyboard with <code>@</code> and <code>.</code> easily accessible</td><td>Email addresses. Usually paired with <code>type="email"</code>.</td></tr>
-    <tr><td><code>url</code></td><td>Text keyboard with <code>/</code> and <code>.</code> easily accessible</td><td>URLs. Usually paired with <code>type="url"</code>.</td></tr>
-    <tr><td><code>search</code></td><td>Text keyboard with a search/submit key</td><td>Search fields. Pairs well with <code>type="search"</code>.</td></tr>
-    <tr><td><code>none</code></td><td>No virtual keyboard</td><td>Custom input UIs (datepickers, color pickers) where you provide your own input mechanism.</td></tr>
-  </tbody>
-</table>
+  <code-block language="html" show-lines label="Digits that aren't numbers" data-escape><form-field>
+  <label for="pin">Card PIN</label>
+  <input type="password" id="pin" name="pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" />
+</form-field>
 
-<h2>inputmode vs type</h2>
-<p>This is the most important concept to understand. Consider a PIN field:</p>
-<ul>
-  <li><code>type="number"</code> gives you a numeric keyboard but also adds spinner arrows, allows scientific notation (<code>1e5</code>), and strips leading zeros.</li>
-  <li><code>type="text" inputmode="numeric"</code> gives you the same numeric keyboard with none of those side effects.</li>
-</ul>
-<p>Use <code>type="number"</code> when the value is a <em>quantity</em> that can be incremented (age, item count). Use <code>type="text" inputmode="numeric"</code> when the value is a <em>code</em> or <em>identifier</em> that happens to be digits (PIN, ZIP, credit card number).</p>
-
-<code-block language="html" label="type vs inputmode" data-escape><!-- PIN: numeric keyboard, no spinner arrows, no validation quirks -->
-<input type="text" inputmode="numeric" pattern="[0-9]*" />
-
-<!-- Price: decimal keyboard with period key -->
-<input type="text" inputmode="decimal" />
-
-<!-- Quantity: use type="number" when you WANT the number behavior -->
-<input type="number" min="1" max="99" /></code-block>
-
-<h2>Practical Examples</h2>
-
-<h3>PIN Entry</h3>
-<p>A 4-digit PIN needs a numeric keyboard but should preserve leading zeros and avoid spinner arrows.</p>
-
-<code-block language="html" label="PIN input" data-escape><label for="pin">PIN code</label>
-<input type="text" id="pin"
-  inputmode="numeric"
-  pattern="[0-9]{4}"
-  maxlength="4"
-  autocomplete="off" /></code-block>
-
-<div class="example">
-  <label for="demo-pin">PIN code</label>
-  <input type="text" id="demo-pin"
-    inputmode="numeric"
-    pattern="[0-9]{4}"
-    maxlength="4"
-    autocomplete="off"
-    placeholder="0000" />
-</div>
-
-<h3>Price Input</h3>
-<p>Prices need a decimal point but shouldn't have spinner arrows or allow scientific notation.</p>
-
-<code-block language="html" label="Price input" data-escape><label for="price">Price</label>
-<input type="text" id="price"
-  inputmode="decimal"
-  pattern="[0-9]*\.?[0-9]{0,2}"
-  placeholder="0.00" /></code-block>
-
-<div class="example">
-  <label for="demo-price">Price</label>
-  <input type="text" id="demo-price"
-    inputmode="decimal"
-    pattern="[0-9]*\.?[0-9]{0,2}"
-    placeholder="0.00" />
-</div>
-
-<h3>ZIP Code</h3>
-<p>US ZIP codes are five digits. Leading zeros matter (<code>01234</code>), so <code>type="number"</code> would break them.</p>
-
-<code-block language="html" label="ZIP code" data-escape><label for="zip">ZIP code</label>
-<input type="text" id="zip"
-  inputmode="numeric"
-  pattern="[0-9]{5}"
-  maxlength="5"
-  autocomplete="postal-code" /></code-block>
-
-<div class="example">
-  <label for="demo-zip">ZIP code</label>
-  <input type="text" id="demo-zip"
-    inputmode="numeric"
-    pattern="[0-9]{5}"
-    maxlength="5"
-    autocomplete="postal-code"
-    placeholder="12345" />
-</div>
-
-<h3>Search Field</h3>
-<p>The <code>search</code> value ensures the virtual keyboard shows a search action key.</p>
-
-<code-block language="html" label="Search field" data-escape><label for="site-search">Search</label>
-<input type="search" id="site-search"
-  inputmode="search"
-  placeholder="Search articles..." /></code-block>
-
-<h3>Contenteditable Element</h3>
-<p>The <code>inputmode</code> attribute also works on contenteditable elements, giving you keyboard control outside of form fields.</p>
-
-<code-block language="html" label="Contenteditable with inputmode" data-escape><div contenteditable="true" inputmode="numeric">
-  Tap to enter a number...
-</div></code-block>
-
-<h2>Suppressing the Keyboard</h2>
-<p>Use <code>inputmode="none"</code> when your UI provides its own input mechanism. The field can still receive focus and programmatic input, but the virtual keyboard will not appear.</p>
-<p>Common use cases include custom datepickers, emoji pickers, or calculator UIs where tapping buttons fills the field.</p>
-
-<h2>Browser Support</h2>
-<p>The <code>inputmode</code> attribute is supported in all modern browsers. On desktop, it has no visible effect since there is no virtual keyboard — it is purely a mobile optimization. This means you can add it to any field without affecting the desktop experience.</p>
+<form-field>
+  <label for="price">Asking price (EUR)</label>
+  <input type="text" id="price" name="price" inputmode="decimal" />
+</form-field></code-block>
+</section>
 
 <section>
-  <h2>See Also</h2>
+  <h2>Values</h2>
+  <table class="props-table">
+    <thead><tr><th>Value</th><th>Keyboard</th><th>Use for</th></tr></thead>
+    <tbody>
+      <tr><td><code>text</code></td><td>Standard, in the user's locale</td><td>The default for text fields.</td></tr>
+      <tr><td><code>numeric</code></td><td>Digits 0&ndash;9</td><td>PINs, postal codes, one-time codes, card numbers.</td></tr>
+      <tr><td><code>decimal</code></td><td>Digits and the locale's decimal separator</td><td>Prices, measurements.</td></tr>
+      <tr><td><code>tel</code></td><td>Phone keypad with <code>*</code>, <code>#</code> and <code>+</code></td><td>Phone numbers in a field that isn't <code>type="tel"</code>.</td></tr>
+      <tr><td><code>email</code></td><td>Text with <code>@</code> and <code>.</code> to hand</td><td>Email in a field that isn't <code>type="email"</code>.</td></tr>
+      <tr><td><code>url</code></td><td>Text with <code>/</code> and <code>.</code> to hand</td><td>Addresses in a field that isn't <code>type="url"</code>.</td></tr>
+      <tr><td><code>search</code></td><td>Text, Enter labelled for search</td><td>Search boxes.</td></tr>
+      <tr><td><code>none</code></td><td>No virtual keyboard</td><td>Fields filled by your own on-screen UI (a keypad, a picker). The field still takes focus and a hardware keyboard.</td></tr>
+      <tr><td>Absent, empty or invalid</td><td>The browser picks from the <code>type</code></td><td>&mdash;</td></tr>
+    </tbody>
+  </table>
+  <p>Inherited: no. Each editable element sets its own. <code>type="tel"</code>, <code>email</code>, <code>url</code>, <code>number</code> and <code>search</code> already choose a suitable keyboard, so <code>inputmode</code> is mainly for <code>type="text"</code> fields and contenteditable.</p>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>inputmode versus type="number"</h3>
+  <p><code>type="number"</code> is for quantities you would increment. On codes and identifiers it gets in the way: spin buttons appear, the mouse wheel and arrow keys change the value, letters such as <code>e</code> are accepted (as in <code>1e5</code>), and long digit strings such as card numbers lose precision as numbers. Use <code>type="text" inputmode="numeric"</code> plus a <code>pattern</code>.</p>
+  <code-block language="html" label="Postal code" data-escape><form-field>
+  <label for="zip">ZIP code</label>
+  <input type="text" id="zip" name="zip" inputmode="numeric" autocomplete="postal-code"
+         pattern="[0-9]{5}" maxlength="5" />
+</form-field></code-block>
+  <p>For real quantities, keep <code>type="number"</code>; see <a href="/docs/attributes/min-max-step/"><code>min</code>, <code>max</code> and <code>step</code></a> and the <a href="/docs/concepts/numeric-inputs/">numeric inputs guide</a>.</p>
+
+  <h3>Editable text outside a form control</h3>
+  <code-block language="html" label="contenteditable with a numeric keyboard" data-escape><p>Table number: <span contenteditable inputmode="numeric">12</span></p></code-block>
+</section>
+
+<section>
+  <h2>In Vanilla Breeze</h2>
   <ul>
-    <li><a href="/docs/attributes/enterkeyhint/"><code>enterkeyhint</code></a> to control the Enter key label on virtual keyboards</li>
-    <li><a href="/docs/attributes/autocomplete/"><code>autocomplete</code></a> for browser autofill hints</li>
-    <li><a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> element reference</li>
-    <li><a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a> element reference</li>
+    <li><strong><a href="/docs/attributes/data-mask/"><code>data-mask</code></a></strong> sets <code>inputmode="numeric"</code> when the mask is digits only (phone, credit card, ZIP and so on) and the input has no <code>inputmode</code> of its own (<code>src/utils/mask-init.js</code>).</li>
+    <li><strong><a href="/docs/attributes/data-accept/"><code>data-accept</code></a></strong> presets set a matching mode when none is given: <code>numeric</code> for <code>digits</code>, <code>date</code> and <code>cc</code>; <code>decimal</code> for <code>currency</code>; <code>tel</code> for <code>phone</code>; <code>text</code> for the other presets and for custom character classes (<code>src/utils/accept-init.js</code>).</li>
+    <li><strong>OTP fields.</strong> <code>&lt;form-field&gt;</code> with <code>input[data-type="otp"]</code> or <code>[data-type="pin"]</code> gives each digit box <code>inputmode="numeric"</code> (<code>src/lib/form-field-enhancements.js</code>).</li>
+    <li>An author <code>inputmode</code> always wins; VB only fills it in when it's missing.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The right keyboard saves effort for everyone on a phone, and particularly for people with motor impairments.</li>
+    <li>Don't use <code>inputmode="none"</code> on a field users must type into. Without your custom keypad, a touch user has no way to enter text.</li>
+    <li><code>inputmode</code> is a hint, not a restriction. A user with a hardware keyboard, or a keyboard app that ignores the hint, can type anything. Validate with <code>pattern</code> or <code>type</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser support</h2>
+  <p>Baseline 2021: Chrome 66, Firefox 95, Safari 12.1. The attribute only affects virtual keyboards, so desktop browsers with a physical keyboard show no change; keyboard apps on Android can ignore it.</p>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><code>numeric</code> keyboards on some phones have no minus sign or decimal point. Use <code>decimal</code>, or <code>text</code>, when those are needed.</li>
+    <li><code>inputmode</code> does not stop invalid characters. Pair it with <code>pattern</code>, or filter keystrokes with <a href="/docs/attributes/data-accept/"><code>data-accept</code></a>.</li>
+    <li>On <code>type="number"</code> the browser already shows a numeric keyboard; adding <code>inputmode</code> doesn't remove the number behaviours listed above.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/enterkeyhint/"><code>enterkeyhint</code></a> &mdash; the label on the Enter key</li>
+    <li><a href="/docs/attributes/autocomplete/"><code>autocomplete</code></a> &mdash; filling the field from saved data</li>
+    <li><a href="/docs/attributes/pattern/"><code>pattern</code></a> &mdash; the constraint that goes with a numeric keyboard</li>
+    <li><a href="/docs/attributes/data-mask/"><code>data-mask</code></a>, <a href="/docs/attributes/data-accept/"><code>data-accept</code></a>, <a href="/docs/attributes/data-stepper/"><code>data-stepper</code></a></li>
+    <li><a href="/docs/concepts/numeric-inputs/">Numeric inputs guide</a>, <a href="/docs/mobile/">Mobile</a></li>
+  </ul>
+  <h3>Which to choose</h3>
+  <ul>
+    <li><strong><code>type="number"</code></strong> &mdash; a quantity that can be stepped (guests, age).</li>
+    <li><strong><code>inputmode="numeric"</code> + <code>pattern</code></strong> &mdash; digits that are an identifier (PIN, ZIP, card).</li>
+    <li><strong><code>data-mask</code></strong> &mdash; digits with a visible format; it adds the keyboard for you.</li>
+    <li><strong><code>data-accept</code></strong> &mdash; a free format with a limited character set; it also adds the keyboard.</li>
   </ul>
 </section>

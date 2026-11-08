@@ -2540,6 +2540,7 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 | `data-format-bytes` | `<data>` | Byte size formatting (value = decimal places 0–20; `data-unit="decimal"` for ÷1000). `Intl` unit style → localised labels (`kB`, `MB`, `Mo`…; `512 bytes`); negative keeps sign; < 1 byte stays in bytes. Locale: `data-locale` → nearest `[lang]` → `<html lang>`. Re-formats on `value`/`data-format-bytes`/`data-unit`/`data-locale`/`lang` changes. No `title` |
 | `data-effect="animate-image"` | `<img>` (optionally in `<picture>`) | Pause/play button (`aria-pressed`, name "Pause animation: <alt>", `data-label-animation-pause` with optional `{alt}`). Wraps the img or its whole `<picture>` in `<span class="animate-image-wrapper">`. Paused shows `data-poster`, else the captured first frame (srcset/`<source>` set aside and restored); no capturable frame (cross-origin) → animation hidden behind its alt text (`[data-animate-image-hidden]`, `.animate-image-placeholder`). Starts paused with `data-animate-image-paused` or reduced motion (`prefers-reduced-motion` or `<html data-motion-reduced>`, both watched at runtime). Effects pack |
 | `data-command` | `<button>` | Command palette trigger |
+| `data-markdown-editable` | any text element, `<textarea>`, `<input>` | Inline markdown editing (extras tier). Text elements: sets `contenteditable`, `role="textbox"`, `aria-multiline="false"`; raw markdown (in `data-markdown-value`) while focused with `[data-md-editing]` styling, sanitised inline markdown rendered on blur. `<textarea>`/`<input>`: `.value` stays markdown; preview rendered on blur into `<output class="md-editable-preview">` after the field, or the element named by `data-preview="id"`. Event `markdown-editable:change` `{ value, html }` (text elements: only when changed). `data-markdown-editable-init` marks enhanced elements |
 | `data-paged` | list-shaped container (`ul`/`ol`/`table`/`card-list`…) | Pagination: `data-paged-size` (10; 0 = off), `data-paged-page`, `data-paged-style` `numbered`\|`prev-next`\|`load-more`\|`infinite` (prefer load-more: infinite strands footer content), `data-paged-window` (2), `data-paged-controls` `before`\|`after`\|`both`\|`none` (none also drops the load-more button), `data-paged-url` (History API; back/forward re-render, no param = page 1); `data-label-nav`/`prev`/`next`/`page`/`status`/`load-more`/`no-more`/`showing` (same set as `<pager-wc>`, read from the container or an ancestor, `Intl` numbers); numbered page changes and load-more ("Showing {visible} of {total}") announced; events in `paged:goto` `{ page }`, `paged:loadmore`; out `paged:change` `{ page, size, total, totalPages, visible, style }` (bubbles). Drive from elsewhere with `<pager-wc>` |
 | `data-sortable` | `<table>` or list-shaped container | Client-side sort. Table: `th[data-sort="key"]` (+ `data-sort-type` `text`\|`number`\|`date`) gets a `<button data-sort-button>` (th keeps columnheader role + `aria-sort`), cycles asc→desc→none; cell value from `data-sort-value`/`data-value`, `<time datetime>`, text. Lists: external `[data-sort-target]` select/button (target resolved at use, so controls may precede the container; a select's initial value applies when the container appears), items `data-sort-{key}`; buttons get `aria-pressed`; list sorts announced (`data-label-sorted`, "Sorted: {sort}. {count} items"). Text collates in the closest `[lang]`; numbers read formatted text ("1,234", "$5", "12 %"). `data-sortable-default`; reflects `data-sort-by`/`data-sort-direction`; event `sort:change` `{ key, direction, total }`; composes with `data-paged` |
 
@@ -2574,6 +2575,116 @@ Applied to `<html>`. Authored values are page defaults: ThemeManager only replac
 | `data-ruby` | `show`, `hide`, `auto` | Ruby visibility. Absent = visible (browser default). Works on any element (also the `<ruby>`); nearest wins. `hide` = visually hidden, kept in the a11y tree; `auto` = hide annotations whose own `:lang()` is not ja/zh/ko/yue/wuu; `show` undoes an outer hide/auto |
 | `data-debug` | (boolean) | Debug mode (needs vanilla-breeze-dev.css/.js) |
 | `data-wireframe` | `lo`, `mid`, `hi`, `annotate` | Wireframe mode (needs vanilla-breeze-dev.css) |
+
+### Native attributes VB styles/enhances
+
+Native HTML attributes that Vanilla Breeze styles, reads or sets. Grouped as on `/docs/attributes/native/` (the groups come from each page's `nativeGroup` frontmatter, see `site/data/nativeAttributes.js`). Attributes with no row get browser defaults only. Each attribute's doc page has the full "In Vanilla Breeze" section.
+
+#### Global
+
+| Attribute | What VB does | File(s) |
+|-----------|--------------|---------|
+| `title` | `abbr[title]` dotted underline + help cursor; print appends the expansion; icon-only button with `[title]` gets square padding; `<tool-tip>` uses the trigger's `title` as fallback content (removes it while upgraded, copies it to `aria-label` if it was the only name); data-hotkey labels fall back to `title` | `src/native-elements/inline-semantics/styles.css`, `src/utils/print.css`, `src/native-elements/button/styles.css`, `src/web-components/tool-tip/logic.js`, `src/utils/hotkey-action-init.js` |
+| `autofocus` | `data-focus-trap` focuses `[autofocus]` on activation (`no-autofocus` opts out); `<content-swap>` focuses `[autofocus]` on the incoming face; `<chat-input autofocus>`; the sanitizer drops it from untrusted HTML | `src/utils/focus-trap-init.js`, `src/web-components/content-swap/logic.js`, `src/web-components/chat-input/logic.js`, `src/lib/sanitize-html.js` |
+| `spellcheck` | `<markdown-editor>` turns it on unless authored; `<emoji-picker>`, `<color-picker>`, `<site-search>` turn it off; `<u>` styled as a red wavy spelling mark | component `logic.js` files, `src/native-elements/inline-semantics/styles.css` |
+| `autocorrect`, `autocapitalize` | `<site-search>` sets both `off` on its input | `src/web-components/site-search/logic.js` |
+| `tabindex` | No focus-ring rule for arbitrary `[tabindex]`. Roving tabindex inside tab-set, context-menu, drop-down, page-tools, selection-menu, emoji-picker and the date/calendar components; authors add `tabindex="0"` to `data-table-scroll` / reel scroll regions | component `logic.js` files |
+| `is` | Not used by VB (data-* enhancers on native elements instead); `<card-list>` refuses to write `is` from data | `src/web-components/card-list/logic.js` |
+
+#### Internationalization
+
+| Attribute | What VB does | File(s) |
+|-----------|--------------|---------|
+| `dir` | `:dir(rtl)` rules (no `[dir]` rules, on purpose) mirror breadcrumb separators, summary marker, side-sheet dialogs, list markers, table bars, range fill, switch knob, shapes, `data-float` and slide view transitions; `icon-wc[data-flip-rtl]`; `pre:has(code, samp):not([dir])` forced LTR | `src/native-elements/nav/styles.css`, `src/native-elements/details/styles.css`, `src/native-elements/dialog/styles.css`, `src/native-elements/lists/styles.css`, `src/native-elements/table/styles.css`, `src/native-elements/code/styles.css`, `src/native-elements/input/range.css`, `src/native-elements/input/switch.css`, `src/shapes/`, `src/utils/float.css`, `src/utils/view-transitions.css`, `src/web-components/icon-wc/styles.js`, `src/native-elements/i18n/styles.css` |
+| `lang` | `:lang()` script typography (`--font-cjk`, `--font-arabic`, `--font-hebrew`, `--font-thai`, `--font-devanagari`, line-height); CJK substitutes for em/i/cite/dfn/u/var; `q:lang()` quote table; `p.indent` for CJK; `data-ruby="auto"` reads `rt:lang()`; `hyphens: auto` on `p.justify`, `article.blog`, `article[data-prose]`; formatters and counters resolve the locale `data-locale` → nearest `[lang]` → `<html lang>` → `navigator.language` | `src/native-elements/i18n/styles.css`, `src/native-elements/paragraph/styles.css`, `src/native-elements/article/styles.css`, `src/lib/i18n.js` (`getLocale(el)`), `src/lib/number-format.js` |
+| `translate` | `data-lorem` output gets `translate="no"`; no styling, and VB does not mark code for you | `src/utils/lorem-init.js` |
+
+#### Accessibility
+
+| Attribute | What VB does | File(s) |
+|-----------|--------------|---------|
+| `aria-current` | `nav a[aria-current="page"]` plus tabs, breadcrumb, pagination, tree and steps (`step`) styles; data-paged buttons; page-toc (`true`). Set by nav-bar, bread-crumb, page-toc, data-paged, data-wizard, carousel, calendar, date-picker | `src/native-elements/nav/styles.css`, `src/utils/data-paged.css` |
+| `aria-pressed` | `button[aria-pressed="true"]` active fill + inner shadow (secondary/ghost variants, forced colours). Set by data-toggle, data-sortable list buttons, player/reader toolbars | `src/native-elements/button/styles.css`, `src/native-elements/menu/styles.css` |
+| `aria-expanded` | Nav dropdown trigger fill + chevron. Set by data-toggle, data-spoiler, tool-tip, accordion, drop-down, combo-box, menus | `src/native-elements/nav/styles.css` |
+| `aria-disabled` | `button:is(:disabled, [aria-disabled="true"])` dimmed, not-allowed, no hover. Set by data-loading, the form coordinator while submitting, data-wizard | `src/native-elements/button/styles.css`, `src/native-elements/form/wizard.css` |
+| `aria-busy` | `button[aria-busy="true"]` wait cursor, no pointer events. Set by data-loading and fetching components | `src/native-elements/button/styles.css` |
+| `aria-invalid` | Same look as `:user-invalid` (error border, thick inline-start edge, double border in forced colours). Set by form-field and the form coordinator (bare controls) | `src/native-elements/input/styles.css`, `src/native-elements/input/switch.css` |
+| `aria-sort` | `th[data-sort]` ⇅ / ↑ / ↓ glyphs with empty alt text. Set by data-sortable and data-table | `src/native-elements/table/styles.css` |
+| `aria-keyshortcuts` | Not styled. Set by data-hotkey actions (an authored value wins), context-menu, command-palette, selection-menu, video/audio player | `src/utils/hotkey-action-init.js` |
+
+#### Forms
+
+| Attribute | What VB does | File(s) |
+|-----------|--------------|---------|
+| `required` | `<form-field>` adds a silent red `*` to the label or grouped legend; `:user-valid:required` success border inside form-field; hidden conditional sections disable their required controls | `src/custom-elements/form-field/styles.css`, `src/lib/form-conditions.js` |
+| `pattern`, `minlength`, `maxlength`, `min`, `max`, `step`, `required` (validity) | `:user-invalid` / `[aria-invalid="true"]` error border with a thick inline-start edge (double border in forced colours); `data-message-<validitykey>` messages in `output.error` | `src/native-elements/input/styles.css`, `src/web-components/form-field/logic.js` |
+| `novalidate` | `form[data-validate]` sets it from JS and runs its own checks | `src/lib/form-coordinator.js` |
+| `formnovalidate` | The `form[data-validate]` coordinator skips validation for that submitter in every mode; data-wizard skips routing to the first invalid step | `src/lib/form-coordinator.js`, `src/lib/wizard.js` |
+| `formaction`, `formmethod`, `formenctype`, `formtarget` | data-validate native mode resubmits with `requestSubmit(submitter)` (all honoured); fetch mode honours formaction, formmethod and formenctype, not formtarget; event mode passes `FormData(form, submitter)` | `src/lib/form-coordinator.js` |
+| `disabled` | Buttons (and `[aria-disabled="true"]`) opacity .5 + not-allowed; fields raised surface + not-allowed; `fieldset:disabled` muted text + dashed border, GrayText in forced colours; conditional sections set and clear it (`data-conditional-disabled`) | `src/native-elements/button/styles.css`, `src/native-elements/input/styles.css`, `src/native-elements/form/styles.css`, `src/lib/form-conditions.js` |
+| `readonly` | Text-like fields: `--input-readonly-bg` fill + `--input-readonly-border-style` (dashed); stepper buttons lock; autosave restore skips | `src/native-elements/input/styles.css`, `src/tokens/forms.css` |
+| `placeholder` | `::placeholder` colour `--input-placeholder` (= `--color-text-muted`); the floating label injects `placeholder=" "` | `src/native-elements/input/styles.css`, `src/tokens/forms.css`, `src/utils/floating-label-init.js` |
+| `list` | currentColor dropdown arrow on text-like `input[list]`, RTL-mirrored, forced-colours safe; `.no-arrow` and `.search` variants; data-range renders range datalist labels + `aria-valuetext` | `src/native-elements/datalist/styles.css`, `src/utils/range-init.js` |
+| `multiple`, `size` (select) | Chevron and `appearance: base-select` only on single-row selects (no `multiple`, `size` absent/0/1) | `src/native-elements/input/styles.css`, `src/native-elements/input/select.css` |
+| `accept`, `multiple` (file) | data-upload drop zone filters drops by `accept`, keeps one file without `multiple`, announces rejects | `src/utils/upload-init.js` |
+| `inputmode` | Set (when absent) by data-mask digit masks, data-accept presets and OTP digit boxes | `src/utils/mask-init.js`, `src/utils/accept-init.js`, `src/lib/form-field-enhancements.js` |
+| `autocomplete` | data-autosave and data-wizard-persist never store `off` or secret-token fields (cc-*, one-time-code, new/current-password); the OTP field moves `one-time-code` to the first digit | `src/utils/_persist-filter.js`, `src/lib/form-field-enhancements.js` |
+| `maxlength` | data-count textarea counter reads it; data-mask sets it from the mask length; OTP sets it from `data-length` | `src/utils/textarea-count-init.js`, `src/utils/mask-init.js`, `src/lib/form-field-enhancements.js` |
+| `min`, `max`, `step` | data-stepper uses `stepUp()`/`stepDown()` and disables its buttons at the bounds; range track/thumb tokens; data-range bubble and markers | `src/utils/number-init.js`, `src/native-elements/input/range.css`, `src/utils/range-init.js` |
+| `wrap` | Nothing; textareas are `inline-size: 100%`, so `wrap="hard"` breaks follow the rendered width, not `cols` | `src/native-elements/input/styles.css` |
+
+#### Interactivity
+
+| Attribute | What VB does | File(s) |
+|-----------|--------------|---------|
+| `hidden` | `[hidden]:not([hidden="until-found"]) { display: none !important }` in the reset layer, so no component, layout, theme or unlayered rule can un-hide; `until-found` is left to the UA's `content-visibility` rule. `data-visible` and `hide-until-ready` / `show-until-ready` use the same reset-layer `!important` mechanism | `src/base/reset.css`, `src/utils/responsive.css`, `src/utils/readiness.css` |
+| `inert` | No global styling. `tr:is([data-disabled], [inert])` gets muted text, no hover highlight, GrayText in forced colours. Set by data-show-when / data-hide-when (with `hidden` and disabled controls), data-spoiler (concealed content), split-surface (collapsed panel); data-hotkey skips inert targets; data-toggle can flip it | `src/native-elements/table/styles.css`, `src/utils/conditional-init.js`, `src/utils/spoiler-init.js`, `src/web-components/split-surface/logic.js`, `src/utils/hotkey-action-init.js` |
+| `popover` | Reset layer re-asserts `display: none !important` on closed popovers (VB element `display` rules used to keep them visible; `<dialog popover>` opened modally and the dashboard `nav[popover]` are exempt) and restores UA `margin: auto` centring at zero specificity; sectioning elements opt out of `container-type` when they are popovers. Styles `[role="tooltip"][popover]` (anchored with `data-anchor`, else to its invoker via `position-anchor: auto`; kbd/code/small tinted on the dark surface) and `[popover="hint"]` (`position-area` block-start, flip-block) as inverted tooltips with `@starting-style` transitions | `src/base/reset.css`, `src/custom-elements/layout-attributes.css`, `src/native-elements/tooltip/styles.css` |
+| `interestfor` | Polyfill (core bundle) when not native: hover, focus and long-press with delays read from the invoker (`interest-delay` natively, `--interest-delay*` in the polyfill; VB's default on `[interestfor]` is 200ms / 100ms), Escape, `aria-describedby` for plain hints or `aria-details` + `aria-expanded` otherwise, `.interest-source` / `.interest-target` classes, `data-interest-polyfill` on `<html>` | `src/utils/interest-polyfill.js`, `src/native-elements/tooltip/styles.css` |
+| `commandfor`, `command` | No polyfill. command-init registers `[commandfor]` buttons for `<command-palette discover>` (label from text, `data-command`, `data-command-group`, `data-command-icon`, `data-shortcut`); dialog styles assume invoker use | `src/utils/command-init.js`, `src/native-elements/dialog/styles.css` |
+| `open` | `details`: borders and joined groups, summary chevron rotates on `[open]` (RTL-mirrored), `::details-content` block-size animation (needs `interpolate-size: allow-keywords` from the motion tokens; Chromium only), printed open. `dialog[open]`: flex column, fade/scale with `@starting-style`, blurred `::backdrop` (`--color-backdrop`, `--backdrop-blur`), hidden in print | `src/native-elements/details/styles.css`, `src/tokens/motion.css`, `src/utils/print.css`, `src/native-elements/dialog/styles.css` |
+| `draggable` | `[draggable="true"]`: grab/grabbing cursor, `user-select: none`, `:focus-visible` outline. State hooks usable by any drag code: `[data-dragging]`, `[data-drag-over]`, `[data-drop-target="before"/"after"]`, `[data-just-dropped]`, `[data-reorder-mode] [data-grabbed]`; reduced-motion switches | `src/native-elements/draggable/styles.css` |
+| `contenteditable` | No styling. `data-markdown-editable` sets `contenteditable` + `role="textbox"` + `aria-multiline="false"`, shows raw markdown while focused (`[data-md-editing]`), renders sanitised markdown on blur and fires `markdown-editable:change` `{ value, html }`. VB hotkeys ignore keys typed in contenteditable unless global; emoji-picker inserts at a contenteditable caret | `src/utils/markdown-editable-init.js`, `src/utils/markdown-editable.css`, `src/lib/sanitize-html.js`, `src/utils/hotkey-bind.js` |
+
+#### Links & Security
+
+| Attribute | What VB does | File(s) |
+|-----------|--------------|---------|
+| `rel` | Styles `a[rel~="external"]` (arrow), `help` (dotted underline), `tag` (pill), `prev` / `next` (arrows), `license` / `privacy-policy` / `terms-of-service` (muted); suppressed in nav/header/footer and with `data-no-icon`; `hgroup.byline a[rel~="author"]` | `src/utils/links.css`, `src/native-elements/hgroup/styles.css` |
+| `target` | `a[target="_blank"]` loads links-init, which adds `rel="noopener"` when no opener policy is declared; `<html data-link-privacy="strict">` also adds `noreferrer` | `src/utils/links-init.js`, `src/lib/lazy-guards.js` |
+| `download` | `a[download]` gets a decorative trailing ↓ (suppressed in nav/header/footer, `a.button`, with an `icon-wc` child or `data-no-icon`); `[data-file]` rows | `src/native-elements/anchor/styles.css`, `src/utils/file-display.css` |
+| `ping` | Analytics sets `ping` on outbound `a[href^="http"]` at click time, only when the visitor has not opted out (not inside `[data-vb-no-track]`, not in iframes); the sanitizer strips `ping` from untrusted HTML | `src/lib/analytics.js`, `src/lib/sanitize-html.js` |
+| `referrerpolicy` | youtube-player thumbnail `no-referrer`, iframe `strict-origin-when-cross-origin`; social-embed frames `strict-origin` | `src/web-components/youtube-player/logic.js`, `src/web-components/social-embed/shared.js` |
+
+#### Embeds
+
+| Attribute | What VB does | File(s) |
+|-----------|--------------|---------|
+| `srcdoc` | The sanitizer drops `srcdoc` in every profile; card-list `data-field-attr` refuses it; `iframe[data-mock]` gets a placeholder `srcdoc` | `src/lib/sanitize-html.js`, `src/web-components/card-list/logic.js`, `src/utils/mock-init.js` |
+| `sandbox` | social-embed builds sandboxed frames (`allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox`; Mastodon without the escape token) | `src/web-components/social-embed/shared.js` |
+| `allow` | youtube-player iframe: `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"` + `allowfullscreen`; social-embed X provider `allow="fullscreen"` | `src/web-components/youtube-player/logic.js`, `src/web-components/social-embed/providers/x.js` |
+
+#### Media
+
+| Attribute | What VB does | File(s) |
+|-----------|--------------|---------|
+| `controls` | `<video-player>` / `<audio-player>` strip `controls` from the inner media element on upgrade and restore it on removal (no-JS fallback); `<audio>` gets `accent-color: var(--color-primary)` + `color-scheme: light dark`; `<video-player>` reflects host `[controls]` as its overlay-visible state | `src/web-components/video-player/logic.js`, `src/web-components/audio-player/logic.js`, `src/native-elements/audio/styles.css` |
+| `poster` | `<video-player>` playlist `a[data-poster]` swaps the poster per track; `<youtube-player poster>` uses a local facade image (no i.ytimg.com request); `video[data-mock]` gets a placeholder SVG poster; sanitizer and card-list treat `poster` as a media URL | `src/web-components/video-player/logic.js`, `src/web-components/youtube-player/logic.js`, `src/utils/mock-init.js`, `src/lib/sanitize-html.js` |
+| `srcset`, `sizes` | `img[data-responsive]` writes measured `sizes`, generates `srcset` from a widths list, defers to `sizes="auto"` on lazy images; the debug badge reads `currentSrc` | `src/utils/responsive-init.js`, `src/utils/responsive.css` |
+
+#### Performance
+
+| Attribute | What VB does | File(s) |
+|-----------|--------------|---------|
+| `loading`, `decoding` | `data-responsive` adds `decoding="async"` when unset; youtube-player, image-gallery, activity-feed, comment-thread and social-embed create lazy images/iframes; data-mock remote presets set `loading="lazy"` | `src/utils/responsive-init.js`, component `logic.js` files, `src/utils/mock-init.js` |
+
+#### Structure
+
+| Attribute | What VB does | File(s) |
+|-----------|--------------|---------|
+| `reversed`, `start`, `li[value]`, `type` | `ol:where([type="i"], [start], [reversed], :has(> li[value], > li:nth-child(100)), [type="a"]:has(> li:nth-child(27)))` widens the indent to `var(--ol-indent, 2.5em)`; `--ol-indent` overrides | `src/native-elements/lists/styles.css`, `src/tokens/themes/_access-dyslexia.css` |
+| `datetime` | `time[data-format-date]` formats from `datetime` (dates and date-times only) and writes `title`; data-sortable, day-view, week-view, activity-feed, recently-visited, comment-thread and page-info read `time[datetime]`; `time` gets `tabular-nums` | `src/utils/format-date-init.js`, `src/utils/data-sortable-init.js`, component `logic.js` files, `src/native-elements/inline-semantics/styles.css` |
+| `cite` | Not styled; sanitizer and card-list treat it as a navigable URL (scheme-checked). Visible attribution is styled via `figure.quote > figcaption` and the `blockquote > :is(footer, cite)` dash prefix; `q` quotes via `:lang()` | `src/lib/sanitize-html.js`, `src/web-components/card-list/logic.js`, `src/native-elements/figure/styles.css`, `src/native-elements/blockquote/styles.css`, `src/native-elements/i18n/styles.css` |
 
 ---
 
@@ -2689,6 +2800,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | ~~`data-collapsible`~~ | **Removed** — use `collapsible` on `<split-surface>` |
 | `data-color` | `<input type="color">` — swatch + hex display (not the badge/button colour variant) |
 | `data-command` | `<button>` — command palette trigger |
+| `data-markdown-editable` | Text element, `<textarea>` or `<input>` — inline markdown editing (`data-preview` = preview element id) |
 | `data-compact` | Various — reduced spacing |
 | `data-completed` | Steps — completed state |
 | `data-clip` | `<img>`, `<figure>` — shape mask (see §2 Shapes) |
