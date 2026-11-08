@@ -264,8 +264,17 @@ crumbLabel: Web Components
           <td>Month + year (partial)</td>
           <td><code>April 2026</code> &mdash; navigates calendar without selecting a day</td>
         </tr>
+        <tr>
+          <td>CJK numeric</td>
+          <td><code>2026年4月15日</code></td>
+        </tr>
+        <tr>
+          <td>Japanese era (和暦)</td>
+          <td><code>令和8年4月15日</code>, <code>令和元年5月1日</code> or <code>R8/4/15</code> &mdash; when the picker&rsquo;s locale is Japanese</td>
+        </tr>
       </tbody>
     </table>
+    <p>Whatever the picker displays in its <a href="#localization">locale</a> can be typed back in, including the CJK forms. Full-width digits are accepted in the CJK forms, and era dates outside their era (<code>令和元年4月30日</code>) are rejected.</p>
     <p>Locale-aware month names are also accepted. Ambiguous numeric formats like <code>4/15/2026</code> are intentionally rejected to avoid locale confusion, and so are impossible dates (<code>2026-02-31</code>, <code>April 31, 2026</code>) &mdash; they are not rolled over into the next month. On blur, empty text clears the date; text that does not parse to a selectable date reverts to the current value.</p>
   </section>
 
@@ -382,6 +391,8 @@ crumbLabel: Web Components
   <section id="localization">
     <h2>Localization</h2>
     <p>The locale is the nearest <code>lang</code> attribute (on the element or an ancestor), falling back to the browser language. It drives the displayed date (<code>Intl.DateTimeFormat</code>), the month name, the weekday column headers, typed month names, and the first day of the week (from <code>Intl.Locale</code> week info). The submitted form value is always ISO-formatted regardless of display locale.</p>
+
+    <p>A BCP 47 calendar extension in <code>lang</code> changes the displayed calendar. <code>lang="ja-JP-u-ca-japanese"</code> shows Japanese era dates (<code>令和8年4月15日</code>), which can also be typed back in, as can <code>R8/4/15</code>. See <a href="/docs/i18n/">Internationalization</a>.</p>
 
     <code-block language="html" show-lines label="German locale" data-escape><label for="termin">Termin</label>
 <date-picker lang="de"

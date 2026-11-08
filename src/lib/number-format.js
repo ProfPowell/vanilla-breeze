@@ -5,7 +5,7 @@
  * (count-up), so the ticker's last frame is exactly the static output.
  */
 
-import { getLocale } from './i18n.js';
+import { getLocale, usableLocale } from './i18n.js';
 
 /**
  * Locale for a formatted element: data-locale, else the nearest [lang],
@@ -14,7 +14,7 @@ import { getLocale } from './i18n.js';
  * @returns {string}
  */
 export function formatLocale(el) {
-  return el.getAttribute('data-locale') || getLocale(el);
+  return usableLocale(el.getAttribute('data-locale') || getLocale(el));
 }
 
 /**

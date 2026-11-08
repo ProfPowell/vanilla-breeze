@@ -137,13 +137,38 @@ toc: true
   <data value="1234.56" data-format-number data-locale="fr">1 234,56</data>
 </html></code-block>
 
+<p>Components that read the nearest <code>lang</code> (<code>&lt;calendar-wc&gt;</code>, <code>&lt;week-view&gt;</code>, <code>&lt;day-view&gt;</code>, <code>&lt;date-picker&gt;</code>) pass it through <code>usableLocale()</code> first. A malformed tag such as the POSIX-style <code>lang="en_US"</code> makes every <code>Intl</code> constructor throw, so those components fall back to <code>en-US</code> rather than failing to render. Write BCP 47 tags with hyphens: <code>en-US</code>, <code>ja-JP</code>.</p>
+
+<h3>Alternate Calendars</h3>
+<p>Locales are passed straight to <code>Intl</code>, so a BCP 47 calendar extension works with no extra configuration. Setting <code>lang="ja-JP-u-ca-japanese"</code> on <code>&lt;html&gt;</code> switches every VB date utility to the Japanese era calendar (和暦) at once:</p>
+
+<table>
+  <thead>
+    <tr><th><code>&lt;html lang&gt;</code></th><th><code>data-format-date</code></th><th><code>data-format-date="short"</code></th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>ja-JP</code></td><td>2026/10/21</td><td>2026/10/21</td></tr>
+    <tr><td><code>ja-JP-u-ca-japanese</code></td><td>令和8年10月21日</td><td>R8/10/21</td></tr>
+  </tbody>
+</table>
+
+<p>The extension is invisible to everything else that reads <code>lang</code>. <code>:lang(ja)</code> still matches, so the CJK typography and ruby rules apply unchanged, and <code>Intl.RelativeTimeFormat</code> and <code>Intl.NumberFormat</code> ignore the calendar and keep working. To use the era calendar for one element only, put the same tag in its <code>data-locale</code> (format utilities) or <code>lang</code> (<code>&lt;date-picker&gt;</code>).</p>
+
+<code-block language="html" label="Japanese era calendar" data-escape><html lang="ja-JP-u-ca-japanese">
+  <time datetime="2026-10-21" data-format-date>令和8年10月21日</time>
+  <time datetime="2026-10-21" data-format-date="short">R8/10/21</time>
+</html></code-block>
+
+<p>Intl formats era dates but cannot parse them. <a href="/docs/elements/web-components/date-picker/"><code>&lt;date-picker&gt;</code></a> accepts typed era dates when its locale is Japanese (<code>令和8年10月21日</code>, <code>令和元年5月1日</code>, <code>R8/10/21</code>) as well as the Gregorian <code>2026年10月21日</code> form.</p>
+
 <h3>JS Utilities</h3>
 <p>Import locale utilities for custom components:</p>
 
-<code-block language="js" label="Locale utility functions" data-escape>import { getLocale, isRTL, usesRuby, primarySubtag } from './lib/i18n.js';
+<code-block language="js" label="Locale utility functions" data-escape>import { getLocale, usableLocale, isRTL, usesRuby, primarySubtag } from './lib/i18n.js';
 
 getLocale();           // 'en-US' (from html[lang] or navigator)
 getLocale(el);         // nearest [lang] of el, then html[lang], then navigator
+usableLocale('en_US'); // 'en-US' (malformed tags fall back instead of throwing)
 isRTL('ar');           // true
 usesRuby('ja');        // true
 primarySubtag('zh-TW'); // 'zh'</code-block>
