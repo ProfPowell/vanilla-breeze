@@ -122,6 +122,16 @@ test.describe('data-format-date', () => {
 /* ---------------------------------------------------------- format-number */
 
 test.describe('data-format-number', () => {
+  test('a malformed lang (POSIX en_US) falls back to en-US instead of throwing', async ({ page }) => {
+    await load(page, `<p lang="en_US"><data id="n" value="1234.5" data-format-number>1234.5</data>
+      <time id="d" datetime="2026-02-09" data-format-date="long">x</time>
+      <time id="bad" datetime="2026-02-30" data-format-date="long">30 Feb</time></p>`,
+    { modules: [NUMBER, DATE] });
+    await expect(page.locator('#n')).toHaveText('1,234.5');
+    await expect(page.locator('#d')).toHaveText('February 9, 2026');
+    await expect(page.locator('#bad')).toHaveText('30 Feb');
+  });
+
   test('uses the nearest [lang] and re-formats on lang / option changes', async ({ page }) => {
     await load(page, `<section id="s" lang="de"><data id="n" value="1234567.5" data-format-number>x</data></section>
       <data id="c" value="48200" data-format-number="currency">x</data>`, { modules: [NUMBER] });

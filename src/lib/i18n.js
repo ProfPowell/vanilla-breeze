@@ -84,11 +84,13 @@ export function usesRuby(locale) {
  * @returns {string}
  */
 export function getLocale(el) {
-  return (
+  // A malformed tag (POSIX "en_US") would make every Intl constructor
+  // throw, so it falls back to en-US like the calendar components do.
+  return usableLocale(
     (el && /** @type {HTMLElement|null} */ (el.closest('[lang]'))?.lang) ||
     document.documentElement.lang ||
     navigator.language ||
-    'en'
+    'en',
   );
 }
 
