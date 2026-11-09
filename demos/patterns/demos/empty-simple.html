@@ -11,13 +11,13 @@
       background: var(--color-surface);
     }
 
-    .messages {
+    #messages {
       min-height: 200px;
       border: 1px dashed var(--color-border);
       border-radius: var(--radius-m);
     }
 
-    .messages:not([data-state]) > .content {
+    #messages:not([data-state]) > .content {
       list-style: none;
       padding: var(--size-m);
       margin: 0;
@@ -25,7 +25,7 @@
       gap: var(--size-s);
     }
 
-    .messages .content li {
+    #messages .content li {
       display: flex;
       align-items: center;
       gap: var(--size-s);
@@ -33,47 +33,25 @@
       border-block-end: 1px solid var(--color-border);
     }
 
-    .messages .content li strong {
+    #messages .content li strong {
       flex: 1;
     }
 
-    .messages .content li span {
+    #messages .content li span {
       font-size: var(--font-size-s);
       color: var(--color-text-muted);
     }
-
-    /* State toggle buttons for demo */
-    .state-controls {
-      display: flex;
-      gap: var(--size-s);
-      margin-block-end: var(--size-l);
-    }
-
-    .state-controls button {
-      padding: var(--size-xs) var(--size-s);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-s);
-      background: var(--color-surface);
-      color: var(--color-text);
-      cursor: pointer;
-    }
-
-    .state-controls button[aria-pressed="true"] {
-      background: var(--color-primary);
-      color: var(--color-text-on-primary);
-      border-color: var(--color-primary);
-    }
   </style>
 </head>
-<body>
+<body data-layout="stack" data-layout-gap="l">
   <h1>Empty State - Simple</h1>
   <!-- Demo state controls -->
-  <div class="state-controls">
-    <button type="button" data-set-state="populated" aria-pressed="false">Populated</button>
-    <button type="button" data-set-state="empty" aria-pressed="true">Empty</button>
-  </div>
+  <layout-cluster data-layout-gap="s" role="group" aria-label="Demo state">
+    <button type="button" class="small secondary" data-set-state="populated" aria-pressed="false">Populated</button>
+    <button type="button" class="small secondary" data-set-state="empty" aria-pressed="true">Empty</button>
+  </layout-cluster>
 
-  <section class="messages" data-state="empty">
+  <section id="messages" data-state="empty">
     <h2 class="visually-hidden">Messages</h2>
 
     <!-- Populated content -->
@@ -106,7 +84,7 @@
   <script type="module" src="/src/main.js"></script>
   <script>
     // Demo: Toggle states with buttons
-    const container = document.querySelector('.messages');
+    const container = document.querySelector('#messages');
     const buttons = document.querySelectorAll('[data-set-state]');
 
     buttons.forEach(button => {

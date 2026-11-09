@@ -11,13 +11,14 @@ currentPath: /docs/patterns/feedback/skeleton/
     <h2>Overview</h2>
     <layout-text>
       <p>Skeleton loaders create a visual preview of content that will appear, giving users an immediate sense of the page structure. They are preferable to spinners for content-heavy pages as they maintain layout stability and feel faster.</p>
+      <p>Vanilla Breeze draws skeletons from the markup you already have. Put <code>data-loading="skeleton"</code> on a container and each <em>direct child</em> becomes a placeholder block the size of its own content: text turns transparent, headings and buttons take a darker shade, and a shimmer sweeps across every block. Remove the attribute when the data arrives and the same elements show their real content, so nothing shifts.</p>
       <p><strong>Key features:</strong></p>
       <ul>
-        <li>Pure CSS animation using <code>@keyframes</code> for smooth pulse effect</li>
+        <li>No skeleton classes: one attribute on the container, from <code>src/utils/loading.css</code></li>
+        <li>Placeholder sizes come from the placeholder content itself, so widths vary naturally</li>
+        <li>Shimmer animation that stops under <code>prefers-reduced-motion</code></li>
         <li>Accessible loading states with <code>aria-busy="true"</code></li>
-        <li>Flexible placeholder sizes matching your content dimensions</li>
-        <li>Uses Vanilla Breeze CSS custom properties for consistent theming</li>
-        <li>Layout primitives like <code>data-layout="stack"</code> for structure</li>
+        <li>Works with layout primitives like <code>&lt;layout-stack&gt;</code> for structure</li>
       </ul>
     </layout-text>
   </section>
@@ -25,7 +26,7 @@ currentPath: /docs/patterns/feedback/skeleton/
   <section>
     <h2>Text Placeholder</h2>
     <layout-text>
-      <p>Display placeholder lines for text content like paragraphs. Use varying widths to simulate natural text flow, with the last line typically shorter.</p>
+      <p>Display placeholder lines for text content like paragraphs. Each child is one block, so write placeholder text of different lengths to vary the widths. <code>data-layout-align="start"</code> lets each block shrink to its text instead of stretching to the full width.</p>
     </layout-text>
 
     <browser-window
@@ -35,20 +36,21 @@ currentPath: /docs/patterns/feedback/skeleton/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="skeleton-text.html" data-escape><layout-card aria-busy="true" aria-label="Loading content">
-  <div data-layout="stack" data-layout-gap="s">
-    <div class="skeleton skeleton-heading"></div>
-    <div class="skeleton skeleton-line"></div>
-    <div class="skeleton skeleton-line"></div>
-    <div class="skeleton skeleton-line"></div>
-  </div>
+    <code-block language="html" label="skeleton-text.html" data-escape><layout-card aria-busy="true" aria-label="Loading content" role="status">
+  <layout-stack data-loading="skeleton" data-layout-gap="xs"
+                data-layout-align="start" aria-hidden="true">
+    <h2>Placeholder article heading</h2>
+    <p>Placeholder text that stands in for the first line of the paragraph while it loads</p>
+    <p>Placeholder text that stands in for the second line of the paragraph as well</p>
+    <p>A shorter placeholder for the closing line</p>
+  </layout-stack>
 </layout-card></code-block>
   </section>
 
   <section>
     <h2>Card Placeholder</h2>
     <layout-text>
-      <p>A complete card skeleton with image placeholder, heading, text lines, and button. Use this pattern for product cards, blog posts, or any content card that loads asynchronously.</p>
+      <p>A complete card skeleton with image placeholder, heading, text lines, and button. Use this pattern for product cards, blog posts, or any content card that loads asynchronously. A direct <code>&lt;img&gt;</code> child becomes the block, sized by its <code>width</code> and <code>height</code>, with the image itself hidden.</p>
     </layout-text>
 
     <browser-window
@@ -58,24 +60,22 @@ currentPath: /docs/patterns/feedback/skeleton/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="skeleton-card.html" data-escape><layout-card class="card-skeleton" aria-busy="true" aria-label="Loading card">
-  <div class="skeleton skeleton-image"></div>
-  <div class="card-content" data-layout="stack" data-layout-gap="m">
-    <div data-layout="stack" data-layout-gap="s">
-      <div class="skeleton skeleton-heading"></div>
-      <div class="skeleton skeleton-line full"></div>
-      <div class="skeleton skeleton-line medium"></div>
-      <div class="skeleton skeleton-line short"></div>
-    </div>
-    <div class="skeleton skeleton-button"></div>
-  </div>
+    <code-block language="html" label="skeleton-card.html" data-escape><layout-card data-padding="m" aria-busy="true" aria-label="Loading card" role="status">
+  <layout-stack data-loading="skeleton" data-layout-gap="xs"
+                data-layout-align="start" aria-hidden="true">
+    <img src="placeholder.svg" alt="" width="600" height="400"/>
+    <h3>Placeholder card title</h3>
+    <p>Placeholder summary line for the card</p>
+    <p>A shorter second line</p>
+    <button type="button" disabled>Read more</button>
+  </layout-stack>
 </layout-card></code-block>
   </section>
 
   <section>
     <h2>Table Placeholder</h2>
     <layout-text>
-      <p>Table skeleton with real headers and placeholder rows. Includes avatar, checkbox, and various cell widths to match typical table layouts. Use this when loading tabular data.</p>
+      <p>Table skeleton with real headers and placeholder rows. Put <code>data-loading="skeleton"</code> on each cell and wrap its placeholder text in a <code>&lt;span&gt;</code>: the span becomes an inline bar the length of its text, so columns keep their real widths. Use this when loading tabular data.</p>
     </layout-text>
 
     <browser-window
@@ -85,11 +85,10 @@ currentPath: /docs/patterns/feedback/skeleton/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="skeleton-table.html" data-escape><layout-card data-padding="none" aria-busy="true" aria-label="Loading table data">
-  <table class="data-table">
+    <code-block language="html" label="skeleton-table.html" data-escape><layout-card data-padding="none" aria-busy="true" aria-label="Loading table data" role="status">
+  <table>
     <thead>
       <tr>
-        <th scope="col" class="col-checkbox"></th>
         <th scope="col">User</th>
         <th scope="col">Email</th>
         <th scope="col">Role</th>
@@ -97,19 +96,13 @@ currentPath: /docs/patterns/feedback/skeleton/
         <th scope="col">Joined</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody aria-hidden="true">
       <tr>
-        <td><div class="skeleton skeleton-checkbox"></div></td>
-        <td>
-          <div class="user-cell">
-            <div class="skeleton skeleton-avatar"></div>
-            <div class="skeleton skeleton-line name"></div>
-          </div>
-        </td>
-        <td><div class="skeleton skeleton-line email"></div></td>
-        <td><div class="skeleton skeleton-line role"></div></td>
-        <td><div class="skeleton skeleton-line status"></div></td>
-        <td><div class="skeleton skeleton-line date"></div></td>
+        <td data-loading="skeleton"><span>Placeholder name</span></td>
+        <td data-loading="skeleton"><span>placeholder@example.com</span></td>
+        <td data-loading="skeleton"><span>Editor</span></td>
+        <td data-loading="skeleton"><span>Active</span></td>
+        <td data-loading="skeleton"><span>Jan 2026</span></td>
       </tr>
       <!-- Additional rows... -->
     </tbody>
@@ -118,98 +111,64 @@ currentPath: /docs/patterns/feedback/skeleton/
   </section>
 
   <section>
-    <h2>CSS Animation</h2>
+    <h2>Skeletons in Feedback States</h2>
     <layout-text>
-      <p>The skeleton animation uses a simple pulse effect that fades between two opacity values. This is performant and works across all browsers.</p>
+      <p>When a container switches between loading, empty, error and populated with <code>data-state</code>, show the skeleton as its loading feedback instead: an <code>&lt;output data-loading data-feedback="skeleton"&gt;</code> of <code>.skeleton-line</code> spans (from <code>src/utils/feedback-states.css</code>). It appears only while the container has <code>data-state="loading"</code>. See <a href="/docs/patterns/feedback/feedback-states/">Feedback States</a>.</p>
     </layout-text>
 
-    <code-block language="css" label="skeleton.css" data-escape>@keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-}
+    <code-block language="html" label="Skeleton as loading feedback" data-escape><section data-state="loading">
+  <h2>Top Contributors</h2>
+  <ol class="content">...</ol>
 
-.skeleton {
-  background: var(--color-border);
-  border-radius: var(--radius-s);
-  animation: skeleton-pulse 1.5s ease-in-out infinite;
-}
-
-.skeleton-heading {
-  height: 1.75rem;
-  width: 60%;
-}
-
-.skeleton-line {
-  height: 1rem;
-}
-
-.skeleton-line:nth-child(1) { width: 100%; }
-.skeleton-line:nth-child(2) { width: 100%; }
-.skeleton-line:nth-child(3) { width: 75%; }
-
-.skeleton-image {
-  aspect-ratio: 16 / 9;
-  width: 100%;
-  border-radius: var(--radius-m);
-}
-
-.skeleton-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-full);
-}
-
-.skeleton-button {
-  height: 2.5rem;
-  width: 8rem;
-  border-radius: var(--radius-m);
-}</code-block>
+  <output data-loading data-feedback="skeleton" role="status" aria-busy="true">
+    <span class="skeleton-line"></span>
+    <span class="skeleton-line"></span>
+    <span class="skeleton-line"></span>
+  </output>
+</section></code-block>
   </section>
 
   <section>
     <h2>Configuration</h2>
     <layout-text>
-      <p>Skeleton elements are built from CSS classes applied to placeholder elements. Here are the key styling options:</p>
+      <p>Skeletons are configured with attributes, not classes:</p>
     </layout-text>
 
     <table class="props-table">
       <thead>
         <tr>
-          <th scope="col">Class</th>
-          <th scope="col">Purpose</th>
-          <th scope="col">Customization</th>
+          <th scope="col">Markup</th>
+          <th scope="col">Effect</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>.skeleton</code></td>
-          <td>Base class with animation</td>
-          <td>Change <code>animation-duration</code> for speed</td>
+          <td><code>data-loading="skeleton"</code></td>
+          <td>Each direct child becomes a placeholder block with a shimmer; text inside turns transparent</td>
         </tr>
         <tr>
-          <td><code>.skeleton-heading</code></td>
-          <td>Heading placeholder</td>
-          <td>Adjust <code>height</code> and <code>width</code></td>
+          <td>Heading child (<code>h1</code>&ndash;<code>h6</code>)</td>
+          <td>Darker block (<code>--color-border-strong</code>) to show hierarchy</td>
         </tr>
         <tr>
-          <td><code>.skeleton-line</code></td>
-          <td>Text line placeholder</td>
-          <td>Set <code>width</code> per line for variety</td>
+          <td><code>&lt;button&gt;</code> or <code>&lt;a&gt;</code> child</td>
+          <td>Darker block in the shape of the control</td>
         </tr>
         <tr>
-          <td><code>.skeleton-image</code></td>
-          <td>Image placeholder</td>
-          <td>Adjust <code>aspect-ratio</code> to match images</td>
+          <td><code>&lt;img&gt;</code> or <code>&lt;svg&gt;</code> child</td>
+          <td>Image-sized block; the image itself is hidden. An image is a replaced element with no <code>::after</code>, so its block is static; wrap it in a <code>&lt;figure&gt;</code> if you want the shimmer on it too</td>
         </tr>
         <tr>
-          <td><code>.skeleton-avatar</code></td>
-          <td>Circular avatar placeholder</td>
-          <td>Set <code>width</code>/<code>height</code> for size</td>
+          <td><code>data-loading</code> (no value)</td>
+          <td>Dims the existing content under a shimmer overlay, for refreshing data that is already shown</td>
         </tr>
         <tr>
-          <td><code>.skeleton-button</code></td>
-          <td>Button placeholder</td>
-          <td>Match your button dimensions</td>
+          <td><code>data-loading="minimal"</code></td>
+          <td>Overlay with a subtle pulse instead of the sweep</td>
+        </tr>
+        <tr>
+          <td><code>output[data-loading][data-feedback="skeleton"]</code></td>
+          <td>Loading feedback inside a <code>data-state</code> container, drawn with <code>.skeleton-line</code></td>
         </tr>
       </tbody>
     </table>
@@ -221,55 +180,21 @@ currentPath: /docs/patterns/feedback/skeleton/
       <ul>
         <li>Add <code>aria-busy="true"</code> to loading containers. Remove the attribute when content finishes loading.</li>
         <li>Include an <code>aria-label</code> describing the loading state so screen readers announce meaningful context (e.g. "Loading card").</li>
+        <li>Mark the placeholder content <code>aria-hidden="true"</code>. Its text is only there to size the blocks; transparent text is still read aloud.</li>
+        <li>Disable placeholder buttons with <code>disabled</code> so they cannot take focus.</li>
         <li>Use <code>role="status"</code> with a live region announcement when content finishes loading so assistive technology is notified.</li>
-        <li>Respect <code>prefers-reduced-motion</code> by disabling or reducing animations for users who prefer it.</li>
+        <li>The shimmer stops under <code>prefers-reduced-motion: reduce</code>; the blocks stay as static shapes.</li>
       </ul>
     </layout-text>
-
-        <code-block language="css" label="reduced-motion.css" data-escape>@media (prefers-reduced-motion: reduce) {
-  .skeleton {
-    animation: none;
-    opacity: 0.6;
-  }
-}</code-block>
-  </section>
-
-  <section>
-    <h2>Animation Variants</h2>
-    <layout-text>
-      <p>You can customize the animation effect to match your brand or preferences:</p>
-    </layout-text>
-
-        <code-block language="css" label="animation-variants.css" data-escape>/* Default pulse animation */
-@keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-}
-
-/* Shimmer/wave animation (left-to-right) */
-@keyframes skeleton-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--color-border) 0%,
-    var(--color-surface-raised) 50%,
-    var(--color-border) 100%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.5s ease-in-out infinite;
-}</code-block>
   </section>
 
   <section>
     <h2>Usage Notes</h2>
     <layout-text>
       <ul>
-        <li><strong>Animation performance:</strong> The pulse animation only animates <code>opacity</code>, which is highly performant. Avoid animating layout properties.</li>
-        <li><strong>Layout stability:</strong> Match skeleton dimensions to actual content to prevent layout shift (CLS) when content loads.</li>
+        <li><strong>Swap, don't rebuild:</strong> Render the real elements with placeholder text, then replace the text and remove <code>data-loading</code>. The block sizes carry over, so the layout does not shift.</li>
+        <li><strong>Layout stability:</strong> Match placeholder lengths and image dimensions to the real content to prevent layout shift (CLS) when content loads.</li>
+        <li><strong>Only direct children:</strong> Nested elements are not drawn as separate blocks. Put the attribute on the element whose children are the shapes you want, as the table does per cell.</li>
         <li><strong>Duration:</strong> Use skeletons for loads under 3-5 seconds. For longer waits, consider progress indicators with estimated time.</li>
       </ul>
     </layout-text>

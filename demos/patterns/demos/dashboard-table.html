@@ -11,32 +11,22 @@
       padding: var(--size-xl);
       background: var(--color-surface-alt);
     }
-    .data-table-wrapper {
-      overflow-x: auto;
-    }
-    [data-layout="cluster"] select,
-    [data-layout="cluster"] input {
+    layout-cluster :is(select, input) {
       inline-size: auto;
     }
-    .filter-bar {
-      background: var(--color-surface);
-      padding: var(--size-m);
-      border-radius: var(--radius-l);
-      margin-block-end: var(--size-m);
-    }
-    .search-input {
-      min-width: 250px;
+    search input[type="search"] {
+      min-inline-size: 250px;
     }
   </style>
 </head>
 <body>
-  <div data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <main data-layout="center" data-layout-max="wide" data-layout-gap="l">
     <!-- Page Header -->
     <header data-layout="cluster" data-layout-justify="between" data-layout-align="center">
-      <div data-layout="stack" data-layout-gap="xs">
+      <hgroup>
         <h1>Orders</h1>
-        <p class="text-muted">Manage and track customer orders</p>
-      </div>
+        <p>Manage and track customer orders</p>
+      </hgroup>
       <button type="button" class="button">
         <icon-wc name="plus" size="sm"></icon-wc>
         Add New Order
@@ -44,36 +34,38 @@
     </header>
 
     <!-- Filter Bar -->
-    <div class="filter-bar" data-layout="cluster" data-layout-justify="between" data-layout-gap="m">
-      <div data-layout="cluster" data-layout-gap="m">
-        <search class="with-icon">
-          <icon-wc name="search" size="sm"></icon-wc>
-          <input type="search" class="search-input" placeholder="Search orders..." aria-label="Search orders"/>
-        </search>
-        <select aria-label="Filter by status">
-          <option value="">All Status</option>
-          <option value="completed">Completed</option>
-          <option value="processing">Processing</option>
-          <option value="pending">Pending</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-      </div>
-      <div data-layout="cluster" data-layout-gap="s">
-        <button type="button" class="button ghost small">
-          <icon-wc name="filter" size="sm"></icon-wc>
-          Filters
-        </button>
-        <button type="button" class="button ghost small">
-          <icon-wc name="download" size="sm"></icon-wc>
-          Export
-        </button>
-      </div>
-    </div>
+    <layout-card data-padding="m">
+      <layout-cluster data-layout-justify="between" data-layout-gap="m">
+        <layout-cluster data-layout-gap="m">
+          <search class="with-icon">
+            <icon-wc name="search" size="sm"></icon-wc>
+            <input type="search" placeholder="Search orders..." aria-label="Search orders"/>
+          </search>
+          <select aria-label="Filter by status">
+            <option value="">All Status</option>
+            <option value="completed">Completed</option>
+            <option value="processing">Processing</option>
+            <option value="pending">Pending</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </layout-cluster>
+        <layout-cluster data-layout-gap="s">
+          <button type="button" class="button ghost small">
+            <icon-wc name="filter" size="sm"></icon-wc>
+            Filters
+          </button>
+          <button type="button" class="button ghost small">
+            <icon-wc name="download" size="sm"></icon-wc>
+            Export
+          </button>
+        </layout-cluster>
+      </layout-cluster>
+    </layout-card>
 
     <!-- Data Table -->
     <layout-card data-padding="none">
-      <div class="data-table-wrapper">
-        <table>
+      <data-table>
+        <table data-responsive="card">
           <thead>
             <tr>
               <th scope="col">Customer</th>
@@ -87,174 +79,174 @@
           <tbody>
             <tr>
               <td>
-                <div data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+                <layout-cluster data-layout-gap="s" data-layout-nowrap>
                   <user-avatar data-size="sm">
-                    <div data-fallback>JD</div>
+                    <span data-fallback>JD</span>
                   </user-avatar>
                   <span>John Doe</span>
-                </div>
+                </layout-cluster>
               </td>
               <td>john.doe@example.com</td>
               <td><layout-badge data-color="success" data-variant="subtle" data-size="l">Completed</layout-badge></td>
               <td>$250.00</td>
               <td>Jan 15, 2026</td>
               <td>
-                <div data-layout="cluster" data-layout-gap="xs">
-                  <button type="button" class="button ghost small icon-only" aria-label="View order">
+                <layout-cluster data-layout-gap="xs" data-layout-nowrap>
+                  <button type="button" class="button ghost small" aria-label="View order">
                     <icon-wc name="eye" size="sm"></icon-wc>
                   </button>
-                  <button type="button" class="button ghost small icon-only" aria-label="Edit order">
+                  <button type="button" class="button ghost small" aria-label="Edit order">
                     <icon-wc name="edit" size="sm"></icon-wc>
                   </button>
-                  <button type="button" class="button ghost small icon-only" aria-label="More actions">
+                  <button type="button" class="button ghost small" aria-label="More actions">
                     <icon-wc name="more-vertical" size="sm"></icon-wc>
                   </button>
-                </div>
+                </layout-cluster>
               </td>
             </tr>
             <tr>
               <td>
-                <div data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+                <layout-cluster data-layout-gap="s" data-layout-nowrap>
                   <user-avatar data-size="sm">
-                    <div data-fallback>SM</div>
+                    <span data-fallback>SM</span>
                   </user-avatar>
                   <span>Sarah Miller</span>
-                </div>
+                </layout-cluster>
               </td>
               <td>sarah.miller@example.com</td>
               <td><layout-badge data-color="info" data-variant="subtle" data-size="l">Processing</layout-badge></td>
               <td>$125.50</td>
               <td>Jan 14, 2026</td>
               <td>
-                <div data-layout="cluster" data-layout-gap="xs">
-                  <button type="button" class="button ghost small icon-only" aria-label="View order">
+                <layout-cluster data-layout-gap="xs" data-layout-nowrap>
+                  <button type="button" class="button ghost small" aria-label="View order">
                     <icon-wc name="eye" size="sm"></icon-wc>
                   </button>
-                  <button type="button" class="button ghost small icon-only" aria-label="Edit order">
+                  <button type="button" class="button ghost small" aria-label="Edit order">
                     <icon-wc name="edit" size="sm"></icon-wc>
                   </button>
-                  <button type="button" class="button ghost small icon-only" aria-label="More actions">
+                  <button type="button" class="button ghost small" aria-label="More actions">
                     <icon-wc name="more-vertical" size="sm"></icon-wc>
                   </button>
-                </div>
+                </layout-cluster>
               </td>
             </tr>
             <tr>
               <td>
-                <div data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+                <layout-cluster data-layout-gap="s" data-layout-nowrap>
                   <user-avatar data-size="sm">
-                    <div data-fallback>RJ</div>
+                    <span data-fallback>RJ</span>
                   </user-avatar>
                   <span>Robert Johnson</span>
-                </div>
+                </layout-cluster>
               </td>
               <td>robert.j@example.com</td>
               <td><layout-badge data-color="warning" data-variant="subtle" data-size="l">Pending</layout-badge></td>
               <td>$89.99</td>
               <td>Jan 14, 2026</td>
               <td>
-                <div data-layout="cluster" data-layout-gap="xs">
-                  <button type="button" class="button ghost small icon-only" aria-label="View order">
+                <layout-cluster data-layout-gap="xs" data-layout-nowrap>
+                  <button type="button" class="button ghost small" aria-label="View order">
                     <icon-wc name="eye" size="sm"></icon-wc>
                   </button>
-                  <button type="button" class="button ghost small icon-only" aria-label="Edit order">
+                  <button type="button" class="button ghost small" aria-label="Edit order">
                     <icon-wc name="edit" size="sm"></icon-wc>
                   </button>
-                  <button type="button" class="button ghost small icon-only" aria-label="More actions">
+                  <button type="button" class="button ghost small" aria-label="More actions">
                     <icon-wc name="more-vertical" size="sm"></icon-wc>
                   </button>
-                </div>
+                </layout-cluster>
               </td>
             </tr>
             <tr>
               <td>
-                <div data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+                <layout-cluster data-layout-gap="s" data-layout-nowrap>
                   <user-avatar data-size="sm">
-                    <div data-fallback>EW</div>
+                    <span data-fallback>EW</span>
                   </user-avatar>
                   <span>Emily Wilson</span>
-                </div>
+                </layout-cluster>
               </td>
               <td>emily.wilson@example.com</td>
               <td><layout-badge data-color="success" data-variant="subtle" data-size="l">Completed</layout-badge></td>
               <td>$432.00</td>
               <td>Jan 13, 2026</td>
               <td>
-                <div data-layout="cluster" data-layout-gap="xs">
-                  <button type="button" class="button ghost small icon-only" aria-label="View order">
+                <layout-cluster data-layout-gap="xs" data-layout-nowrap>
+                  <button type="button" class="button ghost small" aria-label="View order">
                     <icon-wc name="eye" size="sm"></icon-wc>
                   </button>
-                  <button type="button" class="button ghost small icon-only" aria-label="Edit order">
+                  <button type="button" class="button ghost small" aria-label="Edit order">
                     <icon-wc name="edit" size="sm"></icon-wc>
                   </button>
-                  <button type="button" class="button ghost small icon-only" aria-label="More actions">
+                  <button type="button" class="button ghost small" aria-label="More actions">
                     <icon-wc name="more-vertical" size="sm"></icon-wc>
                   </button>
-                </div>
+                </layout-cluster>
               </td>
             </tr>
             <tr>
               <td>
-                <div data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+                <layout-cluster data-layout-gap="s" data-layout-nowrap>
                   <user-avatar data-size="sm">
-                    <div data-fallback>MB</div>
+                    <span data-fallback>MB</span>
                   </user-avatar>
                   <span>Michael Brown</span>
-                </div>
+                </layout-cluster>
               </td>
               <td>m.brown@example.com</td>
               <td><layout-badge data-color="error" data-variant="subtle" data-size="l">Cancelled</layout-badge></td>
               <td>$75.00</td>
               <td>Jan 12, 2026</td>
               <td>
-                <div data-layout="cluster" data-layout-gap="xs">
-                  <button type="button" class="button ghost small icon-only" aria-label="View order">
+                <layout-cluster data-layout-gap="xs" data-layout-nowrap>
+                  <button type="button" class="button ghost small" aria-label="View order">
                     <icon-wc name="eye" size="sm"></icon-wc>
                   </button>
-                  <button type="button" class="button ghost small icon-only" aria-label="Edit order">
+                  <button type="button" class="button ghost small" aria-label="Edit order">
                     <icon-wc name="edit" size="sm"></icon-wc>
                   </button>
-                  <button type="button" class="button ghost small icon-only" aria-label="More actions">
+                  <button type="button" class="button ghost small" aria-label="More actions">
                     <icon-wc name="more-vertical" size="sm"></icon-wc>
                   </button>
-                </div>
+                </layout-cluster>
               </td>
             </tr>
             <tr>
               <td>
-                <div data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+                <layout-cluster data-layout-gap="s" data-layout-nowrap>
                   <user-avatar data-size="sm">
-                    <div data-fallback>JT</div>
+                    <span data-fallback>JT</span>
                   </user-avatar>
                   <span>Jessica Taylor</span>
-                </div>
+                </layout-cluster>
               </td>
               <td>j.taylor@example.com</td>
               <td><layout-badge data-color="info" data-variant="subtle" data-size="l">Processing</layout-badge></td>
               <td>$567.25</td>
               <td>Jan 11, 2026</td>
               <td>
-                <div data-layout="cluster" data-layout-gap="xs">
-                  <button type="button" class="button ghost small icon-only" aria-label="View order">
+                <layout-cluster data-layout-gap="xs" data-layout-nowrap>
+                  <button type="button" class="button ghost small" aria-label="View order">
                     <icon-wc name="eye" size="sm"></icon-wc>
                   </button>
-                  <button type="button" class="button ghost small icon-only" aria-label="Edit order">
+                  <button type="button" class="button ghost small" aria-label="Edit order">
                     <icon-wc name="edit" size="sm"></icon-wc>
                   </button>
-                  <button type="button" class="button ghost small icon-only" aria-label="More actions">
+                  <button type="button" class="button ghost small" aria-label="More actions">
                     <icon-wc name="more-vertical" size="sm"></icon-wc>
                   </button>
-                </div>
+                </layout-cluster>
               </td>
             </tr>
           </tbody>
         </table>
-      </div>
+      </data-table>
     </layout-card>
 
     <!-- Pagination -->
     <footer data-layout="cluster" data-layout-justify="between" data-layout-align="center">
-      <span class="text-sm text-muted">Showing 1-6 of 48 results</span>
+      <small>Showing 1-6 of 48 results</small>
       <nav aria-label="Pagination" data-layout="cluster" data-layout-gap="xs">
         <button type="button" class="button ghost small" disabled aria-label="Previous page">
           <icon-wc name="chevron-left" size="sm"></icon-wc>
@@ -262,14 +254,14 @@
         <button type="button" class="button small" aria-current="page">1</button>
         <button type="button" class="button ghost small">2</button>
         <button type="button" class="button ghost small">3</button>
-        <span class="text-muted">...</span>
+        <span>…</span>
         <button type="button" class="button ghost small">8</button>
         <button type="button" class="button ghost small" aria-label="Next page">
           <icon-wc name="chevron-right" size="sm"></icon-wc>
         </button>
       </nav>
     </footer>
-  </div>
+  </main>
 
   <script type="module" src="/src/main.js"></script>
 </body>

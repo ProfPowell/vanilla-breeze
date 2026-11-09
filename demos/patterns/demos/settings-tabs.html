@@ -10,99 +10,30 @@
       background: var(--color-surface-alt);
       padding: var(--size-xl);
     }
-    .settings-card {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-l);
-      overflow: hidden;
-    }
-    .settings-header {
-      padding: var(--size-l);
-      border-bottom: 1px solid var(--color-border);
-    }
-    .tab-list {
-      display: flex;
-      gap: 0;
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      background: var(--color-surface);
-      border-bottom: 1px solid var(--color-border);
-    }
-    .tab {
-      padding: var(--size-m) var(--size-l);
-      background: transparent;
-      border: none;
-      border-bottom: 2px solid transparent;
-      color: var(--color-text-muted);
-      font-weight: var(--font-weight-medium);
-      font-size: var(--font-size-s);
-      cursor: pointer;
-      transition: all var(--duration-fast) var(--ease-default);
-      margin-bottom: -1px;
-    }
-    .tab:hover {
-      color: var(--color-text);
-      background: var(--color-surface-raised);
-    }
-    .tab[aria-selected="true"] {
-      color: var(--color-interactive);
-      border-bottom-color: var(--color-interactive);
-    }
-    .tab-panel {
-      padding: var(--size-l);
-    }
-    .tab-panel[hidden] {
-      display: none;
-    }
-    .setting-row {
-      padding: var(--size-m) 0;
-      border-bottom: 1px solid var(--color-border);
-    }
-    .setting-row:last-child {
-      border-bottom: none;
-    }
-    .setting-row h3 {
+    /* Setting rows: a heading-sized label in each row, not a page heading */
+    tab-set hgroup > h2 {
       font-size: var(--font-size-m);
-      font-weight: var(--font-weight-medium);
     }
-    .setting-row hgroup > p {
-      font-size: var(--font-size-s);
-    }
-    .setting-row hgroup {
-      flex: 1;
+    /* Destructive action: recolour the whole button palette */
+    button[name="delete_account"] {
+      --btn-color: var(--color-error);
     }
   </style>
 </head>
 <body>
-  <section data-layout="center" data-layout-max="normal" data-layout-gap="l">
-    <header data-layout="stack" data-layout-gap="xs">
+  <main data-layout="center" data-layout-max="normal" data-layout-gap="l">
+    <hgroup>
       <h1>Settings</h1>
-      <p class="text-muted">Manage your account settings and preferences.</p>
-    </header>
+      <p>Manage your account settings and preferences.</p>
+    </hgroup>
 
-    <div class="settings-card">
-      <!-- Tab List -->
-      <div role="tablist" class="tab-list" aria-label="Settings sections">
-        <button type="button" role="tab" class="tab" id="tab-account" aria-selected="true" aria-controls="panel-account">
-          Account
-        </button>
-        <button type="button" role="tab" class="tab" id="tab-security" aria-selected="false" aria-controls="panel-security" tabindex="-1">
-          Security
-        </button>
-        <button type="button" role="tab" class="tab" id="tab-notifications" aria-selected="false" aria-controls="panel-notifications" tabindex="-1">
-          Notifications
-        </button>
-        <button type="button" role="tab" class="tab" id="tab-billing" aria-selected="false" aria-controls="panel-billing" tabindex="-1">
-          Billing
-        </button>
-      </div>
-
-      <!-- Account Panel -->
-      <div role="tabpanel" class="tab-panel" id="panel-account" aria-labelledby="tab-account">
-        <div data-layout="stack" data-layout-gap="l">
+    <layout-card>
+      <tab-set aria-label="Settings sections">
+        <!-- Account -->
+        <details name="settings-tabs" open>
+          <summary>Account</summary>
           <form data-layout="stack" data-layout-gap="l">
-            <div data-layout="grid" data-layout-min="m" data-layout-gap="l">
+            <layout-grid data-layout-min="m" data-layout-gap="l">
               <form-field>
                 <label for="display-name">Display name</label>
                 <input type="text" id="display-name" name="display_name" value="John Doe"/>
@@ -111,7 +42,7 @@
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" value="johndoe"/>
               </form-field>
-            </div>
+            </layout-grid>
 
             <form-field>
               <label for="email">Email address</label>
@@ -127,174 +58,127 @@
               <button type="submit">Update profile</button>
             </footer>
           </form>
-        </div>
-      </div>
+        </details>
 
-      <!-- Security Panel -->
-      <div role="tabpanel" class="tab-panel" id="panel-security" aria-labelledby="tab-security" hidden>
-        <div data-layout="stack" data-layout-gap="l">
-          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="l">
-            <hgroup class="tight">
-              <h2>Change password</h2>
-              <p>Update your password to keep your account secure.</p>
-            </hgroup>
-            <button type="button" class="secondary small">Change</button>
-          </div>
+        <!-- Security -->
+        <details name="settings-tabs">
+          <summary>Security</summary>
+          <layout-stack data-layout-gap="l">
+            <layout-cluster data-layout-justify="between" data-layout-gap="l">
+              <hgroup class="tight">
+                <h2>Change password</h2>
+                <p>Update your password to keep your account secure.</p>
+              </hgroup>
+              <button type="button" class="secondary small">Change</button>
+            </layout-cluster>
 
-          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="center" data-layout-gap="l">
-            <hgroup class="tight">
-              <h2 id="two-factor-label">Two-factor authentication</h2>
-              <p>Add an extra layer of security to your account.</p>
-            </hgroup>
-            <input type="checkbox" data-switch name="two_factor" aria-labelledby="two-factor-label"/>
-          </div>
+            <layout-cluster data-layout-justify="between" data-layout-gap="l">
+              <hgroup class="tight">
+                <h2 id="two-factor-label">Two-factor authentication</h2>
+                <p>Add an extra layer of security to your account.</p>
+              </hgroup>
+              <input type="checkbox" data-switch name="two_factor" aria-labelledby="two-factor-label"/>
+            </layout-cluster>
 
-          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="l">
-            <hgroup class="tight">
-              <h2>Active sessions</h2>
-              <p>Manage devices where you're currently logged in.</p>
-            </hgroup>
-            <button type="button" class="secondary small">View all</button>
-          </div>
+            <layout-cluster data-layout-justify="between" data-layout-gap="l">
+              <hgroup class="tight">
+                <h2>Active sessions</h2>
+                <p>Manage devices where you're currently logged in.</p>
+              </hgroup>
+              <button type="button" class="secondary small">View all</button>
+            </layout-cluster>
 
-          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="l">
-            <hgroup class="tight">
-              <h2>Delete account</h2>
-              <p>Permanently delete your account and all associated data.</p>
-            </hgroup>
-            <button type="button" class="danger small">Delete</button>
-          </div>
-        </div>
-      </div>
+            <layout-cluster data-layout-justify="between" data-layout-gap="l">
+              <hgroup class="tight">
+                <h2>Delete account</h2>
+                <p>Permanently delete your account and all associated data.</p>
+              </hgroup>
+              <button type="button" class="secondary small" name="delete_account">Delete</button>
+            </layout-cluster>
+          </layout-stack>
+        </details>
 
-      <!-- Notifications Panel -->
-      <div role="tabpanel" class="tab-panel" id="panel-notifications" aria-labelledby="tab-notifications" hidden>
-        <div data-layout="stack" data-layout-gap="l">
-          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="center" data-layout-gap="l">
-            <hgroup class="tight">
-              <h2 id="email-notifications-label">Email notifications</h2>
-              <p>Receive email updates about your account activity.</p>
-            </hgroup>
-            <input type="checkbox" data-switch name="email_notifications" checked aria-labelledby="email-notifications-label"/>
-          </div>
+        <!-- Notifications -->
+        <details name="settings-tabs">
+          <summary>Notifications</summary>
+          <layout-stack data-layout-gap="l">
+            <layout-cluster data-layout-justify="between" data-layout-gap="l">
+              <hgroup class="tight">
+                <h2 id="email-notifications-label">Email notifications</h2>
+                <p>Receive email updates about your account activity.</p>
+              </hgroup>
+              <input type="checkbox" data-switch name="email_notifications" checked aria-labelledby="email-notifications-label"/>
+            </layout-cluster>
 
-          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="center" data-layout-gap="l">
-            <hgroup class="tight">
-              <h2 id="push-notifications-label">Push notifications</h2>
-              <p>Get push notifications on your devices.</p>
-            </hgroup>
-            <input type="checkbox" data-switch name="push_notifications" checked aria-labelledby="push-notifications-label"/>
-          </div>
+            <layout-cluster data-layout-justify="between" data-layout-gap="l">
+              <hgroup class="tight">
+                <h2 id="push-notifications-label">Push notifications</h2>
+                <p>Get push notifications on your devices.</p>
+              </hgroup>
+              <input type="checkbox" data-switch name="push_notifications" checked aria-labelledby="push-notifications-label"/>
+            </layout-cluster>
 
-          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="center" data-layout-gap="l">
-            <hgroup class="tight">
-              <h2 id="weekly-digest-label">Weekly digest</h2>
-              <p>Receive a weekly summary of your activity.</p>
-            </hgroup>
-            <input type="checkbox" data-switch name="weekly_digest" aria-labelledby="weekly-digest-label"/>
-          </div>
+            <layout-cluster data-layout-justify="between" data-layout-gap="l">
+              <hgroup class="tight">
+                <h2 id="weekly-digest-label">Weekly digest</h2>
+                <p>Receive a weekly summary of your activity.</p>
+              </hgroup>
+              <input type="checkbox" data-switch name="weekly_digest" aria-labelledby="weekly-digest-label"/>
+            </layout-cluster>
 
-          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="center" data-layout-gap="l">
-            <hgroup class="tight">
-              <h2 id="marketing-emails-label">Marketing emails</h2>
-              <p>Receive updates about new features and promotions.</p>
-            </hgroup>
-            <input type="checkbox" data-switch name="marketing_emails" aria-labelledby="marketing-emails-label"/>
-          </div>
-        </div>
-      </div>
+            <layout-cluster data-layout-justify="between" data-layout-gap="l">
+              <hgroup class="tight">
+                <h2 id="marketing-emails-label">Marketing emails</h2>
+                <p>Receive updates about new features and promotions.</p>
+              </hgroup>
+              <input type="checkbox" data-switch name="marketing_emails" aria-labelledby="marketing-emails-label"/>
+            </layout-cluster>
+          </layout-stack>
+        </details>
 
-      <!-- Billing Panel -->
-      <div role="tabpanel" class="tab-panel" id="panel-billing" aria-labelledby="tab-billing" hidden>
-        <div data-layout="stack" data-layout-gap="l">
-          <layout-card data-variant="outlined" data-padding="m">
-            <div data-layout="cluster" data-layout-justify="between" data-layout-align="center">
-              <div data-layout="stack" data-layout-gap="2xs">
-                <span class="text-sm text-muted">Current plan</span>
-                <span class="text-lg font-semibold">Pro Plan - $29/month</span>
-              </div>
-              <button type="button" class="secondary small">Change plan</button>
-            </div>
-          </layout-card>
+        <!-- Billing -->
+        <details name="settings-tabs">
+          <summary>Billing</summary>
+          <layout-stack data-layout-gap="l">
+            <layout-card data-variant="outlined" data-padding="m">
+              <layout-cluster data-layout-justify="between">
+                <dl data-variant="stacked">
+                  <dt>Current plan</dt>
+                  <dd><strong>Pro Plan - $29/month</strong></dd>
+                </dl>
+                <button type="button" class="secondary small">Change plan</button>
+              </layout-cluster>
+            </layout-card>
 
-          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="l">
-            <hgroup class="tight">
-              <h2>Payment method</h2>
-              <p>Visa ending in 4242 - Expires 12/2027</p>
-            </hgroup>
-            <button type="button" class="secondary small">Update</button>
-          </div>
+            <layout-cluster data-layout-justify="between" data-layout-gap="l">
+              <hgroup class="tight">
+                <h2>Payment method</h2>
+                <p>Visa ending in 4242 - Expires 12/2027</p>
+              </hgroup>
+              <button type="button" class="secondary small">Update</button>
+            </layout-cluster>
 
-          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="l">
-            <hgroup class="tight">
-              <h2>Billing address</h2>
-              <p>123 Main St, San Francisco, CA 94102</p>
-            </hgroup>
-            <button type="button" class="secondary small">Edit</button>
-          </div>
+            <layout-cluster data-layout-justify="between" data-layout-gap="l">
+              <hgroup class="tight">
+                <h2>Billing address</h2>
+                <p>123 Main St, San Francisco, CA 94102</p>
+              </hgroup>
+              <button type="button" class="secondary small">Edit</button>
+            </layout-cluster>
 
-          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="l">
-            <hgroup class="tight">
-              <h2>Invoices</h2>
-              <p>Download past invoices and billing statements.</p>
-            </hgroup>
-            <button type="button" class="secondary small">View history</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+            <layout-cluster data-layout-justify="between" data-layout-gap="l">
+              <hgroup class="tight">
+                <h2>Invoices</h2>
+                <p>Download past invoices and billing statements.</p>
+              </hgroup>
+              <button type="button" class="secondary small">View history</button>
+            </layout-cluster>
+          </layout-stack>
+        </details>
+      </tab-set>
+    </layout-card>
+  </main>
 
   <script type="module" src="/src/main.js"></script>
-  <script>
-    // Tab functionality
-    const tablist = document.querySelector('[role="tablist"]');
-    const tabs = tablist.querySelectorAll('[role="tab"]');
-    const panels = document.querySelectorAll('[role="tabpanel"]');
-
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        // Deselect all tabs
-        tabs.forEach(t => {
-          t.setAttribute('aria-selected', 'false');
-          t.setAttribute('tabindex', '-1');
-        });
-
-        // Hide all panels
-        panels.forEach(p => p.hidden = true);
-
-        // Select clicked tab
-        tab.setAttribute('aria-selected', 'true');
-        tab.removeAttribute('tabindex');
-
-        // Show associated panel
-        const panelId = tab.getAttribute('aria-controls');
-        document.getElementById(panelId).hidden = false;
-      });
-
-      // Keyboard navigation
-      tab.addEventListener('keydown', (e) => {
-        const tabArray = Array.from(tabs);
-        const index = tabArray.indexOf(tab);
-        let newIndex;
-
-        if (e.key === 'ArrowRight') {
-          newIndex = (index + 1) % tabs.length;
-        } else if (e.key === 'ArrowLeft') {
-          newIndex = (index - 1 + tabs.length) % tabs.length;
-        } else if (e.key === 'Home') {
-          newIndex = 0;
-        } else if (e.key === 'End') {
-          newIndex = tabs.length - 1;
-        } else {
-          return;
-        }
-
-        e.preventDefault();
-        tabArray[newIndex].click();
-        tabArray[newIndex].focus();
-      });
-    });
-  </script>
 </body>
 </html>

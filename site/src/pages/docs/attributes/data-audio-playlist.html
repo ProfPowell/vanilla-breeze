@@ -1,0 +1,126 @@
+---
+layout: attribute
+title: "data-audio-playlist"
+description: "Turns a native audio element and a list of track links into a playlist: click a track to play it, finished tracks are marked, and playback moves to the next track."
+attributeName: data-audio-playlist
+category: interaction
+attributeType: data
+currentPath: /docs/attributes/data-audio-playlist/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>data-audio-playlist</code> goes on a container that holds a native <code>&lt;audio controls&gt;</code> and an <code>&lt;ol class="track-list"&gt;</code> of links to audio files. Clicking a track loads it into the player and plays it. When a track ends it is marked as played and the next track in the list starts. Playback stops after the last track.</p>
+  <p>Without JavaScript each track is an ordinary link to its audio file, which the browser plays or downloads.</p>
+
+  <browser-window
+    src="/docs/snippets/demos/audio-tracklist.html"
+    url="https://vanilla-breeze.com/playlist"
+    title="data-audio-playlist"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="A playlist" data-escape><section data-audio-playlist>
+  <audio controls>
+    <source src="tracks/01.mp3" type="audio/mpeg" />
+    <p><a href="tracks/01.mp3" download>Download track 1</a></p>
+  </audio>
+  <details open>
+    <summary>Track Listing</summary>
+    <ol class="track-list">
+      <li data-audio-active>
+        <a href="tracks/01.mp3">01. Opening Theme</a>
+        <span class="track-meta"><time datetime="PT2M14S">2:14</time></span>
+      </li>
+      <li>
+        <a href="tracks/02.mp3">02. Main Theme</a>
+        <span class="track-meta"><time datetime="PT3M45S">3:45</time></span>
+      </li>
+    </ol>
+  </details>
+</section></code-block>
+
+  <p>The script ships with the full bundle (<code>vanilla-breeze.js</code>); the core and autoload bundles load it on demand when a <code>[data-audio-playlist]</code> container first appears.</p>
+
+  <p>For a custom player UI with shuffle and loop, use <a href="/docs/elements/web-components/audio-player/"><code>&lt;audio-player&gt;</code></a>. It shares the same track-list markup and track states.</p>
+</section>
+
+<section>
+  <h2>Options</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute or class</th>
+        <th>On</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-audio-playlist</code></td>
+        <td>the container</td>
+        <td>Boolean. Turns on the playlist. The container must hold an <code>&lt;audio&gt;</code> and a <code>.track-list</code>; otherwise it is left alone.</td>
+      </tr>
+      <tr>
+        <td><code>.track-list</code></td>
+        <td><code>&lt;ol&gt;</code> or <code>&lt;ul&gt;</code></td>
+        <td>The track list. Each <code>&lt;li&gt;</code> holds an <code>&lt;a href&gt;</code> to an audio file; the link's <code>href</code> becomes the player's source.</td>
+      </tr>
+      <tr>
+        <td><code>data-audio-active</code></td>
+        <td><code>&lt;li&gt;</code></td>
+        <td>The current track. Author it on the track the <code>&lt;audio&gt;</code> starts with; the script moves it on click and when a track ends.</td>
+      </tr>
+      <tr>
+        <td><code>data-audio-played</code></td>
+        <td><code>&lt;li&gt;</code></td>
+        <td>(Set by the script.) The track has played to the end. Played tracks that are not active are dimmed.</td>
+      </tr>
+      <tr>
+        <td><code>data-audio-favorite</code></td>
+        <td><code>&lt;li&gt;</code></td>
+        <td>Styling only: marks a favourite track with a heart.</td>
+      </tr>
+      <tr>
+        <td><code>data-audio-playlist-init</code></td>
+        <td>the container</td>
+        <td>(Set by the script.) Marks an enhanced container so it is not enhanced twice. Do not author it.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Styling</h2>
+  <p>The track list styles live with the native audio styles (<code>src/native-elements/audio/styles.css</code>): a <code>&lt;details&gt;</code> that contains a <code>.track-list</code> gets a bordered summary, the active track is highlighted, played tracks are muted and favourites get a heart. <code>.track-meta</code> holds a duration or other detail at the end of the row.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The tracks are real links in a real list, so they are announced as "list, 3 items" and reachable with the keyboard.</li>
+    <li>The native <code>&lt;audio controls&gt;</code> provides the play, pause, seek and volume controls, with the browser's own keyboard support and accessible names.</li>
+    <li>Clicking a track starts playback. That is a user action, so it is allowed by autoplay rules; nothing plays on page load.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Gotchas</h2>
+  <ul>
+    <li><strong><code>loop</code> repeats one track.</strong> A native <code>&lt;audio loop&gt;</code> never fires <code>ended</code>, so the playlist does not advance.</li>
+    <li><strong>The first source comes from the markup.</strong> Keep the <code>&lt;audio&gt;</code>'s <code>&lt;source&gt;</code> and the track marked <code>data-audio-active</code> in step.</li>
+    <li><strong>Not for <code>&lt;audio-player&gt;</code>.</strong> The component handles its own playlist; do not add the attribute to it.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> &mdash; the native element, captions and track lists.</li>
+    <li><a href="/docs/elements/web-components/audio-player/"><code>&lt;audio-player&gt;</code></a> &mdash; a full custom player with the same track-list markup.</li>
+    <li><a href="/docs/attributes/controls/"><code>controls</code></a> &mdash; the native attribute that gives the player its UI.</li>
+  </ul>
+</section>

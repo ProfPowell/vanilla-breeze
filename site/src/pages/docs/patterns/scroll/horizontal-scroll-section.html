@@ -15,7 +15,7 @@ currentPath: /docs/patterns/scroll/horizontal-scroll-section/
     <ul>
       <li>An outer <code>.stage</code> taller than the viewport — its height controls how long the horizontal pass lasts</li>
       <li>A <code>.track</code> that is <code>position: sticky</code>, viewport-sized, with <code>overflow: hidden</code></li>
-      <li>A <code>.row</code> inside the track containing the horizontal content</li>
+      <li>An <code>&lt;ol&gt;</code> with <code>.scroll-row</code> inside the track, holding the horizontal content</li>
       <li><code>animation-timeline: view()</code> on the row drives a translate-X animation from the stage&apos;s scroll progress</li>
       <li>Reduced-motion users get a wrapped vertical layout</li>
     </ul>
@@ -28,12 +28,12 @@ currentPath: /docs/patterns/scroll/horizontal-scroll-section/
   <h2>HTML</h2>
   <code-block language="html" label="Stage + sticky track + row" data-escape><section class="stage">
   <section class="track">
-    <div class="row" role="list">
-      <article role="listitem">Step 1</article>
-      <article role="listitem">Step 2</article>
-      <article role="listitem">Step 3</article>
-      <article role="listitem">Step 4</article>
-    </div>
+    <ol class="scroll-row">
+      <li><h2>Step 1</h2> …</li>
+      <li><h2>Step 2</h2> …</li>
+      <li><h2>Step 3</h2> …</li>
+      <li><h2>Step 4</h2> …</li>
+    </ol>
   </section>
 </section></code-block>
 </section>
@@ -54,13 +54,15 @@ currentPath: /docs/patterns/scroll/horizontal-scroll-section/
   align-items: center;
 }
 
-.row {
+.scroll-row {
   display: flex;
   gap: var(--size-l);
   padding-inline: 5vw;
+  list-style: none;
+  margin: 0;
 }
 
-.row > article {
+.scroll-row > li {
   flex: 0 0 70vw;
   max-inline-size: 50rem;
   padding: var(--size-xl);
@@ -69,7 +71,7 @@ currentPath: /docs/patterns/scroll/horizontal-scroll-section/
 
 @supports (animation-timeline: view()) {
   .stage { view-timeline-name: --hstage; }
-  .row {
+  .scroll-row {
     animation: scroll-left 1s linear forwards;
     animation-timeline: --hstage;
     animation-range: cover 0% cover 100%;
@@ -81,7 +83,7 @@ currentPath: /docs/patterns/scroll/horizontal-scroll-section/
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .row   { animation: none; flex-wrap: wrap; }
+  .scroll-row   { animation: none; flex-wrap: wrap; }
   .track { block-size: auto; overflow: visible; }
   .stage { block-size: auto; }
 }</code-block>

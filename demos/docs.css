@@ -431,6 +431,63 @@
     }
   }
 
+  /* Theme preview panel: an .example scoped to a theme paints that
+     theme's own page surface and radius. Samples nested directly inside
+     an example (side-by-side theme or mode pairs) get a smaller frame. */
+  .example[data-theme] {
+    background: var(--color-background);
+    color: var(--color-text);
+    border-radius: var(--radius-l);
+  }
+
+  .example > [data-theme] {
+    padding: var(--size-m);
+    background: var(--color-background);
+    color: var(--color-text);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-m);
+  }
+
+  /* ===========================================
+     Text inside docs cards and example panels
+     The card padding and the layout-stack gap own the spacing, so text
+     in a stack carries no margin (VB's p + p flow margin and
+     .section-card's heading margin would otherwise add to the gap).
+     Cards inside a <browser-window> are component demos: left alone.
+     =========================================== */
+
+  :is(.section-card, layout-card, .example):not(browser-window *) :is(layout-stack, [data-layout="stack"]) > :is(h2, h3, h4, h5, h6, p, ul, ol, hgroup) {
+    margin: 0;
+  }
+
+  :is(.section-card, layout-card):not(browser-window *) :is(layout-stack, [data-layout="stack"]) > :is(ul, ol) {
+    padding-inline-start: var(--size-m);
+  }
+
+  /* Card heading with a leading icon */
+  :is(.section-card, layout-card):not(browser-window *) :is(h2, h3, h4):has(> icon-wc) {
+    display: flex;
+    align-items: center;
+    gap: var(--size-xs);
+  }
+
+  /* Heading + description: an <hgroup> mutes the description (hgroup's
+     own rule). In a card it keeps the stack's rhythm and body text size. */
+  :is(.section-card, layout-card, .example):not(browser-window *) hgroup {
+    gap: inherit;
+
+    & > p {
+      font-size: inherit;
+      max-inline-size: none;
+    }
+  }
+
+  /* A card's trailing note: smaller, muted text */
+  :is(.section-card, layout-card):not(browser-window *) :is(layout-stack, [data-layout="stack"]) > small {
+    font-size: var(--font-size-s);
+    color: var(--color-text-muted);
+  }
+
   .code-block {
     background: var(--color-gray-900);
     color: var(--color-gray-100);
@@ -518,6 +575,15 @@
   browser-window + code-block {
     margin-block-start: var(--size-s);
   }
+
+  /* Demo-height scale: reserve room for demos whose content opens over or
+     below the frame (menus, popovers, image maps, full pages). One scale
+     for every docs page; set data-demo-height instead of an inline height. */
+  browser-window[data-demo-height="s"]  { min-block-size: 16rem; }
+  browser-window[data-demo-height="m"]  { min-block-size: 24rem; }
+  browser-window[data-demo-height="l"]  { min-block-size: 32rem; }
+  browser-window[data-demo-height="xl"] { min-block-size: 40rem; }
+  browser-window[data-demo-height="2xl"] { min-block-size: 60rem; }
 
   /* Browser-window maximize — escape container-type stacking contexts
      container-type: inline-size (from layout-attributes.css) creates stacking
@@ -703,10 +769,229 @@
     padding: var(--size-2xs) var(--size-s);
   }
 
-  /* In card/entry contexts, don't stretch to full width */
-  .element-entry .pack-badge,
-  .attribute-entry .pack-badge {
-    align-self: flex-start;
+  /* ===========================================
+     Token specimens (/docs/tokens/)
+     data-token names the token a sample shows (without the leading --);
+     the prefix picks the specimen shape. Spacing rows use <token-scale>
+     and font sizes <token-row>; they need only the per-token value.
+     =========================================== */
+
+  [data-token^="color-gray-"] {
+    display: inline-block;
+    inline-size: 3rem;
+    block-size: 2rem;
+  }
+  [data-token="color-gray-50"] { background: var(--color-gray-50); border: var(--border-width-thin) solid var(--color-border); }
+  [data-token="color-gray-100"] { background: var(--color-gray-100); border: var(--border-width-thin) solid var(--color-border); }
+  [data-token="color-gray-200"] { background: var(--color-gray-200); }
+  [data-token="color-gray-300"] { background: var(--color-gray-300); }
+  [data-token="color-gray-400"] { background: var(--color-gray-400); }
+  [data-token="color-gray-500"] { background: var(--color-gray-500); }
+  [data-token="color-gray-600"] { background: var(--color-gray-600); }
+  [data-token="color-gray-700"] { background: var(--color-gray-700); }
+  [data-token="color-gray-800"] { background: var(--color-gray-800); }
+  [data-token="color-gray-900"] { background: var(--color-gray-900); }
+
+  :is([data-token="color-primary"], [data-token="color-secondary"], [data-token="color-accent"]) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-xs);
+    padding: var(--size-s) var(--size-m);
+    border-radius: var(--radius-m);
+  }
+
+  [data-token="color-primary"]   { background: var(--color-primary); color: var(--color-text-on-primary); }
+  [data-token="color-secondary"] { background: var(--color-secondary); color: white; }
+  [data-token="color-accent"]    { background: var(--color-accent); }
+
+  token-scale > [data-bar][data-token="size-3xs"] { inline-size: var(--size-3xs); }
+  token-scale > [data-bar][data-token="size-2xs"] { inline-size: var(--size-2xs); }
+  token-scale > [data-bar][data-token="size-xs"] { inline-size: var(--size-xs); }
+  token-scale > [data-bar][data-token="size-s"] { inline-size: var(--size-s); }
+  token-scale > [data-bar][data-token="size-m"] { inline-size: var(--size-m); }
+  token-scale > [data-bar][data-token="size-l"] { inline-size: var(--size-l); }
+  token-scale > [data-bar][data-token="size-xl"] { inline-size: var(--size-xl); }
+  token-scale > [data-bar][data-token="size-2xl"] { inline-size: var(--size-2xl); }
+  token-scale > [data-bar][data-token="size-3xl"] { inline-size: var(--size-3xl); }
+
+  [data-token="font-size-xs"] { font-size: var(--font-size-xs); }
+  [data-token="font-size-s"] { font-size: var(--font-size-s); }
+  [data-token="font-size-m"] { font-size: var(--font-size-m); }
+  [data-token="font-size-l"] { font-size: var(--font-size-l); }
+  [data-token="font-size-xl"] { font-size: var(--font-size-xl); }
+  [data-token="font-size-2xl"] { font-size: var(--font-size-2xl); }
+  [data-token="font-size-3xl"] { font-size: var(--font-size-3xl); }
+  [data-token="font-size-4xl"] { font-size: var(--font-size-4xl); }
+  [data-token="font-size-5xl"] { font-size: var(--font-size-5xl); }
+
+  :is([data-token^="radius-"], [data-token^="shadow-"]) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-s);
+  }
+
+  [data-token^="radius-"] {
+    inline-size: 4rem;
+    block-size: 4rem;
+    background: var(--color-surface-raised);
+    border: var(--border-width-thin) solid var(--color-border);
+  }
+
+  [data-token="radius-xs"] { border-radius: var(--radius-xs); }
+  [data-token="radius-s"] { border-radius: var(--radius-s); }
+  [data-token="radius-m"] { border-radius: var(--radius-m); }
+  [data-token="radius-l"] { border-radius: var(--radius-l); }
+  [data-token="radius-xl"] { border-radius: var(--radius-xl); }
+  [data-token="radius-full"] { border-radius: var(--radius-full); }
+
+  [data-token^="shadow-"] {
+    inline-size: 6rem;
+    block-size: 6rem;
+    background: var(--color-surface);
+    border-radius: var(--radius-m);
+  }
+
+  [data-token="shadow-xs"] { box-shadow: var(--shadow-xs); }
+  [data-token="shadow-s"] { box-shadow: var(--shadow-s); }
+  [data-token="shadow-m"] { box-shadow: var(--shadow-m); }
+  [data-token="shadow-l"] { box-shadow: var(--shadow-l); }
+  [data-token="shadow-xl"] { box-shadow: var(--shadow-xl); }
+
+  /* ===========================================
+     Filterable index pages (/docs/attributes/, /docs/elements/)
+     One shared set: a chip filter bar, a search box, entry cards in a
+     data-layout="grid" nav, and group headings that span the grid. Chips
+     and entries carry data-type; the page script filters on it and sets
+     [hidden], so every rule that sets display re-asserts [hidden].
+     =========================================== */
+
+  .index-filters {
+    margin-block: var(--size-l);
+    padding: var(--size-m);
+    background: var(--color-surface-raised);
+    border: none;
+    border-radius: var(--radius-m);
+  }
+
+  .index-chip {
+    display: flex;
+    align-items: center;
+    gap: var(--size-xs);
+    padding: var(--size-2xs) var(--size-s);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    font-size: var(--font-size-s);
+    user-select: none;
+    transition: opacity 0.2s, border-color 0.2s;
+
+    & input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    &:has(input:not(:checked)) {
+      opacity: 0.4;
+      border-color: transparent;
+    }
+
+    &:hover {
+      border-color: var(--color-interactive);
+    }
+
+    /* The checkbox is visually hidden, so the chip shows its focus */
+    &:has(input:focus-visible) {
+      outline: var(--border-width-medium) solid var(--color-interactive);
+      outline-offset: 2px;
+    }
+  }
+
+  .index-search {
+    margin-block: var(--size-m) var(--size-l);
+    inline-size: 100%;
+    max-inline-size: 25rem;
+  }
+
+  .index-entry {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--size-2xs);
+    padding: var(--size-s) var(--size-m);
+    background: var(--color-surface);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-s);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    /* Entries with a description get a roomier card */
+    &:has(> p) {
+      padding: var(--size-m);
+    }
+
+    &:hover {
+      border-color: var(--color-interactive);
+      box-shadow: 0 2px 8px oklch(0% 0 0 / 0.08);
+    }
+
+    & code {
+      font-family: var(--font-mono);
+      font-size: var(--font-size-s);
+      font-weight: 500;
+    }
+
+    & > p {
+      font-size: var(--font-size-s);
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  /* Group headings span the whole grid. .index-section-heading is the
+     larger top-level group (Native / Data attributes). */
+  .index-heading,
+  .index-section-heading {
+    grid-column: 1 / -1;
+    padding-block-end: var(--size-xs);
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .index-heading {
+    margin-block-start: var(--size-l);
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+    font-size: var(--font-size-l);
+    font-weight: 600;
+    color: var(--color-text-muted);
+
+    &:first-of-type {
+      margin-block-start: 0;
+    }
+  }
+
+  .index-section-heading {
+    margin-block-start: var(--size-xl);
+    border-block-end: var(--border-width-medium) solid var(--color-border);
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+
+    & a {
+      color: inherit;
+      text-decoration: none;
+
+      &:hover {
+        color: var(--color-interactive);
+      }
+    }
   }
 }
 

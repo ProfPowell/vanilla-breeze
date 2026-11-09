@@ -10,13 +10,13 @@ currentPath: /docs/patterns/marketing/cta/
 <section>
     <h2>Overview</h2>
     <layout-text>
-      <p>Call to Action (CTA) sections are critical conversion points on marketing pages. They typically appear after feature sections or at the bottom of landing pages, prompting users to take the next step. These patterns use <code>data-layout="cover"</code> for vertical centering and <code>data-layout="center"</code> for horizontal alignment.</p>
+      <p>Call to Action (CTA) sections are critical conversion points on marketing pages. They typically appear after feature sections or at the bottom of landing pages, prompting users to take the next step. These patterns use <code>section.hero</code> for vertical centering and centered text, <code>data-padding</code> for fluid block padding, and <code>&lt;layout-center&gt;</code> for horizontal alignment.</p>
       <p><strong>Key features:</strong></p>
       <ul>
-        <li>Vertical centering with <code>data-layout="cover"</code></li>
+        <li>Vertical centering with <code>section.hero</code></li>
         <li>Multiple layout variants (centered, split, full-width)</li>
         <li>Background image support with overlays</li>
-        <li>Inline form integration for lead capture</li>
+        <li>Inline form integration with <code>form.inline</code></li>
         <li>Button groups with <code>data-layout="cluster"</code></li>
         <li>Responsive without media queries</li>
       </ul>
@@ -26,7 +26,7 @@ currentPath: /docs/patterns/marketing/cta/
   <section>
     <h2>Centered CTA</h2>
     <layout-text>
-      <p>The most common CTA pattern: centered headline, supporting text, and action buttons. Perfect for page endings and conversion sections.</p>
+      <p>The most common CTA pattern: centered headline, supporting text, and action buttons. Perfect for page endings and conversion sections. <code>section.hero</code> centers the content, <code>.alt</code> adds the raised surface, and <code>data-padding</code> swaps the hero's large padding for the fluid section padding.</p>
     </layout-text>
 
     <browser-window
@@ -36,27 +36,29 @@ currentPath: /docs/patterns/marketing/cta/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Centered CTA with button group">&lt;section class="cta" data-layout="cover" data-layout-min="s" data-layout-padding="xl"&gt;
-  &lt;div class="cta-content" data-layout="center" data-layout-max="normal" data-layout-gap="l"&gt;
-    &lt;h2&gt;Ready to get started?&lt;/h2&gt;
-    &lt;p class="lead"&gt;
-      Join thousands of developers building better interfaces with Vanilla Breeze.
-      Start your free trial today, no credit card required.
-    &lt;/p&gt;
-    &lt;nav&gt;
-      &lt;ul data-layout="cluster" data-layout-justify="center" data-layout-gap="m"&gt;
-        &lt;li&gt;&lt;a href="/signup/" class="button large"&gt;Start Free Trial&lt;/a&gt;&lt;/li&gt;
-        &lt;li&gt;&lt;a href="/contact/" class="button large secondary"&gt;Talk to Sales&lt;/a&gt;&lt;/li&gt;
-      &lt;/ul&gt;
-    &lt;/nav&gt;
-  &lt;/div&gt;
+    <code-block language="html" label="Centered CTA with button group">&lt;section class="hero alt" data-padding&gt;
+  &lt;layout-center data-layout-max="normal"&gt;
+    &lt;layout-stack data-layout-gap="l"&gt;
+      &lt;h2&gt;Ready to get started?&lt;/h2&gt;
+      &lt;p class="lead"&gt;
+        Join thousands of developers building better interfaces with Vanilla Breeze.
+        Start your free trial today, no credit card required.
+      &lt;/p&gt;
+      &lt;nav&gt;
+        &lt;ul data-layout="cluster" data-layout-justify="center" data-layout-gap="m"&gt;
+          &lt;li&gt;&lt;a href="/signup/" class="button large"&gt;Start Free Trial&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href="/contact/" class="button large secondary"&gt;Talk to Sales&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/nav&gt;
+    &lt;/layout-stack&gt;
+  &lt;/layout-center&gt;
 &lt;/section&gt;</code-block>
   </section>
 
   <section>
     <h2>Split CTA with Form</h2>
     <layout-text>
-      <p>Text on one side, form or image on the other. Uses <code>data-layout="sidebar"</code> for a flexible two-column layout that stacks on narrow viewports. Great for newsletter signups and lead capture.</p>
+      <p>Text on one side, form or image on the other. Uses <code>&lt;layout-sidebar&gt;</code> for a flexible two-column layout that stacks on narrow viewports, inside a plain <code>section.alt</code> so the text stays start-aligned. Great for newsletter signups and lead capture.</p>
     </layout-text>
 
     <browser-window
@@ -66,25 +68,25 @@ currentPath: /docs/patterns/marketing/cta/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Split CTA with inline form">&lt;section class="cta" data-layout="cover" data-layout-min="s" data-layout-padding="xl"&gt;
-  &lt;div data-layout="center" data-layout-max="wide"&gt;
-    &lt;div data-layout="sidebar" data-layout-gap="2xl" data-layout-sidebar-width="wide" data-layout-content-min="m"&gt;
-      &lt;div data-layout="stack" data-layout-gap="l"&gt;
+    <code-block language="html" label="Split CTA with inline form">&lt;section class="alt" data-padding&gt;
+  &lt;layout-center data-layout-max="wide"&gt;
+    &lt;layout-sidebar data-layout-gap="2xl" data-layout-sidebar-width="wide" data-layout-content-min="m"&gt;
+      &lt;layout-stack data-layout-gap="l"&gt;
         &lt;h2&gt;Get notified when we launch&lt;/h2&gt;
         &lt;p class="lead"&gt;
           Be the first to know when new features are released.
           Sign up for early access and exclusive updates.
         &lt;/p&gt;
-        &lt;form class="inline-form" action="/subscribe" method="POST"&gt;
+        &lt;form class="inline" action="/subscribe" method="POST"&gt;
           &lt;form-field&gt;
             &lt;input type="email" name="email" required autocomplete="email" placeholder="Enter your email" aria-label="Email address" /&gt;
           &lt;/form-field&gt;
           &lt;button type="submit"&gt;Notify Me&lt;/button&gt;
         &lt;/form&gt;
-        &lt;p class="text-sm text-muted"&gt;
-          We respect your privacy. Unsubscribe at any time.
+        &lt;p&gt;
+          &lt;small&gt;We respect your privacy. Unsubscribe at any time.&lt;/small&gt;
         &lt;/p&gt;
-      &lt;/div&gt;
+      &lt;/layout-stack&gt;
       &lt;img
         src="/images/cta-illustration.png"
         alt="Product illustration"
@@ -92,25 +94,13 @@ currentPath: /docs/patterns/marketing/cta/
         height="375"
         loading="lazy"
       /&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
+    &lt;/layout-sidebar&gt;
+  &lt;/layout-center&gt;
 &lt;/section&gt;</code-block>
 
-    <h3>Inline Form Styles</h3>
-    <layout-text>
-      <p>Add these styles for the inline email form:</p>
-    </layout-text>
-
-    <code-block language="css" label="Inline form styles" data-escape>.inline-form {
-  display: flex;
-  gap: var(--size-s);
-  flex-wrap: wrap;
-}
-
-.inline-form input {
-  flex: 1;
-  min-width: 200px;
-}</code-block>
+    <aside class="note">
+      <strong>No form CSS needed.</strong> <code>form.inline</code> is built in: it lays the field and button out in a wrapping row with a small gap and aligns them on their bottom edge.
+    </aside>
   </section>
 
   <section>
@@ -126,20 +116,22 @@ currentPath: /docs/patterns/marketing/cta/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="CTA with background image">&lt;section class="cta cta-with-bg" data-layout="cover" data-layout-min="s" data-layout-padding="xl"&gt;
-  &lt;div class="cta-content" data-layout="center" data-layout-max="normal" data-layout-gap="l"&gt;
-    &lt;h2&gt;Transform your workflow today&lt;/h2&gt;
-    &lt;p class="lead"&gt;
-      Stop struggling with complex toolchains. Vanilla Breeze gives you
-      everything you need to build beautiful, responsive interfaces.
-    &lt;/p&gt;
-    &lt;nav&gt;
-      &lt;ul data-layout="cluster" data-layout-justify="center" data-layout-gap="m"&gt;
-        &lt;li&gt;&lt;a href="/signup/" class="button large"&gt;Get Started Free&lt;/a&gt;&lt;/li&gt;
-        &lt;li&gt;&lt;a href="/pricing/" class="button large ghost"&gt;See Pricing&lt;/a&gt;&lt;/li&gt;
-      &lt;/ul&gt;
-    &lt;/nav&gt;
-  &lt;/div&gt;
+    <code-block language="html" label="CTA with background image">&lt;section class="hero cta-with-bg" data-padding&gt;
+  &lt;layout-center data-layout-max="normal"&gt;
+    &lt;layout-stack data-layout-gap="l"&gt;
+      &lt;h2&gt;Transform your workflow today&lt;/h2&gt;
+      &lt;p class="lead"&gt;
+        Stop struggling with complex toolchains. Vanilla Breeze gives you
+        everything you need to build beautiful, responsive interfaces.
+      &lt;/p&gt;
+      &lt;nav&gt;
+        &lt;ul data-layout="cluster" data-layout-justify="center" data-layout-gap="m"&gt;
+          &lt;li&gt;&lt;a href="/signup/" class="button large"&gt;Get Started Free&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href="/pricing/" class="button large ghost"&gt;See Pricing&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/nav&gt;
+    &lt;/layout-stack&gt;
+  &lt;/layout-center&gt;
 &lt;/section&gt;</code-block>
 
     <h3>Required CSS</h3>
@@ -164,6 +156,10 @@ currentPath: /docs/patterns/marketing/cta/
 .cta-with-bg > * {
   position: relative;
   color: var(--color-white);
+}
+
+.cta-with-bg :is(h2, .lead) {
+  color: var(--color-white);
 }</code-block>
 
     <layout-text>
@@ -176,7 +172,7 @@ currentPath: /docs/patterns/marketing/cta/
 }
 
 .cta-with-bg .button.ghost:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: oklch(100% 0 0 / 0.1);
 }</code-block>
   </section>
 
@@ -197,25 +193,25 @@ currentPath: /docs/patterns/marketing/cta/
       </thead>
       <tbody>
         <tr>
-          <td><code>data-layout="cover"</code></td>
-          <td><code>data-layout-min</code></td>
-          <td>CSS length (e.g., <code>50vh</code>, <code>300px</code>)</td>
-          <td>Minimum height of the CTA section.</td>
+          <td><code>section</code></td>
+          <td><code>class</code></td>
+          <td><code>hero</code> <code>alt</code></td>
+          <td><code>hero</code> centers content with a 50vh minimum height; <code>alt</code> adds the raised surface background.</td>
         </tr>
         <tr>
-          <td><code>data-layout="cover"</code></td>
-          <td><code>data-layout-padding</code></td>
-          <td><code>none</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code></td>
-          <td>Padding inside the cover.</td>
+          <td><code>section</code></td>
+          <td><code>data-padding</code></td>
+          <td>(empty) <code>small</code> <code>xsmall</code> <code>none</code></td>
+          <td>Fluid block padding for the section.</td>
         </tr>
         <tr>
-          <td><code>data-layout="center"</code></td>
+          <td><code>layout-center</code></td>
           <td><code>data-layout-max</code></td>
           <td><code>narrow</code> <code>normal</code> <code>wide</code> <code>prose</code></td>
           <td>Maximum content width.</td>
         </tr>
         <tr>
-          <td><code>data-layout="sidebar"</code></td>
+          <td><code>layout-sidebar</code></td>
           <td><code>data-layout-sidebar-width</code></td>
           <td><code>narrow</code> <code>normal</code> <code>wide</code></td>
           <td>Width of the sidebar column.</td>
@@ -238,9 +234,9 @@ currentPath: /docs/patterns/marketing/cta/
         <li><strong>Button text:</strong> Use action-oriented language that clearly states the benefit (e.g., "Start Free Trial" instead of "Submit").</li>
         <li><strong>Primary vs secondary:</strong> Use one primary button for the main action and a secondary/ghost button for alternative actions.</li>
         <li><strong>Contrast:</strong> Ensure sufficient color contrast between text and background, especially with background images. Use <code>--color-overlay-strong</code> for dark overlays.</li>
-        <li><strong>Height:</strong> Use <code>50vh</code> or less for CTAs to differentiate from full-height hero sections.</li>
+        <li><strong>Height:</strong> <code>section.hero</code> has a <code>50vh</code> minimum, which keeps a CTA shorter than a full-height hero section.</li>
         <li><strong>Forms:</strong> Keep inline forms simple with one or two fields. Use full forms in split layouts for more complex signups.</li>
-        <li><strong>Mobile:</strong> Split layouts stack automatically on narrow viewports thanks to <code>data-layout="sidebar"</code>.</li>
+        <li><strong>Mobile:</strong> Split layouts stack automatically on narrow viewports thanks to <code>&lt;layout-sidebar&gt;</code>.</li>
       </ul>
     </layout-text>
   </section>

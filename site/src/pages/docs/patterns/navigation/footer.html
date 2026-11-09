@@ -25,7 +25,7 @@ currentPath: /docs/patterns/navigation/footer/
   <section>
     <h2>Simple Footer</h2>
     <layout-text>
-      <p>A compact footer with horizontal links, logo, and social icons. Uses <code>data-layout="cluster"</code> with <code>data-layout-justify="between"</code> for flexible horizontal spacing that wraps gracefully on smaller screens.</p>
+      <p>A compact footer with horizontal links, logo, and social icons. Uses <code>&lt;layout-cluster data-layout-justify="between"&gt;</code> for flexible horizontal spacing that wraps gracefully on smaller screens.</p>
     </layout-text>
 
     <browser-window
@@ -36,8 +36,8 @@ currentPath: /docs/patterns/navigation/footer/
     </browser-window>
 
     <code-block language="html" label="Simple footer with horizontal links" data-escape><footer class="site" data-layout="stack" data-layout-gap="m">
-  <div data-layout="cluster" data-layout-justify="between" data-layout-align="center">
-    <div data-layout="cluster" data-layout-gap="m" data-layout-align="center">
+  <layout-cluster data-layout-justify="between">
+    <layout-cluster data-layout-gap="m">
       <a href="/"><brand-mark>Acme Co</brand-mark></a>
       <nav class="horizontal" aria-label="Footer navigation">
         <ul>
@@ -47,7 +47,7 @@ currentPath: /docs/patterns/navigation/footer/
           <li><a href="/contact/">Contact</a></li>
         </ul>
       </nav>
-    </div>
+    </layout-cluster>
     <nav class="horizontal" aria-label="Social media">
       <ul>
         <li><a href="https://github.com" aria-label="GitHub">
@@ -61,7 +61,7 @@ currentPath: /docs/patterns/navigation/footer/
         </a></li>
       </ul>
     </nav>
-  </div>
+  </layout-cluster>
   <small>&copy; 2024 Acme Co. All rights reserved.</small>
 </footer></code-block>
   </section>
@@ -69,7 +69,7 @@ currentPath: /docs/patterns/navigation/footer/
   <section>
     <h2>Multi-Column Footer</h2>
     <layout-text>
-      <p>A comprehensive footer with organized link categories in columns. Uses <code>data-layout="grid"</code> with <code>data-layout-min="s"</code> to create responsive columns that automatically adjust based on available space.</p>
+      <p>A comprehensive footer with organized link categories in columns. Uses <code>&lt;layout-grid data-layout-min="s"&gt;</code> to create responsive columns that automatically adjust based on available space.</p>
     </layout-text>
 
     <browser-window
@@ -80,9 +80,9 @@ currentPath: /docs/patterns/navigation/footer/
     </browser-window>
 
     <code-block language="html" label="Multi-column footer with link categories" data-escape><footer class="site" data-layout="stack" data-layout-gap="l">
-  <div data-layout="grid" data-layout-min="s" data-layout-gap="xl">
+  <layout-grid data-layout-min="s" data-layout-gap="xl">
     <nav aria-label="Company links" data-layout="stack" data-layout-gap="m">
-      <h3>Company</h3>
+      <h2>Company</h2>
       <ul data-layout="stack" data-layout-gap="2xs">
         <li><a href="/about/">About</a></li>
         <li><a href="/careers/">Careers</a></li>
@@ -91,7 +91,7 @@ currentPath: /docs/patterns/navigation/footer/
       </ul>
     </nav>
     <nav aria-label="Product links" data-layout="stack" data-layout-gap="m">
-      <h3>Product</h3>
+      <h2>Product</h2>
       <ul data-layout="stack" data-layout-gap="2xs">
         <li><a href="/features/">Features</a></li>
         <li><a href="/pricing/">Pricing</a></li>
@@ -100,7 +100,7 @@ currentPath: /docs/patterns/navigation/footer/
       </ul>
     </nav>
     <nav aria-label="Resources links" data-layout="stack" data-layout-gap="m">
-      <h3>Resources</h3>
+      <h2>Resources</h2>
       <ul data-layout="stack" data-layout-gap="2xs">
         <li><a href="/docs/">Documentation</a></li>
         <li><a href="/guides/">Guides</a></li>
@@ -109,7 +109,7 @@ currentPath: /docs/patterns/navigation/footer/
       </ul>
     </nav>
     <nav aria-label="Legal links" data-layout="stack" data-layout-gap="m">
-      <h3>Legal</h3>
+      <h2>Legal</h2>
       <ul data-layout="stack" data-layout-gap="2xs">
         <li><a href="/privacy/">Privacy</a></li>
         <li><a href="/terms/">Terms</a></li>
@@ -117,13 +117,14 @@ currentPath: /docs/patterns/navigation/footer/
         <li><a href="/licenses/">Licenses</a></li>
       </ul>
     </nav>
-  </div>
+  </layout-grid>
 
-  <div class="footer-bottom" data-layout="cluster" data-layout-justify="between" data-layout-align="center">
-    <div data-layout="cluster" data-layout-gap="m" data-layout-align="center">
+  <hr />
+  <layout-cluster data-layout-justify="between">
+    <p data-layout="cluster" data-layout-gap="m">
       <a href="/"><brand-mark>Acme Co</brand-mark></a>
       <small>&copy; 2024 Acme Co. All rights reserved.</small>
-    </div>
+    </p>
     <nav class="horizontal" aria-label="Social media">
       <ul>
         <li><a href="https://github.com" aria-label="GitHub">
@@ -140,16 +141,16 @@ currentPath: /docs/patterns/navigation/footer/
         </a></li>
       </ul>
     </nav>
-  </div>
+  </layout-cluster>
 </footer></code-block>
 
     <h3>Multi-Column Styles</h3>
     <layout-text>
-      <p>Additional styles for the multi-column layout, including uppercase headings and the bottom separator:</p>
+      <p>Additional styles for the multi-column layout: uppercase, muted column headings and smaller links. The bottom row needs no CSS of its own: a native <code>&lt;hr&gt;</code> draws the separator.</p>
     </layout-text>
 
     <code-block language="css" label="Multi-column footer styles" data-escape>/* Column headings — uppercase, muted */
-footer.site h3 {
+footer.site nav h2 {
   font-size: var(--font-size-s);
   font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
@@ -161,20 +162,13 @@ footer.site h3 {
 /* Smaller nav links in column layout */
 footer.site nav a {
   font-size: var(--font-size-s);
-}
-
-/* Bottom separator */
-.footer-bottom {
-  border-block-start: var(--border-width-thin) solid var(--color-border);
-  padding-block-start: var(--size-l);
-  margin-block-start: var(--size-xl);
 }</code-block>
   </section>
 
   <section>
     <h2>Footer with Newsletter</h2>
     <layout-text>
-      <p>A footer that includes a newsletter signup form alongside navigation links. Uses <code>data-layout="sidebar"</code> to create a split layout where the newsletter section takes priority, with link columns on the side.</p>
+      <p>A footer that includes a newsletter signup form alongside navigation links. Uses <code>&lt;layout-sidebar&gt;</code> to create a split layout where the newsletter section takes priority, with link columns on the side. The form is <code>form.inline</code>, so the field and button sit on one row without a wrapper.</p>
     </layout-text>
 
     <browser-window
@@ -185,28 +179,24 @@ footer.site nav a {
     </browser-window>
 
     <code-block language="html" label="Footer with newsletter signup" data-escape><footer class="site" data-layout="stack" data-layout-gap="l">
-  <div data-layout="sidebar" data-layout-gap="2xl" data-layout-sidebar-width="wide" data-layout-content-min="m">
-    <section class="newsletter" data-layout="stack" data-layout-gap="m">
-      <h3>Subscribe to our newsletter</h3>
+  <layout-sidebar data-layout-gap="2xl" data-layout-sidebar-width="wide" data-layout-content-min="m">
+    <section data-layout="stack" data-layout-gap="m">
+      <h2>Subscribe to our newsletter</h2>
       <p>Get the latest updates, tips, and news delivered to your inbox.</p>
-      <form action="/subscribe" method="POST">
-        <div data-layout="cluster" data-layout-gap="s">
-          <form-field>
-            <label for="email" class="sr-only">Email address</label>
-            <input type="email" id="email" name="email" required
-                   autocomplete="email" placeholder="Enter your email" />
-          </form-field>
-          <button type="submit">Subscribe</button>
-        </div>
+      <form class="inline" action="/subscribe" method="POST">
+        <form-field>
+          <label for="email" class="visually-hidden">Email address</label>
+          <input type="email" id="email" name="email" required
+                 autocomplete="email" placeholder="Enter your email" />
+        </form-field>
+        <button type="submit">Subscribe</button>
       </form>
-      <p class="text-sm text-muted">
-        By subscribing, you agree to our <a href="/privacy/">Privacy Policy</a>.
-      </p>
+      <p><small>By subscribing, you agree to our <a href="/privacy/">Privacy Policy</a>.</small></p>
     </section>
 
-    <div data-layout="grid" data-layout-min="xs" data-layout-gap="xl">
+    <layout-grid data-layout-min="xs" data-layout-gap="xl">
       <nav aria-label="Product links" data-layout="stack" data-layout-gap="m">
-        <h4>Product</h4>
+        <h3>Product</h3>
         <ul data-layout="stack" data-layout-gap="2xs">
           <li><a href="/features/">Features</a></li>
           <li><a href="/pricing/">Pricing</a></li>
@@ -214,7 +204,7 @@ footer.site nav a {
         </ul>
       </nav>
       <nav aria-label="Resources links" data-layout="stack" data-layout-gap="m">
-        <h4>Resources</h4>
+        <h3>Resources</h3>
         <ul data-layout="stack" data-layout-gap="2xs">
           <li><a href="/docs/">Documentation</a></li>
           <li><a href="/guides/">Guides</a></li>
@@ -222,21 +212,22 @@ footer.site nav a {
         </ul>
       </nav>
       <nav aria-label="Company links" data-layout="stack" data-layout-gap="m">
-        <h4>Company</h4>
+        <h3>Company</h3>
         <ul data-layout="stack" data-layout-gap="2xs">
           <li><a href="/about/">About</a></li>
           <li><a href="/careers/">Careers</a></li>
           <li><a href="/contact/">Contact</a></li>
         </ul>
       </nav>
-    </div>
-  </div>
+    </layout-grid>
+  </layout-sidebar>
 
-  <div class="footer-bottom" data-layout="cluster" data-layout-justify="between" data-layout-align="center">
-    <div data-layout="cluster" data-layout-gap="m" data-layout-align="center">
+  <hr />
+  <layout-cluster data-layout-justify="between">
+    <p data-layout="cluster" data-layout-gap="m">
       <a href="/"><brand-mark>Acme Co</brand-mark></a>
       <small>&copy; 2024 Acme Co. All rights reserved.</small>
-    </div>
+    </p>
     <nav class="horizontal" aria-label="Social media">
       <ul>
         <li><a href="https://github.com" aria-label="GitHub">
@@ -250,7 +241,7 @@ footer.site nav a {
         </a></li>
       </ul>
     </nav>
-  </div>
+  </layout-cluster>
 </footer></code-block>
 
     <h3>Newsletter Styles</h3>
@@ -259,18 +250,18 @@ footer.site nav a {
     </layout-text>
 
     <code-block language="css" label="Newsletter section styles" data-escape>/* Newsletter heading and description */
-.newsletter h3 {
+footer.site section h2 {
   font-size: var(--font-size-l);
   margin: 0;
 }
 
-.newsletter p {
+footer.site section p {
   color: var(--color-text-muted);
   font-size: var(--font-size-s);
 }
 
 /* Column headings for newsletter footer */
-footer.site h4 {
+footer.site nav h3 {
   font-size: var(--font-size-s);
   font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
@@ -301,10 +292,10 @@ footer.site h4 {
       <ul>
         <li><strong>Accessibility:</strong> Use <code>aria-label</code> on each <code>&lt;nav&gt;</code> element to distinguish between different navigation sections (e.g., "Company links", "Legal links")</li>
         <li><strong>Social icons:</strong> Always include <code>aria-label</code> on social media links since they only contain icons. Wrap social links in <code>&lt;nav aria-label="Social media"&gt;</code> for proper semantics and to suppress external-link indicators</li>
-        <li><strong>Newsletter forms:</strong> Use <code>class="sr-only"</code> on labels for screen reader accessibility when using placeholder text</li>
+        <li><strong>Newsletter forms:</strong> Use <code>class="visually-hidden"</code> on labels for screen reader accessibility when using placeholder text</li>
         <li><strong>Copyright:</strong> Use <code>&lt;small&gt;</code> for copyright text — VB styles it at the correct size automatically</li>
         <li><strong>Link organization:</strong> Group related links under descriptive headings for better navigation</li>
-        <li><strong>Layout attributes:</strong> Use <code>data-layout</code> attributes directly on semantic elements instead of custom element wrappers for cleaner markup</li>
+        <li><strong>Layout attributes:</strong> Put <code>data-layout</code> directly on semantic elements. Where no semantic element fits, use the matching <code>layout-*</code> element (<code>layout-grid</code>, <code>layout-cluster</code>) rather than a <code>&lt;div&gt;</code></li>
         <li><strong>Responsive behavior:</strong> Test footer layouts at various viewport widths to ensure graceful wrapping</li>
       </ul>
     </layout-text>

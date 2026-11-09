@@ -295,8 +295,18 @@ const elementsByLetter = {
 // Calculate stats
 const allElements = Object.values(elementsByLetter).flat();
 
+// layout-badge data-color for each element type on /docs/elements/ (the
+// filter chips in the page use the same mapping). Cook interpolates dot
+// paths only, so the colour rides on each item as badgeColor.
+const BADGE_COLORS = { native: 'success', custom: 'primary', component: 'accent' };
+
+const byLetterWithColors = Object.fromEntries(Object.entries(elementsByLetter).map(([letter, items]) => [
+  letter,
+  items.map((item) => ({ ...item, badgeColor: BADGE_COLORS[item.type] })),
+]));
+
 export default {
-  byLetter: elementsByLetter,
+  byLetter: byLetterWithColors,
   nativeCount: allElements.filter(e => e.type === 'native').length,
   customCount: allElements.filter(e => e.type === 'custom').length,
   componentCount: allElements.filter(e => e.type === 'component').length,

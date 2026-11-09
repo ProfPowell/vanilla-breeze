@@ -16,7 +16,7 @@ currentPath: /docs/patterns/navigation/navbar/
         <li>Semantic HTML with proper ARIA attributes</li>
         <li>Active page indication via <code>aria-current="page"</code></li>
         <li>Dropdown menus using <code>drop-down</code> component</li>
-        <li>Mobile-responsive with hamburger menu (details/summary)</li>
+        <li>Mobile-responsive menu with the <code>&lt;mobile-menu&gt;</code> element and a native popover</li>
         <li>Sticky header variant with <code>data-sticky</code> attribute</li>
       </ul>
     </layout-text>
@@ -134,19 +134,20 @@ header.site search input {
   <section>
     <h2>Mobile Responsive</h2>
     <layout-text>
-      <p>A responsive navbar that collapses to a hamburger menu on smaller screens. Uses the native <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> pattern for the toggle — no JavaScript required. The CSS overrides VB's default details/summary styles (border, chevron, padding) to work as a clean mobile menu trigger.</p>
+      <p>A responsive navbar that swaps the desktop links for a menu button on smaller screens. The <a href="/docs/elements/custom-elements/mobile-menu/"><code>&lt;mobile-menu&gt;</code></a> element watches the viewport: at or below its <code>breakpoint</code> it hides the sibling <code>&lt;nav&gt;</code> and shows its own trigger. The panel is a native <code>popover</code>, so opening, closing, <kbd>Esc</kbd> and light dismiss need no script of your own, and no custom CSS.</p>
     </layout-text>
 
     <browser-window
       src="/docs/patterns/demos/navbar-mobile.html"
       url="https://vanilla-breeze.com/navbar-mobile"
       title="Mobile Responsive Navbar"
-      shadow>
+      device="iphone-16"
+      device-color="midnight">
     </browser-window>
 
     <code-block language="html" label="Mobile responsive nav" data-escape><header class="site">
   <a href="/"><brand-mark>Acme Co</brand-mark></a>
-  <nav class="horizontal desktop-nav" aria-label="Main navigation">
+  <nav class="horizontal" aria-label="Main navigation">
     <ul>
       <li><a href="/products/">Products</a></li>
       <li><a href="/pricing/">Pricing</a></li>
@@ -154,11 +155,15 @@ header.site search input {
       <li><a href="/contact/">Contact</a></li>
     </ul>
   </nav>
-  <details class="mobile-menu">
-    <summary aria-label="Open menu">
-      <span class="hamburger"></span>
-    </summary>
-    <nav class="mobile-nav" aria-label="Main navigation">
+  <mobile-menu breakpoint="48rem">
+    <button type="button" data-trigger popovertarget="site-menu" aria-label="Menu">
+      <icon-wc name="menu"></icon-wc>
+    </button>
+    <nav popover id="site-menu" class="mobile-menu-panel" aria-label="Site menu">
+      <button type="button" class="mobile-menu-close" popovertarget="site-menu"
+              popovertargetaction="hide" aria-label="Close menu">
+        <icon-wc name="x"></icon-wc>
+      </button>
       <ul>
         <li><a href="/products/">Products</a></li>
         <li><a href="/pricing/">Pricing</a></li>
@@ -166,115 +171,12 @@ header.site search input {
         <li><a href="/contact/">Contact</a></li>
       </ul>
     </nav>
-  </details>
+  </mobile-menu>
 </header></code-block>
 
-    <h3>Mobile Menu CSS</h3>
     <layout-text>
-      <p>The mobile menu requires CSS for VB details/summary overrides, the hamburger icon animation, and responsive behavior:</p>
+      <p>Theme the panel with the <code>--mobile-menu-*</code> tokens listed on the <a href="/docs/elements/custom-elements/mobile-menu/">mobile-menu page</a>. The default breakpoint is <code>52rem</code>; a custom value such as <code>48rem</code> needs JavaScript, so without it the desktop nav stays visible.</p>
     </layout-text>
-
-    <code-block language="css" label="Mobile menu styles" data-escape>/* Override VB details/summary styles for mobile menu */
-.mobile-menu {
-  border: none;
-  border-radius: 0;
-}
-
-.mobile-menu summary {
-  padding: var(--size-xs);
-  min-block-size: auto;
-  border: none;
-}
-
-.mobile-menu summary::after {
-  content: none;  /* Suppress VB chevron — hamburger replaces it */
-}
-
-.mobile-menu > .mobile-nav {
-  padding-inline: 0;
-  padding-block-end: 0;
-}
-
-/* Mobile menu toggle */
-.mobile-menu {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .desktop-nav {
-    display: none;
-  }
-
-  .mobile-menu {
-    display: block;
-    position: relative;
-  }
-
-  /* Hamburger icon */
-  .hamburger {
-    display: block;
-    width: 24px;
-    height: 2px;
-    background: var(--color-text);
-    position: relative;
-  }
-
-  .hamburger::before,
-  .hamburger::after {
-    content: "";
-    position: absolute;
-    width: 24px;
-    height: 2px;
-    background: var(--color-text);
-    left: 0;
-  }
-
-  .hamburger::before {
-    top: -7px;
-  }
-
-  .hamburger::after {
-    top: 7px;
-  }
-
-  /* Open state — X icon */
-  .mobile-menu[open] .hamburger {
-    background: transparent;
-  }
-
-  .mobile-menu[open] .hamburger::before {
-    top: 0;
-    transform: rotate(45deg);
-  }
-
-  .mobile-menu[open] .hamburger::after {
-    top: 0;
-    transform: rotate(-45deg);
-  }
-
-  /* Mobile nav panel */
-  .mobile-nav {
-    position: absolute;
-    top: calc(100% + var(--size-s));
-    right: 0;
-    background: var(--color-surface);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-m);
-    padding: var(--size-s);
-    min-width: 200px;
-    box-shadow: var(--shadow-m);
-  }
-
-  .mobile-nav a {
-    display: block;
-    padding: var(--size-s) var(--size-m);
-    border-radius: var(--radius-s);
-  }
-
-  .mobile-nav a:hover {
-    background: var(--color-surface-raised);
-  }
-}</code-block>
   </section>
 
   <section>
@@ -334,7 +236,7 @@ header.site[data-sticky] {
         <li><strong>Accessibility:</strong> Always use <code>aria-label</code> on <code>&lt;nav&gt;</code> to identify its purpose (e.g., "Main navigation")</li>
         <li><strong>Active state:</strong> Use <code>aria-current="page"</code> on the link representing the current page</li>
         <li><strong>Dropdowns:</strong> The <code>drop-down</code> component handles keyboard navigation and ARIA automatically. Use <code>no-flip</code> in constrained viewports</li>
-        <li><strong>Mobile menu:</strong> Wrap mobile links in a <code>&lt;nav&gt;</code> with <code>&lt;ul&gt;</code>/<code>&lt;li&gt;</code> for a proper navigation landmark. Override VB's details/summary styles (<code>border</code>, <code>summary::after</code> chevron, <code>padding</code>) when using details as a mobile menu trigger</li>
+        <li><strong>Mobile menu:</strong> Give the popover <code>&lt;nav&gt;</code> an <code>aria-label</code> so it is a named navigation landmark, and keep a close button inside it with <code>popovertargetaction="hide"</code>. <code>popovertarget</code> gives the trigger <code>aria-expanded</code> automatically</li>
         <li><strong>Sticky:</strong> Add <code>data-sticky</code> to <code>header.site</code> for position/z-index/background, then add backdrop-filter for a polished effect</li>
         <li><strong>Skip links:</strong> Add a skip-to-content link before the nav for keyboard users</li>
       </ul>

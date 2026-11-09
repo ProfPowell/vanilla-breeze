@@ -6,174 +6,43 @@ currentSection: api
 currentPath: /docs/elements/
 ---
 
-<template slot="extraHead">
-<style>
-  /* Pack badge: entries that ship in an opt-in pack, not the core bundle. */
-  .pack-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--size-3xs);
-    padding: var(--size-3xs) var(--size-xs);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-s);
-    color: var(--color-text-muted);
-    font-size: var(--font-size-xs);
-    white-space: nowrap;
-  }
-  .pack-badge icon-wc { inline-size: 1em; block-size: 1em; }
-  .element-index {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: var(--size-s);
-    margin-block-start: var(--size-l);
-  }
-
-  .element-entry {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--size-2xs);
-    padding: var(--size-s) var(--size-m);
-    background: var(--color-surface);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-s);
-    text-decoration: none;
-    color: inherit;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-
-  .element-entry:hover {
-    border-color: var(--color-interactive);
-    box-shadow: 0 2px 8px oklch(0% 0 0 / 0.08);
-  }
-
-  .element-entry code {
-    font-family: var(--font-mono);
-    font-size: var(--font-size-s);
-    font-weight: 500;
-  }
-
-  .element-badge {
-    padding: var(--size-3xs) var(--size-xs);
-    border-radius: var(--radius-s);
-    font-size: var(--font-size-xs);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-  }
-
-  .element-badge[data-type="native"] {
-    background: oklch(85% 0.1 145);
-    color: oklch(30% 0.1 145);
-  }
-
-  .element-badge[data-type="custom"] {
-    background: oklch(85% 0.1 250);
-    color: oklch(30% 0.1 250);
-  }
-
-  .element-badge[data-type="component"] {
-    background: oklch(85% 0.1 30);
-    color: oklch(30% 0.1 30);
-  }
-
-  .filter-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--size-s);
-    margin-block: var(--size-l);
-    padding: var(--size-m);
-    background: var(--color-surface-raised);
-    border-radius: var(--radius-m);
-    border: none;
-  }
-
-  .filter-chip {
-    display: flex;
-    align-items: center;
-    gap: var(--size-xs);
-    padding: var(--size-2xs) var(--size-s);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-full);
-    cursor: pointer;
-    font-size: var(--font-size-s);
-    user-select: none;
-    transition: opacity 0.2s, border-color 0.2s;
-  }
-
-  .filter-chip input { position: absolute; opacity: 0; pointer-events: none; }
-
-  .filter-chip:has(input:not(:checked)) {
-    opacity: 0.4;
-    border-color: transparent;
-  }
-
-  .filter-chip:hover {
-    border-color: var(--color-interactive);
-  }
-
-  .element-search {
-    margin-block: var(--size-m);
-    inline-size: 100%;
-    max-inline-size: 400px;
-  }
-
-  .element-entry[hidden] { display: none; }
-  .letter-heading[hidden] { display: none; }
-
-  .letter-heading {
-    grid-column: 1 / -1;
-    margin-block-start: var(--size-l);
-    padding-block-end: var(--size-xs);
-    border-block-end: var(--border-width-thin) solid var(--color-border);
-    font-size: var(--font-size-l);
-    font-weight: 600;
-    color: var(--color-text-muted);
-  }
-
-  .letter-heading:first-of-type {
-    margin-block-start: 0;
-  }
-</style>
-</template>
-
 <h1>Element Index</h1>
 <p class="lead">Complete alphabetical listing of all HTML elements, custom elements, and web components.</p>
 
-<fieldset class="filter-bar" aria-label="Filter elements">
+<fieldset class="index-filters" data-layout="cluster" data-layout-gap="s" aria-label="Filter elements">
   <legend class="visually-hidden">Filter by type</legend>
-  <label class="filter-chip">
+  <label class="index-chip">
     <input type="checkbox" checked data-filter="all" />
     <span>All <strong>${elements.totalCount}</strong></span>
   </label>
-  <label class="filter-chip" data-type="native">
+  <label class="index-chip" data-type="native">
     <input type="checkbox" checked data-filter="native" />
-    <span class="element-badge" data-type="native">native</span>
+    <layout-badge data-variant="subtle" data-color="success">native</layout-badge>
     <span><strong>${elements.nativeCount}</strong></span>
   </label>
-  <label class="filter-chip" data-type="custom">
+  <label class="index-chip" data-type="custom">
     <input type="checkbox" checked data-filter="custom" />
-    <span class="element-badge" data-type="custom">custom</span>
+    <layout-badge data-variant="subtle" data-color="primary">custom</layout-badge>
     <span><strong>${elements.customCount}</strong></span>
   </label>
-  <label class="filter-chip" data-type="component">
+  <label class="index-chip" data-type="component">
     <input type="checkbox" checked data-filter="component" />
-    <span class="element-badge" data-type="component">component</span>
+    <layout-badge data-variant="subtle" data-color="accent">component</layout-badge>
     <span><strong>${elements.componentCount}</strong></span>
   </label>
 </fieldset>
 
 <search>
-  <input type="search" class="element-search" placeholder="Search elements…" aria-label="Search elements" />
+  <input type="search" class="index-search" placeholder="Search elements…" aria-label="Search elements" />
 </search>
 
-<nav class="element-index" aria-label="All elements">
+<nav data-layout="grid" data-layout-gap="s" style="--layout-min: 11.25rem" aria-label="All elements">
   {% for letter, items in elements.byLetter %}
-    <h2 class="letter-heading">${letter}</h2>
+    <h2 class="index-heading">${letter}</h2>
     {% for item in items %}
-      <a href="${item.href}" class="element-entry" data-type="${item.type}">
+      <a href="${item.href}" class="index-entry" data-type="${item.type}">
         <code>&lt;${item.name}&gt;</code>
-        <span class="element-badge" data-type="${item.type}">${item.type}</span>
+        <layout-badge data-variant="subtle" data-color="${item.badgeColor}">${item.type}</layout-badge>
         {% if item.pack %}<span class="pack-badge"><icon-wc name="package"></icon-wc>${item.pack}</span>{% endif %}
       </a>
     {% endfor %}
@@ -182,11 +51,11 @@ currentPath: /docs/elements/
 
 <script>
 (function() {
-  const search = document.querySelector('.element-search');
+  const search = document.querySelector('.index-search');
   const allCheck = document.querySelector('[data-filter="all"]');
   const typeChecks = document.querySelectorAll('[data-filter]:not([data-filter="all"])');
-  const entries = document.querySelectorAll('.element-entry');
-  const headings = document.querySelectorAll('.letter-heading');
+  const entries = document.querySelectorAll('.index-entry');
+  const headings = document.querySelectorAll('.index-heading');
 
   function update() {
     const query = (search?.value || '').toLowerCase();
@@ -204,7 +73,7 @@ currentPath: /docs/elements/
     headings.forEach(function(h) {
       var next = h.nextElementSibling;
       var hasVisible = false;
-      while (next && !next.classList.contains('letter-heading')) {
+      while (next && !next.classList.contains('index-heading')) {
         if (!next.hidden) hasVisible = true;
         next = next.nextElementSibling;
       }

@@ -11,14 +11,9 @@
       background: var(--color-surface);
     }
 
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: var(--size-l);
-    }
-
-    @scope (.stats) {
-      figure {
+    /* A stat: a figure whose caption is followed by a <data> value */
+    @scope (figure:has(> figcaption + data)) {
+      :scope {
         display: flex;
         flex-direction: column;
         gap: var(--size-2xs);
@@ -30,7 +25,7 @@
         color: var(--color-text-muted);
       }
 
-      data {
+      :scope > data {
         font-size: var(--font-size-3xl);
         font-weight: var(--font-weight-bold);
         line-height: var(--line-height-tight);
@@ -39,7 +34,7 @@
   </style>
 </head>
 <body>
-  <section class="stats">
+  <section data-layout="grid" data-layout-min="s" data-layout-gap="l" aria-label="Key metrics">
     <figure>
       <figcaption>Total Users</figcaption>
       <data value="24521">24,521</data>

@@ -25,7 +25,7 @@ currentPath: /docs/patterns/marketing/faq/
   <section>
     <h2>Accordion</h2>
     <layout-text>
-      <p>The standard FAQ accordion wraps <code>&lt;details&gt;</code> elements in <code>&lt;accordion-wc&gt;</code>. The component handles the chevron indicator, marker hiding, keyboard navigation, and ARIA attributes &mdash; no custom CSS needed.</p>
+      <p>The standard FAQ accordion wraps <code>&lt;details&gt;</code> elements in <code>&lt;accordion-wc&gt;</code>. The component handles the chevron indicator, marker hiding, keyboard navigation, and ARIA attributes &mdash; no custom CSS needed. Put the answer straight after the <code>&lt;summary&gt;</code>; the component wraps it in its own content panel.</p>
     </layout-text>
 
     <browser-window
@@ -38,15 +38,11 @@ currentPath: /docs/patterns/marketing/faq/
     <code-block language="html" label="FAQ accordion with accordion-wc">&lt;accordion-wc single&gt;
   &lt;details name="faq" open&gt;
     &lt;summary&gt;What is Vanilla Breeze?&lt;/summary&gt;
-    &lt;div&gt;
-      &lt;p&gt;A lightweight CSS framework built on modern web standards...&lt;/p&gt;
-    &lt;/div&gt;
+    &lt;p&gt;A lightweight CSS framework built on modern web standards...&lt;/p&gt;
   &lt;/details&gt;
   &lt;details name="faq"&gt;
     &lt;summary&gt;How do I get started?&lt;/summary&gt;
-    &lt;div&gt;
-      &lt;p&gt;Include via CDN or install via npm...&lt;/p&gt;
-    &lt;/div&gt;
+    &lt;p&gt;Include via CDN or install via npm...&lt;/p&gt;
   &lt;/details&gt;
   &lt;!-- More items... --&gt;
 &lt;/accordion-wc&gt;</code-block>
@@ -59,7 +55,7 @@ currentPath: /docs/patterns/marketing/faq/
   <section>
     <h2>Two-Column Grid</h2>
     <layout-text>
-      <p>A grid layout that displays all FAQ items at once, arranged in two columns on wider screens. Best for shorter lists (4&ndash;8 items) where users benefit from scanning all questions at a glance.</p>
+      <p>A grid layout that displays all FAQ items at once, arranged in two columns on wider screens. Best for shorter lists (4&ndash;8 items) where users benefit from scanning all questions at a glance. Question-and-answer pairs are a description list: each <code>&lt;dl-item&gt;</code> groups a <code>&lt;dt&gt;</code> question with its <code>&lt;dd&gt;</code> answer, and <code>data-layout="grid"</code> goes straight on the <code>&lt;dl&gt;</code>.</p>
     </layout-text>
 
     <browser-window
@@ -69,43 +65,24 @@ currentPath: /docs/patterns/marketing/faq/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Two-column FAQ grid">&lt;div data-layout="grid" data-layout-min="xl" data-layout-gap="xl"&gt;
-  &lt;article class="faq-item" data-layout="stack" data-layout-gap="xs"&gt;
-    &lt;h3&gt;What is Vanilla Breeze?&lt;/h3&gt;
-    &lt;p&gt;A lightweight CSS framework...&lt;/p&gt;
-  &lt;/article&gt;
-  &lt;article class="faq-item" data-layout="stack" data-layout-gap="xs"&gt;
-    &lt;h3&gt;How do I get started?&lt;/h3&gt;
-    &lt;p&gt;Include via CDN or install via npm...&lt;/p&gt;
-  &lt;/article&gt;
+    <code-block language="html" label="Two-column FAQ grid">&lt;dl data-layout="grid" data-layout-min="xl" data-layout-gap="xl"&gt;
+  &lt;dl-item&gt;
+    &lt;dt&gt;What is Vanilla Breeze?&lt;/dt&gt;
+    &lt;dd&gt;A lightweight CSS framework...&lt;/dd&gt;
+  &lt;/dl-item&gt;
+  &lt;dl-item&gt;
+    &lt;dt&gt;How do I get started?&lt;/dt&gt;
+    &lt;dd&gt;Include via CDN or install via npm...&lt;/dd&gt;
+  &lt;/dl-item&gt;
   &lt;!-- More items... --&gt;
-&lt;/div&gt;</code-block>
+&lt;/dl&gt;</code-block>
 
-    <h3>Styling</h3>
-    <layout-text>
-      <p>A border-top on each item creates visual separation in the grid:</p>
-    </layout-text>
-
-    <code-block language="css" label="FAQ grid item styles" data-escape>.faq-item {
-  border-top: var(--border-width-thin) solid var(--color-border);
-  padding-top: var(--size-m);
-}
-
-.faq-item h3 {
-  font-size: var(--font-size-m);
-  margin: 0 0 var(--size-xs) 0;
-}
-
-.faq-item p {
-  color: var(--color-text-muted);
-  margin: 0;
-}</code-block>
   </section>
 
   <section>
     <h2>Categorized</h2>
     <layout-text>
-      <p>For large FAQ lists, group questions by topic. Each category gets a heading with an icon, followed by its own <code>&lt;accordion-wc&gt;</code>. This scales well to dozens of questions without overwhelming users.</p>
+      <p>For large FAQ lists, group questions by topic. Each category is a <code>&lt;section&gt;</code> with an <code>&lt;h2&gt;</code> and icon, followed by its own <code>&lt;accordion-wc&gt;</code>. This scales well to dozens of questions without overwhelming users.</p>
     </layout-text>
 
     <browser-window
@@ -115,47 +92,39 @@ currentPath: /docs/patterns/marketing/faq/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Categorized FAQ with grouped accordions">&lt;div data-layout="stack" data-layout-gap="2xl"&gt;
-  &lt;div class="faq-category"&gt;
+    <code-block language="html" label="Categorized FAQ with grouped accordions">&lt;layout-stack data-layout-gap="2xl"&gt;
+  &lt;section data-layout="stack" data-layout-gap="s"&gt;
     &lt;h2&gt;&lt;icon-wc name="rocket" size="sm"&gt;&lt;/icon-wc&gt; Getting Started&lt;/h2&gt;
     &lt;accordion-wc&gt;
       &lt;details&gt;
         &lt;summary&gt;What is Vanilla Breeze?&lt;/summary&gt;
-        &lt;div&gt;&lt;p&gt;Answer...&lt;/p&gt;&lt;/div&gt;
+        &lt;p&gt;Answer...&lt;/p&gt;
       &lt;/details&gt;
       &lt;details&gt;
         &lt;summary&gt;How do I get started?&lt;/summary&gt;
-        &lt;div&gt;&lt;p&gt;Answer...&lt;/p&gt;&lt;/div&gt;
+        &lt;p&gt;Answer...&lt;/p&gt;
       &lt;/details&gt;
     &lt;/accordion-wc&gt;
-  &lt;/div&gt;
+  &lt;/section&gt;
 
-  &lt;div class="faq-category"&gt;
+  &lt;section data-layout="stack" data-layout-gap="s"&gt;
     &lt;h2&gt;&lt;icon-wc name="settings" size="sm"&gt;&lt;/icon-wc&gt; Technical&lt;/h2&gt;
     &lt;accordion-wc&gt;
       &lt;details&gt;
         &lt;summary&gt;What browsers are supported?&lt;/summary&gt;
-        &lt;div&gt;&lt;p&gt;Answer...&lt;/p&gt;&lt;/div&gt;
+        &lt;p&gt;Answer...&lt;/p&gt;
       &lt;/details&gt;
       &lt;!-- More items... --&gt;
     &lt;/accordion-wc&gt;
-  &lt;/div&gt;
-&lt;/div&gt;</code-block>
+  &lt;/section&gt;
+&lt;/layout-stack&gt;</code-block>
 
     <h3>Styling</h3>
     <layout-text>
-      <p>Minimal CSS for the category heading and icon color:</p>
+      <p>One rule tints the category icons:</p>
     </layout-text>
 
-    <code-block language="css" label="Category heading styles" data-escape>.faq-category h2 {
-  font-size: var(--font-size-l);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: var(--size-xs);
-}
-
-.faq-category h2 icon-wc {
+    <code-block language="css" label="Category heading styles" data-escape>section > h2 > icon-wc {
   color: var(--color-interactive);
 }</code-block>
   </section>
@@ -165,9 +134,9 @@ currentPath: /docs/patterns/marketing/faq/
     <layout-text>
       <ul>
         <li><strong>Accordion vs Grid:</strong> Use accordion for longer FAQ lists (6+ items) to save vertical space. Use the grid for shorter lists where scanning all questions at once is helpful.</li>
-        <li><strong>Single-open mode:</strong> Add <code>data-single</code> to <code>&lt;accordion-wc&gt;</code> so only one answer is visible at a time. Good for long lists where context switching between answers is unlikely.</li>
-        <li><strong>Bordered variant:</strong> Add <code>data-bordered</code> for a contained look with dividers between items. Works well when the FAQ sits alongside other card-based content.</li>
-        <li><strong>Indicator styles:</strong> Use <code>data-indicator="plus-minus"</code> for a +/&minus; style instead of the default chevron. See <a href="/docs/elements/web-components/accordion/">accordion-wc</a> for all options.</li>
+        <li><strong>Single-open mode:</strong> Add <code>single</code> to <code>&lt;accordion-wc&gt;</code> so only one answer is visible at a time. Good for long lists where context switching between answers is unlikely.</li>
+        <li><strong>Bordered variant:</strong> Add <code>bordered</code> for a contained look with dividers between items. Works well when the FAQ sits alongside other card-based content.</li>
+        <li><strong>Indicator styles:</strong> Use <code>indicator="plus-minus"</code> for a +/&minus; style instead of the default chevron. See <a href="/docs/elements/web-components/accordion/">accordion-wc</a> for all options.</li>
         <li><strong>Open by default:</strong> Add the <code>open</code> attribute to a <code>&lt;details&gt;</code> element to have it expanded on page load.</li>
         <li><strong>Question length:</strong> Keep questions concise (under 80 characters). Move complex details to the answer section.</li>
         <li><strong>Answer formatting:</strong> Use paragraphs, lists, and links within answers. Avoid deeply nested content.</li>

@@ -26,7 +26,7 @@ currentPath: /docs/patterns/data/stats/
   <section>
     <h2>Simple Number Grid</h2>
     <layout-text>
-      <p>A clean grid of stat figures with labels and large numbers. Each stat uses a <code>&lt;figure&gt;</code> element with a <code>&lt;figcaption&gt;</code> for the label and <code>&lt;data&gt;</code> for the machine-readable value.</p>
+      <p>A clean grid of stat figures with labels and large numbers. Each stat uses a <code>&lt;figure&gt;</code> element with a <code>&lt;figcaption&gt;</code> for the label and <code>&lt;data&gt;</code> for the machine-readable value. <code>data-layout="grid"</code> lays them out; the scoped CSS keys on the figure's own structure, so no class is needed.</p>
     </layout-text>
 
     <browser-window
@@ -36,7 +36,7 @@ currentPath: /docs/patterns/data/stats/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Simple stats grid" data-escape><section class="stats">
+    <code-block language="html" label="Simple stats grid" data-escape><section data-layout="grid" data-layout-min="s" data-layout-gap="l" aria-label="Key metrics">
   <figure>
     <figcaption>Total Users</figcaption>
     <data value="24521">24,521</data>
@@ -58,14 +58,9 @@ currentPath: /docs/patterns/data/stats/
   </figure>
 </section></code-block>
 
-    <code-block language="css" label="Scoped CSS" data-escape>.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--size-l);
-}
-
-@scope (.stats) {
-  figure {
+    <code-block language="css" label="Scoped CSS" data-escape>/* A stat: a figure whose caption is followed by a <data> value */
+@scope (figure:has(> figcaption + data)) {
+  :scope {
     display: flex;
     flex-direction: column;
     gap: var(--size-2xs);
@@ -77,7 +72,7 @@ currentPath: /docs/patterns/data/stats/
     color: var(--color-text-muted);
   }
 
-  data {
+  :scope > data {
     font-size: var(--font-size-3xl);
     font-weight: var(--font-weight-bold);
     line-height: var(--line-height-tight);
@@ -98,7 +93,7 @@ currentPath: /docs/patterns/data/stats/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Stats with change indicators" data-escape><section class="stats">
+    <code-block language="html" label="Stats with change indicators" data-escape><section data-layout="grid" data-layout-min="s" data-layout-gap="l" aria-label="Key metrics">
   <figure>
     <figcaption>Total Users</figcaption>
     <data value="24521">24,521</data>
@@ -118,7 +113,7 @@ currentPath: /docs/patterns/data/stats/
   </figure>
 </section></code-block>
 
-    <code-block language="css" label="Trend indicator styles" data-escape>@scope (.stats) {
+    <code-block language="css" label="Trend indicator styles" data-escape>@scope (figure:has(> figcaption + data)) {
   small {
     display: flex;
     align-items: center;
@@ -128,19 +123,13 @@ currentPath: /docs/patterns/data/stats/
 
   small[data-trend="up"] { color: var(--color-success); }
   small[data-trend="down"] { color: var(--color-error); }
-
-  small data {
-    font-size: inherit;
-    font-weight: inherit;
-    line-height: inherit;
-  }
 }</code-block>
   </section>
 
   <section>
     <h2>Card-Based Stats</h2>
     <layout-text>
-      <p>Each stat in its own card container with an icon for visual distinction. Uses <code>data-layout="cluster"</code> on the figure for horizontal layout and <code>&lt;layout-stack&gt;</code> for vertical content stacking.</p>
+      <p>Each stat in its own card with an icon for visual distinction. At this point the recipe is exactly what <code>&lt;score-card&gt;</code> packages: title, value, change and icon slots, with <code>trend="up|down"</code> colouring the change.</p>
     </layout-text>
 
     <browser-window
@@ -150,51 +139,23 @@ currentPath: /docs/patterns/data/stats/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Card-based stats" data-escape><section class="stats">
-  <layout-card>
-    <figure data-layout="cluster" data-layout-justify="between" data-layout-align="start">
-      <layout-stack data-layout-gap="2xs">
-        <figcaption>Total Users</figcaption>
-        <data value="24521">24,521</data>
-        <small data-trend="up"><data value="0.125">+12.5%</data> from last month</small>
-      </layout-stack>
-      <span class="stat-icon">
-        <icon-wc name="users" size="md"></icon-wc>
-      </span>
-    </figure>
-  </layout-card>
+    <code-block language="html" label="Card-based stats" data-escape><section data-layout="grid" data-layout-min="m" data-layout-gap="l" aria-label="Key metrics">
+  <score-card trend="up">
+    <span slot="title">Total Users</span>
+    <data slot="value" value="24521">24,521</data>
+    <small slot="change"><data value="0.125">+12.5%</data> from last month</small>
+    <icon-wc slot="icon" name="users" size="md"></icon-wc>
+  </score-card>
 
-  <layout-card>
-    <figure data-layout="cluster" data-layout-justify="between" data-layout-align="start">
-      <layout-stack data-layout-gap="2xs">
-        <figcaption>Revenue</figcaption>
-        <data value="48352">$48,352</data>
-        <small data-trend="up"><data value="0.082">+8.2%</data> from last month</small>
-      </layout-stack>
-      <span class="stat-icon">
-        <icon-wc name="dollar-sign" size="md"></icon-wc>
-      </span>
-    </figure>
-  </layout-card>
+  <score-card trend="up">
+    <span slot="title">Revenue</span>
+    <data slot="value" value="48352">$48,352</data>
+    <small slot="change"><data value="0.082">+8.2%</data> from last month</small>
+    <icon-wc slot="icon" name="dollar-sign" size="md"></icon-wc>
+  </score-card>
 </section></code-block>
 
-    <code-block language="css" label="Card variant styles" data-escape>@scope (.stats) {
-  figure {
-    margin: 0;
-  }
-
-  small data {
-    font-size: inherit;
-    font-weight: inherit;
-    line-height: inherit;
-  }
-
-  .stat-icon {
-    padding: var(--size-s);
-    background: var(--color-surface-raised);
-    border-radius: var(--radius-m);
-  }
-}</code-block>
+    <p>No custom CSS: <code>&lt;score-card&gt;</code> draws the tile, sizes the value and places the icon.</p>
   </section>
 
   <section>

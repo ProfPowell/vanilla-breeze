@@ -11,52 +11,23 @@
       padding: var(--size-xl);
       background: var(--color-surface);
     }
-    .pricing-section {
+    td {
       text-align: center;
+      vertical-align: middle;
     }
-    .pricing-table-wrapper {
-      overflow-x: auto;
-    }
-    .pricing-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      background: var(--color-surface-raised);
-      border-radius: var(--radius-l);
-      overflow: hidden;
-    }
-    .pricing-table thead {
-      position: sticky;
-      top: 0;
-      background: var(--color-surface-raised);
-      z-index: 1;
-    }
-    .pricing-table th,
-    .pricing-table td {
-      padding: var(--size-m);
-      border-bottom: var(--border-width-thin) solid var(--color-border);
-    }
-    .pricing-table th {
-      font-weight: var(--font-weight-semibold);
+    thead th:not(:first-child) {
       text-align: center;
       vertical-align: bottom;
     }
-    .pricing-table th:first-child {
-      text-align: left;
+    td > .status {
+      font-size: var(--font-size-l);
     }
-    .pricing-table td {
-      text-align: center;
+    th[scope="rowgroup"] {
+      background: var(--color-surface-raised);
     }
-    .pricing-table td:first-child {
-      text-align: left;
+    th[scope="row"] {
+      font-weight: var(--font-weight-normal);
       color: var(--color-text-muted);
-    }
-    .pricing-table tbody tr:last-child td {
-      border-bottom: none;
-    }
-    .pricing-table tfoot td {
-      border-bottom: none;
-      padding-top: var(--size-l);
     }
     .plan-header {
       display: flex;
@@ -76,130 +47,122 @@
       color: var(--color-text-muted);
       font-weight: var(--font-weight-normal);
     }
-    .plan-featured .plan-header {
+    th[data-featured] .plan-header {
       color: var(--color-interactive);
-    }
-    .feature-check {
-      color: var(--color-success);
-    }
-    .feature-unavailable {
-      color: var(--color-text-muted);
-    }
-    .category-row td {
-      background: var(--color-surface);
-      font-weight: var(--font-weight-semibold);
-      color: var(--color-text);
-      text-align: left !important;
     }
   </style>
 </head>
 <body>
   <h1>Pricing - Comparison Table</h1>
-  <section class="pricing-section" data-layout="center" data-layout-max="wide" data-layout-gap="2xl">
-    <header data-layout="stack" data-layout-gap="s">
-      <h2>Compare plans</h2>
-      <p class="text-muted">See which plan is right for your needs</p>
-    </header>
-    <div class="pricing-table-wrapper">
-      <table class="pricing-table">
+  <section data-layout="center" data-layout-max="wide" data-layout-gap="2xl">
+    <hgroup data-layout="stack" data-layout-gap="s" data-layout-align="center">
+      <h2 id="compare-plans">Compare plans</h2>
+      <p>See which plan is right for your needs</p>
+    </hgroup>
+    <section data-table-scroll tabindex="0" aria-labelledby="compare-plans">
+      <table>
         <thead>
           <tr>
             <th scope="col">Features</th>
             <th scope="col">
-              <div class="plan-header">
+              <span class="plan-header">
                 <span class="plan-name">Basic</span>
                 <span class="plan-price">$9<span class="plan-period">/mo</span></span>
-              </div>
+              </span>
             </th>
-            <th scope="col" class="plan-featured">
-              <div class="plan-header">
+            <th scope="col" data-featured>
+              <span class="plan-header">
                 <span class="plan-name">Pro</span>
                 <span class="plan-price">$29<span class="plan-period">/mo</span></span>
-              </div>
+              </span>
             </th>
             <th scope="col">
-              <div class="plan-header">
+              <span class="plan-header">
                 <span class="plan-name">Enterprise</span>
                 <span class="plan-price">$99<span class="plan-period">/mo</span></span>
-              </div>
+              </span>
             </th>
           </tr>
         </thead>
         <tbody>
-          <tr class="category-row">
-            <td colspan="4">Usage</td>
+          <tr>
+            <th scope="rowgroup" colspan="4">Usage</th>
           </tr>
           <tr>
-            <td>Projects</td>
+            <th scope="row">Projects</th>
             <td>3</td>
             <td>Unlimited</td>
             <td>Unlimited</td>
           </tr>
           <tr>
-            <td>Storage</td>
+            <th scope="row">Storage</th>
             <td>5 GB</td>
             <td>50 GB</td>
             <td>Unlimited</td>
           </tr>
           <tr>
-            <td>Team members</td>
+            <th scope="row">Team members</th>
             <td>1</td>
             <td>10</td>
             <td>Unlimited</td>
           </tr>
-          <tr class="category-row">
-            <td colspan="4">Features</td>
+        </tbody>
+        <tbody>
+          <tr>
+            <th scope="rowgroup" colspan="4">Features</th>
           </tr>
           <tr>
-            <td>Analytics</td>
+            <th scope="row">Analytics</th>
             <td>Basic</td>
             <td>Advanced</td>
             <td>Custom</td>
           </tr>
           <tr>
-            <td>Custom integrations</td>
-            <td><icon-wc name="x" size="sm" class="feature-unavailable"></icon-wc></td>
-            <td><icon-wc name="check" size="sm" class="feature-check"></icon-wc></td>
-            <td><icon-wc name="check" size="sm" class="feature-check"></icon-wc></td>
+            <th scope="row">Custom integrations</th>
+            <td><span class="status" data-status="inactive"><span class="visually-hidden">Not included</span></span></td>
+            <td><span class="status" data-status="check"><span class="visually-hidden">Included</span></span></td>
+            <td><span class="status" data-status="check"><span class="visually-hidden">Included</span></span></td>
           </tr>
           <tr>
-            <td>API access</td>
-            <td><icon-wc name="x" size="sm" class="feature-unavailable"></icon-wc></td>
-            <td><icon-wc name="check" size="sm" class="feature-check"></icon-wc></td>
-            <td><icon-wc name="check" size="sm" class="feature-check"></icon-wc></td>
+            <th scope="row">API access</th>
+            <td><span class="status" data-status="inactive"><span class="visually-hidden">Not included</span></span></td>
+            <td><span class="status" data-status="check"><span class="visually-hidden">Included</span></span></td>
+            <td><span class="status" data-status="check"><span class="visually-hidden">Included</span></span></td>
           </tr>
           <tr>
-            <td>White labeling</td>
-            <td><icon-wc name="x" size="sm" class="feature-unavailable"></icon-wc></td>
-            <td><icon-wc name="x" size="sm" class="feature-unavailable"></icon-wc></td>
-            <td><icon-wc name="check" size="sm" class="feature-check"></icon-wc></td>
+            <th scope="row">White labeling</th>
+            <td><span class="status" data-status="inactive"><span class="visually-hidden">Not included</span></span></td>
+            <td><span class="status" data-status="inactive"><span class="visually-hidden">Not included</span></span></td>
+            <td><span class="status" data-status="check"><span class="visually-hidden">Included</span></span></td>
           </tr>
-          <tr class="category-row">
-            <td colspan="4">Support</td>
+        </tbody>
+        <tbody>
+          <tr>
+            <th scope="rowgroup" colspan="4">Support</th>
           </tr>
           <tr>
-            <td>Email support</td>
-            <td><icon-wc name="check" size="sm" class="feature-check"></icon-wc></td>
-            <td><icon-wc name="check" size="sm" class="feature-check"></icon-wc></td>
-            <td><icon-wc name="check" size="sm" class="feature-check"></icon-wc></td>
+            <th scope="row">Email support</th>
+            <td><span class="status" data-status="check"><span class="visually-hidden">Included</span></span></td>
+            <td><span class="status" data-status="check"><span class="visually-hidden">Included</span></span></td>
+            <td><span class="status" data-status="check"><span class="visually-hidden">Included</span></span></td>
           </tr>
           <tr>
-            <td>Priority support</td>
-            <td><icon-wc name="x" size="sm" class="feature-unavailable"></icon-wc></td>
-            <td><icon-wc name="check" size="sm" class="feature-check"></icon-wc></td>
-            <td><icon-wc name="check" size="sm" class="feature-check"></icon-wc></td>
+            <th scope="row">Priority support</th>
+            <td><span class="status" data-status="inactive"><span class="visually-hidden">Not included</span></span></td>
+            <td><span class="status" data-status="check"><span class="visually-hidden">Included</span></span></td>
+            <td><span class="status" data-status="check"><span class="visually-hidden">Included</span></span></td>
           </tr>
           <tr>
-            <td>24/7 phone support</td>
-            <td><icon-wc name="x" size="sm" class="feature-unavailable"></icon-wc></td>
-            <td><icon-wc name="x" size="sm" class="feature-unavailable"></icon-wc></td>
-            <td><icon-wc name="check" size="sm" class="feature-check"></icon-wc></td>
+            <th scope="row">24/7 phone support</th>
+            <td><span class="status" data-status="inactive"><span class="visually-hidden">Not included</span></span></td>
+            <td><span class="status" data-status="inactive"><span class="visually-hidden">Not included</span></span></td>
+            <td><span class="status" data-status="check"><span class="visually-hidden">Included</span></span></td>
           </tr>
           <tr>
-            <td>Dedicated account manager</td>
-            <td><icon-wc name="x" size="sm" class="feature-unavailable"></icon-wc></td>
-            <td><icon-wc name="x" size="sm" class="feature-unavailable"></icon-wc></td>
-            <td><icon-wc name="check" size="sm" class="feature-check"></icon-wc></td>
+            <th scope="row">Dedicated account manager</th>
+            <td><span class="status" data-status="inactive"><span class="visually-hidden">Not included</span></span></td>
+            <td><span class="status" data-status="inactive"><span class="visually-hidden">Not included</span></span></td>
+            <td><span class="status" data-status="check"><span class="visually-hidden">Included</span></span></td>
           </tr>
         </tbody>
         <tfoot>
@@ -211,7 +174,7 @@
           </tr>
         </tfoot>
       </table>
-    </div>
+    </section>
   </section>
   <script type="module" src="/src/main.js"></script>
 </body>

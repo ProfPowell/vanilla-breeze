@@ -67,6 +67,7 @@ const dataAttributes = {
       { name: 'data-paged', type: 'behavior', href: '/docs/attributes/data-paged/', description: 'Pagination for any list-shaped container: numbered, prev/next, load-more or infinite, with optional URL state' },
       { name: 'data-sortable', type: 'behavior', href: '/docs/attributes/data-sortable/', description: 'Client-side sorting for lists and tables via column headers or an external control; composes with data-paged' },
       { name: 'data-markdown-editable', type: 'behavior', href: '/docs/attributes/data-markdown-editable/', description: 'Inline markdown editing: raw markdown while focused, sanitised formatting on blur; textarea preview' },
+      { name: 'data-audio-playlist', type: 'behavior', href: '/docs/attributes/data-audio-playlist/', description: 'Native <audio> plus a linked track list: click to play, marks played tracks, advances in order; links download without JS' },
     ],
   },
   responsive: {
@@ -143,13 +144,32 @@ const dataAttributes = {
   },
 };
 
+// layout-badge data-color for each entry type on /docs/attributes/ (the
+// filter chips in the page use the same mapping). Cook interpolates dot
+// paths only, so the colour rides on each item as badgeColor.
+const BADGE_COLORS = {
+  native: 'success',
+  layout: 'secondary',
+  behavior: 'warning',
+  formatting: 'primary',
+  styling: 'accent',
+};
+
+/** Copy categories, adding badgeColor to every item (sources stay untouched). */
+function withBadgeColors(categories) {
+  return Object.fromEntries(Object.entries(categories).map(([key, cat]) => [
+    key,
+    { ...cat, items: cat.items.map((item) => ({ ...item, badgeColor: BADGE_COLORS[item.type] })) },
+  ]));
+}
+
 const nativeItems = Object.values(nativeAttributes).flatMap(cat => cat.items);
 const dataItems = Object.values(dataAttributes).flatMap(cat => cat.items);
 const allItems = [...nativeItems, ...dataItems];
 
 export default {
-  nativeCategories: nativeAttributes,
-  dataCategories: dataAttributes,
+  nativeCategories: withBadgeColors(nativeAttributes),
+  dataCategories: withBadgeColors(dataAttributes),
   nativeCount: nativeItems.length,
   nativePageCount: nativeItems.filter(i => !i.alias).length,
   nativeGroupCount: Object.keys(nativeAttributes).length,

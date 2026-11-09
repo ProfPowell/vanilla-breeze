@@ -6,233 +6,69 @@ currentSection: api
 currentPath: /docs/attributes/
 ---
 
-<template slot="extraHead">
-<style>
-  /* Pack badge: entries that ship in an opt-in pack, not the core bundle. */
-  .pack-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--size-3xs);
-    padding: var(--size-3xs) var(--size-xs);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-s);
-    color: var(--color-text-muted);
-    font-size: var(--font-size-xs);
-    white-space: nowrap;
-  }
-  .pack-badge icon-wc { inline-size: 1em; block-size: 1em; }
-    .attribute-index {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: var(--size-m);
-      margin-block-start: var(--size-l);
-    }
-
-    .attribute-entry {
-      display: flex;
-      flex-direction: column;
-      gap: var(--size-2xs);
-      padding: var(--size-m);
-      background: var(--color-surface);
-      border: var(--border-width-thin) solid var(--color-border);
-      border-radius: var(--radius-s);
-      text-decoration: none;
-      color: inherit;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    .attribute-entry:hover {
-      border-color: var(--color-interactive);
-      box-shadow: 0 2px 8px oklch(0% 0 0 / 0.08);
-    }
-
-    .attribute-entry code {
-      font-family: var(--font-mono);
-      font-size: var(--font-size-s);
-      font-weight: 500;
-    }
-
-    .attribute-entry .description {
-      font-size: var(--font-size-s);
-      color: var(--color-text-muted);
-      margin: 0;
-    }
-
-    .attribute-badge {
-      padding: var(--size-3xs) var(--size-xs);
-      border-radius: var(--radius-s);
-      font-size: var(--font-size-xs);
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
-    }
-
-    .attribute-badge[data-type="native"] {
-      background: oklch(85% 0.15 145);
-      color: oklch(30% 0.1 145);
-    }
-
-    .attribute-badge[data-type="layout"] {
-      background: oklch(85% 0.1 200);
-      color: oklch(30% 0.1 200);
-    }
-
-    .attribute-badge[data-type="behavior"] {
-      background: oklch(85% 0.1 60);
-      color: oklch(30% 0.1 60);
-    }
-
-    .attribute-badge[data-type="formatting"] {
-      background: oklch(85% 0.1 250);
-      color: oklch(30% 0.1 250);
-    }
-
-    .attribute-badge[data-type="styling"] {
-      background: oklch(85% 0.1 330);
-      color: oklch(30% 0.1 330);
-    }
-
-    .filter-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--size-s);
-      margin-block: var(--size-l);
-      padding: var(--size-m);
-      background: var(--color-surface-raised);
-      border-radius: var(--radius-m);
-      border: none;
-    }
-
-    .filter-chip {
-      display: flex;
-      align-items: center;
-      gap: var(--size-xs);
-      padding: var(--size-2xs) var(--size-s);
-      border: var(--border-width-thin) solid var(--color-border);
-      border-radius: var(--radius-full);
-      cursor: pointer;
-      font-size: var(--font-size-s);
-      user-select: none;
-      transition: opacity 0.2s, border-color 0.2s;
-    }
-
-    .filter-chip input { position: absolute; opacity: 0; pointer-events: none; }
-
-    .filter-chip:has(input:not(:checked)) {
-      opacity: 0.4;
-      border-color: transparent;
-    }
-
-    .filter-chip:hover {
-      border-color: var(--color-interactive);
-    }
-
-    .attribute-search {
-      margin-block: var(--size-m);
-      inline-size: 100%;
-      max-inline-size: 400px;
-    }
-
-    .attribute-entry[hidden] { display: none; }
-    .section-heading[hidden] { display: none; }
-    .category-heading[hidden] { display: none; }
-
-    .section-heading {
-      grid-column: 1 / -1;
-      margin-block-start: var(--size-xl);
-      padding-block-end: var(--size-xs);
-      border-block-end: var(--border-width-medium) solid var(--color-border);
-      font-size: var(--font-size-xl);
-      font-weight: 700;
-    }
-
-    .section-heading a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .section-heading a:hover {
-      color: var(--color-interactive);
-    }
-
-    .category-heading {
-      grid-column: 1 / -1;
-      margin-block-start: var(--size-l);
-      padding-block-end: var(--size-xs);
-      border-block-end: var(--border-width-thin) solid var(--color-border);
-      font-size: var(--font-size-l);
-      font-weight: 600;
-    }
-
-    .category-heading:first-of-type {
-      margin-block-start: 0;
-    }
-  </style>
-</template>
-
 <h1>Attribute Index</h1>
   <p class="lead">Complete listing of all attributes — native HTML attributes and VB's <code>data-*</code> enhancers — organized by category.</p>
 
-  <fieldset class="filter-bar" aria-label="Filter attributes">
+  <fieldset class="index-filters" data-layout="cluster" data-layout-gap="s" aria-label="Filter attributes">
     <legend class="visually-hidden">Filter by type</legend>
-    <label class="filter-chip">
+    <label class="index-chip">
       <input type="checkbox" checked data-filter="all" />
       <span>All <strong>${attributeIndex.totalCount}</strong></span>
     </label>
-    <label class="filter-chip" data-type="native">
+    <label class="index-chip" data-type="native">
       <input type="checkbox" checked data-filter="native" />
-      <span class="attribute-badge" data-type="native">native</span>
+      <layout-badge data-variant="subtle" data-color="success">native</layout-badge>
       <span><strong>${attributeIndex.nativeCount}</strong></span>
     </label>
-    <label class="filter-chip" data-type="layout">
+    <label class="index-chip" data-type="layout">
       <input type="checkbox" checked data-filter="layout" />
-      <span class="attribute-badge" data-type="layout">layout</span>
+      <layout-badge data-variant="subtle" data-color="secondary">layout</layout-badge>
       <span><strong>${attributeIndex.layoutCount}</strong></span>
     </label>
-    <label class="filter-chip" data-type="behavior">
+    <label class="index-chip" data-type="behavior">
       <input type="checkbox" checked data-filter="behavior" />
-      <span class="attribute-badge" data-type="behavior">behavior</span>
+      <layout-badge data-variant="subtle" data-color="warning">behavior</layout-badge>
       <span><strong>${attributeIndex.behaviorCount}</strong></span>
     </label>
-    <label class="filter-chip" data-type="formatting">
+    <label class="index-chip" data-type="formatting">
       <input type="checkbox" checked data-filter="formatting" />
-      <span class="attribute-badge" data-type="formatting">formatting</span>
+      <layout-badge data-variant="subtle" data-color="primary">formatting</layout-badge>
       <span><strong>${attributeIndex.formattingCount}</strong></span>
     </label>
-    <label class="filter-chip" data-type="styling">
+    <label class="index-chip" data-type="styling">
       <input type="checkbox" checked data-filter="styling" />
-      <span class="attribute-badge" data-type="styling">styling</span>
+      <layout-badge data-variant="subtle" data-color="accent">styling</layout-badge>
       <span><strong>${attributeIndex.stylingCount}</strong></span>
     </label>
   </fieldset>
 
   <search>
-    <input type="search" class="attribute-search" placeholder="Search attributes…" aria-label="Search attributes" />
+    <input type="search" class="index-search" placeholder="Search attributes…" aria-label="Search attributes" />
   </search>
 
-  <nav class="attribute-index" aria-label="All attributes">
-    <h2 class="section-heading"><a href="/docs/attributes/native/">Native Attributes</a></h2>
+  <nav data-layout="grid" data-layout-min="m" aria-label="All attributes">
+    <h2 class="index-section-heading"><a href="/docs/attributes/native/">Native Attributes</a></h2>
     {% for key, category in attributeIndex.nativeCategories %}
-    <h3 class="category-heading">${category.label}</h3>
+    <h3 class="index-heading">${category.label}</h3>
     {% for item in category.items %}
-    <a href="${item.href}" class="attribute-entry" data-type="${item.type}">
+    <a href="${item.href}" class="index-entry" data-type="${item.type}">
       <code>${item.name}</code>
-      <span class="attribute-badge" data-type="${item.type}">${item.type}</span>
+      <layout-badge data-variant="subtle" data-color="${item.badgeColor}">${item.type}</layout-badge>
       {% if item.pack %}<span class="pack-badge"><icon-wc name="package"></icon-wc>${item.pack}</span>{% endif %}
-      <p class="description">${item.description}</p>
+      <p>${item.description}</p>
     </a>
     {% endfor %}
     {% endfor %}
 
-    <h2 class="section-heading"><a href="/docs/attributes/data/">Data Attributes</a></h2>
+    <h2 class="index-section-heading"><a href="/docs/attributes/data/">Data Attributes</a></h2>
     {% for key, category in attributeIndex.dataCategories %}
-    <h3 class="category-heading">${category.label}</h3>
+    <h3 class="index-heading">${category.label}</h3>
     {% for item in category.items %}
-    <a href="${item.href}" class="attribute-entry" data-type="${item.type}">
+    <a href="${item.href}" class="index-entry" data-type="${item.type}">
       <code>${item.name}</code>
-      <span class="attribute-badge" data-type="${item.type}">${item.type}</span>
+      <layout-badge data-variant="subtle" data-color="${item.badgeColor}">${item.type}</layout-badge>
       {% if item.pack %}<span class="pack-badge"><icon-wc name="package"></icon-wc>${item.pack}</span>{% endif %}
-      <p class="description">${item.description}</p>
+      <p>${item.description}</p>
     </a>
     {% endfor %}
     {% endfor %}
@@ -240,12 +76,12 @@ currentPath: /docs/attributes/
 
 <script>
 (function() {
-  var search = document.querySelector('.attribute-search');
+  var search = document.querySelector('.index-search');
   var allCheck = document.querySelector('[data-filter="all"]');
   var typeChecks = document.querySelectorAll('[data-filter]:not([data-filter="all"])');
-  var entries = document.querySelectorAll('.attribute-entry');
-  var catHeadings = document.querySelectorAll('.category-heading');
-  var secHeadings = document.querySelectorAll('.section-heading');
+  var entries = document.querySelectorAll('.index-entry');
+  var catHeadings = document.querySelectorAll('.index-heading');
+  var secHeadings = document.querySelectorAll('.index-section-heading');
 
   function update() {
     var query = (search?.value || '').toLowerCase();
@@ -265,8 +101,8 @@ currentPath: /docs/attributes/
     catHeadings.forEach(function(h) {
       var next = h.nextElementSibling;
       var hasVisible = false;
-      while (next && !next.classList.contains('category-heading') && !next.classList.contains('section-heading')) {
-        if (next.classList.contains('attribute-entry') && !next.hidden) hasVisible = true;
+      while (next && !next.classList.contains('index-heading') && !next.classList.contains('index-section-heading')) {
+        if (next.classList.contains('index-entry') && !next.hidden) hasVisible = true;
         next = next.nextElementSibling;
       }
       h.hidden = !hasVisible;
@@ -275,8 +111,8 @@ currentPath: /docs/attributes/
     secHeadings.forEach(function(h) {
       var next = h.nextElementSibling;
       var hasVisible = false;
-      while (next && !next.classList.contains('section-heading')) {
-        if (next.classList.contains('attribute-entry') && !next.hidden) hasVisible = true;
+      while (next && !next.classList.contains('index-section-heading')) {
+        if (next.classList.contains('index-entry') && !next.hidden) hasVisible = true;
         next = next.nextElementSibling;
       }
       h.hidden = !hasVisible;

@@ -11,65 +11,35 @@
       padding: var(--size-xl);
       background: var(--color-surface);
     }
-    .pricing-section {
-      text-align: center;
-    }
-    .pricing-card {
-      background: var(--color-surface-raised);
-      border: var(--border-width-thin) solid var(--color-border);
-      border-radius: var(--radius-l);
-      padding: var(--size-l);
-      text-align: center;
-    }
-    .pricing-card[data-featured] {
+    layout-card[data-featured] {
+      position: relative;
       border-color: var(--color-interactive);
       box-shadow: var(--shadow-m);
-      transform: scale(1.05);
-      position: relative;
+      scale: 1.05;
     }
-    .pricing-badge {
+    layout-card[data-featured] > layout-badge {
       position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: var(--color-interactive);
-      color: var(--color-white);
-      padding: var(--size-2xs) var(--size-s);
-      border-radius: var(--radius-full);
-      font-size: var(--font-size-s);
-      font-weight: var(--font-weight-semibold);
+      inset-block-start: 0;
+      inset-inline-start: 50%;
+      translate: -50% -50%;
     }
-    .pricing-card .plan-name {
+    layout-card > hgroup {
+      text-align: center;
+    }
+    .plan-name {
       font-size: var(--font-size-l);
       font-weight: var(--font-weight-semibold);
-      color: var(--color-text);
     }
-    .pricing-card .price {
+    .price {
       font-size: var(--font-size-3xl);
       font-weight: var(--font-weight-bold);
       color: var(--color-text);
     }
-    .pricing-card .price-period {
+    .price-period {
       font-size: var(--font-size-s);
       color: var(--color-text-muted);
     }
-    .feature-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      text-align: left;
-    }
-    .feature-list li {
-      display: flex;
-      align-items: center;
-      gap: var(--size-s);
-      padding: var(--size-xs) 0;
-    }
-    .feature-list icon-wc {
-      color: var(--color-success);
-      flex-shrink: 0;
-    }
-    /* Toggle Switch Styles */
+    /* Billing toggle: the switch is a native checkbox (input[data-switch]) */
     .pricing-toggle {
       display: inline-flex;
       align-items: center;
@@ -77,160 +47,85 @@
     }
     .toggle-label {
       font-weight: var(--font-weight-medium);
+      margin-block: 0;
       color: var(--color-text-muted);
       transition: color 0.2s ease;
     }
-    .toggle-label.active {
+    /* The active side: Monthly while unchecked, Yearly while checked */
+    .toggle-label:has(+ input:not(:checked)),
+    input:checked + .toggle-label {
       color: var(--color-text);
     }
-    .toggle-switch {
-      position: relative;
-      width: 56px;
-      height: 28px;
-    }
-    .toggle-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .toggle-slider {
-      position: absolute;
-      cursor: pointer;
-      inset: 0;
-      background: var(--color-interactive);
-      border-radius: var(--radius-full);
-      transition: background 0.2s ease;
-    }
-    .toggle-slider::before {
-      content: "";
-      position: absolute;
-      height: 22px;
-      width: 22px;
-      left: 3px;
-      bottom: 3px;
-      background: var(--color-white);
-      border-radius: var(--radius-full);
-      transition: transform 0.2s ease;
-    }
-    .toggle-switch input:checked + .toggle-slider::before {
-      transform: translateX(28px);
-    }
-    .toggle-switch input:focus-visible + .toggle-slider {
-      outline: 2px solid var(--color-focus);
-      outline-offset: 2px;
-    }
-    .savings-badge {
-      background: var(--color-success-subtle);
-      color: var(--color-success);
-      padding: var(--size-2xs) var(--size-s);
-      border-radius: var(--radius-full);
-      font-size: var(--font-size-s);
-      font-weight: var(--font-weight-semibold);
-    }
-    /* Price visibility based on toggle state */
-    .price-monthly,
-    .price-yearly {
+    /* Price visibility follows the switch, no JavaScript */
+    section:has(.pricing-toggle input:checked) .price-monthly,
+    section:has(.pricing-toggle input:not(:checked)) .price-yearly {
       display: none;
-    }
-    .pricing-toggle-wrapper:has(input:not(:checked)) ~ .pricing-cards .price-monthly {
-      display: inline;
-    }
-    .pricing-toggle-wrapper:has(input:checked) ~ .pricing-cards .price-yearly {
-      display: inline;
     }
   </style>
 </head>
 <body>
   <h1>Pricing - Monthly/Yearly Toggle</h1>
-  <section class="pricing-section" data-layout="center" data-layout-max="wide" data-layout-gap="2xl">
-    <header data-layout="stack" data-layout-gap="m">
+  <section data-layout="center" data-layout-max="wide" data-layout-gap="2xl">
+    <header data-layout="stack" data-layout-gap="m" data-layout-align="center">
       <h2>Simple, transparent pricing</h2>
-      <p class="text-muted">Choose the plan that's right for you</p>
-      <div class="pricing-toggle-wrapper">
-        <div class="pricing-toggle">
-          <span class="toggle-label active" id="monthly-label">Monthly</span>
-          <label class="toggle-switch">
-            <input type="checkbox" aria-labelledby="monthly-label yearly-label" />
-            <span class="toggle-slider"></span>
-          </label>
-          <span class="toggle-label" id="yearly-label">Yearly</span>
-          <span class="savings-badge">Save 20%</span>
-        </div>
-      </div>
+      <p>Choose the plan that's right for you</p>
+      <p class="pricing-toggle">
+        <span class="toggle-label" aria-hidden="true">Monthly</span>
+        <input type="checkbox" role="switch" data-switch id="billing-yearly"/>
+        <label class="toggle-label" for="billing-yearly">Yearly</label>
+        <layout-badge data-color="success" data-variant="subtle">Save 20%</layout-badge>
+      </p>
     </header>
-    <div data-layout="grid" data-layout-min="l" data-layout-gap="l" class="pricing-cards">
-      <article class="pricing-card" data-layout="stack" data-layout-gap="l">
-        <div data-layout="stack" data-layout-gap="xs">
-          <span class="plan-name">Basic</span>
-          <div>
-            <span class="price price-monthly">$9</span>
-            <span class="price price-yearly">$7</span>
-            <span class="price-period">/month</span>
-          </div>
-          <p class="text-sm text-muted">Perfect for individuals and small projects</p>
-        </div>
-        <ul class="feature-list">
-          <li><icon-wc name="check" size="sm"></icon-wc> Up to 3 projects</li>
-          <li><icon-wc name="check" size="sm"></icon-wc> 5 GB storage</li>
-          <li><icon-wc name="check" size="sm"></icon-wc> Basic analytics</li>
-          <li><icon-wc name="check" size="sm"></icon-wc> Email support</li>
+    <layout-grid data-layout-min="l" data-layout-gap="l">
+      <layout-card data-variant="outlined" data-padding="l" data-layout="stack" data-layout-gap="l">
+        <hgroup data-layout="stack" data-layout-gap="xs">
+          <h3 class="plan-name">Basic</h3>
+          <p><span class="price price-monthly">$9</span><span class="price price-yearly">$7</span> <span class="price-period">/month</span></p>
+          <p><small>Perfect for individuals and small projects</small></p>
+        </hgroup>
+        <ul data-marker="check">
+          <li>Up to 3 projects</li>
+          <li>5 GB storage</li>
+          <li>Basic analytics</li>
+          <li>Email support</li>
         </ul>
         <a href="#" class="button secondary full-width">Get Started</a>
-      </article>
-      <article class="pricing-card" data-featured data-layout="stack" data-layout-gap="l">
-        <span class="pricing-badge">Most Popular</span>
-        <div data-layout="stack" data-layout-gap="xs">
-          <span class="plan-name">Pro</span>
-          <div>
-            <span class="price price-monthly">$29</span>
-            <span class="price price-yearly">$23</span>
-            <span class="price-period">/month</span>
-          </div>
-          <p class="text-sm text-muted">Best for growing teams and businesses</p>
-        </div>
-        <ul class="feature-list">
-          <li><icon-wc name="check" size="sm"></icon-wc> Unlimited projects</li>
-          <li><icon-wc name="check" size="sm"></icon-wc> 50 GB storage</li>
-          <li><icon-wc name="check" size="sm"></icon-wc> Advanced analytics</li>
-          <li><icon-wc name="check" size="sm"></icon-wc> Priority support</li>
-          <li><icon-wc name="check" size="sm"></icon-wc> Custom integrations</li>
-          <li><icon-wc name="check" size="sm"></icon-wc> Team collaboration</li>
+      </layout-card>
+      <layout-card data-variant="outlined" data-padding="l" data-featured data-layout="stack" data-layout-gap="l">
+        <layout-badge data-shape="ribbon" data-color="primary" data-size="l">Most Popular</layout-badge>
+        <hgroup data-layout="stack" data-layout-gap="xs">
+          <h3 class="plan-name">Pro</h3>
+          <p><span class="price price-monthly">$29</span><span class="price price-yearly">$23</span> <span class="price-period">/month</span></p>
+          <p><small>Best for growing teams and businesses</small></p>
+        </hgroup>
+        <ul data-marker="check">
+          <li>Unlimited projects</li>
+          <li>50 GB storage</li>
+          <li>Advanced analytics</li>
+          <li>Priority support</li>
+          <li>Custom integrations</li>
+          <li>Team collaboration</li>
         </ul>
         <a href="#" class="button full-width">Get Started</a>
-      </article>
-      <article class="pricing-card" data-layout="stack" data-layout-gap="l">
-        <div data-layout="stack" data-layout-gap="xs">
-          <span class="plan-name">Enterprise</span>
-          <div>
-            <span class="price price-monthly">$99</span>
-            <span class="price price-yearly">$79</span>
-            <span class="price-period">/month</span>
-          </div>
-          <p class="text-sm text-muted">For large organizations with custom needs</p>
-        </div>
-        <ul class="feature-list">
-          <li><icon-wc name="check" size="sm"></icon-wc> Everything in Pro</li>
-          <li><icon-wc name="check" size="sm"></icon-wc> Unlimited storage</li>
-          <li><icon-wc name="check" size="sm"></icon-wc> Custom analytics</li>
-          <li><icon-wc name="check" size="sm"></icon-wc> 24/7 phone support</li>
-          <li><icon-wc name="check" size="sm"></icon-wc> Dedicated account manager</li>
-          <li><icon-wc name="check" size="sm"></icon-wc> SLA guarantee</li>
+      </layout-card>
+      <layout-card data-variant="outlined" data-padding="l" data-layout="stack" data-layout-gap="l">
+        <hgroup data-layout="stack" data-layout-gap="xs">
+          <h3 class="plan-name">Enterprise</h3>
+          <p><span class="price price-monthly">$99</span><span class="price price-yearly">$79</span> <span class="price-period">/month</span></p>
+          <p><small>For large organizations with custom needs</small></p>
+        </hgroup>
+        <ul data-marker="check">
+          <li>Everything in Pro</li>
+          <li>Unlimited storage</li>
+          <li>Custom analytics</li>
+          <li>24/7 phone support</li>
+          <li>Dedicated account manager</li>
+          <li>SLA guarantee</li>
         </ul>
         <a href="#" class="button secondary full-width">Contact Sales</a>
-      </article>
-    </div>
+      </layout-card>
+    </layout-grid>
   </section>
   <script type="module" src="/src/main.js"></script>
-  <script>
-    // Optional: Update toggle label states for visual feedback
-    const toggle = document.querySelector('.toggle-switch input');
-    const monthlyLabel = document.getElementById('monthly-label');
-    const yearlyLabel = document.getElementById('yearly-label');
-
-    toggle.addEventListener('change', () => {
-      monthlyLabel.classList.toggle('active', !toggle.checked);
-      yearlyLabel.classList.toggle('active', toggle.checked);
-    });
-  </script>
 </body>
 </html>

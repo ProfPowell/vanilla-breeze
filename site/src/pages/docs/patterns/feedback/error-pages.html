@@ -37,28 +37,38 @@ currentPath: /docs/patterns/feedback/error-pages/
 
     <code-block language="html" label="error-404.html">&lt;body data-layout="cover" data-layout-min="xl" data-layout-padding="l"&gt;
   &lt;main data-layout="center" data-layout-max="narrow" data-layout-principal
-        class="error-content" data-layout-gap="xl"&gt;
+        data-layout-intrinsic data-layout-text data-layout-gap="xl"&gt;
     &lt;span class="error-code"&gt;404&lt;/span&gt;
-    &lt;hgroup class="spaced"&gt;
+    &lt;hgroup class="spaced" data-align="center"&gt;
       &lt;h1&gt;Page not found&lt;/h1&gt;
       &lt;p&gt;Sorry, we couldn't find the page you're looking for.
          It may have been moved or deleted.&lt;/p&gt;
     &lt;/hgroup&gt;
-    &lt;footer data-layout="stack" data-layout-gap="m"&gt;
+    &lt;footer data-layout="stack" data-layout-gap="m" data-layout-align="center"&gt;
       &lt;a href="/" class="button"&gt;
         &lt;icon-wc name="home"&gt;&lt;/icon-wc&gt;
         Go back home
       &lt;/a&gt;
-      &lt;nav data-layout="cluster" data-layout-gap="m"
-           data-layout-justify="center" class="error-links"
-           aria-label="Additional navigation"&gt;
-        &lt;a href="/search"&gt;Search&lt;/a&gt;
-        &lt;a href="/sitemap"&gt;Sitemap&lt;/a&gt;
-        &lt;a href="/contact"&gt;Contact support&lt;/a&gt;
+      &lt;nav class="horizontal" aria-label="Additional navigation"&gt;
+        &lt;ul&gt;
+          &lt;li&gt;&lt;a href="/search"&gt;Search&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href="/sitemap"&gt;Sitemap&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href="/contact"&gt;Contact support&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
       &lt;/nav&gt;
     &lt;/footer&gt;
   &lt;/main&gt;
 &lt;/body&gt;</code-block>
+
+    <h3>Error Code Styles</h3>
+    <p>The oversized status number is this recipe's own look, so it keeps a class. Everything else is layout attributes: <code>data-layout-intrinsic</code> centers each child and <code>data-layout-text</code> centers the text.</p>
+    <code-block language="css" label="Error code CSS" data-escape>.error-code {
+  font-size: clamp(4rem, 15vw, 8rem);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-muted);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}</code-block>
   </section>
 
   <section>
@@ -76,20 +86,16 @@ currentPath: /docs/patterns/feedback/error-pages/
 
     <code-block language="html" label="error-500.html">&lt;body data-layout="cover" data-layout-min="xl" data-layout-padding="l"&gt;
   &lt;main data-layout="center" data-layout-max="narrow" data-layout-principal
-        class="error-content" data-layout-gap="xl"&gt;
-    &lt;header data-layout="stack" data-layout-gap="m"
-            data-layout-align="center"&gt;
-      &lt;icon-wc name="alert-triangle" class="error-icon"&gt;&lt;/icon-wc&gt;
-      &lt;span class="error-code"&gt;Error 500&lt;/span&gt;
-    &lt;/header&gt;
-    &lt;hgroup class="spaced"&gt;
+        data-layout-intrinsic data-layout-text data-layout-gap="xl"&gt;
+    &lt;icon-wc name="alert-triangle" size="2xl"&gt;&lt;/icon-wc&gt;
+    &lt;hgroup class="eyebrow spaced" data-align="center"&gt;
+      &lt;p&gt;Error 500&lt;/p&gt;
       &lt;h1&gt;Something went wrong&lt;/h1&gt;
       &lt;p&gt;We're experiencing technical difficulties. Our team has been
          notified and is working on a fix. Please try again later.&lt;/p&gt;
     &lt;/hgroup&gt;
-    &lt;div data-layout="cluster" data-layout-gap="m"
-         data-layout-justify="center"&gt;
-      &lt;button data-action="reload"&gt;
+    &lt;layout-cluster data-layout-gap="m" data-layout-justify="center"&gt;
+      &lt;button type="button" data-action="reload"&gt;
         &lt;icon-wc name="refresh-cw"&gt;&lt;/icon-wc&gt;
         Try again
       &lt;/button&gt;
@@ -97,12 +103,12 @@ currentPath: /docs/patterns/feedback/error-pages/
         &lt;icon-wc name="home"&gt;&lt;/icon-wc&gt;
         Go back home
       &lt;/a&gt;
-    &lt;/div&gt;
-    &lt;nav data-layout="cluster" data-layout-gap="m"
-         data-layout-justify="center" class="error-links"
-         aria-label="Additional navigation"&gt;
-      &lt;a href="/status"&gt;Check system status&lt;/a&gt;
-      &lt;a href="/contact"&gt;Contact support&lt;/a&gt;
+    &lt;/layout-cluster&gt;
+    &lt;nav class="horizontal" aria-label="Additional navigation"&gt;
+      &lt;ul&gt;
+        &lt;li&gt;&lt;a href="/status"&gt;Check system status&lt;/a&gt;&lt;/li&gt;
+        &lt;li&gt;&lt;a href="/contact"&gt;Contact support&lt;/a&gt;&lt;/li&gt;
+      &lt;/ul&gt;
     &lt;/nav&gt;
   &lt;/main&gt;
   &lt;script&gt;
@@ -110,6 +116,8 @@ currentPath: /docs/patterns/feedback/error-pages/
       .addEventListener('click', () =&gt; location.reload());
   &lt;/script&gt;
 &lt;/body&gt;</code-block>
+
+    <p>The status line is an eyebrow (<code>hgroup.eyebrow</code>) above the heading. The icon is tinted by one element rule: <code>main &gt; icon-wc { color: var(--color-error); }</code>.</p>
   </section>
 
   <section>
@@ -127,28 +135,31 @@ currentPath: /docs/patterns/feedback/error-pages/
 
     <code-block language="html" label="error-maintenance.html">&lt;body data-layout="cover" data-layout-min="xl" data-layout-padding="l"&gt;
   &lt;main data-layout="center" data-layout-max="narrow" data-layout-principal
-        class="maintenance-content" data-layout-gap="xl"&gt;
-    &lt;icon-wc name="wrench" class="maintenance-icon"&gt;&lt;/icon-wc&gt;
-    &lt;hgroup class="spaced"&gt;
+        data-layout-intrinsic data-layout-text data-layout-gap="xl"&gt;
+    &lt;icon-wc name="wrench" size="2xl"&gt;&lt;/icon-wc&gt;
+    &lt;hgroup class="spaced" data-align="center"&gt;
       &lt;h1&gt;Under maintenance&lt;/h1&gt;
       &lt;p&gt;We're currently performing scheduled maintenance to improve
          our services. We'll be back shortly.&lt;/p&gt;
     &lt;/hgroup&gt;
-    &lt;span class="eta-badge"&gt;
-      &lt;icon-wc name="clock"&gt;&lt;/icon-wc&gt;
+    &lt;layout-badge data-color="info" data-size="l"&gt;
+      &lt;icon-wc name="clock" size="sm"&gt;&lt;/icon-wc&gt;
       Estimated return: &lt;time datetime="14:00-05:00"&gt;2:00 PM EST&lt;/time&gt;
-    &lt;/span&gt;
-    &lt;section data-layout="stack" data-layout-gap="s"&gt;
-      &lt;p class="section-label"&gt;Get notified when we're back online:&lt;/p&gt;
-      &lt;form class="notify-form" action="/notify" method="POST"&gt;
-        &lt;input type="email" name="email" placeholder="Enter your email"
-               required aria-label="Email address"/&gt;
+    &lt;/layout-badge&gt;
+    &lt;layout-stack data-layout-gap="s" data-layout-align="center"&gt;
+      &lt;p&gt;&lt;small&gt;Get notified when we're back online:&lt;/small&gt;&lt;/p&gt;
+      &lt;form class="inline" action="/notify" method="POST"&gt;
+        &lt;form-field&gt;
+          &lt;label for="notify-email" class="visually-hidden"&gt;Email address&lt;/label&gt;
+          &lt;input type="email" id="notify-email" name="email"
+                 placeholder="Enter your email" required autocomplete="email"/&gt;
+        &lt;/form-field&gt;
         &lt;button type="submit"&gt;Notify me&lt;/button&gt;
       &lt;/form&gt;
-    &lt;/section&gt;
-    &lt;section data-layout="stack" data-layout-gap="m"&gt;
-      &lt;p class="section-label"&gt;Follow us for updates:&lt;/p&gt;
-      &lt;nav class="social-links" aria-label="Social media"&gt;
+    &lt;/layout-stack&gt;
+    &lt;layout-stack data-layout-gap="s" data-layout-align="center"&gt;
+      &lt;p&gt;&lt;small&gt;Follow us for updates:&lt;/small&gt;&lt;/p&gt;
+      &lt;nav class="horizontal" aria-label="Social media"&gt;
         &lt;ul&gt;
           &lt;li&gt;&lt;a href="https://twitter.com" aria-label="Twitter"&gt;
             &lt;icon-wc name="twitter"&gt;&lt;/icon-wc&gt;
@@ -161,9 +172,11 @@ currentPath: /docs/patterns/feedback/error-pages/
           &lt;/a&gt;&lt;/li&gt;
         &lt;/ul&gt;
       &lt;/nav&gt;
-    &lt;/section&gt;
+    &lt;/layout-stack&gt;
   &lt;/main&gt;
 &lt;/body&gt;</code-block>
+
+    <p>No classes beyond VB's own: <code>&lt;layout-badge&gt;</code> carries the return time, <code>form.inline</code> puts the email field beside its button, and <code>nav.horizontal</code> lays out the social links. Inside a <code>data-layout-intrinsic</code> center, group children with <code>&lt;layout-stack&gt;</code> rather than <code>&lt;section&gt;</code>: a section is an inline-size container, so as a content-sized flex item it collapses to zero width.</p>
   </section>
 
   <section>
@@ -199,7 +212,7 @@ currentPath: /docs/patterns/feedback/error-pages/
         <tr>
           <td><code>&lt;icon-wc&gt;</code></td>
           <td>Visual indicator of error type</td>
-          <td>Size via <code>--icon-size</code>, color via CSS</td>
+          <td>Size via the <code>size</code> attribute (<code>xs</code> to <code>2xl</code>), color via CSS</td>
         </tr>
         <tr>
           <td><code>data-layout="cluster"</code></td>

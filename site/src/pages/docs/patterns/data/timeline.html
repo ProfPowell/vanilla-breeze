@@ -17,7 +17,7 @@ currentPath: /docs/patterns/data/timeline/
         <li>Scoped CSS with <code>@scope</code> for clean namespacing</li>
         <li>Vertical and horizontal layout options</li>
         <li>Status indicators via <code>data-status</code> attributes</li>
-        <li>Integration with <code>user-avatar</code>, <code>tool-tip</code>, and <code>layout-reel</code></li>
+        <li>Integration with <code>activity-feed</code>, <code>tool-tip</code>, and <code>layout-reel</code></li>
         <li>Semantic <code>&lt;time&gt;</code> elements for dates</li>
         <li>CSS custom properties for easy theming</li>
       </ul>
@@ -115,7 +115,7 @@ currentPath: /docs/patterns/data/timeline/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Timeline with icons and tooltips" data-escape><ol class="timeline" aria-label="Order status timeline">
+    <code-block language="html" label="Timeline with icons and tooltips" data-escape><ol class="timeline">
   <li>
     <span data-status="completed" aria-label="Completed"
           tabindex="0" title="Completed on March 20, 2024 at 9:00 AM" data-tooltip>
@@ -185,7 +185,7 @@ currentPath: /docs/patterns/data/timeline/
   <section>
     <h2>Activity Feed</h2>
     <layout-text>
-      <p>A compact feed-style timeline for notifications and activity logs. Uses the <code>user-avatar</code> component for avatars, action descriptions with links, and relative timestamps. Suitable for dashboards and notification centers.</p>
+      <p>A compact feed-style timeline for notifications and activity logs, built on the <code>&lt;activity-feed&gt;</code> component: an icon (or avatar) rail, action descriptions with links, and relative timestamps. Suitable for dashboards and notification centers.</p>
     </layout-text>
 
     <browser-window
@@ -195,65 +195,19 @@ currentPath: /docs/patterns/data/timeline/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Activity feed with user-avatar" data-escape><ol class="activity-feed" aria-label="Recent activity">
-  <li>
-    <user-avatar data-size="sm">
-      <span data-fallback>JD</span>
-    </user-avatar>
-    <section>
-      <h3><a href="#"><strong>John Doe</strong></a> added a comment on <a href="#">Issue #423</a></h3>
-      <time datetime="2024-03-25T14:30">2 hours ago</time>
-    </section>
-  </li>
+    <code-block language="html" label="Activity feed with activity-feed" data-escape><activity-feed aria-label="Recent activity">
+  <article data-activity data-activity-icon="message-circle">
+    <a href="#"><strong>John Doe</strong></a> added a comment on <a href="#">Issue #423</a>
+    <time datetime="2026-07-06T08:30:00Z">Jul 6, 2026</time>
+  </article>
 
-  <li>
-    <user-avatar data-size="sm">
-      <span data-fallback>SM</span>
-    </user-avatar>
-    <section>
-      <h3><a href="#"><strong>Sarah Miller</strong></a> uploaded a file to <a href="#">Project Alpha</a></h3>
-      <a href="/files/design-mockup-v2.fig" download>
-        <icon-wc name="file" size="sm"></icon-wc>
-        design-mockup-v2.fig
-      </a>
-      <time datetime="2024-03-25T11:15">5 hours ago</time>
-    </section>
-  </li>
-</ol></code-block>
+  <article data-activity data-activity-icon="upload">
+    <a href="#"><strong>Sarah Miller</strong></a> uploaded <a href="/files/design-mockup-v2.fig" download>design-mockup-v2.fig</a> to <a href="#">Project Alpha</a>
+    <time datetime="2026-07-06T05:15:00Z">Jul 6, 2026</time>
+  </article>
+</activity-feed></code-block>
 
-    <code-block language="css" label="Activity feed styles" data-escape>.activity-feed {
-  --feed-line-color: var(--color-border);
-  --avatar-size: 2rem;
-  position: relative;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-@scope (.activity-feed) {
-  li {
-    display: grid;
-    grid-template-columns: var(--avatar-size) 1fr;
-    gap: var(--size-s);
-    padding-block: var(--size-s);
-  }
-
-  user-avatar { position: relative; z-index: 1; }
-  section { min-width: 0; }
-  h3 { font-size: var(--font-size-s); font-weight: normal; margin: 0; }
-  h3 strong { font-weight: var(--font-weight-semibold); }
-  time { display: block; font-size: var(--font-size-xs); color: var(--color-text-muted); }
-  a[download] {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--size-xs);
-    padding: var(--size-xs) var(--size-s);
-    background: var(--color-surface-alt);
-    border-radius: var(--radius-s);
-    color: var(--color-text);
-    text-decoration: none;
-  }
-}</code-block>
+    <p>No custom CSS: <code>&lt;activity-feed&gt;</code> lays out each entry with its icon rail, turns the authored <code>&lt;time&gt;</code> into a relative timestamp (the authored text is the no-JS fallback), and wires the WAI-ARIA feed pattern. Use <code>data-activity-avatar="URL"</code> instead of an icon to show the actor's photo, and <code>data-group="day"</code> to add date headings.</p>
   </section>
 
   <section>
@@ -349,44 +303,42 @@ currentPath: /docs/patterns/data/timeline/
       <p>Timeline patterns use CSS custom properties for easy customization:</p>
     </layout-text>
 
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Property</th>
-            <th>Default</th>
-            <th>Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>--timeline-line-color</code></td>
-            <td><code>var(--color-border)</code></td>
-            <td>Color of the connecting line</td>
-          </tr>
-          <tr>
-            <td><code>--timeline-dot-color</code></td>
-            <td><code>var(--color-interactive)</code></td>
-            <td>Color of the dot markers</td>
-          </tr>
-          <tr>
-            <td><code>--timeline-dot-size</code></td>
-            <td><code>0.75rem</code></td>
-            <td>Size of the dot markers</td>
-          </tr>
-          <tr>
-            <td><code>--timeline-icon-size</code></td>
-            <td><code>2rem</code></td>
-            <td>Size of icon containers</td>
-          </tr>
-          <tr>
-            <td><code>--avatar-size</code></td>
-            <td><code>2rem</code></td>
-            <td>Size of user avatars in activity feeds</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--timeline-line-color</code></td>
+          <td><code>var(--color-border)</code></td>
+          <td>Color of the connecting line</td>
+        </tr>
+        <tr>
+          <td><code>--timeline-dot-color</code></td>
+          <td><code>var(--color-interactive)</code></td>
+          <td>Color of the dot markers</td>
+        </tr>
+        <tr>
+          <td><code>--timeline-dot-size</code></td>
+          <td><code>0.75rem</code></td>
+          <td>Size of the dot markers</td>
+        </tr>
+        <tr>
+          <td><code>--timeline-icon-size</code></td>
+          <td><code>2rem</code></td>
+          <td>Size of icon containers</td>
+        </tr>
+        <tr>
+          <td><code>--avatar-size</code></td>
+          <td><code>2rem</code></td>
+          <td>Size of user avatars in activity feeds</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
@@ -398,7 +350,7 @@ currentPath: /docs/patterns/data/timeline/
         <li><strong>Semantic time elements:</strong> Always use <code>&lt;time&gt;</code> with a <code>datetime</code> attribute for machine-readable dates</li>
         <li><strong>Status via data attributes:</strong> Use <code>data-status</code> instead of classes for state styling - cleaner separation of concerns</li>
         <li><strong>Tooltips:</strong> Add <code>title</code> + <code>data-tooltip</code> to status icons for hover context (progressive enhancement — works without JS)</li>
-        <li><strong>User avatars:</strong> Use the <code>user-avatar</code> component for consistent avatar styling in activity feeds</li>
+        <li><strong>User avatars:</strong> In an <code>&lt;activity-feed&gt;</code>, <code>data-activity-avatar</code> renders the actor's photo through <code>&lt;user-avatar&gt;</code></li>
         <li><strong>Horizontal scroll:</strong> Use <code>layout-reel</code> with <code>data-layout-scrollbar</code> for horizontal timelines with visible scrollbar</li>
         <li><strong>Color semantics:</strong> Use consistent colors - <code>--color-success</code> for completed, <code>--color-warning</code> for pending, <code>--color-error</code> for issues</li>
       </ul>
@@ -415,6 +367,10 @@ currentPath: /docs/patterns/data/timeline/
       <a href="/docs/elements/custom-elements/reel/" class="section-card">
         <h3>Layout Reel</h3>
         <p>Horizontal scrolling container</p>
+      </a>
+      <a href="/docs/elements/web-components/activity-feed/" class="section-card">
+        <h3>Activity Feed</h3>
+        <p>Accessible feed of timestamped user actions</p>
       </a>
       <a href="/docs/elements/custom-elements/user-avatar/" class="section-card">
         <h3>User Avatar</h3>

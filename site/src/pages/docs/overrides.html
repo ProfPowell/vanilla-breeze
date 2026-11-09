@@ -12,12 +12,13 @@ toc: true
   <h2>The Cascade Contract</h2>
   <p>Vanilla Breeze ships all framework CSS inside <code>@layer</code> blocks:</p>
 
-  <code-block language="css" label="Framework layer order" data-escape>@layer reset, base, theme, components, utilities;</code-block>
+  <code-block language="css" label="Framework layer order" data-escape>@layer tokens, reset, native-elements, custom-elements, web-components, utils,
+  bundle-theme, bundle-effects, bundle-components;</code-block>
 
   <p>This single architectural decision makes everything else on this page work. Any CSS you write <strong>outside</strong> a layer &mdash; a plain class, an ID rule, anything unlayered &mdash; beats all layered CSS automatically.</p>
 
   <code-block language="css" label="Unlayered CSS beats @layer" data-escape>/* Framework — inside @layer, always loses to unlayered CSS */
-@layer components {
+@layer custom-elements {
   .card { background: var(--color-surface); }
 }
 
@@ -94,32 +95,39 @@ toc: true
   <p>The left column shows Swiss defaults. The right column shows identical markup with unlayered classes applied: purple rounded card, italic pull-quote, pill-shaped button. No <code>!important</code> anywhere &mdash; the unlayered rules win by the cascade spec.</p>
 </section>
 
-<!-- Level 4: Utilities -->
+<!-- Level 4: Token-driven elements -->
 <section id="utilities">
-  <h2>Level 4: Theme-Aware Utilities</h2>
-  <p>Vanilla Breeze ships a <code>@layer utilities</code> with token-connected single-purpose classes. Unlike Tailwind utilities that bake in values at build time, VB utilities reference tokens. They respond to the active theme.</p>
+  <h2>Level 4: Token-Driven Elements</h2>
+  <p>Vanilla Breeze does not ship a utility-class layer. Apart from a few typography helpers and <code>.visually-hidden</code>, there are no <code>.bg-*</code>, <code>.text-*</code> or <code>.p-*</code> classes. Instead, every native element and component reads its colour, type, spacing and shape from tokens. The same markup therefore follows whatever theme is active where it sits.</p>
 
-  <code-block language="html" label="Same class, different theme output" data-escape><!-- Swiss context: .bg-primary = red -->
+  <code-block language="html" label="Same markup, different theme output" data-escape><!-- Swiss context: primary = red -->
 <section data-theme="swiss">
-  <p class="bg-primary text-inverse p-2">Swiss red</p>
+  <layout-badge data-color="primary">New</layout-badge>
+  <button type="button">Contact</button>
 </section>
 
-<!-- Cyber context: .bg-primary = cyan -->
+<!-- Cyber context: primary = cyan -->
 <section data-theme="cyber">
-  <p class="bg-primary text-inverse p-2">Cyber cyan</p>
+  <layout-badge data-color="primary">New</layout-badge>
+  <button type="button">Contact</button>
 </section></code-block>
 
-  <p>The same <code>.bg-primary</code> class produces Swiss red in one context and Cyber cyan in another. This is the key difference from static utility frameworks &mdash; your utilities inherit meaning from the theme.</p>
+  <p>Neither the badge nor the button carries a colour class. Each one reads the theme&rsquo;s primary colour (through <code>--color-interactive</code>, which aliases <code>--color-primary</code>), so it is Swiss red in one context and Cyber cyan in the other. This is the key difference from static utility frameworks: you get theme-aware output without writing any classes at all.</p>
 
-  <browser-window src="/docs/snippets/demos/override-utilities.html" url="override-utilities.html" title="Theme-aware utilities demo" shadow>
+  <browser-window src="/docs/snippets/demos/override-utilities.html" url="override-utilities.html" title="Token-driven elements demo" shadow>
   </browser-window>
 
-  <h3>Overriding a Utility</h3>
-  <p>Utilities are inside <code>@layer utilities</code>. Your unlayered CSS overrides them the same way it overrides any framework style:</p>
+  <h3>Writing Your Own Helpers</h3>
+  <p>If you do want a single-purpose helper class, write it against tokens and it becomes theme-aware too. Put it in a layer you declare yourself. Your layer comes after the framework layers, so it beats framework styles, and your unlayered rules still beat it:</p>
 
-  <code-block language="css" label="Override a utility class" data-escape>/* Utilities are in @layer utilities — your CSS wins */
-.custom-highlight {
-  color: oklch(55% 0.2 265);  /* overrides .text-primary */
+  <code-block language="css" label="A token-based helper in your own layer" data-escape>/* Your helper layer — declared after VB's layers, so it beats them */
+@layer helpers {
+  .text-brand { color: var(--color-primary); }
+}
+
+/* Unlayered — beats .text-brand where both apply */
+.price-callout {
+  color: oklch(55% 0.2 265);
 }</code-block>
 </section>
 
@@ -132,7 +140,7 @@ toc: true
     <li><strong>Level 1:</strong> Swiss defaults in the header; Cyber theme switch on the CTA panel</li>
     <li><strong>Level 2:</strong> Muted <code>--color-primary</code> and wider leading in the editorial section</li>
     <li><strong>Level 3:</strong> Custom <code>.pull-quote</code> and <code>.author-byline</code> components (unlayered CSS)</li>
-    <li><strong>Level 4:</strong> Utility classes (<code>.font-bold</code>, <code>.text-muted</code>, <code>.text-sm</code>) on the byline</li>
+    <li><strong>Level 4:</strong> Token-driven elements in the byline (<code>&lt;user-avatar&gt;</code>, <code>&lt;strong&gt;</code>, <code>&lt;small&gt;</code>) with no styling classes</li>
   </ul>
 
   <browser-window src="/docs/snippets/demos/override-combined.html" url="override-combined.html" title="All four levels combined" shadow>
@@ -154,9 +162,9 @@ toc: true
 .card { background: hotpink; }</code-block>
 
   <h3>Do not write overrides inside framework layer names</h3>
-  <p>If you declare <code>@layer components</code> in your own stylesheet, rules in it compete with framework component rules by source order &mdash; not a reliable override path.</p>
+  <p>If you declare <code>@layer custom-elements</code> (or any other framework layer name) in your own stylesheet, your rules join that framework layer and compete with its rules by specificity and source order &mdash; not a reliable override path.</p>
   <code-block language="css" label="Stay unlayered" data-escape>/* Wrong — fights the framework by source order */
-@layer components {
+@layer custom-elements {
   .card { background: hotpink; }
 }
 
@@ -203,7 +211,7 @@ toc: true
       </tr>
       <tr>
         <td>Repeated one-liner visual adjustment</td>
-        <td>Utility class from <code>@layer utilities</code></td>
+        <td>A token-based helper class in your own layer</td>
       </tr>
       <tr>
         <td>You think you need <code>!important</code></td>
@@ -240,7 +248,7 @@ toc: true
       </tr>
       <tr>
         <td>Utility values baked at build time</td>
-        <td>Utility values connected to live tokens</td>
+        <td>Elements read live tokens; no utility layer needed</td>
       </tr>
       <tr>
         <td><code>!important</code> for overrides</td>

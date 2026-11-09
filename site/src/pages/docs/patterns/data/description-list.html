@@ -26,7 +26,7 @@ currentPath: /docs/patterns/data/description-list/
   <section>
     <h2>Simple Vertical Layout</h2>
     <layout-text>
-      <p>A basic vertical description list with terms stacked above their descriptions. The <code>&lt;dl-item&gt;</code> custom element groups each <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> pair.</p>
+      <p>A basic vertical description list with terms stacked above their descriptions, using <code>data-variant="stacked"</code>. The <code>&lt;dl-item&gt;</code> custom element groups each <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> pair.</p>
     </layout-text>
 
     <browser-window
@@ -36,7 +36,7 @@ currentPath: /docs/patterns/data/description-list/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Simple vertical description list">&lt;dl class="key-value" data-layout="stacked"&gt;
+    <code-block language="html" label="Simple vertical description list">&lt;dl data-variant="stacked"&gt;
   &lt;dl-item&gt;
     &lt;dt&gt;Full Name&lt;/dt&gt;
     &lt;dd&gt;Alexandra Chen&lt;/dd&gt;
@@ -55,33 +55,12 @@ currentPath: /docs/patterns/data/description-list/
   &lt;dl-item&gt;
     &lt;dt&gt;Status&lt;/dt&gt;
     &lt;dd&gt;
-      &lt;span class="badge success"&gt;Active&lt;/span&gt;
+      &lt;layout-badge data-color="success" data-variant="subtle" data-size="l"&gt;Active&lt;/layout-badge&gt;
     &lt;/dd&gt;
   &lt;/dl-item&gt;
 &lt;/dl&gt;</code-block>
 
-    <h3>Stacked Layout Styles</h3>
-    <code-block language="css" label="Stacked description list CSS" data-escape>@scope (.key-value[data-layout="stacked"]) {
-  :scope {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--size-l);
-  }
-  dl-item {
-    display: flex;
-    flex-direction: column;
-    gap: var(--size-2xs);
-  }
-  dt {
-    font-size: var(--font-size-s);
-    color: var(--color-text-muted);
-  }
-  dd {
-    margin: 0;
-    font-size: var(--font-size-m);
-  }
-}</code-block>
+    <p>No custom CSS: <code>data-variant="stacked"</code> mutes and shrinks each <code>&lt;dt&gt;</code>, drops the <code>&lt;dd&gt;</code> indent and spaces the groups.</p>
   </section>
 
   <section>
@@ -97,7 +76,7 @@ currentPath: /docs/patterns/data/description-list/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Horizontal description list">&lt;dl class="key-value"&gt;
+    <code-block language="html" label="Horizontal description list">&lt;dl data-variant="horizontal" data-bordered&gt;
   &lt;dl-item&gt;
     &lt;dt&gt;Full Name&lt;/dt&gt;
     &lt;dd&gt;Alexandra Chen&lt;/dd&gt;
@@ -116,51 +95,18 @@ currentPath: /docs/patterns/data/description-list/
   &lt;dl-item&gt;
     &lt;dt&gt;Status&lt;/dt&gt;
     &lt;dd&gt;
-      &lt;span class="badge success"&gt;Active&lt;/span&gt;
+      &lt;layout-badge data-color="success" data-variant="subtle" data-size="l"&gt;Active&lt;/layout-badge&gt;
     &lt;/dd&gt;
   &lt;/dl-item&gt;
 &lt;/dl&gt;</code-block>
 
-    <h3>Horizontal Layout Styles</h3>
-    <code-block language="css" label="Horizontal description list CSS" data-escape>@scope (.key-value) {
-  :scope {
-    margin: 0;
-  }
-  dl-item {
-    display: grid;
-    grid-template-columns: 140px 1fr;
-    gap: var(--size-m);
-    align-items: baseline;
-    padding-block: var(--size-s);
-    border-bottom: 1px solid var(--color-border);
-  }
-  dl-item:last-child {
-    border-bottom: none;
-  }
-  dt {
-    font-size: var(--font-size-s);
-    color: var(--color-text-muted);
-  }
-  dd {
-    margin: 0;
-  }
-}
-
-/* Responsive: stack on small screens */
-@media (max-width: 480px) {
-  @scope (.key-value) {
-    dl-item {
-      grid-template-columns: 1fr;
-      gap: var(--size-2xs);
-    }
-  }
-}</code-block>
+    <p>No custom CSS: <code>data-variant="horizontal"</code> puts terms and descriptions in two columns that line up across every row (each <code>&lt;dl-item&gt;</code> is a subgrid), and falls back to a stacked flow below 16rem of available width. <code>data-bordered</code> draws the row separators; swap it for <code>data-striped</code> to alternate row backgrounds, or add <code>data-density="compact"</code> for dense data.</p>
   </section>
 
   <section>
     <h2>Grouped Sections</h2>
     <layout-text>
-      <p>Multiple description lists organized into logical sections with headings. Each section uses a <code>&lt;layout-card&gt;</code> for visual separation. Ideal for profile pages, order details, or settings displays.</p>
+      <p>Multiple description lists organized into logical sections with headings. Each section is a <code>&lt;layout-card&gt;</code> whose <code>&lt;header&gt;</code> child gives it a divided title bar. Ideal for profile pages, order details, or settings displays.</p>
     </layout-text>
 
     <browser-window
@@ -173,45 +119,40 @@ currentPath: /docs/patterns/data/description-list/
     <code-block language="html" label="Grouped description lists">&lt;layout-stack data-layout-gap="l"&gt;
   &lt;!-- Personal Information Section --&gt;
   &lt;layout-card data-padding="l"&gt;
-    &lt;layout-stack data-layout-gap="m"&gt;
-      &lt;h2 class="section-heading"&gt;Personal Information&lt;/h2&gt;
-      &lt;dl class="key-value"&gt;
-        &lt;dl-item&gt;
-          &lt;dt&gt;Full Name&lt;/dt&gt;
-          &lt;dd&gt;Alexandra Chen&lt;/dd&gt;
-        &lt;/dl-item&gt;
-        &lt;dl-item&gt;
-          &lt;dt&gt;Date of Birth&lt;/dt&gt;
-          &lt;dd&gt;March 15, 1992&lt;/dd&gt;
-        &lt;/dl-item&gt;
-      &lt;/dl&gt;
-    &lt;/layout-stack&gt;
+    &lt;header&gt;
+      &lt;h2&gt;Personal Information&lt;/h2&gt;
+    &lt;/header&gt;
+    &lt;dl data-variant="horizontal" data-bordered&gt;
+      &lt;dl-item&gt;
+        &lt;dt&gt;Full Name&lt;/dt&gt;
+        &lt;dd&gt;Alexandra Chen&lt;/dd&gt;
+      &lt;/dl-item&gt;
+      &lt;dl-item&gt;
+        &lt;dt&gt;Date of Birth&lt;/dt&gt;
+        &lt;dd&gt;March 15, 1992&lt;/dd&gt;
+      &lt;/dl-item&gt;
+    &lt;/dl&gt;
   &lt;/layout-card&gt;
 
   &lt;!-- Contact Details Section --&gt;
   &lt;layout-card data-padding="l"&gt;
-    &lt;layout-stack data-layout-gap="m"&gt;
-      &lt;h2 class="section-heading"&gt;Contact Details&lt;/h2&gt;
-      &lt;dl class="key-value"&gt;
-        &lt;dl-item&gt;
-          &lt;dt&gt;Email&lt;/dt&gt;
-          &lt;dd&gt;alexandra.chen@example.com&lt;/dd&gt;
-        &lt;/dl-item&gt;
-        &lt;dl-item&gt;
-          &lt;dt&gt;Phone&lt;/dt&gt;
-          &lt;dd&gt;+1 (555) 123-4567&lt;/dd&gt;
-        &lt;/dl-item&gt;
-      &lt;/dl&gt;
-    &lt;/layout-stack&gt;
+    &lt;header&gt;
+      &lt;h2&gt;Contact Details&lt;/h2&gt;
+    &lt;/header&gt;
+    &lt;dl data-variant="horizontal" data-bordered&gt;
+      &lt;dl-item&gt;
+        &lt;dt&gt;Email&lt;/dt&gt;
+        &lt;dd&gt;alexandra.chen@example.com&lt;/dd&gt;
+      &lt;/dl-item&gt;
+      &lt;dl-item&gt;
+        &lt;dt&gt;Phone&lt;/dt&gt;
+        &lt;dd&gt;+1 (555) 123-4567&lt;/dd&gt;
+      &lt;/dl-item&gt;
+    &lt;/dl&gt;
   &lt;/layout-card&gt;
 &lt;/layout-stack&gt;</code-block>
 
-    <h3>Section Heading Styles</h3>
-    <code-block language="css" label="Section heading CSS" data-escape>.section-heading {
-  margin: 0;
-  font-size: var(--font-size-m);
-  font-weight: var(--font-weight-semibold);
-}</code-block>
+    <p>No custom CSS: a <code>&lt;layout-card&gt;</code> with a <code>&lt;header&gt;</code> child switches to its structured mode, which pads the header, sizes its heading and draws the divider.</p>
   </section>
 
   <section>
@@ -231,14 +172,14 @@ currentPath: /docs/patterns/data/description-list/
       </thead>
       <tbody>
         <tr>
-          <td><code>&lt;dl class="key-value"&gt;</code></td>
+          <td><code>&lt;dl data-variant&gt;</code></td>
           <td>Container</td>
-          <td>The description list container. Add <code>data-layout="stacked"</code> for vertical layout.</td>
+          <td>The description list. <code>data-variant="stacked"</code> or <code>"horizontal"</code> sets the layout; <code>data-bordered</code>, <code>data-striped</code> and <code>data-density="compact"</code> combine with either.</td>
         </tr>
         <tr>
           <td><code>&lt;dl-item&gt;</code></td>
           <td>Row grouping</td>
-          <td>Custom element that groups a <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> pair for styling.</td>
+          <td>Groups a <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> run; the variants style it exactly like the spec's <code>&lt;div&gt;</code> wrapper.</td>
         </tr>
         <tr>
           <td><code>&lt;dt&gt;</code></td>
@@ -253,58 +194,25 @@ currentPath: /docs/patterns/data/description-list/
       </tbody>
     </table>
 
-    <h3>Grid Row Widths</h3>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Label Width</th>
-          <th>Best For</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>100px</code></td>
-          <td>Short labels</td>
-          <td>Works well for single-word labels like "Name", "Email", "Phone"</td>
-        </tr>
-        <tr>
-          <td><code>140px</code></td>
-          <td>Medium labels</td>
-          <td>Good balance for labels like "Full Name", "Phone Number"</td>
-        </tr>
-        <tr>
-          <td><code>180px</code></td>
-          <td>Long labels</td>
-          <td>Accommodates longer labels like "Email Address", "Member Since"</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h3>CSS Custom Properties</h3>
+    <h3>Term Column Width</h3>
     <table class="props-table">
       <thead>
         <tr>
           <th>Property</th>
-          <th>Usage</th>
+          <th>Default</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>--color-text-muted</code></td>
-          <td>Labels (dt)</td>
-          <td>Subdued color for term labels to create visual hierarchy</td>
+          <td><code>--dl-term-min</code></td>
+          <td><code>10ch</code></td>
+          <td>Minimum width of the term column in the horizontal variant</td>
         </tr>
         <tr>
-          <td><code>--color-border</code></td>
-          <td>Row separators</td>
-          <td>Light border color for horizontal row dividers</td>
-        </tr>
-        <tr>
-          <td><code>--font-size-s</code></td>
-          <td>Labels (dt)</td>
-          <td>Smaller font size for term labels</td>
+          <td><code>--dl-term-max</code></td>
+          <td><code>40%</code></td>
+          <td>Maximum width of the term column; terms wider than this wrap</td>
         </tr>
       </tbody>
     </table>
@@ -315,10 +223,10 @@ currentPath: /docs/patterns/data/description-list/
     <layout-text>
       <ul>
         <li><strong>Semantic HTML:</strong> Always use <code>&lt;dl&gt;</code>, <code>&lt;dt&gt;</code>, and <code>&lt;dd&gt;</code> elements for proper accessibility. Screen readers announce these as description lists.</li>
-        <li><strong>CSS <code>@scope</code>:</strong> Styles use <code>@scope (.key-value)</code> to encapsulate rules and enable semantic element selectors (<code>dl-item</code>, <code>dt</code>, <code>dd</code>) without class pollution.</li>
+        <li><strong>No classes:</strong> The layouts are <code>data-variant</code> values on the <code>&lt;dl&gt;</code> itself, so the list stays plain <code>&lt;dl&gt;</code>/<code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> markup.</li>
         <li><strong>Item grouping:</strong> The <code>&lt;dl-item&gt;</code> custom element groups each term/description pair. This is valid HTML5 and enables grid layout for horizontal display.</li>
         <li><strong>Multiple values:</strong> A single <code>&lt;dt&gt;</code> can have multiple <code>&lt;dd&gt;</code> elements for multiple values (e.g., multiple phone numbers).</li>
-        <li><strong>Responsive design:</strong> The horizontal layout uses a media query to stack on smaller screens, switching from grid to single-column display.</li>
+        <li><strong>Responsive design:</strong> The horizontal variant is a container query: it stacks when the list itself is narrower than 16rem, wherever it sits on the page.</li>
         <li><strong>Value formatting:</strong> Use badges, icons, or formatted text in <code>&lt;dd&gt;</code> elements to enhance readability.</li>
         <li><strong>Empty values:</strong> Display a dash or "Not provided" for empty values rather than leaving blank.</li>
         <li><strong>Long values:</strong> For long text values, consider truncation with a "show more" toggle or allowing text to wrap naturally.</li>

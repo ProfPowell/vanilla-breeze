@@ -145,42 +145,21 @@ document.querySelector('.theme-toggle')?.addEventListener('click', () => {
   <section>
     <h2>Three-Way Selector</h2>
     <layout-text>
-      <p>For users who want explicit Light / System / Dark options:</p>
+      <p>For users who want explicit Light / System / Dark options, use a <a href="/docs/attributes/data-segmented/"><code>data-segmented</code></a> fieldset of radios. VB styles it as a segmented control, the radios give it arrow-key navigation, and no extra CSS is needed.</p>
     </layout-text>
 
-        <code-block language="css" label="Three-way switcher" data-escape>.theme-switcher {
-  display: flex;
-  gap: var(--size-2xs);
-  padding: var(--size-2xs);
-  background: var(--color-surface-sunken);
-  border-radius: var(--radius-m);
-}
+        <code-block language="html" label="Three-way HTML" data-escape><fieldset data-segmented>
+  <legend class="visually-hidden">Theme</legend>
+  <label><input type="radio" name="mode" value="light"> Light</label>
+  <label><input type="radio" name="mode" value="system" checked> System</label>
+  <label><input type="radio" name="mode" value="dark"> Dark</label>
+</fieldset></code-block>
 
-.theme-switcher button {
-  padding: var(--size-xs) var(--size-s);
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-s);
-  cursor: pointer;
-  color: var(--color-text-muted);
-  font-size: var(--font-size-s);
-}
-
-.theme-switcher button:hover {
-  color: var(--color-text);
-}
-
-.theme-switcher button[aria-pressed="true"] {
-  background: var(--color-surface);
-  color: var(--color-text);
-  box-shadow: var(--shadow-s);
-}</code-block>
-
-        <code-block language="html" label="Three-way HTML" data-escape><div class="theme-switcher" role="group" aria-label="Theme">
-  <button aria-pressed="false">Light</button>
-  <button aria-pressed="true">System</button>
-  <button aria-pressed="false">Dark</button>
-</div></code-block>
+        <code-block language="javascript" label="Three-way script" data-escape>document.querySelector('[data-segmented]')?.addEventListener('change', (e) => {
+  const { value } = e.target;
+  if (value === 'system') delete document.documentElement.dataset.mode;
+  else document.documentElement.dataset.mode = value;
+});</code-block>
   </section>
 
   <section>

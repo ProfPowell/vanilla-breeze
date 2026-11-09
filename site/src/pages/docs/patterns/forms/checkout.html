@@ -17,7 +17,7 @@ currentPath: /docs/patterns/forms/checkout/
         <li><code>&lt;form-field&gt;</code> for consistent input styling and validation</li>
         <li><code>data-layout="sidebar"</code> with <code>&lt;main&gt;</code> and <code>&lt;aside&gt;</code> for order summary placement</li>
         <li><code>data-layout="split"</code> for side-by-side fields (city/state, expiry/CVC)</li>
-        <li><code>data-layout="cluster"</code> for inline elements (security note, summary rows)</li>
+        <li><code>&lt;dl&gt;</code> with <code>&lt;dl-item&gt;</code> rows for the order summary; <code>&lt;small&gt;</code> for the security note</li>
         <li><code>&lt;icon-wc name="lock"&gt;</code> for security indicators</li>
         <li>Proper <code>autocomplete</code> attributes for address and payment autofill</li>
         <li><code>inputmode="numeric"</code> for mobile keyboard optimization</li>
@@ -76,7 +76,7 @@ currentPath: /docs/patterns/forms/checkout/
                      autocomplete="street-address" placeholder="123 Main St"/>
             </form-field>
 
-            <div data-layout="split" data-layout-gap="m">
+            <layout-grid data-layout-min="xs" data-layout-gap="m">
               <form-field>
                 <label for="city">City</label>
                 <input type="text" id="city" name="city" required
@@ -88,9 +88,9 @@ currentPath: /docs/patterns/forms/checkout/
                 <input type="text" id="state" name="state" required
                        autocomplete="address-level1" placeholder="CA"/>
               </form-field>
-            </div>
+            </layout-grid>
 
-            <div data-layout="split" data-layout-gap="m">
+            <layout-grid data-layout-min="xs" data-layout-gap="m">
               <form-field>
                 <label for="zip">ZIP / Postal code</label>
                 <input type="text" id="zip" name="zip" required
@@ -106,7 +106,7 @@ currentPath: /docs/patterns/forms/checkout/
                   <option value="GB">United Kingdom</option>
                 </select>
               </form-field>
-            </div>
+            </layout-grid>
         </fieldset>
 
         <!-- Payment Information -->
@@ -119,7 +119,7 @@ currentPath: /docs/patterns/forms/checkout/
                      inputmode="numeric"/>
             </form-field>
 
-            <div data-layout="split" data-layout-gap="m">
+            <layout-grid data-layout-min="xs" data-layout-gap="m">
               <form-field>
                 <label for="expiry">Expiration date</label>
                 <input type="text" id="expiry" name="expiry" required
@@ -133,11 +133,13 @@ currentPath: /docs/patterns/forms/checkout/
                        autocomplete="cc-csc" placeholder="123"
                        inputmode="numeric" maxlength="4"/>
               </form-field>
-            </div>
+            </layout-grid>
 
-            <p class="security-note" data-layout="cluster" data-layout-gap="xs" data-layout-align="center">
-              <icon-wc name="lock"></icon-wc>
-              Your payment information is encrypted and secure.
+            <p>
+              <small data-layout="cluster" data-layout-gap="xs" data-layout-align="center">
+                <icon-wc name="lock"></icon-wc>
+                Your payment information is encrypted and secure.
+              </small>
             </p>
         </fieldset>
 
@@ -149,7 +151,7 @@ currentPath: /docs/patterns/forms/checkout/
 
     <h3>Fieldset Styles</h3>
     <layout-text>
-      <p>VB provides native <code>&lt;fieldset&gt;</code> styling (border, radius, padding, legend formatting). These overrides increase the padding and legend font size for a more spacious checkout layout:</p>
+      <p>VB provides native <code>&lt;fieldset&gt;</code> styling (border, radius, padding, legend formatting). These overrides increase the padding and legend font size for a more spacious checkout layout, and tint the <code>&lt;small&gt;</code> security note:</p>
     </layout-text>
     <code-block language="css" label="Fieldset customization" data-escape>/* Override VB native fieldset padding and legend size */
 fieldset {
@@ -157,13 +159,20 @@ fieldset {
 }
 fieldset legend {
   font-size: var(--font-size-m);
+}
+/* Security note: muted small print with a green lock */
+fieldset small {
+  color: var(--color-text-muted);
+}
+fieldset small icon-wc {
+  color: var(--color-success);
 }</code-block>
   </section>
 
   <section>
     <h2>Split Layout with Order Summary</h2>
     <layout-text>
-      <p>A two-column layout using <code>data-layout="sidebar"</code> with the checkout form in a <code>&lt;main&gt;</code> and an order summary <code>&lt;aside&gt;</code>. The sidebar layout automatically recognizes these semantic elements for content vs sidebar sizing. Order items use <code>data-layout="cluster"</code> for label/price pairs and <code>data-layout="stack"</code> for item details. Native <code>&lt;hr&gt;</code> elements provide visual dividers.</p>
+      <p>A two-column layout using <code>data-layout="sidebar"</code> with the checkout form in a <code>&lt;main&gt;</code> and an order summary <code>&lt;aside&gt;</code>. The sidebar layout automatically recognizes these semantic elements for content vs sidebar sizing. The order summary is a description list: each <code>&lt;dl-item&gt;</code> pairs a <code>&lt;dt&gt;</code> label (item details in <code>&lt;small&gt;</code>) with its <code>&lt;dd&gt;</code> price, laid out as a <code>data-layout="cluster"</code> row. Native <code>&lt;hr&gt;</code> elements provide visual dividers.</p>
     </layout-text>
 
     <browser-window
@@ -173,7 +182,7 @@ fieldset legend {
       shadow>
     </browser-window>
 
-    <code-block language="html" label="checkout-split.html" show-lines data-escape><div data-layout="sidebar" data-layout-gap="xl" data-layout-content-min="l">
+    <code-block language="html" label="checkout-split.html" show-lines data-escape><body data-layout="sidebar" data-layout-gap="xl" data-layout-content-min="l">
   <!-- Checkout Form -->
   <main data-layout="stack" data-layout-gap="l">
     <header data-layout="stack" data-layout-gap="s">
@@ -203,7 +212,7 @@ fieldset legend {
                    autocomplete="street-address" placeholder="123 Main St"/>
           </form-field>
 
-          <div data-layout="split" data-layout-gap="m">
+          <layout-grid data-layout-min="xs" data-layout-gap="m">
             <form-field>
               <label for="city">City</label>
               <input type="text" id="city" name="city" required
@@ -215,9 +224,9 @@ fieldset legend {
               <input type="text" id="state" name="state" required
                      autocomplete="address-level1" placeholder="CA"/>
             </form-field>
-          </div>
+          </layout-grid>
 
-          <div data-layout="split" data-layout-gap="m">
+          <layout-grid data-layout-min="xs" data-layout-gap="m">
             <form-field>
               <label for="zip">ZIP code</label>
               <input type="text" id="zip" name="zip" required
@@ -232,7 +241,7 @@ fieldset legend {
                 <option value="CA">Canada</option>
               </select>
             </form-field>
-          </div>
+          </layout-grid>
       </fieldset>
 
       <!-- Payment Information -->
@@ -245,7 +254,7 @@ fieldset legend {
                    inputmode="numeric"/>
           </form-field>
 
-          <div data-layout="split" data-layout-gap="m">
+          <layout-grid data-layout-min="xs" data-layout-gap="m">
             <form-field>
               <label for="expiry">Expiration</label>
               <input type="text" id="expiry" name="expiry" required
@@ -257,11 +266,13 @@ fieldset legend {
               <input type="text" id="cvc" name="cvc" required
                      autocomplete="cc-csc" placeholder="123" maxlength="4"/>
             </form-field>
-          </div>
+          </layout-grid>
 
-          <p class="security-note" data-layout="cluster" data-layout-gap="xs" data-layout-align="center">
-            <icon-wc name="lock"></icon-wc>
-            Your payment information is encrypted and secure.
+          <p>
+            <small data-layout="cluster" data-layout-gap="xs" data-layout-align="center">
+              <icon-wc name="lock"></icon-wc>
+              Your payment information is encrypted and secure.
+            </small>
           </p>
       </fieldset>
 
@@ -270,76 +281,62 @@ fieldset legend {
   </main>
 
   <!-- Order Summary Sidebar -->
-  <aside class="order-summary" data-layout="stack" data-layout-gap="l">
-    <h3>Order summary</h3>
+  <aside data-layout="stack" data-layout-gap="l">
+    <h2>Order summary</h2>
 
-    <div data-layout="stack" data-layout-gap="m">
-      <div data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
-        <div data-layout="stack" data-layout-gap="2xs">
-          <span class="order-item-name">Premium Wireless Headphones</span>
-          <span class="order-item-details">Black, Qty: 1</span>
-        </div>
-        <span class="order-item-price">$249.00</span>
-      </div>
+    <dl data-layout="stack" data-layout-gap="s">
+      <dl-item data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
+        <dt>Premium Wireless Headphones <small>Black, Qty: 1</small></dt>
+        <dd>$249.00</dd>
+      </dl-item>
       <!-- More items... -->
-    </div>
+    </dl>
 
     <hr/>
 
-    <div data-layout="stack" data-layout-gap="s">
-      <div class="summary-row" data-layout="cluster" data-layout-justify="between">
-        <span>Subtotal</span>
-        <span>$327.98</span>
-      </div>
-      <div class="summary-row" data-layout="cluster" data-layout-justify="between">
-        <span>Shipping</span>
-        <span>$9.99</span>
-      </div>
-      <div class="summary-row" data-layout="cluster" data-layout-justify="between">
-        <span>Tax</span>
-        <span>$27.12</span>
-      </div>
-    </div>
+    <dl data-layout="stack" data-layout-gap="s">
+      <dl-item data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
+        <dt>Subtotal</dt>
+        <dd>$327.98</dd>
+      </dl-item>
+      <dl-item data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
+        <dt>Shipping</dt>
+        <dd>$9.99</dd>
+      </dl-item>
+      <dl-item data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
+        <dt>Tax</dt>
+        <dd>$27.12</dd>
+      </dl-item>
+    </dl>
 
     <hr/>
 
-    <div class="summary-row total" data-layout="cluster" data-layout-justify="between">
-      <span>Total</span>
-      <span>$365.09</span>
-    </div>
+    <dl data-layout="stack" data-layout-gap="s">
+      <dl-item data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
+        <dt><strong>Total</strong></dt>
+        <dd><strong>$365.09</strong></dd>
+      </dl-item>
+    </dl>
   </aside>
-</div></code-block>
+</body></code-block>
 
     <h3>Order Summary Styles</h3>
     <layout-text>
-      <p>Layout is handled entirely by <code>data-layout</code> attributes. These styles cover only visual concerns (font sizes, weights, and colors):</p>
+      <p>Layout is handled entirely by <code>data-layout</code> attributes. These element styles cover only the visual details (no classes needed):</p>
     </layout-text>
-    <code-block language="css" label="Order summary styling" data-escape>.order-summary h3 {
-  font-size: var(--font-size-l);
+    <code-block language="css" label="Order summary styling" data-escape>/* Each dl-item is a cluster row; drop the default dd indent */
+aside dd {
   margin: 0;
-}
-.order-summary hr {
-  margin-block: 0;
-}
-.order-item-name {
-  font-weight: var(--font-weight-medium);
-}
-.order-item-details {
-  font-size: var(--font-size-s);
-  color: var(--color-text-muted);
-}
-.order-item-price {
-  font-weight: var(--font-weight-medium);
   white-space: nowrap;
 }
-.summary-row {
-  font-size: var(--font-size-s);
+/* Item details sit under the name as muted small print */
+aside dt small {
+  display: block;
+  font-weight: normal;
   color: var(--color-text-muted);
 }
-.summary-row.total {
-  font-size: var(--font-size-m);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text);
+aside hr {
+  margin-block: 0;
 }</code-block>
   </section>
 

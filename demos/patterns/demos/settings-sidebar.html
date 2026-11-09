@@ -11,65 +11,28 @@
       margin: 0;
       background: var(--color-surface-alt);
     }
-    .settings-nav {
+    /* Sidebar panel: the page-layout region, styled by element */
+    body > nav {
       background: var(--color-surface);
-      border-inline-end: 1px solid var(--color-border);
-      padding: var(--size-l);
-      min-block-size: 100vh;
+      border-inline-end: var(--border-width-thin) solid var(--color-border);
+      padding: var(--size-l) var(--size-s);
     }
-    .settings-nav h2 {
-      font-size: var(--font-size-s);
-      font-weight: var(--font-weight-semibold);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--color-text-muted);
-      margin: 0 0 var(--size-m) var(--size-s);
-    }
-    .settings-nav a {
+    body > nav a {
       display: flex;
       align-items: center;
       gap: var(--size-s);
-      padding: var(--size-s) var(--size-m);
-      color: var(--color-text-muted);
-      text-decoration: none;
       border-radius: var(--radius-m);
-      transition: color var(--duration-fast) var(--ease-default),
-                  background var(--duration-fast) var(--ease-default);
     }
-    .settings-nav a:hover {
-      color: var(--color-text);
-      background: var(--color-surface-raised);
-    }
-    .settings-nav a[aria-current="page"] {
-      color: var(--color-interactive);
-      background: var(--color-primary-subtle);
-      font-weight: var(--font-weight-medium);
-    }
-    .settings-content {
+    body > main {
       padding: var(--size-xl);
-    }
-    .settings-section {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-l);
-      padding: var(--size-l);
-    }
-    .settings-section h2 {
-      margin: 0 0 var(--size-xs) 0;
-      font-size: var(--font-size-l);
-    }
-    .settings-section > p {
-      color: var(--color-text-muted);
-      margin: 0 0 var(--size-l) 0;
     }
   </style>
 </head>
 <body data-page-layout="sidebar-left" data-layout-gap="none" data-layout-sidebar-width="narrow">
   <h1>Settings - Sidebar Navigation</h1>
   <!-- Settings Navigation -->
-  <nav class="settings-nav" aria-label="Settings navigation">
-    <h2>Settings</h2>
-    <ul data-layout="stack" data-layout-gap="xs">
+  <nav class="vertical" aria-label="Settings navigation">
+    <ul>
       <li><a href="#" aria-current="page">
         <icon-wc name="cog"></icon-wc>
         General
@@ -87,25 +50,29 @@
         Billing
       </a></li>
       <li><a href="#">
-        <icon-wc name="puzzle-piece"></icon-wc>
+        <icon-wc name="puzzle"></icon-wc>
         Integrations
       </a></li>
     </ul>
   </nav>
 
   <!-- Settings Content -->
-  <main class="settings-content" data-layout="stack" data-layout-gap="xl">
-    <header data-layout="stack" data-layout-gap="xs">
+  <main data-layout="stack" data-layout-gap="xl">
+    <hgroup>
       <h1>General Settings</h1>
-      <p class="text-muted">Manage your account preferences and profile information.</p>
-    </header>
+      <p>Manage your account preferences and profile information.</p>
+    </hgroup>
 
     <!-- Account Information -->
-    <section class="settings-section">
-      <h2>Account Information</h2>
-      <p>Update your personal details and contact information.</p>
+    <layout-card data-padding="l">
+      <header>
+        <hgroup>
+          <h2>Account Information</h2>
+          <p>Update your personal details and contact information.</p>
+        </hgroup>
+      </header>
       <form data-layout="stack" data-layout-gap="l">
-        <div data-layout="grid" data-layout-min="m" data-layout-gap="l">
+        <layout-grid data-layout-min="m" data-layout-gap="l">
           <form-field>
             <label for="first-name">First name</label>
             <input type="text" id="first-name" name="first_name" value="John"
@@ -116,7 +83,7 @@
             <input type="text" id="last-name" name="last_name" value="Doe"
                    autocomplete="family-name"/>
           </form-field>
-        </div>
+        </layout-grid>
 
         <form-field>
           <label for="email">Email address</label>
@@ -130,15 +97,19 @@
                  autocomplete="username"/>
         </form-field>
       <button type="submit" hidden>Submit</button>
-</form>
-    </section>
+      </form>
+    </layout-card>
 
     <!-- Regional Settings -->
-    <section class="settings-section">
-      <h2>Regional Settings</h2>
-      <p>Configure your timezone, language, and regional preferences.</p>
+    <layout-card data-padding="l">
+      <header>
+        <hgroup>
+          <h2>Regional Settings</h2>
+          <p>Configure your timezone, language, and regional preferences.</p>
+        </hgroup>
+      </header>
       <form data-layout="stack" data-layout-gap="l">
-        <div data-layout="grid" data-layout-min="m" data-layout-gap="l">
+        <layout-grid data-layout-min="m" data-layout-gap="l">
           <form-field>
             <label for="timezone">Timezone</label>
             <select id="timezone" name="timezone">
@@ -158,7 +129,7 @@
               <option value="de">German</option>
             </select>
           </form-field>
-        </div>
+        </layout-grid>
 
         <form-field>
           <label for="date-format">Date format</label>
@@ -169,17 +140,21 @@
           </select>
         </form-field>
       <button type="submit" hidden>Submit</button>
-</form>
-    </section>
+      </form>
+    </layout-card>
 
     <!-- Appearance -->
-    <section class="settings-section">
-      <h2>Appearance</h2>
-      <p>Customize how the application looks and feels.</p>
+    <layout-card data-padding="l">
+      <header>
+        <hgroup>
+          <h2>Appearance</h2>
+          <p>Customize how the application looks and feels.</p>
+        </hgroup>
+      </header>
       <form data-layout="stack" data-layout-gap="l">
         <fieldset data-variant="minimal">
-          <legend class="sr-only">Theme preference</legend>
-          <div data-layout="cluster" data-layout-gap="l">
+          <legend class="visually-hidden">Theme preference</legend>
+          <layout-cluster data-layout-gap="l">
             <label>
               <input type="radio" name="theme" value="light"/>
               Light
@@ -192,11 +167,11 @@
               <input type="radio" name="theme" value="system" checked/>
               System
             </label>
-          </div>
+          </layout-cluster>
         </fieldset>
       <button type="submit" hidden>Submit</button>
-</form>
-    </section>
+      </form>
+    </layout-card>
 
     <!-- Save Actions -->
     <footer data-layout="cluster" data-layout-justify="end" data-layout-gap="m">

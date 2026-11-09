@@ -15,10 +15,10 @@ currentPath: /docs/patterns/marketing/pricing/
       <ul>
         <li>Responsive card grids with <code>data-layout="grid"</code></li>
         <li>Highlighted recommended tier</li>
-        <li>Feature comparison tables with sticky headers</li>
-        <li>Monthly/yearly billing toggle with <code>:has()</code> selector</li>
+        <li>Feature comparison tables with row-group headings and a <code>data-table-scroll</code> wrapper</li>
+        <li>Monthly/yearly billing toggle: a native <code>input[data-switch]</code> plus the <code>:has()</code> selector</li>
         <li>Accessible markup with proper semantics</li>
-        <li>No JavaScript required for basic functionality</li>
+        <li>No JavaScript required</li>
       </ul>
     </layout-text>
   </section>
@@ -26,7 +26,7 @@ currentPath: /docs/patterns/marketing/pricing/
   <section>
     <h2>Pricing Cards</h2>
     <layout-text>
-      <p>Three-tier pricing cards in a responsive grid. The middle tier is highlighted as "Most Popular" with accent styling and a badge.</p>
+      <p>Three-tier pricing cards in a responsive grid. Each plan is a <code>&lt;layout-card&gt;</code> with an <code>&lt;hgroup&gt;</code> for its name and price and a <code>ul[data-marker="check"]</code> for its features. The middle tier carries <code>data-featured</code> and a <code>&lt;layout-badge data-shape="ribbon"&gt;</code>.</p>
     </layout-text>
 
     <browser-window
@@ -36,144 +36,106 @@ currentPath: /docs/patterns/marketing/pricing/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Three-tier pricing cards">&lt;section class="pricing-section" data-layout="center" data-layout-max="wide" data-layout-gap="2xl"&gt;
-  &lt;header data-layout="stack" data-layout-gap="s"&gt;
+    <code-block language="html" label="Three-tier pricing cards">&lt;section data-layout="center" data-layout-max="wide" data-layout-gap="2xl"&gt;
+  &lt;hgroup data-layout="stack" data-layout-gap="s" data-layout-align="center"&gt;
     &lt;h2&gt;Simple, transparent pricing&lt;/h2&gt;
-    &lt;p class="text-muted"&gt;Choose the plan that's right for you&lt;/p&gt;
-  &lt;/header&gt;
-  &lt;div data-layout="grid" data-layout-min="l" data-layout-gap="l"&gt;
-    &lt;article class="pricing-card" data-layout="stack" data-layout-gap="l"&gt;
-      &lt;div data-layout="stack" data-layout-gap="xs"&gt;
-        &lt;span class="plan-name"&gt;Basic&lt;/span&gt;
-        &lt;div&gt;
-          &lt;span class="price"&gt;$9&lt;/span&gt;
-          &lt;span class="price-period"&gt;/month&lt;/span&gt;
-        &lt;/div&gt;
-        &lt;p class="text-sm text-muted"&gt;Perfect for individuals and small projects&lt;/p&gt;
-      &lt;/div&gt;
-      &lt;ul class="feature-list"&gt;
-        &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Up to 3 projects&lt;/li&gt;
-        &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; 5 GB storage&lt;/li&gt;
-        &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Basic analytics&lt;/li&gt;
-        &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Email support&lt;/li&gt;
+    &lt;p&gt;Choose the plan that's right for you&lt;/p&gt;
+  &lt;/hgroup&gt;
+  &lt;layout-grid data-layout-min="l" data-layout-gap="l"&gt;
+    &lt;layout-card data-variant="outlined" data-padding="l" data-layout="stack" data-layout-gap="l"&gt;
+      &lt;hgroup data-layout="stack" data-layout-gap="xs"&gt;
+        &lt;h3 class="plan-name"&gt;Basic&lt;/h3&gt;
+        &lt;p&gt;&lt;span class="price"&gt;$9&lt;/span&gt; &lt;span class="price-period"&gt;/month&lt;/span&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;small&gt;Perfect for individuals and small projects&lt;/small&gt;&lt;/p&gt;
+      &lt;/hgroup&gt;
+      &lt;ul data-marker="check"&gt;
+        &lt;li&gt;Up to 3 projects&lt;/li&gt;
+        &lt;li&gt;5 GB storage&lt;/li&gt;
+        &lt;li&gt;Basic analytics&lt;/li&gt;
+        &lt;li&gt;Email support&lt;/li&gt;
       &lt;/ul&gt;
       &lt;a href="#" class="button secondary full-width"&gt;Get Started&lt;/a&gt;
-    &lt;/article&gt;
-    &lt;article class="pricing-card" data-featured data-layout="stack" data-layout-gap="l"&gt;
-      &lt;span class="pricing-badge"&gt;Most Popular&lt;/span&gt;
-      &lt;div data-layout="stack" data-layout-gap="xs"&gt;
-        &lt;span class="plan-name"&gt;Pro&lt;/span&gt;
-        &lt;div&gt;
-          &lt;span class="price"&gt;$29&lt;/span&gt;
-          &lt;span class="price-period"&gt;/month&lt;/span&gt;
-        &lt;/div&gt;
-        &lt;p class="text-sm text-muted"&gt;Best for growing teams and businesses&lt;/p&gt;
-      &lt;/div&gt;
-      &lt;ul class="feature-list"&gt;
-        &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Unlimited projects&lt;/li&gt;
-        &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; 50 GB storage&lt;/li&gt;
-        &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Advanced analytics&lt;/li&gt;
-        &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Priority support&lt;/li&gt;
-        &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Custom integrations&lt;/li&gt;
-        &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Team collaboration&lt;/li&gt;
+    &lt;/layout-card&gt;
+    &lt;layout-card data-variant="outlined" data-padding="l" data-featured data-layout="stack" data-layout-gap="l"&gt;
+      &lt;layout-badge data-shape="ribbon" data-color="primary" data-size="l"&gt;Most Popular&lt;/layout-badge&gt;
+      &lt;hgroup data-layout="stack" data-layout-gap="xs"&gt;
+        &lt;h3 class="plan-name"&gt;Pro&lt;/h3&gt;
+        &lt;p&gt;&lt;span class="price"&gt;$29&lt;/span&gt; &lt;span class="price-period"&gt;/month&lt;/span&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;small&gt;Best for growing teams and businesses&lt;/small&gt;&lt;/p&gt;
+      &lt;/hgroup&gt;
+      &lt;ul data-marker="check"&gt;
+        &lt;li&gt;Unlimited projects&lt;/li&gt;
+        &lt;li&gt;50 GB storage&lt;/li&gt;
+        &lt;li&gt;Advanced analytics&lt;/li&gt;
+        &lt;li&gt;Priority support&lt;/li&gt;
+        &lt;li&gt;Custom integrations&lt;/li&gt;
+        &lt;li&gt;Team collaboration&lt;/li&gt;
       &lt;/ul&gt;
       &lt;a href="#" class="button full-width"&gt;Get Started&lt;/a&gt;
-    &lt;/article&gt;
-    &lt;article class="pricing-card" data-layout="stack" data-layout-gap="l"&gt;
-      &lt;div data-layout="stack" data-layout-gap="xs"&gt;
-        &lt;span class="plan-name"&gt;Enterprise&lt;/span&gt;
-        &lt;div&gt;
-          &lt;span class="price"&gt;$99&lt;/span&gt;
-          &lt;span class="price-period"&gt;/month&lt;/span&gt;
-        &lt;/div&gt;
-        &lt;p class="text-sm text-muted"&gt;For large organizations with custom needs&lt;/p&gt;
-      &lt;/div&gt;
-      &lt;ul class="feature-list"&gt;
-        &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Everything in Pro&lt;/li&gt;
-        &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Unlimited storage&lt;/li&gt;
-        &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Custom analytics&lt;/li&gt;
-        &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; 24/7 phone support&lt;/li&gt;
-        &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Dedicated account manager&lt;/li&gt;
-        &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; SLA guarantee&lt;/li&gt;
+    &lt;/layout-card&gt;
+    &lt;layout-card data-variant="outlined" data-padding="l" data-layout="stack" data-layout-gap="l"&gt;
+      &lt;hgroup data-layout="stack" data-layout-gap="xs"&gt;
+        &lt;h3 class="plan-name"&gt;Enterprise&lt;/h3&gt;
+        &lt;p&gt;&lt;span class="price"&gt;$99&lt;/span&gt; &lt;span class="price-period"&gt;/month&lt;/span&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;small&gt;For large organizations with custom needs&lt;/small&gt;&lt;/p&gt;
+      &lt;/hgroup&gt;
+      &lt;ul data-marker="check"&gt;
+        &lt;li&gt;Everything in Pro&lt;/li&gt;
+        &lt;li&gt;Unlimited storage&lt;/li&gt;
+        &lt;li&gt;Custom analytics&lt;/li&gt;
+        &lt;li&gt;24/7 phone support&lt;/li&gt;
+        &lt;li&gt;Dedicated account manager&lt;/li&gt;
+        &lt;li&gt;SLA guarantee&lt;/li&gt;
       &lt;/ul&gt;
       &lt;a href="#" class="button secondary full-width"&gt;Contact Sales&lt;/a&gt;
-    &lt;/article&gt;
-  &lt;/div&gt;
+    &lt;/layout-card&gt;
+  &lt;/layout-grid&gt;
 &lt;/section&gt;</code-block>
 
     <h3>Required CSS</h3>
     <layout-text>
-      <p>Add these styles for pricing card layouts:</p>
+      <p>The card, badge and list come from VB. Only the featured lift and the price typography are bespoke:</p>
     </layout-text>
 
-    <code-block language="css" label="Pricing card styles" data-escape>.pricing-card {
-  background: var(--color-surface-raised);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-l);
-  padding: var(--size-l);
+    <code-block language="css" label="Pricing card styles" data-escape>layout-card[data-featured] {
+  position: relative;
+  border-color: var(--color-interactive);
+  box-shadow: var(--shadow-m);
+  scale: 1.05;
+}
+
+layout-card[data-featured] > layout-badge {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 50%;
+  translate: -50% -50%;
+}
+
+layout-card > hgroup {
   text-align: center;
 }
 
-.pricing-card[data-featured] {
-  border-color: var(--color-interactive);
-  box-shadow: var(--shadow-m);
-  transform: scale(1.05);
-  position: relative;
-}
-
-.pricing-badge {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--color-interactive);
-  color: var(--color-white);
-  padding: var(--size-2xs) var(--size-s);
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-s);
-  font-weight: var(--font-weight-semibold);
-}
-
-.pricing-card .plan-name {
+.plan-name {
   font-size: var(--font-size-l);
   font-weight: var(--font-weight-semibold);
+}
+
+.price {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text);
 }
 
-.pricing-card .price {
-  font-size: var(--font-size-3xl);
-  font-weight: var(--font-weight-bold);
-}
-
-.pricing-card .price-period {
+.price-period {
   font-size: var(--font-size-s);
   color: var(--color-text-muted);
-}
-
-.feature-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  text-align: left;
-}
-
-.feature-list li {
-  display: flex;
-  align-items: center;
-  gap: var(--size-s);
-  padding: var(--size-xs) 0;
-}
-
-.feature-list icon-wc {
-  color: var(--color-success);
-  flex-shrink: 0;
 }</code-block>
   </section>
 
   <section>
     <h2>Comparison Table</h2>
     <layout-text>
-      <p>A feature comparison table with plan columns and feature rows. Uses semantic <code>&lt;table&gt;</code> markup with proper <code>scope</code> attributes for accessibility. The header is sticky for easy comparison while scrolling.</p>
+      <p>A feature comparison table with plan columns and feature rows. Uses semantic <code>&lt;table&gt;</code> markup with proper <code>scope</code> attributes for accessibility: each category is its own <code>&lt;tbody&gt;</code> headed by a <code>th scope="rowgroup"</code>, and each feature name is a <code>th scope="row"</code>. Included and missing features use the <code>.status</code> marker with visually hidden text, so the table reads correctly without the glyphs. The <code>data-table-scroll</code> wrapper lets the table scroll sideways on narrow screens; add <code>data-table-scroll="block"</code> and <code>data-sticky="header"</code> to pin the plan row while scrolling a long table.</p>
     </layout-text>
 
     <browser-window
@@ -183,61 +145,63 @@ currentPath: /docs/patterns/marketing/pricing/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Feature comparison table">&lt;div class="pricing-table-wrapper"&gt;
-  &lt;table class="pricing-table"&gt;
+    <code-block language="html" label="Feature comparison table">&lt;section data-table-scroll tabindex="0" aria-labelledby="compare-plans"&gt;
+  &lt;table&gt;
     &lt;thead&gt;
       &lt;tr&gt;
         &lt;th scope="col"&gt;Features&lt;/th&gt;
         &lt;th scope="col"&gt;
-          &lt;div class="plan-header"&gt;
+          &lt;span class="plan-header"&gt;
             &lt;span class="plan-name"&gt;Basic&lt;/span&gt;
             &lt;span class="plan-price"&gt;$9&lt;span class="plan-period"&gt;/mo&lt;/span&gt;&lt;/span&gt;
-          &lt;/div&gt;
+          &lt;/span&gt;
         &lt;/th&gt;
-        &lt;th scope="col" class="plan-featured"&gt;
-          &lt;div class="plan-header"&gt;
+        &lt;th scope="col" data-featured&gt;
+          &lt;span class="plan-header"&gt;
             &lt;span class="plan-name"&gt;Pro&lt;/span&gt;
             &lt;span class="plan-price"&gt;$29&lt;span class="plan-period"&gt;/mo&lt;/span&gt;&lt;/span&gt;
-          &lt;/div&gt;
+          &lt;/span&gt;
         &lt;/th&gt;
         &lt;th scope="col"&gt;
-          &lt;div class="plan-header"&gt;
+          &lt;span class="plan-header"&gt;
             &lt;span class="plan-name"&gt;Enterprise&lt;/span&gt;
             &lt;span class="plan-price"&gt;$99&lt;span class="plan-period"&gt;/mo&lt;/span&gt;&lt;/span&gt;
-          &lt;/div&gt;
+          &lt;/span&gt;
         &lt;/th&gt;
       &lt;/tr&gt;
     &lt;/thead&gt;
     &lt;tbody&gt;
-      &lt;tr class="category-row"&gt;
-        &lt;td colspan="4"&gt;Usage&lt;/td&gt;
+      &lt;tr&gt;
+        &lt;th scope="rowgroup" colspan="4"&gt;Usage&lt;/th&gt;
       &lt;/tr&gt;
       &lt;tr&gt;
-        &lt;td&gt;Projects&lt;/td&gt;
+        &lt;th scope="row"&gt;Projects&lt;/th&gt;
         &lt;td&gt;3&lt;/td&gt;
         &lt;td&gt;Unlimited&lt;/td&gt;
         &lt;td&gt;Unlimited&lt;/td&gt;
       &lt;/tr&gt;
       &lt;tr&gt;
-        &lt;td&gt;Storage&lt;/td&gt;
+        &lt;th scope="row"&gt;Storage&lt;/th&gt;
         &lt;td&gt;5 GB&lt;/td&gt;
         &lt;td&gt;50 GB&lt;/td&gt;
         &lt;td&gt;Unlimited&lt;/td&gt;
       &lt;/tr&gt;
-      &lt;tr class="category-row"&gt;
-        &lt;td colspan="4"&gt;Features&lt;/td&gt;
+    &lt;/tbody&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;
+        &lt;th scope="rowgroup" colspan="4"&gt;Features&lt;/th&gt;
       &lt;/tr&gt;
       &lt;tr&gt;
-        &lt;td&gt;Custom integrations&lt;/td&gt;
-        &lt;td&gt;&lt;icon-wc name="x" size="sm" class="feature-unavailable"&gt;&lt;/icon-wc&gt;&lt;/td&gt;
-        &lt;td&gt;&lt;icon-wc name="check" size="sm" class="feature-check"&gt;&lt;/icon-wc&gt;&lt;/td&gt;
-        &lt;td&gt;&lt;icon-wc name="check" size="sm" class="feature-check"&gt;&lt;/icon-wc&gt;&lt;/td&gt;
+        &lt;th scope="row"&gt;Custom integrations&lt;/th&gt;
+        &lt;td&gt;&lt;span class="status" data-status="inactive"&gt;&lt;span class="visually-hidden"&gt;Not included&lt;/span&gt;&lt;/span&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;span class="status" data-status="check"&gt;&lt;span class="visually-hidden"&gt;Included&lt;/span&gt;&lt;/span&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;span class="status" data-status="check"&gt;&lt;span class="visually-hidden"&gt;Included&lt;/span&gt;&lt;/span&gt;&lt;/td&gt;
       &lt;/tr&gt;
       &lt;tr&gt;
-        &lt;td&gt;API access&lt;/td&gt;
-        &lt;td&gt;&lt;icon-wc name="x" size="sm" class="feature-unavailable"&gt;&lt;/icon-wc&gt;&lt;/td&gt;
-        &lt;td&gt;&lt;icon-wc name="check" size="sm" class="feature-check"&gt;&lt;/icon-wc&gt;&lt;/td&gt;
-        &lt;td&gt;&lt;icon-wc name="check" size="sm" class="feature-check"&gt;&lt;/icon-wc&gt;&lt;/td&gt;
+        &lt;th scope="row"&gt;API access&lt;/th&gt;
+        &lt;td&gt;&lt;span class="status" data-status="inactive"&gt;&lt;span class="visually-hidden"&gt;Not included&lt;/span&gt;&lt;/span&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;span class="status" data-status="check"&gt;&lt;span class="visually-hidden"&gt;Included&lt;/span&gt;&lt;/span&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;span class="status" data-status="check"&gt;&lt;span class="visually-hidden"&gt;Included&lt;/span&gt;&lt;/span&gt;&lt;/td&gt;
       &lt;/tr&gt;
     &lt;/tbody&gt;
     &lt;tfoot&gt;
@@ -249,64 +213,34 @@ currentPath: /docs/patterns/marketing/pricing/
       &lt;/tr&gt;
     &lt;/tfoot&gt;
   &lt;/table&gt;
-&lt;/div&gt;</code-block>
+&lt;/section&gt;</code-block>
 
     <h3>Required CSS</h3>
     <layout-text>
-      <p>Add these styles for pricing tables:</p>
+      <p>VB styles the table itself. These rules centre the plan columns and set the plan-header typography; on a real site, scope them under your pricing section:</p>
     </layout-text>
 
-    <code-block language="css" label="Pricing table styles" data-escape>.pricing-table-wrapper {
-  overflow-x: auto;
+    <code-block language="css" label="Pricing table styles" data-escape>td {
+  text-align: center;
+  vertical-align: middle;
 }
 
-.pricing-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--color-surface-raised);
-  border-radius: var(--radius-l);
-  overflow: hidden;
-}
-
-.pricing-table thead {
-  position: sticky;
-  top: 0;
-  background: var(--color-surface-raised);
-  z-index: 1;
-}
-
-.pricing-table th,
-.pricing-table td {
-  padding: var(--size-m);
-  border-bottom: var(--border-width-thin) solid var(--color-border);
-}
-
-.pricing-table th {
-  font-weight: var(--font-weight-semibold);
+thead th:not(:first-child) {
   text-align: center;
   vertical-align: bottom;
 }
 
-.pricing-table th:first-child {
-  text-align: left;
+td > .status {
+  font-size: var(--font-size-l);
 }
 
-.pricing-table td {
-  text-align: center;
+th[scope="rowgroup"] {
+  background: var(--color-surface-raised);
 }
 
-.pricing-table td:first-child {
-  text-align: left;
+th[scope="row"] {
+  font-weight: var(--font-weight-normal);
   color: var(--color-text-muted);
-}
-
-.pricing-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.pricing-table tfoot td {
-  border-bottom: none;
-  padding-top: var(--size-l);
 }
 
 .plan-header {
@@ -331,30 +265,15 @@ currentPath: /docs/patterns/marketing/pricing/
   font-weight: var(--font-weight-normal);
 }
 
-.plan-featured .plan-header {
+th[data-featured] .plan-header {
   color: var(--color-interactive);
-}
-
-.feature-check {
-  color: var(--color-success);
-}
-
-.feature-unavailable {
-  color: var(--color-text-muted);
-}
-
-.category-row td {
-  background: var(--color-surface);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text);
-  text-align: left !important;
 }</code-block>
   </section>
 
   <section>
     <h2>With Billing Toggle</h2>
     <layout-text>
-      <p>Pricing cards with a monthly/yearly billing toggle. Uses the CSS <code>:has()</code> selector to show different prices based on the toggle state, requiring no JavaScript for core functionality.</p>
+      <p>Pricing cards with a monthly/yearly billing toggle. The switch is a native checkbox with <code>data-switch</code>, labelled "Yearly". The CSS <code>:has()</code> selector swaps the prices and highlights the active billing period, so no JavaScript is needed.</p>
     </layout-text>
 
     <browser-window
@@ -364,44 +283,38 @@ currentPath: /docs/patterns/marketing/pricing/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Pricing with monthly/yearly toggle">&lt;section class="pricing-section" data-layout="center" data-layout-max="wide" data-layout-gap="2xl"&gt;
-  &lt;header data-layout="stack" data-layout-gap="m"&gt;
+    <code-block language="html" label="Pricing with monthly/yearly toggle">&lt;section data-layout="center" data-layout-max="wide" data-layout-gap="2xl"&gt;
+  &lt;header data-layout="stack" data-layout-gap="m" data-layout-align="center"&gt;
     &lt;h2&gt;Simple, transparent pricing&lt;/h2&gt;
-    &lt;p class="text-muted"&gt;Choose the plan that's right for you&lt;/p&gt;
-    &lt;div class="pricing-toggle-wrapper"&gt;
-      &lt;div class="pricing-toggle"&gt;
-        &lt;span class="toggle-label active" id="monthly-label"&gt;Monthly&lt;/span&gt;
-        &lt;label class="toggle-switch"&gt;
-          &lt;input type="checkbox" aria-labelledby="monthly-label yearly-label" /&gt;
-          &lt;span class="toggle-slider"&gt;&lt;/span&gt;
-        &lt;/label&gt;
-        &lt;span class="toggle-label" id="yearly-label"&gt;Yearly&lt;/span&gt;
-        &lt;span class="savings-badge"&gt;Save 20%&lt;/span&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
+    &lt;p&gt;Choose the plan that's right for you&lt;/p&gt;
+    &lt;p class="pricing-toggle"&gt;
+      &lt;span class="toggle-label" aria-hidden="true"&gt;Monthly&lt;/span&gt;
+      &lt;input type="checkbox" role="switch" data-switch id="billing-yearly"/&gt;
+      &lt;label class="toggle-label" for="billing-yearly"&gt;Yearly&lt;/label&gt;
+      &lt;layout-badge data-color="success" data-variant="subtle"&gt;Save 20%&lt;/layout-badge&gt;
+    &lt;/p&gt;
   &lt;/header&gt;
-  &lt;div data-layout="grid" data-layout-min="l" data-layout-gap="l" class="pricing-cards"&gt;
-    &lt;article class="pricing-card" data-layout="stack" data-layout-gap="l"&gt;
-      &lt;div data-layout="stack" data-layout-gap="xs"&gt;
-        &lt;span class="plan-name"&gt;Basic&lt;/span&gt;
-        &lt;div&gt;
-          &lt;span class="price price-monthly"&gt;$9&lt;/span&gt;
-          &lt;span class="price price-yearly"&gt;$7&lt;/span&gt;
-          &lt;span class="price-period"&gt;/month&lt;/span&gt;
-        &lt;/div&gt;
-      &lt;/div&gt;
+  &lt;layout-grid data-layout-min="l" data-layout-gap="l"&gt;
+    &lt;layout-card data-variant="outlined" data-padding="l" data-layout="stack" data-layout-gap="l"&gt;
+      &lt;hgroup data-layout="stack" data-layout-gap="xs"&gt;
+        &lt;h3 class="plan-name"&gt;Basic&lt;/h3&gt;
+        &lt;p&gt;&lt;span class="price price-monthly"&gt;$9&lt;/span&gt;&lt;span class="price price-yearly"&gt;$7&lt;/span&gt; &lt;span class="price-period"&gt;/month&lt;/span&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;small&gt;Perfect for individuals and small projects&lt;/small&gt;&lt;/p&gt;
+      &lt;/hgroup&gt;
       &lt;!-- features... --&gt;
-    &lt;/article&gt;
+      &lt;a href="#" class="button secondary full-width"&gt;Get Started&lt;/a&gt;
+    &lt;/layout-card&gt;
     &lt;!-- more cards... --&gt;
-  &lt;/div&gt;
+  &lt;/layout-grid&gt;
 &lt;/section&gt;</code-block>
 
     <h3>Required CSS</h3>
     <layout-text>
-      <p>Add these styles for the billing toggle. The <code>:has()</code> selector enables price switching without JavaScript:</p>
+      <p>Add these styles for the billing toggle, alongside the card styles above. VB draws the switch; the <code>:has()</code> rules handle the label state and the price swap:</p>
     </layout-text>
 
-    <code-block language="css" label="Billing toggle styles" data-escape>.pricing-toggle {
+    <code-block language="css" label="Billing toggle styles" data-escape>/* Billing toggle: the switch is a native checkbox (input[data-switch]) */
+.pricing-toggle {
   display: inline-flex;
   align-items: center;
   gap: var(--size-m);
@@ -409,94 +322,23 @@ currentPath: /docs/patterns/marketing/pricing/
 
 .toggle-label {
   font-weight: var(--font-weight-medium);
+  margin-block: 0;
   color: var(--color-text-muted);
   transition: color 0.2s ease;
 }
 
-.toggle-label.active {
+/* The active side: Monthly while unchecked, Yearly while checked */
+.toggle-label:has(+ input:not(:checked)),
+input:checked + .toggle-label {
   color: var(--color-text);
 }
 
-.toggle-switch {
-  position: relative;
-  width: 56px;
-  height: 28px;
-}
-
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  inset: 0;
-  background: var(--color-interactive);
-  border-radius: var(--radius-full);
-  transition: background 0.2s ease;
-}
-
-.toggle-slider::before {
-  content: "";
-  position: absolute;
-  height: 22px;
-  width: 22px;
-  left: 3px;
-  bottom: 3px;
-  background: var(--color-white);
-  border-radius: var(--radius-full);
-  transition: transform 0.2s ease;
-}
-
-.toggle-switch input:checked + .toggle-slider::before {
-  transform: translateX(28px);
-}
-
-.toggle-switch input:focus-visible + .toggle-slider {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
-}
-
-.savings-badge {
-  background: var(--color-success-subtle);
-  color: var(--color-success);
-  padding: var(--size-2xs) var(--size-s);
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-s);
-  font-weight: var(--font-weight-semibold);
-}
-
-/* Base hidden state */
-.price-monthly,
-.price-yearly {
+/* Price visibility follows the switch, no JavaScript */
+section:has(.pricing-toggle input:checked) .price-monthly,
+section:has(.pricing-toggle input:not(:checked)) .price-yearly {
   display: none;
-}
-
-/* Price visibility using :has() */
-.pricing-toggle-wrapper:has(input:not(:checked)) ~ .pricing-cards .price-monthly {
-  display: inline;
-}
-
-.pricing-toggle-wrapper:has(input:checked) ~ .pricing-cards .price-yearly {
-  display: inline;
 }</code-block>
 
-    <h3>Optional JavaScript Enhancement</h3>
-    <layout-text>
-      <p>The core price-switching is CSS-only via <code>:has()</code>. The demo includes a small script for visual label feedback, toggling the <code>.active</code> class on the Monthly/Yearly labels as the user interacts with the toggle:</p>
-    </layout-text>
-
-    <code-block language="javascript" label="Toggle label feedback" data-escape>// Optional: Update toggle label states for visual feedback
-const toggle = document.querySelector('.toggle-switch input');
-const monthlyLabel = document.getElementById('monthly-label');
-const yearlyLabel = document.getElementById('yearly-label');
-
-toggle.addEventListener('change', () => {
-  monthlyLabel.classList.toggle('active', !toggle.checked);
-  yearlyLabel.classList.toggle('active', toggle.checked);
-});</code-block>
   </section>
 
   <section>
@@ -540,7 +382,7 @@ toggle.addEventListener('change', () => {
           <td>Vertical spacing between elements.</td>
         </tr>
         <tr>
-          <td><code>.pricing-card</code></td>
+          <td><code>layout-card</code></td>
           <td><code>data-featured</code></td>
           <td>Boolean attribute</td>
           <td>Highlights the recommended plan.</td>

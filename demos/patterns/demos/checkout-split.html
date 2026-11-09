@@ -18,44 +18,29 @@
     fieldset legend {
       font-size: var(--font-size-m);
     }
-    .order-summary h3 {
-      font-size: var(--font-size-l);
-      margin: 0;
-    }
-    .order-summary hr {
-      margin-block: 0;
-    }
-    .order-item-name {
-      font-weight: var(--font-weight-medium);
-    }
-    .order-item-details {
-      font-size: var(--font-size-s);
+    /* Security note: muted small print with a green lock */
+    fieldset small {
       color: var(--color-text-muted);
     }
-    .order-item-price {
-      font-weight: var(--font-weight-medium);
+    fieldset small icon-wc {
+      color: var(--color-success);
+    }
+    /* Order summary: each dl-item is a cluster row; drop the dd indent */
+    aside dd {
+      margin: 0;
       white-space: nowrap;
     }
-    .summary-row {
-      font-size: var(--font-size-s);
+    aside dt small {
+      display: block;
+      font-weight: normal;
       color: var(--color-text-muted);
     }
-    .summary-row.total {
-      font-size: var(--font-size-m);
-      font-weight: var(--font-weight-semibold);
-      color: var(--color-text);
-    }
-    .security-note {
-      font-size: var(--font-size-s);
-      color: var(--color-text-muted);
-    }
-    .security-note icon-wc {
-      color: var(--color-success);
+    aside hr {
+      margin-block: 0;
     }
   </style>
 </head>
-<body>
-  <div data-layout="sidebar" data-layout-gap="xl" data-layout-content-min="l">
+<body data-layout="sidebar" data-layout-gap="xl" data-layout-content-min="l">
     <!-- Checkout Form -->
     <main data-layout="stack" data-layout-gap="l">
       <header data-layout="stack" data-layout-gap="s">
@@ -85,7 +70,7 @@
                      autocomplete="address-line1" placeholder="123 Main St"/>
             </form-field>
 
-            <div data-layout="split" data-layout-gap="m">
+            <layout-grid data-layout-min="xs" data-layout-gap="m">
               <form-field>
                 <label for="city">City</label>
                 <input type="text" id="city" name="city" required
@@ -97,9 +82,9 @@
                 <input type="text" id="state" name="state" required
                        autocomplete="address-level1" placeholder="CA"/>
               </form-field>
-            </div>
+            </layout-grid>
 
-            <div data-layout="split" data-layout-gap="m">
+            <layout-grid data-layout-min="xs" data-layout-gap="m">
               <form-field>
                 <label for="zip">ZIP code</label>
                 <input type="text" id="zip" name="zip" required
@@ -115,7 +100,7 @@
                   <option value="GB">United Kingdom</option>
                 </select>
               </form-field>
-            </div>
+            </layout-grid>
         </fieldset>
 
         <!-- Payment Information -->
@@ -128,7 +113,7 @@
                      inputmode="numeric"/>
             </form-field>
 
-            <div data-layout="split" data-layout-gap="m">
+            <layout-grid data-layout-min="xs" data-layout-gap="m">
               <form-field>
                 <label for="expiry">Expiration</label>
                 <input type="text" id="expiry" name="expiry" required
@@ -142,11 +127,13 @@
                        autocomplete="cc-csc" placeholder="123"
                        inputmode="numeric" maxlength="4"/>
               </form-field>
-            </div>
+            </layout-grid>
 
-            <p class="security-note" data-layout="cluster" data-layout-gap="xs" data-layout-align="center">
-              <icon-wc name="lock"></icon-wc>
-              Your payment information is encrypted and secure.
+            <p>
+              <small data-layout="cluster" data-layout-gap="xs" data-layout-align="center">
+                <icon-wc name="lock"></icon-wc>
+                Your payment information is encrypted and secure.
+              </small>
             </p>
         </fieldset>
 
@@ -155,60 +142,50 @@
     </main>
 
     <!-- Order Summary Sidebar -->
-    <aside class="order-summary" data-layout="stack" data-layout-gap="l">
+    <aside data-layout="stack" data-layout-gap="l">
       <h2>Order summary</h2>
 
-      <div data-layout="stack" data-layout-gap="m">
-        <div data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
-          <div data-layout="stack" data-layout-gap="2xs">
-            <span class="order-item-name">Premium Wireless Headphones</span>
-            <span class="order-item-details">Black, Qty: 1</span>
-          </div>
-          <span class="order-item-price">$249.00</span>
-        </div>
-
-        <div data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
-          <div data-layout="stack" data-layout-gap="2xs">
-            <span class="order-item-name">USB-C Charging Cable</span>
-            <span class="order-item-details">6ft, Qty: 2</span>
-          </div>
-          <span class="order-item-price">$29.98</span>
-        </div>
-
-        <div data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
-          <div data-layout="stack" data-layout-gap="2xs">
-            <span class="order-item-name">Leather Carrying Case</span>
-            <span class="order-item-details">Brown, Qty: 1</span>
-          </div>
-          <span class="order-item-price">$49.00</span>
-        </div>
-      </div>
+      <dl data-layout="stack" data-layout-gap="s">
+        <dl-item data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
+          <dt>Premium Wireless Headphones <small>Black, Qty: 1</small></dt>
+          <dd>$249.00</dd>
+        </dl-item>
+        <dl-item data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
+          <dt>USB-C Charging Cable <small>6ft, Qty: 2</small></dt>
+          <dd>$29.98</dd>
+        </dl-item>
+        <dl-item data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
+          <dt>Leather Carrying Case <small>Brown, Qty: 1</small></dt>
+          <dd>$49.00</dd>
+        </dl-item>
+      </dl>
 
       <hr/>
 
-      <div data-layout="stack" data-layout-gap="s">
-        <div class="summary-row" data-layout="cluster" data-layout-justify="between">
-          <span>Subtotal</span>
-          <span>$327.98</span>
-        </div>
-        <div class="summary-row" data-layout="cluster" data-layout-justify="between">
-          <span>Shipping</span>
-          <span>$9.99</span>
-        </div>
-        <div class="summary-row" data-layout="cluster" data-layout-justify="between">
-          <span>Tax</span>
-          <span>$27.12</span>
-        </div>
-      </div>
+      <dl data-layout="stack" data-layout-gap="s">
+        <dl-item data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
+          <dt>Subtotal</dt>
+          <dd>$327.98</dd>
+        </dl-item>
+        <dl-item data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
+          <dt>Shipping</dt>
+          <dd>$9.99</dd>
+        </dl-item>
+        <dl-item data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
+          <dt>Tax</dt>
+          <dd>$27.12</dd>
+        </dl-item>
+      </dl>
 
       <hr/>
 
-      <div class="summary-row total" data-layout="cluster" data-layout-justify="between">
-        <span>Total</span>
-        <span>$365.09</span>
-      </div>
+      <dl data-layout="stack" data-layout-gap="s">
+        <dl-item data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
+          <dt><strong>Total</strong></dt>
+          <dd><strong>$365.09</strong></dd>
+        </dl-item>
+      </dl>
     </aside>
-  </div>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

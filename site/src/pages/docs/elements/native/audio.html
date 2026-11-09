@@ -83,7 +83,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Layer 3: Track Listing</h2>
-    <p>The track list itself is HTML + CSS: <code>&lt;details&gt;/&lt;summary&gt;</code> shows and hides it natively, and on its own each track link simply navigates to the audio file. The demo below is wrapped in <code>.audio-standalone</code>, which turns on the playlist utility (JavaScript) &mdash; clicking a track there swaps the audio source and plays it in place. See <a href="#interactive-playlist-with-js">Interactive Playlist</a> for that wrapper; the code sample directly below is the bare, script-free structure.</p>
+    <p>The track list itself is HTML + CSS: <code>&lt;details&gt;/&lt;summary&gt;</code> shows and hides it natively, and on its own each track link simply navigates to the audio file. The demo below is wrapped in a <code>data-audio-playlist</code> container, which turns on the playlist utility (JavaScript) &mdash; clicking a track there swaps the audio source and plays it in place. See <a href="#interactive-playlist-with-js">Interactive Playlist</a> for that wrapper; the code sample directly below is the bare, script-free structure.</p>
 
     <browser-window src="/docs/snippets/demos/audio-tracklist.html" url="https://vanilla-breeze.com/audio/tracklist" title="Audio with track listing" shadow></browser-window>
     <code-block language="html" label="Audio with track listing (CSS-only structure)" data-escape><audio controls>
@@ -115,8 +115,8 @@ crumbLabel: Native Elements
 </details></code-block>
 
     <h3 id="interactive-playlist-with-js">Interactive Playlist (with JS)</h3>
-    <p>Wrap the audio and track list in a container with class <code>.audio-standalone</code> to enable click-to-play behavior via the playlist utility (<code>src/utils/audio-playlist-init.js</code>). If the script does not run, the links fall back to navigating to each file.</p>
-    <code-block language="html" label="Standalone interactive playlist" data-escape><section class="audio-standalone">
+    <p>Wrap the audio and track list in a container with the <code>data-audio-playlist</code> attribute to enable click-to-play behavior via the playlist utility (<code>src/utils/audio-playlist-init.js</code>). If the script does not run, the links fall back to navigating to each file.</p>
+    <code-block language="html" label="Standalone interactive playlist" data-escape><section data-audio-playlist>
   <audio controls>
     <source src="tracks/01-opening.mp3" type="audio/mpeg">
     <p><a href="tracks/01-opening.mp3" download>Download track 1</a></p>
@@ -136,8 +136,9 @@ crumbLabel: Native Elements
   </details>
 </section></code-block>
 
-    <h4>The <code>.audio-standalone</code> contract</h4>
+    <h4>The <code>data-audio-playlist</code> contract</h4>
     <ul>
+      <li><strong>Attribute</strong> — <code>data-audio-playlist</code> is a boolean attribute on any container element (a <code>&lt;section&gt;</code>, <code>&lt;article&gt;</code> or <code>&lt;figure&gt;</code>); it takes no value.</li>
       <li><strong>Structure</strong> — the container holds one <code>&lt;audio&gt;</code> and one <code>.track-list</code> (usually inside <code>&lt;details&gt;</code>). Each track is an <code>&lt;li&gt;</code> with an <code>&lt;a href&gt;</code> pointing at its audio file. Containers without both are left alone.</li>
       <li><strong>Click</strong> — clicking a track link sets the audio source to the link's URL, moves <code>data-audio-active</code> to that <code>&lt;li&gt;</code> and starts playback. A refused <code>play()</code> (autoplay policy, unloadable file) is caught, never thrown.</li>
       <li><strong>Ended</strong> — the finished track gets <code>data-audio-played</code> and keeps <code>data-audio-active</code>; the next track in list order then starts. After the last track playback stops and that track stays active. A native <code>&lt;audio loop&gt;</code> repeats the current track instead (it never ends).</li>

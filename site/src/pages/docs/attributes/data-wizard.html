@@ -27,27 +27,55 @@ crumbLabel: Data Attributes
     shadow>
   </browser-window>
 
-  <code-block language="html" show-lines label="Basic multi-step wizard" data-escape><form data-wizard>
-  <progress data-wizard-progress></progress>
+  <code-block language="html" show-lines label="Basic multi-step wizard" data-escape><body data-layout="cover" data-layout-min="xl" data-layout-padding="l">
+  <layout-card data-max="narrow" data-padding="l" data-layout-principal>
+    <layout-stack data-layout-gap="xl">
+      <h1>Create your account</h1>
 
-  <fieldset data-wizard-step>
-    <legend>Account</legend>
-    <label for="email">Email</label>
-    <input id="email" name="email" type="email" required>
-  </fieldset>
+      <!-- Numbered step list, filled from the legends and kept in sync by wizard.js -->
+      <nav class="steps" id="signup-steps" aria-label="Sign-up progress">
+        <ol></ol>
+      </nav>
 
-  <fieldset data-wizard-step>
-    <legend>Profile</legend>
-    <label for="name">Name</label>
-    <input id="name" name="name" required>
-  </fieldset>
+      <form action="/signup" method="POST" data-wizard data-wizard-steps="#signup-steps">
+        <fieldset data-wizard-step>
+          <legend>Account</legend>
+          <form-field>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required autocomplete="email"/>
+          </form-field>
+        </fieldset>
 
-  <nav data-wizard-nav>
-    <button type="button" data-wizard-prev>Back</button>
-    <button type="button" data-wizard-next>Next</button>
-    <button type="submit">Submit</button>
-  </nav>
-</form></code-block>
+        <fieldset data-wizard-step>
+          <legend>Details</legend>
+          <layout-stack data-layout-gap="l">
+            <form-field>
+              <label for="full-name">Full name</label>
+              <input type="text" id="full-name" name="full_name" required autocomplete="name"/>
+            </form-field>
+            <form-field>
+              <label for="plan">Plan</label>
+              <select id="plan" name="plan">
+                <option value="free">Free</option>
+                <option value="pro">Pro ($12/month)</option>
+              </select>
+            </form-field>
+          </layout-stack>
+        </fieldset>
+
+        <fieldset data-wizard-step data-wizard-summary>
+          <legend>Review</legend>
+        </fieldset>
+
+        <nav data-wizard-nav data-layout="cluster" data-layout-justify="between" aria-label="Sign-up steps">
+          <button type="button" class="secondary" data-wizard-prev>Back</button>
+          <button type="button" data-wizard-next>Next</button>
+          <button type="submit">Create account</button>
+        </nav>
+      </form>
+    </layout-stack>
+  </layout-card>
+</body></code-block>
 
   <h3>What the script does</h3>
   <ol>
@@ -87,6 +115,7 @@ crumbLabel: Data Attributes
       <tr><td><code>data-label-step</code></td><td><code>&lt;form&gt;</code></td><td>template, <code>{n}</code></td><td>Step {n}</td><td>Name of a step that has no legend.</td></tr>
       <tr><td><code>data-label-status</code></td><td><code>&lt;form&gt;</code></td><td>template, <code>{current}</code> <code>{total}</code> <code>{name}</code></td><td>Now on step {current} of {total}: {name}</td><td>Live-region announcement.</td></tr>
       <tr><td><code>data-label-completed</code></td><td><code>&lt;form&gt;</code></td><td>template, <code>{name}</code></td><td>Go to {name} (completed)</td><td>Accessible name of a completed item in a <code>nav.steps</code> list.</td></tr>
+      <tr><td><code>data-label-yes</code></td><td><code>&lt;form&gt;</code></td><td>text</td><td>Yes</td><td>Summary value of a checked standalone checkbox.</td></tr>
     </tbody>
   </table>
   <p>Numbers in the labels are formatted with <code>Intl.NumberFormat</code> for the nearest <code>lang</code>. The visible "Step 1 of 3" counter is CSS; translate it with <code>--wizard-label-step</code> and <code>--wizard-label-of</code> (see Styling).</p>
@@ -267,7 +296,7 @@ form[data-wizard][data-wizard-enhanced][data-wizard-last] [data-wizard-nav] [dat
 </fieldset></code-block>
 
   <h3>Summary step</h3>
-  <p>Manual mode fills elements that name a field with <code>data-wizard-field</code>. Without any, the step gets a generated <code>&lt;dl&gt;</code> of every non-empty field in the other included steps, labelled from each field's <code>&lt;label&gt;</code> (or a group's <code>&lt;legend&gt;</code>); hidden and password inputs are left out.</p>
+  <p>Manual mode fills elements that name a field with <code>data-wizard-field</code>. Without any, the step gets a generated <code>&lt;dl&gt;</code> of every non-empty field in the other included steps, labelled from each field's <code>&lt;label&gt;</code> (or a group's <code>&lt;legend&gt;</code>); hidden and password inputs are left out. Values read as the user saw them: a select shows its chosen option text, a checked radio or grouped checkbox shows its label, and a standalone checkbox shows "Yes" (<code>data-label-yes</code>).</p>
   <browser-window
     src="/docs/examples/demos/wizard-summary.html"
     url="https://vanilla-breeze.com/wizard-summary"

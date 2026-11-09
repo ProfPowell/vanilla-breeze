@@ -5,50 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Dashboard - Charts Layout</title>
   <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/cdn/vanilla-breeze-charts.css"/>
   <style>
     body {
       margin: 0;
       padding: var(--size-xl);
       background: var(--color-surface-alt);
     }
-    [data-layout="cluster"] select {
+    layout-cluster select {
       inline-size: auto;
     }
 
     /* Sparkline themed by trend color */
-    .spark { display: block; inline-size: 100%; block-size: 100%; }
-    .spark .line     { fill: none; stroke: currentColor; stroke-width: 2; vector-effect: non-scaling-stroke; }
-    .spark .endpoint { fill: currentColor; }
+    svg[slot="sparkline"]        { display: block; inline-size: 100%; block-size: 100%; }
+    svg[slot="sparkline"] path   { fill: none; stroke: currentColor; stroke-width: 2; vector-effect: non-scaling-stroke; }
+    svg[slot="sparkline"] circle { fill: currentColor; }
     score-card[trend="up"]   [slot="sparkline"] { color: var(--color-success); }
     score-card[trend="down"] [slot="sparkline"] { color: var(--color-error); }
     score-card[trend="flat"] [slot="sparkline"] { color: var(--color-text-muted); }
-
-    .chart-placeholder {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px dashed var(--color-border);
-      border-radius: var(--radius-m);
-      background: var(--color-surface);
-      color: var(--color-text-muted);
-      font-size: var(--font-size-s);
-    }
-    .chart-main {
-      aspect-ratio: 16 / 9;
-      min-height: 300px;
-    }
-    .chart-secondary {
-      aspect-ratio: 4 / 3;
-      min-height: 200px;
-    }
   </style>
 </head>
 <body>
-  <div data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <main data-layout="center" data-layout-max="wide" data-layout-gap="l">
     <!-- Page Header -->
     <header data-layout="cluster" data-layout-justify="between" data-layout-align="center">
       <h1>Analytics</h1>
-      <div data-layout="cluster" data-layout-gap="s">
+      <layout-cluster data-layout-gap="s">
         <select aria-label="Time period">
           <option>Last 7 days</option>
           <option selected>Last 30 days</option>
@@ -59,18 +41,18 @@
           <icon-wc name="refresh-cw" size="sm"></icon-wc>
           Refresh
         </button>
-      </div>
+      </layout-cluster>
     </header>
 
     <!-- Top Stats Row -->
-    <div data-layout="grid" data-layout-gap="l" data-layout-min="m">
+    <layout-grid data-layout-gap="l" data-layout-min="m">
       <score-card trend="up" tone="info">
         <span slot="title">Total Visitors</span>
         <data slot="value" value="24521">24,521</data>
         <small slot="change"><data value="0.125">+12.5%</data></small>
-        <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Visitors trend, increasing">
-          <path class="line" d="M 0 22 L 20 19 L 40 17 L 60 12 L 80 8 L 100 4"/>
-          <circle class="endpoint" cx="100" cy="4" r="2"/>
+        <svg slot="sparkline" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Visitors trend, increasing">
+          <path d="M 0 22 L 20 19 L 40 17 L 60 12 L 80 8 L 100 4"/>
+          <circle cx="100" cy="4" r="2"/>
         </svg>
         <icon-wc slot="icon" name="users" size="md"></icon-wc>
       </score-card>
@@ -79,9 +61,9 @@
         <span slot="title">Page Views</span>
         <data slot="value" value="89432">89,432</data>
         <small slot="change"><data value="0.083">+8.3%</data></small>
-        <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Page views trend, increasing">
-          <path class="line" d="M 0 20 L 20 18 L 40 15 L 60 13 L 80 10 L 100 7"/>
-          <circle class="endpoint" cx="100" cy="7" r="2"/>
+        <svg slot="sparkline" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Page views trend, increasing">
+          <path d="M 0 20 L 20 18 L 40 15 L 60 13 L 80 10 L 100 7"/>
+          <circle cx="100" cy="7" r="2"/>
         </svg>
         <icon-wc slot="icon" name="eye" size="md"></icon-wc>
       </score-card>
@@ -90,9 +72,9 @@
         <span slot="title">Bounce Rate</span>
         <data slot="value" value="0.423">42.3%</data>
         <small slot="change"><data value="-0.021">-2.1%</data></small>
-        <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Bounce rate trend, decreasing">
-          <path class="line" d="M 0 8 L 20 10 L 40 11 L 60 13 L 80 15 L 100 18"/>
-          <circle class="endpoint" cx="100" cy="18" r="2"/>
+        <svg slot="sparkline" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Bounce rate trend, decreasing">
+          <path d="M 0 8 L 20 10 L 40 11 L 60 13 L 80 15 L 100 18"/>
+          <circle cx="100" cy="18" r="2"/>
         </svg>
         <icon-wc slot="icon" name="alert-circle" size="md"></icon-wc>
       </score-card>
@@ -101,90 +83,98 @@
         <span slot="title">Avg. Session</span>
         <data slot="value" value="272">4m 32s</data>
         <small slot="change"><data value="0.187">+18.7%</data></small>
-        <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Avg session trend, increasing">
-          <path class="line" d="M 0 24 L 20 20 L 40 17 L 60 14 L 80 10 L 100 6"/>
-          <circle class="endpoint" cx="100" cy="6" r="2"/>
+        <svg slot="sparkline" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Avg session trend, increasing">
+          <path d="M 0 24 L 20 20 L 40 17 L 60 14 L 80 10 L 100 6"/>
+          <circle cx="100" cy="6" r="2"/>
         </svg>
         <icon-wc slot="icon" name="clock" size="md"></icon-wc>
       </score-card>
-    </div>
+    </layout-grid>
 
     <!-- Charts Row -->
-    <div data-layout="grid" data-layout-gap="l" data-layout-min="xl">
+    <layout-grid data-layout-gap="l" data-layout-min="xl">
       <!-- Main Chart -->
       <layout-card data-padding="l">
-        <div data-layout="stack" data-layout-gap="m">
-          <div data-layout="cluster" data-layout-justify="between" data-layout-align="center">
-            <h2 class="text-lg">Traffic Overview</h2>
-            <div data-layout="cluster" data-layout-gap="s">
+        <layout-stack data-layout-gap="m">
+          <header data-layout="cluster" data-layout-justify="between" data-layout-align="center">
+            <h2>Traffic Overview</h2>
+            <layout-cluster data-layout-gap="s">
               <button type="button" class="button small ghost">Daily</button>
-              <button type="button" class="button small secondary">Weekly</button>
+              <button type="button" class="button small secondary" aria-pressed="true">Weekly</button>
               <button type="button" class="button small ghost">Monthly</button>
-            </div>
-          </div>
-          <div class="chart-placeholder chart-main">
-            <div data-layout="stack" data-layout-gap="xs" data-layout-align="center">
-              <icon-wc name="bar-chart-2" size="lg"></icon-wc>
-              <span>Line Chart - Traffic over time</span>
-            </div>
-          </div>
-        </div>
+            </layout-cluster>
+          </header>
+          <chart-wc
+            data-type="area"
+            data-label-y="Visitors"
+            data-legend
+            data-tooltip
+            data-values='[
+              {"name": "Visitors",   "values": {"Wk 1": 4200, "Wk 2": 5100, "Wk 3": 4800, "Wk 4": 6100, "Wk 5": 5900, "Wk 6": 7200}},
+              {"name": "Page views", "values": {"Wk 1": 2900, "Wk 2": 3400, "Wk 3": 3100, "Wk 4": 4200, "Wk 5": 4400, "Wk 6": 5000}}
+            ]'>
+          </chart-wc>
+        </layout-stack>
       </layout-card>
 
       <!-- Secondary Chart -->
       <layout-card data-padding="l">
-        <div data-layout="stack" data-layout-gap="m">
-          <h2 class="text-lg">Traffic Sources</h2>
-          <div class="chart-placeholder chart-secondary">
-            <div data-layout="stack" data-layout-gap="xs" data-layout-align="center">
-              <icon-wc name="pie-chart" size="lg"></icon-wc>
-              <span>Pie Chart - Source breakdown</span>
-            </div>
-          </div>
-        </div>
+        <layout-stack data-layout-gap="m">
+          <h2>Traffic Sources</h2>
+          <chart-wc
+            data-type="pie"
+            data-legend
+            data-tooltip
+            data-values='{"Organic": 42, "Direct": 26, "Referral": 18, "Social": 14}'>
+          </chart-wc>
+        </layout-stack>
       </layout-card>
-    </div>
+    </layout-grid>
 
     <!-- Additional Charts Row -->
-    <div data-layout="grid" data-layout-gap="l" data-layout-min="l">
+    <layout-grid data-layout-gap="l" data-layout-min="l">
       <layout-card data-padding="l">
-        <div data-layout="stack" data-layout-gap="m">
-          <h2 class="text-lg">Top Pages</h2>
-          <div class="chart-placeholder chart-secondary">
-            <div data-layout="stack" data-layout-gap="xs" data-layout-align="center">
-              <icon-wc name="bar-chart" size="lg"></icon-wc>
-              <span>Horizontal Bar Chart</span>
-            </div>
-          </div>
-        </div>
+        <layout-stack data-layout-gap="m">
+          <h2>Top Pages</h2>
+          <chart-wc
+            data-type="bar"
+            data-tooltip
+            data-values='[
+              {"name": "Views", "values": {"/home": 18200, "/pricing": 9400, "/docs": 7600, "/blog": 5100}}
+            ]'>
+          </chart-wc>
+        </layout-stack>
       </layout-card>
 
       <layout-card data-padding="l">
-        <div data-layout="stack" data-layout-gap="m">
-          <h2 class="text-lg">Device Types</h2>
-          <div class="chart-placeholder chart-secondary">
-            <div data-layout="stack" data-layout-gap="xs" data-layout-align="center">
-              <icon-wc name="pie-chart" size="lg"></icon-wc>
-              <span>Donut Chart</span>
-            </div>
-          </div>
-        </div>
+        <layout-stack data-layout-gap="m">
+          <h2>Device Types</h2>
+          <chart-wc
+            data-type="column"
+            data-tooltip
+            data-values='[
+              {"name": "Share (%)", "values": {"Desktop": 58, "Mobile": 36, "Tablet": 6}}
+            ]'>
+          </chart-wc>
+        </layout-stack>
       </layout-card>
 
       <layout-card data-padding="l">
-        <div data-layout="stack" data-layout-gap="m">
-          <h2 class="text-lg">Geographic Data</h2>
-          <div class="chart-placeholder chart-secondary">
-            <div data-layout="stack" data-layout-gap="xs" data-layout-align="center">
-              <icon-wc name="globe" size="lg"></icon-wc>
-              <span>World Map</span>
-            </div>
-          </div>
-        </div>
+        <layout-stack data-layout-gap="m">
+          <h2>Top Countries</h2>
+          <chart-wc
+            data-type="column"
+            data-tooltip
+            data-values='[
+              {"name": "Visitors", "values": {"US": 9800, "UK": 4100, "DE": 3300, "IN": 2900, "BR": 1700}}
+            ]'>
+          </chart-wc>
+        </layout-stack>
       </layout-card>
-    </div>
-  </div>
+    </layout-grid>
+  </main>
 
   <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/cdn/vanilla-breeze-charts.js"></script>
 </body>
 </html>

@@ -26,7 +26,7 @@ currentPath: /docs/patterns/application/profile/
   <section>
     <h2>Profile Header</h2>
     <layout-text>
-      <p>A centered profile header with a large avatar, user name, role, bio, stats row, and edit button. Ideal for the top of a user's profile page.</p>
+      <p>A profile header built on <code>data-layout="media"</code>: a large avatar in the figure column, with the name, role, bio, stats row and edit button stacked beside it. Ideal for the top of a user's profile page.</p>
     </layout-text>
 
     <browser-window
@@ -36,81 +36,50 @@ currentPath: /docs/patterns/application/profile/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="profile-header.html">&lt;layout-card&gt;
-  &lt;div class="profile-header" data-layout="stack" data-layout-gap="l" data-layout-align="center"&gt;
-    &lt;!-- Avatar --&gt;
-    &lt;user-avatar data-size="2xl"&gt;
+    <code-block language="html" label="profile-header.html">&lt;layout-card data-padding="xl"&gt;
+  &lt;header data-layout="media" data-layout-gap="xl"&gt;
+    &lt;!-- Avatar: slot="figure" puts it in the media column --&gt;
+    &lt;user-avatar data-size="2xl" slot="figure"&gt;
       &lt;span data-fallback&gt;JD&lt;/span&gt;
     &lt;/user-avatar&gt;
 
     &lt;!-- Name and Role --&gt;
-    &lt;hgroup class="tight"&gt;
-      &lt;h1 class="profile-name"&gt;Jane Doe&lt;/h1&gt;
+    &lt;hgroup&gt;
+      &lt;h1&gt;Jane Doe&lt;/h1&gt;
       &lt;p&gt;Senior Product Designer&lt;/p&gt;
     &lt;/hgroup&gt;
 
     &lt;!-- Bio --&gt;
-    &lt;p class="profile-bio"&gt;
-      Passionate about creating intuitive user experiences...
-    &lt;/p&gt;
+    &lt;p&gt;Passionate about creating intuitive user experiences...&lt;/p&gt;
 
     &lt;!-- Stats --&gt;
-    &lt;dl data-layout="cluster" data-layout-gap="xl" data-layout-justify="center"&gt;
-      &lt;div class="stat-item"&gt;
-        &lt;dd class="stat-value"&gt;142&lt;/dd&gt;
-        &lt;dt class="stat-label"&gt;Posts&lt;/dt&gt;
-      &lt;/div&gt;
-      &lt;div class="stat-item"&gt;
-        &lt;dd class="stat-value"&gt;12.4K&lt;/dd&gt;
-        &lt;dt class="stat-label"&gt;Followers&lt;/dt&gt;
-      &lt;/div&gt;
-      &lt;div class="stat-item"&gt;
-        &lt;dd class="stat-value"&gt;891&lt;/dd&gt;
-        &lt;dt class="stat-label"&gt;Following&lt;/dt&gt;
-      &lt;/div&gt;
+    &lt;dl data-layout="cluster" data-layout-gap="xl" data-variant="stacked"&gt;
+      &lt;dl-item&gt;
+        &lt;dt&gt;Posts&lt;/dt&gt;
+        &lt;dd&gt;&lt;strong&gt;142&lt;/strong&gt;&lt;/dd&gt;
+      &lt;/dl-item&gt;
+      &lt;dl-item&gt;
+        &lt;dt&gt;Followers&lt;/dt&gt;
+        &lt;dd&gt;&lt;strong&gt;12.4K&lt;/strong&gt;&lt;/dd&gt;
+      &lt;/dl-item&gt;
+      &lt;dl-item&gt;
+        &lt;dt&gt;Following&lt;/dt&gt;
+        &lt;dd&gt;&lt;strong&gt;891&lt;/strong&gt;&lt;/dd&gt;
+      &lt;/dl-item&gt;
     &lt;/dl&gt;
 
     &lt;!-- Edit Button --&gt;
-    &lt;button class="button secondary"&gt;
-      &lt;icon-wc name="edit" size="sm"&gt;&lt;/icon-wc&gt;
-      Edit Profile
-    &lt;/button&gt;
-  &lt;/div&gt;
+    &lt;p&gt;
+      &lt;button type="button" class="button secondary"&gt;
+        &lt;icon-wc name="edit" size="sm"&gt;&lt;/icon-wc&gt;
+        Edit Profile
+      &lt;/button&gt;
+    &lt;/p&gt;
+  &lt;/header&gt;
 &lt;/layout-card&gt;</code-block>
 
-    <h3>Profile Header Styles</h3>
-    <code-block language="css" label="Profile header CSS" data-escape>.profile-header {
-  text-align: center;
-  padding: var(--size-2xl);
-}
-
-.profile-name {
-  margin: 0;
-  font-size: var(--font-size-2xl);
-}
-
-.profile-bio {
-  max-width: 50ch;
-  margin-inline: auto;
-  color: var(--color-text-muted);
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-value {
-  display: block;
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-}
-
-.stat-label {
-  font-size: var(--font-size-s);
-  color: var(--color-text-muted);
-}
-
-dl, dd { margin: 0; }</code-block>
+    <h3>Stat Row Styles</h3>
+    <p>The hgroup mutes the role, <code>data-variant="stacked"</code> mutes the stat labels and drops the <code>&lt;dd&gt;</code> indent, and <code>&lt;strong&gt;</code> weights the numbers. No extra CSS is needed: a stacked list that is also <code>data-layout</code> spaces its groups with the layout's gap instead of a block margin.</p>
   </section>
 
   <section>
@@ -127,54 +96,37 @@ dl, dd { margin: 0; }</code-block>
     </browser-window>
 
     <code-block language="html" label="profile-card.html">&lt;layout-card data-padding="l"&gt;
-  &lt;div data-layout="stack" data-layout-gap="m"&gt;
-    &lt;div data-layout="cluster" data-layout-gap="m" data-layout-align="center"&gt;
-      &lt;user-avatar data-size="lg"&gt;
+  &lt;layout-stack data-layout-gap="m"&gt;
+    &lt;header data-layout="media" data-layout-gap="m" data-layout-align="center"&gt;
+      &lt;user-avatar data-size="lg" slot="figure"&gt;
         &lt;img src="user-photo.jpg" alt="Alex Thompson" /&gt;
       &lt;/user-avatar&gt;
-      &lt;div data-layout="stack" data-layout-gap="2xs"&gt;
-        &lt;h3 class="profile-card-name"&gt;Alex Thompson&lt;/h3&gt;
-        &lt;a href="mailto:alex@example.com" class="profile-card-email"&gt;alex@example.com&lt;/a&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
-    &lt;p class="profile-card-description"&gt;
-      Full-stack developer with 8 years of experience.
-    &lt;/p&gt;
-    &lt;div data-layout="cluster" data-layout-gap="s"&gt;
-      &lt;button class="button small"&gt;
+      &lt;hgroup&gt;
+        &lt;h2&gt;Alex Thompson&lt;/h2&gt;
+        &lt;p&gt;&lt;a href="mailto:alex@example.com"&gt;alex@example.com&lt;/a&gt;&lt;/p&gt;
+      &lt;/hgroup&gt;
+    &lt;/header&gt;
+    &lt;p&gt;Full-stack developer with 8 years of experience.&lt;/p&gt;
+    &lt;layout-cluster data-layout-gap="s"&gt;
+      &lt;button type="button" class="button small"&gt;
         &lt;icon-wc name="mail" size="sm"&gt;&lt;/icon-wc&gt;
         Message
       &lt;/button&gt;
-      &lt;button class="button small secondary"&gt;
+      &lt;button type="button" class="button small secondary"&gt;
         &lt;icon-wc name="user-plus" size="sm"&gt;&lt;/icon-wc&gt;
         Follow
       &lt;/button&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
+    &lt;/layout-cluster&gt;
+  &lt;/layout-stack&gt;
 &lt;/layout-card&gt;</code-block>
 
-    <h3>Profile Card Styles</h3>
-    <code-block language="css" label="Profile card CSS" data-escape>.profile-card-name {
-  margin: 0;
-  font-size: var(--font-size-l);
-}
-
-.profile-card-email {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-s);
-}
-
-.profile-card-description {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-s);
-  margin: 0;
-}</code-block>
+    <p>No custom CSS: <code>&lt;hgroup&gt;</code> mutes the email line, and <code>slot="figure"</code> sends the avatar to the media column.</p>
   </section>
 
   <section>
     <h2>Full Profile Page</h2>
     <layout-text>
-      <p>A complete profile page layout with a sidebar containing user info and a main content area showing an activity feed. Uses <code>layout-sidebar</code> for responsive two-column layout.</p>
+      <p>A complete profile page layout with a sidebar containing user info and a main content area showing an <code>&lt;activity-feed&gt;</code>. Uses <code>&lt;layout-sidebar&gt;</code> with an <code>&lt;aside&gt;</code> for the responsive two-column layout.</p>
     </layout-text>
 
     <browser-window
@@ -184,84 +136,59 @@ dl, dd { margin: 0; }</code-block>
       shadow>
     </browser-window>
 
-    <code-block language="html" label="profile-full.html">&lt;div data-layout="sidebar" data-layout-gap="xl" data-layout-sidebar-width="wide" data-layout-content-min="m"&gt;
+    <code-block language="html" label="profile-full.html">&lt;layout-sidebar data-layout-gap="xl" data-layout-sidebar-width="wide" data-layout-content-min="m"&gt;
   &lt;!-- Profile Sidebar --&gt;
-  &lt;layout-card data-padding="l"&gt;
-    &lt;div class="profile-sidebar" data-layout="stack" data-layout-gap="l" data-layout-align="center"&gt;
-      &lt;user-avatar data-size="2xl"&gt;
-        &lt;img src="user-photo.jpg" alt="Sarah Chen" /&gt;
-        &lt;span data-status="online"&gt;&lt;/span&gt;
-      &lt;/user-avatar&gt;
+  &lt;aside aria-label="Profile"&gt;
+    &lt;layout-card data-padding="l"&gt;
+      &lt;layout-center data-layout-intrinsic data-layout-text data-layout-gutter="none" data-layout-gap="l"&gt;
+        &lt;user-avatar data-size="2xl"&gt;
+          &lt;img src="user-photo.jpg" alt="Sarah Chen" /&gt;
+          &lt;span data-status="online"&gt;&lt;/span&gt;
+        &lt;/user-avatar&gt;
 
-      &lt;hgroup class="tight"&gt;
-        &lt;h1 class="profile-name"&gt;Sarah Chen&lt;/h1&gt;
-        &lt;p&gt;Engineering Manager&lt;/p&gt;
-      &lt;/hgroup&gt;
+        &lt;hgroup data-align="center"&gt;
+          &lt;h1&gt;Sarah Chen&lt;/h1&gt;
+          &lt;p&gt;Engineering Manager&lt;/p&gt;
+        &lt;/hgroup&gt;
 
-      &lt;p class="profile-bio"&gt;Leading distributed teams...&lt;/p&gt;
+        &lt;p&gt;Leading distributed teams...&lt;/p&gt;
 
-      &lt;dl data-layout="cluster" data-layout-gap="l" data-layout-justify="center"&gt;
-        &lt;div class="stat-item"&gt;
-          &lt;dd class="stat-value"&gt;89&lt;/dd&gt;
-          &lt;dt class="stat-label"&gt;Posts&lt;/dt&gt;
-        &lt;/div&gt;
-        &lt;!-- More stats... --&gt;
-      &lt;/dl&gt;
+        &lt;dl data-layout="cluster" data-layout-gap="l" data-layout-justify="center" data-variant="stacked"&gt;
+          &lt;dl-item&gt;
+            &lt;dt&gt;Posts&lt;/dt&gt;
+            &lt;dd&gt;&lt;strong&gt;89&lt;/strong&gt;&lt;/dd&gt;
+          &lt;/dl-item&gt;
+          &lt;!-- More stats... --&gt;
+        &lt;/dl&gt;
 
-      &lt;div data-layout="cluster" data-layout-gap="s"&gt;
-        &lt;button class="button"&gt;Follow&lt;/button&gt;
-        &lt;button class="button secondary"&gt;Message&lt;/button&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
-  &lt;/layout-card&gt;
+        &lt;layout-cluster data-layout-gap="s" data-layout-justify="center"&gt;
+          &lt;button type="button" class="button"&gt;Follow&lt;/button&gt;
+          &lt;button type="button" class="button secondary"&gt;Message&lt;/button&gt;
+        &lt;/layout-cluster&gt;
+      &lt;/layout-center&gt;
+    &lt;/layout-card&gt;
+  &lt;/aside&gt;
 
   &lt;!-- Activity Feed --&gt;
-  &lt;div data-layout="stack" data-layout-gap="l"&gt;
+  &lt;section data-layout="stack" data-layout-gap="l" aria-labelledby="activity-heading"&gt;
     &lt;header data-layout="cluster" data-layout-justify="between"&gt;
-      &lt;h2&gt;Recent Activity&lt;/h2&gt;
+      &lt;h2 id="activity-heading"&gt;Recent Activity&lt;/h2&gt;
       &lt;!-- Filter buttons --&gt;
     &lt;/header&gt;
 
-    &lt;div data-layout="stack" data-layout-gap="m"&gt;
-      &lt;article class="activity-item" data-layout="stack" data-layout-gap="s"&gt;
-        &lt;div data-layout="cluster" data-layout-gap="s" data-layout-align="center"&gt;
-          &lt;icon-wc name="file-text" size="sm"&gt;&lt;/icon-wc&gt;
-          &lt;span class="activity-meta"&gt;Published a post&lt;/span&gt;
-        &lt;/div&gt;
-        &lt;h3&gt;Building Resilient Microservices&lt;/h3&gt;
-        &lt;p&gt;Lessons learned from migrating...&lt;/p&gt;
-      &lt;/article&gt;
-      &lt;!-- More activity items... --&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
-&lt;/div&gt;</code-block>
+    &lt;layout-card&gt;
+      &lt;activity-feed aria-label="Recent activity"&gt;
+        &lt;article data-activity data-activity-icon="file-text"&gt;
+          Published &lt;a href="/posts/microservices"&gt;Building Resilient Microservices&lt;/a&gt;
+          &lt;time datetime="2026-07-06T08:00:00Z"&gt;Jul 6, 2026&lt;/time&gt;
+        &lt;/article&gt;
+        &lt;!-- More activity entries... --&gt;
+      &lt;/activity-feed&gt;
+    &lt;/layout-card&gt;
+  &lt;/section&gt;
+&lt;/layout-sidebar&gt;</code-block>
 
-    <h3>Activity Item Styles</h3>
-    <code-block language="css" label="Activity item CSS" data-escape>.activity-item {
-  padding: var(--size-m);
-  border-radius: var(--radius-m);
-  background: var(--color-surface);
-}
-
-.activity-item:hover {
-  background: var(--color-surface-raised);
-}
-
-.activity-meta {
-  font-size: var(--font-size-s);
-  color: var(--color-text-muted);
-}
-
-.activity-title {
-  margin: 0;
-  font-size: var(--font-size-m);
-}
-
-.activity-description {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: var(--font-size-s);
-}</code-block>
+    <p><code>&lt;activity-feed&gt;</code> lays out each <code>&lt;article data-activity&gt;</code> with its icon rail and turns the authored <code>&lt;time&gt;</code> into a relative timestamp. The only page CSS is the stat-row rule shown under Profile Header.</p>
   </section>
 
   <section>
@@ -357,7 +284,7 @@ dl, dd { margin: 0; }</code-block>
         <li><strong>Avatar fallbacks:</strong> Always provide initials via <code>&lt;span data-fallback&gt;</code> as a fallback when images fail to load</li>
         <li><strong>Status indicators:</strong> Use <code>&lt;span data-status="online"&gt;</code> inside <code>user-avatar</code> to show user presence</li>
         <li><strong>Heading groups:</strong> Use <code>&lt;hgroup&gt;</code> for name + role pairs — the <code>&lt;p&gt;</code> inside automatically gets muted color styling</li>
-        <li><strong>Semantic stats:</strong> Use <code>&lt;dl&gt;</code> / <code>&lt;dt&gt;</code> / <code>&lt;dd&gt;</code> for stat label/value pairs instead of generic <code>&lt;div&gt;</code> / <code>&lt;span&gt;</code> elements</li>
+        <li><strong>Semantic stats:</strong> Use <code>&lt;dl data-variant="stacked"&gt;</code> with one <code>&lt;dl-item&gt;</code> per stat, label (<code>&lt;dt&gt;</code>) before value (<code>&lt;dd&gt;</code>), instead of generic <code>&lt;div&gt;</code> / <code>&lt;span&gt;</code> elements</li>
         <li><strong>Responsive layouts:</strong> The sidebar layout automatically stacks on smaller screens when <code>data-layout-content-min</code> is reached</li>
         <li><strong>Sticky sidebar:</strong> <code>data-layout-sticky</code> works on <code>&lt;nav&gt;</code> and <code>&lt;aside&gt;</code> within page layouts, not on <code>&lt;layout-card&gt;</code></li>
         <li><strong>Accessibility:</strong> Ensure avatar images have meaningful <code>alt</code> text and buttons have clear labels</li>
@@ -385,6 +312,10 @@ dl, dd { margin: 0; }</code-block>
       <a href="/docs/elements/web-components/icons/" class="section-card">
         <h3>Icon</h3>
         <p>Icon element documentation and available icons</p>
+      </a>
+      <a href="/docs/elements/web-components/activity-feed/" class="section-card">
+        <h3>Activity Feed</h3>
+        <p>Accessible feed of timestamped user actions</p>
       </a>
     </layout-grid>
   </section>

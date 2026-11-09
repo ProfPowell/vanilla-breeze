@@ -10,14 +10,14 @@ currentPath: /docs/patterns/marketing/features/
 <section>
     <h2>Overview</h2>
     <layout-text>
-      <p>Feature sections highlight product capabilities and benefits. These patterns use <code>data-layout="grid"</code> for responsive multi-column layouts and <code>data-layout="sidebar"</code> for split content, applied directly to semantic HTML elements without wrapper elements.</p>
+      <p>Feature sections highlight product capabilities and benefits. These patterns use <code>&lt;layout-grid&gt;</code> for responsive multi-column layouts and <code>data-layout="split"</code> for image-and-text rows, with a centered <code>&lt;hgroup&gt;</code> for the section intro and no wrapper classes.</p>
     </layout-text>
   </section>
 
   <section>
     <h2>Icon Grid</h2>
     <layout-text>
-      <p>A responsive grid of features with icons. Uses <code>data-layout="grid"</code> with <code>data-layout-min="m"</code> to create columns that automatically adjust based on available space. The outer <code>&lt;section&gt;</code> combines center and gap via <code>data-layout="center"</code> with <code>data-layout-gap</code>, eliminating a nested stack wrapper.</p>
+      <p>A responsive grid of features with icons. Uses <code>&lt;layout-grid&gt;</code> with <code>data-layout-min="m"</code> to create columns that automatically adjust based on available space. The outer <code>&lt;section&gt;</code> combines center and gap via <code>data-layout="center"</code> with <code>data-layout-gap</code>, and <code>data-padding</code> adds the fluid section padding. <code>&lt;hgroup data-align="center"&gt;</code> centres the heading and mutes the subheading.</p>
     </layout-text>
 
     <browser-window
@@ -27,28 +27,28 @@ currentPath: /docs/patterns/marketing/features/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Feature grid with icons">&lt;section class="features" data-layout="center" data-layout-max="wide" data-layout-gap="2xl"&gt;
-  &lt;header class="features-header" data-layout="stack" data-layout-gap="s"&gt;
+    <code-block language="html" label="Feature grid with icons">&lt;section data-layout="center" data-layout-max="wide" data-layout-gap="2xl" data-padding&gt;
+  &lt;hgroup data-align="center"&gt;
     &lt;h2&gt;Everything you need to build faster&lt;/h2&gt;
-    &lt;p class="lead"&gt;Our platform provides all the tools and features you need to ship products quickly without compromising on quality.&lt;/p&gt;
-  &lt;/header&gt;
-  &lt;div data-layout="grid" data-layout-min="m" data-layout-gap="l"&gt;
-    &lt;div data-layout="stack" data-layout-gap="s"&gt;
+    &lt;p&gt;Our platform provides all the tools and features you need to ship products quickly without compromising on quality.&lt;/p&gt;
+  &lt;/hgroup&gt;
+  &lt;layout-grid data-layout-min="m" data-layout-gap="l"&gt;
+    &lt;article data-layout="stack" data-layout-gap="s"&gt;
       &lt;span class="feature-icon"&gt;
         &lt;icon-wc name="zap" size="md"&gt;&lt;/icon-wc&gt;
       &lt;/span&gt;
       &lt;h3&gt;Lightning Fast&lt;/h3&gt;
       &lt;p&gt;Optimized for speed with minimal overhead. Your pages load instantly, keeping users engaged.&lt;/p&gt;
-    &lt;/div&gt;
-    &lt;div data-layout="stack" data-layout-gap="s"&gt;
+    &lt;/article&gt;
+    &lt;article data-layout="stack" data-layout-gap="s"&gt;
       &lt;span class="feature-icon"&gt;
         &lt;icon-wc name="shield" size="md"&gt;&lt;/icon-wc&gt;
       &lt;/span&gt;
       &lt;h3&gt;Secure by Default&lt;/h3&gt;
       &lt;p&gt;Built-in security best practices protect your data and your users without extra configuration.&lt;/p&gt;
-    &lt;/div&gt;
+    &lt;/article&gt;
     &lt;!-- Additional features... --&gt;
-  &lt;/div&gt;
+  &lt;/layout-grid&gt;
 &lt;/section&gt;</code-block>
 
     <h3>Styling</h3>
@@ -62,7 +62,7 @@ currentPath: /docs/patterns/marketing/features/
   justify-content: center;
   width: 3rem;
   height: 3rem;
-  background: var(--color-interactive-subtle);
+  background: var(--color-primary-subtle);
   color: var(--color-interactive);
   border-radius: var(--radius-m);
 }</code-block>
@@ -71,7 +71,7 @@ currentPath: /docs/patterns/marketing/features/
   <section>
     <h2>Alternating Rows</h2>
     <layout-text>
-      <p>Feature rows with image and text that alternate sides. Uses <code>data-layout="sidebar"</code> directly on each <code>&lt;article&gt;</code> with CSS to flip the direction on even rows.</p>
+      <p>Feature rows with image and text that alternate sides. Uses <code>data-layout="split"</code> directly on each <code>&lt;article&gt;</code> for an even two-column grid that stacks below 48rem, with one CSS rule to put the image first on even rows.</p>
     </layout-text>
 
     <browser-window
@@ -81,21 +81,23 @@ currentPath: /docs/patterns/marketing/features/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Alternating image/text rows">&lt;section class="features" data-layout="center" data-layout-max="wide" data-layout-gap="3xl"&gt;
-  &lt;article class="feature-row" data-layout="sidebar" data-layout-gap="2xl" data-layout-sidebar-width="wide" data-layout-content-min="m"&gt;
-    &lt;div data-layout="stack" data-layout-gap="m"&gt;
+    <code-block language="html" label="Alternating image/text rows">&lt;section data-layout="center" data-layout-max="wide" data-layout-gap="3xl" data-padding&gt;
+  &lt;article data-layout="split" data-layout-gap="2xl"&gt;
+    &lt;layout-stack data-layout-gap="m"&gt;
       &lt;h2&gt;Intuitive drag-and-drop builder&lt;/h2&gt;
       &lt;p&gt;Create beautiful layouts without writing code. Our visual builder lets you design pages quickly with a library of pre-built components.&lt;/p&gt;
-      &lt;a href="#" class="feature-link"&gt;
-        Learn about the builder
-        &lt;icon-wc name="arrow-right" size="sm"&gt;&lt;/icon-wc&gt;
-      &lt;/a&gt;
-    &lt;/div&gt;
-    &lt;figure class="feature-image" aria-label="Builder interface"&gt;
-      Builder Preview
+      &lt;p&gt;
+        &lt;a href="/builder/"&gt;
+          Learn about the builder
+          &lt;icon-wc name="arrow-right" size="sm"&gt;&lt;/icon-wc&gt;
+        &lt;/a&gt;
+      &lt;/p&gt;
+    &lt;/layout-stack&gt;
+    &lt;figure&gt;
+      &lt;img src="/images/builder.png" alt="Drag and drop builder interface" width="500" height="375" loading="lazy" /&gt;
     &lt;/figure&gt;
   &lt;/article&gt;
-  &lt;article class="feature-row" data-layout="sidebar" data-layout-gap="2xl" data-layout-sidebar-width="wide" data-layout-content-min="m"&gt;
+  &lt;article data-layout="split" data-layout-gap="2xl"&gt;
     &lt;!-- Second row automatically flips via CSS --&gt;
     &lt;!-- Same structure, image appears on left --&gt;
   &lt;/article&gt;
@@ -103,18 +105,20 @@ currentPath: /docs/patterns/marketing/features/
 
     <h3>Styling</h3>
     <layout-text>
-      <p>A single rule flips the sidebar direction on even rows:</p>
+      <p>A single rule moves the image first on even rows, only once the split is two columns wide (it stacks below 48rem):</p>
     </layout-text>
 
-    <code-block language="css" label="Alternating row styles" data-escape>.feature-row:nth-child(even) {
-  flex-direction: row-reverse;
+    <code-block language="css" label="Alternating row styles" data-escape>@media (width >= 48rem) {
+  article[data-layout="split"]:nth-child(even) > figure {
+    order: -1;
+  }
 }</code-block>
   </section>
 
   <section>
     <h2>Card Grid</h2>
     <layout-text>
-      <p>Features displayed in bordered cards with hover effects. Uses <code>data-layout="grid"</code> with <code>&lt;layout-card data-variant="outlined"&gt;</code> for base card styling and a small CSS addition for hover states.</p>
+      <p>Features displayed in bordered cards with hover effects. Uses <code>&lt;layout-grid&gt;</code> with <code>&lt;layout-card data-variant="outlined"&gt;</code> for base card styling and a small CSS addition for hover states.</p>
     </layout-text>
 
     <browser-window
@@ -124,23 +128,23 @@ currentPath: /docs/patterns/marketing/features/
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Card-based feature grid">&lt;section class="features" data-layout="center" data-layout-max="wide" data-layout-gap="2xl"&gt;
-  &lt;header class="features-header" data-layout="stack" data-layout-gap="s"&gt;
+    <code-block language="html" label="Card-based feature grid">&lt;section data-layout="center" data-layout-max="wide" data-layout-gap="2xl" data-padding&gt;
+  &lt;hgroup data-align="center"&gt;
     &lt;h2&gt;Built for modern workflows&lt;/h2&gt;
-    &lt;p class="lead"&gt;Streamline your development process with features designed to help teams move faster.&lt;/p&gt;
-  &lt;/header&gt;
-  &lt;div data-layout="grid" data-layout-min="l" data-layout-gap="l"&gt;
+    &lt;p&gt;Streamline your development process with features designed to help teams move faster.&lt;/p&gt;
+  &lt;/hgroup&gt;
+  &lt;layout-grid data-layout-min="l" data-layout-gap="l"&gt;
     &lt;layout-card data-variant="outlined" data-padding="l"&gt;
-      &lt;div data-layout="stack" data-layout-gap="m"&gt;
+      &lt;layout-stack data-layout-gap="m"&gt;
         &lt;span class="feature-icon"&gt;
           &lt;icon-wc name="zap" size="sm"&gt;&lt;/icon-wc&gt;
         &lt;/span&gt;
         &lt;h3&gt;Instant Deploys&lt;/h3&gt;
         &lt;p&gt;Push to git and your site is live in seconds. Zero-config deployments with automatic rollbacks.&lt;/p&gt;
-      &lt;/div&gt;
+      &lt;/layout-stack&gt;
     &lt;/layout-card&gt;
     &lt;!-- Additional cards... --&gt;
-  &lt;/div&gt;
+  &lt;/layout-grid&gt;
 &lt;/section&gt;</code-block>
 
     <h3>Styling</h3>
@@ -162,7 +166,7 @@ layout-card[data-variant="outlined"]:hover {
   <section>
     <h2>Feature Highlight</h2>
     <layout-text>
-      <p>A spotlight section for a single key feature. Uses <code>data-layout="sidebar"</code> on an <code>&lt;article&gt;</code> with a large image and detailed description including bullet points with checkmarks.</p>
+      <p>A spotlight section for a single key feature. Uses <code>data-layout="split"</code> on an <code>&lt;article&gt;</code> with a large image and a description whose benefit bullets use <code>&lt;ul data-marker="check"&gt;</code>, VB's built-in checkmark list marker.</p>
     </layout-text>
 
     <browser-window
@@ -172,60 +176,34 @@ layout-card[data-variant="outlined"]:hover {
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Single feature spotlight">&lt;section class="feature-highlight" data-layout="center" data-layout-max="wide"&gt;
-  &lt;article data-layout="sidebar" data-layout-gap="2xl" data-layout-sidebar-width="wide" data-layout-content-min="m"&gt;
-    &lt;figure class="feature-image" aria-label="AI Assistant interface"&gt;
-      Feature Illustration
+    <code-block language="html" label="Single feature spotlight">&lt;section data-layout="center" data-layout-max="wide" data-padding&gt;
+  &lt;article data-layout="split" data-layout-gap="2xl"&gt;
+    &lt;figure&gt;
+      &lt;img src="/images/assistant.png" alt="AI Assistant interface" width="500" height="375" loading="lazy" /&gt;
     &lt;/figure&gt;
-    &lt;div data-layout="stack" data-layout-gap="l"&gt;
+    &lt;layout-stack data-layout-gap="l" data-layout-align="start"&gt;
       &lt;layout-badge data-variant="subtle" data-color="primary" data-size="l"&gt;
         &lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;
         New Feature
       &lt;/layout-badge&gt;
       &lt;h2&gt;Meet your AI-powered assistant&lt;/h2&gt;
       &lt;p&gt;Our intelligent assistant helps you work smarter, not harder. It learns your preferences over time and provides personalized suggestions.&lt;/p&gt;
-      &lt;ul class="checkmark-list"&gt;
-        &lt;li&gt;
-          &lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt;
-          &lt;span&gt;Natural language processing understands complex requests&lt;/span&gt;
-        &lt;/li&gt;
-        &lt;li&gt;
-          &lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt;
-          &lt;span&gt;Learns from your workflow to provide relevant suggestions&lt;/span&gt;
-        &lt;/li&gt;
+      &lt;ul data-marker="check"&gt;
+        &lt;li&gt;Natural language processing understands complex requests&lt;/li&gt;
+        &lt;li&gt;Learns from your workflow to provide relevant suggestions&lt;/li&gt;
         &lt;!-- Additional bullet points... --&gt;
       &lt;/ul&gt;
-      &lt;div data-layout="cluster" data-layout-gap="m"&gt;
-        &lt;a href="#" class="button"&gt;Try It Free&lt;/a&gt;
-        &lt;a href="#" class="button ghost"&gt;Watch Demo&lt;/a&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
+      &lt;p data-layout="cluster" data-layout-gap="m"&gt;
+        &lt;a href="/signup/" class="button"&gt;Try It Free&lt;/a&gt;
+        &lt;a href="/demo/" class="button ghost"&gt;Watch Demo&lt;/a&gt;
+      &lt;/p&gt;
+    &lt;/layout-stack&gt;
   &lt;/article&gt;
 &lt;/section&gt;</code-block>
 
-    <h3>Styling</h3>
-    <layout-text>
-      <p>Checkmark list styles for benefit bullet points:</p>
-    </layout-text>
-
-    <code-block language="css" label="Checkmark list styles" data-escape>.checkmark-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.checkmark-list li {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--size-s);
-  padding: var(--size-xs) 0;
-}
-
-.checkmark-list icon-wc {
-  color: var(--color-success);
-  flex-shrink: 0;
-  margin-top: 0.125em;
-}</code-block>
+    <aside class="note">
+      <strong>No list CSS needed.</strong> <code>data-marker="check"</code> swaps the bullet for a green check through <code>::marker</code>. The glyph has empty alt text, so screen readers announce the item text only. A checklist that records state needs real checkboxes instead.
+    </aside>
   </section>
 
   <section>
@@ -237,7 +215,7 @@ layout-card[data-variant="outlined"]:hover {
         <li><strong>Card Grid:</strong> Choose when features are peers and benefit from visual separation. Hover effects signal interactivity — pair with links if cards are clickable.</li>
         <li><strong>Feature Highlight:</strong> Use to spotlight a single flagship feature with a benefit checklist and call-to-action. Place after a grid variant for emphasis.</li>
         <li><strong>Combining variants:</strong> A common pattern is Icon Grid for an overview, followed by Alternating Rows or a Feature Highlight for deeper dives.</li>
-        <li><strong>Semantic markup:</strong> Use <code>data-layout</code> attributes on semantic elements like <code>&lt;section&gt;</code>, <code>&lt;article&gt;</code>, and <code>&lt;header&gt;</code> instead of nesting layout wrapper elements.</li>
+        <li><strong>Semantic markup:</strong> Use <code>data-layout</code> attributes on semantic elements like <code>&lt;section&gt;</code>, <code>&lt;article&gt;</code>, and <code>&lt;hgroup&gt;</code> instead of nesting layout wrapper elements.</li>
       </ul>
     </layout-text>
   </section>
