@@ -136,6 +136,8 @@ module.exports = {
 
   // CSS-only custom elements (style + structure, no JS logic, no manifest).
   "token-swatch":    { flow: true, phrasing: true, permittedContent: ["@phrasing"] },
+  "token-scale":     { flow: true, permittedContent: ["@flow"] },
+  "token-row":       { flow: true, permittedContent: ["@flow"] },
   "layout-columns":  { flow: true, permittedContent: ["@flow"] },
   "layout-canvas":   { flow: true, permittedContent: ["@flow"] },
   "layout-specimen": { flow: true, permittedContent: ["@flow"] },

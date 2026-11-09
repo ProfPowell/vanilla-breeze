@@ -7,6 +7,9 @@
 #   name             allowed in every file (`prefix-*` wildcards allowed)
 #   path: a b c      allowed only in that repo-relative file
 #
+# Page-local style findings are keyed dup:name / shadow:name
+# (e.g. `site/src/pages/docs/x.html: shadow:lead`).
+#
 # Pre-existing undefined classes are tracked separately in
 # scripts/lint-doc-classes.baseline.json (a ratchet: new ones fail).
 
@@ -20,15 +23,17 @@ mermaid
 # Google Translate's opt-out class, shown next to translate="no".
 notranslate
 
+# .skip-link is a copy-in recipe whose CSS is on
+# /docs/accessibility-utilities/#skip-link, not shipped CSS. Used by many
+# page-shell samples and demos, so allowed everywhere.
+skip-link
+
 # --- Author hooks in samples -------------------------------------------------
 # Samples that show the author's own class as a selector target for a VB
 # attribute (data-select-all="input.pick"), or as a hook for the author's CSS.
 
 # data-select-all targets items by selector; these are the author's classes.
 site/src/pages/docs/attributes/data-select-all.html: row-select notify option-check pick
-# .skip-link is a copy-in recipe (/docs/accessibility-utilities/#skip-link),
-# not shipped CSS; the page says so.
-site/src/pages/docs/attributes/tabindex.html: skip-link
 # Author classes on sample elements, styled or scripted by the author's code.
 site/src/pages/docs/attributes/data-bubble.html: conversation
 site/src/pages/docs/attributes/data-container.html: stat-card
@@ -36,3 +41,34 @@ site/src/pages/docs/attributes/data-highlights.html: custom-colors
 site/src/pages/docs/attributes/data-morph.html: promo-tile
 site/src/pages/docs/attributes/data-ticker.html: hero-stat
 site/src/pages/docs/attributes/hide-until-ready.html: chart-placeholder
+
+# The no-js pattern: <html class="no-js"> swapped to "js" by a head script.
+site/src/pages/docs/elements/native/html.html: js no-js
+demos/snippets/demos/noscript-fallback.html: js no-js
+# data-api: "your design system's card", an author class by definition.
+site/src/pages/docs/concepts/data-api.html: my-custom-card
+# bdi: insertion hooks for user-generated names and comments.
+site/src/pages/docs/elements/native/bdi.html: username comment
+# shadows: stands in for the author's own clip-path element.
+site/src/pages/docs/concepts/shadows.html: clipped-badge
+
+# --- Anti-examples ------------------------------------------------------------
+# Samples showing what NOT to write; the classes are meant to be foreign.
+
+# architecture-decisions: the Tailwind utility-class anti-example.
+site/src/pages/docs/concepts/architecture-decisions.html: flex-col gap-4
+# debugging: utility-class anti-example.
+site/src/pages/docs/debugging.html: gap-m
+# i.html: icon-font anti-example (<i class="icon-star">).
+site/src/pages/docs/elements/native/i.html: icon-star
+# principles: the "Avoid" example of presentational class names.
+site/src/pages/docs/principles.html: gray no-background
+# div.html: the "div class=main → <main>" mapping table.
+site/src/pages/docs/elements/native/div.html: main
+
+# div.html / output.html: "avoid" mapping tables (div class=section → <section>, div class=message → <output>).
+site/src/pages/docs/elements/native/div.html: section
+site/src/pages/docs/elements/native/output.html: message
+# tool-tip variant="card" renders pop-over.hover-card, whose styles define .text-muted (src/web-components/tool-tip/styles.css:165); the class is generated, so the file never names it.
+site/src/pages/docs/elements/web-components/tooltip.html: text-muted
+demos/examples/demos/tooltip-cards.html: text-muted
