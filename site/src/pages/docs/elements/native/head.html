@@ -204,6 +204,7 @@ crumbLabel: Native Elements
         </tr>
       </tbody>
     </table>
+    <p>A page that authors <code>data-mode="light"</code> or <code>"dark"</code> keeps it until the visitor picks a mode; a mode change from another tab does not show while the page forces its own. On a page with <code>data-theme-source="site"</code> the first <code>data-theme</code> id is the brand (<code>default</code> is valid) and the site's brand beats a stored one; other ids survive.</p>
     <p>A root-attribute field that is <code>null</code> or missing means "no choice": the attribute you authored on <code>&lt;html&gt;</code> stays. The snippet records your authored values in <code>window.__vbAuthoredRoot</code> before writing, so <code>ThemeManager</code> can restore them on reset.</p>
     <code-block language="html" label="Theme flash prevention snippet" data-escape><script>
   try {
@@ -215,7 +216,7 @@ crumbLabel: Native Elements
       } catch { return null; }
     };
     const ATTRS = ['data-theme', 'data-accent', 'data-border-style', 'data-icon-set',
-      'data-fluid', 'data-backdrop', 'data-backdrop-chrome'];
+      'data-fluid', 'data-backdrop', 'data-backdrop-chrome', 'data-mode', 'data-theme-source'];
     window.__vbAuthoredRoot = Object.fromEntries(ATTRS.map((a) => [a, root.getAttribute(a)]));
 
     const stored = read('theme', 'current') || {};
@@ -234,15 +235,25 @@ crumbLabel: Native Elements
 
     // Mode
     const mode = stored.mode || 'auto';
-    const dark = mode === 'dark' || (mode === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
-    if (mode !== 'auto' || dark) root.dataset.mode = dark ? 'dark' : 'light';
+    const authoredMode = window.__vbAuthoredRoot['data-mode'];
+    const pageMode = authoredMode === 'light' || authoredMode === 'dark';
+    let dark = mode === 'dark' || (mode === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+    if (pageMode) dark = authoredMode === 'dark'; // the page forces its scheme: leave data-mode alone
+    else if (mode !== 'auto' || dark) root.dataset.mode = dark ? 'dark' : 'light';
 
     // Brand + accessibility themes (a brand pinned on <html> is the default)
-    const pinned = (root.getAttribute('data-theme') || '').split(/\s+/)
-      .find((t) => t && !t.startsWith('a11y-')) || '';
-    const brand = stored.brand && stored.brand !== 'default' ? stored.brand : pinned;
+    const live = (root.getAttribute('data-theme') || '').split(/\s+/).filter(Boolean);
+    const site = root.dataset.themeSource === 'site'; // the site owner chose the theme
+    const pinned = site
+      ? (live[0] && !live[0].startsWith('a11y-') ? live[0] : '')
+      : live.find((t) => !t.startsWith('a11y-')) || '';
+    const brand = site && pinned ? pinned
+      : stored.brand && stored.brand !== 'default' ? stored.brand : pinned;
     const a11y = read('settings', 'a11y');
-    const parts = [brand, ...(Array.isArray(a11y) ? a11y : [])].filter(Boolean);
+    const rest = [...new Set([...live.filter((t) => t !== pinned && t !== brand),
+      ...(Array.isArray(a11y) ? a11y : [])])].filter((t) => t !== brand);
+    const parts = brand && brand !== 'default' ? [brand, ...rest]
+      : site && rest.length ? ['default', ...rest] : rest;
     if (parts.length) root.dataset.theme = parts.join(' ');
 
     // Other root preferences

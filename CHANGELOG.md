@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-08
+
+0.6.0 adds themes set by the site (`<html data-theme-source="site">`: the page's brand wins over a visitor's stored brand, and the theme manager keeps the ids it did not write) and scoped themes (a theme on an `<article>` or `<main>` gets its own derived colors, fonts and content rules). It also carries the native attributes review, a docs-wide class clean-up (samples and demos use VB primitives instead of classes VB never styled, enforced by `lint:doc-classes`), fixes for skeleton loading, description lists, `nav.steps` and the wizard summary, and one breaking rename: the native audio playlist is enabled by `data-audio-playlist` instead of `.audio-standalone`. The element and attribute reviews are listed below.
+
 ### Security
 
 - **Native attributes review.**
@@ -45,6 +49,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Self-hosted fonts ship with the CDN build** — `dist/cdn/fonts/` (Atkinson Hyperlegible, Latin Modern Math) is committed, and `tests/unit/dist-css-urls.test.js` checks that every relative `url()` in the built CSS resolves to a file the published package contains.
+- **Themes set by the site.** `<html data-theme-source="site">` makes the page's `data-theme` brand win over a visitor's stored brand (the first id is the brand, `default` is valid); the theme manager keeps every `data-theme` id it did not write (`swiss vp-site`); an authored `data-mode="light|dark"` is kept unless the visitor picks a mode; a theme whose `<link data-vb-theme>` is on the page is not fetched again. The flash-prevention snippet in the docs follows the same rules.
 - **Doc class clean-up.**
   - **lint:doc-classes** — Reads same-file CSS and JS code samples, page scripts and selector-valued `data-*` attributes as definitions, keeping live `<style>` and sample CSS apart. Theme- and pack-only classes, and classes VB styles only inside another component, no longer count as VB API. Pattern and snippet demos are scanned too. A docs-page `<style>` rule that duplicates another page's local CSS or shadows a VB or docs-chrome class is flagged. The grandfathered baseline (278 pairs) is now empty.
   - **data-audio-playlist attribute page** — `/docs/attributes/data-audio-playlist/`, listed under Interaction.
@@ -714,8 +720,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Scoped themes** — Themes scoped to an element (e.g. an article) now get their own derived colors, not the page's. `--color-primary`, interactive, surface, form, tint and chart tokens, the font slots (`--font-display`, `--font-heading`, `--font-body`, `--font-code`, …), the radius/shadow aliases and glass values are re-derived on `:where([data-theme])`, the scoped element uses its theme's `--font-sans`, (zero specificity, `@layer tokens`, so a theme's own colors still win), and a themed element inside a `data-mode` region (or the system dark scheme) gets that theme's dark or light values. Theme content rules written as `[data-theme~=x] :is(main, article) …` (headings, links, code, buttons in 42 themes) now also apply when the `<main>` or `<article>` itself carries the theme. Root-applied themes compute the same colors as before.
+- **Icons pack font** — The icons pack (`icons.theme.css` / `icons.full.css`, the `./icons-css` export) loads Material Symbols Outlined from Google Fonts through an `@import` at the top of the file. The self-hosted file was never in the npm package, so icons failed to load from npm/CDN. To self-host, replace the `@import` with your own `@font-face` (see the comment in `src/packs/icons/icons.theme.css`).
 - **Doc class clean-up.**
-  - **Nested themes** — A `data-theme` on any element now repaints everything inside it: brand colours, interactive, hover and focus aliases, row stripe, form-control colours, color-mix tints, border-animation colours and the overlay surface. These were `var()`s declared only on `:root`, so a nested Swiss or Cyber section still had blue buttons, links and focus rings. Themes that set an alias themselves still win, and forced colors keep system colours inside nested themes.
+  - **Forced colors inside scoped themes** — Under `forced-colors: active` the system colour mapping is also asserted on `:root [data-theme]`, so a scoped theme re-deriving its own aliases cannot paint its palette over Canvas / CanvasText / Highlight.
   - **data-loading** — The overlay rules no longer outrank their own variants: skeleton placeholders render at full strength (they were stuck at 0.3 opacity), `data-loading="minimal"` pulses, reduced motion stops the shimmer, and a direct `<img>` / `<svg>` child of a skeleton is a grey block instead of vanishing.
   - **Description lists** — A stacked `dl` that is also `data-layout` spaces its groups with the layout gap (the group margin pushed items off the row), and a horizontal `dl` as a flex or cluster item no longer collapses to a few pixels.
   - **Reduced transparency** — `--color-overlay-strong` is a dense dark scrim (80% black) instead of an opaque light grey that hid hero and CTA background images behind white-on-grey text.

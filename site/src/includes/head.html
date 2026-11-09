@@ -107,7 +107,7 @@
     // Snapshot the page's authored root attributes before writing stored
     // prefs over them: ThemeManager treats these as the page defaults
     // (reset() restores them; no preference never strips them).
-    const ROOT_ATTRS = ['data-theme', 'data-accent', 'data-border-style', 'data-icon-set', 'data-fluid', 'data-backdrop', 'data-backdrop-chrome'];
+    const ROOT_ATTRS = ['data-theme', 'data-accent', 'data-border-style', 'data-icon-set', 'data-fluid', 'data-backdrop', 'data-backdrop-chrome', 'data-mode', 'data-theme-source'];
     window.__vbAuthoredRoot = Object.fromEntries(ROOT_ATTRS.map((a) => [a, root.getAttribute(a)]));
 
     const stored = vbRead('theme', 'current') || {};
@@ -125,8 +125,15 @@
       else root.setAttribute(attr, value);
     };
     const mode = stored.mode || 'auto';
-    const pinned = (root.getAttribute('data-theme') || '').split(/\s+/).find((t) => t && !t.startsWith('a11y-')) || '';
-    const brand = stored.brand && stored.brand !== 'default' ? stored.brand : (pinned || 'default');
+    const liveTokens = (root.getAttribute('data-theme') || '').split(/\s+/).filter(Boolean);
+    const site = root.dataset.themeSource === 'site';
+    // Site pages list the brand first ("default" is a valid brand there).
+    const pinned = site
+      ? (liveTokens[0] && !liveTokens[0].startsWith('a11y-') ? liveTokens[0] : '')
+      : liveTokens.find((t) => !t.startsWith('a11y-')) || '';
+    const brand = site && pinned ? pinned : (stored.brand && stored.brand !== 'default' ? stored.brand : (pinned || 'default'));
+    const authoredMode = window.__vbAuthoredRoot['data-mode'];
+    const pageMode = authoredMode === 'light' || authoredMode === 'dark';
     const isDev = document.currentScript?.dataset.vbIsDev === 'true';
     const coreThemes = new Set([
       'default',
@@ -138,15 +145,18 @@
       'classic'
     ]);
     const packThemes = new Set(['kawaii', 'memphis']);
-    if (mode !== 'auto') {
+    if (pageMode) {
+      // The page forces its scheme; leave its authored data-mode alone.
+    } else if (mode !== 'auto') {
       root.dataset.mode = mode;
     } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       root.dataset.mode = 'dark';
     }
     const a11y = vbRead('settings', 'a11y') || [];
-    const parts = [];
-    if (brand && brand !== 'default') parts.push(brand);
-    parts.push(...(Array.isArray(a11y) ? a11y : []));
+    // Same merge as ThemeManager: keep the page's other ids, brand first.
+    const a11yIds = Array.isArray(a11y) ? a11y : [];
+    const rest = [...new Set([...liveTokens.filter((t) => t !== pinned && t !== brand), ...a11yIds])].filter((t) => t !== brand);
+    const parts = brand !== 'default' ? [brand, ...rest] : (site && rest.length ? ['default', ...rest] : rest);
     if (parts.length) root.dataset.theme = parts.join(' ');
     const safeBrand = /^[a-z0-9-]+$/.test(brand) ? brand : 'default';
     // Only a stored brand needs fetching here; a pinned brand ships its CSS.
@@ -176,7 +186,7 @@
     setRoot('data-accent', pref('accent'), 'default');
     // Seed the browser chrome colour for the known mode. ThemeManager.apply()
     // replaces it with the computed --color-background once CSS is in.
-    const effectiveMode = mode !== 'auto' ? mode
+    const effectiveMode = pageMode ? authoredMode : mode !== 'auto' ? mode
       : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     const themeColor = effectiveMode === 'dark' ? '#080d16' : '#ffffff';
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {

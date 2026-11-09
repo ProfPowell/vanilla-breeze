@@ -69,10 +69,34 @@
    --color-hover-bg, etc., and data-mode="light" inside a dark page gets
    the light ones (light-dark() resolves against the element's own
    color-scheme). Concrete dark surfaces come from the dark-mode rule
-   further down, which wins on source order. */
+   further down, which wins on source order.
+   :where([data-theme]) does the same for a theme scoped to an element
+   (<article data-theme="amber"> on a swiss page): seed-only themes set
+   just --hue-* / --lightness-* / --chroma-*, so the element must derive
+   its own colours from them. Zero specificity, and this is @layer tokens:
+   a theme's own literal --color-* (@layer bundle-theme, or unlayered)
+   always wins over these derivations. */
 :root,
 [data-mode="light"],
-[data-mode="dark"] {
+[data-mode="dark"],
+:where([data-theme]) {
+  /* ==================== BRAND COLORS ==================== */
+  /* Derived from seeds + hues — themes set seeds, core derives states */
+  --color-primary: oklch(var(--lightness-primary) var(--chroma-primary) var(--hue-primary));
+  --color-primary-hover: oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
+  --color-primary-active: oklch(from var(--color-primary) calc(l - 0.12) c h);
+  --color-primary-subtle: oklch(from var(--color-primary) 0.95 0.03 h);
+
+  /* Secondary */
+  --color-secondary: oklch(var(--lightness-secondary) var(--chroma-secondary) var(--hue-secondary));
+  --color-secondary-hover: oklch(from var(--color-secondary) calc(l - 0.08) c h);
+  --color-secondary-subtle: oklch(from var(--color-secondary) 0.95 0.03 h);
+
+  /* Accent */
+  --color-accent: oklch(var(--lightness-accent) var(--chroma-accent) var(--hue-accent));
+  --color-accent-hover: oklch(from var(--color-accent) calc(l - 0.08) c h);
+  --color-accent-subtle: oklch(from var(--color-accent) 0.95 0.03 h);
+
   /* ==================== STATUS COLORS ==================== */
   --color-success: oklch(55% 0.2 145);
   --color-success-subtle: light-dark(
@@ -134,14 +158,28 @@
   --color-border-strong: light-dark(var(--color-gray-300), var(--color-gray-600));
   --color-border-subtle: light-dark(var(--color-gray-100), var(--color-gray-800));
   --color-border-muted: light-dark(var(--color-gray-100), var(--color-gray-800));
+  --color-border-focus: var(--color-primary);
 
   /* Scrollbar */
   --scrollbar-thumb: light-dark(var(--color-gray-400), var(--color-gray-600));
   --scrollbar-track: transparent;
 
-  /* The constant one of the four hover/active state tokens (the three
-     theme-derived ones are in the alias rule below). */
+  /* Interactive colors (buttons, links) */
+  --color-interactive: var(--color-primary);
+  --color-interactive-hover: var(--color-primary-hover);
+  --color-interactive-active: var(--color-primary-active);
+
+  /* Row stripe — the alternating wash for table[data-striped] and
+     dl[data-striped]. A text-tinted mix, so it shows on any surface in
+     either mode and stays distinct from the row hover colour. */
+  --color-row-stripe: color-mix(in oklch, var(--color-text) 5%, transparent);
+
+  /* Interactive state colors — hover/active for list items, menus, nav links, table rows.
+     Themes override these 4 tokens to control all interactive surfaces at once. */
+  --color-hover-bg: var(--color-surface-raised);
+  --color-hover-text: var(--color-interactive);
   --color-active-bg: transparent;
+  --color-active-text: var(--color-interactive);
 
   /* Overlay colors */
   --color-overlay-subtle: light-dark(
@@ -157,66 +195,10 @@
     oklch(0% 0 0 / 0.70)
   );
 
-  /* Focus ring geometry (the colours are in the alias rule below) */
+  /* Focus ring */
+  --color-focus-ring: var(--color-primary);
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
-}
-
-/* ==================== THEME-DERIVED ALIASES ==================== */
-/* Brand colours and every alias built on a theme-varying colour (primary,
-   text, surface). Same freezing rule as above: var() resolves on the
-   element that declares the property, so an alias declared only on :root
-   keeps the ROOT theme's colour all the way down. A nested
-   <section data-theme="swiss"> set its own --color-primary, but its
-   buttons (--color-interactive), hover text and focus rings stayed the
-   page's blue. Declaring this rule on [data-theme] too re-derives them from
-   the scoped theme's own seeds and colours. Themes live in @layer
-   bundle-theme, so a theme that sets any of these itself (journal, nord,
-   claymorphism…) still wins on its own element. Surfaces and text stay in
-   the rule above: they are light-dark() of fixed greys (resolved where
-   used), and re-declaring them on a nested theme would drop the page's
-   hue-tinted dark surfaces. */
-:root,
-[data-mode="light"],
-[data-mode="dark"],
-[data-theme] {
-  /* ==================== BRAND COLORS ==================== */
-  /* Derived from seeds + hues — themes set seeds, core derives states */
-  --color-primary: oklch(var(--lightness-primary) var(--chroma-primary) var(--hue-primary));
-  --color-primary-hover: oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
-  --color-primary-active: oklch(from var(--color-primary) calc(l - 0.12) c h);
-  --color-primary-subtle: oklch(from var(--color-primary) 0.95 0.03 h);
-
-  /* Secondary */
-  --color-secondary: oklch(var(--lightness-secondary) var(--chroma-secondary) var(--hue-secondary));
-  --color-secondary-hover: oklch(from var(--color-secondary) calc(l - 0.08) c h);
-  --color-secondary-subtle: oklch(from var(--color-secondary) 0.95 0.03 h);
-
-  /* Accent */
-  --color-accent: oklch(var(--lightness-accent) var(--chroma-accent) var(--hue-accent));
-  --color-accent-hover: oklch(from var(--color-accent) calc(l - 0.08) c h);
-  --color-accent-subtle: oklch(from var(--color-accent) 0.95 0.03 h);
-
-  /* Interactive colors (buttons, links) */
-  --color-interactive: var(--color-primary);
-  --color-interactive-hover: var(--color-primary-hover);
-  --color-interactive-active: var(--color-primary-active);
-
-  /* Interactive state colors — hover/active for list items, menus, nav
-     links, table rows. Themes override these to control all interactive
-     surfaces at once (--color-active-bg is the constant fourth, above). */
-  --color-hover-bg: var(--color-surface-raised);
-  --color-hover-text: var(--color-interactive);
-  --color-active-text: var(--color-interactive);
-
-  /* Row stripe — the alternating wash for table[data-striped] and
-     dl[data-striped]. A text-tinted mix, so it shows on any surface in
-     either mode and stays distinct from the row hover colour. */
-  --color-row-stripe: color-mix(in oklch, var(--color-text) 5%, transparent);
-
-  /* Focus */
-  --color-border-focus: var(--color-primary);
-  --color-focus-ring: var(--color-primary);
   --focus-ring-color: var(--color-focus-ring);
 }
 
@@ -227,7 +209,7 @@
   :root,
   [data-mode="light"],
   [data-mode="dark"],
-  [data-theme] {
+  :where([data-theme]) {
     --color-text-on-primary-auto:     contrast-color(var(--color-primary));
     --color-text-on-secondary-auto:   contrast-color(var(--color-secondary));
     --color-text-on-accent-auto:      contrast-color(var(--color-accent));
@@ -248,9 +230,15 @@
   color-scheme: light;
 }
 
-/* Force dark mode */
+/* Force dark mode. The :where() line is a themed element inside a dark
+   region (<html data-mode="dark"> … <article data-theme="amber">): the
+   derived rule above re-declares its surfaces from light-dark(), so the
+   hue-tinted dark surfaces must be re-derived there too, from the
+   element's own --hue-primary. Skipped when the element or any ancestor
+   is data-mode="light" (same approximation as the accent rules). */
 :root[data-mode="dark"],
-[data-mode="dark"] {
+[data-mode="dark"],
+:where([data-mode="dark"] [data-theme]:not([data-mode="light"], [data-mode="light"] [data-theme])) {
   color-scheme: dark;
 
   /* Brand seeds shift for dark mode contrast */
@@ -293,7 +281,8 @@
    :not([data-mode="light"]) (not :not([data-mode])) matches the existing
    theme/accent system-dark rules; data-mode="light" keeps forcing light. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-mode="light"]) {
+  :root:not([data-mode="light"]),
+  :where([data-theme]:not([data-mode="light"], [data-mode="light"] [data-theme])) {
     --lightness-primary: 65%;
     --chroma-primary: 0.18;
 

@@ -141,7 +141,7 @@
       }
     }
 
-    & :is(main, article) {
+    :is(& :is(main, article), &:is(main, article)) {
     /* Cute dividers with hearts — exclude shape HR classes */
     & hr:not([data-ornament], [class]) {
       border: none;
@@ -404,12 +404,12 @@
        reversed. An ol with a type attribute keeps its native marker text
        (only colour/weight change): [type] matches case-insensitively and the
        `s` flag is not supported everywhere, so a/A and i/I can't be told apart. */
-    & article ul:not([class], [data-marker], nav *) > li::marker {
+    :is(& article, &:is(article)) ul:not([class], [data-marker], nav *) > li::marker {
       content: "♡\2009";
       color: var(--color-primary);
     }
 
-    & article ol:not([class], nav *) > li::marker {
+    :is(& article, &:is(article)) ol:not([class], nav *) > li::marker {
       color: var(--_kawaii-color-lavender);
       font-weight: 700;
     }
@@ -418,7 +418,7 @@
        style (type attribute, inline list-style-type) keep native markers.
        A list-style-type set from a stylesheet can't be detected here —
        add a class to such lists to opt out of the hearts. */
-    & article ol:not([class], [type], [style*="list-style"], nav *) > li::marker {
+    :is(& article, &:is(article)) ol:not([class], [type], [style*="list-style"], nav *) > li::marker {
       content: counter(list-item) "♡\2009";
     }
 
@@ -428,7 +428,7 @@
       border-color: var(--color-border-muted);
     }
 
-    & :is(main, article) code-block {
+    :is(& :is(main, article), &:is(main, article)) code-block {
       --cb-header-bg: var(--color-surface);
       --cb-string: var(--_kawaii-color-lavender);
       --cb-function: var(--color-accent);
@@ -436,7 +436,7 @@
       --cb-button-bg: var(--color-surface);
     }
 
-    & :is(main, article) browser-window {
+    :is(& :is(main, article), &:is(main, article)) browser-window {
       --browser-window-header-bg: var(--color-surface);
     }
 
@@ -588,7 +588,8 @@
 
   /* Dark mode - night kawaii */
   :root[data-theme~="kawaii"][data-mode="dark"],
-  [data-theme~="kawaii"][data-mode="dark"] {
+  [data-theme~="kawaii"][data-mode="dark"],
+  [data-mode="dark"] [data-theme~="kawaii"]:where(:not([data-mode], [data-mode="light"] [data-theme~="kawaii"])) {
     color-scheme: dark;
 
     --color-surface: oklch(18% 0.04 290);

@@ -173,7 +173,8 @@
 
   /* ===== DARK MODE ===== */
   :root[data-theme~="super2026"][data-mode="dark"],
-  [data-theme~="super2026"][data-mode="dark"] {
+  [data-theme~="super2026"][data-mode="dark"],
+  [data-mode="dark"] [data-theme~="super2026"]:where(:not([data-mode], [data-mode="light"] [data-theme~="super2026"])) {
     color-scheme: dark;
 
     --color-primary:          oklch(62% 0.28 18);
@@ -284,7 +285,7 @@
       --color-interactive: var(--color-interactive-hover);
     }
 
-    & :is(main, article) {
+    :is(& :is(main, article), &:is(main, article)) {
       /* Headings: display font, uppercase, bold colors by level */
       & :is(h1, h2, h3, h4, h5, h6) {
         font-family: var(--font-display);
@@ -597,7 +598,7 @@
     }
 
     /* layout-card: ink border + color accent + arc decoration */
-    & :is(main, article) layout-card {
+    :is(& :is(main, article), &:is(main, article)) layout-card {
       position: relative;
       overflow: hidden;
       border: var(--_sg2-rule-sm);
@@ -630,7 +631,7 @@
 
     /* Code blocks: always dark bg + light text (architectural ink on plaster)
        Uses absolute values so dark mode doesn't break contrast */
-    & :is(main, article) code-block {
+    :is(& :is(main, article), &:is(main, article)) code-block {
       --cb-bg: var(--_sg2-ink);
       --cb-code-bg: var(--_sg2-ink);
       --cb-header-bg: oklch(18% 0.010 240);
@@ -652,7 +653,7 @@
     }
 
     /* Browser window: always dark header + light text */
-    & :is(main, article) browser-window {
+    :is(& :is(main, article), &:is(main, article)) browser-window {
       --browser-window-header-bg: var(--_sg2-ink);
       --browser-window-content-bg: var(--color-surface-raised);
       --browser-window-border-color: oklch(25% 0.010 240);
@@ -743,8 +744,9 @@
 
   /* Dark mode component adjustments */
   :root[data-theme~="super2026"][data-mode="dark"],
-  [data-theme~="super2026"][data-mode="dark"] {
-    & :is(main, article) {
+  [data-theme~="super2026"][data-mode="dark"],
+  [data-mode="dark"] [data-theme~="super2026"]:where(:not([data-mode], [data-mode="light"] [data-theme~="super2026"])) {
+    :is(& :is(main, article), &:is(main, article)) {
       /* Outline text: lighten stroke for dark backgrounds */
       & h1:not([data-effect~="gradient-text"]) {
         -webkit-text-stroke-color: oklch(80% 0.005 80);
@@ -782,7 +784,7 @@
       }
     }
 
-    & :is(main, article) code-block {
+    :is(& :is(main, article), &:is(main, article)) code-block {
       --cb-header-bg: oklch(12% 0.008 240);
       --cb-border-color: oklch(28% 0.010 240);
       --cb-label-color: oklch(54% 0.005 80);
@@ -795,7 +797,7 @@
       --cb-scrollbar-thumb: oklch(40% 0.008 240);
     }
 
-    & :is(main, article) browser-window {
+    :is(& :is(main, article), &:is(main, article)) browser-window {
       /* --_sg2-ink inverts to a mid grey in dark mode: pin the header to the
          light-mode ink so it stays dark under the status dots and focus ring */
       --browser-window-header-bg: oklch(12% 0.008 240);

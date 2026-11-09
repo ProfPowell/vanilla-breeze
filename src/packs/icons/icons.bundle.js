@@ -32,8 +32,10 @@ export const bundle = {
     { name: 'whimsy',          selector: '[data-vb-whimsy]',           type: 'js' },
   ],
 
+  // Loaded from Google Fonts by an @import in icons.theme.css; `file` is only a
+  // self-hosting copy (src/packs/icons/fonts/, not shipped in the npm package).
   fonts: [
-    { family: 'Material Symbols Outlined', file: 'material-symbols-outlined.woff2', weight: '100 700', style: 'normal', axes: ['FILL', 'wght', 'GRAD', 'opsz'] },
+    { family: 'Material Symbols Outlined', source: 'google-fonts', file: 'material-symbols-outlined.woff2', weight: '100 700', style: 'normal', axes: ['FILL', 'wght', 'GRAD', 'opsz'] },
   ],
 
   tokenOverrides: [
