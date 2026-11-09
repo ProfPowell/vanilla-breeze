@@ -2,6 +2,14 @@
 export default {
   "items": [
     {
+      "id": "0.6.0",
+      "type": "update",
+      "title": "v0.6.0",
+      "body": "0.6.0 adds themes set by the site (`<html data-theme-source=\"site\">`: the page's brand wins over a visitor's stored brand, and the theme manager keeps the ids it did not write) and scoped themes (a theme on an `<article>` or `<main>` gets its own derived colors, fonts and cont…",
+      "url": "https://vanilla-breeze.com/changelog/#v0-6-0",
+      "date": "2026-11-08"
+    },
+    {
       "id": "0.5.0",
       "type": "update",
       "title": "v0.5.0",
