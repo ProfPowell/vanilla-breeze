@@ -158,3 +158,38 @@ test.describe('chart-wc — failure', () => {
     await expect(page.locator('chart-wc > table')).toBeVisible();
   });
 });
+
+test.describe('chart-wc — ring hole follows the theme', () => {
+  // The hole's fill came from Pie.js's center.style default (#fff), compiled
+  // into the shadow stylesheet as `.svc-center { fill: #fff }`, which beats
+  // the circle's own fill attribute — so the hole stayed white in dark mode.
+  const RING = `<chart-wc data-type="ring" data-title="Storage"
+    data-values='{"Documents":42,"Photos":28,"Free":30}'></chart-wc>`;
+
+  for (const mode of ['light', 'dark']) {
+    test(`hole fill equals --color-surface in ${mode} mode`, async ({ page }) => {
+      await page.addInitScript((m) => {
+        document.addEventListener('DOMContentLoaded', () => { document.documentElement.dataset.mode = m; });
+      }, mode);
+      await load(page, RING);
+      const { hole, surface } = await page.evaluate(() => {
+        const host = document.querySelector('chart-wc [data-chart-svg]');
+        const circle = host.shadowRoot.querySelector('circle.svc-center');
+        const probe = document.createElement('span');
+        probe.style.color = 'var(--color-surface)';
+        host.parentElement.append(probe);
+        const surface = getComputedStyle(probe).color;
+        probe.remove();
+        // Normalise both through `color` so oklch()/rgb() spellings compare.
+        const norm = document.createElement('span');
+        norm.style.color = getComputedStyle(circle).fill;
+        host.parentElement.append(norm);
+        const hole = getComputedStyle(norm).color;
+        norm.remove();
+        return { hole, surface };
+      });
+      expect(hole).toBe(surface);
+      if (mode === 'dark') expect(hole).not.toMatch(/^(rgb\(255, 255, 255\)|oklch\(1 0 0\))$/);
+    });
+  }
+});

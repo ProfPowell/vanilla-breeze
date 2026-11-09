@@ -109,6 +109,7 @@ export const CORE_GUARDS = /** @type {const} */ ([
   { selector: 'time[data-format-date]', load: () => import('../utils/format-date-init.js') },
   { selector: 'data[data-format-number]', load: () => import('../utils/format-number-init.js') },
   { selector: 'data[data-format-bytes]', load: () => import('../utils/format-bytes-init.js') },
+  { selector: '[data-audio-playlist]', load: () => import('../utils/audio-playlist-init.js') },
 
   // ── Collection upscales (pagination / sorting / toggling) ──────────────
   { selector: '[data-paged]', load: () => import('../utils/data-paged-init.js') },

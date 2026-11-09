@@ -18,7 +18,7 @@
  *   elements through form.elements.
  * - After a step change, focus moves to the new step's <legend>.
  * - Strings: data-label-back / -next / -submit / -step / -status /
- *   -completed on the form; numbers use Intl.NumberFormat for the nearest
+ *   -completed / -yes on the form; numbers use Intl.NumberFormat for the nearest
  *   [lang].
  * - data-wizard-persist stores through VBStore ("wizard" namespace) with an
  *   expiry (data-wizard-persist-hours, default 24) and skips controls that
@@ -35,7 +35,7 @@
 import { VBStore } from './vb-store.js';
 import { getLocale } from './i18n.js';
 import {
-  evaluateCondition, readField, controlName, controlValues,
+  evaluateCondition, fieldsNamed, controlName, controlValues,
   syncSectionControls, DISABLED_MARK,
 } from './form-conditions.js';
 import { isPersistable } from '../utils/_persist-filter.js';
@@ -53,6 +53,7 @@ const LABELS = {
   step: 'Step {n}',
   status: 'Now on step {current} of {total}: {name}',
   completed: 'Go to {name} (completed)',
+  yes: 'Yes',
 };
 
 /** Inputs where Enter triggers implicit submission. */
@@ -880,10 +881,57 @@ class WizardController {
 
   /**
    * Current value of a named field for display (several values joined).
+   * Shows what the user picked, not the submitted value: a select's option
+   * text, a checked radio's or checkbox's label.
    * @param {string} name
    */
   #displayValue(name) {
-    return readField(this.#form, name).join(', ');
+    return fieldsNamed(this.#form, name).flatMap((el) => this.#displayTexts(el)).join(', ');
+  }
+
+  /**
+   * Display text for one control's current value(s).
+   * @param {Element} el
+   * @returns {string[]}
+   */
+  #displayTexts(el) {
+    const values = controlValues(el);
+    if (!values.length) return [];
+    if (el instanceof HTMLSelectElement) {
+      return [...el.selectedOptions]
+        .filter((o) => o.value !== '')
+        .map((o) => o.label.trim() || o.value);
+    }
+    if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
+      // A lone checkbox's label already names the row (it is the <dt>), so
+      // its value reads as "Yes" (data-label-yes).
+      if (el.type === 'checkbox' && !this.#groupLegend(el)) return [this.#label('yes')];
+      return [this.#ownLabelText(el) || values[0]];
+    }
+    return values;
+  }
+
+  /**
+   * Legend of the group fieldset (not a step) a checkbox/radio sits in.
+   * @param {HTMLInputElement} input
+   * @returns {string}
+   */
+  #groupLegend(input) {
+    const group = input.closest('fieldset:not([data-wizard-step])');
+    return group?.querySelector(':scope > legend')?.textContent.trim() || '';
+  }
+
+  /**
+   * Text of a control's first <label>, without nested controls.
+   * @param {Element} input
+   * @returns {string}
+   */
+  #ownLabelText(input) {
+    const labels = /** @type {any} */ (input).labels;
+    if (!labels?.length) return '';
+    const clone = /** @type {HTMLElement} */ (labels[0].cloneNode(true));
+    clone.querySelectorAll('input, select, textarea').forEach((n) => n.remove());
+    return clone.textContent.replace(/\s+/g, ' ').trim();
   }
 
   #populateSummary() {
@@ -936,18 +984,12 @@ class WizardController {
   #findFieldLabel(input) {
     // Checkbox/radio groups: the group's legend names the field
     if (input instanceof HTMLInputElement && (input.type === 'checkbox' || input.type === 'radio')) {
-      const group = input.closest('fieldset:not([data-wizard-step])');
-      const legend = group?.querySelector(':scope > legend');
-      if (legend) return legend.textContent.trim();
+      const legend = this.#groupLegend(input);
+      if (legend) return legend;
     }
 
-    const labels = /** @type {any} */ (input).labels;
-    if (labels?.length) {
-      const clone = /** @type {HTMLElement} */ (labels[0].cloneNode(true));
-      clone.querySelectorAll('input, select, textarea').forEach((n) => n.remove());
-      const text = clone.textContent.trim();
-      if (text) return text;
-    }
+    const text = this.#ownLabelText(input);
+    if (text) return text;
 
     const formField = input.closest('form-field');
     const label = formField?.querySelector('label');

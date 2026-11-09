@@ -233,6 +233,59 @@ describe('guard table health', () => {
   });
 });
 
+describe('every full-barrel util is reachable from the core and autoload entries', () => {
+  // web-components/index.js (the full barrel, and what dev demos load via
+  // /src/main.js) statically imports every utils/*-init.js. The core and
+  // autoload entries do not import that barrel, so a util only reaches them
+  // through a static import in their own graph or through a guard. A util with
+  // neither works in dev demos and is dead in vanilla-breeze-core.js and the
+  // autoload bundle (built demo pages) — how [data-audio-playlist] shipped.
+  const guarded = new Set(
+    [...guardSpecifiers('src/lib/lazy-guards.js'), ...guardSpecifiers('src/lib/lazy-guards-full.js')]
+      .map((spec) => resolveFrom('src/lib/lazy-guards.js', spec)),
+  );
+  const utilInits = [...graph('src/web-components/index.js')].filter((m) =>
+    /^src\/utils\/.+-init\.js$/.test(m),
+  );
+
+  /** @type {Array<[string, string[]]>} */
+  const REACH_ENTRIES = [
+    ['src/main-core.js', ['src/web-components/core.js']],
+    ['src/main-autoload.js', ['src/web-components/core.js']],
+  ];
+  for (const [entry, expand] of REACH_ENTRIES) {
+    it(`${entry} reaches every utils/*-init.js the full barrel imports`, () => {
+      const reachable = graph(entry, expand);
+      // The slim core bundle deliberately leaves the extras tier out: pages
+      // pair it with vanilla-breeze-extras.js, which carries those utils.
+      const extrasTier = entry === 'src/main-core.js'
+        ? new Set([
+            ...graph('src/web-components/extras.js'),
+            ...guardSpecifiers('src/lib/lazy-guards-full.js').map((spec) =>
+              resolveFrom('src/lib/lazy-guards-full.js', spec),
+            ),
+          ])
+        : new Set();
+      const dead = utilInits.filter(
+        (m) => !reachable.has(m) && !guarded.has(m) && !extrasTier.has(m),
+      );
+      assert.deepEqual(
+        dead,
+        [],
+        `These utils are live in /src/main.js but never load from ${entry}. ` +
+          `Add a guard to src/lib/lazy-guards.js or lazy-guards-full.js (or a static import):\n  ${dead.join('\n  ')}`,
+      );
+    });
+  }
+
+  it('[data-audio-playlist] is a core-tier guard', () => {
+    assert.ok(
+      CORE_GUARDS.some((g) => g.selector === '[data-audio-playlist]'),
+      'audio-playlist-init.js needs a core guard so core and autoload pages load it.',
+    );
+  });
+});
+
 describe('core ⊆ full JS graph parity', () => {
   const full = graph('src/main.js', ['src/web-components/index.js']);
 

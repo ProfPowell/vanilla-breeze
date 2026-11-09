@@ -450,7 +450,7 @@ test.describe('data-wizard', () => {
     await expect(page.locator('#co')).toBeDisabled();
   });
 
-  test('auto summary lists checkbox groups and skips hidden/password inputs', async ({ page }) => {
+  test('auto summary lists checkbox groups by label and skips hidden/password inputs', async ({ page }) => {
     await load(page, `
       <form id="w" data-wizard>
         <fieldset data-wizard-step><legend>Prefs</legend>
@@ -465,6 +465,6 @@ test.describe('data-wizard', () => {
     await readyWizard(page);
     await page.evaluate(() => /** @type {any} */ (document.getElementById('w')).wizardNext());
     await expect(page.locator('#sum dt')).toHaveText(['Topics']);
-    await expect(page.locator('#sum dd')).toHaveText(['news, sports']);
+    await expect(page.locator('#sum dd')).toHaveText(['News, Sports']);
   });
 });

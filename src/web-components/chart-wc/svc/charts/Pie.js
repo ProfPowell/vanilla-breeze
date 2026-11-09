@@ -47,7 +47,10 @@ class PieChart extends Chart {
       center: {
         size: '40%',
         style: {
-          fill: '#fff',
+          // Compiled into the shadow stylesheet as `.svc-center { fill }`,
+          // which beats the circle's fill attribute, so it must carry the
+          // theme token itself. A literal #fff painted a white hole in dark mode.
+          fill: 'var(--color-surface, #fff)',
         },
         label: {
           style: {

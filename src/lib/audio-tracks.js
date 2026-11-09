@@ -1,6 +1,6 @@
 /**
  * audio-tracks: shared track-list behaviour for <audio-player> and the
- * `.audio-standalone` playlist utility (src/utils/audio-playlist-init.js).
+ * `[data-audio-playlist]` playlist utility (src/utils/audio-playlist-init.js).
  *
  * Track-list contract (both consumers):
  * - Tracks are `<li>` elements inside `.track-list`, each holding an `<a href>`

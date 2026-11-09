@@ -1,8 +1,8 @@
 /**
  * audio-playlist-init: Track list click handling for native audio playlists
  *
- * Enhances `.audio-standalone` containers (not `audio-player` — that component
- * handles its own playlist). Clicking a track in `.track-list` updates the
+ * Enhances `[data-audio-playlist]` containers (not `audio-player` — that
+ * component handles its own playlist). Clicking a track in `.track-list` updates the
  * `<audio>` element's src, marks the track `data-audio-active` and plays it.
  * When a track ends it is marked `data-audio-played` (and stays active) and
  * the next track in list order starts; playback stops after the last track.
@@ -11,7 +11,7 @@
  * Without JS, track links navigate to the audio file directly — a valid fallback.
  *
  * @example
- * <section class="audio-standalone">
+ * <section data-audio-playlist>
  *   <audio controls>
  *     <source src="tracks/01.mp3" type="audio/mpeg">
  *   </audio>
@@ -27,7 +27,7 @@
 
 import { activateTrack, markActivePlayed, nextTrack } from '../lib/audio-tracks.js';
 
-const CONTAINER_SELECTOR = '.audio-standalone';
+const CONTAINER_SELECTOR = '[data-audio-playlist]';
 
 /**
  * Initialize playlist behavior for a single container

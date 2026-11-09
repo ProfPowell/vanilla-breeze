@@ -431,7 +431,7 @@ Events: `vb:beforesubmit` (cancelable, detail `{ form, submitter }`, after valid
 | `data-wizard-if` | step | Conditional step. Shared condition language (`name`, `!name`, `name:value` / `name=value`, `name:!value` / `name!=value`, `&&`, `\|\|`). While false the step gets `data-wizard-hidden` and its controls are disabled (`data-conditional-disabled`) |
 | `data-wizard-optional` | step | Next skips this step's validation |
 | `data-wizard-summary` | step | Review step: fills `[data-wizard-field]` or generates a `<dl data-wizard-summary-list>` |
-| `data-wizard-field` | in summary step | Text becomes the named field's value(s) |
+| `data-wizard-field` | in summary step | Text becomes what the user picked for the named field: a select's option text, a checked radio or grouped checkbox's label, otherwise the value(s) |
 | `data-wizard-progress` | `<progress>` | value/max follow current/included steps |
 | `data-wizard-nav` | `<nav>` | Back/Next/Submit container (injected when missing) |
 | `data-wizard-prev` | `<button>` | Previous step (visibility:hidden on step 1) |
@@ -442,6 +442,7 @@ Events: `vb:beforesubmit` (cancelable, detail `{ form, submitter }`, after valid
 | `data-wizard-persist` | `<form id>` | `session` \| `local` — VBStore `vb:wizard:{id}`, filtered by `isPersistable()` |
 | `data-wizard-persist-hours` | `<form>` | Saved-state lifetime, default 24 |
 | `data-label-back` / `-next` / `-submit` | `<form>` | Injected button text |
+| `data-label-yes` | `<form>` | Summary text for a checked standalone checkbox (default "Yes") |
 | `data-label-step` | `<form>` | Unnamed step, `{n}` (default `Step {n}`) |
 | `data-label-status` | `<form>` | Announcement, `{current}` `{total}` `{name}` (default `Now on step {current} of {total}: {name}`) |
 | `data-label-completed` | `<form>` | Completed nav.steps item name, `{name}` (default `Go to {name} (completed)`) |
@@ -622,7 +623,7 @@ Base: `<dt>` bold, `<dd>` indented (inline-start). Groups may be flat or wrapped
 
 | Data Attribute | Values | Description |
 |----------------|--------|-------------|
-| `data-variant` | `horizontal`, `stacked` | Term/description columns (subgrid; stacks below 24rem) or muted label above value |
+| `data-variant` | `horizontal`, `stacked` | Term/description columns (subgrid; stacks below 16rem) or muted label above value |
 | `data-bordered` | (boolean) | Separator lines between wrapped groups |
 | `data-density` | `compact` | Tighter spacing |
 | `data-striped` | (boolean) | Alternating `--color-row-stripe` (same token as `table[data-striped]`); wrapped groups stripe whole; flat: odd visible dt + following dd run (up to 4 dd); `[hidden]` entries are skipped |
@@ -675,6 +676,7 @@ Themes restyle only plain rules (`hr:not([data-ornament], [class])`: any class o
 | Attribute | Element | Description |
 |-----------|---------|-------------|
 | `data-chapter-list` | `track[kind=chapters]` | Renders `nav.chapter-list` (seek buttons) after the video; active chapter's button gets `aria-current="true"` (+ `li[data-active]`); `data-label` names the nav (default "Video chapters") |
+| `data-audio-playlist` | container (`section`, `article`, `figure`) holding one `<audio>` + one `ol.track-list` | Playlist utility (`src/utils/audio-playlist-init.js`; full bundle, and loaded on demand by the core and autoload bundles via a lazy guard): clicking a track link swaps the audio `src`, moves `li[data-audio-active]` and plays (refused `play()` caught); on `ended` marks `data-audio-played` and advances in list order, stopping after the last; marks the container `data-audio-playlist-init`; containers added later are enhanced. Without JS the links navigate to the files. `<audio-player>` runs its own playlist instead |
 
 ### `<iframe>` Embed
 

@@ -38,6 +38,7 @@ export const EXTRAS_GUARDS = /** @type {const} */ ([
   },
   { selector: ':is(img, video, iframe, canvas)[data-mock]', load: () => import('../utils/mock-init.js') },
   { selector: '[data-lorem]', load: () => import('../utils/lorem-init.js') },
+  { selector: 'track[kind="chapters"][data-chapter-list]', load: () => import('../utils/chapter-list-init.js') },
 ]);
 
 /**

@@ -1,5 +1,5 @@
 /**
- * `.audio-standalone` playlist utility (src/utils/audio-playlist-init.js).
+ * `[data-audio-playlist]` playlist utility (src/utils/audio-playlist-init.js).
  *
  * Tests the WORKING TREE: /src/** is served from disk and the fixture page
  * is routed on a fake URL, so these don't depend on a fresh build snapshot.
@@ -68,12 +68,12 @@ async function load(page, body) {
       </head><body>${body}</body></html>`,
   }));
   await page.goto(url, { waitUntil: 'load' });
-  await page.waitForSelector('.audio-standalone[data-audio-playlist-init]');
+  await page.waitForSelector('[data-audio-playlist][data-audio-playlist-init]');
   return errors;
 }
 
 const playlist = (tracks) => `
-  <section class="audio-standalone">
+  <section data-audio-playlist>
     <audio controls><source src="/__media/${tracks[0]}.wav" type="audio/wav"></audio>
     <details open>
       <summary>Track Listing</summary>
@@ -120,10 +120,36 @@ test('a play() rejection from an unloadable track is caught', async ({ page }) =
 
 test('containers added later are enhanced once', async ({ page }) => {
   await load(page, playlist(['one', 'two']));
-  await page.evaluate((html) => document.body.insertAdjacentHTML('beforeend', html), playlist(['three', 'four']).replace('audio-standalone', 'audio-standalone late'));
+  await page.evaluate((html) => document.body.insertAdjacentHTML('beforeend', html), playlist(['three', 'four']).replace('data-audio-playlist>', 'data-audio-playlist class="late">'));
   await page.waitForSelector('.late[data-audio-playlist-init]');
   await page.click('.late >> text=four');
   await page.waitForFunction(() => document.querySelector('.late audio').src.endsWith('four.wav'));
   // The first player is untouched
   expect(await page.evaluate(() => document.querySelector('audio').src)).toBe('');
+});
+
+test('the core guard table loads the util (core and autoload bundles)', async ({ page }) => {
+  // The core and autoload entries reach this util only through the
+  // [data-audio-playlist] guard in src/lib/lazy-guards.js; without it the
+  // playlist was inert everywhere but the full bundle.
+  await page.route('**/src/**', (route) => {
+    const path = join(REPO, new URL(route.request().url()).pathname);
+    try {
+      route.fulfill({ body: readFileSync(path), contentType: 'text/javascript' });
+    } catch {
+      route.fulfill({ status: 404, body: '' });
+    }
+  });
+  await page.route('**/__audio-guard.html', (route) => route.fulfill({
+    status: 200,
+    contentType: 'text/html; charset=utf-8',
+    body: `<!doctype html><html lang="en"><head><meta charset="utf-8"></head><body>
+      ${playlist(['one', 'two'])}
+      <script type="module">
+        import { runCoreGuards } from '/src/lib/lazy-guards.js';
+        runCoreGuards();
+      </script></body></html>`,
+  }));
+  await page.goto('/__audio-guard.html', { waitUntil: 'load' });
+  await expect(page.locator('[data-audio-playlist]')).toHaveAttribute('data-audio-playlist-init', '');
 });

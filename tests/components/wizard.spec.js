@@ -616,8 +616,9 @@ test.describe('wizard — summary step', () => {
     const nameSummary = page.locator('#manual-summary-wizard [data-wizard-field="fullname"]');
     await expect(nameSummary).toHaveText('Alice Smith');
 
+    // The option's text, not its value
     const colorSummary = page.locator('#manual-summary-wizard [data-wizard-field="color"]');
-    await expect(colorSummary).toHaveText('blue');
+    await expect(colorSummary).toHaveText('Blue');
   });
 
   test('manual summary shows dash for empty fields', async ({ page }) => {
@@ -654,6 +655,67 @@ test.describe('wizard — summary step', () => {
     await expect(dts).toHaveCount(2);
     await expect(dds.nth(0)).toHaveText('555-1234');
     await expect(dds.nth(1)).toHaveText('Portland');
+  });
+
+  test('auto summary shows option text and choice labels, not submitted values', async ({ page }) => {
+    await page.route('**/__wizard-review.html', (route) => route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      body: `<!doctype html><html lang="en"><head><meta charset="utf-8">
+        <link rel="stylesheet" href="/src/main.css"><script type="module" src="/src/main.js"></script>
+        </head><body><main>
+        <form data-wizard id="review-wizard">
+          <fieldset data-wizard-step>
+            <legend>Plan</legend>
+            <label for="rv-plan">Plan</label>
+            <select id="rv-plan" name="plan">
+              <option value="">Choose…</option>
+              <option value="pro-m">Pro (monthly)</option>
+              <option value="pro-y" label="Pro (yearly)">ignored text</option>
+            </select>
+            <label for="rv-extras">Extras</label>
+            <select id="rv-extras" name="extras" multiple>
+              <option value="sso">Single sign-on</option>
+              <option value="audit">Audit log</option>
+              <option value="sla">Priority SLA</option>
+            </select>
+            <fieldset>
+              <legend>Billing</legend>
+              <label><input type="radio" name="billing" value="card"> Credit card</label>
+              <label><input type="radio" name="billing" value="inv"> Invoice</label>
+            </fieldset>
+            <fieldset>
+              <legend>Topics</legend>
+              <label><input type="checkbox" name="topics" value="t1"> Releases</label>
+              <label><input type="checkbox" name="topics" value="t2"> Security</label>
+              <label><input type="checkbox" name="topics" value="t3"> Events</label>
+            </fieldset>
+            <label><input type="checkbox" name="terms" value="agreed"> Accept the terms</label>
+          </fieldset>
+          <fieldset data-wizard-step data-wizard-summary><legend>Review</legend></fieldset>
+        </form>
+        </main></body></html>`,
+    }));
+    await page.goto('/__wizard-review.html');
+    await waitForWizard(page, '#review-wizard');
+
+    await page.selectOption('#rv-plan', 'pro-y');
+    await page.selectOption('#rv-extras', ['sso', 'sla']);
+    await page.getByLabel('Invoice').check();
+    await page.getByLabel('Releases').check();
+    await page.getByLabel('Events').check();
+    await page.getByLabel('Accept the terms').check();
+    await page.click('#review-wizard [data-wizard-next]');
+
+    const dl = page.locator('#review-wizard [data-wizard-summary-list]');
+    await expect(dl.locator('dt')).toHaveText(['Plan', 'Extras', 'Billing', 'Topics', 'Accept the terms']);
+    await expect(dl.locator('dd')).toHaveText([
+      'Pro (yearly)',
+      'Single sign-on, Priority SLA',
+      'Invoice',
+      'Releases, Events',
+      'Yes',
+    ]);
   });
 
   test('summary updates when navigating back and changing values', async ({ page }) => {
