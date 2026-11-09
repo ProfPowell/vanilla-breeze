@@ -84,3 +84,36 @@
   /* --- Caret (text cursor in editable fields) --- */
   --caret-color: auto;
 }
+
+/* Nested themes: every colour alias above is a var() of a theme colour, and
+   var() resolves on the element that declares the property, so declared
+   only on :root they keep the page theme's colours inside a nested
+   <section data-theme="…">. Re-declare just the colour aliases there (not
+   the geometry: a page-level a11y-large-text --control-size must survive
+   a nested theme). A theme that sets one of these itself still wins: themes
+   are in @layer bundle-theme. */
+[data-theme] {
+  --input-bg: var(--color-surface);
+  --input-border: var(--control-border);
+  --input-border-focus: var(--color-interactive);
+  --input-placeholder: var(--color-text-muted);
+  --control-border: color-mix(in oklab, var(--color-border-strong), var(--color-text) 30%);
+  --control-checked-bg: var(--color-primary);
+  --control-checked-border: var(--color-primary);
+  --switch-track-bg: var(--control-border);
+  --switch-track-checked-bg: var(--color-interactive);
+  --range-track-bg: var(--control-border);
+  --range-track-fill: var(--color-primary);
+  --range-thumb-bg: var(--color-surface);
+  --range-thumb-border: var(--color-primary);
+  --progress-track-bg: var(--color-surface-raised);
+  --progress-track-border: var(--control-border);
+  --progress-fill: var(--color-interactive);
+  --progress-fill-warning: light-dark(oklch(from var(--color-warning) 0.6 c h), var(--color-warning));
+  --meter-track-bg: var(--progress-track-bg);
+  --meter-track-border: var(--control-border);
+  --meter-fill-optimum: var(--color-success);
+  --meter-fill-suboptimum: light-dark(oklch(from var(--color-warning) 0.6 c h), var(--color-warning));
+  --meter-fill-even-less-good: var(--color-error);
+  --input-readonly-bg: var(--color-surface-raised);
+}

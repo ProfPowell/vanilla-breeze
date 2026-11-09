@@ -552,6 +552,16 @@ nav {
     --_completed-bg: var(--color-success);
     --_completed-border: var(--color-success);
     --_completed-text: var(--color-text-on-success-auto, white);
+
+    /* Named container so narrow horizontal steppers can switch to the
+       labels-below layout (see the narrow-width block further down). */
+    container: vb-steps / inline-size;
+  }
+
+  /* Vertical steppers may sit in a content-sized column; never let the
+     inline-size container collapse them. */
+  &.steps[data-direction="vertical"] {
+    container-type: normal;
   }
 
 
@@ -678,15 +688,26 @@ nav {
     align-items: flex-start;
   }
 
-  &.steps[data-labels="below"] li {
+  /* Every step, the last included, gets an equal column (flex-basis 0,
+     min-size 0 so long labels wrap instead of widening their column).
+     Equal columns put each marker one column-width from the next, which
+     is what the connector's ±50% insets below assume. */
+  &.steps[data-labels="below"] li,
+  &.steps[data-labels="below"] li:last-child {
+    flex: 1 1 0;
+    min-inline-size: 0;
     flex-direction: column;
     align-items: center;
     position: relative;
     text-align: center;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+    padding-inline: var(--size-2xs);
     gap: var(--size-2xs);
   }
 
-  /* Connector repositioned: absolute at circle height */
+  /* Connector repositioned: absolute at circle height, from this
+     marker's edge to the next marker's edge (one column to the end) */
   &.steps[data-labels="below"] li:not(:last-child)::after {
     position: absolute;
     inset-block-start: calc(var(--_step-size) / 2);
@@ -696,6 +717,46 @@ nav {
     min-inline-size: 0;
     flex: none;
     order: 0;
+  }
+
+  /* ---- Narrow-width fallback ----
+     Labels beside markers need roughly marker + label + connector per
+     step and overflow sideways in a narrow container (4 steps at 360px
+     ran ~230px past the edge). Below 36rem a horizontal stepper takes
+     the labels-below layout: every label stays visible (and is still the
+     step's text, so nothing changes for assistive tech), wrapping and
+     hyphenating inside an equal column. Rules mirror the labels-below
+     block above; keep the two in step. */
+  @container vb-steps (inline-size < 36rem) {
+    &.steps:not([data-direction="vertical"]) > ol {
+      align-items: flex-start;
+    }
+
+    &.steps:not([data-direction="vertical"]) li,
+    &.steps:not([data-direction="vertical"]) li:last-child {
+      flex: 1 1 0;
+      min-inline-size: 0;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      overflow-wrap: anywhere;
+      hyphens: auto;
+      font-size: var(--font-size-xs);
+      padding-inline: var(--size-3xs);
+      gap: var(--size-2xs);
+    }
+
+    &.steps:not([data-direction="vertical"]) li:not(:last-child)::after {
+      position: absolute;
+      inset-block-start: calc(var(--_step-size) / 2);
+      inset-inline-start: calc(50% + var(--_step-size) / 2 + var(--size-xs));
+      inset-inline-end: calc(-50% + var(--_step-size) / 2 + var(--size-xs));
+      inline-size: auto;
+      min-inline-size: 0;
+      flex: none;
+      order: 0;
+    }
   }
 
   /* ---- Vertical variant ---- */

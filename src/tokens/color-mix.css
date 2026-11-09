@@ -3,9 +3,19 @@
  *
  * Opacity and tint variations computed from base colors.
  * These adapt automatically when themes change colors.
+ *
+ * var() resolves on the element that declares the property, so these are
+ * declared on every element that can change the colours they mix (a scoped
+ * data-mode, data-theme or data-accent) as well as :root; declared only on
+ * :root they kept the page's primary inside a nested theme. No theme sets
+ * them, so re-declaring them never drops a theme value.
  */
 
-:root {
+:root,
+[data-mode="light"],
+[data-mode="dark"],
+[data-theme],
+[data-accent] {
   /* ==================== PRIMARY TINT SCALE ==================== */
   /* For backgrounds, highlights - derived from --color-primary */
   --tint-primary-5: color-mix(in oklab, var(--color-primary) 5%, transparent);

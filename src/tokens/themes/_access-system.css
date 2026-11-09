@@ -49,7 +49,7 @@
   /* Responds to users who prefer less transparency/blur effects */
   @media (prefers-reduced-transparency) {
     :root {
-      /* Make overlays fully opaque */
+      /* The subtle / medium tints become opaque surface-like greys */
       --color-overlay-subtle: light-dark(
         oklch(95% 0 0),
         oklch(15% 0 0)
@@ -58,10 +58,13 @@
         oklch(90% 0 0),
         oklch(20% 0 0)
       );
-      --color-overlay-strong: light-dark(
-        oklch(85% 0 0),
-        oklch(10% 0 0)
-      );
+      /* The strong overlay is a SCRIM: a dark layer behind light text
+         over an image or video (hero, CTA backgrounds) and dialog
+         backdrops. It is dark in both modes (0.5 light, 0.7 dark), so it
+         stays dark here, just denser. The old opaque light grey left white
+         text on grey and hid the image outright; 80% black keeps the text
+         pairing (white stays above 9:1 on any image) and the image visible. */
+      --color-overlay-strong: oklch(0% 0 0 / 0.8);
 
       /* Disable backdrop blur effects */
       --backdrop-blur: 0;
@@ -73,7 +76,12 @@
   /* ==================== WINDOWS HIGH CONTRAST MODE ==================== */
   /* Full support for forced-colors mode (Windows High Contrast) */
   @media (forced-colors: active) {
-    :root {
+    /* :root [data-theme] too: a nested themed section re-derives its
+       interactive / focus aliases from its own palette (colors.css), so the
+       system colours must be re-asserted there; (0,2,0) beats the
+       themes' own [data-theme~="…"] rules. */
+    :root,
+    :root [data-theme] {
       /* Map to system color keywords for full compatibility */
       --color-background: Canvas;
       --color-surface: Canvas;

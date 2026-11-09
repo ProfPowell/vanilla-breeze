@@ -136,7 +136,7 @@ test('horizontal: narrow container stacks and nothing overflows', async ({ page 
         <dl-item><dt>Email</dt><dd>alexandra.chen.with.a.very.long.address@example-company.com</dd></dl-item>
       </dl>
     </section>
-    <style>#wrap { inline-size: 280px; }</style>`);
+    <style>#wrap { inline-size: 240px; }</style>`); // under the 16rem stack point
   const r = await page.evaluate(() => {
     const dl = document.getElementById('t');
     const dlBox = dl.getBoundingClientRect();

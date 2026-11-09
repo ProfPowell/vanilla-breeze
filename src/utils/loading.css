@@ -1,8 +1,14 @@
 /* loading: Universal loading state for any element */
 /* Apply data-loading to show a loading overlay with shimmer effect */
 /* Exclude feedback outputs which use data-loading differently */
+/* The exclusion sits in :where() so every rule in this file is plain
+   [data-loading…] specificity and later variant rules win on source order.
+   A bare :not(output, button, .button) counts as a class, so it used to
+   outrank the skeleton, minimal and reduced-motion rules below: skeleton
+   children rendered at the dim 0.3 opacity, minimal kept the sweep and
+   reduced motion kept animating. */
 
-[data-loading]:not(output, button, .button) {
+[data-loading]:where(:not(output, button, .button)) {
   position: relative;
   pointer-events: none;
   cursor: wait;
@@ -12,7 +18,7 @@
 }
 
 /* Shimmer overlay with animated gradient (single pseudo-element) */
-[data-loading]:not(output, button, .button)::after {
+[data-loading]:where(:not(output, button, .button))::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -31,7 +37,7 @@
 }
 
 /* Dim content beneath overlay */
-[data-loading]:not(output, button, .button) > * {
+[data-loading]:where(:not(output, button, .button)) > * {
   position: relative;
   z-index: 1;
   opacity: 0.3;
@@ -138,10 +144,22 @@
   color: transparent !important;
 }
 
-/* Nested images should also hide */
-[data-loading="skeleton"] img,
-[data-loading="skeleton"] svg {
+/* Nested images hide inside their grey parent box (a figure, a link) */
+[data-loading="skeleton"] > * :is(img, svg) {
   opacity: 0;
+}
+
+/* A direct img / svg child IS the grey box: keep its background and size,
+   hide only its pixels. An img's image is clipped to its content box, so
+   pushing it out with object-position leaves the background showing; an
+   inline svg hides its drawing instead. (Replaced elements get no ::after,
+   so a direct img shows a static box without the shimmer.) */
+[data-loading="skeleton"] > img {
+  object-position: -100vmax -100vmax;
+}
+
+[data-loading="skeleton"] > svg > * {
+  visibility: hidden;
 }
 
 /* Interactive elements */

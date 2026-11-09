@@ -144,10 +144,20 @@ dl[data-striped] > :nth-child(odd of :is(div, dl-item):not([hidden])) {
 
 /* Horizontal — term column + description column. Groups are subgrids, so
    the term column lines up across every row. Every dd lands in column 2;
-   several dt in one group stack in column 1. Below 24rem of available
-   inline size it falls back to a stacked flow. */
+   several dt in one group stack in column 1. Below 16rem of its own inline
+   size it falls back to a stacked flow; 16rem keeps it two-column in a
+   sidebar (the widest sidebar basis is 20rem; the old 24rem stacked every
+   sidebar list).
+   The dl is its own query container, which gives it no intrinsic width
+   (size containment), so a content-sized dl (a flex or cluster item)
+   collapsed to a few pixels. The min-inline-size floor keeps such a dl
+   20rem wide, or as wide as its container when that is narrower. It
+   resolves against the parent, so it never feeds a shrink-to-fit
+   ancestor's intrinsic width (a cyclic percentage counts as zero there):
+   a dl inside a <fieldset> does not widen it. */
 dl[data-variant="horizontal"] {
   container: vb-dl / inline-size;
+  min-inline-size: min(100%, 20rem);
   display: grid;
   grid-template-columns: fit-content(var(--dl-term-max, 40%)) minmax(0, 1fr);
   column-gap: var(--_dl-col-gap, var(--size-m));
@@ -187,7 +197,7 @@ dl[data-variant="horizontal"] > dd + dt {
   overflow-wrap: break-word;
 }
 
-@container vb-dl (inline-size < 24rem) {
+@container vb-dl (inline-size < 16rem) {
   :is(dl[data-variant="horizontal"], dl[data-variant="horizontal"] > :is(div, dl-item)) > :is(dt, dd) {
     grid-column: 1 / -1;
     min-inline-size: 0;
@@ -209,8 +219,13 @@ dl[data-variant="horizontal"] > dd + dt {
   margin-block-start: var(--size-2xs);
 }
 
-dl[data-variant="stacked"] > dd + dt,
-dl[data-variant="stacked"] > :is(div, dl-item) + :is(div, dl-item) {
+/* Group spacing is a block margin, so it applies only to a dl in normal
+   flow: a stacked dl that is also data-layout (cluster, grid, …) spaces its
+   groups with the layout's gap, and the margin would push every group
+   after the first down off the row. :where() keeps the exemption at zero
+   specificity, so the bordered / striped reset below still wins. */
+dl[data-variant="stacked"]:where(:not([data-layout])) > dd + dt,
+dl[data-variant="stacked"]:where(:not([data-layout])) > :is(div, dl-item) + :is(div, dl-item) {
   margin-block-start: var(--_dl-group-gap, var(--size-l));
 }
 
