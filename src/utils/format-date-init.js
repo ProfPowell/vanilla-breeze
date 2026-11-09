@@ -28,7 +28,7 @@
  * <time datetime="2026-02-09T10:00:00Z" data-format-date="relative">February 9, 2026</time>
  */
 
-import { getLocale } from '../lib/i18n.js';
+import { getLocale, usableLocale } from '../lib/i18n.js';
 
 const SELECTOR = 'time[data-format-date]';
 const WATCHED = ['datetime', 'data-format-date', 'data-format-time', 'data-time-zone', 'data-locale', 'lang'];
@@ -87,6 +87,23 @@ function initFormatDate(root = document) {
 }
 
 /**
+ * Parse a datetime attribute. A date-only value ("2026-10-21") is a calendar
+ * date: it is built at UTC midnight and formatted in UTC (see datePrecision /
+ * formatAbsolute), so it shows the same day in every time zone. Overflowing
+ * components (2026-02-30) are rejected; V8's parser would roll them into
+ * the next month.
+ * @param {string} raw
+ * @returns {Date}
+ */
+function parseDatetime(raw) {
+  const m = raw.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return new Date(raw);
+  const [y, mo, d] = [Number(m[1]), Number(m[2]) - 1, Number(m[3])];
+  const date = new Date(Date.UTC(y, mo, d));
+  return date.getUTCMonth() === mo && date.getUTCDate() === d ? date : new Date(NaN);
+}
+
+/**
  * Enhance a single <time> element with formatted date display
  * @param {Element} el - The time element to enhance
  */
@@ -120,13 +137,13 @@ function formatDate(el) {
   // V8's lenient Date parser turns "09-22" into 22 Sep 2001.
   if (!/^\d{4}/.test(raw)) return;
 
-  const datetime = new Date(raw);
+  const datetime = parseDatetime(raw);
   if (isNaN(datetime.getTime())) return;
 
   // Date-only values (YYYY, YYYY-MM, YYYY-MM-DD) are parsed as UTC midnight.
   const precision = datePrecision(raw);
   const style = el.getAttribute('data-format-date') || 'medium';
-  const locale = el.getAttribute('data-locale') || getLocale(el);
+  const locale = usableLocale(el.getAttribute('data-locale') || getLocale(el));
   const origin = origins.get(el);
 
   if (style === 'relative') {

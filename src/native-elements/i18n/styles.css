@@ -85,6 +85,19 @@ em:lang(zh):not(:lang(zh-Latn)) {
   text-emphasis-position: under right;
 }
 
+/* Ruby occupies the space above the base text. Move the emphasis marks
+   below rather than letting the UA drop them (WebKit) or stack them above
+   the ruby (Chromium, Firefox). Keep the full :is():not() prefix: a
+   shorter selector loses to the rule above on specificity. */
+em:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)):has(ruby) {
+  text-emphasis-position: under right;
+}
+
+/* 圏点 belong on prose, not on code or Latin identifiers. */
+em:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) :is(code, kbd, samp, var) {
+  text-emphasis: none;
+}
+
 /* CJK <i> (alternate voice: terms from another language, thoughts, ship
    names): override the face with --font-cjk-alternate. */
 i:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
