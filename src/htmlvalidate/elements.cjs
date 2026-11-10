@@ -1573,6 +1573,7 @@ module.exports = {
       "data-label-empty": {},
       "data-label-count": {},
       "data-label-count-one": {},
+      "data-label-count-more": {},
       "data-label-unavailable": {},
       "data-label-error": {},
       "data-label-untitled": {},

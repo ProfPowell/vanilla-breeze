@@ -40,6 +40,7 @@ const LABELS = {
   empty: 'No results found',
   count: '{count} results',
   'count-one': '1 result',
+  'count-more': '{count} of {total} results',
   unavailable: 'Search unavailable',
   error: 'Search error. Please try again.',
   untitled: 'Untitled',
@@ -292,7 +293,8 @@ class SiteSearch extends VBElement {
       'aria-label': this.#label('results'),
     });
 
-    this.#status = h('p', { class: 'status', role: 'status' });
+    // Not `status`: that is the global status-dot class (a ● before the text).
+    this.#status = h('p', { class: 'search-status', role: 'status' });
 
     const kbd = (/** @type {string} */ t) => h('kbd', {}, [t]);
 
@@ -464,7 +466,7 @@ class SiteSearch extends VBElement {
       );
       if (seq !== this.#searchSeq) return;
       this.#results = results;
-      this.#renderResults(results);
+      this.#renderResults(results, search?.results?.length ?? results.length);
     } catch (error) {
       if (seq !== this.#searchSeq) return;
       console.error('[site-search] Search error:', error);
@@ -474,8 +476,11 @@ class SiteSearch extends VBElement {
     }
   }
 
-  /** @param {any[]} results */
-  #renderResults(results) {
+  /**
+   * @param {any[]} results - the results to list (at most MAX_RESULTS)
+   * @param {number} [total] - how many the index matched in all
+   */
+  #renderResults(results, total = results.length) {
     this.#activeIndex = -1;
     this.#input.removeAttribute('aria-activedescendant');
 
@@ -506,9 +511,11 @@ class SiteSearch extends VBElement {
     } else if (items.length === 0) {
       this.#setStatus(this.#label('empty'));
     } else {
-      this.#setStatus(items.length === 1
-        ? this.#label('count-one')
-        : this.#label('count').replace('{count}', String(items.length)));
+      // The list is capped: say so rather than report the cap as the count.
+      const capped = total > SiteSearch.#MAX_RESULTS && total > items.length;
+      const text = capped ? this.#label('count-more')
+        : items.length === 1 ? this.#label('count-one') : this.#label('count');
+      this.#setStatus(text.replace('{count}', String(items.length)).replace('{total}', String(total)));
     }
   }
 

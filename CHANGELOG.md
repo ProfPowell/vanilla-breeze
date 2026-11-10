@@ -6,6 +6,14 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **site-search: `data-label-count-more`** — When the index matches more results than the eight listed, the status reads "8 of 23 results" (`{count}` listed, `{total}` matched) instead of reporting the cap as the count.
+
+### Fixed
+
+- **site-search: stray dot in the dialog** — The status line used the class `status`, which is also the global status-dot pattern, so a "●" showed under the input (and before the result count). The line is now `search-status`, takes no room while empty, and the empty dialog has one divider instead of two. `<emoji-picker>`'s hidden live region drops the same dot.
+
 ## [0.6.1] - 2026-11-09
 
 0.6.1 fixes navigation and button hover colours (the current nav item stays readable while hovered or open, buttons inside a nav keep their own colours, and a button's label always contrasts with its hover and pressed fill), marks the current section in `<nav-bar>` when the page sits below a menu entry, clears `<form-field>` errors on form reset, and repairs five `<chart-wc>` rendering bugs. The Tutorials section is rewritten as four step-by-step builds with a live preview after every step.

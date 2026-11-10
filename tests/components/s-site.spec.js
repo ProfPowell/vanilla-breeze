@@ -26,6 +26,7 @@ const DATA = [
 export async function options(o) { window.__pagefindOptions = o; }
 export async function search(q) {
   if (q === 'none') return { results: [] };
+  if (q === 'many') return { results: Array.from({ length: 23 }, (_, i) => ({ data: async () => ({ url: '/docs/m' + i + '/', meta: { title: 'M' + i }, excerpt: 'm' }) })) };
   return { results: DATA.map((d) => ({ data: async () => d })) };
 }
 `;
@@ -76,7 +77,7 @@ async function openAndType(page, q = 'table') {
   await page.click('#s [data-trigger]');
   await expect(page.locator('#s dialog')).toHaveJSProperty('open', true);
   await page.locator('#s input').fill(q);
-  await expect(page.locator('#s .status')).not.toHaveText(/Searching|^$/);
+  await expect(page.locator('#s [role="status"]')).not.toHaveText(/Searching|^$/);
 }
 
 test.describe('site-search', () => {
@@ -224,6 +225,33 @@ test.describe('site-search', () => {
     await openAndType(page);
     await expect(page.locator('#s [role="status"]')).toHaveText('Search unavailable');
     await expect(page.locator('#s dialog')).not.toContainText('npm run');
+  });
+
+  test('status line: no status-dot bleed, no room when empty, capped lists say so', async ({ page }) => {
+    await load(page, SEARCH, { modules: ['site-search'] });
+    await page.click('#s [data-trigger]');
+    const status = page.locator('#s [role="status"]');
+    // Empty dialog: the status takes no room and the input sits on the footer.
+    const empty = await page.evaluate(() => {
+      const d = document.querySelector('#s dialog');
+      const st = d.querySelector('[role="status"]');
+      const wrap = d.querySelector('.input-wrapper').getBoundingClientRect();
+      const foot = d.querySelector('.footer').getBoundingClientRect();
+      return { h: st.getBoundingClientRect().height, gap: foot.top - wrap.bottom, rule: getComputedStyle(d.querySelector('.input-wrapper')).borderBlockEndWidth };
+    });
+    expect(empty.h).toBe(0);
+    expect(empty.gap).toBe(0);
+    expect(empty.rule).toBe('0px');
+
+    await page.locator('#s input').fill('table');
+    await expect(status).toHaveText('2 results');
+    // The global .status pattern puts a ● before its text; not here.
+    expect(await status.evaluate((el) => getComputedStyle(el, '::before').content)).toBe('none');
+    expect(await page.evaluate(() => getComputedStyle(document.querySelector('#s .input-wrapper')).borderBlockEndWidth)).not.toBe('0px');
+
+    await page.locator('#s input').fill('many');
+    await expect(status).toHaveText('8 of 23 results');
+    await expect(page.locator('#s [role="option"]')).toHaveCount(8);
   });
 
   test('data-label-* overrides UI strings', async ({ page }) => {
