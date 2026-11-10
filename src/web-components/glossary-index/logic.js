@@ -6,16 +6,18 @@ import { fragmentClick, goToFragment } from '../_shared/fragment-link.js';
 /**
  * glossary-index: Interactive glossary with search and scroll-spy
  *
- * Wraps a static glossary page to add live filtering, active letter
- * tracking in the jump nav (aria-current="true"), and a permalink on every
- * term with an id: activating it follows the fragment and copies the
- * term's URL to the clipboard.
+ * Wraps a static glossary page to add live filtering and active letter
+ * tracking in the jump nav (aria-current="true"). With `permalinks`, every
+ * term with an id also gets a "#" link that follows the fragment and
+ * copies the term's URL to the clipboard (for authors who link to terms;
+ * most glossaries are linked TO from prose and do not need it).
  *
  * Filtering walks dt/dd groups (several dt sharing one dd, several dd per
  * dt, or <div>-wrapped groups), announces the match count, shows an empty
  * state, and marks jump links to emptied sections aria-disabled.
  *
  * @attr {string} placeholder - Placeholder text for the search input
+ * @attr {boolean} permalinks - Add a copy-link "#" beside each term that has an id
  * @attr {string} data-label-filter - Accessible name of the search input (default "Filter glossary terms")
  * @attr {string} data-label-matches-one / data-label-matches-other - Match-count announcement, {count} replaced (any Intl.PluralRules category)
  * @attr {string} data-label-all-one / data-label-all-other - Announcement when the filter is cleared
@@ -102,8 +104,8 @@ class GlossaryIndex extends VBElement {
   #status = null;
   /** @type {HTMLElement | null} */
   #empty = null;
-  /** @type {IntersectionObserver | null} */
-  #observer = null;
+  /** rAF handle for the scroll-spy; 0 when idle. */
+  #spyFrame = 0;
   /** @type {HTMLAnchorElement[]} */
   #permalinks = [];
   /** @type {Map<Element, ReturnType<typeof setTimeout>>} */
@@ -115,13 +117,13 @@ class GlossaryIndex extends VBElement {
     this.listen(this, 'click', this.#onClick);
     this.listen(this, 'click', fragmentClick);
     this.#addSearch();
-    this.#addPermalinks();
+    if (this.hasAttribute('permalinks')) this.#addPermalinks();
     this.#initScrollSpy();
   }
 
   teardown() {
-    this.#observer?.disconnect();
-    this.#observer = null;
+    cancelAnimationFrame(this.#spyFrame);
+    this.#spyFrame = 0;
     for (const t of this.#timers.values()) clearTimeout(t);
     this.#timers.clear();
     // Undo filtering, then remove everything this component added.
@@ -314,30 +316,37 @@ class GlossaryIndex extends VBElement {
 
   /* ── Scroll-spy ── */
 
+  /**
+   * The current letter is the last section whose top has passed a line a
+   * third of the way down the viewport, else the first section. (A band
+   * observer skipped short sections: at the top of the page a one-term
+   * "A" never entered the band, so "C" was marked.)
+   */
   #initScrollSpy() {
-    const jumpLinks = this.querySelectorAll('.glossary-jump a');
-    if (!jumpLinks.length) return;
+    if (!this.querySelector('.glossary-jump a') || !this.querySelector(SECTIONS)) return;
+    const queue = () => {
+      if (this.#spyFrame) return;
+      this.#spyFrame = requestAnimationFrame(() => {
+        this.#spyFrame = 0;
+        this.#updateSpy();
+      });
+    };
+    this.listen(window, 'scroll', queue, { passive: true });
+    this.listen(window, 'resize', queue, { passive: true });
+    this.#updateSpy();
+  }
 
-    const sections = this.querySelectorAll(SECTIONS);
+  #updateSpy() {
+    const sections = /** @type {HTMLElement[]} */ ([...this.querySelectorAll(SECTIONS)]).filter((s) => !s.hidden);
     if (!sections.length) return;
-
-    this.#observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const id = entry.target.id;
-            for (const link of jumpLinks) {
-              const isActive = link.getAttribute('href') === `#${id}`;
-              link.setAttribute('aria-current', isActive ? 'true' : 'false');
-            }
-          }
-        }
-      },
-      { rootMargin: '-20% 0px -60% 0px' }
-    );
-
+    const line = window.innerHeight / 3;
+    let current = sections[0];
     for (const section of sections) {
-      this.#observer.observe(section);
+      if (section.getBoundingClientRect().top <= line) current = section;
+      else break;
+    }
+    for (const link of this.querySelectorAll('.glossary-jump a')) {
+      link.setAttribute('aria-current', link.getAttribute('href') === `#${current.id}` ? 'true' : 'false');
     }
   }
 

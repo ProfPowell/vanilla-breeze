@@ -17,10 +17,16 @@
   color: var(--color-interactive);
 }
 
-/* Letter heading — sticky as user scrolls */
+/* One letter group */
+.glossary-section + .glossary-section {
+  margin-block-start: var(--size-xl);
+}
+
+/* Letter heading — sticks below a sticky site header as the reader scrolls */
 .glossary-section h2 {
   position: sticky;
-  top: 0;
+  top: var(--sticky-offset, 0px);
+  margin-block-end: var(--size-m);
   background: var(--color-surface);
   padding-block: var(--size-xs);
   border-block-end: var(--border-width-thin) solid var(--color-border);
@@ -30,12 +36,26 @@
   z-index: 1;
 }
 
-/* Term — prominent, linkable */
+/* A term and its definition share one left edge and one padded box, so a
+   highlighted entry (below) is a single block rather than two. */
+.glossary-section dl dt,
+.glossary-section dl dd {
+  margin-inline: 0;
+  padding-inline: var(--size-m);
+}
+
+/* Term — prominent */
 .glossary-section dl dt {
   display: flex;
   align-items: baseline;
   gap: var(--size-xs);
-  scroll-margin-top: var(--size-xl);
+  padding-block-start: var(--size-xs);
+  /* Clear a sticky site header and the sticky letter heading */
+  scroll-margin-top: calc(var(--sticky-offset, 0px) + var(--size-3xl));
+}
+
+.glossary-section dl dd + dt {
+  margin-block-start: var(--size-s);
 }
 
 .glossary-section dl dt dfn {
@@ -44,17 +64,56 @@
   font-weight: var(--font-weight-semibold, 600);
 }
 
-/* Highlight when navigated to via anchor */
+/* Definition */
+.glossary-section dl dd {
+  padding-block: var(--size-2xs) var(--size-xs);
+}
+
+.glossary-section dl dd > * {
+  max-inline-size: 75ch;
+  margin-block: 0;
+}
+
+.glossary-section dl dd > * + * {
+  margin-block-start: var(--size-2xs);
+}
+
+/* Arrived at a term by its anchor (a link from prose, a related term): one
+   tinted block with an accent on its leading edge. The dt and its dd are
+   separate boxes with the same edges, so the tint and the bar run through. */
 .glossary-section dl dt:target,
 .glossary-section dl dt:target + dd {
   background: oklch(from var(--color-interactive) l c h / 0.08);
-  border-radius: var(--radius-s);
-  outline: var(--border-width-medium, 2px) solid var(--color-interactive);
-  outline-offset: var(--size-xs);
+  box-shadow: inset var(--border-width-thick, 4px) 0 0 var(--color-interactive);
 }
 
-/* "See also" cross-reference links */
+.glossary-section dl dt:target {
+  border-start-end-radius: var(--radius-s);
+}
+
+.glossary-section dl dt:target + dd {
+  border-end-end-radius: var(--radius-s);
+}
+
+.glossary-section:dir(rtl) dl dt:target,
+.glossary-section:dir(rtl) dl dt:target + dd {
+  box-shadow: inset calc(-1 * var(--border-width-thick, 4px)) 0 0 var(--color-interactive);
+}
+
+@media (forced-colors: active) {
+  .glossary-section dl dt:target,
+  .glossary-section dl dt:target + dd {
+    border-inline-start: var(--border-width-thick, 4px) solid Highlight;
+    box-shadow: none;
+  }
+}
+
+/* Relations line (broader / related / also known as): quieter than the
+   definition, with ordinary links */
+.glossary-section dl dd [data-relations] {
+  color: var(--color-text-muted);
+}
+
 .glossary-section dl dd a {
-  font-style: italic;
-  font-size: var(--font-size-s);
+  font-size: inherit;
 }

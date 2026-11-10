@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "glossary-index"
-description: "Interactive glossary wrapper with live search filtering, scroll-spy letter tracking and copyable term permalinks."
+description: "Interactive glossary wrapper with live search filtering and scroll-spy letter tracking; copyable term permalinks are optional."
 elementName: glossary-index
 category: component
 currentPath: /docs/elements/web-components/glossary-index/
@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>&lt;glossary-index&gt;</code> component wraps a static <code>&lt;dl&gt;</code>-based glossary to add live search filtering, scroll-spy active letter tracking, and a copyable permalink on every term. Without JavaScript, the glossary is fully readable with anchor link jump navigation.</p>
+  <p>The <code>&lt;glossary-index&gt;</code> component wraps a static <code>&lt;dl&gt;</code>-based glossary to add live search filtering and scroll-spy active letter tracking. A glossary is mostly linked <em>to</em>: a term in prose links to its entry here, and the entry it lands on is highlighted. Without JavaScript, the glossary is fully readable with anchor link jump navigation.</p>
 
   <browser-window
     src="/docs/examples/demos/glossary.html"
@@ -57,6 +57,7 @@ crumbLabel: Web Components
     </thead>
     <tbody>
       <tr><td><code>placeholder</code></td><td>string</td><td><code>"Filter terms…"</code></td><td>Placeholder hint for the search input</td></tr>
+      <tr><td><code>permalinks</code></td><td>boolean</td><td>&mdash;</td><td>Add a copy-link <code>#</code> beside each term that has an <code>id</code> (off by default)</td></tr>
       <tr><td><code>data-label-filter</code></td><td>string</td><td><code>"Filter glossary terms"</code></td><td>Accessible name of the search input (a placeholder is not a label)</td></tr>
       <tr><td><code>data-label-matches-one</code> / <code>-other</code></td><td>string</td><td><code>"{count} term matches"</code> / <code>"{count} terms match"</code></td><td>Polite match-count announcement (<code>Intl.PluralRules</code>; any category works)</td></tr>
       <tr><td><code>data-label-all-one</code> / <code>-other</code></td><td>string</td><td><code>"Showing all {count} terms"</code></td><td>Announcement when the filter is cleared</td></tr>
@@ -135,8 +136,9 @@ crumbLabel: Web Components
   <ul>
     <li><strong>Search filtering:</strong> A search input (in a <code>&lt;search&gt;</code> landmark) is injected at the top of an inner <code>&lt;main&gt;</code>, otherwise just before the <code>.glossary-jump</code> nav, otherwise after the first heading. Typing filters terms in real time, hiding non-matching terms and emptied sections. A visible message appears when nothing matches.</li>
     <li><strong>Term groups:</strong> Filtering walks real <code>&lt;dl&gt;</code> groups &mdash; several <code>&lt;dt&gt;</code> sharing one <code>&lt;dd&gt;</code>, several <code>&lt;dd&gt;</code> for one term, or <code>&lt;div&gt;</code>-wrapped groups &mdash; and hides or shows each group as a whole.</li>
-    <li><strong>Scroll-spy:</strong> As the user scrolls, the active letter in the jump navigation gets <code>aria-current="true"</code> (styled bold in the interactive colour).</li>
-    <li><strong>Permalinks:</strong> Every <code>&lt;dt&gt;</code> with an <code>id</code> gets a <code>#</code> link. Activating it goes to the term (focus, history, <code>:target</code>) and copies the term&rsquo;s URL to the clipboard. Jump links and permalinks stay on the page under <code>&lt;base href&gt;</code>.</li>
+    <li><strong>Scroll-spy:</strong> As the user scrolls, the active letter in the jump navigation gets <code>aria-current="true"</code> (styled bold in the interactive colour). The current letter is the last section whose top has passed a third of the way down the viewport, so the first letter is current at the top of the page however short its section is.</li>
+    <li><strong>Arriving at a term:</strong> A link to a term&rsquo;s <code>id</code> (from prose, or a related term) highlights the term and its definition as one tinted block with an accent on its leading edge, clear of a sticky header.</li>
+    <li><strong>Permalinks (optional):</strong> With the <code>permalinks</code> attribute, every <code>&lt;dt&gt;</code> with an <code>id</code> gets a <code>#</code> link, shown on hover or focus. Activating it goes to the term (focus, history, <code>:target</code>) and copies the term&rsquo;s URL to the clipboard. Jump links and permalinks stay on the page under <code>&lt;base href&gt;</code>.</li>
     <li><strong>Deep links:</strong> URL hash is updated when clicking jump links, allowing direct links to specific letters.</li>
     <li><strong>Progressive enhancement:</strong> Without JavaScript, the static markup provides a fully functional glossary with working anchor links.</li>
   </ul>

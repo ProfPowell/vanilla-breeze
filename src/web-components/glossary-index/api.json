@@ -2,9 +2,10 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "glossary-index",
   "type": "web-component",
-  "description": "Interactive glossary with search filtering, scroll-spy letter tracking and copyable term permalinks",
+  "description": "Interactive glossary with search filtering and scroll-spy letter tracking; copyable term permalinks are opt-in",
   "attributes": [
     { "name": "placeholder",              "kind": "host-api", "purpose": "config", "type": "string", "default": "Filter terms…", "description": "Placeholder text for the injected search input (a hint, not its label — see data-label-filter)" },
+    { "name": "permalinks",               "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Add a copy-link # beside each term that has an id. Off by default: a glossary is mostly linked to, from terms in prose" },
     { "name": "data-label-filter",        "kind": "data", "purpose": "config", "type": "string", "default": "Filter glossary terms", "description": "Accessible name of the search input" },
     { "name": "data-label-matches-one",   "kind": "data", "purpose": "config", "type": "string", "default": "{count} term matches", "description": "Polite match-count announcement for the Intl.PluralRules \"one\" category ({count} is replaced). Any category works: -few, -many, -zero, -two." },
     { "name": "data-label-matches-other", "kind": "data", "purpose": "config", "type": "string", "default": "{count} terms match", "description": "Match-count announcement for the \"other\" category and the fallback for unset categories" },
@@ -15,7 +16,7 @@
     { "name": "data-label-copied",        "kind": "data", "purpose": "config", "type": "string", "default": "Link copied to clipboard", "description": "Screen-reader announcement after a permalink copies the term URL" }
   ],
   "childAttributes": [
-    { "name": "id", "on": "dt", "type": "string", "description": "Term anchor. Each dt with an id gets a permalink that follows the fragment and copies the term URL." }
+    { "name": "id", "on": "dt", "type": "string", "description": "Term anchor: the target of links from prose and related terms (highlighted on arrival). With permalinks, each dt with an id also gets a # link that follows the fragment and copies the term URL." }
   ],
   "structure": [
     { "element": "nav.glossary-jump", "required": false, "description": "Letter jump navigation; its fragment links get aria-current=\"true\" for the section in view and aria-disabled while their section is filtered out" },

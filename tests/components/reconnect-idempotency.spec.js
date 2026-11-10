@@ -220,8 +220,11 @@ const BEHAVIOUR = [
     run: `const n = await fired(el, 'tab-set:change', () => el.querySelectorAll('summary')[1].click());
           return [n, el.querySelectorAll('summary')[1].getAttribute('aria-expanded')];`, expected: [1, 'true'] },
   { name: 'time-index', demo: 'examples/demos/timeline-changelog.html', selector: 'time-index',
-    run: `const btn = q(el, '[data-timeline-controls] button'); btn.click(); await tick();
-          return btn.getAttribute('aria-pressed');`, expected: 'true' },
+    run: `const order = q(el, '[data-timeline-order]');
+          const first = () => (el.querySelector('.changelog-entries > :is(li, article, section)') || {}).textContent;
+          const before = first();
+          order.value = 'oldest'; order.dispatchEvent(new Event('change', { bubbles: true })); await tick();
+          return [el.querySelectorAll('[data-timeline-order]').length, first() !== before];`, expected: [1, true] },
   { name: 'time-picker', demo: 'examples/demos/time-picker-basic.html', selector: 'time-picker',
     run: `q(el, '.time-trigger-icon').click(); await tick();
           return q(el, '.time-input').getAttribute('aria-expanded');`, expected: 'true' },

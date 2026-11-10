@@ -344,7 +344,7 @@ test.describe('glossary-wc', () => {
 });
 
 const INDEX = `
-  <glossary-index placeholder="Filter terms…">
+  <glossary-index placeholder="Filter terms…" permalinks>
     <h1>Glossary</h1>
     <p class="lead">Lead.</p>
     <nav class="glossary-jump" aria-label="Jump to letter">
@@ -456,5 +456,46 @@ test.describe('glossary-index', () => {
     });
     expect(style.on).toBe('600');
     expect(style.on).not.toBe(style.off);
+  });
+
+  test('scroll-spy: the first letter is current at the top, even when its section is short', async ({ page }) => {
+    await page.setViewportSize({ width: 1000, height: 700 });
+    await load(page, INDEX, { modules: ['glossary-index'], ready: 'glossary-index[data-upgraded]' });
+    const current = () => page.locator('.glossary-jump a[aria-current="true"]').allTextContents();
+    await expect.poll(current).toEqual(['A']);
+    await page.evaluate(() => document.getElementById('glossary-p').scrollIntoView({ block: 'start' }));
+    await expect.poll(current).toEqual(['P']);
+    await page.evaluate(() => scrollTo(0, 0));
+    await expect.poll(current).toEqual(['A']);
+  });
+
+  test('no "#" permalinks unless asked for', async ({ page }) => {
+    await load(page, INDEX.replace(' permalinks>', '>'), { modules: ['glossary-index'], ready: 'glossary-index[data-upgraded]' });
+    await expect(page.locator('.glossary-permalink')).toHaveCount(0);
+    await expect(page.locator('glossary-index input[type="search"]')).toHaveCount(1);
+    await load(page, INDEX, { modules: ['glossary-index'], ready: 'glossary-index[data-upgraded]' });
+    await expect(page.locator('.glossary-permalink')).toHaveCount(4);
+  });
+
+  test('a targeted term is one highlighted block: no outlines, term and definition share edges', async ({ page }) => {
+    const url = await load(page, INDEX, { modules: ['glossary-index'], ready: 'glossary-index[data-upgraded]' });
+    await page.goto(`${url}#term-attribute`);
+    await page.waitForSelector('glossary-index[data-upgraded]');
+    const r = await page.evaluate(() => {
+      const dt = document.getElementById('term-attribute');
+      const dd = document.getElementById('dd-attr-1');
+      const [a, b] = [dt.getBoundingClientRect(), dd.getBoundingClientRect()];
+      const cs = (el) => getComputedStyle(el);
+      const plain = document.getElementById('term-accessibility');
+      return {
+        outlines: [cs(dt).outlineStyle, cs(dd).outlineStyle],
+        tinted: cs(dt).backgroundColor !== 'rgba(0, 0, 0, 0)' && cs(dt).backgroundColor === cs(dd).backgroundColor,
+        bar: cs(dt).boxShadow !== 'none' && cs(dt).boxShadow === cs(dd).boxShadow,
+        sameEdges: a.left === b.left && a.right === b.right,
+        contiguous: Math.abs(a.bottom - b.top) < 1,
+        others: cs(plain).backgroundColor,
+      };
+    });
+    expect(r).toEqual({ outlines: ['none', 'none'], tinted: true, bar: true, sameEdges: true, contiguous: true, others: 'rgba(0, 0, 0, 0)' });
   });
 });

@@ -888,6 +888,7 @@ module.exports = {
   "glossary-index": {
     attributes: {
       "placeholder": {},
+      "permalinks": { boolean: true },
       "data-label-filter": {},
       "data-label-matches-one": {},
       "data-label-matches-other": {},

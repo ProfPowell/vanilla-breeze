@@ -7600,7 +7600,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "glossary-index",
     "type": "web-component",
-    "description": "Interactive glossary with search filtering, scroll-spy letter tracking and copyable term permalinks",
+    "description": "Interactive glossary with search filtering and scroll-spy letter tracking; copyable term permalinks are opt-in",
     "attributes": [
       {
         "name": "placeholder",
@@ -7609,6 +7609,13 @@ export default {
         "type": "string",
         "default": "Filter terms…",
         "description": "Placeholder text for the injected search input (a hint, not its label — see data-label-filter)"
+      },
+      {
+        "name": "permalinks",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Add a copy-link # beside each term that has an id. Off by default: a glossary is mostly linked to, from terms in prose"
       },
       {
         "name": "data-label-filter",
@@ -7680,7 +7687,7 @@ export default {
         "name": "id",
         "on": "dt",
         "type": "string",
-        "description": "Term anchor. Each dt with an id gets a permalink that follows the fragment and copies the term URL."
+        "description": "Term anchor: the target of links from prose and related terms (highlighted on arrival). With permalinks, each dt with an id also gets a # link that follows the fragment and copies the term URL."
       }
     ],
     "structure": [
