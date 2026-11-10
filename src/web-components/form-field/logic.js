@@ -124,6 +124,17 @@ class FormField extends VBElement {
       this.validate();
     });
 
+    // A form reset returns the field to neutral: without this an emptied
+    // field kept data-valid (the green tick) or a stale error. The reset
+    // event fires before the values change and can still be cancelled, so
+    // act after the dispatch.
+    const form = /** @type {any} */ (control).form ?? this.closest('form');
+    if (form instanceof HTMLFormElement) {
+      this.listen(form, 'reset', (e) => {
+        setTimeout(() => { if (!e.defaultPrevented && this.isConnected) this.clearError(); });
+      });
+    }
+
     this.#syncAria(this.hasAttribute('data-invalid'));
     return true;
   }

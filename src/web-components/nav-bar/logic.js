@@ -5,7 +5,9 @@
  * 1. HTML-first — wrap existing `<a>` children. The component sets
  *    `aria-current="page"` on the link best matching `location.pathname`
  *    (exact wins, longest-prefix breaks ties). A popstate listener
- *    keeps the active state fresh.
+ *    keeps the active state fresh. When no managed link matches but a
+ *    link nested beside a `data-nav-link` trigger does (a drop-down menu
+ *    item), the trigger gets `aria-current="true"`: the current section.
  * 2. JS-first — assign `.items = [{ href, label, ... }]` to rebuild
  *    children with the default renderer. Idempotent.
  *
@@ -195,6 +197,7 @@ class NavBar extends VBElement {
     const previous = this.current;
     const next = this.#matchPathname();
     this.#applyCurrent(next);
+    if (next == null) this.#markSection();
     if (previous !== next) {
       this.dispatchEvent(new CustomEvent('nav-bar:current-changed', {
         detail: { current: next, previous, source },
@@ -250,6 +253,39 @@ class NavBar extends VBElement {
     const match = exact || bestPrefix;
     if (!match) return null;
     return match.getAttribute('data-route') || match.getAttribute('href');
+  }
+
+  /**
+   * Section fallback: no managed link matches the location, but a link
+   * nested beside one does (a menu item inside the same `<drop-down>` or
+   * `<li>` as a `data-nav-link` trigger). The trigger then names the
+   * current section, so it gets `aria-current="true"` (not "page": the
+   * trigger's own href is a different page). `.current` stays null.
+   * Exact beats prefix, longest prefix wins, first in DOM order breaks ties.
+   */
+  #markSection() {
+    const path = normalizePath(window.location.pathname);
+    const origin = window.location.origin;
+    const exactOnly = this.getAttribute('data-match') === 'exact';
+    let best = null;
+    let bestScore = -1;
+    for (const trigger of this.querySelectorAll('a[data-nav-link]')) {
+      const group = trigger.closest('drop-down, li');
+      if (!group || !this.contains(group)) continue;
+      for (const link of group.querySelectorAll('a[href]:not([data-nav-link])')) {
+        const raw = link.getAttribute('href');
+        if (!raw || raw.startsWith('#')) continue;
+        let url;
+        try { url = new URL(raw, document.baseURI); } catch { continue; }
+        if (!/^https?:$/.test(url.protocol) || url.origin !== origin) continue;
+        const linkPath = normalizePath(url.pathname);
+        let score = -1;
+        if (linkPath === path) score = Number.MAX_SAFE_INTEGER;
+        else if (!exactOnly && linkPath !== '/' && path.startsWith(linkPath + '/')) score = linkPath.length;
+        if (score > bestScore) { best = trigger; bestScore = score; }
+      }
+    }
+    if (best) best.setAttribute('aria-current', 'true');
   }
 
   #applyCurrent(value) {

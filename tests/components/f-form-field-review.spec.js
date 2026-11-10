@@ -417,3 +417,28 @@ test('data-invalid (server-side error) shows the error icon, not the check', asy
   expect(good.mask).toContain('M20');
   expect(bad.bg).not.toBe(good.bg);
 });
+
+test('form reset returns fields to neutral (no stale valid tick or error)', async ({ page }) => {
+  await load(page, `<form id="f">
+    <form-field id="a"><label for="n">Name</label><input id="n" name="n" required /><output class="error" for="n" aria-live="polite">Required</output></form-field>
+    <form-field id="b"><label for="e">Email</label><input id="e" name="e" type="email" required /><output class="error" for="e" aria-live="polite">Required</output></form-field>
+    <button type="reset" id="r">Reset</button></form>`);
+  await page.fill('#n', 'Ada');
+  await page.locator('#n').blur();
+  await page.evaluate(() => document.getElementById('b').validate());
+  const state = () => page.evaluate(() => ['a', 'b'].map((id) => {
+    const f = document.getElementById(id);
+    return [f.hasAttribute('data-valid'), f.hasAttribute('data-invalid'), f.querySelector('input').getAttribute('aria-invalid'), f.querySelector('output').textContent.trim()];
+  }));
+  expect((await state())[0][0]).toBe(true);
+  expect((await state())[1][1]).toBe(true);
+  await page.click('#r');
+  await expect.poll(state).toEqual([[false, false, null, ''], [false, false, null, '']]);
+  // A cancelled reset changes nothing.
+  await page.fill('#n', 'Ada');
+  await page.locator('#n').blur();
+  await page.evaluate(() => document.getElementById('f').addEventListener('reset', (e) => e.preventDefault()));
+  await page.click('#r');
+  await page.waitForTimeout(100);
+  expect((await state())[0][0]).toBe(true);
+});

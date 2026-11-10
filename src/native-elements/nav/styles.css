@@ -41,7 +41,10 @@ nav a {
     background-color var(--duration-fast) var(--ease-default);
 }
 
-nav a:hover {
+/* A .button inside a nav (a pager, a call to action) keeps its own colours:
+   this rule out-specifies .button, and painted the nav hover text colour on
+   the button's hover fill (blue on darker blue in the default theme). */
+nav a:hover:where(:not(.button)) {
   background: var(--_hover-bg);
   color: var(--_hover-color);
 }
@@ -65,6 +68,7 @@ nav a:focus-visible {
    `a:not([class]) { text-decoration: none }`, so it is locked the same way
    and changed through --nav-active-decoration (or per variant). */
 nav a[aria-current="page"],
+nav a[aria-current="true"],
 nav [aria-current="page"] > a,
 nav a.active {
   background: var(--_active-bg);
@@ -969,6 +973,17 @@ nav drop-down:has(> button[data-dropdown-toggle]) {
   &:has(> [data-trigger]:is([aria-current="page"], [aria-current="true"], .active)) {
     background: var(--_active-bg);
     color: var(--_active-color);
+
+    /* The current item keeps its fill while hovered or open. The open rule
+       above is the more specific one, so without this the fill dropped to
+       the hover background under a label locked to --_active-color (white on
+       light grey in the default theme: the label vanished). Mixing toward
+       the text colour moves the fill away from the label in both modes. */
+    &:hover,
+    &:has(> button[data-dropdown-toggle][aria-expanded="true"]) {
+      background: color-mix(in oklch, var(--_active-bg) 88%, var(--color-text));
+      color: var(--_active-color);
+    }
   }
 }
 

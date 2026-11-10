@@ -23,7 +23,13 @@ input:where([type="submit" i], [type="button" i], [type="reset" i]) {
      y = 0.1791. A fixed white failed on the L65% dark-mode primary (~3.3:1)
      and on custom --btn-color fills (3650 follow-up). */
   --_text-k: clamp(0, (0.1791 - y) * 100000, 1);
-  --_text: color(from var(--_color) xyz-d65
+  /* --_fill is the fill being painted right now: the rest colour, or the
+     hover/active/pressed state colour. The label is computed from it, not
+     from --_color, so it stays readable when a state moves the fill across
+     the black/white threshold (dark mode: a black label on the L65% primary
+     dropped to ~3.6:1 on its darker hover fill). */
+  --_fill: var(--_color);
+  --_text: color(from var(--_fill) xyz-d65
     calc(0.9505 * var(--_text-k))
     var(--_text-k)
     calc(1.089 * var(--_text-k)));
@@ -43,7 +49,7 @@ input:where([type="submit" i], [type="button" i], [type="reset" i]) {
   padding-inline-end: calc(var(--btn-padding-inline-end, var(--btn-padding-inline, var(--size-m))) - var(--_bw));
   min-block-size: var(--size-touch-min);
   min-inline-size: var(--size-touch-min);
-  background: var(--_color);
+  background: var(--_fill);
   color: var(--_text);
   border: var(--_bw) solid transparent;
   border-radius: var(--radius-m);
@@ -52,24 +58,26 @@ input:where([type="submit" i], [type="button" i], [type="reset" i]) {
   text-transform: var(--btn-text-transform, none);
   letter-spacing: var(--btn-letter-spacing, normal);
   cursor: var(--cursor-custom-pointer, pointer);
-  transition: background var(--duration-fast) var(--ease-default);
+  transition:
+    background var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
 
   /* Hover only where hover exists (no sticky hover on touch). Disabled and
      aria-disabled buttons never react. The :where() guard adds no
      specificity, so existing overrides keep winning. */
   @media (hover: hover) {
     &:hover:where(:not(:disabled, [aria-disabled="true"])) {
-      background: var(--_hover);
+      --_fill: var(--_hover);
     }
   }
 
   &:active:where(:not(:disabled, [aria-disabled="true"])) {
-    background: var(--_active);
+    --_fill: var(--_active);
   }
 
   /* Toggle buttons */
   &[aria-pressed="true"] {
-    background: var(--_active);
+    --_fill: var(--_active);
     box-shadow: var(--shadow-inner);
   }
 
@@ -109,6 +117,7 @@ input:where([type="submit" i], [type="button" i], [type="reset" i]) {
     }
 
     &[aria-pressed="true"] {
+      --_fill: var(--_color);
       background: var(--_color);
       color: var(--_text);
       border-color: var(--_color);
@@ -189,7 +198,7 @@ button[aria-busy="true"],
   button,
   .button,
   input:where([type="submit" i], [type="button" i], [type="reset" i]) {
-    --_text: contrast-color(var(--_color));
+    --_text: contrast-color(var(--_fill));
   }
 }
 

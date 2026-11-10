@@ -1805,7 +1805,7 @@ Top-level navigation primitive: keeps `aria-current="page"` on the link that mat
 | `data-match` | `exact` | Exact pathname only (default: exact wins, longest prefix breaks ties, then DOM order) |
 | `data-label-new-tab` | string | SR suffix for external `.items` links (default `(opens in new tab)`) |
 
-Child attributes: `href` (resolved against the base URL; matched by origin + pathname, trailing slash/query/hash ignored; other-origin, non-http(s) and `#` links never match), `data-route` (`.current` target, falls back to `href`), `data-nav-link` (nested mode: when any descendant `<a>` has it, those are the candidates instead of direct `<a>` children).
+Child attributes: `href` (resolved against the base URL; matched by origin + pathname, trailing slash/query/hash ignored; other-origin, non-http(s) and `#` links never match), `data-route` (`.current` target, falls back to `href`), `data-nav-link` (nested mode: when any descendant `<a>` has it, those are the candidates instead of direct `<a>` children). Section fallback: when no managed link matches but a link nested beside a `data-nav-link` trigger does (same `<drop-down>` or `<li>`), the trigger gets `aria-current="true"`; `.current` stays null.
 
 Landmark: host gets `role="navigation"` unless it contains a `<nav>`.
 
