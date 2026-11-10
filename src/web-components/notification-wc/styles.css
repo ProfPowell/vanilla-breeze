@@ -404,18 +404,70 @@ notification-wc[data-mode="panel"] > article {
   .notification-trigger { transition: none; }
 }
 
-/* ══ Inside a mobile menu panel ══════════════════════════════════
-   A floating 360px dropdown has nowhere to go in a narrow menu: the list
-   opens in the menu's own flow, on a full line below the bell. */
-.mobile-menu-panel notification-wc[data-mode="panel"] {
-  display: contents;
+/* ══ Sheet ═══════════════════════════════════════════════════════
+   On a narrow screen, or with the bell inside a popover (a mobile menu),
+   the panel opens in the top layer as a sheet, like the site search
+   dialog, instead of a dropdown that would be clipped or squeezed. The
+   component adds popover="manual" while it is open this way. */
+.notification-panel:popover-open {
+  position: fixed;
+  inset: 0;
+  margin-block: 10vh auto;
+  margin-inline: auto;
+  padding: 0;
+  inline-size: min(90vw, 600px);
+  max-inline-size: 100%;
+  block-size: fit-content;
+  max-block-size: 70vh;
+  color: var(--color-text);
+  box-shadow: var(--shadow-xl, var(--shadow-l));
 }
 
-.mobile-menu-panel .notification-panel {
-  position: static;
-  flex: 1 0 100%;
-  inline-size: auto;
-  max-inline-size: none;
-  max-block-size: 50vh;
-  box-shadow: none;
+.notification-panel:popover-open::backdrop {
+  background: oklch(0% 0 0 / 0.5);
+}
+
+/* The close button belongs to the sheet: a dropdown closes by clicking away */
+.notification-close {
+  all: unset;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: var(--radius-s);
+  color: var(--color-text-muted);
+  cursor: var(--cursor-custom-pointer, pointer);
+}
+
+.notification-panel:popover-open .notification-close {
+  display: inline-flex;
+}
+
+.notification-close:hover { color: var(--color-text); background: var(--color-hover-bg); }
+.notification-close:focus-visible {
+  outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+  outline-offset: var(--focus-ring-offset, 2px);
+}
+
+.notification-panel:popover-open .notification-header strong {
+  margin-inline-end: auto;
+  font-size: var(--font-size-m);
+}
+
+@media (width < 37.5rem) { /* --bp-s: full-width sheet from the top edge */
+  .notification-panel:popover-open {
+    margin-block: 0 auto;
+    inline-size: 100%;
+    max-block-size: 100dvh;
+    border-radius: 0;
+    border-inline: 0;
+    border-block-start: 0;
+  }
+}
+
+@media (forced-colors: active) {
+  .notification-panel:popover-open {
+    border-color: CanvasText;
+  }
 }

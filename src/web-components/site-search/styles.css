@@ -108,8 +108,14 @@ site-search {
     }
   }
 
+  /* Close button: the Esc key cap for keyboards, an × on narrow screens */
   .shortcut {
+    all: unset;
+    box-sizing: border-box;
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: var(--size-3xs) var(--size-xs);
     background: var(--color-surface-raised);
     border: var(--border-width-thin) solid var(--color-border);
@@ -117,6 +123,25 @@ site-search {
     font-size: var(--font-size-xs);
     font-family: var(--font-mono);
     color: var(--color-text-muted);
+    cursor: var(--cursor-custom-pointer, pointer);
+
+    & kbd {
+      all: unset;
+    }
+
+    & icon-wc {
+      display: none;
+    }
+
+    &:hover {
+      color: var(--color-text);
+      border-color: var(--color-text-muted);
+    }
+
+    &:focus-visible {
+      outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+      outline-offset: var(--focus-ring-offset, 2px);
+    }
   }
 
   /* --- Results --- */
@@ -186,7 +211,9 @@ site-search {
 
   .hint {
     display: flex;
+    align-items: center;
     gap: var(--size-xs);
+    white-space: nowrap;
 
     & kbd {
       padding: var(--size-3xs) var(--size-2xs);
@@ -199,6 +226,8 @@ site-search {
   }
 
   .powered {
+    white-space: nowrap;
+
     & a {
       color: inherit;
       text-decoration: underline;
@@ -247,9 +276,39 @@ site-search {
       animation: vb-slide-down var(--motion-enter-duration) var(--ease-out);
     }
 
+    /* No room, and usually no keyboard: drop the key hints, keep the credit */
+    .hint {
+      display: none;
+    }
+
     .footer {
-      flex-direction: column;
+      justify-content: flex-end;
+      padding-inline: var(--size-m);
+    }
+
+    .input-wrapper {
       gap: var(--size-xs);
+      padding: var(--size-s) var(--size-m);
+    }
+
+    .input {
+      min-inline-size: 0;
+      font-size: var(--font-size-m);
+    }
+
+    /* The close button becomes a touch-sized × */
+    .shortcut {
+      inline-size: 2.5rem;
+      block-size: 2.5rem;
+      padding: 0;
+
+      & kbd {
+        display: none;
+      }
+
+      & icon-wc {
+        display: inline-flex;
+      }
     }
   }
 

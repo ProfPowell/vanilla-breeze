@@ -13,12 +13,14 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 
 - **mobile-menu: `data-mobile-menu` moves a header tool into the panel** — A sibling of `<mobile-menu>` marked `data-mobile-menu` (one element that should exist once, such as a notification bell) is moved into the panel in mobile mode, at the `data-mobile-menu-slot` element when there is one, and back to its place on leaving it. If the tool carries `data-unread`, the menu button shows a dot. The docs site's bell now collapses into the menu this way.
-- **notification-wc: `data-unread` and an in-menu list** — The element reflects its unread count as `data-unread`. Inside a `.mobile-menu-panel` its list opens in the menu's flow instead of as a 360px floating dropdown.
+- **notification-wc: `data-unread`, and a sheet on small screens** — The element reflects its unread count as `data-unread`. On a screen narrower than 37.5rem, or when the bell is inside a popover such as a mobile menu, the panel opens as a sheet in the top layer (full width from the top edge on a phone, centred otherwise) with a backdrop and a close button (`data-label-close`), instead of a 360px dropdown that would be clipped or squeezed. The menu behind it stays open.
+- **site-search: close button, and a layout that fits a phone** — The Esc key cap beside the input is now a button (`data-label-dismiss`). Below 37.5rem it becomes a touch-sized ×, the keyboard hints are dropped from the footer, and the input row is tighter, so nothing wraps or truncates at 300px.
 - **site-search: `data-label-count-more`** — When the index matches more results than the eight listed, the status reads "8 of 23 results" (`{count}` listed, `{total}` matched) instead of reporting the cap as the count.
 
 ### Fixed
 
-- **page-tools: floating button collided with a fab-stack** — On narrow screens the collapsed toolbar's button took the bottom corner for itself and sat on top of a `<fab-stack>` there (the docs site's settings gear). When the page has a `<fab-stack>` the button now joins it as its last child and returns home when the toolbar expands; its panel opens just above the button wherever the stack puts it, positioned before it paints.
+- **page-tools: floating button collided with a fab-stack** — On narrow screens the collapsed toolbar's button took the bottom corner for itself and sat on top of a `<fab-stack>` there (the docs site's settings gear). When the page has a `<fab-stack>` the button now joins it as its last child and returns home when the toolbar expands; its panel opens just above the button wherever the stack puts it, positioned before it paints. In the stack the button takes its neighbours' size and look.
+- **fab-stack: a hidden back-to-top left a hole** — A `[data-back-to-top]` that is not showing was only made invisible, so it still took a slot in the stack. It now takes no room until it shows.
 - **site-search: stray dot in the dialog** — The status line used the class `status`, which is also the global status-dot pattern, so a "●" showed under the input (and before the result count). The line is now `search-status`, takes no room while empty, and the empty dialog has one divider instead of two. `<emoji-picker>`'s hidden live region drops the same dot.
 
 ## [0.6.1] - 2026-11-09

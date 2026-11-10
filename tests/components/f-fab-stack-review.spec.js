@@ -133,6 +133,32 @@ const BTT_PAGE = `
   <button id="after">After</button>
   <p id="spacer">Tall content</p>`;
 
+test('a hidden back-to-top takes no room in the stack; a visible one does', async ({ page }) => {
+  await load(page, `
+    <main><p id="spacer">Text</p></main>
+    <fab-stack id="stack">
+      <button type="button" id="gear" style="inline-size:44px;block-size:44px">G</button>
+      <a href="#" id="top" data-back-to-top aria-label="Back to top">&uarr;</a>
+      <button type="button" id="tools" style="inline-size:44px;block-size:44px">T</button>
+    </fab-stack>`, { head: '<style>#spacer { min-block-size: 400vh; } fab-stack { --fab-stack-gap: 10px; }</style>' });
+  await page.waitForSelector('#top[data-back-to-top-init]:not([data-state-visible])', { state: 'attached' });
+  const gap = async () => (await rect(page, '#gear')).top - (await rect(page, '#tools')).bottom;
+  // Hidden: the two buttons sit one gap apart
+  await expect.poll(gap).toBe(10);
+  expect(await page.locator('#top').evaluate((el) => getComputedStyle(el).display)).toBe('none');
+  await page.evaluate(() => {
+    const y = innerHeight * 2;
+    document.body.scrollTop = y;
+    document.documentElement.scrollTop = y;
+    window.scrollTo(0, y);
+  });
+  await page.waitForSelector('#top[data-state-visible]');
+  // Visible: it sits between them, a gap either side
+  await expect.poll(gap).toBe(10 + 44 + 10);
+  const t = await rect(page, '#top');
+  expect(t.top).toBe((await rect(page, '#tools')).bottom + 10);
+});
+
 test('hidden back-to-top is skipped by Tab', async ({ page }) => {
   await load(page, BTT_PAGE);
   await page.waitForSelector('#btt[data-back-to-top-init]:not([data-state-visible])', { state: 'attached' });

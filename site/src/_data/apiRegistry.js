@@ -9373,6 +9373,14 @@ export default {
         "description": "Panel mode: Mark-all button text."
       },
       {
+        "name": "data-label-close",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Close notifications",
+        "description": "(panel) Accessible name of the close button shown when the panel opens as a sheet"
+      },
+      {
         "name": "data-label-tabs",
         "kind": "data",
         "purpose": "config",
@@ -13743,6 +13751,14 @@ export default {
         "type": "string",
         "default": "to close",
         "description": "Footer hint after Esc"
+      },
+      {
+        "name": "data-label-dismiss",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Close search",
+        "description": "Accessible name of the close button beside the input (the Esc key cap; an × on narrow screens)"
       },
       {
         "name": "data-label-powered",

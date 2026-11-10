@@ -254,6 +254,43 @@ test.describe('site-search', () => {
     await expect(page.locator('#s [role="option"]')).toHaveCount(8);
   });
 
+  test('close button beside the input; small screens drop the key hints and fit the window', async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 700 });
+    await load(page, SEARCH, { modules: ['site-search'] });
+    await page.click('#s [data-trigger]');
+    const close = page.getByRole('button', { name: 'Close search' });
+    await expect(close).toBeVisible();
+    await expect(close).toHaveText('Esc');
+    await expect(page.locator('#s .hint')).toBeVisible();
+    await close.click();
+    await expect(page.locator('#s dialog')).toHaveJSProperty('open', false);
+    await expect(page.locator('#s [data-trigger]')).toBeFocused();
+
+    await page.setViewportSize({ width: 300, height: 700 });
+    await page.click('#s [data-trigger]');
+    await expect(page.locator('#s .hint')).toBeHidden();
+    const r = await page.evaluate(() => {
+      const d = document.querySelector('#s dialog');
+      const box = d.getBoundingClientRect();
+      const btn = d.querySelector('.shortcut').getBoundingClientRect();
+      const foot = d.querySelector('.footer');
+      const input = d.querySelector('input').getBoundingClientRect();
+      return {
+        width: box.width, left: box.left,
+        closeInside: btn.right <= box.right && btn.left >= box.left,
+        touch: btn.width >= 40 && btn.height >= 40,
+        icon: getComputedStyle(d.querySelector('.shortcut icon-wc')).display !== 'none',
+        key: getComputedStyle(d.querySelector('.shortcut kbd')).display,
+        footerOneLine: foot.getBoundingClientRect().height < 48,
+        inputRoom: input.width > 150,
+        overflow: d.scrollWidth > d.clientWidth,
+      };
+    });
+    expect(r).toEqual({ width: 300, left: 0, closeInside: true, touch: true, icon: true, key: 'none', footerOneLine: true, inputRoom: true, overflow: false });
+    await page.getByRole('button', { name: 'Close search' }).click();
+    await expect(page.locator('#s dialog')).toHaveJSProperty('open', false);
+  });
+
   test('data-label-* overrides UI strings', async ({ page }) => {
     await load(page, `<site-search id="s" data-label-placeholder="Rechercher…" data-label-dialog="Recherche" data-label-count="{count} résultats"><button type="button" data-trigger>R</button></site-search>`,
       { modules: ['site-search'] });

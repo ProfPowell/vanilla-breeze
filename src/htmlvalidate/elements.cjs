@@ -1083,6 +1083,7 @@ module.exports = {
       "data-label-unread": {},
       "data-label-title": {},
       "data-label-mark-all": {},
+      "data-label-close": {},
       "data-label-tabs": {},
       "data-label-all": {},
       "data-label-watching": {},
@@ -1581,6 +1582,7 @@ module.exports = {
       "data-label-navigate": {},
       "data-label-select": {},
       "data-label-close": {},
+      "data-label-dismiss": {},
       "data-label-powered": {}
     }
   },

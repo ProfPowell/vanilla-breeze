@@ -330,7 +330,7 @@ test.describe('site header (header.html)', () => {
     expect(await page.locator('mobile-menu > [data-trigger]').evaluate((el) => getComputedStyle(el, '::after').content)).not.toBe('none');
 
     // Open the menu: the bell is there, clear of the close button, and its
-    // list opens inside the panel rather than overflowing it
+    // list opens as a sheet over the menu rather than squeezed inside it
     await page.locator('mobile-menu > [data-trigger]').click();
     const bell = page.locator('.mobile-menu-panel notification-wc [data-trigger]');
     await expect(bell).toBeVisible();
@@ -341,13 +341,19 @@ test.describe('site header (header.html)', () => {
     });
     expect(overlap).toBe(false);
     await bell.click();
-    await expect(page.locator('.mobile-menu-panel .notification-panel')).toBeVisible();
-    const fit = await page.evaluate(() => {
-      const list = document.querySelector('.mobile-menu-panel .notification-panel').getBoundingClientRect();
-      const panel = document.querySelector('.mobile-menu-panel').getBoundingClientRect();
-      return list.left >= panel.left && list.right <= panel.right && getComputedStyle(document.querySelector('.mobile-menu-panel .notification-panel')).position === 'static';
+    const sheet = page.locator('.mobile-menu-panel .notification-panel');
+    await expect(sheet).toBeVisible();
+    const fit = await sheet.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { top: r.top, left: r.left, width: r.width, vw: innerWidth, topLayer: el.matches(':popover-open'), overflow: document.documentElement.scrollWidth > innerWidth };
     });
-    expect(fit).toBe(true);
+    // 375px wide: a full-width sheet from the top edge, in the top layer
+    expect(fit).toEqual({ top: 0, left: 0, width: 375, vw: 375, topLayer: true, overflow: false });
+    await expect(page.locator('.mobile-menu-panel')).toBeVisible();
+    // Its close button returns to the bell with the menu still open
+    await sheet.locator('.notification-close').click();
+    await expect(sheet).toBeHidden();
+    await expect(bell).toBeFocused();
     await expect(page.locator('.mobile-menu-panel')).toBeVisible();
 
     // Wide: one bell, back in the header after the menu

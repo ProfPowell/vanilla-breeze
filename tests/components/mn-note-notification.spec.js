@@ -156,6 +156,61 @@ test('notification-wc: focus moves into the dialog and Escape returns it', async
   await expect(dialog).toBeHidden();
 });
 
+test('notification-wc: dropdown on a wide screen; a sheet on a narrow one or inside a popover', async ({ page }) => {
+  // Wide, bell in the header: a dropdown under the bell, no close button
+  await page.setViewportSize({ width: 1000, height: 700 });
+  await load(page, PANEL);
+  await panelReady(page);
+  const trigger = page.locator('#n > [data-trigger]');
+  const panel = page.locator('#n .notification-panel');
+  await trigger.click();
+  await expect(panel).toBeVisible();
+  expect(await panel.evaluate((el) => [el.hasAttribute('popover'), getComputedStyle(el).position])).toEqual([false, 'absolute']);
+  await expect(panel.locator('.notification-close')).toBeHidden();
+  await page.keyboard.press('Escape');
+
+  // Narrow: a full-width sheet in the top layer with a backdrop and a close button
+  await page.setViewportSize({ width: 360, height: 700 });
+  await trigger.click();
+  await expect(panel).toBeVisible();
+  const sheet = await panel.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return { top: r.top, left: r.left, width: r.width, topLayer: el.matches(':popover-open'), overflow: document.documentElement.scrollWidth > innerWidth };
+  });
+  expect(sheet).toEqual({ top: 0, left: 0, width: 360, topLayer: true, overflow: false });
+  await expect(page.getByRole('dialog', { name: 'Notifications' })).toBeFocused();
+  await panel.getByRole('button', { name: 'Close notifications' }).click();
+  await expect(panel).toBeHidden();
+  await expect(trigger).toBeFocused();
+  expect(await panel.evaluate((el) => el.hasAttribute('popover'))).toBe(false);
+  // Escape and a click on the backdrop close it too
+  await trigger.click();
+  await expect(panel).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(panel).toBeHidden();
+  await trigger.click();
+  await expect(panel).toBeVisible();
+  await page.mouse.click(180, 650);
+  await expect(panel).toBeHidden();
+
+  // Wide, but inside a popover (a mobile menu at tablet width): still a sheet,
+  // centred, and the menu stays open behind it
+  await page.setViewportSize({ width: 800, height: 700 });
+  await load(page, `
+    <button type="button" id="open" popovertarget="menu">Menu</button>
+    <nav popover id="menu" style="inline-size:260px">${PANEL.replace('<header>', '<section>').replace('</header>', '</section>')}</nav>`);
+  await panelReady(page);
+  await page.locator('#open').click();
+  await page.locator('#n > [data-trigger]').click();
+  const inMenu = page.locator('#n .notification-panel');
+  await expect(inMenu).toBeVisible();
+  const box = await inMenu.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return { wide: r.width > 400, centred: Math.abs((r.left + r.right) / 2 - innerWidth / 2) < 2, topLayer: el.matches(':popover-open'), menuOpen: document.getElementById('menu').matches(':popover-open') };
+  });
+  expect(box).toEqual({ wide: true, centred: true, topLayer: true, menuOpen: true });
+});
+
 test('notification-wc: tabs pattern with aria-controls, tabpanels and arrow keys', async ({ page }) => {
   await load(page, PANEL);
   await panelReady(page);

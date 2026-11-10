@@ -47,6 +47,7 @@ const LABELS = {
   navigate: 'to navigate',
   select: 'to select',
   close: 'to close',
+  dismiss: 'Close search',
   powered: 'Powered by',
 };
 
@@ -308,7 +309,11 @@ class SiteSearch extends VBElement {
         h('div', { class: 'input-wrapper' }, [
           h('icon-wc', { name: 'search', class: 'icon' }),
           this.#input,
-          h('kbd', { class: 'shortcut', 'aria-hidden': 'true' }, ['Esc']),
+          // A real button: on a touch screen there is no Esc key to press
+          h('button', { type: 'button', class: 'shortcut', 'aria-label': this.#label('dismiss') }, [
+            h('kbd', {}, ['Esc']),
+            h('icon-wc', { name: 'x', size: 'sm' }),
+          ]),
         ]),
         this.#status,
         this.#resultsList,
@@ -353,6 +358,7 @@ class SiteSearch extends VBElement {
 
   /** Clicks on the ::backdrop target the dialog itself, outside its box. */
   #handleDialogClick = (/** @type {MouseEvent} */ e) => {
+    if (/** @type {Element} */ (e.target).closest?.('.shortcut')) { this.close(); return; }
     if (e.target !== this.#dialog) return;
     const r = this.#dialog.getBoundingClientRect();
     const inside = e.clientX >= r.left && e.clientX <= r.right

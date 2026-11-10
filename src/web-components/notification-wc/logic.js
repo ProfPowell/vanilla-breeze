@@ -61,6 +61,7 @@ const LABELS = {
   unread: '{n} unread',
   title: 'Notifications',
   'mark-all': 'Mark all read',
+  close: 'Close notifications',
   tabs: 'Notification categories',
   all: 'All',
   watching: 'Watching',
@@ -174,6 +175,7 @@ class NotificationWc extends VBElement {
     }
     if (this.#isOpen) {
       this.#isOpen = false;
+      this.#hideSheet();
       if (this.#panel) this.#panel.hidden = true;
       this.#trigger?.setAttribute('aria-expanded', 'false');
     }
@@ -421,6 +423,7 @@ class NotificationWc extends VBElement {
       <header class="notification-header">
         <strong id="${id}-title">${escapeHtml(this.#label('title'))}</strong>
         <button type="button" class="notification-mark-all">${escapeHtml(this.#label('mark-all'))}</button>
+        <button type="button" class="notification-close" aria-label="${escapeHtml(this.#label('close'))}"><icon-wc name="x" size="sm" aria-hidden="true"></icon-wc></button>
       </header>
       <div class="notification-tabs" role="tablist" aria-label="${escapeHtml(this.#label('tabs'))}">
         <button type="button" role="tab" id="${id}-tab-all" data-tab="all" aria-controls="${id}-all" aria-selected="${all}" tabindex="${all ? 0 : -1}">${escapeHtml(this.#label('all'))}</button>
@@ -645,6 +648,7 @@ class NotificationWc extends VBElement {
     const tab = /** @type {HTMLElement|null} */ (target.closest('[role="tab"]'));
     if (tab?.dataset.tab) { this.#selectTab(tab.dataset.tab); return; }
     if (target.closest('.notification-mark-all')) { this.#handleMarkAllRead(); return; }
+    if (target.closest('.notification-close')) { this.#close({ restoreFocus: true }); return; }
     const unwatch = /** @type {HTMLElement|null} */ (target.closest('[data-watch-unwatch]'));
     if (unwatch) { this.#handleUnwatch(e, unwatch); return; }
     const row = target.closest('.notification-list .notification-row');
@@ -679,10 +683,28 @@ class NotificationWc extends VBElement {
   };
 
   #handleOutsideClick = (e) => {
-    if (this.#isOpen && !this.contains(/** @type {Node} */ (e.target))) {
+    if (!this.#isOpen) return;
+    if (!this.contains(/** @type {Node} */ (e.target))) {
       this.#close();
+      return;
+    }
+    // Sheet: a click on the backdrop is dispatched to the panel itself.
+    if (e.target === this.#panel && this.#panel?.matches(':popover-open')) {
+      const r = this.#panel.getBoundingClientRect();
+      const { clientX: x, clientY: y } = /** @type {MouseEvent} */ (e);
+      if (x < r.left || x > r.right || y < r.top || y > r.bottom) this.#close({ restoreFocus: true });
     }
   };
+
+  /**
+   * Whether the panel opens as a sheet (top layer, with a backdrop) instead
+   * of a dropdown under the bell: on a narrow screen, or when the bell sits
+   * inside a popover such as a mobile menu, where a dropdown would be
+   * clipped or squeezed.
+   */
+  #asSheet() {
+    return !!this.closest('[popover]') || matchMedia('(width < 37.5rem)').matches;
+  }
 
   /** Tabbing out of the component closes the (non-modal) panel. */
   #handleFocusOut = (e) => {
@@ -728,6 +750,11 @@ class NotificationWc extends VBElement {
     if (!this.#panel) return;
     this.#isOpen = true;
     this.#panel.hidden = false;
+    if (this.#asSheet() && typeof this.#panel.showPopover === 'function') {
+      // Manual popover: top layer, above an open menu, which stays open.
+      this.#panel.setAttribute('popover', 'manual');
+      this.#panel.showPopover();
+    }
     this.#trigger?.setAttribute('aria-expanded', 'true');
     this.#panel.focus({ preventScroll: true });
     this.#loadWatches(); // refresh watch list each time the panel opens
@@ -738,11 +765,20 @@ class NotificationWc extends VBElement {
     if (!this.#panel) return;
     const focusInside = this.#panel.contains(document.activeElement);
     this.#isOpen = false;
+    this.#hideSheet();
     this.#panel.hidden = true;
     this.#trigger?.setAttribute('aria-expanded', 'false');
     // Return focus to the trigger when it would otherwise be stranded.
     if (restoreFocus || focusInside) this.#trigger?.focus();
     this.dispatchEvent(new CustomEvent('notification-wc:close', { bubbles: true, composed: true }));
+  }
+
+  /** Take the panel out of the top layer (no-op when it is a dropdown). */
+  #hideSheet() {
+    const panel = this.#panel;
+    if (!panel?.hasAttribute('popover')) return;
+    if (panel.matches(':popover-open')) panel.hidePopover();
+    panel.removeAttribute('popover');
   }
 
   // ── Dynamic fetch ──────────────────────────────────────────────────
