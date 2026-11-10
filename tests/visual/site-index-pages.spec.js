@@ -37,10 +37,23 @@ test.describe('site index and guide regions', () => {
       const region = page.locator(selector);
       await region.first().scrollIntoViewIfNeeded();
       // Several matches (the first rows of an index): shoot their bounding box.
-      const boxes = await region.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().toJSON()));
+      // Late upgrades above the region (a chart, an iframe preview) move it
+      // after the first measure: wait until two reads 250ms apart agree.
+      const measure = () => region.evaluateAll((els) => els.map((el) => {
+        const r = el.getBoundingClientRect();
+        return { top: r.top + scrollY, bottom: r.bottom + scrollY, left: r.left, right: r.right };
+      }));
+      let boxes = await measure();
+      for (let i = 0; i < 20; i++) {
+        await page.waitForTimeout(250);
+        const next = await measure();
+        const settled = JSON.stringify(next) === JSON.stringify(boxes);
+        boxes = next;
+        if (settled) break;
+      }
       expect(boxes.length, `${selector} matched nothing`).toBeGreaterThan(0);
-      const top = Math.min(...boxes.map((b) => b.top)) + await page.evaluate(() => scrollY);
-      const bottom = Math.max(...boxes.map((b) => b.bottom)) + await page.evaluate(() => scrollY);
+      const top = Math.min(...boxes.map((b) => b.top));
+      const bottom = Math.max(...boxes.map((b) => b.bottom));
       const left = Math.min(...boxes.map((b) => b.left));
       const right = Math.max(...boxes.map((b) => b.right));
       await expect(page).toHaveScreenshot(`${id}.png`, {
