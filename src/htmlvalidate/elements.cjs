@@ -1743,7 +1743,8 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "variant": { enum: ["popover", "inline"] },
-      "compact": { boolean: true },
+      "themes": {},
+      "swatches": { boolean: true },
       "open": { boolean: true },
       "data-label-panel": {},
       "data-label-trigger": {},

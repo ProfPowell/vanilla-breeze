@@ -86,8 +86,8 @@ const upgraded = (page, n = 1) => page.waitForFunction(
 test.describe('theme-picker', () => {
   test('two pickers have separate radio groups; both show the mode', async ({ page }) => {
     await load(page, `
-      <theme-picker id="a" compact></theme-picker>
-      <theme-picker id="b" variant="inline" compact></theme-picker>`, { modules: TP });
+      <theme-picker id="a"></theme-picker>
+      <theme-picker id="b" variant="inline"></theme-picker>`, { modules: TP });
     await upgraded(page, 2);
     const r = await page.evaluate(() => {
       const names = (id) => [...new Set([...document.querySelectorAll(`#${id} input[type=radio]`)].map((i) => i.name))];
@@ -138,28 +138,62 @@ test.describe('theme-picker', () => {
   test('two controls only: mode and theme; nothing settings-panel owns', async ({ page }) => {
     await load(page, `
       <theme-picker id="a" variant="inline"></theme-picker>
-      <theme-picker id="b" variant="inline" compact></theme-picker>`, { modules: TP });
+      <theme-picker id="b" variant="inline" swatches></theme-picker>`, { modules: TP });
     await upgraded(page, 2);
     for (const id of ['a', 'b']) {
       await expect(page.locator(`#${id} fieldset`)).toHaveCount(2);
       await expect(page.locator(`#${id} input[data-field=mode]`)).toHaveCount(3);
       await expect(page.locator(`#${id} :is([data-a11y-theme], [data-extension], [data-field=accent], [data-field=fluid], select[name*=accent], select[name*=fluid], a[download])`)).toHaveCount(0);
     }
-    // Default: every theme is a swatch. Compact: the same themes in one select.
-    const swatches = await page.locator('#a input[data-field=brand]').evaluateAll((els) => els.map((e) => e.value));
-    const options = await page.locator('#b select option').evaluateAll((els) => els.map((e) => e.value));
-    expect(swatches.length).toBeGreaterThan(40);
-    expect(options).toEqual(swatches);
-    await expect(page.locator('#a select')).toHaveCount(0);
-    await expect(page.locator('#b input[data-field=brand]')).toHaveCount(0);
+    // Default: every theme in one grouped select. swatches: the same themes as radios.
+    const options = await page.locator('#a select option').evaluateAll((els) => els.map((e) => e.value));
+    const swatches = await page.locator('#b input[data-field=brand]').evaluateAll((els) => els.map((e) => e.value));
+    expect(options.length).toBeGreaterThan(40);
+    expect(swatches).toEqual(options);
+    expect(await page.locator('#a select optgroup').count()).toBeGreaterThan(3);
+    await expect(page.locator('#a input[data-field=brand]')).toHaveCount(0);
+    await expect(page.locator('#b select')).toHaveCount(0);
   });
 
-  test('a pick in one picker shows in the other; the grid names the theme', async ({ page }) => {
+  test('themes limits and orders the list; unknown ids dropped; current theme kept', async ({ page }) => {
     await load(page, `
-      <theme-picker id="a" variant="inline"></theme-picker>
-      <theme-picker id="b" variant="inline" compact></theme-picker>`, { modules: TP });
+      <theme-picker id="a" variant="inline" themes="swiss default nope organic swiss"></theme-picker>
+      <theme-picker id="b" variant="inline" themes="swiss default organic" swatches></theme-picker>
+      <theme-picker id="c" variant="inline" themes="nope"></theme-picker>`, { modules: TP });
+    await upgraded(page, 3);
+    const values = (sel) => page.locator(sel).evaluateAll((els) => els.map((e) => e.value));
+    expect(await values('#a select option')).toEqual(['swiss', 'default', 'organic']);
+    await expect(page.locator('#a select optgroup')).toHaveCount(0);
+    expect(await values('#b input[data-field=brand]')).toEqual(['swiss', 'default', 'organic']);
+    // Nothing valid listed: every theme
+    expect((await values('#c select option')).length).toBeGreaterThan(40);
+
+    // A visitor already on a theme that is not listed still sees it selected
+    await page.evaluate(async () => {
+      const { ThemeManager } = await import('/src/lib/theme-manager.js');
+      await ThemeManager.setBrand('nord');
+      const a = document.getElementById('a');
+      const host = a.parentElement;
+      a.remove();
+      host.prepend(a);
+    });
+    await expect(page.locator('#a select')).toHaveValue('nord');
+    expect(await values('#a select option')).toEqual(['swiss', 'default', 'organic', 'nord']);
+    // ...and a theme set elsewhere while the picker is live is added too
+    await page.evaluate(async () => {
+      const { ThemeManager } = await import('/src/lib/theme-manager.js');
+      await ThemeManager.setBrand('dracula');
+    });
+    await expect(page.locator('#a select')).toHaveValue('dracula');
+  });
+
+  test('a pick in one picker shows in the other; swatches name the theme', async ({ page }) => {
+    await load(page, `
+      <theme-picker id="a" variant="inline" swatches></theme-picker>
+      <theme-picker id="b" variant="inline"></theme-picker>`, { modules: TP });
     await upgraded(page, 2);
     await expect(page.locator('#a .theme-name')).toHaveText('Default');
+    await expect(page.locator('#b .theme-name')).toHaveCount(0);
     await page.locator('#b select').selectOption('swiss');
     await expect(page.locator('html')).toHaveAttribute('data-theme', /swiss/);
     await expect(page.locator('#a input[data-field=brand][value=swiss]')).toBeChecked();
@@ -172,7 +206,7 @@ test.describe('theme-picker', () => {
   });
 
   test('authored and stored a11y-* tokens on <html> survive init and a theme change', async ({ page }) => {
-    await load(page, '<theme-picker variant="inline" compact></theme-picker>', {
+    await load(page, '<theme-picker variant="inline"></theme-picker>', {
       modules: TP, htmlAttrs: 'data-theme="a11y-large-text"',
     });
     await upgraded(page);
@@ -192,12 +226,14 @@ test.describe('theme-picker', () => {
     await page.waitForTimeout(300);
     const r = await page.evaluate(() => {
       const b = document.querySelector('#p .panel').getBoundingClientRect();
-      return { left: b.left, right: b.right, bottom: b.bottom, w: innerWidth, h: innerHeight, overflow: document.documentElement.scrollWidth > innerWidth };
+      return { left: b.left, right: b.right, top: b.top, bottom: b.bottom, w: innerWidth, h: innerHeight, overflow: document.documentElement.scrollWidth > innerWidth };
     });
     expect(r.overflow).toBe(false);
     expect(r.left).toBeGreaterThanOrEqual(0);
     expect(r.right).toBeLessThanOrEqual(r.w);
     expect(r.bottom).toBeLessThanOrEqual(r.h);
+    // Mode buttons and a select: a small panel
+    expect(r.bottom - r.top).toBeLessThan(240);
   });
 
   test('teardown resets open state; generated trigger is type=button; labels', async ({ page }) => {

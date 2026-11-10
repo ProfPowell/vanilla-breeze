@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "theme-picker"
-description: "Theme selection component: color mode (light/dark/auto) and theme, as a swatch grid or a compact select."
+description: "Theme selection component: color mode (light/dark/auto) and theme, as a select of every theme or a short list of swatches."
 elementName: theme-picker
 category: component
 pack: ui
@@ -14,7 +14,7 @@ crumbLabel: Web Components
 <section>
     <h2>Overview</h2>
     <p>The <code>&lt;theme-picker&gt;</code> component lets a visitor choose two things: the color mode and the theme. It integrates with <code>ThemeManager</code> for persistence and system preference detection.</p>
-    <p>The theme chooser has two forms. By default every theme is a swatch, which suits a site that wants to show its range. Add <code>compact</code> and the swatches become one grouped <code>&lt;select&gt;</code>, which fits a header, a mobile menu or a narrow sidebar. Everything else a visitor can adjust (sizing, accessibility themes, motion, sound) belongs to <a href="/docs/elements/web-components/settings-panel/">&lt;settings-panel&gt;</a>; the two share state and can sit on the same page.</p>
+    <p>The theme chooser is one grouped <code>&lt;select&gt;</code> of every theme, which stays small however many themes there are. A site that offers only a few themes lists them in <code>themes</code>, and can add <code>swatches</code> to show that short list as colour swatches instead. Everything else a visitor can adjust (sizing, accessibility themes, motion, sound) belongs to <a href="/docs/elements/web-components/settings-panel/">&lt;settings-panel&gt;</a>; the two share state and can sit on the same page.</p>
 
     <browser-window
       src="/docs/examples/demos/theme-picker-popover.html"
@@ -33,7 +33,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Inline Variant</h2>
-    <p>For settings pages, use the inline variant, which is always visible. With room to spare, the swatches are shown under their group headings:</p>
+    <p>For settings pages and mobile menus, use the inline variant, which is always visible:</p>
 
     <browser-window
       src="/docs/examples/demos/theme-picker-inline.html"
@@ -46,18 +46,21 @@ crumbLabel: Web Components
   </section>
 
   <section>
-    <h2>Compact Mode</h2>
-    <p>For tight spots (mobile menus, narrow sidebars, a crowded header), add <code>compact</code>: the three mode buttons and one grouped <code>&lt;select&gt;</code> of every theme. This works with both popover and inline variants.</p>
+    <h2>A Short List of Themes</h2>
+    <p><code>themes</code> takes the ids of the themes your site offers, separated by spaces, in the order to show them. The select then lists only those. Unknown ids are ignored, and a visitor whose current theme is not on the list still sees it as an option.</p>
+
+    <code-block language="html" show-lines label="Four themes in the select" data-escape><theme-picker themes="default modern swiss organic"></theme-picker></code-block>
+
+    <p>Add <code>swatches</code> to show the list as colour swatches. Swatches have no visible text, so the name of the one under the pointer or focus appears beside the legend. This form suits a handful of themes; with dozens, the select is easier to scan.</p>
 
     <browser-window
-      src="/docs/examples/demos/theme-picker-compact.html"
-      url="https://vanilla-breeze.com/compact"
-      title="Compact Theme Picker"
+      src="/docs/examples/demos/theme-picker-swatches.html"
+      url="https://vanilla-breeze.com/swatches"
+      title="Theme Picker with Swatches"
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Compact popover" data-escape><theme-picker compact></theme-picker></code-block>
-    <code-block language="html" show-lines label="Compact inline" data-escape><theme-picker variant="inline" compact></theme-picker></code-block>
+    <code-block language="html" show-lines label="A short list as swatches" data-escape><theme-picker themes="default modern minimal classic swiss organic" swatches></theme-picker></code-block>
   </section>
 
   <section>
@@ -106,10 +109,16 @@ crumbLabel: Web Components
           <td>Display mode - popover with trigger or always visible</td>
         </tr>
         <tr>
-          <td><code>compact</code></td>
+          <td><code>themes</code></td>
+          <td>theme ids, space-separated</td>
+          <td>every theme</td>
+          <td>The themes to offer, in that order</td>
+        </tr>
+        <tr>
+          <td><code>swatches</code></td>
           <td>boolean</td>
           <td>-</td>
-          <td>The theme chooser is one grouped select instead of the swatch grid</td>
+          <td>Show the themes as colour swatches instead of a select (for a short <code>themes</code> list)</td>
         </tr>
         <tr>
           <td><code>open</code></td>
@@ -396,11 +405,11 @@ cp src/tokens/themes/_brand-template.css src/tokens/themes/_brand-coral.css</cod
     <h2>Accessibility</h2>
     <ul>
       <li>The popover is a non-modal <code>role="dialog"</code> with an <code>aria-label</code>. Focus is not trapped: opening moves focus to the selected colour mode, <kbd>Escape</kbd> closes and returns focus to the trigger, and tabbing out of the picker or clicking outside closes it.</li>
-      <li>Every radio set (mode and each theme group) is a <code>role="radiogroup"</code> inside a labelled <code>&lt;fieldset&gt;</code>. Radio names are unique per picker, so a header picker and a mobile-menu picker on the same page don't share groups.</li>
+      <li>Every radio set (mode, and the swatches when used) is a <code>role="radiogroup"</code> inside a labelled <code>&lt;fieldset&gt;</code>. Radio names are unique per picker, so a header picker and a mobile-menu picker on the same page don't share groups.</li>
       <li>Arrow keys move through a radio group and apply each choice, but never close the popover. Only pointer selections auto-dismiss it.</li>
       <li>The trigger announces its state with <code>aria-expanded</code> and <code>aria-controls</code>.</li>
       <li>In forced-colours mode the selected mode segment and options use <code>Highlight</code>, and swatches keep their real colours with a visible outline.</li>
-      <li>Swatches have no visible text, so the name of the swatch under the pointer or focus is shown beside the Theme legend (the current theme's name otherwise). Each swatch also has its name as its accessible label.</li>
+      <li>The theme select has the legend's text as its accessible name. With <code>swatches</code>, the name of the swatch under the pointer or focus is shown beside the legend (the current theme's name otherwise), and each swatch has its name as its accessible label.</li>
       <li>Accessibility themes on <code>&lt;html data-theme&gt;</code> (for example <code>a11y-large-text</code>, authored or set through <code>&lt;settings-panel&gt;</code>) are kept when the visitor picks another theme.</li>
     </ul>
   </section>

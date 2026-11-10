@@ -2,18 +2,20 @@
  * theme-picker: Theme selection component
  *
  * Two controls: color mode (auto/light/dark) and theme. The theme chooser
- * has two forms: a grid of swatches for every theme (default), or one
- * grouped <select> (`compact`) for tight spots. Everything else a visitor
- * can set (sizing, accessibility themes, motion, sounds) lives in
- * <settings-panel>. Integrates with ThemeManager for persistence and
- * system preference detection.
+ * is one grouped <select> of every theme. `themes` limits it to the themes
+ * a site offers, and `swatches` shows that short list as a row of colour
+ * swatches instead of a select. Everything else a visitor can set (sizing,
+ * accessibility themes, motion, sounds) lives in <settings-panel>.
+ * Integrates with ThemeManager for persistence and system preference
+ * detection.
  *
  * @attr {string} variant - Display variant: 'popover' (default), 'inline'
- * @attr {boolean} compact - Theme chooser is a grouped <select> instead of the swatch grid
+ * @attr {string} themes - Space-separated theme ids to offer, in that order (default: every theme)
+ * @attr {boolean} swatches - Theme chooser is a grid of swatches instead of a <select>; meant for a short `themes` list
  * @attr {boolean} open - Reflected state only — set by open()/close()/toggle() methods, not intended as initial markup (popover variant only)
  * @attr {string} data-label-* - i18n overrides for generated strings (see LABELS)
  *
- * @example Popover variant (default): every theme as a swatch
+ * @example Popover variant (default): mode buttons and a select of every theme
  * <theme-picker>
  *   <button data-trigger>
  *     <icon-wc name="palette"></icon-wc>
@@ -21,8 +23,8 @@
  *   </button>
  * </theme-picker>
  *
- * @example Compact: mode buttons and one select
- * <theme-picker compact></theme-picker>
+ * @example A site's own short list, as swatches
+ * <theme-picker themes="default modern swiss organic" swatches></theme-picker>
  *
  * @example Inline variant (for settings pages)
  * <theme-picker variant="inline"></theme-picker>
@@ -34,10 +36,9 @@ import { ThemeManager } from '../../lib/theme-manager.js';
 import { preloadTheme } from '../../lib/theme-loader.js';
 import { MODES, THEME_GROUPS } from '../../lib/theme-data.js';
 
-/** Theme id → display name, for the name shown beside the swatch grid. */
-/** @type {Map<string, string>} */
-const THEME_NAMES = new Map();
-for (const group of THEME_GROUPS) for (const t of group.themes) THEME_NAMES.set(t.id, t.name);
+/** Theme id → theme record. */
+const THEMES = new Map();
+for (const group of THEME_GROUPS) for (const t of group.themes) THEMES.set(t.id, t);
 
 /** English fallbacks for every generated string; override with data-label-<key>. */
 const LABELS = {
@@ -62,7 +63,9 @@ class ThemePicker extends VBElement {
   #panel;
   #isOpen = false;
   #isInline = false;
-  #isCompact = false;
+  #swatches = false;
+  /** Theme groups to offer: every group, or the `themes` list as one group. */
+  #groups = THEME_GROUPS;
   /** @type {ReturnType<typeof setTimeout> | null} */
   #autoDismissTimer = null;
   /** Per-instance suffix for radio-group names (two pickers on one page
@@ -78,9 +81,24 @@ class ThemePicker extends VBElement {
 
   setup() {
     this.#isInline = this.getAttribute('variant') === 'inline';
-    this.#isCompact = this.hasAttribute('compact');
+    this.#swatches = this.hasAttribute('swatches');
+    this.#groups = this.#resolveGroups();
     this.#initAsync(++this.#gen);
     return true;
+  }
+
+  /**
+   * The themes to offer. `themes="a b c"` gives those ids in that order
+   * (unknown ids are dropped; none left means every theme). The visitor's
+   * current theme is added when it is not on the list, so the control never
+   * shows a choice that is not in force.
+   */
+  #resolveGroups() {
+    const ids = (this.getAttribute('themes') || '').split(/\s+/).filter(Boolean);
+    if (!ids.length) return THEME_GROUPS;
+    const picked = [...new Set(ids)].map(id => THEMES.get(id)).filter(Boolean);
+    if (!picked.length) return THEME_GROUPS;
+    return [{ label: this.#label('theme'), themes: picked, tier: 'core' }];
   }
 
   /** @param {number} gen */
@@ -187,32 +205,45 @@ class ThemePicker extends VBElement {
       </fieldset>
 
       <fieldset class="section">
-        <legend>${themeLabel}${this.#isCompact ? '' : ' <span class="theme-name" aria-hidden="true"></span>'}</legend>
-        ${this.#isCompact ? this.#renderThemeSelect(brand, themeLabel) : this.#renderThemeGrid(brand)}
+        <legend>${themeLabel}${this.#swatches ? ' <span class="theme-name" aria-hidden="true"></span>' : ''}</legend>
+        ${this.#swatches ? this.#renderThemeGrid(brand) : this.#renderThemeSelect(brand, themeLabel)}
       </fieldset>
     `;
   }
 
-  /** Compact: every theme in one grouped <select>. */
+  /**
+   * The offered groups, plus the current theme when the list leaves it out.
+   * @param {string} brand
+   */
+  #groupsFor(brand) {
+    const groups = this.#groups.filter(g => g.themes.length);
+    if (groups.some(g => g.themes.some(t => t.id === brand))) return groups;
+    const current = THEMES.get(brand);
+    const last = groups[groups.length - 1];
+    if (!current || !last) return groups;
+    return [...groups.slice(0, -1), { label: last.label, tier: last.tier, themes: [...last.themes, current] }];
+  }
+
+  /** Default: the themes in one <select>, grouped when there are groups. */
   #renderThemeSelect(brand, label) {
+    const groups = this.#groupsFor(brand);
+    const options = (themes) => themes.map(t => `
+      <option value="${esc(t.id)}" ${brand === t.id ? 'selected' : ''}>${esc(t.name)}</option>
+    `).join('');
     return `
       <select class="theme-select" name="theme-brand-select" aria-label="${label}">
-        ${THEME_GROUPS.map(group => `
-          <optgroup label="${esc(group.label)}">
-            ${group.themes.map(t => `
-              <option value="${esc(t.id)}" ${brand === t.id ? 'selected' : ''}>${esc(t.name)}</option>
-            `).join('')}
-          </optgroup>
+        ${groups.length === 1 ? options(groups[0].themes) : groups.map(group => `
+          <optgroup label="${esc(group.label)}">${options(group.themes)}</optgroup>
         `).join('')}
       </select>
     `;
   }
 
-  /** Default: every theme as a swatch, grouped, in a scrolling region. */
+  /** `swatches`: each theme as a swatch. */
   #renderThemeGrid(brand) {
     return `
       <div class="themes">
-        ${THEME_GROUPS.filter(group => group.themes.length).map(group => `
+        ${this.#groupsFor(brand).map(group => `
           <div class="theme-category">
             <span class="category-label">${esc(group.label)}</span>
             <div class="swatch-grid" role="radiogroup" aria-label="${esc(group.label)}">
@@ -263,7 +294,7 @@ class ThemePicker extends VBElement {
     themes?.addEventListener('pointerleave', () => this.#showThemeName());
     themes?.addEventListener('focusout', () => this.#showThemeName());
 
-    // Brand change — compact select
+    // Brand change — select
     const brandSelect = this.#panel.querySelector('select[name="theme-brand-select"]');
     if (brandSelect) {
       brandSelect.addEventListener('change', this.#handleBrandSelect);
@@ -328,7 +359,7 @@ class ThemePicker extends VBElement {
   /** @param {string} [id] - theme to name; the current theme when omitted */
   #showThemeName(id = ThemeManager.getState().brand) {
     const name = this.#panel?.querySelector('.theme-name');
-    if (name) name.textContent = THEME_NAMES.get(id) ?? id;
+    if (name) name.textContent = THEMES.get(id)?.name ?? id;
   }
 
   #handleBrandChange = async (e) => {
@@ -402,9 +433,16 @@ class ThemePicker extends VBElement {
 
     this.#showThemeName();
 
-    // Update brand select (compact)
+    // Update brand select
     const brandSelect = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('select[name="theme-brand-select"]'));
-    if (brandSelect) brandSelect.value = brand;
+    if (brandSelect) {
+      // A theme set elsewhere that the `themes` list leaves out: add it, so
+      // the select never shows a blank or a stale choice.
+      if (![...brandSelect.options].some(o => o.value === brand) && THEMES.has(brand)) {
+        brandSelect.add(new Option(THEMES.get(brand).name, brand));
+      }
+      brandSelect.value = brand;
+    }
 
     // Keep the selected swatch in view inside the scrolling theme list
     if (brandInput && this.#isOpen) brandInput.closest('.swatch-cell')?.scrollIntoView({ block: 'nearest' });

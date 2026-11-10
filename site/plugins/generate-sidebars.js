@@ -315,7 +315,7 @@ export class GenerateSidebars {
     html += `      </ul>\n`;
     html += `      <div class="mobile-menu-theme">\n`;
     html += `        <strong class="mobile-section-title">Theme</strong>\n`;
-    html += `        <theme-picker variant="inline" compact></theme-picker>\n`;
+    html += `        <theme-picker variant="inline"></theme-picker>\n`;
     html += `      </div>\n`;
     html += `    </nav>\n`;
 

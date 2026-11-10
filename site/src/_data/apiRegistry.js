@@ -15034,7 +15034,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "theme-picker",
     "type": "web-component",
-    "description": "Theme selection: color mode and theme (a swatch grid, or one select when compact), as a popover or inline panel",
+    "description": "Theme selection: color mode and theme (a select of every theme, or a short list as swatches), as a popover or inline panel",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -15055,11 +15055,18 @@ export default {
         "description": "popover: trigger + floating panel; inline: always-visible panel"
       },
       {
-        "name": "compact",
+        "name": "themes",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Space-separated theme ids to offer, in that order (default: every theme). Unknown ids are ignored; the visitor's current theme is added if it is not listed"
+      },
+      {
+        "name": "swatches",
         "kind": "host-api",
         "purpose": "visual-variant",
         "type": "boolean",
-        "description": "Theme chooser is one grouped <select> instead of the swatch grid (the smallest form)"
+        "description": "Theme chooser is a grid of colour swatches instead of a <select>; meant for a short themes list"
       },
       {
         "name": "open",
