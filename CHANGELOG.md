@@ -20,6 +20,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ### Fixed
 
 - **page-tools: floating button collided with a fab-stack** — On narrow screens the collapsed toolbar's button took the bottom corner for itself and sat on top of a `<fab-stack>` there (the docs site's settings gear). When the page has a `<fab-stack>` the button now joins it as its last child and returns home when the toolbar expands; its panel opens just above the button wherever the stack puts it, positioned before it paints. In the stack the button takes its neighbours' size and look.
+- **drop-down: split-toggle hover hid the chevron on a filled item** — Hovering the chevron button of the current nav item painted a fixed light-grey square under a white chevron. The hover is now a tint of the chevron's own colour, so it shows on any fill.
 - **fab-stack: a hidden back-to-top left a hole** — A `[data-back-to-top]` that is not showing was only made invisible, so it still took a slot in the stack. It now takes no room until it shows.
 - **site-search: stray dot in the dialog** — The status line used the class `status`, which is also the global status-dot pattern, so a "●" showed under the input (and before the result count). The line is now `search-status`, takes no room while empty, and the empty dialog has one divider instead of two. `<emoji-picker>`'s hidden live region drops the same dot.
 

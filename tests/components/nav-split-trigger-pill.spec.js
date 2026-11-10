@@ -135,6 +135,30 @@ for (const mode of ['light', 'dark']) {
     expect(await contrast(page, m.chevron, m.bg), JSON.stringify(m)).toBeGreaterThanOrEqual(3);
   });
 
+  test(`the chevron stays visible while its own button is hovered (${mode})`, async ({ page }, info) => {
+    test.skip(info.project.name !== 'desktop', 'hover');
+    await load(page, NAV('horizontal pills'));
+    await page.evaluate((m) => { document.documentElement.dataset.mode = m; }, mode);
+    for (const id of ['cur', 'other']) {
+      await page.hover(`#${id} > button[data-dropdown-toggle]`);
+      await page.waitForTimeout(300);
+      // The button's hover tint is translucent: composite it over the item
+      const m = await page.evaluate((hostId) => {
+        const host = document.getElementById(hostId);
+        const btn = host.querySelector(':scope > button[data-dropdown-toggle]');
+        const ctx = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d');
+        for (const el of [document.body, host, btn]) {
+          ctx.fillStyle = getComputedStyle(el).backgroundColor;
+          ctx.fillRect(0, 0, 1, 1);
+        }
+        const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+        return { under: `rgb(${r}, ${g}, ${b})`, chevron: getComputedStyle(btn).color, tint: getComputedStyle(btn).backgroundColor };
+      }, id);
+      expect(m.tint, id).not.toBe(TRANSPARENT);
+      expect(await contrast(page, m.chevron, m.under), `${id} ${JSON.stringify(m)}`).toBeGreaterThanOrEqual(3);
+    }
+  });
+
   test(`a .button inside a nav keeps a readable label on hover (${mode})`, async ({ page }, info) => {
     test.skip(info.project.name !== 'desktop', 'hover');
     await load(page, `${NAV('horizontal pills')}
