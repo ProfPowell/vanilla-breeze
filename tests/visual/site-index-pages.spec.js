@@ -18,7 +18,9 @@ const REGIONS = [
   ['kitchen-sink-jump', '/docs/examples/kitchen-sink/', 'nav[aria-labelledby="jump-to-section"]'],
   ['tokens-spacing', '/docs/tokens/', 'layout-stack:has(> token-scale)'],
   ['tutorial-hub-cards', '/docs/tutorial/', 'ol[data-layout="grid"]'],
-  ['tutorial-pager', '/docs/tutorial/dashboard/', 'nav[aria-label="Tutorials"]'],
+  // 'isolate': the pager sits below a whole tutorial, so any edit above it
+  // moves it by a fraction of a pixel and re-antialiases the text.
+  ['tutorial-pager', '/docs/tutorial/dashboard/', 'nav[aria-label="Tutorials"]', 'isolate'],
 ];
 
 async function open(page, path) {
@@ -31,10 +33,20 @@ async function open(page, path) {
 }
 
 test.describe('site index and guide regions', () => {
-  for (const [id, path, selector] of REGIONS) {
+  for (const [id, path, selector, isolate] of REGIONS) {
     test(id, async ({ page }) => {
       await open(page, path);
       const region = page.locator(selector);
+      if (isolate) {
+        // Hide everything before the region, up to <main>.
+        await region.first().evaluate((el) => {
+          for (let node = el; node && node.localName !== 'main'; node = node.parentElement) {
+            for (let prev = node.previousElementSibling; prev; prev = prev.previousElementSibling) {
+              /** @type {HTMLElement} */ (prev).style.display = 'none';
+            }
+          }
+        });
+      }
       await region.first().scrollIntoViewIfNeeded();
       // Several matches (the first rows of an index): shoot their bounding box.
       // Late upgrades above the region (a chart, an iframe preview) move it
