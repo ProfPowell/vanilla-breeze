@@ -56,6 +56,12 @@ test.describe('site index and guide regions', () => {
       const bottom = Math.max(...boxes.map((b) => b.bottom));
       const left = Math.min(...boxes.map((b) => b.left));
       const right = Math.max(...boxes.map((b) => b.right));
+      // One element: let Playwright shoot it. A full-page capture resizes the
+      // viewport, which reflows tall mobile pages and moves the clip off target.
+      if (boxes.length === 1) {
+        await expect(region).toHaveScreenshot(`${id}.png`, { animations: 'disabled', maxDiffPixelRatio: 0.01 });
+        return;
+      }
       await expect(page).toHaveScreenshot(`${id}.png`, {
         fullPage: true,
         clip: { x: left, y: top, width: right - left, height: bottom - top },
