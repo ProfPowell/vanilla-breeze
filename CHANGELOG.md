@@ -6,6 +6,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **layout-card in a list grid** — A card that is the only child of an `<li>` in `data-layout="grid"` or `<layout-grid>` now fills the item, so every card in a row matches the tallest, as bare cards in a grid already do. Lists of cards (`<ul data-layout="grid"><li><layout-card>`) had uneven heights since the guides moved to list markup.
+- **Docs site** — The element and attribute indexes were unstyled in 0.6.0, and their search and type filters matched nothing: the index grids are written by `site/plugins/generate-indexes.js`, which still emitted the class names the class clean-up had retired. The plugin now writes the templates' markup (`.index-heading`, `.index-entry`, `<layout-badge>`), and a unit test keeps the two in step. The kitchen-sink "Jump to Section" box and the tokens spacing chart are restored; `tests/visual/site-index-pages.spec.js` screenshots these regions.
+
 ## [0.6.0] - 2026-11-08
 
 0.6.0 adds themes set by the site (`<html data-theme-source="site">`: the page's brand wins over a visitor's stored brand, and the theme manager keeps the ids it did not write) and scoped themes (a theme on an `<article>` or `<main>` gets its own derived colors, fonts and content rules). It also carries the native attributes review, a docs-wide class clean-up (samples and demos use VB primitives instead of classes VB never styled, enforced by `lint:doc-classes`), fixes for skeleton loading, description lists, `nav.steps` and the wizard summary, and one breaking rename: the native audio playlist is enabled by `data-audio-playlist` instead of `.audio-standalone`. The element and attribute reviews are listed below.
