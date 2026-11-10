@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- **theme-picker: reduced to color mode and theme** (breaking) — The picker now has two controls. The theme chooser is a swatch grid of every theme by default (one continuous grid in the popover, grouped under headings inline, with the name of the hovered or current theme beside the legend) or one grouped `<select>` with `compact`. The popover drops from about 807px tall to 471px with every theme showing, and to about 200px when compact. Removed from the picker: color accents, sizing, accessibility themes, motion/sound toggles and the per-theme token download links, with their `data-label-accent|style|featured|more-themes|a11y|sizing|extensions|download` strings and the `theme-picker:dtcg-download` event. Sizing, accessibility themes and effects are `<settings-panel>`'s; accents remain available through `ThemeManager.setAccent()` and `data-accent`. The docs site header uses the swatch grid; its mobile menu keeps the compact form.
+
 ### Added
 
 - **site-search: `data-label-count-more`** — When the index matches more results than the eight listed, the status reads "8 of 23 results" (`{count}` listed, `{total}` matched) instead of reporting the cap as the count.

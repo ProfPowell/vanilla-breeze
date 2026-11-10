@@ -1748,15 +1748,7 @@ module.exports = {
       "data-label-panel": {},
       "data-label-trigger": {},
       "data-label-mode": {},
-      "data-label-accent": {},
-      "data-label-style": {},
-      "data-label-featured": {},
-      "data-label-more-themes": {},
-      "data-label-theme": {},
-      "data-label-a11y": {},
-      "data-label-sizing": {},
-      "data-label-extensions": {},
-      "data-label-download": {}
+      "data-label-theme": {}
     }
   },
 

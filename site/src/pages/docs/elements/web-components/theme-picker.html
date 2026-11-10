@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "theme-picker"
-description: "Theme selection component for color mode (light/dark/auto), brand themes, and color accents."
+description: "Theme selection component: color mode (light/dark/auto) and theme, as a swatch grid or a compact select."
 elementName: theme-picker
 category: component
 pack: ui
@@ -13,7 +13,8 @@ crumbLabel: Web Components
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;theme-picker&gt;</code> component provides a UI for users to select their preferred color mode and brand theme. It integrates with <code>ThemeManager</code> for persistence and system preference detection.</p>
+    <p>The <code>&lt;theme-picker&gt;</code> component lets a visitor choose two things: the color mode and the theme. It integrates with <code>ThemeManager</code> for persistence and system preference detection.</p>
+    <p>The theme chooser has two forms. By default every theme is a swatch, which suits a site that wants to show its range. Add <code>compact</code> and the swatches become one grouped <code>&lt;select&gt;</code>, which fits a header, a mobile menu or a narrow sidebar. Everything else a visitor can adjust (sizing, accessibility themes, motion, sound) belongs to <a href="/docs/elements/web-components/settings-panel/">&lt;settings-panel&gt;</a>; the two share state and can sit on the same page.</p>
 
     <browser-window
       src="/docs/examples/demos/theme-picker-popover.html"
@@ -32,7 +33,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Inline Variant</h2>
-    <p>For settings pages, use the inline variant which is always visible:</p>
+    <p>For settings pages, use the inline variant, which is always visible. With room to spare, the swatches are shown under their group headings:</p>
 
     <browser-window
       src="/docs/examples/demos/theme-picker-inline.html"
@@ -46,7 +47,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Compact Mode</h2>
-    <p>For high-theme-count scenarios (mobile menus, narrow sidebars), add <code>compact</code> to render the theme section as a grouped <code>&lt;select&gt;</code> dropdown instead of the swatch grid. This works with both popover and inline variants.</p>
+    <p>For tight spots (mobile menus, narrow sidebars, a crowded header), add <code>compact</code>: the three mode buttons and one grouped <code>&lt;select&gt;</code> of every theme. This works with both popover and inline variants.</p>
 
     <browser-window
       src="/docs/examples/demos/theme-picker-compact.html"
@@ -108,7 +109,7 @@ crumbLabel: Web Components
           <td><code>compact</code></td>
           <td>boolean</td>
           <td>-</td>
-          <td>Render theme section as grouped select dropdown instead of swatch grid</td>
+          <td>The theme chooser is one grouped select instead of the swatch grid</td>
         </tr>
         <tr>
           <td><code>open</code></td>
@@ -139,19 +140,11 @@ crumbLabel: Web Components
         <tr><td><code>data-label-panel</code></td><td>Theme settings (panel <code>aria-label</code>)</td></tr>
         <tr><td><code>data-label-trigger</code></td><td>Theme settings (generated trigger)</td></tr>
         <tr><td><code>data-label-mode</code></td><td>Color Mode</td></tr>
-        <tr><td><code>data-label-accent</code></td><td>Color Accent</td></tr>
-        <tr><td><code>data-label-style</code></td><td>Style</td></tr>
-        <tr><td><code>data-label-featured</code></td><td>Featured</td></tr>
-        <tr><td><code>data-label-more-themes</code></td><td>More Themes</td></tr>
-        <tr><td><code>data-label-theme</code></td><td>Theme (compact select)</td></tr>
-        <tr><td><code>data-label-a11y</code></td><td>Accessibility</td></tr>
-        <tr><td><code>data-label-sizing</code></td><td>Sizing</td></tr>
-        <tr><td><code>data-label-extensions</code></td><td>Extensions</td></tr>
-        <tr><td><code>data-label-download</code></td><td>Download {name} as DTCG tokens (<code>{name}</code> is replaced)</td></tr>
+        <tr><td><code>data-label-theme</code></td><td>Theme (legend, and the select's accessible name)</td></tr>
       </tbody>
     </table>
     <code-block language="html" show-lines label="German labels" data-escape><theme-picker data-label-panel="Darstellung" data-label-mode="Farbmodus"
-  data-label-accent="Akzentfarbe" data-label-a11y="Barrierefreiheit"></theme-picker></code-block>
+  data-label-theme="Thema"></theme-picker></code-block>
   </section>
 
   <section>
@@ -187,7 +180,7 @@ ThemeManager.setMode('dark');
 // Set brand theme (personality themes)
 ThemeManager.setBrand('swiss');
 
-// Set color accent (see the accent table below)
+// Set a color accent (no control in the picker; see the accent table below)
 ThemeManager.setAccent('ocean');
 
 // Toggle between light and dark
@@ -232,7 +225,7 @@ window.addEventListener('vb:theme-change', (e) => {
     </table>
 
     <h3>Color Accents</h3>
-    <p>Color accents are applied via <code>ThemeManager.setAccent()</code> and shown as the dot row in the picker. All eleven:</p>
+    <p>A color accent shifts a theme's brand hues. The picker has no control for it: apply one from your own code with <code>ThemeManager.setAccent()</code>. All eleven:</p>
     <table class="props-table">
       <thead>
         <tr>
@@ -391,24 +384,9 @@ cp src/tokens/themes/_brand-template.css src/tokens/themes/_brand-coral.css</cod
           <td>Fired when popover closes</td>
         </tr>
         <tr>
-          <td><code>theme-picker:dtcg-download</code></td>
-          <td><code>{ themeId, href }</code></td>
-          <td>A per-swatch DTCG download link was clicked (the native download still happens)</td>
-        </tr>
-        <tr>
           <td><code>vb:theme-change</code></td>
           <td><code>{ mode, brand, accent, borderStyle, iconSet, fluid, backdrop, backdropChrome, pageBgType, effectiveMode }</code></td>
           <td>Fired on <code>window</code> by <code>ThemeManager</code> when the theme changes. The picker listens and re-syncs.</td>
-        </tr>
-        <tr>
-          <td><code>vb:a11y-themes-change</code></td>
-          <td><code>string[]</code> (active <code>a11y-*</code> ids)</td>
-          <td>Fired on <code>window</code> when an accessibility theme is toggled. Every picker and <code>&lt;settings-panel&gt;</code> listens, so all controls on the page stay in step.</td>
-        </tr>
-        <tr>
-          <td><code>vb:extensions-change</code></td>
-          <td><code>{ motionFx, sounds }</code></td>
-          <td>Fired on <code>window</code> when extension preferences are applied (on load and on toggle). Shared with <code>&lt;settings-panel&gt;</code> the same way.</td>
         </tr>
       </tbody>
     </table>
@@ -418,10 +396,11 @@ cp src/tokens/themes/_brand-template.css src/tokens/themes/_brand-coral.css</cod
     <h2>Accessibility</h2>
     <ul>
       <li>The popover is a non-modal <code>role="dialog"</code> with an <code>aria-label</code>. Focus is not trapped: opening moves focus to the selected colour mode, <kbd>Escape</kbd> closes and returns focus to the trigger, and tabbing out of the picker or clicking outside closes it.</li>
-      <li>Every radio set (mode, accent, each theme group, sizing) is a <code>role="radiogroup"</code> inside a labelled <code>&lt;fieldset&gt;</code>. Radio names are unique per picker, so a header picker and a mobile-menu picker on the same page don't share groups.</li>
+      <li>Every radio set (mode and each theme group) is a <code>role="radiogroup"</code> inside a labelled <code>&lt;fieldset&gt;</code>. Radio names are unique per picker, so a header picker and a mobile-menu picker on the same page don't share groups.</li>
       <li>Arrow keys move through a radio group and apply each choice, but never close the popover. Only pointer selections auto-dismiss it.</li>
       <li>The trigger announces its state with <code>aria-expanded</code> and <code>aria-controls</code>.</li>
-      <li>In forced-colours mode the selected mode segment and options use <code>Highlight</code>, and swatches and accent dots keep their real colours with a visible outline.</li>
-      <li>Accessibility themes you author on <code>&lt;html data-theme&gt;</code> (for example <code>a11y-large-text</code>) are kept until the visitor makes their own choice.</li>
+      <li>In forced-colours mode the selected mode segment and options use <code>Highlight</code>, and swatches keep their real colours with a visible outline.</li>
+      <li>Swatches have no visible text, so the name of the swatch under the pointer or focus is shown beside the Theme legend (the current theme's name otherwise). Each swatch also has its name as its accessible label.</li>
+      <li>Accessibility themes on <code>&lt;html data-theme&gt;</code> (for example <code>a11y-large-text</code>, authored or set through <code>&lt;settings-panel&gt;</code>) are kept when the visitor picks another theme.</li>
     </ul>
   </section>

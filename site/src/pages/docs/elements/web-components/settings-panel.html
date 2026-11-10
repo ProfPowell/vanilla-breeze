@@ -14,7 +14,7 @@ crumbLabel: Web Components
   <h2>Overview</h2>
   <p>A compact settings panel opened from a gear button. It is built from native <code>&lt;details&gt;</code> sections that share a per-instance <code>name</code>, so only one section is open at a time. The sections hold theme selection, accessibility toggles, layout options, effects, environment shifts and system information.</p>
 
-  <p>It runs alongside <a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a>. Both components read and write the same <code>ThemeManager</code> state and VBStore keys, and each listens for the other's window events, so a change made in one shows up in the other on the same page. Other tabs are not synced: there is no <code>storage</code> listener, so a second tab picks up changes when it reloads.</p>
+  <p>It runs alongside <a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a>, which covers only color mode and theme. Both components read and write the same <code>ThemeManager</code> state and listen for <code>vb:theme-change</code>, so a mode or theme picked in one shows up in the other on the same page. Everything else (accessibility themes, layout, effects, environment) is set here. Other tabs are not synced: there is no <code>storage</code> listener, so a second tab picks up changes when it reloads.</p>
 
   <browser-window
     src="/docs/examples/demos/settings-panel-basic.html"
@@ -365,7 +365,7 @@ settings.addEventListener('settings-panel:data-changed', (e) => {
 
 <section>
   <h2>State Sharing</h2>
-  <p><code>&lt;settings-panel&gt;</code> and <code>&lt;theme-picker&gt;</code> share state through these channels. When a window event arrives, the panel applies the event's <code>detail</code> before it updates its controls. That way it never shows stale values, and it never writes stale values back.</p>
+  <p><code>&lt;settings-panel&gt;</code> shares state through these channels. <code>&lt;theme-picker&gt;</code> uses the first (mode and theme); a second panel, or your own controls, can use all three. When a window event arrives, the panel applies the event's <code>detail</code> before it updates its controls. That way it never shows stale values, and it never writes stale values back.</p>
   <table class="props-table">
     <thead>
       <tr>
@@ -441,7 +441,7 @@ settings.addEventListener('settings-panel:data-changed', (e) => {
 <section>
   <h2>Related</h2>
   <ul>
-    <li><a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a> &mdash; Full theme picker with swatch grid (runs in parallel)</li>
+    <li><a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a> &mdash; Color mode and theme only, as a swatch grid or a compact select (runs in parallel)</li>
     <li><a href="/docs/elements/custom-elements/site-tools/"><code>&lt;site-tools&gt;</code></a> &mdash; Container for site-wide tools</li>
     <li><a href="/docs/attributes/data-sticky/"><code>data-sticky</code></a> &mdash; Sticky header system</li>
     <li><a href="/docs/themes/">Themes</a> &mdash; Available theme documentation</li>

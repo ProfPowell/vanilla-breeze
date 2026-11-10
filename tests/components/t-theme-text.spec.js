@@ -111,7 +111,7 @@ test.describe('theme-picker', () => {
     await page.waitForTimeout(400);
     await expect(page.locator('#p')).toHaveAttribute('open', '');
     // Pointer selection still auto-dismisses
-    await page.locator('#p label.option', { has: page.locator('input[value="light"]') }).click();
+    await page.locator('#p label.seg', { has: page.locator('input[value="light"]') }).click();
     await expect(page.locator('#p')).not.toHaveAttribute('open', '');
   });
 
@@ -135,34 +135,69 @@ test.describe('theme-picker', () => {
     expect(r).toEqual({ a: 1, b: 0 });
   });
 
-  test('a11y + extension changes from other controls re-sync the picker', async ({ page }) => {
+  test('two controls only: mode and theme; nothing settings-panel owns', async ({ page }) => {
     await load(page, `
       <theme-picker id="a" variant="inline"></theme-picker>
       <theme-picker id="b" variant="inline" compact></theme-picker>`, { modules: TP });
     await upgraded(page, 2);
-    // Toggle in picker A → picker B follows
-    await page.locator('#a input[data-a11y-theme="a11y-large-text"]').evaluate((i) => i.click());
-    await expect(page.locator('#b input[data-a11y-theme="a11y-large-text"]')).toBeChecked();
-    // settings-panel style event from window → both follow
-    await page.evaluate(() => {
-      window.dispatchEvent(new CustomEvent('vb:a11y-themes-change', { detail: ['a11y-dyslexia'] }));
-      window.dispatchEvent(new CustomEvent('vb:extensions-change', { detail: { motionFx: false, sounds: false } }));
-    });
     for (const id of ['a', 'b']) {
-      await expect(page.locator(`#${id} input[data-a11y-theme="a11y-dyslexia"]`)).toBeChecked();
-      await expect(page.locator(`#${id} input[data-a11y-theme="a11y-large-text"]`)).not.toBeChecked();
-      await expect(page.locator(`#${id} input[data-extension="motionFx"]`)).not.toBeChecked();
+      await expect(page.locator(`#${id} fieldset`)).toHaveCount(2);
+      await expect(page.locator(`#${id} input[data-field=mode]`)).toHaveCount(3);
+      await expect(page.locator(`#${id} :is([data-a11y-theme], [data-extension], [data-field=accent], [data-field=fluid], select[name*=accent], select[name*=fluid], a[download])`)).toHaveCount(0);
     }
+    // Default: every theme is a swatch. Compact: the same themes in one select.
+    const swatches = await page.locator('#a input[data-field=brand]').evaluateAll((els) => els.map((e) => e.value));
+    const options = await page.locator('#b select option').evaluateAll((els) => els.map((e) => e.value));
+    expect(swatches.length).toBeGreaterThan(40);
+    expect(options).toEqual(swatches);
+    await expect(page.locator('#a select')).toHaveCount(0);
+    await expect(page.locator('#b input[data-field=brand]')).toHaveCount(0);
   });
 
-  test('authored a11y-* token on <html> survives init with nothing stored', async ({ page }) => {
-    await load(page, '<theme-picker variant="inline"></theme-picker>', {
+  test('a pick in one picker shows in the other; the grid names the theme', async ({ page }) => {
+    await load(page, `
+      <theme-picker id="a" variant="inline"></theme-picker>
+      <theme-picker id="b" variant="inline" compact></theme-picker>`, { modules: TP });
+    await upgraded(page, 2);
+    await expect(page.locator('#a .theme-name')).toHaveText('Default');
+    await page.locator('#b select').selectOption('swiss');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', /swiss/);
+    await expect(page.locator('#a input[data-field=brand][value=swiss]')).toBeChecked();
+    await expect(page.locator('#a .theme-name')).toHaveText('Swiss');
+    // Hovering a swatch names it; leaving the list names the current theme again
+    await page.locator('#a label.swatch-cell', { has: page.locator('input[value=brutalist]') }).hover();
+    await expect(page.locator('#a .theme-name')).toHaveText('Brutalist');
+    await page.locator('#a legend').first().hover();
+    await expect(page.locator('#a .theme-name')).toHaveText('Swiss');
+  });
+
+  test('authored and stored a11y-* tokens on <html> survive init and a theme change', async ({ page }) => {
+    await load(page, '<theme-picker variant="inline" compact></theme-picker>', {
       modules: TP, htmlAttrs: 'data-theme="a11y-large-text"',
     });
     await upgraded(page);
     await page.waitForTimeout(200);
     await expect(page.locator('html')).toHaveAttribute('data-theme', /a11y-large-text/);
-    await expect(page.locator('theme-picker input[data-a11y-theme="a11y-large-text"]')).toBeChecked();
+    await page.locator('theme-picker select').selectOption('swiss');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', /swiss/);
+    await expect(page.locator('html')).toHaveAttribute('data-theme', /a11y-large-text/);
+  });
+
+  test('popover fits a small viewport: no page overflow, panel inside the window', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 640 });
+    await load(page, '<p style="text-align:end"><theme-picker id="p"></theme-picker></p>', { modules: TP });
+    await upgraded(page);
+    await page.locator('#p [data-trigger]').click();
+    await expect(page.locator('#p')).toHaveAttribute('open', '');
+    await page.waitForTimeout(300);
+    const r = await page.evaluate(() => {
+      const b = document.querySelector('#p .panel').getBoundingClientRect();
+      return { left: b.left, right: b.right, bottom: b.bottom, w: innerWidth, h: innerHeight, overflow: document.documentElement.scrollWidth > innerWidth };
+    });
+    expect(r.overflow).toBe(false);
+    expect(r.left).toBeGreaterThanOrEqual(0);
+    expect(r.right).toBeLessThanOrEqual(r.w);
+    expect(r.bottom).toBeLessThanOrEqual(r.h);
   });
 
   test('teardown resets open state; generated trigger is type=button; labels', async ({ page }) => {

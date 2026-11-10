@@ -66,7 +66,7 @@ test.describe('theme-picker', () => {
 
     /* Click the "dark" mode option — the styled label is the click surface
        (it covers the radio input) */
-    const darkOption = page.locator('theme-picker label.option', {
+    const darkOption = page.locator('theme-picker label.seg', {
       has: page.locator('input[type="radio"][value="dark"]'),
     });
     await darkOption.click();

@@ -1386,7 +1386,7 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<stepper-wc>` | Form-associated stepper for formatted units, currency, duration, bytes, token-snap scales and enums (plain numbers: `<input type="number" data-stepper>`). Inner `role="spinbutton"` is named from `<label for>` / wrapping label / host `aria-labelledby` / `aria-label`; `readonly` (aria-readonly, buttons disabled), `disabled` / disabled fieldset; `data-label-decrease` / `-increase`; `.value`, `.displayText`, `recomputeWidth()` | |
 | `<tab-set>` | Accessible tabs | ✓ |
 | `<text-reader>` | Text-to-speech reader (Web Speech API + CSS Custom Highlight API): `for` (target id), `variant="icon"` (trigger + top-layer toolbar placed after it; Escape returns focus), `selectors` (default `p,li`), `speed`, `voice`, `highlight="false"`, `scroll="false"`; `data-label-play`/`-pause`/`-stop`/`-reader`/`-controls`/`-voice`/`-loading-voices`/`-speed`/`-slower`/`-faster`; slots `icon-play`/`icon-pause`/`icon-stop`/`icon-trigger`. Language = target's nearest `[lang]` (utterance.lang + voice preference); skips pre/code/aria-hidden/hidden; `<`/`>` sanitised to spaces; text re-extracted on play; reduced-motion = instant scroll; `play()`/`pause()`/`resume()`/`stop()`, `voices`/`speaking`/`paused`/`progress`; events `text-reader:play`/`pause`/`resume`/`stop`/`end`/`word`/`error` | |
-| `<theme-picker>` | Theme switcher (popover or `variant="inline"`, `compact`); per-instance radio groups; pointer picks auto-dismiss, arrow keys never do; non-modal (Escape / Tab-out / outside click close); `data-label-*`; syncs with sibling pickers + settings-panel via `vb:a11y-themes-change` / `vb:extensions-change` | ✓ |
+| `<theme-picker>` | Color mode + theme only (popover or `variant="inline"`); themes as a swatch grid, or one grouped select with `compact`; per-instance radio groups; pointer picks auto-dismiss, arrow keys never do; non-modal (Escape / Tab-out / outside click close); `data-label-panel|trigger|mode|theme`; syncs with sibling pickers + settings-panel via `vb:theme-change`. Sizing, a11y themes, motion and sound live in `<settings-panel>` | ✓ |
 | `<time-index>` | Changelog/timeline enhancer: "Oldest first" toggle (`aria-pressed`), `versions` filter (entry version = `data-version` → own `.version-tag` → `v2-1-0` id) with live count, `<time data-relative>` keeps absolute date in `title`, optional `updates-src` JSON feed (http(s)/relative links only); `data-label-controls` / `-sort` / `-filter` / `-all` / `-status` / `-status-all` / `-recent` | |
 | `<time-picker>` | Form-associated time picker (combobox text entry + spinbutton dialog) over `<input type="time">` | ✓ |
 | `<toast-msg>` | Toast notification queue | ✓ |
@@ -1740,7 +1740,6 @@ Theme picker UI (mode, accent, theme, sizing, a11y themes, extensions). `variant
 | Events | Detail |
 |--------|--------|
 | `theme-picker:open`, `theme-picker:close` | — |
-| `theme-picker:dtcg-download` | `{ themeId, href }` |
 | `vb:a11y-themes-change` (on window; also listened for) | `string[]` of active `a11y-*` ids |
 | `vb:extensions-change` (on window; also listened for) | `{ motionFx, sounds, charShortcuts }` |
 

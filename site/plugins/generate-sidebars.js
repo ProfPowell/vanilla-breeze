@@ -255,7 +255,7 @@ export class GenerateSidebars {
     html += `        Search\n`;
     html += `      </button>\n`;
     html += `    </site-search>\n`;
-    html += `    <theme-picker compact>\n`;
+    html += `    <theme-picker>\n`;
     html += `      <button type="button" data-trigger class="ghost">\n`;
     html += `        <icon-wc name="palette" size="sm"></icon-wc>\n`;
     html += `        Theme\n`;

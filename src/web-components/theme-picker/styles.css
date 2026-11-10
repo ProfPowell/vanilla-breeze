@@ -14,6 +14,11 @@ theme-picker {
     display: block;
   }
 
+  /* Swatch grid (not compact): room for six swatches a row */
+  &:not([compact], [variant="inline"]) .panel {
+    inline-size: 18rem;
+  }
+
   /* Open state */
   &[open] .panel {
     opacity: 1;
@@ -37,6 +42,12 @@ theme-picker {
     border: none;
     padding: 0;
     background: transparent;
+    inline-size: auto;
+  }
+
+  /* Inline: the page scrolls, not the theme list */
+  &[variant="inline"] .themes {
+    max-block-size: none;
   }
 }
 
@@ -62,7 +73,9 @@ theme-picker {
     z-index: 1000;
 
     /* Appearance */
-    min-inline-size: 16rem;
+    /* 16rem holds the mode buttons and a select */
+    inline-size: 16rem;
+    text-align: start;
     padding: var(--size-m);
     background: var(--color-surface-overlay);
     border: var(--border-width-thin) solid var(--color-border);
@@ -94,8 +107,6 @@ theme-picker {
 
   .section + .section {
     margin-block-start: var(--size-m);
-    padding-block-start: var(--size-m);
-    border-block-start: var(--border-width-thin) solid var(--color-border);
   }
 
   .section > legend {
@@ -107,169 +118,47 @@ theme-picker {
     color: var(--color-text-muted);
   }
 
-  /* --- Options --- */
-  .options {
-    display: flex;
-    gap: var(--size-xs);
-  }
+  /* Name of the swatch under the pointer or focus, else the current theme */
+  .theme-name {
+    color: var(--color-text);
 
-  /* --- Option (radio button wrapper) --- */
-  .option {
-    display: block;
-    flex: 1;
-    min-inline-size: 0;
-    cursor: var(--cursor-custom-pointer, pointer);
-
-    /* Hide native radio */
-    & input[type="radio"] {
-      position: absolute;
-      inline-size: 1px;
-      block-size: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    /* Hover state */
-    &:hover .option-content {
-      background: var(--color-hover-bg);
-    }
-
-    /* Focus state */
-    & input:focus-visible + .option-content {
-      outline: var(--focus-ring-width) solid var(--focus-ring-color);
-      outline-offset: var(--focus-ring-offset);
-    }
-
-    /* Selected state */
-    & input:checked + .option-content {
-      border-color: var(--color-primary);
-      background: var(--color-primary-subtle);
-      /* Ensure dark text on light subtle background for contrast */
-      color: var(--color-gray-900);
-
-      & icon-wc {
-        color: var(--color-primary);
-      }
-    }
-  }
-
-  /* Option content (visual) */
-  .option-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--size-2xs);
-    padding: var(--size-s);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-s);
-    font-size: var(--font-size-s);
-    text-align: center;
-    transition:
-      border-color var(--duration-fast) var(--ease-default),
-      background-color var(--duration-fast) var(--ease-default);
-
-    & icon-wc {
-      font-size: 1.25em;
+    &:not(:empty)::before {
+      content: "\00B7\00A0";
       color: var(--color-text-muted);
     }
   }
 
-  /* --- Sizing grid (2×2 with descriptions) --- */
-  .options--sizing {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+  /* --- Theme swatches: every theme, grouped, in a scrolling region --- */
+  .themes {
+    max-block-size: min(22rem, 50vh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* Room for the selected swatch's outline and the hover scale */
+    padding: var(--size-2xs);
+    margin: calc(-1 * var(--size-2xs));
   }
 
-  .option--sizing .option-content {
-    flex-direction: row;
-    align-items: start;
-    gap: var(--size-xs);
-    text-align: start;
-    padding: var(--size-xs) var(--size-s);
-
-    & icon-wc {
-      flex-shrink: 0;
-      margin-block-start: 0.15em;
-    }
-  }
-
-  .option-text {
-    display: flex;
-    flex-direction: column;
-
-    & small {
-      font-size: var(--font-size-xs);
-      color: var(--color-text-muted);
-      line-height: 1.3;
-    }
-  }
-
-  .option--sizing input:checked + .option-content .option-text small {
-    color: var(--color-primary);
-  }
-
-  /* --- Swatch Grid (compact theme selection) --- */
-  .options--swatch-grid {
+  .swatch-grid {
     display: flex;
     flex-wrap: wrap;
     gap: var(--size-xs);
   }
 
-  /* Wrapper around .swatch-cell when a DTCG download link is attached.
-     Provides a positioning context so the absolute-positioned link sits
-     on top of the swatch without breaking the label/input relationship.
-     (vanilla-breeze-hojq) */
-  .swatch-cell-group {
-    position: relative;
-    display: inline-flex;
-  }
+  /* Popover: one continuous grid. The groups stay in the markup (each is a
+     labelled radiogroup); their headings show in the roomier inline form. */
+  :scope:not([variant="inline"]) .themes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-xs);
 
-  .swatch-dtcg {
-    position: absolute;
-    inset-block-start: -0.25rem;
-    inset-inline-end: -0.25rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: 1rem;
-    block-size: 1rem;
-    padding: 0;
-    border-radius: var(--radius-full, 999px);
-    background: var(--color-surface, white);
-    color: var(--color-text-muted, currentColor);
-    border: 1px solid var(--color-border);
-    text-decoration: none;
-    line-height: 1;
-    /* Hidden by default to keep the swatch grid clean — appears on hover
-       of the wrapper or when the link itself receives keyboard focus. */
-    opacity: 0;
-    transition: opacity var(--duration-fast, 150ms);
-    cursor: var(--cursor-custom-pointer, pointer);
-  }
+    & .theme-category,
+    & .swatch-grid {
+      display: contents;
+    }
 
-  .swatch-cell-group:hover .swatch-dtcg,
-  .swatch-cell-group:focus-within .swatch-dtcg,
-  .swatch-dtcg:focus-visible {
-    opacity: 1;
-  }
-
-  .swatch-dtcg:hover {
-    color: var(--color-text);
-    border-color: var(--color-interactive, currentColor);
-  }
-
-  .swatch-dtcg:focus-visible {
-    outline: 2px solid var(--color-interactive);
-    outline-offset: 1px;
-  }
-
-  .swatch-dtcg icon-wc {
-    inline-size: 0.625rem;
-    block-size: 0.625rem;
+    & .category-label {
+      display: none;
+    }
   }
 
   .swatch-cell {
@@ -292,8 +181,8 @@ theme-picker {
       display: flex;
       align-items: center;
       justify-content: center;
-      inline-size: 2.5rem;
-      block-size: 2.5rem;
+      inline-size: 2rem;
+      block-size: 2rem;
       border-radius: var(--radius-s);
       background: var(--swatch-bg);
       color: var(--swatch-fg, white);
@@ -303,7 +192,7 @@ theme-picker {
         border-color var(--duration-fast) var(--ease-default);
 
       & icon-wc {
-        font-size: 1rem;
+        font-size: 0.875rem;
       }
     }
 
@@ -331,57 +220,9 @@ theme-picker {
     }
   }
 
-  /* --- Color Accent Dots --- */
-  .options--accent-dots {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--size-2xs);
-    align-items: center;
-  }
+  /* --- Theme select (compact) --- */
 
-  .accent-dot {
-    cursor: var(--cursor-custom-pointer, pointer);
-
-    & input[type="radio"] {
-      position: absolute;
-      inline-size: 1px;
-      block-size: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-  }
-
-  .accent-dot-visual {
-    display: block;
-    inline-size: 1.5rem;
-    block-size: 1.5rem;
-    border-radius: 50%;
-    border: 2px solid oklch(0 0 0 / 0.1);
-    transition: transform var(--duration-fast) var(--ease-default);
-  }
-
-  .accent-dot:hover .accent-dot-visual {
-    transform: scale(1.15);
-  }
-
-  .accent-dot input:checked + .accent-dot-visual {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-    border-color: transparent;
-  }
-
-  .accent-dot input:focus-visible + .accent-dot-visual {
-    outline: var(--focus-ring-width) solid var(--focus-ring-color);
-    outline-offset: var(--focus-ring-offset);
-  }
-
-  /* --- Compact mode controls --- */
-
-  .compact-select {
+  .theme-select {
     display: block;
     inline-size: 100%;
     padding: var(--size-xs) var(--size-s);
@@ -401,18 +242,18 @@ theme-picker {
 
   /* base-select: restore flex layout (overrides display: block above) */
   @supports (appearance: base-select) {
-    .compact-select:not([multiple]) {
+    .theme-select:not([multiple]) {
       display: flex;
       align-items: center;
     }
   }
 
-  /* Segmented control (compact color mode)
+  /* Segmented control (color mode)
      Uses CSS grid + subgrid so the icon row and label row align across
      every option, regardless of theme font-size/icon-rendering quirks.
      Each option subgrids into the same two parent rows: icons line up
      in row 1, labels in row 2. */
-  .compact-segmented {
+  .segmented {
     display: grid;
     grid-template-columns: repeat(var(--seg-count, 3), 1fr);
     grid-template-rows: auto auto;
@@ -421,7 +262,7 @@ theme-picker {
     overflow: hidden;
   }
 
-  .compact-seg {
+  .seg {
     display: grid;
     grid-template-rows: subgrid;
     grid-row: span 2;
@@ -440,7 +281,7 @@ theme-picker {
       border: 0;
     }
 
-    & .compact-seg-visual {
+    & .seg-visual {
       display: grid;
       grid-template-rows: subgrid;
       grid-row: span 2;
@@ -464,33 +305,24 @@ theme-picker {
       font-size: 1em;
     }
 
-    &:not(:last-child) .compact-seg-visual {
+    &:not(:last-child) .seg-visual {
       border-inline-end: var(--border-width-thin) solid var(--color-border);
     }
 
-    &:hover .compact-seg-visual {
+    &:hover .seg-visual {
       background: var(--color-surface-alt);
     }
 
-    & input:checked + .compact-seg-visual {
+    & input:checked + .seg-visual {
       background: var(--color-primary);
       color: white;
     }
 
-    & input:focus-visible + .compact-seg-visual {
+    & input:focus-visible + .seg-visual {
       outline: var(--focus-ring-width) solid var(--focus-ring-color);
       outline-offset: var(--focus-ring-offset);
     }
   }
-
-  /* Toggle list (compact a11y + extensions) */
-  .compact-toggles {
-    display: flex;
-    flex-direction: column;
-    gap: var(--size-xs);
-  }
-
-  /* Hidden labels use class="visually-hidden" — see src/utils/visually-hidden.css. */
 
   /* --- Theme Category Sub-labels --- */
   .theme-category {
@@ -508,211 +340,6 @@ theme-picker {
     letter-spacing: 0.05em;
     margin-block-end: var(--size-2xs);
   }
-
-  /* --- More Themes Section --- */
-  .section--more-themes {
-    border-block-start: var(--border-width-thin) solid var(--color-border);
-
-    &[open] .chevron {
-      transform: rotate(180deg);
-    }
-  }
-
-  .more-themes-toggle {
-    display: flex;
-    align-items: center;
-    gap: var(--size-xs);
-    padding: var(--size-s) 0;
-    font-size: var(--font-size-s);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-muted);
-    cursor: var(--cursor-custom-pointer, pointer);
-    list-style: none;
-
-    &::-webkit-details-marker {
-      display: none;
-    }
-
-    &::marker {
-      display: none;
-    }
-
-    & .chevron {
-      margin-inline-start: auto;
-      transition: transform var(--duration-fast) var(--ease-default);
-    }
-
-    &:hover {
-      color: var(--color-text);
-    }
-  }
-
-  /* --- Extensions Section --- */
-  .section--extensions {
-    border-block-start: var(--border-width-thin) solid var(--color-border);
-
-    &[open] .chevron {
-      transform: rotate(180deg);
-    }
-  }
-
-  .extensions-toggle {
-    display: flex;
-    align-items: center;
-    gap: var(--size-xs);
-    padding: var(--size-s) 0;
-    font-size: var(--font-size-s);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-muted);
-    cursor: var(--cursor-custom-pointer, pointer);
-    list-style: none;
-
-    &::-webkit-details-marker {
-      display: none;
-    }
-
-    &::marker {
-      display: none;
-    }
-
-    & .chevron {
-      margin-inline-start: auto;
-      transition: transform var(--duration-fast) var(--ease-default);
-    }
-
-    &:hover {
-      color: var(--color-text);
-    }
-  }
-
-  .extensions-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--size-xs);
-    padding-block-end: var(--size-xs);
-  }
-
-  /* --- Extension Toggle --- */
-  .extension-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--size-s);
-    padding: var(--size-xs) var(--size-s);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-s);
-    cursor: var(--cursor-custom-pointer, pointer);
-    transition: background var(--duration-fast) var(--ease-default);
-
-    &:hover {
-      background: var(--color-surface-alt);
-    }
-  }
-
-  .extension-info {
-    display: flex;
-    align-items: center;
-    gap: var(--size-xs);
-
-    & icon-wc {
-      color: var(--color-text-muted);
-      font-size: 1rem;
-    }
-  }
-
-  .extension-name {
-    font-size: var(--font-size-s);
-  }
-
-
-  /* --- Accessibility Section --- */
-  .section--a11y {
-    border-block-start: var(--border-width-thin) solid var(--color-border);
-  }
-
-  .options--a11y {
-    display: flex;
-    flex-direction: column;
-    gap: var(--size-xs);
-  }
-
-  .option--a11y {
-    display: flex;
-    flex: none;
-    cursor: var(--cursor-custom-pointer, pointer);
-
-    /* Hide native checkbox */
-    & input[type="checkbox"] {
-      position: absolute;
-      inline-size: 1px;
-      block-size: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    & .option-content {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: var(--size-s);
-      inline-size: 100%;
-      padding: var(--size-s);
-      border: var(--border-width-thin) solid var(--color-border);
-      border-radius: var(--radius-s);
-      font-size: var(--font-size-s);
-      text-align: start;
-      transition:
-        border-color var(--duration-fast) var(--ease-default),
-        background-color var(--duration-fast) var(--ease-default);
-    }
-
-    & .option-content::before {
-      content: "";
-      display: block;
-      inline-size: 1rem;
-      block-size: 1rem;
-      flex-shrink: 0;
-      border: var(--border-width-thin) solid var(--color-border);
-      border-radius: var(--radius-xs);
-      background: var(--color-surface);
-      transition:
-        background var(--duration-fast) var(--ease-default),
-        border-color var(--duration-fast) var(--ease-default);
-    }
-
-    &:hover .option-content {
-      background: var(--color-hover-bg);
-    }
-
-    & input:focus-visible + .option-content {
-      outline: var(--focus-ring-width) solid var(--focus-ring-color);
-      outline-offset: var(--focus-ring-offset);
-    }
-
-    & input:checked + .option-content {
-      border-color: var(--color-primary);
-      background: var(--color-primary-subtle);
-      color: var(--color-gray-900);
-    }
-
-    & input:checked + .option-content::before {
-      background: var(--color-primary);
-      border-color: var(--color-primary);
-      /* Checkmark via SVG background */
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
-      background-size: 0.75rem;
-      background-repeat: no-repeat;
-      background-position: center;
-    }
-
-    & input:checked + .option-content icon-wc {
-      color: var(--color-primary);
-    }
-  }
 }
 
 /* Reduced Motion adjustments */
@@ -723,7 +350,8 @@ theme-picker {
       transform: none;
     }
 
-    .option-content {
+    .swatch-visual,
+    .seg-visual {
       transition: none;
     }
   }
@@ -737,8 +365,8 @@ theme-picker {
       border-color: CanvasText;
     }
 
-    /* Compact mode segment: selected = Highlight fill */
-    .compact-seg input:checked + .compact-seg-visual {
+    /* Mode segment: selected = Highlight fill */
+    .seg input:checked + .seg-visual {
       forced-color-adjust: none;
       background: Highlight;
       color: HighlightText;
@@ -748,37 +376,20 @@ theme-picker {
       }
     }
 
-    /* Full-mode options (mode, sizing, a11y checkboxes) */
-    .option input:checked + .option-content,
-    .options--a11y input:checked + .option-content {
-      border-color: Highlight;
-      outline: 2px solid Highlight;
-      outline-offset: -2px;
-    }
-
-    .options--a11y input:checked + .option-content::before {
-      forced-color-adjust: none;
-      background-color: Highlight;
-      border-color: Highlight;
-    }
-
-    /* Swatches and accent dots keep their real colours (they ARE the
-       content), outlined in CanvasText; the selected one in Highlight. */
-    .swatch-visual,
-    .accent-dot-visual {
+    /* Swatches keep their real colours (they ARE the content), outlined
+       in CanvasText; the selected one in Highlight. */
+    .swatch-visual {
       forced-color-adjust: none;
       border-color: CanvasText;
     }
 
-    .swatch-cell input:checked + .swatch-visual,
-    .accent-dot input:checked + .accent-dot-visual {
+    .swatch-cell input:checked + .swatch-visual {
       outline: 3px solid Highlight;
       outline-offset: 2px;
     }
 
     .swatch-cell input:focus-visible + .swatch-visual,
-    .accent-dot input:focus-visible + .accent-dot-visual,
-    .compact-seg input:focus-visible + .compact-seg-visual {
+    .seg input:focus-visible + .seg-visual {
       outline: 2px dashed CanvasText;
       outline-offset: 4px;
     }
