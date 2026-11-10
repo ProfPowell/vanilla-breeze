@@ -1,136 +1,261 @@
 ---
 layout: docs
 title: "Tutorial: Contact Form"
-description: "Build an accessible contact form with native validation, custom error messages, and a success toast. Layered from plain HTML through form-field to toast-msg."
+description: "Build an accessible contact form in four steps: a native form that validates with no JavaScript, layout attributes, form-field for inline hints and errors, then toast-msg for a success confirmation."
 currentSection: start
 currentPath: /docs/tutorial/contact-form/
 ---
 
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <p><small><a href="/docs/tutorial/">← All tutorials</a> · ~10 minutes · Layer focus: <strong>forms &amp; validation</strong></small></p>
+  <p><a href="/docs/tutorial/">← All tutorials</a></p>
   <h1>Tutorial: Contact form</h1>
-  <p class="lead">Build an accessible contact form with native HTML validation, helpful error messages, and a submit-success toast — in that order. Every layer works without the next, and the whole thing gracefully degrades if JS never loads.</p>
+  <p class="lead">Build a contact form that validates, explains its errors and confirms a send. You start with a native form that already works with no JavaScript, and each step adds one layer on top without taking that away.</p>
+  <p><small>About 15 minutes · Uses all four layers: semantic HTML, layout attributes, one custom element (<code>&lt;form-field&gt;</code>) and one web component (<code>&lt;toast-msg&gt;</code>).</small></p>
 
-  <browser-window url="example.com/contact" src="/docs/examples/demos/tutorial/contact-form.html"></browser-window>
+  <figure data-layout="stack" data-layout-gap="s">
+    <browser-window url="example.com/contact" title="The finished contact form" data-demo-height="2xl" src="/docs/examples/demos/tutorial/contact-form.html"></browser-window>
+    <figcaption>The finished form. Press <strong>Send message</strong> while it is empty, then fill it in and send again. Nothing is posted anywhere.</figcaption>
+  </figure>
 </section>
 
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="step-1">Step 1 — A form the platform already understands</h2>
-  <p>Before any framework, HTML forms did required fields, email validation, and error messages. Start there.</p>
+  <h2 id="setup">Before you start</h2>
+  <p>Create a folder with one file in it, <code>index.html</code>, and paste in this starter. Open it in a browser, and reload after each step.</p>
 
-  <code-block language="html" label="Step 1 — native HTML form" data-escape><form action="/contact" method="post">
-  <h1>Get in touch</h1>
-  <p>We reply within one business day.</p>
+  <code-block language="html" label="index.html" data-escape><!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact us</title>
+  <link rel="stylesheet" href="https://unpkg.com/vanilla-breeze@0.6/dist/cdn/vanilla-breeze.css">
+  <style>body { padding: var(--size-l); }</style>
+</head>
+<body>
+  <!-- Step 1 goes here -->
+</body>
+</html></code-block>
 
-  <label for="name">Full name</label>
-  <input id="name" name="name" type="text" required autocomplete="name"/>
-
-  <label for="email">Email</label>
-  <input id="email" name="email" type="email" required autocomplete="email"/>
-
-  <label for="topic">Topic</label>
-  <select id="topic" name="topic" required>
-    <option value="">Pick one…</option>
-    <option>Sales question</option>
-    <option>Technical support</option>
-    <option>Press &amp; media</option>
-  </select>
-
-  <label for="message">Message</label>
-  <textarea id="message" name="message" rows="4" required minlength="20"></textarea>
-
-  <button type="submit">Send message</button>
-</form></code-block>
-
-  <p>This form submits to a server, validates on the client, and shows browser-default error tooltips. No CSS, no JS.</p>
+  <p>That is the stylesheet and one line of CSS, which keeps the form off the edge of the window using a Vanilla Breeze spacing token. It is the only CSS you will write. The script tag is added in step 4, the only step that needs it. For npm and self-hosted installs, see the <a href="/docs/quick-start/#install">Quick Start</a>.</p>
 </section>
 
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="step-2">Step 2 — Lay it out with <code>data-*</code></h2>
-  <p>A form is a vertical stack. Buttons belong in a cluster. The whole thing gets a readable width via <code>data-layout-max="narrow"</code>. No wrappers added.</p>
+  <h2 id="step-1">Step 1 — Semantic HTML: a form the browser can validate</h2>
+  <p>HTML already covers most of what a contact form needs. Each control gets a <code>&lt;label&gt;</code> tied to it with <code>for</code> and <code>id</code>, so clicking the label focuses the control and a screen reader announces its name. Each control also gets a <code>name</code>, which labels its value for the server.</p>
+  <p>The validation rules are attributes too. <code>required</code> blocks an empty submit, <code>type="email"</code> rejects text that is not an address (and brings up the email keyboard on a phone), and <code>minlength="20"</code> asks for more than "hi". The first <code>&lt;option&gt;</code> has an empty <code>value</code>, which is what lets <code>required</code> work on the <code>&lt;select&gt;</code>. The two <code>autocomplete</code> values let the browser fill in the name and email.</p>
+  <p>Replace the comment in <code>&lt;body&gt;</code> with this:</p>
 
-  <code-block language="html" label="Step 2 — data-layout on the form" data-escape><main data-layout="center" data-layout-max="narrow">
-  <form data-layout="stack" data-layout-gap="m" aria-labelledby="contact-title">
-    <header data-layout="stack" data-layout-gap="xs">
+  <code-block language="html" label="Step 1: the whole form" max-lines="24" data-escape><main>
+  <form aria-labelledby="contact-title">
+    <header>
       <h1 id="contact-title">Get in touch</h1>
-      <p>We reply within one business day.</p>
+      <p>Questions about an order, a return or anything else.</p>
     </header>
 
-    <!-- labels and inputs as before -->
+    <p>
+      <label for="contact-name">Full name</label>
+      <input id="contact-name" name="name" type="text" autocomplete="name" required/>
+    </p>
 
-    <footer data-layout="cluster" data-layout-gap="s">
+    <p>
+      <label for="contact-email">Email</label>
+      <input id="contact-email" name="email" type="email" autocomplete="email" required/>
+    </p>
+
+    <p>
+      <label for="contact-topic">Topic</label>
+      <select id="contact-topic" name="topic" required>
+        <option value="">Choose a topic…</option>
+        <option value="order">An order</option>
+        <option value="return">A return</option>
+        <option value="other">Something else</option>
+      </select>
+    </p>
+
+    <p>
+      <label for="contact-message">Message</label>
+      <textarea id="contact-message" name="message" rows="5" minlength="20" required></textarea>
+    </p>
+
+    <p>
+      <label>
+        <input type="checkbox" name="consent" required/>
+        I agree to my details being stored so you can reply
+      </label>
+    </p>
+
+    <footer>
       <button type="submit">Send message</button>
-      <button type="reset" class="ghost">Clear</button>
+      <p><small>We reply within one business day.</small></p>
     </footer>
   </form>
 </main></code-block>
 
-  <p>Notice the <code>&lt;footer&gt;</code> inside the form: it's semantically fine and we use <code>data-layout="cluster"</code> to keep the buttons on one line, wrapping on narrow screens.</p>
+  <p>The <code>&lt;form&gt;</code> has no <code>action</code> or <code>method</code> yet. That is deliberate, so the examples on this page have nowhere to post: a valid submit only reloads the frame with the values in the address. When you have a server endpoint, add it, for example <code>action="/contact" method="post"</code>.</p>
+
+  <browser-window url="example.com/contact" title="Step 1: semantic HTML" data-demo-height="2xl" src="/docs/examples/demos/tutorial/contact-form/step-1-html.html"></browser-window>
+
+  <h3 id="step-1-check">Check</h3>
+  <ul>
+    <li>Press <strong>Send message</strong> with the form empty. The browser stops the submit, focuses <em>Full name</em> and shows its own message there.</li>
+    <li>Type <code>ada</code> in <em>Email</em>, fill in the rest and submit. The browser asks for a full address.</li>
+    <li>Click a label. Its control takes focus.</li>
+    <li>It works, but the form runs the full width of the window and the spacing is uneven. That is step 2.</li>
+  </ul>
 </section>
 
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="step-3">Step 3 — Group fields with <code>&lt;form-field&gt;</code></h2>
-  <p>The <code>&lt;form-field&gt;</code> custom element wraps a label, control, and message slot. You get consistent spacing, accessible error messaging, and a hook for live validation feedback — without rewriting your inputs.</p>
+  <h2 id="step-2">Step 2 — Layout attributes: one readable column</h2>
+  <p>The decision here is to keep the form in a single column. Two fields side by side save a little height, but people fill forms in from top to bottom, and one column reads the same on a phone and on a desktop. So the layout work is small: limit the width and even out the vertical spacing. Attributes on four elements you already have do that. No element is added or removed.</p>
 
-  <code-block language="html" label="Step 3 — form-field wraps each control" data-escape><form-field>
-  <label for="name">Full name</label>
-  <input id="name" name="name" type="text" required autocomplete="name"
-         data-message-valuemissing="Please tell us your name"/>
+  <code-block language="html" label="Step 2: the four changed opening tags" data-escape><main data-layout="center" data-layout-max="narrow">
+  <form aria-labelledby="contact-title" data-layout="stack" data-layout-gap="m">
+    <header data-layout="stack" data-layout-gap="xs">…</header>
+
+    <!-- the five <p> groups, unchanged -->
+
+    <footer data-layout="cluster" data-layout-gap="m" data-layout-align="center">…</footer>
+  </form>
+</main></code-block>
+
+  <ul>
+    <li><code>center</code> with <code>data-layout-max="narrow"</code> turns <code>&lt;main&gt;</code> into a centered column that stops growing at a comfortable width.</li>
+    <li><code>stack</code> on the <code>&lt;form&gt;</code> spaces its children evenly. The gap now comes from one place, <code>data-layout-gap</code>, instead of each element's own margins.</li>
+    <li><code>stack</code> with a smaller gap on the <code>&lt;header&gt;</code> keeps the heading and its sentence together.</li>
+    <li><code>cluster</code> on the <code>&lt;footer&gt;</code> puts the button and the note on one line and lets the note wrap underneath when there is no room.</li>
+  </ul>
+
+  <browser-window url="example.com/contact" title="Step 2: layout attributes" data-demo-height="2xl" src="/docs/examples/demos/tutorial/contact-form/step-2-layout.html"></browser-window>
+
+  <h3 id="step-2-check">What changed</h3>
+  <ul>
+    <li>Make the window narrow: the column shrinks with it, and the note drops below the button.</li>
+    <li>Validation is exactly as it was. Layout attributes are CSS only.</li>
+  </ul>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="step-3">Step 3 — Custom elements: <code>&lt;form-field&gt;</code> for hints and errors</h2>
+  <p>The browser's own error message appears on one field at a time, so a reader with three mistakes finds them one submit after another. And you cannot choose the words.</p>
+  <p><code>&lt;form-field&gt;</code> is the Vanilla Breeze element for one label, one control and its messages. At this step it is CSS only. Replace each <code>&lt;p&gt;</code> wrapper from step 1 with a <code>&lt;form-field&gt;</code> and add the messages as <code>&lt;output&gt;</code> elements: <code>class="hint"</code> for help that is always visible, <code>class="error"</code> for text that stays hidden until the control is invalid. Those two classes are part of <code>&lt;form-field&gt;</code>'s markup; they are the only classes in this form.</p>
+
+  <code-block language="html" label="Step 3: three of the five fields" data-escape><form-field>
+  <label for="contact-email">Email</label>
+  <input id="contact-email" name="email" type="email" autocomplete="email" required
+         aria-describedby="contact-email-hint contact-email-error"/>
+  <output id="contact-email-hint" class="hint" for="contact-email">We only use it to reply to you.</output>
+  <output id="contact-email-error" class="error" for="contact-email" aria-live="polite">Enter an email address, like name@example.com.</output>
 </form-field>
 
 <form-field>
-  <label for="email">Email</label>
-  <input id="email" name="email" type="email" required autocomplete="email"
-         data-message-valuemissing="We need an email to reply"
-         data-message-typemismatch="That doesn't look like a valid email"/>
+  <label for="contact-message">Message</label>
+  <textarea id="contact-message" name="message" rows="5" minlength="20" required
+            aria-describedby="contact-message-hint contact-message-error"></textarea>
+  <output id="contact-message-hint" class="hint" for="contact-message">At least 20 characters.</output>
+  <output id="contact-message-error" class="error" for="contact-message" aria-live="polite">Write a message of at least 20 characters.</output>
 </form-field>
 
-<form-field>
-  <label for="message">Message</label>
-  <textarea id="message" name="message" rows="4" required minlength="20"
-            data-message-valuemissing="A short message helps us route this"
-            data-message-tooshort="A few more words, please"></textarea>
+<form-field data-type="checkbox">
+  <label>
+    <input id="contact-consent" type="checkbox" name="consent" required
+           aria-describedby="contact-consent-error"/>
+    I agree to my details being stored so you can reply
+  </label>
+  <output id="contact-consent-error" class="error" for="contact-consent" aria-live="polite">Tick the box so we can reply.</output>
 </form-field></code-block>
 
-  <p>Every <code>data-message-*</code> attribute maps to a <a href="https://developer.mozilla.org/en-US/docs/Web/API/ValidityState">ValidityState</a> flag. The form still uses native HTML validation — <code>&lt;form-field&gt;</code> just surfaces the right message at the right time, in plain text, next to the right input.</p>
+  <p><em>Full name</em> and <em>Topic</em> follow the same pattern with an error and no hint: "Enter your name." and "Choose a topic." The checkbox gains an <code>id</code> for its error to point at, and <code>data-type="checkbox"</code> lays the label out beside the box.</p>
+  <p><code>aria-describedby</code> on the control lists the ids of its hint and error, so a screen reader reads them along with the label. <code>aria-live="polite"</code> on the error announces it when it appears. The error is shown with the <code>:user-invalid</code> selector, which only matches after the reader has edited the control or tried to submit, so an untouched form shows no errors.</p>
+
+  <browser-window url="example.com/contact" title="Step 3: form-field" data-demo-height="2xl" src="/docs/examples/demos/tutorial/contact-form/step-3-form-field.html"></browser-window>
+
+  <h3 id="step-3-check">Check</h3>
+  <ul>
+    <li>Required fields now have a red asterisk after the label. You did not write it: <code>&lt;form-field&gt;</code> adds it wherever it finds a <code>required</code> control.</li>
+    <li>Submit the empty form. Every field shows its own message at once. The browser's message still appears on the first field as well; step 4 takes over from it.</li>
+    <li>Type <code>ada</code> in <em>Email</em> and press Tab. The error shows as you leave the field. Finish the address and the field turns green and its hint folds away.</li>
+    <li>There is still no script on the page. One limit follows from that: each field has a single error text, so <em>Email</em> says the same thing whether it is empty or mistyped.</li>
+  </ul>
 </section>
 
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="step-4">Step 4 — Confirm success with <code>&lt;toast-msg&gt;</code></h2>
-  <p>When the form submits, the server either renders a thank-you page or returns a 200. For the JS-enhanced path, pop a toast so the reader knows it worked — without navigating.</p>
+  <h2 id="step-4">Step 4 — Web components: <code>&lt;toast-msg&gt;</code> confirms the send</h2>
+  <p>The test for adding a component is whether the page needs behaviour that HTML and CSS cannot provide. This form does, twice: confirming a send without leaving the page, and choosing an error message by the kind of mistake. So this is the step where the script goes in. Add it to your <code>&lt;head&gt;</code>, under the stylesheet:</p>
 
-  <code-block language="html" label="Step 4 — toast-msg handles feedback" data-escape><toast-msg id="contact-toast" position="top-end" duration="4000"></toast-msg>
+  <code-block language="html" label="Step 4: add the script to the head" data-escape><script type="module" src="https://unpkg.com/vanilla-breeze@0.6/dist/cdn/vanilla-breeze.js"></script></code-block>
+
+  <p>Then make three changes to the page: two attributes on the <code>&lt;form&gt;</code>, specific messages on two controls, and a <code>&lt;toast-msg&gt;</code> with a few lines of script after <code>&lt;/main&gt;</code>.</p>
+
+  <code-block language="html" label="Step 4: the changes" data-escape><form aria-labelledby="contact-title" data-layout="stack" data-layout-gap="m"
+      data-validate data-submit="event">
+
+  <!-- Email: two more attributes on the input -->
+  <input id="contact-email" name="email" type="email" autocomplete="email" required
+         aria-describedby="contact-email-hint contact-email-error"
+         data-message-valuemissing="Enter your email address."
+         data-message-typemismatch="That does not look like an email address. Check for a missing @."/>
+
+  <!-- Message: two more attributes on the textarea -->
+  <textarea id="contact-message" name="message" rows="5" minlength="20" required
+            aria-describedby="contact-message-hint contact-message-error"
+            data-message-valuemissing="Write your message."
+            data-message-tooshort="Add a little more detail: at least 20 characters."></textarea>
+
+</form>
+
+<!-- After </main> -->
+<toast-msg id="contact-toast" position="bottom-end"></toast-msg>
 
 <script type="module">
   const form = document.querySelector('form');
   const toast = document.querySelector('#contact-toast');
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const res = await fetch('/contact', { method: 'POST', body: new FormData(form) });
-    if (res.ok) {
-      toast.show({ variant: 'success', title: 'Message sent', description: 'We reply within one business day.' });
-      form.reset();
-    } else {
-      toast.show({ variant: 'error', title: 'Something went wrong', description: 'Please try again in a moment.' });
-    }
+  form.addEventListener('vb:submit', (event) => {
+    // event.detail is the validated FormData: send it to your server here.
+    toast.show({ message: 'Message sent. We reply within one business day.', variant: 'success' });
+    form.reset();
+    form.querySelectorAll('form-field').forEach((field) => field.clearError());
   });
-&lt;/script&gt;</code-block>
+</script></code-block>
 
-  <p>If JavaScript fails to load, the form still submits to <code>/contact</code> and the server takes over. The toast is a progressive enhancement, not a dependency.</p>
+  <ul>
+    <li><code>data-validate</code> hands validation to Vanilla Breeze. On submit it checks every field, shows all the errors and moves focus to the first invalid control. The browser's own message bubbles are switched off.</li>
+    <li><code>data-submit="event"</code> changes what a valid submit does. Nothing is sent. The form fires a <code>vb:submit</code> event whose <code>detail</code> is the form's <code>FormData</code>. Here the handler only shows the toast; in your project, the comment marks where a <code>fetch()</code> call goes.</li>
+    <li><code>data-message-valuemissing</code>, <code>data-message-typemismatch</code> and <code>data-message-tooshort</code> each name one kind of validation failure. With the script loaded, <code>&lt;form-field&gt;</code> puts the matching text in the error <code>&lt;output&gt;</code>. Other controls keep their step 3 text.</li>
+    <li><code>&lt;toast-msg&gt;</code> is an empty container fixed to a corner of the window. Calling <code>show()</code> with a <code>message</code> and a <code>variant</code> adds a toast. The container is a polite live region, so a screen reader announces the message. The toast leaves after five seconds, and waits while the pointer or keyboard focus is on it.</li>
+    <li><code>form.reset()</code> empties the controls and <code>clearError()</code> returns each field to its neutral look.</li>
+  </ul>
+
+  <browser-window url="example.com/contact" title="Step 4: toast-msg" data-demo-height="2xl" src="/docs/examples/demos/tutorial/contact-form/step-4-toast.html"></browser-window>
+
+  <h3 id="step-4-check">Check</h3>
+  <ul>
+    <li>Submit the empty form. All five errors appear, focus lands on <em>Full name</em>, and the browser's bubble is gone. <em>Email</em> now says "Enter your email address."</li>
+    <li>Type <code>ada</code> in <em>Email</em>. The message changes to the one about a missing @.</li>
+    <li>Fill in everything and send. A toast appears in the bottom corner of the frame and the form clears. The address of the frame does not change: nothing was submitted.</li>
+    <li>Turn JavaScript off in your browser's developer tools and reload. You are back at step 3: the asterisks, hints and step 3 error texts all work, and a valid submit goes to the server the ordinary way. That is why a real form still needs an <code>action</code> and a server page that says the message arrived.</li>
+  </ul>
 </section>
 
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="recap">What you learned</h2>
+  <h2 id="learned">What you learned</h2>
   <ul>
-    <li><code>data-layout="stack"</code> on a <code>&lt;form&gt;</code> gives vertical rhythm with one attribute.</li>
-    <li><code>&lt;form-field&gt;</code> turns native <code>ValidityState</code> messages into readable prose via <code>data-message-*</code>.</li>
-    <li><code>&lt;toast-msg&gt;</code> surfaces success without navigating — and vanishes cleanly when JS is off.</li>
-    <li>The form works end-to-end at <em>every</em> layer: no CSS, no JS, no problem.</li>
+    <li>Labels, <code>required</code>, <code>type</code>, <code>minlength</code> and <code>autocomplete</code> give you a validating form with no script.</li>
+    <li><code>data-layout</code> on elements you already have lays the form out without adding one.</li>
+    <li><code>&lt;form-field&gt;</code> with <code>&lt;output class="hint"&gt;</code> and <code>&lt;output class="error"&gt;</code> shows help and errors beside each control using CSS alone.</li>
+    <li>With the script, <code>data-validate</code> and <code>data-message-*</code> choose a message for each kind of mistake, and <code>data-submit="event"</code> hands you the validated data.</li>
+    <li><code>&lt;toast-msg&gt;</code> confirms the send, and the form still submits when the script does not run.</li>
   </ul>
 
-  <nav data-layout="cluster" data-layout-gap="m" aria-label="Next">
-    <a class="button" href="/docs/tutorial/blog-post/">Next: Blog post →</a>
-    <a href="/docs/tutorial/">All tutorials</a>
+  <h2 id="try">Try it yourself</h2>
+  <ol>
+    <li><strong>Add an optional phone field.</strong> Use <code>type="tel"</code> and <code>autocomplete="tel"</code>, leave out <code>required</code>, and give it a hint. Read: <a href="/docs/elements/web-components/form-field/">form-field</a> and the <a href="/docs/attributes/autocomplete/">autocomplete attribute</a>.</li>
+    <li><strong>Add an error summary.</strong> A list of the errors at the top of the form, each linking to its field. Vanilla Breeze fills it in when it finds the summary markup inside a <code>data-validate</code> form. Read: the validation section of <a href="/docs/elements/web-components/form-field/">form-field</a> and <a href="/docs/elements/native/form/">the form element</a>.</li>
+    <li><strong>Keep the confirmation on the page.</strong> A toast disappears after a few seconds. Put an empty <code>&lt;section role="status"&gt;</code> above the form and, in the <code>vb:submit</code> handler, fill it with a <code>&lt;status-message data-variant="success"&gt;</code> instead of calling <code>toast.show()</code>. Read: <a href="/docs/elements/custom-elements/status-message/">status-message</a> and <a href="/docs/elements/web-components/toast/">toast-msg</a>.</li>
+  </ol>
+
+  <nav aria-label="Tutorials" data-layout="cluster" data-layout-justify="between">
+    <a class="button secondary" rel="prev" href="/docs/tutorial/dashboard/">← Previous: Dashboard</a>
+    <a class="button" rel="next" href="/docs/tutorial/blog-post/">Next: Blog post →</a>
   </nav>
 </section>

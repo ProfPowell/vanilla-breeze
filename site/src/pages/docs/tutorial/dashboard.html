@@ -1,182 +1,278 @@
 ---
 layout: docs
 title: "Tutorial: Dashboard"
-description: "Build an admin dashboard with KPI tiles, an area chart, and a sortable table. Layered from semantic HTML through custom elements to web components."
+description: "Build an analytics dashboard in one HTML file: four key metrics, a chart and a sortable table. The page is complete as semantic HTML with two real tables; layout attributes, CSS-only cards and two web components are added one step at a time."
 currentSection: start
 currentPath: /docs/tutorial/dashboard/
 includeCharts: true
 ---
 
-<template slot="extraHead">
-<style>
-  /* The dashboard preview needs vertical room for the chart + table. */
-  #tut-dash-hero::part(content) { min-height: 720px; }
-</style>
-</template>
-
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <p><small><a href="/docs/tutorial/">← All tutorials</a> · ~15 minutes · Layer focus: <strong>custom elements &amp; web components</strong></small></p>
+  <p><a href="/docs/tutorial/">← All tutorials</a></p>
   <h1>Tutorial: Dashboard</h1>
-  <p class="lead">Build an admin dashboard with four KPI tiles, a live chart, and a sortable table. The layout is semantic HTML, the cards are custom elements, and the chart and table are web components — each layer pulling its weight.</p>
+  <p class="lead">Build a weekly analytics dashboard: four key metrics, a chart of page views and a table of projects you can sort. You'll write it as plain HTML with two real tables first, so it is complete before any JavaScript runs.</p>
+  <p><small>About 15 minutes · Uses all four layers: semantic HTML, <code>data-*</code> attributes, CSS-only custom elements, web components · JavaScript is added in step 4</small></p>
 
-  <browser-window id="tut-dash-hero" url="example.com/dashboard" src="/docs/examples/demos/tutorial/dashboard.html"></browser-window>
+  <figure data-layout="stack" data-layout-gap="s">
+    <browser-window url="dashboard.example" title="The finished dashboard" data-demo-height="2xl" src="/docs/examples/demos/tutorial/dashboard.html"></browser-window>
+    <figcaption>The finished page. Select a column heading in the Projects table to sort by it.</figcaption>
+  </figure>
 </section>
 
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="step-1">Step 1 — Semantic skeleton</h2>
-  <p>A dashboard is just a page with a heading, four numbers, a chart, and a table. In semantic HTML that's exactly what we write — no framework vocabulary required.</p>
+  <h2 id="setup">Before you start</h2>
+  <p>Make a folder, and in it one file called <code>index.html</code> with this in it. Open the file in a browser and keep it open: after each step, save and reload.</p>
 
-  <code-block language="html" label="Step 1 — semantic dashboard" data-escape><main>
-  <header>
-    <h1>Dashboard</h1>
-    <button type="button">Invite</button>
-  </header>
+  <code-block language="html" label="index.html" data-escape><!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="https://unpkg.com/vanilla-breeze@0.6/dist/cdn/vanilla-breeze.css">
+  <style>body { padding: var(--size-l); }</style>
+</head>
+<body>
+  <!-- Everything in steps 1 to 3 goes here -->
+</body>
+</html></code-block>
 
+  <p>That is the whole setup: one stylesheet, pinned to <code>@0.6</code> because Vanilla Breeze is pre-release, and one line of CSS that keeps the content off the edge of the window using a Vanilla Breeze spacing token. It is the only CSS you will write. The other ways to install are in the <a href="/docs/quick-start/#install">Quick Start</a>.</p>
+  <p>There is no <code>&lt;script&gt;</code> tag yet. In this series the script is added only in the step that needs it. On this page that is step 4, and until then everything you see is HTML and CSS.</p>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="step-1">Step 1 — Write the page in semantic HTML</h2>
+  <p>A dashboard is a heading, a few numbers and some data. Write exactly that. Each metric is an <code>&lt;hgroup&gt;</code>: a heading with the paragraphs that belong to it. The number is the heading, because it is the headline of the group; the label comes before it and the change since last week after it. Each number sits in a <code>&lt;data&gt;</code> element whose <code>value</code> holds the raw figure.</p>
+  <p>The decision that matters most is the data. A chart is a picture of a table, so write the table: one row per day, with the day as a row header. The projects list is a table too. Both get a <code>&lt;caption&gt;</code>, which names the table for screen readers and will later become the chart's title. Because the data is in the HTML, the page is already complete.</p>
+  <p>Dates go in <code>&lt;time&gt;</code> with a machine-readable <code>datetime</code>. You'll need those values again in step 4.</p>
+
+  <code-block language="html" label="Step 1: inside the body element" max-lines="24" data-escape><header>
+  <h1>Dashboard</h1>
+  <p>Week of <time datetime="2026-11-02">2 November 2026</time></p>
+</header>
+
+<main>
   <section aria-label="Key metrics">
-    <article><h2>Signups</h2><p>1,284</p></article>
-    <article><h2>Active users</h2><p>8,927</p></article>
-    <article><h2>Revenue</h2><p>$42.3k</p></article>
-    <article><h2>Churn</h2><p>2.1%</p></article>
+    <hgroup>
+      <p>Signups</p>
+      <h2><data value="1284">1,284</data></h2>
+      <p>Up 12.4% on last week</p>
+    </hgroup>
+    <hgroup>
+      <p>Active users</p>
+      <h2><data value="8927">8,927</data></h2>
+      <p>Up 4.1% on last week</p>
+    </hgroup>
+    <hgroup>
+      <p>Revenue</p>
+      <h2><data value="42300">$42,300</data></h2>
+      <p>Up 8.7% on last week</p>
+    </hgroup>
+    <hgroup>
+      <p>Churn</p>
+      <h2><data value="0.021">2.1%</data></h2>
+      <p>Down 0.3 points on last week</p>
+    </hgroup>
   </section>
 
-  <section>
-    <h2>Page views this week</h2>
-    <!-- chart will live here -->
+  <table>
+    <caption>Page views by day</caption>
+    <thead>
+      <tr><th scope="col">Day</th><th scope="col">Views</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Mon</th><td>4,400</td></tr>
+      <tr><th scope="row">Tue</th><td>5,500</td></tr>
+      <tr><th scope="row">Wed</th><td>4,900</td></tr>
+      <tr><th scope="row">Thu</th><td>7,000</td></tr>
+      <tr><th scope="row">Fri</th><td>6,900</td></tr>
+      <tr><th scope="row">Sat</th><td>3,300</td></tr>
+      <tr><th scope="row">Sun</th><td>2,900</td></tr>
+    </tbody>
+  </table>
+
+  <table>
+    <caption>Projects</caption>
+    <thead>
+      <tr><th scope="col">Project</th><th scope="col">Status</th><th scope="col">Open tasks</th><th scope="col">Due</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Website redesign</td><td>Active</td><td>12</td><td><time datetime="2026-11-20">Nov 20</time></td></tr>
+      <tr><td>Mobile app</td><td>In review</td><td>8</td><td><time datetime="2026-12-04">Dec 4</time></td></tr>
+      <tr><td>Design system</td><td>Active</td><td>23</td><td><time datetime="2027-01-15">Jan 15</time></td></tr>
+      <tr><td>Marketing site</td><td>Shipped</td><td>0</td><td><time datetime="2026-10-30">Oct 30</time></td></tr>
+      <tr><td>Billing migration</td><td>Blocked</td><td>5</td><td><time datetime="2026-11-13">Nov 13</time></td></tr>
+      <tr><td>Onboarding emails</td><td>Active</td><td>3</td><td><time datetime="2026-11-27">Nov 27</time></td></tr>
+    </tbody>
+  </table>
+</main></code-block>
+
+  <browser-window url="dashboard.example" title="Step 1: semantic HTML" data-demo-height="xl" src="/docs/examples/demos/tutorial/dashboard/step-1-html.html"></browser-window>
+
+  <h3 id="step-1-check">Check</h3>
+  <ul>
+    <li>The stylesheet has set the typeface and the heading sizes, and styled both tables: a shaded header row, rules between rows, a muted caption.</li>
+    <li>Nothing is arranged. The four metrics sit in one long column and the text starts at the edge of the window. That is correct for now: the stylesheet does not guess a layout.</li>
+    <li>Every number on the finished dashboard is already on the page and readable.</li>
+  </ul>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="step-2">Step 2 — Arrange it with <code>data-*</code> attributes</h2>
+  <p>Layout in Vanilla Breeze is an attribute on an element you already have. Three values of <code>data-layout</code> arrange this page:</p>
+  <ul>
+    <li><code>stack</code> on <code>&lt;body&gt;</code> and <code>&lt;main&gt;</code>: an even vertical gap between their children, sized by <code>data-layout-gap</code>.</li>
+    <li><code>cluster</code> on the <code>&lt;header&gt;</code>: a row that wraps. <code>data-layout-justify="between"</code> pushes the title and the date to opposite ends, and <code>data-layout-align="baseline"</code> lines up their text.</li>
+    <li><code>grid</code> on the metrics section: as many columns as fit at a minimum width (<code>data-layout-min="s"</code> is 10rem), with no breakpoints to write. Four across on a desktop, two on a phone.</li>
+  </ul>
+  <p>The metrics also get a class. Vanilla Breeze has no utility classes, but it has a few variant classes that say which kind of thing an element is. <code>class="eyebrow"</code> on an <code>&lt;hgroup&gt;</code> turns its first paragraph into a small uppercase label above the heading.</p>
+  <p>There is one new element. The projects table has four columns, and a table cannot shrink below its content, so on a narrow phone it would push the page sideways. Wrap it in a <code>&lt;section data-table-scroll&gt;</code> and the table scrolls inside the section instead. A scrolling area must be reachable by keyboard and have a name, which is what <code>tabindex="0"</code> and <code>aria-labelledby</code> pointing at the caption are for.</p>
+
+  <code-block language="html" label="Step 2: the changed tags" data-escape><body data-layout="stack" data-layout-gap="l">
+<header data-layout="cluster" data-layout-justify="between" data-layout-align="baseline">
+  …
+</header>
+
+<main data-layout="stack" data-layout-gap="xl">
+  <section aria-label="Key metrics" data-layout="grid" data-layout-min="s" data-layout-gap="m">
+    <hgroup class="eyebrow">
+      <p>Signups</p>
+      <h2><data value="1284">1,284</data></h2>
+      <p>Up 12.4% on last week</p>
+    </hgroup>
+    <!-- class="eyebrow" on the other three too -->
   </section>
 
-  <section>
-    <h2>Recent projects</h2>
+  <table>…</table> <!-- page views: unchanged -->
+
+  <section data-table-scroll tabindex="0" aria-labelledby="projects-caption">
     <table>
-      <thead><tr><th>Project</th><th>Owner</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td>Website Redesign</td><td>Alice</td><td>Active</td></tr>
-        <tr><td>Mobile App</td><td>Bob</td><td>In review</td></tr>
-      </tbody>
+      <caption id="projects-caption">Projects</caption>
+      …
     </table>
   </section>
 </main></code-block>
-</section>
 
-<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="step-2">Step 2 — Lay it out with <code>data-*</code></h2>
-  <p>Four KPIs in a responsive row? That's <code>data-layout="grid"</code> with a sensible <code>data-layout-min</code>. The header is a <code>cluster</code>. Nothing else changes.</p>
+  <browser-window url="dashboard.example" title="Step 2: layout attributes" data-demo-height="xl" src="/docs/examples/demos/tutorial/dashboard/step-2-layout.html"></browser-window>
 
-  <code-block language="html" label="Step 2 — data-layout on the skeleton" data-escape><main data-layout="stack" data-layout-gap="l">
-  <header data-layout="cluster" data-layout-justify="between" data-layout-align="center">
-    <h1>Dashboard</h1>
-    <nav data-layout="cluster" data-layout-gap="s">
-      <button type="button" class="secondary">Export</button>
-      <button type="button">Invite</button>
-    </nav>
-  </header>
-
-  <section data-layout="grid" data-layout-min="s" data-layout-gap="m" aria-label="Key metrics">
-    <article>
-      <p>Signups</p>
-      <p>1,284</p>
-      <p>▲ 12.4%</p>
-    </article>
-    <!-- three more articles… -->
-  </section>
-</main></code-block>
-
-  <p>One attribute per section, all on the elements we already had.</p>
-</section>
-
-<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="step-3">Step 3 — Upgrade KPI tiles to <code>&lt;layout-card&gt;</code></h2>
-  <p>A KPI tile is a surface with a border, padding, and a consistent inner rhythm. That's what <code>&lt;layout-card&gt;</code> is for. You get the visual treatment, keep the semantic <code>&lt;article&gt;</code> meaning, and gain no JavaScript.</p>
-
-  <code-block language="html" label="Step 3 — cards as the tile surface" data-escape><section data-layout="grid" data-layout-min="s" data-layout-gap="m" aria-label="Key metrics">
-  <layout-card data-variant="outlined" data-padding="m">
-    <p>Signups</p>
-    <p>1,284</p>
-    <p>▲ 12.4%</p>
-  </layout-card>
-
-  <layout-card data-variant="outlined" data-padding="m">
-    <p>Active users</p>
-    <p>8,927</p>
-    <p>▲ 4.1%</p>
-  </layout-card>
-
-  <layout-card data-variant="outlined" data-padding="m">
-    <p>Revenue</p>
-    <p>$42.3k</p>
-    <p>▲ 8.7%</p>
-  </layout-card>
-
-  <layout-card data-variant="outlined" data-padding="m">
-    <p>Churn</p>
-    <p>2.1%</p>
-    <p>▼ 0.3%</p>
-  </layout-card>
-</section></code-block>
-
-  <p><code>&lt;layout-card&gt;</code> variants: <code>outlined</code>, <code>elevated</code>, <code>ghost</code>. Padding scale: <code>s</code>, <code>m</code>, <code>l</code>. The whole component is CSS — no runtime cost.</p>
-</section>
-
-<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="step-4">Step 4 — Reach for web components only where you need JS</h2>
-  <p>Two places on this page genuinely benefit from JavaScript: the chart (rendering to canvas) and the data table (sorting, filtering). For everything else we stayed declarative.</p>
-
-  <h3>The chart</h3>
-  <p><code>&lt;chart-wc&gt;</code> is a thin Chart.js wrapper driven entirely by data attributes. Pass a JSON <code>data-values</code> payload and you get an accessible, themed, responsive chart that respects the current theme tokens.</p>
-
-  <code-block language="html" label="Step 4a — area chart in a card" data-escape><section data-layout="stack" data-layout-gap="s">
-  <h2>Page views this week</h2>
-  <layout-card data-variant="outlined" data-padding="m">
-    <chart-wc
-      data-type="area"
-      data-label-y="Views"
-      data-legend
-      data-tooltip
-      data-values='[
-        {"name": "Organic", "values": {"Mon": 3200, "Tue": 4100, "Wed": 3800, "Thu": 5200, "Fri": 4700, "Sat": 2400, "Sun": 2100}},
-        {"name": "Direct",  "values": {"Mon": 1200, "Tue": 1400, "Wed": 1100, "Thu": 1800, "Fri": 2200, "Sat": 900,  "Sun": 800}}
-      ]'>
-    </chart-wc>
-  </layout-card>
-</section></code-block>
-
-  <p>To use <code>&lt;chart-wc&gt;</code>, add one CSS and one JS file to your page:</p>
-
-  <code-block language="html" label="Add the chart bundle" data-escape><link rel="stylesheet" href="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze-charts.css"/>
-<script type="module" src="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze-charts.js"></script></code-block>
-
-  <p>Supported types: <code>line</code>, <code>area</code>, <code>bar</code>, <code>column</code>, <code>pie</code>, <code>scatter</code>, <code>bubble</code>.</p>
-
-  <h3>The sortable table</h3>
-  <p>A plain <code>&lt;table&gt;</code> already has semantics and a readable default style. Wrap it in <code>&lt;data-table&gt;</code> and every column header becomes clickable, sortable, and announces its state to screen readers — without you writing any JavaScript.</p>
-
-  <code-block language="html" label="Step 4b — data-table enhances a plain table" data-escape><data-table sortable>
-  <table>
-    <thead>
-      <tr><th>Project</th><th>Owner</th><th>Status</th><th>Tasks</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>Website Redesign</td><td>Alice</td><td>Active</td><td>12</td></tr>
-      <tr><td>Mobile App</td><td>Bob</td><td>In review</td><td>8</td></tr>
-      <tr><td>Design System</td><td>Carol</td><td>Active</td><td>23</td></tr>
-      <tr><td>Marketing Site</td><td>Dan</td><td>Shipped</td><td>5</td></tr>
-    </tbody>
-  </table>
-</data-table></code-block>
-
-  <p>If JavaScript fails to load, the plain <code>&lt;table&gt;</code> is still perfectly readable. That's the whole point.</p>
-</section>
-
-<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="recap">What you learned</h2>
+  <h3 id="step-2-check">Check</h3>
   <ul>
-    <li><code>data-layout="grid" data-layout-min="s"</code> gives you a KPI row that reflows on any screen.</li>
-    <li><code>&lt;layout-card data-variant="outlined"&gt;</code> is the declarative way to spend a surface.</li>
-    <li><code>&lt;chart-wc&gt;</code> accepts a JSON <code>data-values</code> attribute — no imperative setup.</li>
-    <li><code>&lt;data-table&gt;</code> wraps a native <code>&lt;table&gt;</code> and degrades to it gracefully without JS.</li>
+    <li>The date has moved to the right of the title, and the four metrics sit in a row with small coloured labels.</li>
+    <li>Narrow the window. The metrics drop to two columns, then one. You wrote no media query.</li>
+    <li>At about 320px wide the projects table scrolls sideways inside its own area and the rest of the page stays put.</li>
+  </ul>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="step-3">Step 3 — Add custom elements for the tiles</h2>
+  <p>The metrics are in a row, but nothing marks where one ends and the next begins. A dashboard tile needs a surface: a border, a corner radius and padding. No attribute on an <code>&lt;hgroup&gt;</code> provides that, and in most frameworks this is where a <code>&lt;div class="card"&gt;</code> appears.</p>
+  <p>Vanilla Breeze uses a named element instead. Wrap each <code>&lt;hgroup&gt;</code> in a <code>&lt;layout-card&gt;</code>; <code>data-variant="outlined"</code> draws a border in place of the default shadow. The card is a child of the grid, so the four tiles come out the same height.</p>
+  <p>The status column gets the same treatment. Wrap each status in a <code>&lt;layout-badge&gt;</code> and pick a colour that matches its meaning: <code>success</code> for Active, <code>info</code> for In review, <code>error</code> for Blocked, and none for Shipped. The colour only reinforces the word, so the text stays.</p>
+  <p>Both are custom elements styled by the stylesheet alone. They have no behaviour, so there is still no script.</p>
+
+  <code-block language="html" label="Step 3: one tile and one table row; repeat for the rest" data-escape><layout-card data-variant="outlined">
+  <hgroup class="eyebrow">
+    <p>Signups</p>
+    <h2><data value="1284">1,284</data></h2>
+    <p>Up 12.4% on last week</p>
+  </hgroup>
+</layout-card>
+
+<tr>
+  <td>Website redesign</td>
+  <td><layout-badge data-color="success" data-variant="subtle">Active</layout-badge></td>
+  <td>12</td>
+  <td><time datetime="2026-11-20">Nov 20</time></td>
+</tr></code-block>
+
+  <browser-window url="dashboard.example" title="Step 3: custom elements" data-demo-height="xl" src="/docs/examples/demos/tutorial/dashboard/step-3-cards.html"></browser-window>
+
+  <h3 id="step-3-check">What changed</h3>
+  <ul>
+    <li>Each metric is a bordered tile, and the tiles in a row are the same height even when one label wraps.</li>
+    <li>Statuses are tinted pills. Blocked stands out without you reading the column.</li>
+  </ul>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="step-4">Step 4 — Add web components for the chart and the sort</h2>
+  <p>Before adding a web component, ask one question: does this page need behaviour that HTML and CSS cannot provide? Here the answer is yes, twice. Drawing a chart from numbers takes code, and so does re-ordering table rows when someone picks a column.</p>
+  <p>Both components work the same way: they wrap the table you already wrote and read it. <strong>This is the step where the script goes in.</strong> <code>&lt;data-table&gt;</code> is in the main script. Charts are a separate add-on, so they are not downloaded by pages that have none; the add-on is one more script and one more stylesheet. Add these three lines to the <code>&lt;head&gt;</code>:</p>
+
+  <code-block language="html" label="Step 4: add to the head, after the first stylesheet" data-escape><link rel="stylesheet" href="https://unpkg.com/vanilla-breeze@0.6/dist/cdn/vanilla-breeze-charts.css">
+<script type="module" src="https://unpkg.com/vanilla-breeze@0.6/dist/cdn/vanilla-breeze.js"></script>
+<script type="module" src="https://unpkg.com/vanilla-breeze@0.6/dist/cdn/vanilla-breeze-charts.js"></script></code-block>
+
+  <p>Wrap the page-views table in <code>&lt;chart-wc&gt;</code>. It reads the row headers as categories and the Views column as a series, draws an SVG chart, and uses the caption as the title. <code>data-type="column"</code> picks the chart and <code>data-label-y</code> names the vertical axis. <code>data-config</code> passes options to the chart engine as JSON: with one series there is nothing for a legend to tell apart, so it is switched off (the hover tooltip currently depends on the legend, so it goes too). The table does not go away. It is hidden visually and stays in the page as the chart's text alternative, and it is what gets printed.</p>
+  <p>Wrap the projects table in <code>&lt;data-table&gt;</code>, inside the scrolling section, and mark each sortable column with <code>data-sort</code> and the kind of value it holds: <code>string</code>, <code>number</code> or <code>date</code>. "Nov 20" has no year, so it cannot be sorted as a date as written. Give each of those cells a <code>data-sort-value</code> with the same value as its <code>datetime</code>.</p>
+
+  <code-block language="html" label="Step 4: wrap the two tables" data-escape><chart-wc data-type="column" data-label-y="Views" data-config='{"legend": {"enabled": false}, "tooltip": {"enabled": false}}'>
+  <table>
+    <caption>Page views by day</caption>
+    …
+  </table>
+</chart-wc>
+
+<section data-table-scroll tabindex="0" aria-labelledby="projects-caption">
+  <data-table>
+    <table>
+      <caption id="projects-caption">Projects</caption>
+      <thead>
+        <tr>
+          <th scope="col" data-sort="string">Project</th>
+          <th scope="col" data-sort="string">Status</th>
+          <th scope="col" data-sort="number">Open tasks</th>
+          <th scope="col" data-sort="date">Due</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Website redesign</td>
+          <td><layout-badge data-color="success" data-variant="subtle">Active</layout-badge></td>
+          <td>12</td>
+          <td data-sort-value="2026-11-20"><time datetime="2026-11-20">Nov 20</time></td>
+        </tr>
+        <!-- data-sort-value on the other five Due cells too -->
+      </tbody>
+    </table>
+  </data-table>
+</section></code-block>
+
+  <browser-window url="dashboard.example" title="Step 4: web components" data-demo-height="2xl" src="/docs/examples/demos/tutorial/dashboard/step-4-components.html"></browser-window>
+
+  <h3 id="step-4-check">Check</h3>
+  <ul>
+    <li>The page-views table is now a column chart with one bar per day.</li>
+    <li>Each Projects column heading has become a button with a sort arrow. Select Open tasks: the rows run 0, 3, 5, 8, 12, 23. Select it again and the order reverses. Select Due and the rows run from Oct 30 to Jan 15, which only works because of <code>data-sort-value</code>.</li>
+    <li>Use the keyboard: <kbd>Tab</kbd> reaches each heading and <kbd>Enter</kbd> or <kbd>Space</kbd> sorts. The new order is announced to screen readers.</li>
+    <li>Turn JavaScript off and reload. You are back at step 3: two plain tables, every number still there. Nothing is blank and nothing is broken.</li>
   </ul>
 
-  <nav data-layout="cluster" data-layout-gap="m" aria-label="Next">
-    <a class="button" href="/docs/tutorial/contact-form/">Next: Contact form →</a>
-    <a href="/docs/tutorial/">All tutorials</a>
+  <figure data-layout="stack" data-layout-gap="s">
+    <browser-window url="dashboard.example" title="The same file with JavaScript off" data-demo-height="xl" src="/docs/examples/demos/tutorial/dashboard/step-3-cards.html"></browser-window>
+    <figcaption>What a visitor sees if the scripts do not load: the step 3 page.</figcaption>
+  </figure>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="learned">What you learned</h2>
+  <ul>
+    <li>Put the data in the HTML. A chart and a sortable grid both start as a <code>&lt;table&gt;</code>, and the table is what remains when a script fails.</li>
+    <li><code>data-layout</code> arranges an existing element: <code>stack</code> for vertical spacing, <code>cluster</code> for a wrapping row, <code>grid</code> for columns that reflow.</li>
+    <li>CSS-only custom elements such as <code>&lt;layout-card&gt;</code> and <code>&lt;layout-badge&gt;</code> add a surface when no attribute will. They need no script.</li>
+    <li>Web components wrap markup that already works. <code>&lt;chart-wc&gt;</code> and <code>&lt;data-table&gt;</code> read the table inside them, and the script tag arrives only with them.</li>
+  </ul>
+
+  <h2 id="try">Try it yourself</h2>
+  <ol>
+    <li><strong>Filter the projects.</strong> Add <code>data-filterable</code> to the projects <code>&lt;table&gt;</code>. A search box appears above it, and typing "active" hides the other rows. Read <a href="/docs/elements/web-components/data-table/">data-table</a>.</li>
+    <li><strong>Compare two sources.</strong> Add a third column to the page-views table, name the two value columns Organic and Direct, and remove <code>data-config</code>. The legend comes back, and so does the tooltip when you point at a day. Read <a href="/docs/elements/web-components/chart-wc/">chart-wc</a>.</li>
+    <li><strong>Swap a tile for a component.</strong> <code>&lt;score-card&gt;</code> is a web component made for metric tiles, with a trend colour and room for a sparkline. Replace one <code>&lt;layout-card&gt;</code> with it and compare what each gives you with JavaScript off. Read <a href="/docs/elements/web-components/score-card/">score-card</a>.</li>
+  </ol>
+
+  <nav aria-label="Tutorials" data-layout="cluster" data-layout-justify="between">
+    <a class="button secondary" rel="prev" href="/docs/tutorial/landing-page/">← Previous: Landing page</a>
+    <a class="button" rel="next" href="/docs/tutorial/contact-form/">Next: Contact form →</a>
   </nav>
 </section>

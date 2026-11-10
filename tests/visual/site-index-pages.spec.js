@@ -17,6 +17,8 @@ const REGIONS = [
   ['semantic-layouts-cards', '/docs/semantic-layouts/', 'ul[data-layout="grid"]'],
   ['kitchen-sink-jump', '/docs/examples/kitchen-sink/', 'nav[aria-labelledby="jump-to-section"]'],
   ['tokens-spacing', '/docs/tokens/', 'layout-stack:has(> token-scale)'],
+  ['tutorial-hub-cards', '/docs/tutorial/', 'ol[data-layout="grid"]'],
+  ['tutorial-pager', '/docs/tutorial/dashboard/', 'nav[aria-label="Tutorials"]'],
 ];
 
 async function open(page, path) {

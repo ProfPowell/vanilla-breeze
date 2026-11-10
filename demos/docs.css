@@ -363,6 +363,41 @@
       color: var(--color-text-muted);
       margin: 0;
     }
+
+    /* Link-card affordance: the title underlines with the card's hover and
+       focus, and an optional <footer> is the call to action ("Start →"),
+       in the link colour, so a card that is a link reads as one at rest. */
+    &:is(:hover, :focus-visible) :is(h2, h3) {
+      text-decoration: underline;
+      text-decoration-thickness: var(--border-width-medium);
+      text-underline-offset: 0.2em;
+    }
+
+    & small {
+      display: block;
+      margin-block-end: var(--size-2xs);
+      color: var(--color-text-muted);
+    }
+
+    & footer {
+      margin-block-start: auto;
+      padding-block-start: var(--size-m);
+      color: var(--color-interactive);
+      font-weight: 500;
+    }
+
+    /* With a call to action the card is a column, so the footers of a row
+       of equal-height cards line up along the bottom. */
+    &:has(> footer) {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  /* A link card alone in a grid list item fills it (equal-height rows),
+     as layout-card does. */
+  :is(layout-grid, [data-layout="grid"]) > li > a.section-card:only-child {
+    block-size: 100%;
   }
 
   .section-card.featured {

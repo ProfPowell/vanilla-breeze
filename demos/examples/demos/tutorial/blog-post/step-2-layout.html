@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>A year of rain — Blog post tutorial step 2 (layout attributes)</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>body { padding: var(--size-l); }</style>
+  <!--
+    Step 2 of docs/tutorial/blog-post/: step 1 plus layout. The article gets
+    data-layout="prose" (65ch measure + vertical rhythm) and is centered; the
+    article header and footer become stacks; the tag list takes the .inline
+    list variant. Still no script.
+  -->
+</head>
+<body>
+<main>
+  <article data-layout="prose" data-layout-centered>
+    <header data-layout="stack" data-layout-gap="xs">
+      <p>Field notes</p>
+      <h1>A year of rain: what a backyard weather station taught me</h1>
+      <p>By <a rel="author" href="https://example.com/authors/mara-lindqvist">Mara Lindqvist</a> · <time datetime="2026-10-12">October 12, 2026</time> · 6 min read</p>
+    </header>
+
+    <p class="lead">Twelve months ago I bolted a rain gauge to the fence, mostly to settle an argument about whether our street gets less rain than the airport. It does. That turned out to be the least interesting thing I learned.</p>
+
+    <h2 id="why">Why measure your own weather</h2>
+    <p>The official station for our town sits at the airport, nine miles away and two hundred feet lower. Its numbers are accurate for the runway. They are a rough guess for my garden, which sits behind a ridge that splits most summer storms in two.</p>
+    <p>I wanted to know how rough. A gauge of my own would answer that, and it would tell me when the water butts were about to run dry instead of after.</p>
+    <blockquote>
+      <p>The forecast tells you what the sky will do over the county. The gauge tells you what it did over your beans.</p>
+      <footer>Ines Okafor, who has kept the allotment records since 1998</footer>
+    </blockquote>
+
+    <h2 id="hardware">The hardware</h2>
+    <p>The station is deliberately small. A tipping-bucket gauge counts rain in 0.2&nbsp;mm steps, a sealed sensor reads temperature and humidity, and a single-board computer in a weatherproof box logs both every five minutes.</p>
+    <ul>
+      <li>Tipping-bucket rain gauge, mounted level and clear of the fence line</li>
+      <li>Temperature and humidity sensor inside a louvred shield</li>
+      <li>Single-board computer, powered from the shed</li>
+    </ul>
+    <p>The whole thing cost less than a decent pair of boots. The expensive part was the afternoon spent getting the gauge level.</p>
+
+    <h2 id="reading">Reading the gauge</h2>
+    <p>Each time the bucket tips, a magnet closes a switch. The logger only has to count the pulses and multiply. This is the entire rain script:</p>
+    <pre><code>MM_PER_TIP = 0.2
+tips = 0
+
+def on_tip(channel):
+    global tips
+    tips += 1
+
+def rainfall_mm():
+    return round(tips * MM_PER_TIP, 1)</code></pre>
+    <p>A scheduled job writes <code>rainfall_mm()</code> to a file at midnight and resets the counter. Twelve months of data is a text file smaller than one phone photo.</p>
+
+    <h2 id="results">What twelve months showed</h2>
+    <p>The garden received 523&nbsp;mm of rain over the year. The airport reported 640&nbsp;mm. The gap is not spread evenly: winter totals match within a few millimetres, and almost all of the difference comes from four summer storms that passed north of the ridge.</p>
+    <figure>
+      <svg viewBox="0 0 240 90" role="img" aria-labelledby="rain-chart-title">
+        <title id="rain-chart-title">Bar chart of monthly rainfall, wettest in November and driest in July</title>
+        <g fill="currentColor">
+          <rect x="2" y="8" width="16" height="82"/>
+          <rect x="22" y="20" width="16" height="70"/>
+          <rect x="42" y="27" width="16" height="63"/>
+          <rect x="62" y="38" width="16" height="52"/>
+          <rect x="82" y="45" width="16" height="45"/>
+          <rect x="102" y="52" width="16" height="38"/>
+          <rect x="122" y="63" width="16" height="27"/>
+          <rect x="142" y="74" width="16" height="16"/>
+          <rect x="162" y="81" width="16" height="9"/>
+          <rect x="182" y="70" width="16" height="20"/>
+          <rect x="202" y="49" width="16" height="41"/>
+          <rect x="222" y="30" width="16" height="60"/>
+        </g>
+      </svg>
+      <figcaption>Monthly rainfall in the garden, November 2025 to October 2026. The tallest bar is 82&nbsp;mm.</figcaption>
+    </figure>
+    <p>July was the surprise. The airport logged 48&nbsp;mm that month and the garden logged 9. The beans noticed before I did.</p>
+
+    <h2 id="lessons">What I would change</h2>
+    <p>I would mount the gauge on its own post from the start. For the first two months it sat too close to the fence, and a westerly wind was enough to shelter it. Those readings are marked as estimates.</p>
+    <p>I would also write the data down in two places. A power cut in March cost me three days, which I filled in from a neighbour's notebook. The notebook was right; the notebook is always right.</p>
+
+    <footer data-layout="stack" data-layout-gap="m">
+      <ul class="inline">
+        <li><a rel="tag" href="https://example.com/tags/weather">Weather</a></li>
+        <li><a rel="tag" href="https://example.com/tags/gardening">Gardening</a></li>
+        <li><a rel="tag" href="https://example.com/tags/hardware">Hardware</a></li>
+      </ul>
+      <details>
+        <summary>Further reading</summary>
+        <ul>
+          <li><a href="https://example.com/guides/siting-a-rain-gauge">Siting a rain gauge: height, level and shelter</a></li>
+          <li><a href="https://example.com/guides/tipping-bucket">How a tipping-bucket gauge works</a></li>
+          <li><a href="https://example.com/notes/allotment-records">Twenty-five years of allotment rainfall records</a></li>
+        </ul>
+      </details>
+    </footer>
+  </article>
+</main>
+</body>
+</html>

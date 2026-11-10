@@ -1,138 +1,248 @@
 ---
 layout: docs
 title: "Tutorial: Blog Post"
-description: "Build a long-form article page with prose typography, tags, a pull quote, collapsible further reading, and an on-page table of contents."
+description: "Build a long-form article in four steps: semantic HTML, a reading measure from layout attributes, two CSS-only custom elements, then a generated table of contents and copyable heading links."
 currentSection: start
 currentPath: /docs/tutorial/blog-post/
 ---
 
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <p><small><a href="/docs/tutorial/">← All tutorials</a> · ~10 minutes · Layer focus: <strong>typography &amp; reading</strong></small></p>
+  <p><a href="/docs/tutorial/">← All tutorials</a></p>
   <h1>Tutorial: Blog post</h1>
-  <p class="lead">Build a long-form article with prose typography, tag pills, a collapsible "further reading" section, and a sticky table of contents — everything you need for a readable blog template.</p>
+  <p class="lead">Build a long-form article: a title and byline, five sections, a quote, a code sample, a chart, tags and a list of further reading. You'll write it as plain HTML, then add a reading width, two small custom elements and a generated table of contents.</p>
+  <p><small>About 15 minutes · Uses all four layers: semantic HTML, layout attributes, custom elements, web components</small></p>
 
-  <browser-window url="example.com/blog/post" src="/docs/examples/demos/tutorial/blog-post.html"></browser-window>
+  <figure data-layout="stack" data-layout-gap="s">
+    <browser-window url="example.com/notes/a-year-of-rain" title="The finished blog post" data-demo-height="xl" src="/docs/examples/demos/tutorial/blog-post.html"></browser-window>
+    <figcaption>The finished page. Scroll it and try the contents list.</figcaption>
+  </figure>
 </section>
 
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="step-1">Step 1 — Just the article</h2>
-  <p>An article is an article. Native HTML already has the elements we need: <code>&lt;article&gt;</code>, <code>&lt;header&gt;</code>, <code>&lt;blockquote&gt;</code>, <code>&lt;footer&gt;</code>. Start with the content.</p>
+  <h2 id="setup">Before you start</h2>
+  <p>Make a folder, and in it one file called <code>index.html</code>. Paste in this starter and open the file in a browser. Everything in the tutorial goes inside <code>&lt;body&gt;</code>.</p>
 
-  <code-block language="html" label="Step 1 — semantic article" data-escape><article>
-  <header>
-    <p><small>Engineering · 6 min read</small></p>
-    <h1>Shipping a design system without a framework</h1>
-    <p><small>By Jane Doe · April 20, 2026</small></p>
-  </header>
+  <code-block language="html" label="index.html" data-escape><!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A year of rain</title>
+  <link rel="stylesheet" href="https://unpkg.com/vanilla-breeze@0.6/dist/cdn/vanilla-breeze.css">
+  <style>body { padding: var(--size-l); }</style>
+</head>
+<body>
+  <!-- Step 1 goes here -->
+</body>
+</html></code-block>
 
-  <p>Frameworks aren't the only way to scale...</p>
-
-  <blockquote>
-    <p>"The most durable UI is the one that works before any JavaScript runs."</p>
-  </blockquote>
-
-  <h2>Three layers, three promises</h2>
-  <p>Think about a web page the way the platform thinks about it...</p>
-  <ul>
-    <li>Semantic elements do the heavy lifting</li>
-    <li>Design tokens keep colors and spacing consistent</li>
-    <li>Web components fill the gaps</li>
-  </ul>
-
-  <footer>
-    <button type="button">Share</button>
-    <button type="button">Subscribe</button>
-  </footer>
-</article></code-block>
+  <p>The <code>&lt;link&gt;</code> is the whole install for the first three steps. The one line of CSS keeps the text off the edge of the window, using a Vanilla Breeze spacing token; it is the only CSS you will write. There is no script tag yet: you add it in step 4, the only step that needs it. For npm and self-hosting, see <a href="/docs/quick-start/#install">Quick Start</a>.</p>
 </section>
 
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="step-2">Step 2 — Give it reading width</h2>
-  <p>Long text needs a measure — a constrained line length that keeps eyes moving horizontally without getting lost. That's exactly what <code>data-layout-max="prose"</code> is for.</p>
+  <h2 id="step-1">Step 1 — Semantic HTML</h2>
+  <p>An article is mostly decisions about meaning, and HTML already has an element for each one.</p>
+  <p>The post is an <code>&lt;article&gt;</code> with a <code>&lt;header&gt;</code> for the title and byline and a <code>&lt;footer&gt;</code> for what comes after the text. The date is a <code>&lt;time&gt;</code> with a machine-readable <code>datetime</code>. The quote is a <code>&lt;blockquote&gt;</code> whose own <code>&lt;footer&gt;</code> names the speaker. The code is <code>&lt;pre&gt;&lt;code&gt;</code>. The chart is an inline SVG in a <code>&lt;figure&gt;</code> with a <code>&lt;figcaption&gt;</code>, so the file needs no image. The further reading is a native <code>&lt;details&gt;</code>, which opens and closes without any script.</p>
+  <p>Three smaller choices matter later. Each <code>&lt;h2&gt;</code> gets an <code>id</code> you chose, so a link to <code>#results</code> keeps working if you reword the heading. Each tag is a link with <code>rel="tag"</code>, and the author link has <code>rel="author"</code>: both say what the link is, and the stylesheet draws tag links as pills because of it. The opening paragraph has <code>class="lead"</code>, one of a few variant classes Vanilla Breeze defines for cases where HTML has no element.</p>
 
-  <code-block language="html" label="Step 2 — prose width + rhythm" data-escape><main data-layout="center" data-layout-max="prose" data-layout-gap="m">
-  <article data-layout="stack" data-layout-gap="m">
-    <header data-layout="stack" data-layout-gap="xs">
-      <p><small>Engineering · 6 min read</small></p>
-      <h1>Shipping a design system without a framework</h1>
-      <p><small>By Jane Doe · April 20, 2026</small></p>
+  <code-block language="html" label="Step 1: inside the body element" max-lines="24" data-escape><main>
+  <article>
+    <header>
+      <p>Field notes</p>
+      <h1>A year of rain: what a backyard weather station taught me</h1>
+      <p>By <a rel="author" href="https://example.com/authors/mara-lindqvist">Mara Lindqvist</a> · <time datetime="2026-10-12">October 12, 2026</time> · 6 min read</p>
     </header>
 
-    <!-- paragraphs, blockquote, lists… -->
+    <p class="lead">Twelve months ago I bolted a rain gauge to the fence, mostly to settle an argument about whether our street gets less rain than the airport. It does. That turned out to be the least interesting thing I learned.</p>
 
-    <footer data-layout="cluster" data-layout-gap="s">
-      <button type="button">Share</button>
-      <button type="button" class="secondary">Subscribe</button>
+    <h2 id="why">Why measure your own weather</h2>
+    <p>The official station for our town sits at the airport, nine miles away and two hundred feet lower. Its numbers are accurate for the runway. They are a rough guess for my garden, which sits behind a ridge that splits most summer storms in two.</p>
+    <p>I wanted to know how rough. A gauge of my own would answer that, and it would tell me when the water butts were about to run dry instead of after.</p>
+    <blockquote>
+      <p>The forecast tells you what the sky will do over the county. The gauge tells you what it did over your beans.</p>
+      <footer>Ines Okafor, who has kept the allotment records since 1998</footer>
+    </blockquote>
+
+    <h2 id="hardware">The hardware</h2>
+    <p>The station is deliberately small. A tipping-bucket gauge counts rain in 0.2&nbsp;mm steps, a sealed sensor reads temperature and humidity, and a single-board computer in a weatherproof box logs both every five minutes.</p>
+    <ul>
+      <li>Tipping-bucket rain gauge, mounted level and clear of the fence line</li>
+      <li>Temperature and humidity sensor inside a louvred shield</li>
+      <li>Single-board computer, powered from the shed</li>
+    </ul>
+    <p>The whole thing cost less than a decent pair of boots. The expensive part was the afternoon spent getting the gauge level.</p>
+
+    <h2 id="reading">Reading the gauge</h2>
+    <p>Each time the bucket tips, a magnet closes a switch. The logger only has to count the pulses and multiply. This is the entire rain script:</p>
+    <pre><code>MM_PER_TIP = 0.2
+tips = 0
+
+def on_tip(channel):
+    global tips
+    tips += 1
+
+def rainfall_mm():
+    return round(tips * MM_PER_TIP, 1)</code></pre>
+    <p>A scheduled job writes <code>rainfall_mm()</code> to a file at midnight and resets the counter. Twelve months of data is a text file smaller than one phone photo.</p>
+
+    <h2 id="results">What twelve months showed</h2>
+    <p>The garden received 523&nbsp;mm of rain over the year. The airport reported 640&nbsp;mm. The gap is not spread evenly: winter totals match within a few millimetres, and almost all of the difference comes from four summer storms that passed north of the ridge.</p>
+    <figure>
+      <svg viewBox="0 0 240 90" role="img" aria-labelledby="rain-chart-title">
+        <title id="rain-chart-title">Bar chart of monthly rainfall, wettest in November and driest in July</title>
+        <g fill="currentColor">
+          <rect x="2" y="8" width="16" height="82"/>
+          <rect x="22" y="20" width="16" height="70"/>
+          <rect x="42" y="27" width="16" height="63"/>
+          <rect x="62" y="38" width="16" height="52"/>
+          <rect x="82" y="45" width="16" height="45"/>
+          <rect x="102" y="52" width="16" height="38"/>
+          <rect x="122" y="63" width="16" height="27"/>
+          <rect x="142" y="74" width="16" height="16"/>
+          <rect x="162" y="81" width="16" height="9"/>
+          <rect x="182" y="70" width="16" height="20"/>
+          <rect x="202" y="49" width="16" height="41"/>
+          <rect x="222" y="30" width="16" height="60"/>
+        </g>
+      </svg>
+      <figcaption>Monthly rainfall in the garden, November 2025 to October 2026. The tallest bar is 82&nbsp;mm.</figcaption>
+    </figure>
+    <p>July was the surprise. The airport logged 48&nbsp;mm that month and the garden logged 9. The beans noticed before I did.</p>
+
+    <h2 id="lessons">What I would change</h2>
+    <p>I would mount the gauge on its own post from the start. For the first two months it sat too close to the fence, and a westerly wind was enough to shelter it. Those readings are marked as estimates.</p>
+    <p>I would also write the data down in two places. A power cut in March cost me three days, which I filled in from a neighbour's notebook. The notebook was right; the notebook is always right.</p>
+
+    <footer>
+      <ul>
+        <li><a rel="tag" href="https://example.com/tags/weather">Weather</a></li>
+        <li><a rel="tag" href="https://example.com/tags/gardening">Gardening</a></li>
+        <li><a rel="tag" href="https://example.com/tags/hardware">Hardware</a></li>
+      </ul>
+      <details>
+        <summary>Further reading</summary>
+        <ul>
+          <li><a href="https://example.com/guides/siting-a-rain-gauge">Siting a rain gauge: height, level and shelter</a></li>
+          <li><a href="https://example.com/guides/tipping-bucket">How a tipping-bucket gauge works</a></li>
+          <li><a href="https://example.com/notes/allotment-records">Twenty-five years of allotment rainfall records</a></li>
+        </ul>
+      </details>
     </footer>
   </article>
 </main></code-block>
 
-  <p>Values for <code>data-layout-max</code> on a <code>center</code> region: <code>narrow</code>, <code>normal</code>, <code>wide</code>, and <code>prose</code>. <code>prose</code> caps the line at 65 characters — the width research suggests for comfortable reading.</p>
-</section>
+  <browser-window url="example.com/notes/a-year-of-rain" title="Step 1: semantic HTML" data-demo-height="xl" src="/docs/examples/demos/tutorial/blog-post/step-1-html.html"></browser-window>
 
-<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="step-3">Step 3 — Custom elements for the flair</h2>
-  <p>A few places call for a custom element: the tag pills in the header, and a clear "callout" surface for a key takeaway. <code>&lt;layout-badge&gt;</code> gives you the pill shape, and <code>&lt;layout-card&gt;</code> gives you the callout.</p>
-
-  <code-block language="html" label="Step 3 — badges and a callout card" data-escape><header data-layout="stack" data-layout-gap="xs">
-  <nav data-layout="cluster" data-layout-gap="xs" aria-label="Tags">
-    <layout-badge data-variant="info">Engineering</layout-badge>
-    <layout-badge data-variant="info">Platform</layout-badge>
-    <layout-badge>6 min read</layout-badge>
-  </nav>
-  <h1>Shipping a design system without a framework</h1>
-  <p><small>By Jane Doe · April 20, 2026</small></p>
-</header>
-
-<!-- later in the article… -->
-
-<layout-card data-variant="ghost" data-padding="l">
-  <p><strong>Key takeaway.</strong> Going framework-free doesn't mean giving up structure. You still get tokens, themes, and layout primitives — just expressed as plain HTML.</p>
-</layout-card></code-block>
-
-  <p>Still no JavaScript. The badges and card are pure CSS custom elements.</p>
-</section>
-
-<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="step-4">Step 4 — Add navigation helpers with web components</h2>
-  <p>Two genuine-JS wins on a long article: a clickable table of contents that highlights the current section as you scroll, and a collapsible "further reading" group that saves vertical space. The first is <code>&lt;page-toc&gt;</code>, the second is a native <code>&lt;details&gt;</code> grouped by <code>&lt;accordion-wc&gt;</code>.</p>
-
-  <code-block language="html" label="Step 4a — page-toc" data-escape><page-toc scope="article" levels="h2" data-title="On this page"></page-toc></code-block>
-
-  <p><code>&lt;page-toc&gt;</code> scans the article for headings, renders anchored links, and updates the active link as the reader scrolls. Without JavaScript it renders nothing — so the reader never sees a broken widget.</p>
-
-  <code-block language="html" label="Step 4b — collapsible further reading" data-escape><accordion-wc single>
-  <details name="reading">
-    <summary>Further reading</summary>
-    <ul>
-      <li><a href="/docs/concepts/">Progressive enhancement in depth</a></li>
-      <li><a href="/docs/semantic-layouts/">Semantic layouts with data-layout</a></li>
-      <li><a href="/docs/themes/">Theme system and token architecture</a></li>
-    </ul>
-  </details>
-  <details name="reading">
-    <summary>Code samples</summary>
-    <ul>
-      <li><a href="/docs/snippets/html/hero-section/">Hero section snippets</a></li>
-      <li><a href="/docs/patterns/forms/contact/">Contact form pattern</a></li>
-    </ul>
-  </details>
-</accordion-wc></code-block>
-
-  <p><code>&lt;accordion-wc&gt;</code> enhances native <code>&lt;details name="…"&gt;</code> groups with keyboard navigation and smoother transitions. If JavaScript fails, the browser's built-in exclusive-disclosure behavior still works — that's why we use <code>name=""</code> on the <code>&lt;details&gt;</code> elements.</p>
-</section>
-
-<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="recap">What you learned</h2>
+  <h3 id="step-1-check">Check</h3>
   <ul>
-    <li><code>data-layout-max="prose"</code> constrains line length to a comfortable reading width.</li>
-    <li><code>&lt;layout-badge&gt;</code> gives you pill-shaped tags without <code>&lt;span class=""&gt;</code> everywhere.</li>
-    <li><code>&lt;page-toc&gt;</code> generates a scroll-aware table of contents with zero config.</li>
-    <li><code>&lt;accordion-wc&gt;</code> enhances native <code>&lt;details name="…"&gt;</code> — and gracefully falls back to it.</li>
+    <li>The page is readable from top to bottom, and the quote, code block, caption and tag pills are already styled.</li>
+    <li>Click <strong>Further reading</strong>: it opens. That is the browser, not a script.</li>
+    <li>Make the window wide. The lines run the full width, headings sit tight against the text above them, and the tags are a bulleted list. Those are the three things step 2 fixes.</li>
+  </ul>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="step-2">Step 2 — A reading measure with layout attributes</h2>
+  <p>Long text needs a measure: a line short enough that your eye finds the start of the next one. It also needs rhythm, with more space above a heading than below it so each heading belongs to the text that follows.</p>
+  <p><code>data-layout="prose"</code> does both. It caps the article at 65 characters per line, spaces its direct children, and gives the figure, the code block and the quote extra room. <code>data-layout-centered</code> puts the column in the middle of the page. You could get the width alone from <code>data-layout="center"</code> with <code>data-layout-max="prose"</code>, but then you would have to space every heading yourself.</p>
+  <p>The rhythm reaches direct children only, so the lines inside the <code>&lt;header&gt;</code> and <code>&lt;footer&gt;</code> are still touching. Each becomes a <code>stack</code> with its own gap: tight in the header, where three lines form one unit, and looser in the footer. The tag list takes <code>class="inline"</code>, the list variant that lays items out in a wrapping row without bullets. A layout attribute would arrange the items but leave the bullets, so the variant class is the right tool here.</p>
+
+  <code-block language="html" label="Step 2: four opening tags change" data-escape><article data-layout="prose" data-layout-centered>
+  <header data-layout="stack" data-layout-gap="xs">…</header>
+
+  <!-- lead paragraph and the five sections: unchanged -->
+
+  <footer data-layout="stack" data-layout-gap="m">
+    <ul class="inline">…</ul>
+    <details>…</details>
+  </footer>
+</article></code-block>
+
+  <browser-window url="example.com/notes/a-year-of-rain" title="Step 2: layout attributes" data-demo-height="xl" src="/docs/examples/demos/tutorial/blog-post/step-2-layout.html"></browser-window>
+
+  <h3 id="step-2-changed">What changed</h3>
+  <ul>
+    <li>The text sits in a centered column. Resize the window: the column stays the same width until the window is narrower than it, then it fills the space.</li>
+    <li>Headings have clear space above them, and the chart is a sensible size because it fills the column, not the window.</li>
+    <li>The tags are a row of pills, with a gap between them and the further reading.</li>
+  </ul>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="step-3">Step 3 — Custom elements where HTML has no word</h2>
+  <p>Custom elements in Vanilla Breeze are new tag names styled by the same stylesheet. The ones in this step have no JavaScript. The test for using one: is there a thing on the page that HTML has no element for, and that you would otherwise build from a <code>&lt;span&gt;</code> and a class?</p>
+  <p>This article has two. "Field notes" is a category label: not a heading, not a link, just a small chip. That is <code>&lt;layout-badge&gt;</code>; <code>data-variant="subtle"</code> and <code>data-color="primary"</code> give it a quiet tint that follows the theme. The byline gets a <code>&lt;user-avatar&gt;</code> showing the author's initials in a <code>data-fallback</code> span. The name is printed right beside it, so the avatar is marked <code>aria-hidden="true"</code> and a screen reader does not read "ML" before "Mara Lindqvist".</p>
+  <p>The tags fail the test, so they stay as they are. They are links, HTML has an element for links, and <code>rel="tag"</code> already makes them pills.</p>
+
+  <code-block language="html" label="Step 3: the article header" data-escape><header data-layout="stack" data-layout-gap="xs">
+  <p><layout-badge data-variant="subtle" data-color="primary">Field notes</layout-badge></p>
+  <h1>A year of rain: what a backyard weather station taught me</h1>
+  <p><user-avatar data-size="xs" aria-hidden="true"><span data-fallback>ML</span></user-avatar> By <a rel="author" href="https://example.com/authors/mara-lindqvist">Mara Lindqvist</a> · <time datetime="2026-10-12">October 12, 2026</time> · 6 min read</p>
+</header></code-block>
+
+  <browser-window url="example.com/notes/a-year-of-rain" title="Step 3: custom elements" data-demo-height="l" src="/docs/examples/demos/tutorial/blog-post/step-3-elements.html"></browser-window>
+
+  <h3 id="step-3-changed">What changed</h3>
+  <ul>
+    <li>"Field notes" is a tinted chip above the title, and a small disc with the author's initials starts the byline.</li>
+    <li>There is still no script on the page. Both elements are CSS only.</li>
+  </ul>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="step-4">Step 4 — Web components: a table of contents and heading links</h2>
+  <p>Web components are the layer that needs JavaScript, so the test is stricter: does the reader get something the first three layers cannot give, and is the page still whole without it?</p>
+  <p>A five-section article passes twice. A list of its sections helps a reader decide where to start, but a list written by hand goes stale the first time you rename a heading. <code>&lt;page-toc&gt;</code> builds the list from the headings on the page. It needs each heading to have an <code>id</code>, which is why you wrote them in step 1. <code>levels="h2"</code> limits it to the section headings and <code>data-title</code> sets its label. Its <code>scope</code> is a CSS selector and it reads the first element that matches. The default is <code>main</code>; <code>main article</code> says exactly which article you mean, so the list stays right when the page later gains a second one, such as a comment or a related post.</p>
+  <p>The second is sharing a section. <code>&lt;heading-links&gt;</code> adds a link icon to each heading it contains; activating one jumps to that section and copies its address. It goes around the <code>&lt;article&gt;</code>, not inside it. Inside, it would become the article's only direct child and the step 2 rhythm would have nothing to space.</p>
+  <p>Add the script to the <code>&lt;head&gt;</code>, then the two elements:</p>
+
+  <code-block language="html" label="Step 4: one script, two elements" data-escape><!-- in <head>, after the stylesheet -->
+<script type="module" src="https://unpkg.com/vanilla-breeze@0.6/dist/cdn/vanilla-breeze.js"></script>
+
+<main>
+<heading-links levels="h2">
+  <article data-layout="prose" data-layout-centered>
+    <header data-layout="stack" data-layout-gap="xs">…</header>
+
+    <p class="lead">…</p>
+
+    <page-toc scope="main article" levels="h2" data-title="In this article"></page-toc>
+
+    <h2 id="why">Why measure your own weather</h2>
+    <!-- the rest of the article: unchanged -->
+  </article>
+</heading-links>
+</main></code-block>
+
+  <browser-window url="example.com/notes/a-year-of-rain" title="Step 4: web components" data-demo-height="xl" src="/docs/examples/demos/tutorial/blog-post/step-4-components.html"></browser-window>
+
+  <h3 id="step-4-check">Check</h3>
+  <ul>
+    <li>An "In this article" box lists the five sections. Click one: the page scrolls to it, the address gains <code>#results</code>, and that entry is marked as the current one.</li>
+    <li>In a window narrower than 64rem the box is a disclosure: click its title to fold it away. In a wider window it stays open.</li>
+    <li>Hover a section heading, or tab to it: a link icon appears. Click it and paste somewhere; you have the address of that section. On a touch screen the icons are always shown.</li>
+    <li>Turn JavaScript off and reload. The contents box and the link icons are gone and nothing is left in their place: you are looking at step 3. The headings still have their <code>id</code>s, so a link to <code>#results</code> still lands, and <strong>Further reading</strong> still opens.</li>
+  </ul>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="learned">What you learned</h2>
+  <ul>
+    <li>Start with the elements that say what each part is.</li>
+    <li><code>data-layout="prose"</code> gives an article its measure and rhythm; nested groups such as the header and footer get their own <code>stack</code>.</li>
+    <li>Reach for a custom element when HTML has no element for the thing (<code>&lt;layout-badge&gt;</code>, <code>&lt;user-avatar&gt;</code>), and not when it does (tag links).</li>
+    <li>Add a web component when it gives the reader something new and the page is complete without it. <code>&lt;page-toc&gt;</code> and <code>&lt;heading-links&gt;</code> both leave step 3 behind when JavaScript is off.</li>
   </ul>
 
-  <nav data-layout="cluster" data-layout-gap="m" aria-label="Next">
-    <a class="button" href="/docs/tutorial/">Back to all tutorials</a>
-    <a href="/docs/quick-start/">Revisit Quick Start</a>
+  <h2 id="try">Try it yourself</h2>
+  <ol>
+    <li>Number the article. Add <code>data-numbered</code> to the <code>&lt;article&gt;</code> and see what happens to the headings and the figure caption. No script is involved. Read <a href="/docs/elements/native/article/">the article element</a>.</li>
+    <li>Show reading progress. Add a <code>&lt;reading-progress&gt;</code> element and scroll. Read <a href="/docs/elements/web-components/reading-progress/">reading-progress</a>, then decide whether it passes the step 4 test for your page.</li>
+    <li>Keep the contents in view. Move <code>&lt;page-toc&gt;</code> out of the article into an <code>&lt;aside&gt;</code> beside it, so the current-section marker is visible while you read. Read the sidebar section of <a href="/docs/elements/web-components/page-toc/">page-toc</a> and <a href="/docs/attributes/data-sticky/">data-sticky</a>.</li>
+  </ol>
+
+  <nav aria-label="Tutorials" data-layout="cluster" data-layout-justify="between">
+    <a class="button secondary" rel="prev" href="/docs/tutorial/contact-form/">← Previous: Contact form</a>
+    <a class="button" rel="next" href="/docs/tutorial/">Next: All tutorials →</a>
   </nav>
 </section>
