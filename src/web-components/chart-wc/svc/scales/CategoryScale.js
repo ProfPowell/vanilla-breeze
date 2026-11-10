@@ -41,6 +41,15 @@ class CategoryScale {
           dataIndex--;
         }
         position = Util.formatNumber(dataIndex * stats[type].scaleFactor + halfBarWidth);
+      } else if (isKeyAxis) {
+        // Line/area: the first key sits at 0% and the last at 100%. Position
+        // from the key index, not from the rounded scaleFactor: 6 x 16.67
+        // is 100.02, which the > 100 check below used to drop, losing the
+        // last label, tick and guide.
+        dataIndex = index * step;
+        const lastIndex = stats[type].scaleLength - 1;
+        if (dataIndex > lastIndex) continue;
+        position = Util.formatNumber(lastIndex > 0 ? (dataIndex / lastIndex) * 100 : 0);
       } else {
         position = Util.formatNumber(index * step * stats[type].scaleFactor);
       }
@@ -70,7 +79,13 @@ class CategoryScale {
       }
 
       labelText = applyLabelFormat(labelText, type, config);
-      elements.labels.push(createLabel(type, position, labelText));
+      const label = createLabel(type, position, labelText);
+      // A line/area x label at the right edge ends at its tick instead of
+      // being centred on it, so it stays inside the chart.
+      if (type === 'x' && isKeyAxis && !isBarColumn && index > 0 && position === 100) {
+        label.options.class.push('scale-label-x-end');
+      }
+      elements.labels.push(label);
     }
     return elements;
   }

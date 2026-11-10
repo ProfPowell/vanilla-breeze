@@ -1,4 +1,5 @@
 import { VElement } from '../DOM/VElement.js';
+import {COLOR_LABEL, COLOR_TITLE} from '../constants.js';
 import {escapeHtml, miniMarkdown} from '../utils/Utils.js';
 
 /**
@@ -40,14 +41,14 @@ class Title {
           'width': '100%',
           'font-weight': 400,
           'font-size': 'var(--chart-title-size, 1.4rem)',
-          'color': 'var(--chart-title-color, #444)',
+          'color': COLOR_TITLE,
           'text-anchor': 'middle',
           'alignment-baseline': 'middle',
         },
         subtitle: {
           style: {
             'font-size': 'var(--chart-subtitle-size, 0.9rem)',
-            'color': 'var(--chart-subtitle-color, var(--chart-label-color, #737373))',
+            'color': `var(--chart-subtitle-color, ${COLOR_LABEL})`,
             'font-weight': 300,
           },
         },

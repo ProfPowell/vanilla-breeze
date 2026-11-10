@@ -1,3 +1,5 @@
+import {COLOR_LABEL, COLOR_GRID} from '../constants.js';
+
 /**
  * Static chart CSS as a template literal.
  * Replaces Layout.js, Legend.js, Tooltip.js, and Responsive.js JSON objects.
@@ -26,11 +28,15 @@ figure[data-chart-id] {
   box-sizing: border-box;
   font-family: var(--chart-font-family, inherit);
   font-weight: 300;
-  color: var(--chart-label-color, #737373);
+  color: ${COLOR_LABEL};
   background: var(--color-surface, #fff);
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: rgba(0,0,0,0);
+  /* Queried by the legend reflow below. chart-body cannot be restyled by a
+     query on itself, so the figure is the container for it. */
+  container-type: inline-size;
+  container-name: chart-figure;
 }
 
 /* ── Chart title ── */
@@ -44,7 +50,7 @@ chart-title {
 
 .svc-subtitle {
   font-size: var(--chart-subtitle-size, 0.9rem);
-  color: var(--chart-subtitle-color, var(--chart-label-color, #737373));
+  color: var(--chart-subtitle-color, ${COLOR_LABEL});
   font-weight: 300;
   margin-block-start: 0.2em;
 }
@@ -150,6 +156,11 @@ chart-label[position="x"] {
   transform: translate(-50%, 0%);
 }
 
+.svc-scale-label-x-end {
+  transform: translate(-100%, 0);
+  text-align: end;
+}
+
 .svc-scale-label-y {
   inset-inline-end: 0;
   transform: translate(0%, -50%);
@@ -170,7 +181,7 @@ chart-legend {
   overflow: scroll;
   margin: 0;
   padding: 0;
-  color: var(--chart-label-color, #737373);
+  color: ${COLOR_LABEL};
 }
 
 .svc-legend-item {
@@ -191,9 +202,9 @@ chart-legend {
   -webkit-appearance: none;
   inline-size: 1.1em;
   block-size: 1.1em;
-  border: 2px solid var(--chart-grid-color, #ddd);
+  border: 2px solid ${COLOR_GRID};
   border-radius: 3px;
-  background: var(--chart-grid-color, #ddd);
+  background: ${COLOR_GRID};
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
@@ -277,10 +288,25 @@ path.svc-focus {
 }
 
 /* ── Responsive (container queries for layout, media for height) ── */
-@container chart-body (max-width: 400px) {
-  chart-body { grid-template-columns: 1fr; }
-  chart-legend { max-inline-size: none; display: block; }
-  .svc-legend { flex-direction: row; }
+/* Narrow chart: the legend moves under the plot as a wrapping row. */
+@container chart-figure (max-width: 400px) {
+  chart-body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+  chart-legend {
+    max-inline-size: none;
+    padding-inline: 0.5rem;
+    align-self: auto;
+  }
+  .svc-legend {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    column-gap: 1rem;
+    overflow: visible;
+  }
+  .svc-legend-item { margin-block-start: 0; }
 }
 
 @media (max-width: 600px) {

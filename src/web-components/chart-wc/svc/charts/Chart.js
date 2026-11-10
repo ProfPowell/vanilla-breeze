@@ -7,6 +7,7 @@ import { Stylesheet } from '../styles/Stylesheet.js';
 import { createSVGContainer } from '../DOM/structure.js';
 import {compileDOM, escapeHtml} from '../utils/Utils.js';
 import { SVC } from '../SVC.js';
+import {COLOR_LABEL} from '../constants.js';
 import {
   tooltipInteraction, legendInteraction,
   keyboardNavigation, dataClickInteraction,
@@ -149,7 +150,7 @@ class Chart extends SVC {
     };
     // Check the user attrubutes and default attributes
     Object.keys(components).forEach((name) => {
-      if (!config[name] || config[name].enabled) {
+      if (!config[name] || config[name].enabled !== false) {
         defaultObjs.push(components[name].defaults);
       }
     });
@@ -179,7 +180,7 @@ class Chart extends SVC {
       'style': {
         'font-family': 'var(--chart-font-family, inherit)',
         'font-weight': 300,
-        'color': 'var(--chart-label-color, #737373)',
+        'color': COLOR_LABEL,
       },
       'legend': {
         enabled: true,
@@ -220,7 +221,7 @@ class Chart extends SVC {
         enabled: true,
         style: {
           'font-size': '1.5em',
-          'fill': 'var(--chart-label-color, #616161)',
+          'fill': COLOR_LABEL,
           'text-anchor': 'middle',
         },
       },

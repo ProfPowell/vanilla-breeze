@@ -1,4 +1,5 @@
 import { VElement } from '../DOM/VElement.js';
+import {COLOR_LABEL} from '../constants.js';
 
 /**
  * Tooltip Class
@@ -49,7 +50,7 @@ class Tooltip {
           style: {
             'background-color': 'var(--chart-tooltip-bg, var(--color-surface, #fff))',
             'box-shadow': 'var(--chart-tooltip-shadow, 0 2px 4px rgba(0, 0, 0, 0.2))',
-            'color': 'var(--chart-tooltip-color, var(--chart-label-color, #737373))',
+            'color': `var(--chart-tooltip-color, ${COLOR_LABEL})`,
             'padding': '1em',
             'z-index': 2,
           },

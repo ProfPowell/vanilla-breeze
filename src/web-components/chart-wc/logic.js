@@ -283,11 +283,14 @@ class ChartWc extends VBElement {
       }
       config.title = titleConfig;
     }
-    if (this.dataset.legend != null) {
-      config.legend = {enabled: true};
-    }
-    if (this.dataset.tooltip != null) {
-      config.tooltip = {enabled: true};
+    // Legend and tooltip are on by default (the engine's defaults). The
+    // attributes switch them: bare or any value but "false" is on, "false"
+    // is off. They win over data-config and the table's own attributes.
+    for (const name of ['legend', 'tooltip']) {
+      const value = this.dataset[name];
+      if (value != null) {
+        config[name] = {...config[name], enabled: value !== 'false'};
+      }
     }
     if (this.dataset.palette != null) {
       const palette = parseJson(this.dataset.palette, null);

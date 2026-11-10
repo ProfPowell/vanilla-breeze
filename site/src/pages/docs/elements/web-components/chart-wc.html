@@ -82,6 +82,15 @@ crumbLabel: Web Components
   </section>
 
   <section>
+    <h2 id="legend-and-tooltip">Legend and tooltip</h2>
+    <p>Every chart except a sparkline has a legend and hover tooltips unless you turn them off. <code>data-legend="false"</code> hides the legend, which a single-series chart rarely needs, and <code>data-tooltip="false"</code> turns the tooltips off. The bare attribute or <code>="true"</code> states the default. On a table source the same attributes can go on the <code>&lt;table&gt;</code>. An attribute on <code>&lt;chart-wc&gt;</code> wins over <code>data-config</code> and over the table.</p>
+    <code-block language="html" show-lines label="Single series, no legend" data-escape><chart-wc data-type="column" data-title="Page views by day" data-legend="false"
+  data-values='[{"name": "Views", "values": {"Mon": 4400, "Tue": 5500, "Wed": 4900}}]'>
+</chart-wc></code-block>
+    <p>The legend sits beside the plot. When the chart is 400px wide or less it moves under the plot as a wrapping row, so the plot keeps the full width.</p>
+  </section>
+
+  <section>
     <h2>Sparkline mode</h2>
     <p>Add <code>data-size="sparkline"</code> to render a minimal trend chart with no axes, gridlines, tick labels, axis labels, title, legend, or tooltip. The chart becomes a pure inline shape sized by its container &mdash; ideal for dashboard tiles, data tables, and the <code>sparkline</code> slot of <code>&lt;<a href="/docs/elements/web-components/score-card/">score-card</a>&gt;</code>.</p>
 
@@ -222,7 +231,7 @@ chart.addEventListener('chart-wc:error', (e) => {
 
 // Last-minute engine config tweaks (the object is used for this render)
 chart.addEventListener('chart-wc:config-resolved', (e) => {
-  e.detail.config.legend = { enabled: true };
+  e.detail.config.legend = { enabled: false };
 });</code-block>
   </section>
 
@@ -233,7 +242,7 @@ chart.addEventListener('chart-wc:config-resolved', (e) => {
       <li><strong>Table source:</strong> once the chart has mounted, the authored table gets <code>class="visually-hidden"</code>. It stays in the accessibility tree &mdash; caption, headers and cells are all announced. With <code>data-chart="enhance"</code> it stays visible.</li>
       <li><strong>JSON sources</strong> (<code>.data</code>, <code>data-values</code>, <code>&lt;script&gt;</code>, <code>&lt;template&gt;</code>): chart-wc generates a visually hidden <code>&lt;table data-chart-generated&gt;</code> from the data and keeps it in sync on every render. Its caption is <code>data-title</code> (plus <code>data-subtitle</code>); <code>data-label-x</code> / <code>data-label-y</code> name the category and value columns. Pie/ring data becomes label/value rows, scatter/bubble data one row per point.</li>
       <li>If the data can't be tabulated, the SVG is exposed instead as <code>role="img"</code> named by <code>data-title</code>.</li>
-      <li><strong>Keyboard:</strong> the engine's own keyboard navigation (arrow keys between data points when <code>data-tooltip</code> is on, focusable pie slices) lives inside the <code>aria-hidden</code> SVG, so chart-wc removes those elements from the tab order (<code>tabindex="-1"</code>) &mdash; a focusable element inside <code>aria-hidden</code> would be a silent tab stop for screen-reader users. Mouse tooltips still work; keyboard and screen-reader users get the same values from the table. Use <code>data-chart="enhance"</code> when sighted keyboard users need the numbers on screen.</li>
+      <li><strong>Keyboard:</strong> the engine's own keyboard navigation (arrow keys between data points when tooltips are on, focusable pie slices) lives inside the <code>aria-hidden</code> SVG, so chart-wc removes those elements from the tab order (<code>tabindex="-1"</code>) &mdash; a focusable element inside <code>aria-hidden</code> would be a silent tab stop for screen-reader users. Mouse tooltips still work; keyboard and screen-reader users get the same values from the table. Use <code>data-chart="enhance"</code> when sighted keyboard users need the numbers on screen.</li>
       <li><strong>Failure:</strong> the table is only hidden after the chart mounts successfully. If rendering throws, <code>chart-wc:error</code> fires and the table stays visible.</li>
       <li><strong>Print:</strong> the data table prints and the SVG is hidden (sparklines are the exception: they print the trend shape).</li>
     </ul>
@@ -270,7 +279,7 @@ chart.data = [
 ];
 
 // Update config
-chart.config = { legend: { enabled: true } };
+chart.config = { legend: { enabled: false } };
 
 // Re-extract from table and re-render
 chart.refresh();
@@ -314,17 +323,20 @@ chart.addEventListener('chart-wc:data-changed', (e) =&gt; {
 
   <section>
     <h2>Theme Integration</h2>
-    <p>Charts read VB design tokens via CSS custom properties. The theme bridge converts these into palette and axis configuration automatically.</p>
+    <p>Charts read VB design tokens via CSS custom properties. The theme bridge converts these into palette and axis configuration automatically. Each chart property falls back to the theme token beside it, so charts follow light and dark mode without any set-up; set a property on <code>&lt;chart-wc&gt;</code> or an ancestor to override it.</p>
 
     <table class="props-table">
       <thead>
-        <tr><th>Custom Property</th><th>Purpose</th></tr>
+        <tr><th>Custom Property</th><th>Falls back to</th><th>Purpose</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>--chart-series-1</code> &hellip; <code>--chart-series-6</code></td><td>Chart color palette per series</td></tr>
-        <tr><td><code>--chart-label-color</code></td><td>Axis tick label color</td></tr>
-        <tr><td><code>--chart-axis-color</code></td><td>Axis line color</td></tr>
-        <tr><td><code>--chart-grid-color</code></td><td>Grid line color</td></tr>
+        <tr><td><code>--chart-series-1</code> &hellip; <code>--chart-series-6</code></td><td><code>--color-primary</code>, <code>--color-accent</code>, &hellip;</td><td>Chart color palette per series</td></tr>
+        <tr><td><code>--chart-title-color</code></td><td><code>--color-text</code></td><td>Title color</td></tr>
+        <tr><td><code>--chart-label-color</code></td><td><code>--color-text-muted</code></td><td>Axis, legend and tooltip label color; subtitle color unless <code>--chart-subtitle-color</code> is set</td></tr>
+        <tr><td><code>--chart-axis-color</code></td><td><code>--color-border-strong</code></td><td>Axis line color</td></tr>
+        <tr><td><code>--chart-grid-color</code></td><td><code>--color-border</code></td><td>Grid line color</td></tr>
+        <tr><td><code>--chart-tick-color</code></td><td><code>--color-border</code></td><td>Tick mark color</td></tr>
+        <tr><td><code>--chart-baseline-color</code></td><td><code>--color-text-muted</code></td><td>Zero line color when the data goes negative</td></tr>
       </tbody>
     </table>
   </section>

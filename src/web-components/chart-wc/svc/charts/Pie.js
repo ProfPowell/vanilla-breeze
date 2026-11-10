@@ -3,6 +3,7 @@ import { VElement } from '../DOM/VElement.js';
 import { Tooltip } from '../components/Tooltip.js';
 import * as Util from '../utils/Utils.js';
 import {escapeHtml, isPlainObject} from '../utils/Utils.js';
+import {COLOR_LABEL} from '../constants.js';
 
 /**
  * Pie Chart
@@ -346,13 +347,13 @@ class PieChart extends Chart {
           'y1': ly1.toFixed(1),
           'x2': lx2.toFixed(1),
           'y2': ly2.toFixed(1),
-          'stroke': 'var(--chart-label-color, #737373)',
+          'stroke': COLOR_LABEL,
           'stroke-width': '0.5',
           'class': ['plot-leader'],
         }));
 
         const text = new VElement('text', {
-          'fill': 'var(--chart-label-color, #737373)',
+          'fill': COLOR_LABEL,
           'x': labelX.toFixed(1),
           'y': labelY.toFixed(1),
           'alignment-baseline': 'middle',

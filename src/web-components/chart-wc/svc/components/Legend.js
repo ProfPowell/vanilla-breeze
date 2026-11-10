@@ -1,4 +1,5 @@
 import { VElement } from '../DOM/VElement.js';
+import {COLOR_LABEL} from '../constants.js';
 
 /**
  * Legend class
@@ -45,7 +46,7 @@ class Legend {
             'display': 'flex',
             'align-items': 'center',
             'padding': '0.5em',
-            'color': 'var(--chart-label-color, #616161)',
+            'color': COLOR_LABEL,
             'white-space': 'nowrap',
           },
         },

@@ -214,11 +214,12 @@ export function extractTableData(table, chartType) {
 export function extractTableConfig(table) {
   const config = {};
 
-  if (table.hasAttribute('data-tooltip')) {
-    config.tooltip = {enabled: true};
-  }
-  if (table.hasAttribute('data-legend')) {
-    config.legend = {enabled: true};
+  // On by default; "false" turns them off (same rule as on <chart-wc>).
+  for (const name of ['tooltip', 'legend']) {
+    const value = table.getAttribute(`data-${name}`);
+    if (value != null) {
+      config[name] = {enabled: value !== 'false'};
+    }
   }
   if (table.hasAttribute('data-grid')) {
     config.guides = {x: {enabled: true}, y: {enabled: true}};

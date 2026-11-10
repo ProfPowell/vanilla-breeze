@@ -280,9 +280,12 @@ class SVC {
     if (!container) {
       return null;
     }
-    /** @type {{ functions: Record<string, any> }} */
+    // toggles: per-series visibility, written by the legend. It exists
+    // without a legend too, because the tooltips read it.
+    /** @type {{ functions: Record<string, any>, toggles: any[] }} */
     const state = {
       functions: {},
+      toggles: [],
     };
     /** @type {any[]} */
     const interactions = /** @type {any} */ (this).interactions || [];
@@ -401,7 +404,7 @@ class SVC {
       config: ${_safeJsonEmbed(self.config)}
     };
     var svgRoot = document.currentScript.closest('svg');
-    var state = { functions: []};`;
+    var state = { functions: [], toggles: [] };`;
 
     functions.forEach((fnName) => {
       toExecute += `state.functions['${fnName}'] = ${fnName}(state, svgRoot, chart);`;

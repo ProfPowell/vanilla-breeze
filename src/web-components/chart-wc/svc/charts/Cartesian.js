@@ -6,6 +6,7 @@ import { Tooltip } from '../components/Tooltip.js';
 import { createMediaQueries } from '../components/ScaleQueries.js';
 import {calculateStats} from '../stats/index.js';
 import {createScale} from '../scales/index.js';
+import {COLOR_AXIS, COLOR_BASELINE, COLOR_TICK, COLOR_GRID} from '../constants.js';
 
 /**
  * Cartesian chart
@@ -44,7 +45,7 @@ class Cartesian extends Chart {
           },
         },
         style: {
-          'stroke': 'var(--chart-axis-color, #444)',
+          'stroke': COLOR_AXIS,
           'stroke-width': 0.3,
           'vector-effect': 'non-scaling-stroke',
         },
@@ -53,7 +54,7 @@ class Cartesian extends Chart {
         x: {},
         y: {},
         style: {
-          'stroke': 'var(--chart-baseline-color, #888)',
+          'stroke': COLOR_BASELINE,
           'stroke-width': 1,
         },
       },
@@ -66,7 +67,7 @@ class Cartesian extends Chart {
         },
         style: {
           'stroke-width': '1',
-          'stroke': 'var(--chart-tick-color, #DDD)',
+          'stroke': COLOR_TICK,
         },
       },
       'guides': {
@@ -78,7 +79,7 @@ class Cartesian extends Chart {
           enabled: true,
         },
         style: {
-          'stroke': 'var(--chart-grid-color, #e4e4e4)',
+          'stroke': COLOR_GRID,
           'stroke-dasharray': '0, 0',
           'stroke-width': 1,
           'stroke-linecap': 'round',
