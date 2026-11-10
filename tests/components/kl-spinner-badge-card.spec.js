@@ -187,6 +187,22 @@ test.describe('layout-badge', () => {
 /* ------------------------------------------------------------------- card */
 
 test.describe('layout-card', () => {
+  test('cards in a list grid fill their <li>, so a row is equal height', async ({ page }) => {
+    await page.setViewportSize({ width: 1200, height: 800 });
+    const card = (text) => `<li><layout-card data-variant="outlined"><h3>Title</h3><p>${text}</p></layout-card></li>`;
+    for (const [open, close] of [
+      ['<ul class="unstyled" data-layout="grid" data-layout-min="m">', '</ul>'],
+      ['<ol class="unstyled" data-layout="grid" data-layout-min="m">', '</ol>'],
+    ]) {
+      await load(page, `${open}${card('Short.')}${card('A much longer body that wraps onto several lines in a narrow column, so this card is taller than the others in its row.')}${card('Medium length body text.')}${close}`);
+      const heights = await page.evaluate(() => [...document.querySelectorAll('li > layout-card')].map((c) => [
+        Math.round(c.getBoundingClientRect().height), Math.round(c.parentElement.getBoundingClientRect().height),
+      ]));
+      expect(new Set(heights.map(([c]) => c)).size, open).toBe(1);
+      for (const [c, li] of heights) expect(c, open).toBe(li);
+    }
+  });
+
   test('multiple content children stack between header and footer without overlap', async ({ page }) => {
     await load(page, `
       <layout-card id="c" style="inline-size: 360px">
