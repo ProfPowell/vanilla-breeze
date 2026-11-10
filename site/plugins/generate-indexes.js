@@ -17,19 +17,31 @@ function packBadge(item) {
   return `<span class="pack-badge"><icon-wc name="package"></icon-wc>${esc(item.pack)}</span>`;
 }
 
+// --- Shared index entry ---
+// Mirrors the {% for %} body in site/src/pages/docs/elements/index.html and
+// docs/attributes/index.html (that loop body is replaced, never rendered), so
+// the class names here must match the templates and the .index-* rules in
+// demos/docs.css. tests/unit/generate-indexes.test.js holds them in step.
+export function indexEntry(item, { name, fallbackType, withDescription = false }) {
+  const type = item.type || fallbackType;
+  let html = `<a href="${item.href}" class="index-entry" data-type="${type}">`;
+  html += `<code>${name}</code>`;
+  html += `<layout-badge data-variant="subtle"${item.badgeColor ? ` data-color="${item.badgeColor}"` : ''}>${type}</layout-badge>`;
+  html += packBadge(item);
+  if (withDescription && item.description) html += `<p>${esc(item.description)}</p>`;
+  html += `</a>\n`;
+  return html;
+}
+
 // --- Element Index: alphabetical ---
-function generateElementIndex(data) {
+export function generateElementIndex(data) {
   const byLetter = data.elements?.byLetter;
   if (!byLetter) return null;
   let html = '';
   for (const [letter, items] of Object.entries(byLetter)) {
-    html += `<h2 class="letter-heading">${letter}</h2>\n`;
+    html += `<h2 class="index-heading">${letter}</h2>\n`;
     for (const item of items) {
-      html += `<a href="${item.href}" class="element-entry" data-type="${item.type}">`;
-      html += `<code>&lt;${esc(item.name)}&gt;</code>`;
-      html += `<span class="element-badge" data-type="${item.type}">${item.type}</span>`;
-      html += packBadge(item);
-      html += `</a>\n`;
+      html += indexEntry(item, { name: `&lt;${esc(item.name)}&gt;`, fallbackType: 'native' });
     }
   }
   return html;
@@ -97,43 +109,18 @@ function generateCustomElementsIndex(data) {
 }
 
 // --- Attribute index (combined native + data) ---
-function generateAttributeNativeItems(data) {
-  const cats = data.attributeIndex?.nativeCategories;
-  if (!cats) return null;
+export function generateAttributeItems(categories, fallbackType) {
+  if (!categories) return null;
   let html = '';
-  for (const [key, category] of Object.entries(cats)) {
-    html += `<h3 class="category-heading">${esc(category.label)}</h3>\n`;
+  for (const category of Object.values(categories)) {
+    html += `<h3 class="index-heading">${esc(category.label)}</h3>\n`;
     for (const item of category.items) {
-      html += `<a href="${item.href}" class="attribute-entry" data-type="${item.type || 'native'}">`;
-      html += `<code>${esc(item.name)}</code>`;
-      if (item.type) html += `<span class="attribute-badge" data-type="${item.type}">${item.type}</span>`;
-      html += packBadge(item);
-      if (item.description) html += `<p class="description">${esc(item.description)}</p>`;
-      html += `</a>\n`;
+      html += indexEntry(item, { name: esc(item.name), fallbackType, withDescription: true });
     }
   }
   return html;
 }
 
-function generateAttributeDataItems(data) {
-  const cats = data.attributeIndex?.dataCategories;
-  if (!cats) return null;
-  let html = '';
-  for (const [key, category] of Object.entries(cats)) {
-    html += `<h3 class="category-heading">${esc(category.label)}</h3>\n`;
-    for (const item of category.items) {
-      html += `<a href="${item.href}" class="attribute-entry" data-type="${item.type || 'data'}">`;
-      html += `<code>${esc(item.name)}</code>`;
-      if (item.type) html += `<span class="attribute-badge" data-type="${item.type}">${item.type}</span>`;
-      html += packBadge(item);
-      if (item.description) html += `<p class="description">${esc(item.description)}</p>`;
-      html += `</a>\n`;
-    }
-  }
-  return html;
-}
-
-// --- Attribute sub-indexes (native-only, data-only) ---
 function generateAttributeSubIndex(categories) {
   if (!categories) return null;
   let html = '';
@@ -215,8 +202,8 @@ export class GenerateIndexes {
     }
     // Attribute indexes
     else if (path.includes('docs/attributes/index') && !path.includes('native') && !path.includes('data/')) {
-      const nativeHtml = generateAttributeNativeItems(this.data);
-      const dataHtml = generateAttributeDataItems(this.data);
+      const nativeHtml = generateAttributeItems(this.data.attributeIndex?.nativeCategories, 'native');
+      const dataHtml = generateAttributeItems(this.data.attributeIndex?.dataCategories, 'data');
       if (nativeHtml) this.replaceForLoop('attributeIndex.nativeCategories', nativeHtml);
       if (dataHtml) this.replaceForLoop('attributeIndex.dataCategories', dataHtml);
     }
