@@ -1458,7 +1458,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "mobile-menu",
     "type": "custom-element",
-    "description": "Breakpoint observer for a header menu. Sets [data-mobile] at or below the breakpoint, which shows the author's trigger and hides sibling nav, nav-bar and site-tools in the parent header. The author supplies the trigger and the native popover panel.",
+    "description": "Breakpoint observer for a header menu. Sets [data-mobile] at or below the breakpoint, which shows the author's trigger and hides sibling nav, nav-bar and site-tools in the parent header; a sibling marked data-mobile-menu is moved into the panel instead. The author supplies the trigger and the native popover panel.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -1494,6 +1494,14 @@ export default {
       {
         "element": "<button class=\"mobile-menu-close\" popovertargetaction=\"hide\">",
         "description": "Optional author-supplied close button inside the panel."
+      },
+      {
+        "element": "<… data-mobile-menu>",
+        "description": "A sibling of <mobile-menu> in the header that should exist once (a notification bell). Moved into the panel in mobile mode and back on leaving it. If it carries data-unread, the trigger shows a dot."
+      },
+      {
+        "element": "<… data-mobile-menu-slot>",
+        "description": "Optional element inside the panel that receives the moved data-mobile-menu siblings (default: the end of the panel)."
       }
     ],
     "css": {
@@ -9475,6 +9483,14 @@ export default {
         "type": "string",
         "default": "Error:",
         "description": "Banner mode: visually hidden prefix announcing the error variant, so it isn't conveyed by colour alone."
+      },
+      {
+        "name": "data-unread",
+        "kind": "data",
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "number",
+        "description": "(panel) Set by the element to the unread count while there are unread items, removed at zero. Read-only state for styling from outside (a mobile-menu trigger's unread dot)."
       }
     ],
     "events": [

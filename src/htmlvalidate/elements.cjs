@@ -1096,7 +1096,8 @@ module.exports = {
       "data-label-variant-info": {},
       "data-label-variant-success": {},
       "data-label-variant-warning": {},
-      "data-label-variant-error": {}
+      "data-label-variant-error": {},
+      "data-unread": {}
     }
   },
 

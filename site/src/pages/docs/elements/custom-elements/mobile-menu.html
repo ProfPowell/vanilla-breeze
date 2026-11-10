@@ -115,6 +115,25 @@ crumbLabel: Custom Elements
         <li>CSS does the rest: <code>header:has(&gt; mobile-menu[data-mobile]) &gt; :is(nav, nav-bar, site-tools)</code> is hidden. No inline styles are written, so removing the element (or leaving mobile mode) always restores the desktop chrome.</li>
         <li>When switching back to desktop, it closes the panel if it is open.</li>
     </ol>
+
+    <h3>Moving a header tool into the menu</h3>
+    <p>Search and a theme picker can simply be repeated inside the panel. A tool that should exist once, such as a notification bell, is marked <code>data-mobile-menu</code> in the header instead. In mobile mode the element moves that sibling into the panel, appending it to the element marked <code>data-mobile-menu-slot</code> (or to the end of the panel when there is no slot), and puts it back in its place in the header on leaving mobile mode or when the menu is removed. It is the same element throughout, so its state and listeners carry over. Before upgrade, and without JavaScript, the marked sibling is hidden at the default breakpoint along with the rest of the desktop chrome.</p>
+    <p>If the moved tool carries <code>data-unread</code> (<a href="/docs/elements/web-components/notification-wc/"><code>&lt;notification-wc&gt;</code></a> sets it while there are unread items), the menu button shows a dot, since the tool itself is out of sight until the menu opens.</p>
+
+    <code-block language="html" label="A bell that moves into the menu" data-escape><header>
+  <a href="/">Brand</a>
+  <nav aria-label="Main">…</nav>
+  <mobile-menu>
+    <button type="button" data-trigger popovertarget="menu" aria-label="Menu">…</button>
+    <nav popover id="menu" class="mobile-menu-panel" aria-label="Site menu">
+      <section data-mobile-menu-slot>
+        <site-search>…</site-search>
+      </section>
+      <ul>…</ul>
+    </nav>
+  </mobile-menu>
+  <notification-wc src="/api/notifications" data-mobile-menu></notification-wc>
+</header></code-block>
     <p>The default <code>52rem</code> breakpoint is also a CSS media query, so the right state paints before the element upgrades (no layout shift) and even without JavaScript. Because <code>popover</code> and <code>popovertarget</code> are native, the menu still opens and closes with JavaScript off. A custom <code>breakpoint</code> needs JavaScript; without it, the desktop nav stays visible at every width.</p>
 </section>
 

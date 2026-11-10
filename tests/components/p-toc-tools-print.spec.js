@@ -199,6 +199,50 @@ test.describe('page-tools', () => {
     });
     expect(r).toEqual({ fabs: 1, pops: 1, tools: ['t1', 't2', 't3'] });
   });
+
+  test('with a fab-stack on the page the FAB joins it: no overlap, panel above the FAB', async ({ page }) => {
+    await page.setViewportSize({ width: 400, height: 800 });
+    await load(page, TOOLS + `
+      <fab-stack id="stack">
+        <button type="button" id="gear" style="inline-size:3rem;block-size:3rem">G</button>
+      </fab-stack>`);
+    await page.waitForSelector('page-tools[data-collapsed]', { state: 'attached' }); // display: contents, FAB elsewhere
+    const fab = page.locator('.page-tools-fab');
+    await expect(fab).toBeVisible();
+    const box = (sel) => page.locator(sel).evaluate((el) => el.getBoundingClientRect().toJSON());
+    expect(await fab.evaluate((el) => el.parentElement.id)).toBe('stack');
+    // Both boxes in one read, once the stack has settled
+    const boxes = () => page.evaluate(() => ['.page-tools-fab', '#gear'].map((sel) => document.querySelector(sel).getBoundingClientRect().toJSON()));
+    await expect.poll(async () => { const [a, b] = await boxes(); return a.bottom <= b.top; }).toBe(true);
+    const [f, g] = await boxes();
+    // Stacked, not on top of each other
+    expect(f.bottom).toBeLessThanOrEqual(g.top);
+    expect(Math.abs((f.left + f.right) / 2 - (g.left + g.right) / 2)).toBeLessThan(2);
+
+    await fab.click();
+    await expect(page.locator('.page-tools-popover')).toBeVisible();
+    const pop = await box('.page-tools-popover');
+    expect(pop.bottom).toBeLessThanOrEqual(f.top);
+    expect(pop.right).toBeLessThanOrEqual(400);
+    await expect(page.locator('.page-tools-popover #t1')).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    // Wide again: the FAB goes home, hidden, and the tools are back in the bar
+    await page.setViewportSize({ width: 1200, height: 800 });
+    await expect(page.locator('page-tools')).not.toHaveAttribute('data-collapsed', '');
+    const home = await page.evaluate(() => {
+      const pt = document.getElementById('pt');
+      const fabEl = document.querySelector('.page-tools-fab');
+      return { parent: fabEl.parentElement.id, hidden: fabEl.hidden, inStack: document.querySelectorAll('#stack .page-tools-fab').length, tools: /** @type {any} */ (pt).tools.map((t) => t.id) };
+    });
+    expect(home).toEqual({ parent: 'pt', hidden: true, inStack: 0, tools: ['t1', 't2', 't3'] });
+
+    // Removing page-tools while collapsed takes its FAB out of the stack
+    await page.setViewportSize({ width: 400, height: 800 });
+    await page.waitForSelector('page-tools[data-collapsed]', { state: 'attached' }); // display: contents, FAB elsewhere
+    await page.evaluate(() => document.getElementById('pt').remove());
+    await expect(page.locator('#stack .page-tools-fab')).toHaveCount(0);
+  });
 });
 
 /* ───────────────────────── page-toc ───────────────────────── */

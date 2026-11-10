@@ -244,6 +244,9 @@ class PageTools extends VBElement {
     this.listen(this.#popover, 'beforetoggle', (e) => {
       if (/** @type {ToggleEvent} */ (e).newState === 'closed') {
         this.#focusWasInside = !!this.#popover?.contains(document.activeElement);
+      } else {
+        /* Before it paints, so the panel never shows in the wrong place */
+        this.#anchorPopover();
       }
     });
     this.listen(this.#popover, 'toggle', (e) => {
@@ -258,6 +261,21 @@ class PageTools extends VBElement {
       const active = document.activeElement;
       if (!active || active === document.body || this.#popover?.contains(active)) this.#fab?.focus();
     });
+  }
+
+  /** With the FAB in a <fab-stack>, sit the panel just above the FAB. */
+  #anchorPopover() {
+    if (!this.#fab || !this.#popover) return;
+    if (this.#fab.parentElement === this) {
+      this.#popover.style.removeProperty('--_fab-top');
+      this.#popover.style.removeProperty('--_fab-end');
+      return;
+    }
+    const box = this.#fab.getBoundingClientRect();
+    const rtl = getComputedStyle(this.#fab).direction === 'rtl';
+    const end = rtl ? box.left : document.documentElement.clientWidth - box.right;
+    this.#popover.style.setProperty('--_fab-top', `${Math.round(window.innerHeight - box.top + 8)}px`);
+    this.#popover.style.setProperty('--_fab-end', `${Math.max(8, Math.round(end))}px`);
   }
 
   #handleBreakpoint(mql) {
@@ -281,6 +299,9 @@ class PageTools extends VBElement {
 
     this.#collapsed = true;
     this.#fab.hidden = false;
+    /* A page with a <fab-stack> keeps its floating buttons there: join it
+       rather than sit on top of it in the same corner. */
+    document.querySelector('fab-stack')?.append(this.#fab);
     this.setAttribute('data-collapsed', '');
     this.#syncAriaOrientation();
   }
@@ -295,7 +316,8 @@ class PageTools extends VBElement {
       this.#popover.hidePopover?.();
     }
 
-    /* Move tools back before FAB */
+    /* Bring the FAB home from a <fab-stack>, then move tools back before it */
+    if (this.#fab.parentElement !== this) this.insertBefore(this.#fab, this.#popover);
     const tools = Array.from(this.#popover.children);
     for (const tool of tools) {
       this.insertBefore(tool, this.#fab);

@@ -10,6 +10,11 @@
  * removing the element restores them. A CSS media query covers the default
  * 52rem breakpoint before (or without) JS, so there is no layout shift.
  *
+ * A sibling marked [data-mobile-menu] (a notification bell, say) is one
+ * element that should exist once: in mobile mode it is moved into the
+ * panel, at the [data-mobile-menu-slot] element if the panel has one, and
+ * moved back to its place in the header on leaving mobile mode.
+ *
  * The panel is a native popover: Esc closes it and focus returns to the
  * trigger. It is NOT modal — no focus trap, no inert page, no scroll lock.
  */
@@ -22,12 +27,17 @@ class MobileMenu extends HTMLElement {
   /** @type {MediaQueryList|null} */
   #mql = null;
 
+  /** Moved siblings and the comment nodes holding their places.
+   *  @type {Map<Element, Comment>} */
+  #moved = new Map();
+
   connectedCallback() {
     this.#observe();
   }
 
   disconnectedCallback() {
     this.#unobserve();
+    this.#restore();
   }
 
   attributeChangedCallback() {
@@ -50,12 +60,37 @@ class MobileMenu extends HTMLElement {
   #onBreakpoint = () => {
     const mobile = this.#mql?.matches ?? false;
     this.toggleAttribute('data-mobile', mobile);
+    if (mobile) this.#adopt();
+    else this.#restore();
     if (!mobile) {
       // Close the panel when switching to desktop
       const panel = /** @type {HTMLElement | null} */ (this.querySelector('[popover]'));
       if (panel?.matches(':popover-open')) panel.hidePopover?.();
     }
   };
+
+  /** Move [data-mobile-menu] siblings into the panel. */
+  #adopt() {
+    const panel = this.querySelector('[popover]');
+    const host = this.parentElement;
+    if (!panel || !host) return;
+    const slot = panel.querySelector('[data-mobile-menu-slot]') ?? panel;
+    for (const el of host.querySelectorAll(':scope > [data-mobile-menu]')) {
+      const mark = document.createComment('mobile-menu');
+      el.before(mark);
+      this.#moved.set(el, mark);
+      slot.append(el);
+    }
+  }
+
+  /** Put moved siblings back where they were. */
+  #restore() {
+    for (const [el, mark] of this.#moved) {
+      if (mark.isConnected) mark.replaceWith(el);
+      else mark.remove();
+    }
+    this.#moved.clear();
+  }
 }
 
 if (!customElements.get('mobile-menu')) {

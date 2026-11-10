@@ -516,9 +516,12 @@ class NotificationWc extends VBElement {
       this.#badge.textContent = String(unread);
       this.#badge.hidden = false;
       icon?.setAttribute('name', 'bell-dot');
+      // Reflected for styling from outside (a menu button's unread dot)
+      this.setAttribute('data-unread', String(unread));
     } else {
       this.#badge.hidden = true;
       icon?.setAttribute('name', 'bell');
+      this.removeAttribute('data-unread');
     }
     // The badge is aria-hidden; the count lives in the trigger's name.
     const base = this.#authorLabel || this.#label('trigger');

@@ -149,6 +149,79 @@ test.describe('mobile-menu', () => {
     expect(fc.outline).toBe('solid');
     expect(fc.deco).toContain('underline');
   });
+
+  test('a [data-mobile-menu] sibling moves into the panel slot and back', async ({ page }) => {
+    const body = `
+      <header class="site">
+        <a href="/">Brand</a>
+        <nav id="desk" aria-label="Main"><ul><li><a href="/a/">A</a></li></ul></nav>
+        <mobile-menu>
+          <button type="button" id="trig" data-trigger popovertarget="mm" aria-label="Menu">Menu</button>
+          <nav popover id="mm" class="mobile-menu-panel" aria-label="Site menu">
+            <section id="slot" data-mobile-menu-slot><button type="button" id="search">Search</button></section>
+            <ul><li><a href="/a/">A</a></li></ul>
+          </nav>
+        </mobile-menu>
+        <button type="button" id="bell" data-mobile-menu>Bell</button>
+        <button type="button" id="stay">Stays</button>
+      </header>`;
+    await page.setViewportSize({ width: 600, height: 800 });
+    await load(page, body, { modules: [MM] });
+    await page.waitForFunction(() => customElements.get('mobile-menu'));
+    const where = () => page.evaluate(() => {
+      const bell = document.getElementById('bell');
+      return { parent: bell.parentElement.id || bell.parentElement.localName, prev: bell.previousElementSibling?.id || bell.previousElementSibling?.localName, next: bell.nextElementSibling?.id ?? null };
+    });
+    expect(await where()).toEqual({ parent: 'slot', prev: 'search', next: null });
+    // The unmarked sibling stays in the header, visible
+    expect(await display(page, '#stay')).not.toBe('none');
+    // Reachable: open the menu and the moved control is in it
+    await page.locator('#trig').click();
+    await expect(page.locator('#mm #bell')).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    // Desktop: back where it was, exactly once
+    await page.setViewportSize({ width: 1200, height: 800 });
+    await expect(page.locator('mobile-menu')).not.toHaveAttribute('data-mobile', '');
+    expect(await where()).toEqual({ parent: 'header', prev: 'mobile-menu', next: 'stay' });
+    await expect(page.locator('#bell')).toBeVisible();
+    expect(await page.locator('#bell').count()).toBe(1);
+
+    // Back and forth leaves no placeholders behind
+    await page.setViewportSize({ width: 600, height: 800 });
+    await page.setViewportSize({ width: 1200, height: 800 });
+    await expect(page.locator('mobile-menu')).not.toHaveAttribute('data-mobile', '');
+    const comments = await page.evaluate(() => [...document.querySelector('header').childNodes].filter((n) => n.nodeType === 8).length);
+    expect(comments).toBe(0);
+
+    // Removing the menu while mobile hands the control back
+    await page.setViewportSize({ width: 600, height: 800 });
+    await expect.poll(async () => (await where()).parent).toBe('slot');
+    await page.evaluate(() => document.querySelector('mobile-menu').remove());
+    expect((await where()).parent).toBe('header');
+  });
+
+  test('before upgrade a [data-mobile-menu] sibling is hidden at the default breakpoint; unread marks the trigger', async ({ page }) => {
+    const body = `
+      <header class="site">
+        <a href="/">Brand</a>
+        <mobile-menu>
+          <button type="button" id="trig" data-trigger popovertarget="mm" aria-label="Menu">Menu</button>
+          <nav popover id="mm" class="mobile-menu-panel" aria-label="Site menu"><ul><li><a href="/a/">A</a></li></ul></nav>
+        </mobile-menu>
+        <button type="button" id="bell" data-mobile-menu>Bell</button>
+      </header>`;
+    await page.setViewportSize({ width: 600, height: 800 });
+    await load(page, body);
+    expect(await display(page, '#bell')).toBe('none');
+
+    await load(page, body, { modules: [MM] });
+    await page.waitForFunction(() => customElements.get('mobile-menu'));
+    const dot = () => page.locator('#trig').evaluate((el) => getComputedStyle(el, '::after').content);
+    expect(await dot()).toBe('none');
+    await page.evaluate(() => { document.getElementById('bell').dataset.unread = '2'; });
+    expect(await dot()).not.toBe('none');
+  });
 });
 
 test.describe('nav-bar', () => {

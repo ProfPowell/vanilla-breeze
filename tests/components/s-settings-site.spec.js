@@ -310,19 +310,50 @@ test.describe('site-legal', () => {
 });
 
 test.describe('site header (header.html)', () => {
-  test('notification bell stays reachable on mobile', async ({ page }) => {
+  test('notification bell collapses into the mobile menu and stays reachable', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 700 });
     await page.route('**/go/notify/messages', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
     const header = readFileSync(join(REPO, 'site/src/includes/header.html'), 'utf8');
     await load(page, header, {
-      modules: ['/src/web-components/notification-wc/logic.js'],
+      modules: ['/src/custom-elements/mobile-menu/logic.js', '/src/web-components/notification-wc/logic.js'],
       ready: 'notification-wc[data-upgraded]',
     });
     const r = await page.evaluate(() => ({
-      inTools: !!document.querySelector('site-tools notification-wc'),
+      bells: document.querySelectorAll('notification-wc').length,
+      inHeader: !!document.querySelector('header > notification-wc'),
+      inSlot: !!document.querySelector('.mobile-menu-panel [data-mobile-menu-slot] > notification-wc'),
       toolsHidden: getComputedStyle(document.querySelector('header > site-tools')).display === 'none',
     }));
-    expect(r).toEqual({ inTools: false, toolsHidden: true });
+    expect(r).toEqual({ bells: 1, inHeader: false, inSlot: true, toolsHidden: true });
+    // The header's static release note is unread: the menu button says so
+    await expect(page.locator('notification-wc')).toHaveAttribute('data-unread', /\d+/);
+    expect(await page.locator('mobile-menu > [data-trigger]').evaluate((el) => getComputedStyle(el, '::after').content)).not.toBe('none');
+
+    // Open the menu: the bell is there, clear of the close button, and its
+    // list opens inside the panel rather than overflowing it
+    await page.locator('mobile-menu > [data-trigger]').click();
+    const bell = page.locator('.mobile-menu-panel notification-wc [data-trigger]');
+    await expect(bell).toBeVisible();
+    const overlap = await page.evaluate(() => {
+      const a = document.querySelector('.mobile-menu-panel notification-wc [data-trigger]').getBoundingClientRect();
+      const b = document.querySelector('.mobile-menu-panel .mobile-menu-close').getBoundingClientRect();
+      return !(a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top);
+    });
+    expect(overlap).toBe(false);
+    await bell.click();
+    await expect(page.locator('.mobile-menu-panel .notification-panel')).toBeVisible();
+    const fit = await page.evaluate(() => {
+      const list = document.querySelector('.mobile-menu-panel .notification-panel').getBoundingClientRect();
+      const panel = document.querySelector('.mobile-menu-panel').getBoundingClientRect();
+      return list.left >= panel.left && list.right <= panel.right && getComputedStyle(document.querySelector('.mobile-menu-panel .notification-panel')).position === 'static';
+    });
+    expect(fit).toBe(true);
+    await expect(page.locator('.mobile-menu-panel')).toBeVisible();
+
+    // Wide: one bell, back in the header after the menu
+    await page.keyboard.press('Escape');
+    await page.setViewportSize({ width: 1200, height: 700 });
     await expect(page.locator('header > notification-wc')).toBeVisible();
+    await expect(page.locator('notification-wc')).toHaveCount(1);
   });
 });

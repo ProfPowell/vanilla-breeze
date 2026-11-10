@@ -268,9 +268,9 @@ export class GenerateSidebars {
     html += `    </button>\n`;
     html += this.#generateMobileMenuPanel();
     html += `  </mobile-menu>\n`;
-    // Bell sits outside site-tools so it stays reachable when mobile-menu
-    // hides the tools cluster at narrow widths.
-    html += `  <notification-wc src="/go/notify/messages">\n`;
+    // One bell, not two: data-mobile-menu has <mobile-menu> move it into the
+    // panel's slot at narrow widths (and mark the menu button when unread).
+    html += `  <notification-wc src="/go/notify/messages" data-mobile-menu>\n`;
     html += (await latestReleaseArticle()).replace(/^  /gm, '');
     html += `  </notification-wc>\n`;
     html += `</header>\n`;
@@ -287,7 +287,7 @@ export class GenerateSidebars {
     html += `      <button type="button" class="mobile-menu-close" popovertarget="mobile-menu" popovertargetaction="hide" aria-label="Close menu">\n`;
     html += `        <icon-wc name="x"></icon-wc>\n`;
     html += `      </button>\n`;
-    html += `      <div class="mobile-menu-search">\n`;
+    html += `      <div class="mobile-menu-search" data-mobile-menu-slot>\n`;
     html += `        <site-search>\n`;
     html += `          <button type="button" data-trigger class="ghost" style="inline-size: 100%">\n`;
     html += `            <icon-wc name="search" size="sm"></icon-wc>\n`;

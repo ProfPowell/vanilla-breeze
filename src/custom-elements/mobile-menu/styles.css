@@ -36,7 +36,7 @@ mobile-menu[data-mobile] {
 /* Hidden via CSS (not inline styles) so removing <mobile-menu> or leaving
    mobile mode always restores the desktop chrome. !important: these must
    beat author/theme display rules on header children. */
-header:has(> mobile-menu[data-mobile]) > :is(nav, nav-bar, site-tools) {
+header:has(> mobile-menu[data-mobile]) > :is(nav, nav-bar, site-tools, [data-mobile-menu]) {
   display: none !important;
 }
 
@@ -47,7 +47,7 @@ header:has(> mobile-menu[data-mobile]) > :is(nav, nav-bar, site-tools) {
     display: contents;
   }
 
-  header:has(> mobile-menu:not(:defined):is(:not([breakpoint]), [breakpoint="52rem"])) > :is(nav, nav-bar, site-tools) {
+  header:has(> mobile-menu:not(:defined):is(:not([breakpoint]), [breakpoint="52rem"])) > :is(nav, nav-bar, site-tools, [data-mobile-menu]) {
     display: none !important;
   }
 }
@@ -60,6 +60,31 @@ mobile-menu [data-trigger] {
   cursor: var(--cursor-custom-pointer, pointer);
   color: var(--color-text);
   margin-inline-start: auto;
+}
+
+/* A moved-in tool has something unread (notification-wc reflects
+   data-unread): mark the menu button, since the tool is out of sight. */
+mobile-menu:has([data-mobile-menu][data-unread]) > [data-trigger] {
+  position: relative;
+}
+
+mobile-menu:has([data-mobile-menu][data-unread]) > [data-trigger]::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  inline-size: 0.625rem;
+  block-size: 0.625rem;
+  border-radius: 50%;
+  background: var(--color-error);
+  border: 2px solid var(--color-surface);
+}
+
+@media (forced-colors: active) {
+  mobile-menu:has([data-mobile-menu][data-unread]) > [data-trigger]::after {
+    background: Highlight;
+    border-color: Canvas;
+  }
 }
 
 /* --- Panel --- */
@@ -180,6 +205,24 @@ mobile-menu .mobile-menu-search {
 
 mobile-menu .mobile-menu-search site-search {
   display: block;
+}
+
+/* Slot for tools moved in from the header ([data-mobile-menu]): a row
+   that wraps, so a tool's own panel can take a full line below it. */
+mobile-menu [data-mobile-menu-slot] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--size-s);
+}
+
+mobile-menu [data-mobile-menu-slot] > site-search {
+  flex: 1;
+}
+
+/* Keep the row clear of the close button in the panel's corner */
+.mobile-menu-panel:has(> .mobile-menu-close) [data-mobile-menu-slot] {
+  padding-inline-end: calc(1.5rem + 2 * var(--size-xs));
 }
 
 mobile-menu .mobile-menu-search button {

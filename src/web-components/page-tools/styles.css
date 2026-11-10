@@ -155,49 +155,52 @@ page-tools[data-collapsed] {
   display: contents;
 }
 
-/* --- FAB button --- */
+/* --- FAB button ---
+   Not scoped to page-tools: when the page has a <fab-stack>, the FAB joins
+   it (so the corner's floating buttons stack instead of overlapping) and
+   is then no longer a descendant. */
+
+.page-tools-fab[hidden] {
+  display: none;
+}
+
+.page-tools-fab {
+  position: fixed;
+  inset-block-end: var(--page-tools-fab-bottom, var(--size-l));
+  inset-inline-end: var(--page-tools-fab-end, var(--size-m));
+  z-index: var(--layer-sticky, 100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--page-tools-fab-size, 3rem);
+  block-size: var(--page-tools-fab-size, 3rem);
+  padding: 0;
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  cursor: var(--cursor-custom-pointer, pointer);
+  box-shadow: var(--shadow-m);
+  transition:
+    background-color var(--duration-fast) var(--ease-default),
+    box-shadow var(--duration-fast) var(--ease-default);
+
+  &:hover {
+    background: var(--color-surface);
+    box-shadow: var(--shadow-l);
+  }
+
+  &:focus-visible {
+    outline: var(--border-width-medium) solid var(--color-interactive);
+    outline-offset: var(--border-width-thin);
+  }
+
+  &:active {
+    scale: 0.95;
+  }
+}
 
 @scope (page-tools) {
-  .page-tools-fab[hidden] {
-    display: none;
-  }
-
-  .page-tools-fab {
-    position: fixed;
-    inset-block-end: var(--page-tools-fab-bottom, var(--size-l));
-    inset-inline-end: var(--page-tools-fab-end, var(--size-m));
-    z-index: var(--layer-sticky, 100);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: var(--page-tools-fab-size, 3rem);
-    block-size: var(--page-tools-fab-size, 3rem);
-    padding: 0;
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: 50%;
-    background: var(--color-surface-raised);
-    color: var(--color-text);
-    cursor: var(--cursor-custom-pointer, pointer);
-    box-shadow: var(--shadow-m);
-    transition:
-      background-color var(--duration-fast) var(--ease-default),
-      box-shadow var(--duration-fast) var(--ease-default);
-
-    &:hover {
-      background: var(--color-surface);
-      box-shadow: var(--shadow-l);
-    }
-
-    &:focus-visible {
-      outline: var(--border-width-medium) solid var(--color-interactive);
-      outline-offset: var(--border-width-thin);
-    }
-
-    &:active {
-      scale: 0.95;
-    }
-  }
-
   /* --- Popover panel ---
      Author `display` beats the UA `[popover]:not(:popover-open) { display:none }`,
      so the panel only gets a display while open and the hidden state is
@@ -214,8 +217,10 @@ page-tools[data-collapsed] {
     container-type: normal;
     position: fixed;
     inset: auto;
-    inset-block-end: calc(var(--page-tools-fab-bottom, var(--size-l)) + var(--page-tools-fab-size, 3rem) + var(--size-s));
-    inset-inline-end: var(--page-tools-fab-end, var(--size-m));
+    /* --_fab-top / --_fab-end: set from the FAB's box when it sits in a
+       <fab-stack>; otherwise the panel sits above the FAB's own corner. */
+    inset-block-end: var(--_fab-top, calc(var(--page-tools-fab-bottom, var(--size-l)) + var(--page-tools-fab-size, 3rem) + var(--size-s)));
+    inset-inline-end: var(--_fab-end, var(--page-tools-fab-end, var(--size-m)));
     margin: 0;
     padding: var(--size-s);
     border: var(--border-width-thin) solid var(--color-border);
@@ -249,13 +254,11 @@ page-tools[data-collapsed] {
    above by source order (an unprefixed selector loses on specificity). */
 
 @media (prefers-reduced-motion: reduce) {
-  @scope (page-tools) {
-    .page-tools-fab {
-      transition: none;
+  .page-tools-fab {
+    transition: none;
 
-      &:active {
-        scale: none;
-      }
+    &:active {
+      scale: none;
     }
   }
 
