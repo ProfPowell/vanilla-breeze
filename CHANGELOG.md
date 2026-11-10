@@ -6,8 +6,29 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-09
+
+0.6.1 fixes navigation and button hover colours (the current nav item stays readable while hovered or open, buttons inside a nav keep their own colours, and a button's label always contrasts with its hover and pressed fill), marks the current section in `<nav-bar>` when the page sits below a menu entry, clears `<form-field>` errors on form reset, and repairs five `<chart-wc>` rendering bugs. The Tutorials section is rewritten as four step-by-step builds with a live preview after every step.
+
+### Added
+
+- **nav-bar: current section** — When no `data-nav-link` link matches the location but a link nested beside one does (a menu item in the same `<drop-down>` or `<li>`), the trigger gets `aria-current="true"` and the current-item styling. `.current` stays `null`.
+
+### Changed
+
+- **Tutorials rewritten** — The hub lists the four tutorials as numbered link cards and the four layers as a plain list. Each tutorial (landing page, dashboard, contact form, blog post) now starts from a file you create, shows the page after every step in its own demo, says what to check, and ends with exercises and a previous/next pager. Install snippets in Quick Start and the tutorials pin `@0.6`.
+
 ### Fixed
 
+- **nav: current item on hover** — A current item in `nav.pills` whose `<drop-down hover>` opens on hover kept its white label but lost its fill to the hover background, so the label vanished. The current fill now holds while hovered or open (mixed slightly toward the text colour as feedback).
+- **nav: `.button` inside `<nav>`** — `nav a:hover` no longer applies to `.button`, which took the nav hover text colour on its own hover fill (blue on darker blue in the default theme).
+- **button: label follows the painted fill** — The label colour is computed from the fill being painted (rest, hover, active or pressed), not from the rest colour. In dark mode a black label on the lighter primary dropped to about 3.6:1 on the darker hover fill; it now flips to white there.
+- **form-field: form reset** — A reset returns each field to neutral. An emptied field used to keep `data-valid` (the green tick) or a stale error. A cancelled reset changes nothing.
+- **page-toc without JavaScript** — An empty, not-yet-defined `<page-toc>` no longer takes a slot in a stack or prose rhythm.
+- **chart-wc: legend and tooltip switches** — Both have always been on by default, while the docs said the `data-legend` and `data-tooltip` attributes enabled them; the attributes did nothing. The default stays on, and `data-legend="false"` / `data-tooltip="false"` now turn each off (on `<chart-wc>` or its source `<table>`), winning over `data-config`. Moving the mouse over a column, bar, line or area chart whose legend was off threw on every move; the tooltip now works without a legend.
+- **chart-wc: legend in a narrow chart** — In a chart 400px wide or less the legend moves under the plot as a wrapping row. The rule that was meant to do this was a container query styling its own container, so the legend stayed beside the plot and squeezed it.
+- **chart-wc: last x-axis label on line and area charts** — The final category lost its label, tick and guide line to a rounding error (seven categories drew six labels). With more than 15 categories the labels now sit on the points they name.
+- **chart-wc: dark mode** — Title, axis labels, grid lines, ticks and axis follow the theme (`--color-text`, `--color-text-muted`, `--color-border`, `--color-border-strong`) instead of fixed greys, which left near-white grid lines and a dark grey title on a dark surface. The `--chart-*` properties still override them.
 - **layout-card in a list grid** — A card that is the only child of an `<li>` in `data-layout="grid"` or `<layout-grid>` now fills the item, so every card in a row matches the tallest, as bare cards in a grid already do. Lists of cards (`<ul data-layout="grid"><li><layout-card>`) had uneven heights since the guides moved to list markup.
 - **Docs site** — The element and attribute indexes were unstyled in 0.6.0, and their search and type filters matched nothing: the index grids are written by `site/plugins/generate-indexes.js`, which still emitted the class names the class clean-up had retired. The plugin now writes the templates' markup (`.index-heading`, `.index-entry`, `<layout-badge>`), and a unit test keeps the two in step. The kitchen-sink "Jump to Section" box and the tokens spacing chart are restored; `tests/visual/site-index-pages.spec.js` screenshots these regions.
 

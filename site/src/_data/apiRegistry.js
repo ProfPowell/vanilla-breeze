@@ -3669,15 +3669,27 @@ export default {
         "name": "data-legend",
         "kind": "data",
         "purpose": "config",
-        "type": "boolean",
-        "description": "Show legend (presence enables)"
+        "type": "enum",
+        "values": [
+          "",
+          "true",
+          "false"
+        ],
+        "default": "true",
+        "description": "Series legend with show/hide checkboxes. On by default; \"false\" hides it (bare or \"true\" keeps it on). Wins over data-config. Moves under the plot when the chart is 400px wide or less."
       },
       {
         "name": "data-tooltip",
         "kind": "data",
         "purpose": "config",
-        "type": "boolean",
-        "description": "Enable tooltips (presence enables)"
+        "type": "enum",
+        "values": [
+          "",
+          "true",
+          "false"
+        ],
+        "default": "true",
+        "description": "Hover tooltips. On by default; \"false\" turns them off (bare or \"true\" keeps them on). Wins over data-config."
       },
       {
         "name": "data-palette",
@@ -9130,7 +9142,7 @@ export default {
         "name": "data-nav-link",
         "on": "a",
         "type": "boolean",
-        "description": "Marks a descendant <a> as a candidate for active-state matching when the link list is wrapped (e.g. inside <li> or <drop-down>). When any descendant carries this attribute, those replace 'direct children' as the candidate set."
+        "description": "Marks a descendant <a> as a candidate for active-state matching when the link list is wrapped (e.g. inside <li> or <drop-down>). When any descendant carries this attribute, those replace 'direct children' as the candidate set. When none of them matches the location but a link nested beside one does (a menu item in the same <drop-down> or <li>), that one gets aria-current=\"true\" as the current section."
       }
     ],
     "structure": [],

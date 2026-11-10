@@ -2,6 +2,14 @@
 export default {
   "items": [
     {
+      "id": "0.6.1",
+      "type": "update",
+      "title": "v0.6.1",
+      "body": "0.6.1 fixes navigation and button hover colours (the current nav item stays readable while hovered or open, buttons inside a nav keep their own colours, and a button's label always contrasts with its hover and pressed fill), marks the current section in `<nav-bar>` when the pa…",
+      "url": "https://vanilla-breeze.com/changelog/#v0-6-1",
+      "date": "2026-11-09"
+    },
+    {
       "id": "0.6.0",
       "type": "update",
       "title": "v0.6.0",

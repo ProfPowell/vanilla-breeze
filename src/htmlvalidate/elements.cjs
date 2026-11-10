@@ -532,8 +532,8 @@ module.exports = {
       "data-subtitle": {},
       "data-label-x": {},
       "data-label-y": {},
-      "data-legend": { boolean: true },
-      "data-tooltip": { boolean: true },
+      "data-legend": { enum: ["true", "false"], omit: true },
+      "data-tooltip": { enum: ["true", "false"], omit: true },
       "data-palette": {},
       "data-chart": { enum: ["replace", "enhance"] },
       "data-size": { enum: ["sparkline"] }
