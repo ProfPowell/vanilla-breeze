@@ -71,21 +71,24 @@ const RELEASES = `
   </time-index>`;
 
 test.describe('time-index', () => {
-  test('sort reverses li entries; toggle has a stable label and aria-pressed', async ({ page }) => {
+  test('order select names the order in force and reverses li entries', async ({ page }) => {
     await load(page, 'time-index', LIST);
-    const btn = page.locator('[data-timeline-controls] button');
-    await expect(btn).toHaveText('Oldest first');
-    await expect(btn).toHaveAttribute('aria-pressed', 'false');
-    await btn.click();
-    await expect(btn).toHaveText('Oldest first');
-    await expect(btn).toHaveAttribute('aria-pressed', 'true');
-    const order = await page.$$eval('.changelog-entries > li', (lis) => lis.map((li) => li.querySelector('.version-tag')?.textContent || li.dataset.version));
-    expect(order).toEqual(['v1.0.0', 'v2.0.0', 'v2.1.0']);
+    const select = page.getByLabel('Order');
+    const versions = () => page.$$eval('.changelog-entries > li', (lis) => lis.map((li) => li.querySelector('.version-tag')?.textContent || li.dataset.version));
+    // As authored: newest first, and the control says so
+    await expect(select).toHaveValue('newest');
+    expect(await select.locator('option').allTextContents()).toEqual(['Newest first', 'Oldest first']);
+    await expect(page.locator('[data-timeline-controls] button')).toHaveCount(0);
+    expect(await versions()).toEqual(['v2.1.0', 'v2.0.0', 'v1.0.0']);
+    await select.selectOption('oldest');
+    expect(await versions()).toEqual(['v1.0.0', 'v2.0.0', 'v2.1.0']);
+    await select.selectOption('newest');
+    expect(await versions()).toEqual(['v2.1.0', 'v2.0.0', 'v1.0.0']);
   });
 
   test('sort reverses top-level release sections and their entries', async ({ page }) => {
     await load(page, 'time-index', RELEASES);
-    await page.locator('[data-timeline-controls] button').click();
+    await page.locator('[data-timeline-order]').selectOption('oldest');
     const r = await page.evaluate(() => ({
       releases: [...document.querySelectorAll('#ti > section')].map((s) => s.id),
       first: [...document.querySelectorAll('#v2-1-0 article')].map((a) => a.id),
@@ -98,7 +101,7 @@ test.describe('time-index', () => {
 
   test('filter matches .version-tag / data-version and announces the count', async ({ page }) => {
     await load(page, 'time-index', LIST);
-    const select = page.locator('[data-timeline-controls] select');
+    const select = page.locator('[data-timeline-controls] select[data-timeline-version]');
     expect(await select.locator('option').allTextContents()).toEqual(['All versions', 'v2.1.0', 'v2.0.0', 'v1.0.0']);
     await select.selectOption('v1.0.0');
     const hidden = await page.$$eval('.changelog-entries > li', (lis) => lis.map((li) => li.hidden));
@@ -112,7 +115,7 @@ test.describe('time-index', () => {
 
   test('filter reads v2-1-0 ids on release sections', async ({ page }) => {
     await load(page, 'time-index', RELEASES);
-    await page.locator('[data-timeline-controls] select').selectOption('v2.0.0');
+    await page.locator('[data-timeline-controls] select[data-timeline-version]').selectOption('v2.0.0');
     await expect(page.locator('#v2-0-0')).toBeVisible();
     await expect(page.locator('#v2-1-0')).toBeHidden();
     await expect(page.locator('#v1-0-0')).toBeHidden();
@@ -127,13 +130,13 @@ test.describe('time-index', () => {
 
   test('data-label-* overrides the UI strings; options are text, not HTML', async ({ page }) => {
     await load(page, 'time-index', `
-      <time-index versions data-label-sort="Älteste zuerst" data-label-all="Alle" data-label-filter="Version" data-label-controls="Steuerung">
+      <time-index versions data-label-order="Reihenfolge" data-label-oldest="Älteste zuerst" data-label-all="Alle" data-label-filter="Version" data-label-controls="Steuerung">
         <ol class="changelog-entries"><li><span class="version-tag">&lt;img src=x onerror=alert(1)&gt;</span></li></ol>
       </time-index>`);
     await expect(page.locator('[data-timeline-controls]')).toHaveAttribute('aria-label', 'Steuerung');
-    await expect(page.locator('[data-timeline-controls] button')).toHaveText('Älteste zuerst');
-    await expect(page.locator('[data-timeline-controls] select')).toHaveAttribute('aria-label', 'Version');
-    const opts = await page.$$eval('[data-timeline-controls] option', (o) => o.map((x) => x.textContent));
+    await expect(page.getByLabel('Reihenfolge').locator('option').nth(1)).toHaveText('Älteste zuerst');
+    await expect(page.locator('[data-timeline-controls] select[data-timeline-version]')).toHaveAttribute('aria-label', 'Version');
+    const opts = await page.$$eval('[data-timeline-controls] select[data-timeline-version] option', (o) => o.map((x) => x.textContent));
     expect(opts).toEqual(['Alle', '<img src=x onerror=alert(1)>']);
     expect(await page.locator('[data-timeline-controls] img').count()).toBe(0);
   });

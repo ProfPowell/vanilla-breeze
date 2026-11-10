@@ -13761,6 +13761,14 @@ export default {
         "description": "Accessible name of the close button beside the input (the Esc key cap; an × on narrow screens)"
       },
       {
+        "name": "data-label-browse",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Browse instead",
+        "description": "Heading and accessible name of the browse links when the authored <nav data-browse> has no aria-label"
+      },
+      {
         "name": "data-label-powered",
         "kind": "data",
         "purpose": "config",
@@ -13773,6 +13781,10 @@ export default {
       {
         "element": "<button data-trigger>",
         "description": "Button that opens the search dialog (generated with a search icon when absent)"
+      },
+      {
+        "element": "<nav data-browse>",
+        "description": "Optional author-supplied links to other ways into the content (an index, a glossary, a sitemap). Shown in the dialog while there are no results; never shown in the page. Its aria-label, if set, is the heading."
       }
     ],
     "childAttributes": [
@@ -15189,7 +15201,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "time-index",
     "type": "web-component",
-    "description": "Interactive changelog/timeline component: relative dates, sort toggle, version filter and a recently-updated-pages feed",
+    "description": "Interactive changelog/timeline component: relative dates, an order select, a version filter and a recently-updated-pages feed",
     "attributes": [
       {
         "name": "versions",
@@ -15214,12 +15226,36 @@ export default {
         "description": "Accessible name of the injected controls nav."
       },
       {
-        "name": "data-label-sort",
+        "name": "data-label-order",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Order",
+        "description": "Visible label of the order select"
+      },
+      {
+        "name": "data-label-newest",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Newest first",
+        "description": "Order option for the authored order (taken to be newest first)"
+      },
+      {
+        "name": "data-label-oldest",
         "kind": "data",
         "purpose": "config",
         "type": "string",
         "default": "Oldest first",
-        "description": "Sort toggle text. The label never changes; aria-pressed carries the state."
+        "description": "Order option for the reversed order"
+      },
+      {
+        "name": "data-label-version",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Version",
+        "description": "Visible label of the version select"
       },
       {
         "name": "data-label-filter",

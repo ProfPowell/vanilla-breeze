@@ -5,7 +5,7 @@ import { updateRelativeTimes } from '../../lib/time-relative.js';
 /**
  * time-index: Interactive changelog/timeline component
  *
- * Enhances a static changelog with relative dates, a sort toggle, a version
+ * Enhances a static changelog with relative dates, an order select, a version
  * filter and an optional "recently updated pages" feed.
  *
  * Entry model:
@@ -21,7 +21,10 @@ import { updateRelativeTimes } from '../../lib/time-relative.js';
  * @attr {boolean} versions                 - Add a version filter select
  * @attr {string}  updates-src              - URL of a JSON array of { title, href|url, modified|date } for a "recently updated pages" feed
  * @attr {string}  data-label-controls      - Accessible name of the controls nav (default "Timeline controls")
- * @attr {string}  data-label-sort          - Sort toggle text (default "Oldest first"); state is aria-pressed
+ * @attr {string}  data-label-order         - Label of the order select (default "Order")
+ * @attr {string}  data-label-newest        - Option for the authored order (default "Newest first")
+ * @attr {string}  data-label-oldest        - Option for the reversed order (default "Oldest first")
+ * @attr {string}  data-label-version       - Visible label of the version select (default "Version")
  * @attr {string}  data-label-filter        - Accessible name of the version select (default "Filter by version")
  * @attr {string}  data-label-all           - "All" option text (default "All versions")
  * @attr {string}  data-label-status        - Filter announcement; {count}, {total}, {version} (default "Showing {count} of {total} entries for {version}")
@@ -146,22 +149,27 @@ class TimeIndex extends VBElement {
     controls.setAttribute('data-timeline-controls', '');
     controls.setAttribute('aria-label', this.#label('Controls', 'Timeline controls'));
 
-    /* Sort toggle: stable label, state in aria-pressed */
-    const sortBtn = document.createElement('button');
-    sortBtn.type = 'button';
-    sortBtn.textContent = this.#label('Sort', 'Oldest first');
-    sortBtn.setAttribute('aria-pressed', 'false');
-    sortBtn.addEventListener('click', () => {
-      this.#toggleSort();
-      sortBtn.setAttribute('aria-pressed', String(this.#isReversed));
+    /* Order: a select that names the order in force. (A lone "Oldest
+       first" toggle read as the current state, not as the action.) The
+       authored order is taken to be newest first. */
+    const order = document.createElement('select');
+    order.setAttribute('data-timeline-order', '');
+    order.append(
+      new Option(this.#label('Newest', 'Newest first'), 'newest'),
+      new Option(this.#label('Oldest', 'Oldest first'), 'oldest'),
+    );
+    order.value = this.#isReversed ? 'oldest' : 'newest';
+    order.addEventListener('change', () => {
+      if ((order.value === 'oldest') !== this.#isReversed) this.#toggleSort();
     });
-    controls.append(sortBtn);
+    controls.append(this.#labelled(this.#label('Order', 'Order'), order));
 
     /* Version filter */
     if (this.hasAttribute('versions')) {
       const versions = [...new Set(this.#units().map(u => this.#versionOf(u)).filter(Boolean))];
       if (versions.length > 0) {
         const select = document.createElement('select');
+        select.setAttribute('data-timeline-version', '');
         select.setAttribute('aria-label', this.#label('Filter', 'Filter by version'));
         select.append(new Option(this.#label('All', 'All versions'), ''));
         for (const v of versions) select.append(new Option(v, v));
@@ -175,7 +183,7 @@ class TimeIndex extends VBElement {
         select.addEventListener('change', () => {
           status.textContent = this.#filterByVersion(select.value);
         });
-        controls.append(select, status);
+        controls.append(this.#labelled(this.#label('Version', 'Version'), select), status);
       }
     }
 
@@ -186,6 +194,15 @@ class TimeIndex extends VBElement {
     while (anchor && anchor.parentElement !== this) anchor = anchor.parentElement;
     if (anchor) anchor.before(controls);
     else this.prepend(controls);
+  }
+
+  /** Wrap a control in a <label> with visible text. */
+  #labelled(text, control) {
+    const label = document.createElement('label');
+    const span = document.createElement('span');
+    span.textContent = text;
+    label.append(span, control);
+    return label;
   }
 
   /** Move nodes into each other's slots in reverse order (gaps preserved). */

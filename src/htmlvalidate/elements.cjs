@@ -1583,6 +1583,7 @@ module.exports = {
       "data-label-select": {},
       "data-label-close": {},
       "data-label-dismiss": {},
+      "data-label-browse": {},
       "data-label-powered": {}
     }
   },
@@ -1761,7 +1762,10 @@ module.exports = {
       "versions": { boolean: true },
       "updates-src": {},
       "data-label-controls": {},
-      "data-label-sort": {},
+      "data-label-order": {},
+      "data-label-newest": {},
+      "data-label-oldest": {},
+      "data-label-version": {},
       "data-label-filter": {},
       "data-label-all": {},
       "data-label-status": {},

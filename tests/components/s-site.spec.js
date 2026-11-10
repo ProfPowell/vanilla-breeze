@@ -254,6 +254,44 @@ test.describe('site-search', () => {
     await expect(page.locator('#s [role="option"]')).toHaveCount(8);
   });
 
+  test('browse links: hidden in the page, shown in the dialog only while there are no results', async ({ page }) => {
+    const BROWSE = `<site-search id="s"><button type="button" data-trigger>Search</button>
+      <nav data-browse><a href="/docs/index-of/">Keyword Index</a><a href="/docs/glossary/">Glossary</a></nav></site-search>`;
+    await load(page, BROWSE, { modules: ['site-search'] });
+    // In the page the nav is never shown (it sits inside the closed dialog)
+    await expect(page.locator('#s nav[data-browse]')).toBeHidden();
+    await page.click('#s [data-trigger]');
+    const nav = page.locator('#s dialog nav[data-browse]');
+    // Empty query: offered, under its heading, with an accessible name
+    await expect(nav).toBeVisible();
+    await expect(nav).toHaveAttribute('aria-label', 'Browse instead');
+    await expect(page.locator('#s .browse-title')).toHaveText('Browse instead');
+    await expect(nav.locator('a')).toHaveCount(2);
+    // The input keeps its divider now that something sits below it
+    expect(await page.evaluate(() => getComputedStyle(document.querySelector('#s .input-wrapper')).borderBlockEndWidth)).not.toBe('0px');
+    // Results: out of the way
+    await page.locator('#s input').fill('table');
+    await expect(page.locator('#s [role="status"]')).toHaveText('2 results');
+    await expect(nav).toBeHidden();
+    // Nothing found: offered again
+    await page.locator('#s input').fill('none');
+    await expect(page.locator('#s [role="status"]')).toHaveText('No results found');
+    await expect(nav).toBeVisible();
+    // Reconnect: one nav, back in a fresh dialog, not duplicated
+    await page.keyboard.press('Escape');
+    await page.evaluate(() => { const el = document.getElementById('s'); const host = el.parentElement; el.remove(); host.prepend(el); });
+    await expect(page.locator('#s nav[data-browse]')).toHaveCount(1);
+    await expect(page.locator('#s dialog')).toHaveCount(1);
+    await expect(page.locator('#s dialog nav[data-browse]')).toHaveCount(1);
+    // A custom label, and no nav at all, both work
+    await load(page, `<site-search id="s"><button type="button" data-trigger>S</button><nav data-browse aria-label="Other ways in"><a href="/a/">A</a></nav></site-search>
+      <site-search id="t"><button type="button" data-trigger>T</button></site-search>`, { modules: ['site-search'] });
+    await page.click('#s [data-trigger]');
+    await expect(page.locator('#s .browse-title')).toHaveText('Other ways in');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#t .browse')).toHaveCount(0);
+  });
+
   test('close button beside the input; small screens drop the key hints and fit the window', async ({ page }) => {
     await page.setViewportSize({ width: 900, height: 700 });
     await load(page, SEARCH, { modules: ['site-search'] });

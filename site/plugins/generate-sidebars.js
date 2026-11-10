@@ -217,6 +217,12 @@ export class GenerateSidebars {
 
     html += `<header class="site" data-sticky data-vt="header">\n`;
     html += `  <a href="${header.logo.href}"><brand-mark>${header.logo.text}</brand-mark></a>\n`;
+    // The library's version, beside its name: for a library the release in
+    // front of you is the first thing to know. Links to the release notes.
+    if (header.releases) {
+      const { version } = JSON.parse(readFileSync(resolve(__dirname, '../../package.json'), 'utf8'));
+      html += `  <a href="${header.releases.href}" class="version-badge" aria-label="Version ${version}: ${header.releases.label.toLowerCase()}"><layout-badge data-variant="subtle">v${version}</layout-badge></a>\n`;
+    }
     // <nav-bar> wraps the link list so aria-current="page" is set on
     // the matching section trigger automatically (popstate-aware).
     // Triggers carry data-nav-link to opt into nested-link matching;
@@ -254,6 +260,7 @@ export class GenerateSidebars {
     html += `        <icon-wc name="search" size="sm"></icon-wc>\n`;
     html += `        Search\n`;
     html += `      </button>\n`;
+    html += this.#browseNav('      ');
     html += `    </site-search>\n`;
     html += `    <theme-picker>\n`;
     html += `      <button type="button" data-trigger class="ghost">\n`;
@@ -278,6 +285,20 @@ export class GenerateSidebars {
     writeFileSync(resolve(this.includesDir, 'header.html'), html);
   }
 
+  // The Explore menu's views (index, glossary, topics, sitemap) are the
+  // other ways into the content: <site-search> shows them in its dialog
+  // while there are no results.
+  #browseNav(indent) {
+    const explore = this.nav.header.nav.find((item) => item.section === 'explore');
+    if (!explore?.children?.length) return '';
+    let html = `${indent}<nav data-browse aria-label="Browse instead">\n`;
+    for (const child of explore.children) {
+      html += `${indent}  <a href="${child.href}">${child.label}</a>\n`;
+    }
+    html += `${indent}</nav>\n`;
+    return html;
+  }
+
   // --- MOBILE MENU PANEL (embedded in header) ---
   #generateMobileMenuPanel() {
     const header = this.nav.header;
@@ -293,6 +314,7 @@ export class GenerateSidebars {
     html += `            <icon-wc name="search" size="sm"></icon-wc>\n`;
     html += `            Search\n`;
     html += `          </button>\n`;
+    html += this.#browseNav('          ');
     html += `        </site-search>\n`;
     html += `      </div>\n`;
     html += `      <ul>\n`;

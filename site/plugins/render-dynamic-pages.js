@@ -227,6 +227,18 @@ function renderChangelog(markdown) {
     .map((r) => `<li><a href="#${r.anchor}" class="version-tag">v${escapeHtml(r.version)}</a></li>`)
     .join('\n        ');
 
+  // The newest published release: named at the top of the page (with the
+  // install command) and marked in the list, so "which version is current"
+  // never has to be worked out from dates.
+  const latest = releases.find((r) => r.anchor !== 'unreleased');
+  const latestBlock = latest ? `<p class="latest-release">
+      <strong>Latest release:</strong>
+      <a href="#${latest.anchor}" class="version-tag">v${escapeHtml(latest.version)}</a>${latest.date ? `, released <time datetime="${escapeHtml(latest.date)}">${formatReleaseDate(latest)}</time>` : ''}.
+      Install it with <code>npm install vanilla-breeze@${escapeHtml(latest.version)}</code>.
+    </p>
+
+    ` : '';
+
   const articles = releases.map((r) => {
     const label = r.anchor === 'unreleased' ? 'Unreleased' : `v${escapeHtml(r.version)}`;
     const headingId = `${r.anchor}-heading`;
@@ -237,9 +249,10 @@ function renderChangelog(markdown) {
       ? `<ul class="inline change-badges" aria-label="What changed">${badges
         .map((b) => `<li><mark class="${b.cls}">${b.label}</mark></li>`).join('')}</ul>`
       : '';
+    const current = r === latest ? ' <layout-badge data-variant="subtle" data-color="green">Latest release</layout-badge>' : '';
     const released = r.date
-      ? `<p>Released <time datetime="${escapeHtml(r.date)}">${formatReleaseDate(r)}</time></p>`
-      : '<p>Not yet released</p>';
+      ? `<p>Released <time datetime="${escapeHtml(r.date)}">${formatReleaseDate(r)}</time>${current}</p>`
+      : `<p>In development: not yet released${current}</p>`;
     // Releases are <section>s, not <article>s: several themes (swiss,
     // editorial, organic) style every article as a prose column with a drop
     // cap, which a release list is not.
@@ -259,7 +272,7 @@ function renderChangelog(markdown) {
         </section>`;
   }).join('\n\n        ');
 
-  return `<nav aria-label="Jump to version">
+  return `${latestBlock}<nav aria-label="Jump to version">
       <ol class="inline version-list">
         ${jumpLinks}
       </ol>

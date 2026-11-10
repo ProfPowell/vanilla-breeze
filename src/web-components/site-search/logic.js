@@ -48,6 +48,7 @@ const LABELS = {
   select: 'to select',
   close: 'to close',
   dismiss: 'Close search',
+  browse: 'Browse instead',
   powered: 'Powered by',
 };
 
@@ -171,6 +172,8 @@ class SiteSearch extends VBElement {
   #input = /** @type {*} */ (null);
   /** @type {HTMLElement} */
   #resultsList = /** @type {*} */ (null);
+  /** Authored <nav data-browse>, moved into the dialog while upgraded. @type {HTMLElement|null} */
+  #browse = null;
   /** @type {HTMLElement} */
   #status = /** @type {*} */ (null);
   /** @type {any[]} */
@@ -204,6 +207,10 @@ class SiteSearch extends VBElement {
     this.#searchSeq++;
     this.#results = [];
     this.#activeIndex = -1;
+    // The author's browse nav goes back where it was written, so a
+    // reconnect's setup() finds it again
+    if (this.#browse) this.append(this.#browse);
+    this.#browse = null;
     // Remove the rendered dialog so a reconnect's setup() doesn't stack a
     // second one (the trigger is find-or-create and safely reused)
     this.#dialog?.remove();
@@ -330,6 +337,17 @@ class SiteSearch extends VBElement {
         ]),
       ]),
     ]));
+
+    // Other ways in (an index, a glossary, a sitemap): an authored
+    // <nav data-browse> child is shown in the dialog while there are no
+    // results to show, i.e. before a query and when a query finds nothing.
+    this.#browse = /** @type {HTMLElement|null} */ (this.querySelector(':scope > nav[data-browse]'));
+    if (this.#browse) {
+      const title = this.#browse.getAttribute('aria-label') || this.#label('browse');
+      this.#browse.setAttribute('aria-label', title);
+      const heading = h('p', { class: 'browse-title', 'aria-hidden': 'true' }, [title]);
+      this.#dialog.querySelector('.search')?.after(h('div', { class: 'browse' }, [heading, this.#browse]));
+    }
 
     this.appendChild(this.#dialog);
   }
