@@ -1,9 +1,11 @@
 /**
  * Pinned web fonts for screenshot suites (vanilla-breeze-saei).
  *
- * Themes load Google Fonts through the css2 API, which resolves to versioned
- * woff2 URLs. When Google ships a new build, every glyph shifts and themed
- * baselines fail until they're regenerated: on Google's schedule, not ours.
+ * Themes now ship their own font files (src/fonts/), so they need no
+ * pinning. The Icons pack and a few demos still load Google Fonts through
+ * the css2 API, which resolves to versioned woff2 URLs. When Google ships a
+ * new build, every glyph shifts and baselines fail until they're
+ * regenerated: on Google's schedule, not ours.
  *
  * This fixture intercepts fonts.googleapis.com and fonts.gstatic.com and
  * serves a committed copy from tests/visual/font-cache/. The cached css2

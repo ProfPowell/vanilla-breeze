@@ -198,10 +198,13 @@ async function buildThemes() {
       .replace(/^_extreme-/, '');
     const themeId = name.replace('.css', '');
 
-    const result = await esbuild.build({
+    // outdir is cdn/ (not cdn/themes/) so the fonts a theme imports from
+    // src/fonts/ land in the one shared cdn/fonts/ folder; esbuild writes
+    // the url() in the theme as ../fonts/<name>.woff2.
+    await esbuild.build({
       ...CSS_DEFAULTS,
-      entryPoints: [join(themesDir, file)],
-      outfile: join(outDir, name),
+      entryPoints: [{ in: join(themesDir, file), out: `themes/${themeId}` }],
+      outdir: CDN,
       write: true,
       logLevel: 'silent',
     });
@@ -538,11 +541,16 @@ async function buildCDN() {
   });
   fixAtPropertyLeadingZeros(join(CDN, 'vanilla-breeze-core.css'));
 
-  // OFL 1.1 requires the licence to travel with the self-hosted
-  // Atkinson Hyperlegible files esbuild just emitted to cdn/fonts/.
+  // OFL 1.1 requires the licence to travel with the self-hosted font files
+  // esbuild emits to cdn/fonts/: Atkinson Hyperlegible, and every family
+  // vendored into src/fonts/ by scripts/vendor-fonts.mjs.
+  mkdirSync(join(CDN, 'fonts'), { recursive: true });
   const atkinsonLicence = join(SRC, 'tokens', 'themes', 'fonts', 'atkinson-hyperlegible-OFL.txt');
   if (existsSync(atkinsonLicence)) {
     cpSync(atkinsonLicence, join(CDN, 'fonts', 'atkinson-hyperlegible-OFL.txt'));
+  }
+  for (const f of readdirSync(join(SRC, 'fonts')).filter((f) => f.endsWith('-OFL.txt'))) {
+    cpSync(join(SRC, 'fonts', f), join(CDN, 'fonts', f));
   }
 
   // Self-hosted Latin Modern Math. The core bundles' @font-face
