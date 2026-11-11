@@ -1,18 +1,75 @@
-/* site-index: Keyword/topic index with page references */
+/* site-index: Keyword/topic index with page references.
+   Set like the index at the back of a book: a ruled letter heading, each term
+   in the text colour with its pages listed under it as ordinary links, in as
+   many columns as the measure allows. */
+
+/* The index nav: explicit nav[data-index], or site-index's direct-child nav
+   of sections (no dependency on an English aria-label) */
+:is(nav[data-index], site-index > nav:has(> section)) {
+  columns: 19rem auto;
+  column-gap: var(--size-2xl);
+  margin-block-start: var(--size-l);
+
+  & > section {
+    margin-block-end: var(--size-xl);
+  }
+
+  /* Letter heading: the letter, a rule, the term count at the far end */
+  & > section > h2 {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--size-s);
+    margin-block: 0 var(--size-xs);
+    padding-block-end: var(--size-2xs);
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+    font-size: var(--font-size-xl);
+    line-height: 1.2;
+    break-after: avoid;
+  }
+
+  /* A term and its references stay in one column */
+  & > section > ul > li {
+    padding-block: var(--size-2xs);
+    break-inside: avoid;
+  }
+
+  /* References are text links, not the block nav items `nav a` makes */
+  & .index-refs a {
+    display: inline;
+    padding: 0;
+    color: var(--color-interactive);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklch, currentColor 40%, transparent);
+    text-underline-offset: 0.2em;
+  }
+
+  & .index-refs a:hover {
+    background: none;
+    color: var(--color-interactive-hover, var(--color-interactive));
+    text-decoration-color: currentColor;
+  }
+}
+
+/* Term text */
+.index-term {
+  font-weight: var(--font-weight-semibold, 600);
+}
 
 .index-refs {
-  margin-block-start: var(--size-3xs);
+  margin-block: var(--size-3xs) 0;
   padding-inline-start: var(--size-m);
   font-size: var(--font-size-s);
+  line-height: 1.5;
   color: var(--color-text-muted);
   list-style: none;
 }
 
 .index-refs li {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--size-xs);
-  padding-block: var(--size-3xs);
+  gap: 0 var(--size-xs);
 }
 
 /* Content-type pills */
@@ -24,16 +81,33 @@
   border-radius: var(--radius-full);
 }
 
-/* Term text */
-.index-term {
-  font-weight: var(--font-weight-medium, 500);
-}
-
-/* --- Jump nav — compact letter strip --- */
+/* --- Jump nav: a strip of equal letter cells --- */
 
 .index-jump ol {
-  font-variant-numeric: tabular-nums;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-3xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
   font-size: var(--font-size-s);
+}
+
+/* Letters with entries (links) and without (spans) share one box, so the
+   strip keeps a single baseline and an even rhythm. */
+.index-jump :is(a, span) {
+  display: grid;
+  place-items: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  padding: 0;
+  border-radius: var(--radius-s);
+  font-weight: var(--font-weight-medium, 500);
+  text-decoration: none;
+}
+
+.index-jump a:hover {
+  background: color-mix(in oklch, currentColor 12%, transparent);
 }
 
 .index-jump [aria-disabled="true"] {
@@ -50,19 +124,23 @@
   }
 }
 
-.index-jump [aria-current="true"] {
-  font-weight: 600;
-  color: var(--color-interactive);
+/* The letter in view: a tinted cell, not nav's underline */
+.index-jump a[aria-current="true"] {
+  --_active-decoration: none;
+
+  background: color-mix(in oklch, var(--color-interactive) 16%, transparent);
+  color: var(--color-interactive) !important;
+  font-weight: var(--font-weight-semibold, 600);
 }
 
-/* --- Entry count badges --- */
+/* --- Term count beside a letter heading --- */
 
 .index-count {
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
   font-variant-numeric: tabular-nums;
   font-weight: normal;
-  margin-inline-start: var(--size-3xs);
+  letter-spacing: normal;
 }
 
 /* --- Expand/collapse toggle --- */
@@ -85,18 +163,4 @@
   outline: 2px solid var(--color-interactive);
   outline-offset: 2px;
   border-radius: var(--radius-s);
-}
-
-/* Multi-column at wider viewports */
-/* The index nav: explicit nav[data-index], or site-index's direct-child nav
-   of sections (no dependency on an English aria-label) */
-@media (min-width: 60rem) {
-  :is(nav[data-index], site-index > nav:has(> section)) {
-    columns: 2;
-    column-gap: var(--size-2xl);
-  }
-
-  :is(nav[data-index], site-index > nav:has(> section)) > section {
-    break-inside: avoid;
-  }
 }

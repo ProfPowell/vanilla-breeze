@@ -13255,7 +13255,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "site-index",
     "type": "web-component",
-    "description": "Interactive keyword index: filter, A–Z jump strip, entry counts, display limit and sort over a hand-authored (or src JSON) index",
+    "description": "Interactive keyword index: one filter box, an A–Z jump strip, a term count per letter and an optional display limit over a hand-authored (or src JSON) index",
     "attributes": [
       {
         "name": "placeholder",
@@ -13284,23 +13284,11 @@ export default {
         "purpose": "config",
         "type": "enum",
         "values": [
-          "topic",
-          "all"
+          "all",
+          "topic"
         ],
-        "default": "topic",
-        "description": "Initial filter scope: match terms only, or terms and page titles"
-      },
-      {
-        "name": "sort",
-        "kind": "host-api",
-        "purpose": "config",
-        "type": "enum",
-        "values": [
-          "alpha",
-          "count"
-        ],
-        "default": "alpha",
-        "description": "Initial sort: authored (alphabetical) order, or sections with most entries first"
+        "default": "all",
+        "description": "What the filter box matches: terms and the titles of the pages they point to, or terms only"
       },
       {
         "name": "limit",
@@ -13325,60 +13313,28 @@ export default {
         "description": "Accessible name of the controls search landmark"
       },
       {
-        "name": "data-label-scope",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string",
-        "default": "Search scope",
-        "description": "Accessible name of the scope select"
-      },
-      {
-        "name": "data-label-scope-topic",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string",
-        "default": "By Topic",
-        "description": "Scope option: match terms only"
-      },
-      {
-        "name": "data-label-scope-all",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string",
-        "default": "All",
-        "description": "Scope option: match terms and page titles"
-      },
-      {
-        "name": "data-label-sort",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string",
-        "default": "Sort order",
-        "description": "Accessible name of the sort select"
-      },
-      {
-        "name": "data-label-sort-alpha",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string",
-        "default": "Alphabetical",
-        "description": "Sort option"
-      },
-      {
-        "name": "data-label-sort-count",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string",
-        "default": "Most entries",
-        "description": "Sort option"
-      },
-      {
         "name": "data-label-jump",
         "kind": "data",
         "purpose": "config",
         "type": "string",
         "default": "Jump to letter",
         "description": "Accessible name of the letter strip"
+      },
+      {
+        "name": "data-label-terms",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} terms",
+        "description": "Term count beside each letter heading and as the hover hint on its jump letter ({count} is replaced)"
+      },
+      {
+        "name": "data-label-terms-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "1 term",
+        "description": "Term count for a letter with one term"
       },
       {
         "name": "data-label-more",

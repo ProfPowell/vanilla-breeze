@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "site-index"
-description: "Interactive site keyword index with A-Z jump nav, search filtering, entry counts, display limits, sort options, and optional JSON data loading."
+description: "Interactive site keyword index with an A-Z jump strip, one filter box, term counts, display limits, and optional JSON data loading."
 elementName: site-index
 category: component
 currentPath: /docs/elements/web-components/site-index/
@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>&lt;site-index&gt;</code> component enhances a static keyword index with A-Z jump navigation, search filtering with scope control, entry counts, display limits with expand/collapse, and sort options.</p>
+  <p>The <code>&lt;site-index&gt;</code> component enhances a static keyword index with an A-Z jump strip, one filter box, a term count per letter, and display limits with expand/collapse.</p>
   <p>Without JavaScript, the static markup is a fully functional keyword index with CSS multi-column layout at wider viewports.</p>
   <p>The index is <strong>hand-authored</strong>: you write the terms and their page references (or serve them as <code>src</code> JSON). Nothing is derived from page front matter or <code>&lt;meta name="concept"&gt;</code> tags; the site&rsquo;s own <a href="/index-of/">keyword index</a> is maintained by hand.</p>
 
@@ -72,14 +72,8 @@ crumbLabel: Web Components
       <tr>
         <td><code>filter</code></td>
         <td>string</td>
-        <td><code>"topic"</code></td>
-        <td>Initial search scope: <code>"topic"</code> (terms only) or <code>"all"</code> (terms and page titles)</td>
-      </tr>
-      <tr>
-        <td><code>sort</code></td>
-        <td>string</td>
-        <td><code>"alpha"</code></td>
-        <td>Initial sort: <code>"alpha"</code> (authored order) or <code>"count"</code> (most entries first)</td>
+        <td><code>"all"</code></td>
+        <td>What the filter box matches: <code>"all"</code> (terms and the titles of the pages they point to) or <code>"topic"</code> (terms only)</td>
       </tr>
       <tr>
         <td><code>limit</code></td>
@@ -97,7 +91,7 @@ crumbLabel: Web Components
         <td><code>data-label-*</code></td>
         <td>string</td>
         <td>English</td>
-        <td>UI string overrides: <code>controls</code>, <code>scope</code>, <code>scope-topic</code>, <code>scope-all</code>, <code>sort</code>, <code>sort-alpha</code>, <code>sort-count</code>, <code>jump</code>, <code>more</code> (<code>{count}</code> replaced), <code>less</code>, <code>matches</code>, <code>matches-one</code>, <code>no-matches</code></td>
+        <td>UI string overrides: <code>controls</code>, <code>jump</code>, <code>terms</code> and <code>terms-one</code> (<code>{count}</code> replaced), <code>more</code> (<code>{count}</code> replaced), <code>less</code>, <code>matches</code>, <code>matches-one</code>, <code>no-matches</code></td>
       </tr>
     </tbody>
   </table>
@@ -107,22 +101,17 @@ crumbLabel: Web Components
   <h2>Features</h2>
 
   <h3>A-Z Jump Navigation</h3>
-  <p>By default, the jump nav shows only letters that have entries. Set <code>letters="all"</code> to show A&ndash;Z plus any other letters your sections use (<code>id="index-é"</code> adds &Eacute;, sorted with the page language), with disabled states for empty ones. Letters come from the section ids, not a fixed alphabet. Scroll-spy highlights the current letter as the user scrolls.</p>
+  <p>By default, the jump nav shows only letters that have entries. Set <code>letters="all"</code> to show A&ndash;Z plus any other letters your sections use (<code>id="index-é"</code> adds &Eacute;, sorted with the page language), with disabled states for empty ones. Letters come from the section ids, not a fixed alphabet. Scroll-spy highlights the current letter as the user scrolls, and hovering a letter shows how many terms it holds.</p>
   <code-block language="html" show-lines label="All letters mode" data-escape><site-index letters="all">
   <!-- Full A-Z strip; letters without entries are disabled -->
 </site-index></code-block>
 
-  <h3>Search Scope</h3>
-  <p>The controls bar includes a scope dropdown:</p>
-  <ul>
-    <li><strong>By Topic</strong> (default) &mdash; matches only the topic heading (<code>.index-term</code>)</li>
-    <li><strong>All</strong> &mdash; matches both topic headings and sub-entry link text (<code>.index-refs a</code>)</li>
-  </ul>
-  <p>For example, searching "button" in "All" mode will find topics that have a "Button element" sub-entry even if "button" isn't in the topic name.</p>
+  <h3>Filter</h3>
+  <p>One filter box sits above the index. It matches a term (<code>.index-term</code>) and the titles of the pages listed under it (<code>.index-refs a</code>), so &ldquo;button&rdquo; finds a topic with a &ldquo;Button element&rdquo; reference even when the word is not in the topic name. Set <code>filter="topic"</code> to match terms only.</p>
   <p>While a filter is active every match shows (the display limit and its &ldquo;Show N more&rdquo; buttons step aside), a live status reports &ldquo;N terms match&rdquo; or &ldquo;No matches&rdquo;, and letters whose sections are filtered out become <code>aria-disabled</code>. Clearing the filter restores the display limit.</p>
 
-  <h3>Entry Counts</h3>
-  <p>The component automatically appends reference counts: <code>(N)</code> after each topic term and in each letter heading. This helps users see at a glance which topics have the most content.</p>
+  <h3>Term Counts</h3>
+  <p>Each letter heading shows how many terms it holds (&ldquo;4 terms&rdquo;). The pages for a term are listed right under it, so terms carry no count of their own.</p>
 
   <h3>Display Limit</h3>
   <p>When <code>limit</code> is set, letter sections with more topics than the limit show a "Show N more" toggle button. Clicking expands to show all entries; clicking again collapses back.</p>
@@ -130,13 +119,6 @@ crumbLabel: Web Components
   <!-- Sections with more than 3 topics show
        a "Show N more" button -->
 </site-index></code-block>
-
-  <h3>Sort Options</h3>
-  <p>The controls bar includes a sort dropdown:</p>
-  <ul>
-    <li><strong>Alphabetical</strong> (default) &mdash; standard A-Z order</li>
-    <li><strong>Most entries</strong> &mdash; reorders letter sections by total reference count, highest first</li>
-  </ul>
 </section>
 
 <section>

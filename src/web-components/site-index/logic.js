@@ -5,8 +5,8 @@ import { fragmentClick } from '../_shared/fragment-link.js';
 /**
  * site-index: Interactive site keyword index
  *
- * Enhances a hand-authored keyword index with search filtering, A-Z jump
- * navigation, entry counts, display limits, and sort options.
+ * Enhances a hand-authored keyword index with one filter box, an A-Z jump
+ * strip, a term count per letter and an optional display limit.
  *
  * The index is an explicit `<nav data-index>`, else the host's direct-child
  * `<nav>` that holds `<section>`s — no particular aria-label is required, so
@@ -14,8 +14,7 @@ import { fragmentClick } from '../_shared/fragment-link.js';
  *
  * @attr {string}  placeholder - Search input placeholder (default "Filter index…")
  * @attr {string}  letters     - Jump nav mode: "entries" (default) | "all" | "none"
- * @attr {string}  filter      - Search scope: "topic" (default) | "all"
- * @attr {string}  sort        - Sort mode: "alpha" (default) | "count"
+ * @attr {string}  filter      - What the filter matches: "all" (default: terms and page titles) | "topic" (terms only)
  * @attr {number}  limit       - Max entries per letter before "Show more" toggle
  * @attr {string}  src         - URL to load index data from (optional)
  * @attr {string}  data-label-* - UI string overrides (see LABELS)
@@ -31,13 +30,9 @@ import { fragmentClick } from '../_shared/fragment-link.js';
 /** Default UI strings — each overridable with data-label-<key>. */
 const LABELS = {
   controls: 'Filter the index',
-  scope: 'Search scope',
-  'scope-topic': 'By Topic',
-  'scope-all': 'All',
-  sort: 'Sort order',
-  'sort-alpha': 'Alphabetical',
-  'sort-count': 'Most entries',
   jump: 'Jump to letter',
+  terms: '{count} terms',
+  'terms-one': '1 term',
   more: 'Show {count} more',
   less: 'Show less',
   matches: '{count} terms match',
@@ -65,10 +60,6 @@ function safeHref(href) {
 class SiteIndex extends VBElement {
   /** @type {IntersectionObserver|null} */
   #observer = null;
-  /** @type {Element[]} */
-  #originalSectionOrder = [];
-  /** @type {HTMLSelectElement|null} */
-  #scopeSelect = null;
   /** @type {HTMLInputElement|null} */
   #searchInput = null;
   /** @type {HTMLOutputElement|null} */
@@ -130,7 +121,6 @@ class SiteIndex extends VBElement {
   }
 
   #enhance() {
-    this.#cacheSectionOrder();
     this.#addCounts();
     this.#buildControls();
 
@@ -143,66 +133,36 @@ class SiteIndex extends VBElement {
     if (this.#searchInput?.value) this.#filter(this.#searchInput.value);
   }
 
-  /* ── Section order cache for sort restore ── */
-
-  #cacheSectionOrder() {
-    // On reconnect the nav may be count-sorted; only cache once per nav
-    const sections = this.#sections();
-    if (this.#originalSectionOrder.length
-      && this.#originalSectionOrder.every((s) => sections.includes(/** @type {HTMLElement} */ (s)))) return;
-    this.#originalSectionOrder = sections;
-  }
-
   /* ── Entry counts ── */
 
+  /** @param {number} n */
+  #termsLabel(n) {
+    return n === 1 ? this.#label('terms-one') : this.#label('terms', n);
+  }
+
+  /** Terms under a letter. @param {Element} section */
+  #termCount(section) {
+    return section.querySelectorAll(':scope > ul > li').length;
+  }
+
+  /**
+   * Each letter heading says how many terms it holds. The references are
+   * listed under every term, so a count per term would only repeat them.
+   */
   #addCounts() {
     for (const section of this.#sections()) {
-      const items = section.querySelectorAll(':scope > ul > li');
-      let sectionTotal = 0;
-
-      for (const item of items) {
-        const refs = item.querySelectorAll('.index-refs > li');
-        const count = refs.length;
-        sectionTotal += count;
-
-        const term = item.querySelector('.index-term');
-        // The badge is the term's next sibling (term.after) — check there, or a
-        // reconnect's setup() adds a second one.
-        if (term && count > 0 && !term.nextElementSibling?.classList.contains('index-count')) {
-          const badge = document.createElement('span');
-          badge.className = 'index-count';
-          badge.textContent = `(${count})`;
-          term.after(badge);
-        }
-      }
-
+      const count = this.#termCount(section);
       const h2 = section.querySelector('h2');
-      if (h2 && sectionTotal > 0 && !h2.querySelector('.index-count')) {
-        const badge = document.createElement('span');
-        badge.className = 'index-count';
-        badge.textContent = `(${sectionTotal})`;
-        h2.append(badge);
-      }
+      // Reconnect guard: setup() re-runs, the badge moved back with the host.
+      if (!h2 || !count || h2.querySelector('.index-count')) continue;
+      const badge = document.createElement('span');
+      badge.className = 'index-count';
+      badge.textContent = this.#termsLabel(count);
+      h2.append(' ', badge);
     }
   }
 
   /* ── Controls bar ── */
-
-  /**
-   * @param {string} labelKey
-   * @param {[string, string][]} options
-   */
-  #select(labelKey, options) {
-    const select = document.createElement('select');
-    select.setAttribute('aria-label', this.#label(/** @type {any} */ (labelKey)));
-    for (const [value, key] of options) {
-      const opt = document.createElement('option');
-      opt.value = value;
-      opt.textContent = this.#label(/** @type {any} */ (key));
-      select.append(opt);
-    }
-    return select;
-  }
 
   #buildControls() {
     // Reconnect guard: setup() re-runs on every reconnect, but the controls
@@ -226,20 +186,6 @@ class SiteIndex extends VBElement {
     this.#searchInput = input;
     controls.append(input);
 
-    /* Scope dropdown */
-    const scope = this.#select('scope', [['topic', 'scope-topic'], ['all', 'scope-all']]);
-    if (this.getAttribute('filter') === 'all') scope.value = 'all';
-    scope.addEventListener('change', () => this.#filter(input.value));
-    this.#scopeSelect = scope;
-    controls.append(scope);
-
-    /* Sort dropdown */
-    const sort = this.#select('sort', [['alpha', 'sort-alpha'], ['count', 'sort-count']]);
-    const sortAttr = this.getAttribute('sort');
-    if (sortAttr === 'count') sort.value = 'count';
-    sort.addEventListener('change', () => this.#sort(sort.value));
-    controls.append(sort);
-
     /* Live result count */
     const status = document.createElement('output');
     status.setAttribute('role', 'status');
@@ -254,9 +200,6 @@ class SiteIndex extends VBElement {
     } else {
       this.prepend(controls);
     }
-
-    /* Apply initial sort if set */
-    if (sortAttr === 'count') this.#sort('count');
   }
 
   /* ── Jump nav ── */
@@ -296,6 +239,10 @@ class SiteIndex extends VBElement {
         const a = document.createElement('a');
         a.setAttribute('href', `#${id}`);
         a.textContent = letter;
+        // A hover hint only: the letter stays the link's name, the heading it
+        // jumps to carries the same count as text.
+        const section = this.querySelector(`#${CSS.escape(id)}`);
+        if (section) a.title = this.#termsLabel(this.#termCount(section));
         li.append(a);
       } else {
         const span = document.createElement('span');
@@ -398,7 +345,7 @@ class SiteIndex extends VBElement {
   #filter(query) {
     const lang = this.#lang;
     const q = query.toLocaleLowerCase(lang).trim();
-    const scope = this.#scopeSelect?.value || 'topic';
+    const scope = this.getAttribute('filter') === 'topic' ? 'topic' : 'all';
     let total = 0;
 
     for (const section of this.#sections()) {
@@ -406,6 +353,7 @@ class SiteIndex extends VBElement {
       const expandBtn = section.querySelector(':scope > [data-index-expand]');
       const expanded = expandBtn?.getAttribute('aria-expanded') === 'true';
       let hasMatch = false;
+      let matched = 0;
 
       for (const item of items) {
         const termText = item.querySelector('.index-term')?.textContent?.toLocaleLowerCase(lang) || '';
@@ -420,7 +368,7 @@ class SiteIndex extends VBElement {
           }
         }
 
-        if (matches) { hasMatch = true; total++; }
+        if (matches) { hasMatch = true; matched++; total++; }
         // With no query the display limit applies again; with a query every
         // match shows, overflow included
         const overflowHidden = !q && item.hasAttribute('data-index-overflow') && !expanded;
@@ -428,6 +376,9 @@ class SiteIndex extends VBElement {
       }
 
       section.hidden = !hasMatch;
+      // The heading and its jump letter count what is showing: the matches
+      // while a filter is on, every term otherwise.
+      this.#showCount(section, q ? matched : this.#termCount(section));
       // "Show N more" makes no sense while a filter decides what shows
       if (expandBtn) /** @type {HTMLElement} */ (expandBtn).hidden = !!q;
     }
@@ -440,6 +391,19 @@ class SiteIndex extends VBElement {
     }
 
     this.#updateJumpNavState();
+  }
+
+  /**
+   * @param {Element} section
+   * @param {number} count
+   */
+  #showCount(section, count) {
+    const text = this.#termsLabel(count);
+    const badge = section.querySelector('h2 > .index-count');
+    if (badge && badge.textContent !== text) badge.textContent = text;
+    if (!section.id) return;
+    const link = this.querySelector(`:scope > .index-jump a[href="#${CSS.escape(section.id)}"]`);
+    if (link) link.setAttribute('title', text);
   }
 
   #updateJumpNavState() {
@@ -458,30 +422,6 @@ class SiteIndex extends VBElement {
       } else {
         link.removeAttribute('aria-disabled');
         link.removeAttribute('tabindex');
-      }
-    }
-  }
-
-  /* ── Sort ── */
-
-  /** @param {string} mode */
-  #sort(mode) {
-    const nav = this.#indexNav();
-    if (!nav) return;
-
-    if (mode === 'alpha') {
-      for (const section of this.#originalSectionOrder) {
-        nav.append(section);
-      }
-    } else if (mode === 'count') {
-      const sections = [...nav.querySelectorAll(':scope > section')];
-      sections.sort((a, b) => {
-        const countA = a.querySelectorAll('.index-refs > li').length;
-        const countB = b.querySelectorAll('.index-refs > li').length;
-        return countB - countA;
-      });
-      for (const section of sections) {
-        nav.append(section);
       }
     }
   }
@@ -579,7 +519,6 @@ class SiteIndex extends VBElement {
     } else {
       this.append(nav);
     }
-    this.#originalSectionOrder = [];
   }
 }
 

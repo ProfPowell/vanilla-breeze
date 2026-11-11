@@ -415,6 +415,51 @@ test.describe('site-index', () => {
     expect(r.expand).toBe(1);
   });
 
+  test('one filter box, term counts on headings, and a hint on each letter', async ({ page }) => {
+    await load(page, INDEX, { modules: ['site-index'] });
+    await page.waitForSelector('site-index[data-upgraded]');
+    const r = await page.evaluate(() => {
+      const ix = document.getElementById('ix');
+      const box = (el) => { const b = el.getBoundingClientRect(); return [Math.round(b.width), Math.round(b.height), Math.round(b.top)]; };
+      return {
+        controls: [...ix.querySelectorAll('[data-index-controls] :is(input, select, button)')].map((el) => el.localName),
+        headingA: ix.querySelector('#index-a h2 .index-count')?.textContent,
+        headingB: ix.querySelector('#index-b h2 .index-count')?.textContent,
+        termBadges: ix.querySelectorAll('.index-term + .index-count').length,
+        hintA: ix.querySelector('.index-jump a[href="#index-a"]')?.title,
+        // A linked letter and an empty one share a box and a row
+        linked: box(ix.querySelector('.index-jump a[href="#index-a"]')),
+        empty: box(ix.querySelector('.index-jump span[aria-disabled]')),
+        refPadding: getComputedStyle(ix.querySelector('.index-refs a')).paddingBlockStart,
+      };
+    });
+    expect(r.controls).toEqual(['input']);
+    expect(r.headingA).toBe('4 terms');
+    expect(r.headingB).toBe('1 term');
+    expect(r.termBadges).toBe(0);
+    expect(r.hintA).toBe('4 terms');
+    expect(r.linked).toEqual(r.empty);
+    expect(r.refPadding).toBe('0px');
+  });
+
+  test('the filter matches page titles too, unless filter="topic"', async ({ page }) => {
+    await load(page, INDEX, { modules: ['site-index'] });
+    await page.waitForSelector('site-index[data-upgraded]');
+    const status = page.locator('#ix [role="status"]');
+    await page.locator('#ix [data-index-search]').fill('page 1');
+    await expect(status).toHaveText('1 term matches'); // only apple has a second page
+    // The heading and the letter's hint count the matches while filtering
+    await expect(page.locator('#index-a h2 .index-count')).toHaveText('1 term');
+    await expect(page.locator('#ix .index-jump a[href="#index-a"]')).toHaveAttribute('title', '1 term');
+    await page.locator('#ix [data-index-search]').fill('');
+    await expect(page.locator('#index-a h2 .index-count')).toHaveText('4 terms');
+
+    await load(page, INDEX.replace('<site-index id="ix"', '<site-index id="ix" filter="topic"'), { modules: ['site-index'] });
+    await page.waitForSelector('site-index[data-upgraded]');
+    await page.locator('#ix [data-index-search]').fill('page 1');
+    await expect(page.locator('#ix [role="status"]')).toHaveText('No matches');
+  });
+
   test('filter keeps the display limit in sync and announces counts', async ({ page }) => {
     await load(page, INDEX, { modules: ['site-index'] });
     await page.waitForSelector('site-index[data-upgraded]');
@@ -505,7 +550,7 @@ test.describe('site-index', () => {
         badges: ix.querySelectorAll('#index-b .index-count').length,
       };
     });
-    expect(r).toEqual({ controls: 1, jump: 1, expand: 1, badges: 2 });
+    expect(r).toEqual({ controls: 1, jump: 1, expand: 1, badges: 1 });
     await page.locator('#ix [data-index-search]').fill('beta');
     await expect(page.locator('#ix [role="status"]')).toHaveText('1 term matches');
   });
