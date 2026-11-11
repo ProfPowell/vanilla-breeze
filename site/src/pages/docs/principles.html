@@ -1,333 +1,202 @@
 ---
 layout: docs
-title: "Principles - Vanilla Breeze"
-description: "Understand the philosophy behind Vanilla Breeze: the three-layer architecture, progressive enhancement, and why HTML-first matters."
+title: "Principles"
+description: "What Vanilla Breeze commits to: HTML as the atom, one grammar across HTML, CSS and JavaScript, optional layers, themeable presentation, minimal execution, overridable defaults and the web for all."
 currentSection: start
 currentPath: /docs/principles/
 ---
 
 <h1>Principles</h1>
-  <p class="lead">Vanilla Breeze is built on a philosophy of progressive enhancement, simplicity, and respect for the web platform. Understanding these principles helps you get the most out of the library.</p>
+  <p class="lead">Vanilla Breeze is an HTML-first framework. HTML is the atom of a site or app, whether a server emits it or the browser enhances it. CSS and JavaScript are optional layers on top of it.</p>
 
   <nav class="subnav" aria-label="Principles sections">
     <ul>
-      <li><a href="#three-layers">The Three Layers</a></li>
-      <li><a href="#why-html-first">Why HTML-First</a></li>
-      <li><a href="#progressive-enhancement">Progressive Enhancement</a></li>
-      <li><a href="#zero-dependencies">Zero Dependencies</a></li>
-      <li><a href="#semantic-naming">Semantic Naming</a></li>
-      <li><a href="#data-attributes">Data Attributes</a></li>
-      <li><a href="#design-decisions">Design Decisions</a></li>
+      <li><a href="#statement">Statement</a></li>
+      <li><a href="#grammar">The grammar</a></li>
+      <li><a href="#principles">Eight principles</a></li>
+      <li><a href="#enforcement">What enforces them</a></li>
+      <li><a href="#wont-do">What we won't do</a></li>
     </ul>
   </nav>
 
-  <!-- Three Layers Section -->
-  <section id="three-layers">
-    <h2>The Three-Layer Architecture</h2>
-    <p>Vanilla Breeze organizes web development into three distinct, optional layers. Each layer builds on the previous without requiring it.</p>
+  <section id="statement">
+    <h2>Statement</h2>
+    <p>Markup starts with elements. A class varies an element's look, an attribute configures it, and <code>data-*</code> attributes hold its state and data. CSS binds to elements first, uses classes for variation and reads state from attributes. JavaScript is encapsulated in components that communicate through state and use the web platform wherever it can.</p>
+    <p>CSS and JavaScript are optional, and each is added as a progressive enhancement. Presentation is separate, layered and flexible, so look and feel are easy to change and themes are first class. Execution is kept minimal for performance and reliability.</p>
+    <p>The framework is opinionated. Its defaults come from experience, and every one of them can be overridden. The goal is the web for all: accessibility, performance and internationalization are designed in at all times.</p>
+  </section>
 
-    <layout-grid data-layout-min="m" data-layout-gap="m">
-      <layout-card>
-        <layout-stack data-layout-gap="s">
-          <h3>
-            <icon-wc name="file-code" size="sm"></icon-wc>
-            Layer 1: HTML
-          </h3>
-          <p>Semantic markup that works everywhere. Content is accessible, indexable, and functional with no styling at all.</p>
-          <small><strong>Required:</strong> Always</small>
-        </layout-stack>
-      </layout-card>
-      <layout-card>
-        <layout-stack data-layout-gap="s">
-          <h3>
-            <icon-wc name="palette" size="sm"></icon-wc>
-            Layer 2: CSS
-          </h3>
-          <p>Design tokens, native element styling, and CSS-only custom elements. Full visual polish without any JavaScript.</p>
-          <small><strong>Required:</strong> Optional</small>
-        </layout-stack>
-      </layout-card>
-      <layout-card>
-        <layout-stack data-layout-gap="s">
-          <h3>
-            <icon-wc name="zap" size="sm"></icon-wc>
-            Layer 3: JavaScript
-          </h3>
-          <p>Web components for complex interactivity: animations, keyboard navigation, ARIA management, and dynamic behavior.</p>
-          <small><strong>Required:</strong> Optional</small>
-        </layout-stack>
-      </layout-card>
-    </layout-grid>
-
-    <h3>How the Layers Work Together</h3>
-    <p>Consider an accordion component:</p>
+  <section id="grammar">
+    <h2>One grammar, three languages</h2>
+    <p>The same four parts of speech mean the same thing in HTML, CSS and JavaScript. Learn the table once and every element, attribute and component in the library reads the same way.</p>
 
     <table>
       <thead>
         <tr>
-          <th>Layer</th>
-          <th>What You Get</th>
-          <th>Code</th>
+          <th>Part</th>
+          <th>Says</th>
+          <th>In HTML</th>
+          <th>CSS</th>
+          <th>JavaScript</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>HTML only</td>
-          <td>Functional expand/collapse with native <code>&lt;details&gt;</code></td>
-          <td><code>&lt;details&gt;&lt;summary&gt;Title&lt;/summary&gt;Content&lt;/details&gt;</code></td>
+          <th scope="row">Element</th>
+          <td>What it is</td>
+          <td><code>&lt;nav&gt;</code>, <code>&lt;form-field&gt;</code>, <code>&lt;tab-set&gt;</code></td>
+          <td>Binds here first</td>
+          <td>Defines components</td>
         </tr>
         <tr>
-          <td>HTML + CSS</td>
-          <td>Styled with proper spacing, typography, and visual hierarchy</td>
-          <td>Same HTML, Vanilla Breeze CSS loaded</td>
+          <th scope="row">Class</th>
+          <td>Which look</td>
+          <td><code>class="secondary"</code></td>
+          <td>Varies the element's look</td>
+          <td>Leaves classes alone</td>
         </tr>
         <tr>
-          <td>HTML + CSS + JS</td>
-          <td>Smooth animations, keyboard navigation, exclusive mode</td>
-          <td><code>&lt;accordion-wc&gt;</code> wrapper added</td>
+          <th scope="row">Attribute</th>
+          <td>How it is configured</td>
+          <td><code>data-layout-gap="m"</code>, <code>filter="topic"</code></td>
+          <td>Selects on the value</td>
+          <td>Reads on connect and on change</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>data-*</code> state</th>
+          <td>What is true right now</td>
+          <td><code>data-state="open"</code>, <code>data-loading</code></td>
+          <td>Styles the state</td>
+          <td>Reads and writes</td>
         </tr>
       </tbody>
     </table>
 
-    <p>Each layer is an enhancement, not a requirement. Your content works at every level.</p>
+    <h3>Why some attributes carry <code>data-</code> and some do not</h3>
+    <p>HTML does not allow new attributes on its own elements, so anything Vanilla Breeze adds to a native element is a <code>data-*</code> attribute. An element the library defines can declare attributes of its own.</p>
+    <code-block language="html" label="Attributes on native and library elements" data-escape><!-- Native elements: additions are data-* -->
+<table data-variant="minimal">
+<section data-layout="stack" data-layout-gap="m">
+
+<!-- Library elements: their own attributes -->
+<theme-picker variant="inline">
+<site-index filter="topic">
+
+<!-- State is data-* (or native state) everywhere -->
+<button data-loading>
+<details open></code-block>
+    <p>Where the platform already has a state attribute, such as <code>open</code>, <code>disabled</code> or <code>aria-pressed</code>, the library uses it and does not invent a second one.</p>
   </section>
 
-  <!-- Why HTML-First Section -->
-  <section id="why-html-first">
-    <h2>Why HTML-First Matters</h2>
-    <p>Many frameworks treat HTML as an afterthought or a compile target. Vanilla Breeze treats it as the foundation.</p>
+  <section id="principles">
+    <h2>Eight principles</h2>
 
-    <h3>Benefits of HTML-First</h3>
-    <layout-stack data-layout-gap="m">
-      <layout-card>
-        <layout-stack data-layout-gap="xs">
-          <h4>Resilience</h4>
-          <p>When JavaScript fails (and it will), your content remains accessible. Forms still submit. Links still navigate. Information is still readable.</p>
-        </layout-stack>
-      </layout-card>
-      <layout-card>
-        <layout-stack data-layout-gap="xs">
-          <h4>Performance</h4>
-          <p>HTML renders immediately. Users see content before CSS and JavaScript finish loading. No blank screens, no loading spinners for basic content.</p>
-        </layout-stack>
-      </layout-card>
-      <layout-card>
-        <layout-stack data-layout-gap="xs">
-          <h4>SEO and Discoverability</h4>
-          <p>Search engines can index all your content without executing JavaScript. Social media previews work correctly. Screen readers work out of the box.</p>
-        </layout-stack>
-      </layout-card>
-      <layout-card>
-        <layout-stack data-layout-gap="xs">
-          <h4>Simplicity</h4>
-          <p>HTML is the simplest programming language. Anyone can learn it. There's no build step, no transpilation, no framework-specific syntax to master.</p>
-        </layout-stack>
-      </layout-card>
-      <layout-card>
-        <layout-stack data-layout-gap="xs">
-          <h4>Longevity</h4>
-          <p>HTML from 1995 still works today. Frameworks come and go; semantic HTML persists. Your investment in learning HTML pays dividends forever.</p>
-        </layout-stack>
-      </layout-card>
-    </layout-stack>
-
-    <h3>The Web Platform is Powerful</h3>
-    <p>Modern HTML provides more than many developers realize:</p>
-    <ul>
-      <li><code>&lt;details&gt;</code> and <code>&lt;summary&gt;</code> for accordions</li>
-      <li><code>&lt;dialog&gt;</code> for modals with built-in focus trapping</li>
-      <li><code>popover</code> attribute for popovers and dropdowns</li>
-      <li><code>&lt;input type="date"&gt;</code> for date pickers</li>
-      <li><code>&lt;input type="color"&gt;</code> for color pickers</li>
-      <li><code>&lt;progress&gt;</code> and <code>&lt;meter&gt;</code> for progress indicators</li>
-      <li>Form validation with <code>required</code>, <code>pattern</code>, <code>min</code>, <code>max</code></li>
-      <li><code>:has()</code>, <code>:is()</code>, and <code>:where()</code> for powerful CSS selectors</li>
-    </ul>
-    <p>Vanilla Breeze enhances these native capabilities rather than replacing them.</p>
-  </section>
-
-  <!-- Progressive Enhancement Section -->
-  <section id="progressive-enhancement">
-    <h2>Progressive Enhancement</h2>
-    <p>Progressive enhancement means starting with a baseline experience that works for everyone, then adding capabilities for browsers and users that support them.</p>
-
-    <h3>How Vanilla Breeze Implements This</h3>
-
-    <h4>CSS Custom Elements Without JavaScript</h4>
-    <p>Layout elements like <code>&lt;layout-stack&gt;</code> and <code>&lt;layout-grid&gt;</code> work purely with CSS. No JavaScript registration is needed because they use CSS attribute selectors:</p>
-    <code-block language="css" label="CSS-only custom element" data-escape>/* This selector works whether or not the element is registered */
-layout-stack {
-  display: flex;
-  flex-direction: column;
-}
-
-layout-stack[data-layout-gap="m"] {
-  gap: var(--size-m);
-}</code-block>
-
-    <h4>Web Components That Enhance Native Elements</h4>
-    <p>JavaScript web components wrap native HTML patterns. The native pattern always works; the web component adds polish:</p>
-    <code-block language="html" label="Progressive accordion" data-escape><!-- This works without JS, styled by CSS -->
+    <h3 id="html-is-the-atom">1. HTML is the atom</h3>
+    <p>Every feature starts as markup that a browser can read with nothing else loaded. A server can emit it or a script can enhance it, and in both cases the markup is the source of truth. An accordion is a <code>&lt;details&gt;</code> first.</p>
+    <code-block language="html" label="The same content at each step" data-escape><!-- Works with HTML alone -->
 <details>
-  <summary>Click to expand</summary>
-  <p>Content is always accessible</p>
+  <summary>Shipping</summary>
+  <p>Orders leave the warehouse within two days.</p>
 </details>
 
-<!-- This adds animations and keyboard features -->
+<!-- Same markup, wrapped for animation and keyboard support -->
 <accordion-wc>
   <details>
-    <summary>Click to expand</summary>
-    <p>Content with smooth animation</p>
+    <summary>Shipping</summary>
+    <p>Orders leave the warehouse within two days.</p>
   </details>
 </accordion-wc></code-block>
+    <p>See <a href="/docs/elements/">Elements</a> for the native elements, the CSS-only custom elements and the web components that build on them.</p>
 
-    <h4>Graceful Degradation Patterns</h4>
-    <p>Components use the <code>:defined</code> pseudo-class to style differently before and after JavaScript runs:</p>
-    <code-block language="css" label="Defined vs undefined styling" data-escape>/* Before JS registers the component */
-tab-set:not(:defined) {
-  /* Show all panels stacked */
-}
+    <h3 id="one-grammar">2. One grammar across HTML, CSS and JavaScript</h3>
+    <p>Elements say what a thing is, classes vary its look, attributes configure it and <code>data-*</code> holds state. Names describe purpose and never appearance: <code>class="secondary"</code>, <code>--color-text-muted</code>, <code>&lt;layout-sidebar&gt;</code>. See <a href="/docs/attributes/">Attributes</a> and the <a href="/docs/attributes/class/"><code>class</code></a> page.</p>
 
-/* After JS registers the component */
-tab-set:defined {
-  /* Show tab navigation */
-}</code-block>
+    <h3 id="optional-layers">3. CSS and JavaScript are optional</h3>
+    <p>Each layer improves the page and none is needed to read it. Layout elements such as <code>&lt;layout-stack&gt;</code> are styled by CSS alone and are never registered with JavaScript. A web component styles its unregistered form, so the content is usable while the script loads and if it never arrives.</p>
+    <code-block language="css" label="Styling before and after upgrade" data-escape>/* Script not loaded: every panel is visible, stacked */
+tab-set:not(:defined) { display: block; }
+
+/* Script loaded: the tab interface takes over */
+tab-set:defined { display: grid; }</code-block>
+    <p>The <a href="/docs/architecture/resilience-matrix/">Resilience Matrix</a> records what each component does without JavaScript and without CSS.</p>
+
+    <h3 id="components">4. Behavior lives in components</h3>
+    <p>JavaScript is encapsulated in web components. They communicate through attributes, state and events, and they use the platform before any package: <code>&lt;dialog&gt;</code>, <code>popover</code>, form validation, <code>ElementInternals</code>, view transitions. The library ships with no runtime dependencies. See the <a href="/docs/architecture/data-api/">Data API</a> for how a component accepts both markup and properties.</p>
+
+    <h3 id="presentation">5. Presentation is separate, layered and themeable</h3>
+    <p>Styles are ordered by cascade layers and written against semantic tokens, so a theme changes the look of every element without touching markup. Themes are first class. See <a href="/docs/tokens/">Tokens</a>, <a href="/docs/themes/">Themes</a> and <a href="/docs/overrides/">Overrides</a>.</p>
+    <code-block language="css" label="Tokens name a purpose" data-escape>color: var(--color-text-muted);
+background: var(--color-surface);
+border-color: var(--color-border);</code-block>
+
+    <h3 id="minimal">6. Do the minimum</h3>
+    <p>Code that does not run cannot be slow and cannot fail. The library prefers HTML to CSS and CSS to JavaScript, loads components only when a page uses them and keeps each bundle within a budget. See <a href="/docs/performance/">Performance</a>.</p>
+
+    <h3 id="defaults">7. Opinionated defaults, all overridable</h3>
+    <p>A page with no classes and no configuration should already look finished. The defaults come from experience, and each is a token, a layer or an attribute that you can change. See <a href="/docs/overrides/">Overrides</a>.</p>
+
+    <h3 id="web-for-all">8. The web for all</h3>
+    <p>Accessibility, performance and internationalization are part of every element from the start. Styles use logical properties so layouts follow the writing direction. Components carry their roles, labels and keyboard behavior, and their text can be translated. See <a href="/docs/accessibility/">Accessibility</a> and <a href="/docs/i18n/">i18n</a>.</p>
   </section>
 
-  <!-- Zero Dependencies Section -->
-  <section id="zero-dependencies">
-    <h2>Zero Dependencies</h2>
-    <p>Vanilla Breeze has no runtime dependencies. The CSS and JavaScript are self-contained.</p>
+  <section id="enforcement">
+    <h2>What enforces them</h2>
+    <p>A principle that nothing checks will drift. These run on every change, and a failure blocks the release.</p>
 
-    <h3>Why This Matters</h3>
-    <ul>
-      <li><strong>Security:</strong> No supply chain vulnerabilities from transitive dependencies</li>
-      <li><strong>Stability:</strong> No breaking changes from upstream packages</li>
-      <li><strong>Size:</strong> You get exactly what you need, nothing more</li>
-      <li><strong>Simplicity:</strong> No package manager required for basic usage</li>
-      <li><strong>Longevity:</strong> Works as long as browsers support standard web APIs</li>
-    </ul>
-
-    <h3>How We Achieve This</h3>
-    <p>Vanilla Breeze uses only:</p>
-    <ul>
-      <li>Standard CSS with custom properties</li>
-      <li>Native Web Components API</li>
-      <li>CSS <code>@layer</code> for cascade management</li>
-      <li>No polyfills required (targets modern evergreen browsers)</li>
-    </ul>
-
-    <p>Development dependencies exist for building and testing, but they never ship to users.</p>
-  </section>
-
-  <!-- Semantic Naming Section -->
-  <section id="semantic-naming">
-    <h2>Semantic Naming</h2>
-    <p>Names should describe <em>what</em> something is, not <em>how</em> it looks.</p>
-
-    <h3>Custom Elements</h3>
-    <p>Custom elements use descriptive, hyphenated names that are self-documenting:</p>
-    <code-block language="html" label="Semantic element names" data-escape><!-- Layout describes what it does -->
-<layout-stack>     <!-- Stacks children vertically -->
-<layout-cluster>   <!-- Clusters items horizontally with wrapping -->
-<layout-sidebar>   <!-- Creates a sidebar layout -->
-<layout-grid>      <!-- Responsive grid layout -->
-
-<!-- Web components describe their purpose -->
-<accordion-wc>     <!-- Accordion behavior -->
-<tab-set>          <!-- Tab interface -->
-<toast-msg>         <!-- Toast notifications --></code-block>
-
-    <h3>CSS Classes</h3>
-    <p>Classes describe variants or purposes, not visual properties:</p>
-    <code-block language="html" label="Semantic class names" data-escape><!-- Good: describes purpose -->
-<button class="secondary">Cancel</button>
-<button class="ghost">Learn More</button>
-<nav class="horizontal pills">...</nav>
-
-<!-- Avoid: describes appearance -->
-<button class="gray">Cancel</button>
-<button class="no-background">Learn More</button></code-block>
-
-    <h3>Design Tokens</h3>
-    <p>Tokens use semantic names that adapt to context:</p>
-    <code-block language="css" label="Semantic token names" data-escape>/* Good: semantic purpose */
-color: var(--color-text);           /* Adapts to light/dark */
-color: var(--color-text-muted);     /* Secondary text */
-background: var(--color-surface);   /* Main background */
-background: var(--color-interactive); /* Interactive elements */
-
-/* Avoid: literal values */
-color: var(--gray-700);
-background: var(--white);</code-block>
-  </section>
-
-  <!-- Data Attributes Section -->
-  <section id="data-attributes">
-    <h2>Data Attributes for Configuration</h2>
-    <p>Vanilla Breeze uses <code>data-*</code> attributes rather than classes for component configuration and state. This creates a clear separation of concerns. Classes are kept for named, element-scoped variants; see the <a href="/docs/attributes/class/"><code>class</code></a> attribute page.</p>
-
-    <h3>Why Data Attributes?</h3>
     <table>
       <thead>
         <tr>
-          <th>Aspect</th>
-          <th>Classes</th>
-          <th>Data Attributes</th>
+          <th>Principle</th>
+          <th>Check</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>Purpose</td>
-          <td>Styling hooks</td>
-          <td>Configuration and state</td>
+          <td>HTML is the atom</td>
+          <td>Conformance rules reject <code>&lt;div&gt;</code> wrappers and broken heading order in every demo, and require <code>&lt;form-field&gt;</code> around form controls.</td>
         </tr>
         <tr>
-          <td>Values</td>
-          <td>Boolean only (present/absent)</td>
-          <td>Any string value</td>
+          <td>One grammar</td>
+          <td>A conformance rule flags state written as a class. A lint rejects classes in the documentation that the library does not define. Each component's documented attributes are compared with its code.</td>
         </tr>
         <tr>
-          <td>JavaScript access</td>
-          <td><code>classList.contains()</code></td>
-          <td><code>dataset.property</code></td>
+          <td>Optional layers</td>
+          <td>The <a href="/docs/architecture/resilience-matrix/">Resilience Matrix</a> is generated from data kept beside each component.</td>
         </tr>
         <tr>
-          <td>Collision risk</td>
-          <td>High (common names)</td>
-          <td>Low (namespaced)</td>
+          <td>Behavior in components</td>
+          <td>The package declares no runtime dependencies.</td>
+        </tr>
+        <tr>
+          <td>Themeable presentation</td>
+          <td>Token lints reject undefined tokens and literal colors, and check that every theme covers the semantic tokens. A conformance rule rejects inline styles.</td>
+        </tr>
+        <tr>
+          <td>Do the minimum</td>
+          <td>A size budget fails the build when a bundle grows past its limit.</td>
+        </tr>
+        <tr>
+          <td>The web for all</td>
+          <td>Component tests check contrast under each theme, keyboard behavior and right-to-left layout.</td>
         </tr>
       </tbody>
     </table>
-
-    <h3>Convention</h3>
-    <code-block language="html" label="Data attribute patterns" data-escape><!-- Configuration with values -->
-<layout-stack data-layout-gap="m" data-layout-align="center">
-<layout-grid data-layout-min="m" data-layout-gap="l">
-<tab-set data-orientation="vertical">
-
-<!-- State (boolean or value) -->
-<accordion-wc single>
-<button data-state="loading">
-<input data-valid="true">
-
-<!-- Classes for variant styling only -->
-<button class="secondary">
-<nav class="horizontal pills"></code-block>
   </section>
 
-  <!-- Design Decisions Section -->
-  <section id="design-decisions">
-    <h2>Design Decisions</h2>
-    <p>Every architectural choice in Vanilla Breeze traces to a specific failure mode it prevents. The principles above &mdash; HTML-first, progressive enhancement, zero dependencies, semantic naming, data attributes &mdash; are not just preferences. They are structural decisions with engineering rationale.</p>
-    <p>For the full list of decisions, the failure modes they prevent, and the trade-offs they accept, see <a href="/docs/concepts/architecture-decisions/">Architecture Decisions</a>.</p>
+  <section id="wont-do">
+    <h2>What we won't do</h2>
+    <ul>
+      <li><strong>Require a build step.</strong> Link a stylesheet and a script and the library works.</li>
+      <li><strong>Ship utility classes.</strong> Layout and spacing belong to elements and attributes. A class names a look.</li>
+      <li><strong>Add runtime dependencies.</strong> Development tools exist for building and testing, and none of them reach your users.</li>
+      <li><strong>Replace a native element that already does the job.</strong> The library styles and extends <code>&lt;dialog&gt;</code>, <code>&lt;details&gt;</code> and <code>popover</code>. It does not rebuild them.</li>
+      <li><strong>Make JavaScript a condition for reading content.</strong></li>
+    </ul>
+    <p><a href="/docs/architecture/architecture-decisions/">Architecture Decisions</a> gives the reasoning for each choice, the failure it prevents and the cost it accepts.</p>
   </section>
 
-  <!-- Next Steps Section -->
   <section>
-    <h2>Next Steps</h2>
-    <p>Now that you understand the philosophy, put it into practice:</p>
-
+    <h2>Next steps</h2>
     <layout-grid data-layout-min="m" data-layout-gap="m">
       <a href="/docs/quick-start/" class="section-card">
         <h3>Quick Start</h3>
@@ -337,13 +206,13 @@ background: var(--white);</code-block>
         <h3>Tutorial</h3>
         <p>Build a complete page step by step.</p>
       </a>
-      <a href="/docs/accessibility/" class="section-card">
-        <h3>Accessibility</h3>
-        <p>Learn how Vanilla Breeze supports accessibility.</p>
+      <a href="/docs/architecture/architecture-decisions/" class="section-card">
+        <h3>Architecture Decisions</h3>
+        <p>Why each choice was made and what it costs.</p>
       </a>
       <a href="/docs/elements/" class="section-card">
         <h3>Elements</h3>
-        <p>Explore all available components.</p>
+        <p>Every element and component in the library.</p>
       </a>
     </layout-grid>
   </section>
