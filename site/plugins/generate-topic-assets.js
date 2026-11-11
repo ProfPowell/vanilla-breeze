@@ -19,7 +19,7 @@ import { writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const SORT_SCRIPT = `(function enhanceTopicSort() {
+export const SORT_SCRIPT = `(function enhanceTopicSort() {
   var controls = document.querySelector('[data-sort-controls]');
   var list = document.querySelector('ul[data-topic-index]');
   if (!controls || !list) return;
@@ -59,7 +59,7 @@ const SORT_SCRIPT = `(function enhanceTopicSort() {
     alpha: 'Sorted alphabetically.',
     count: 'Sorted by most articles.',
     views: 'Sorted by most read.',
-    updated: 'Sorted by recently updated.',
+    updated: 'Sorted by latest update.',
     created: 'Sorted by oldest first.'
   };
 
@@ -83,94 +83,216 @@ const SORT_SCRIPT = `(function enhanceTopicSort() {
 })();
 `;
 
-const TOPIC_INDEX_CSS = `/* Topic index — sort controls + topic list. Selectors target data-* and
-   native elements only; no class names. Loaded from /css/topic-index.css. */
+export const TOPIC_INDEX_CSS = `/* Topic index — sort controls + topic list. Selectors target data-* and
+   native elements only; no class names. Loaded from /css/topic-index.css.
+   Colours come from the semantic tokens, so every theme and both schemes
+   apply (the pressed sort button is the interactive colour, not the accent). */
 
+/* Sort: a label and one joined row of toggle buttons */
 [data-sort-controls] {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
   align-items: center;
+  gap: var(--size-2xs) var(--size-s);
   border: 0;
   padding: 0;
-  margin-block-end: 1rem;
+  margin: 0;
+  min-inline-size: 0;
 }
 
+/* Floated, the legend stops being the fieldset's caption box and lines up
+   as the first item of the row. */
 [data-sort-controls] legend {
-  font-weight: 600;
-  margin-inline-end: 0.5rem;
+  float: inline-start;
+  padding: 0;
+  margin: 0;
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--color-text-muted);
 }
 
 [data-sort-controls] button {
   font: inherit;
-  background: var(--color-surface, #fff);
-  color: inherit;
-  border: 1px solid var(--color-border, #d0d7de);
-  border-radius: var(--radius-s, 0.25rem);
-  padding: 0.35rem 0.75rem;
+  font-size: var(--font-size-s);
+  line-height: 1.2;
+  min-block-size: 2rem;
+  padding: var(--size-2xs) var(--size-s);
+  margin: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: 0;
+  box-shadow: none;
   cursor: pointer;
 }
 
-[data-sort-controls] button[aria-pressed="true"] {
-  background: var(--color-accent, #0969da);
-  color: var(--color-on-accent, #fff);
-  border-color: var(--color-accent, #0969da);
+/* Joined: shared edges collapse, the two ends are rounded */
+[data-sort-options] {
+  display: inline-flex;
+  flex-wrap: wrap;
+  row-gap: var(--size-2xs);
+}
+
+[data-sort-controls] button + button {
+  margin-inline-start: calc(var(--border-width-thin, 1px) * -1);
+}
+
+[data-sort-controls] button:first-of-type {
+  border-start-start-radius: var(--radius-m);
+  border-end-start-radius: var(--radius-m);
+}
+
+[data-sort-controls] button:not([hidden]):last-of-type {
+  border-start-end-radius: var(--radius-m);
+  border-end-end-radius: var(--radius-m);
 }
 
 [data-sort-controls] button:hover:not([aria-pressed="true"]) {
-  background: var(--color-surface-hover, #f6f8fa);
+  background: color-mix(in oklch, currentColor 10%, transparent);
+  color: var(--color-text);
 }
 
+[data-sort-controls] button[aria-pressed="true"] {
+  position: relative;
+  background: color-mix(in oklch, var(--color-interactive) 16%, transparent);
+  color: var(--color-text);
+  border-color: var(--color-interactive);
+  font-weight: var(--font-weight-medium, 500);
+}
+
+[data-sort-controls] button:focus-visible {
+  position: relative;
+  outline: var(--border-width-medium, 2px) solid var(--color-interactive);
+  outline-offset: 2px;
+}
+
+/* The list is one grid, so name, summary, count and date line up in columns
+   down the page; each row is a single link. */
 ul[data-topic-index] {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 0.25rem;
+  grid-template-columns: minmax(8rem, max-content) minmax(0, 1fr) max-content max-content;
+  column-gap: var(--size-l);
+  border-block-start: var(--border-width-thin, 1px) solid var(--color-border);
+}
+
+ul[data-topic-index] > li,
+ul[data-topic-index] > li > a {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  margin: 0;
 }
 
 ul[data-topic-index] > li {
-  border-block-end: 1px solid var(--color-border-subtle, #eaeef2);
+  border-block-end: var(--border-width-thin, 1px) solid var(--color-border);
 }
 
 ul[data-topic-index] > li > a {
-  display: flex;
-  flex-wrap: wrap;
   align-items: baseline;
-  gap: 1rem;
-  justify-content: space-between;
-  padding: 0.6rem 0.25rem;
+  padding: var(--size-s) var(--size-xs);
   text-decoration: none;
   color: inherit;
 }
 
 ul[data-topic-index] > li > a:hover {
-  background: var(--color-surface-hover, #f6f8fa);
+  background: color-mix(in oklch, currentColor 6%, transparent);
+}
+
+ul[data-topic-index] > li > a:hover [data-topic-label] {
+  color: var(--color-interactive);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 [data-topic-label] {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold, 600);
 }
 
-[data-topic-meta] {
-  display: inline-flex;
-  gap: 0.75rem;
-  font-size: 0.875rem;
-  color: var(--color-text-subtle, #57606a);
+/* What the topic means: one line, trimmed (the topic page has it in full) */
+[data-topic-about] {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+}
+
+[data-topic-count],
+[data-topic-updated] {
+  font-size: var(--font-size-s);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+[data-topic-count] {
+  text-align: end;
+}
+
+/* Narrow: name with its count and date on one line, the summary beneath */
+@media (width < 48rem) {
+  ul[data-topic-index] {
+    grid-template-columns: minmax(0, 1fr) max-content max-content;
+    column-gap: var(--size-s);
+  }
+
+  [data-topic-about] {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+}
+
+@media (width < 30rem) {
+  ul[data-topic-index] {
+    grid-template-columns: minmax(0, 1fr) max-content;
+  }
+
+  [data-topic-updated] {
+    display: none;
+  }
 }
 
 [data-topic-as-of] {
-  font-size: 0.875rem;
-  color: var(--color-text-subtle, #57606a);
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
   font-style: italic;
-  margin-block-end: 0.5rem;
+  margin: 0;
 }
 
 /* Topic detail page — relations and article list */
 
 [data-topic-relations] p {
-  font-size: 0.95rem;
-  color: var(--color-text-subtle, #57606a);
+  margin: 0;
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+}
+
+/* The relations sit in a <nav>, whose links are block items with padding by
+   default; here they are words in a sentence. */
+[data-topic-relations] a {
+  display: inline;
+  padding: 0;
+  color: var(--color-interactive);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+[data-topic-relations] a:hover {
+  background: none;
+  color: var(--color-interactive-hover, var(--color-interactive));
+}
+
+section:has(> [data-topic-content]) > h2 {
+  margin-block: 0 var(--size-m);
+  font-size: var(--font-size-xl);
 }
 
 [data-topic-content] {
@@ -182,13 +304,15 @@ ul[data-topic-index] > li > a:hover {
 }
 
 [data-topic-content] article > h3 {
-  margin-block: 0 0.25rem;
+  margin-block: 0 var(--size-3xs);
+  font-size: var(--font-size-l);
+  line-height: 1.3;
 }
 
 [data-topic-content] article > time {
   display: block;
   font-size: 0.875rem;
-  color: var(--color-text-subtle, #57606a);
+  color: var(--color-text-muted);
   margin-block-end: 0.25rem;
 }
 
@@ -201,7 +325,7 @@ ul[data-topic-index] > li > a:hover {
 footer[data-article-tags] {
   margin-block-start: 1.5rem;
   padding-block-start: 1rem;
-  border-block-start: 1px solid var(--color-border-subtle, #eaeef2);
+  border-block-start: 1px solid var(--color-border);
 }
 
 /* Layout comes from data-layout="cluster" on the <ul>, which also resets
@@ -215,7 +339,7 @@ footer[data-article-tags] ul {
 footer[data-article-tags] li > a {
   display: inline-block;
   padding: 0.2rem 0.6rem;
-  border: 1px solid var(--color-border, #d0d7de);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-s, 0.25rem);
   font-size: 0.875rem;
   text-decoration: none;
@@ -223,7 +347,7 @@ footer[data-article-tags] li > a {
 }
 
 footer[data-article-tags] li > a:hover {
-  background: var(--color-surface-hover, #f6f8fa);
+  background: color-mix(in oklch, currentColor 8%, transparent);
 }
 `;
 

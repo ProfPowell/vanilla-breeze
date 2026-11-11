@@ -198,7 +198,7 @@ function renderTopicIndexBody(index, conceptById) {
     const updatedHuman = updatedAttr ? fmtDateShort(updatedAttr) : '';
     const updatedTime = updatedHuman
       ? `<time data-topic-updated datetime="${escHtml(updatedAttr)}">Updated ${escHtml(updatedHuman)}</time>`
-      : '';
+      : '<span data-topic-updated></span>';
     return `        <li data-concept="${escHtml(t.id)}"
             data-label="${escHtml(t.label)}"
             data-count="${t.contentCount}"
@@ -208,10 +208,9 @@ function renderTopicIndexBody(index, conceptById) {
             data-group="${escHtml(t.group)}">
           <a href="${escHtml(t.href)}" data-concept="${escHtml(t.id)}">
             <span data-topic-label>${escHtml(t.label)}</span>
-            <span data-topic-meta>
-              <span data-topic-count>${t.contentCount} ${t.contentCount === 1 ? 'article' : 'articles'}</span>
-              ${updatedTime}
-            </span>
+            <span data-topic-about>${escHtml(t.definition)}</span>
+            <span data-topic-count>${t.contentCount} ${t.contentCount === 1 ? 'article' : 'articles'}</span>
+            ${updatedTime}
           </a>
         </li>`;
   }).join('\n');
@@ -251,15 +250,17 @@ ${ldJson}
 
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
   <h1>Topics</h1>
-  <p class="lead">Every concept the documentation covers, with article counts and recency. Sort by name, popularity, or date.</p>
+  <p class="lead">Every concept the documentation covers: what it means, how many articles discuss it and when they last changed.</p>
 
   <fieldset data-sort-controls hidden>
     <legend>Sort by</legend>
-    <button type="button" data-sort="alpha" aria-pressed="true">A–Z</button>
-    <button type="button" data-sort="count" aria-pressed="false">Most written</button>
-    <button type="button" data-sort="views" aria-pressed="false">Most read</button>
-    <button type="button" data-sort="updated" aria-pressed="false">Recently updated</button>
-    <button type="button" data-sort="created" aria-pressed="false">Oldest first</button>
+    <span data-sort-options>
+      <button type="button" data-sort="alpha" aria-pressed="true">Name</button>
+      <button type="button" data-sort="count" aria-pressed="false">Most articles</button>
+      <button type="button" data-sort="views" aria-pressed="false">Most read</button>
+      <button type="button" data-sort="updated" aria-pressed="false">Latest</button>
+      <button type="button" data-sort="created" aria-pressed="false">Oldest</button>
+    </span>
   </fieldset>
 
   <p aria-live="polite" data-sort-status class="visually-hidden">
@@ -287,6 +288,18 @@ function conceptRef(id, conceptById, hasPage, attrs) {
     : `<span data-concept="${escHtml(id)}">${label}</span>`;
 }
 
+/* Page descriptions are frontmatter strings that already carry entities
+   (&lt;dfn&gt;), because Cook prints them unescaped; decode before escaping
+   so they are not escaped twice. */
+function decodeEntities(text) {
+  return String(text)
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;/g, "'")
+    .replace(/&amp;/g, '&');
+}
+
 function renderTopicDetailBody(topic, conceptById, hasPage) {
   const articleListItems = topic.articles.map((a) => {
     const dateAttr = a.date || '';
@@ -294,7 +307,7 @@ function renderTopicDetailBody(topic, conceptById, hasPage) {
     const time = dateHuman
       ? `<time datetime="${escHtml(dateAttr)}">${escHtml(dateHuman)}</time>`
       : '';
-    const description = a.description ? `<p>${escHtml(a.description)}</p>` : '';
+    const description = a.description ? `<p>${escHtml(decodeEntities(a.description))}</p>` : '';
     return `      <li>
         <article>
           <h3><a href="${escHtml(a.url)}">${escHtml(a.title || a.url)}</a></h3>
@@ -393,7 +406,7 @@ function indexFrontmatter(label) {
   return `---
 layout: docs
 title: "Topics"
-description: "Every concept the Vanilla Breeze documentation covers, with article counts and recency. Sort by name, popularity, or date."
+description: "Every concept the Vanilla Breeze documentation covers: what it means, how many articles discuss it and when they last changed."
 currentSection: explore
 currentPath: /topics/
 author: "Thomas A. Powell"
