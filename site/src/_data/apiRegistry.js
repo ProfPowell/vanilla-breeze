@@ -7335,7 +7335,7 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Tile URL template overriding provider: {z} {x} {y}, {s} (a/b/c subdomain rotation) and {r} (\"@2x\" on high-density screens). Set attribution for the credit. See /docs/concepts/service-facade/."
+        "description": "Tile URL template overriding provider: {z} {x} {y}, {s} (a/b/c subdomain rotation) and {r} (\"@2x\" on high-density screens). Set attribution for the credit. See /docs/extensibility/service-facade/."
       },
       {
         "name": "attribution",

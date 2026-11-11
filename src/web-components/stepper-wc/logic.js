@@ -234,7 +234,7 @@ class StepperWc extends VBElement {
       // Logged once per page, not on every upgrade / reconnect.
       if (numericHintLogged) return;
       numericHintLogged = true;
-      console.info('[stepper-wc] No mode attribute set. Plain numeric stepping is better served by `<input type="number" data-stepper>`. See /docs/concepts/numeric-inputs/');
+      console.info('[stepper-wc] No mode attribute set. Plain numeric stepping is better served by `<input type="number" data-stepper>`. See /docs/interaction/numeric-inputs/');
     }
   }
 

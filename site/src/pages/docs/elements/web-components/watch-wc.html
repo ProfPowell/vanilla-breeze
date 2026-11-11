@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p><code>&lt;watch-wc&gt;</code> wraps the <a href="/docs/attributes/data-watch-page/"><code>data-watch-page</code></a> button into a one-tag component. Drop it anywhere on a page and a user can toggle whether that page is in their watch list. State persists in <a href="/docs/concepts/architecture-decisions/">VBStore</a> under the <code>watches</code> namespace; the bell&rsquo;s <a href="/docs/elements/web-components/notification-wc/">Watching tab</a> surfaces the list.</p>
+  <p><code>&lt;watch-wc&gt;</code> wraps the <a href="/docs/attributes/data-watch-page/"><code>data-watch-page</code></a> button into a one-tag component. Drop it anywhere on a page and a user can toggle whether that page is in their watch list. State persists in <a href="/docs/architecture/architecture-decisions/">VBStore</a> under the <code>watches</code> namespace; the bell&rsquo;s <a href="/docs/elements/web-components/notification-wc/">Watching tab</a> surfaces the list.</p>
   <p>The component is a thin author convenience &mdash; the watch state machine still lives in <code>src/utils/page-watch-init.js</code>. The wrapper renders a <code>&lt;button data-watch-page aria-pressed&gt;</code> with the right markup, label, and icon for the chosen variant, then repaints its label and icon whenever <code>aria-pressed</code> changes. The state script keeps <code>aria-pressed</code> in step with the store: on load (so an already-watched page shows &ldquo;Watching&rdquo; straight away), on click, and when the page is watched or unwatched anywhere else on the page.</p>
 </section>
 
@@ -51,7 +51,7 @@ crumbLabel: Web Components
     <tbody>
       <tr><td><code>variant</code></td><td><code>icon</code> (default), <code>compact</code>, <code>button</code></td><td>Visual preset. <code>icon</code> is a 2.25-rem ghost icon button, <code>compact</code> is small icon plus text, <code>button</code> is a full-size ghost button.</td></tr>
       <tr><td><code>label</code></td><td>string</td><td>Constant visible text for the <code>compact</code> and <code>button</code> variants, used in both states. Without it the text toggles between <code>data-label-watch</code> and <code>data-label-watching</code>.</td></tr>
-      <tr><td><code>server-sync</code></td><td>boolean</td><td>Turns on server-side sync via <a href="/docs/concepts/service-contracts/"><code>VBService('notify')</code></a> for the <strong>whole page</strong>, not just this instance: it sets the page-global <code>window.vbPageWatch.serverSync</code> flag, which every watch button and the notification panel&rsquo;s unwatch then use. Equivalent to <code>&lt;meta name="vb-page-watch-server" content="true"&gt;</code>.</td></tr>
+      <tr><td><code>server-sync</code></td><td>boolean</td><td>Turns on server-side sync via <a href="/docs/extensibility/service-contracts/"><code>VBService('notify')</code></a> for the <strong>whole page</strong>, not just this instance: it sets the page-global <code>window.vbPageWatch.serverSync</code> flag, which every watch button and the notification panel&rsquo;s unwatch then use. Equivalent to <code>&lt;meta name="vb-page-watch-server" content="true"&gt;</code>.</td></tr>
       <tr><td><code>data-label-watch</code></td><td>string</td><td>Text of the <code>compact</code> / <code>button</code> variants while the page is not watched. Default &ldquo;Watch for updates&rdquo;.</td></tr>
       <tr><td><code>data-label-watching</code></td><td>string</td><td>Text of the <code>compact</code> / <code>button</code> variants while the page is watched. Default &ldquo;Watching&rdquo;.</td></tr>
       <tr><td><code>data-label-action</code></td><td>string</td><td>Icon variant: accessible name (<code>aria-label</code>) and tooltip while not watched. Default &ldquo;Watch this page for updates&rdquo;.</td></tr>
@@ -102,6 +102,6 @@ crumbLabel: Web Components
   <ul>
     <li><a href="/docs/attributes/data-watch-page/"><code>data-watch-page</code></a> &mdash; the underlying attribute pattern this component wraps</li>
     <li><a href="/docs/elements/web-components/notification-wc/"><code>&lt;notification-wc&gt;</code></a> &mdash; surfaces the watch list in its Watching tab, and a &ldquo;content changed&rdquo; notice when a watched page changed since your last visit</li>
-    <li><a href="/docs/concepts/service-contracts/">Service contracts</a> &mdash; the <code>/go/notify/subscribe</code> endpoint server-sync uses</li>
+    <li><a href="/docs/extensibility/service-contracts/">Service contracts</a> &mdash; the <code>/go/notify/subscribe</code> endpoint server-sync uses</li>
   </ul>
 </section>

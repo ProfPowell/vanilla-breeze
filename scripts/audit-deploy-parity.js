@@ -45,7 +45,7 @@ const ASSETS = [
   '/src/web-components/watch-wc/logic.js',
   '/src/custom-elements/layout-sidebar/styles.css',
   '/docs/typography/',
-  '/docs/concepts/feel/',
+  '/docs/interaction/feel/',
   '/docs/alpenglow/',
   '/sitemap.xml',
 ];

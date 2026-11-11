@@ -6,7 +6,7 @@
  *
  * Schema (one record per page):
  *   {
- *     url: "/docs/concepts/document-provenance/",
+ *     url: "/docs/content-management/document-provenance/",
  *     title: "Document Provenance",
  *     description: "…",
  *     author: "Thomas A. Powell",

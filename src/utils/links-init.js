@@ -17,7 +17,7 @@
  * also gain noreferrer. Opt-in because some flows (referral analytics,
  * affiliate tracking) legitimately depend on Referer.
  *
- * See /docs/concepts/link-relations/ for vocabulary + philosophy.
+ * See /docs/content-management/link-relations/ for vocabulary + philosophy.
  */
 
 const SAFE_OPENER_TOKENS = new Set(['opener', 'noopener', 'noreferrer']);

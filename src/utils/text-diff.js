@@ -5,7 +5,7 @@
  * can compose runtime text diffs into a `<change-set>` without going
  * through the version-switcher.
  *
- * See `/docs/concepts/diff-display/` for the recipe that explains when
+ * See `/docs/content-management/diff-display/` for the recipe that explains when
  * to reach for this helper vs the existing diff-shaped primitives
  * (`<change-set>` for authored markup, `<compare-surface>` for image
  * before/after, `<review-surface>` for editorial review,

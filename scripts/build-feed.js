@@ -10,7 +10,7 @@
  *   - bullet
  *   - bullet
  *
- * Output (per /docs/concepts/service-contracts/ §/go/feed):
+ * Output (per /docs/extensibility/service-contracts/ §/go/feed):
  *   {
  *     items: [
  *       { id, type: "update", title, body, url, date }

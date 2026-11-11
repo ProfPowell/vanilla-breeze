@@ -1475,7 +1475,7 @@ Your privacy policy should describe the analytics system in plain language. Mini
 1. Publish `src/utils/analytics-init.js` with the corrected Tier 1 map (verified live event names above).
 2. **Instrument `<theme-composer>` to dispatch `theme-composer:change`** — blocker for `theme.compose` tracking.
 3. Wire Tier 2 medium-value events, including design-system tooling events.
-4. Document the normalised event catalog in VB docs (`site/src/pages/docs/analytics/`).
+4. Document the normalised event catalog in VB docs (`site/src/pages/docs/extensibility/analytics/`).
 5. Add dedupe guidance for combined `ping` + JS click tracking.
 
 ### Phase 3 — Optional Modules

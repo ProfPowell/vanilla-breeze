@@ -1,7 +1,7 @@
 # Express middleware — VB /go/* reference implementation
 
 Single Express app that mounts every endpoint from
-[`/docs/concepts/service-contracts/`](../../../site/src/pages/docs/concepts/service-contracts.html).
+[`/docs/extensibility/service-contracts/`](../../../site/src/pages/docs/extensibility/service-contracts.html).
 One pluggable storage adapter (in-memory by default), Nodemailer for
 email, zero hidden dependencies.
 

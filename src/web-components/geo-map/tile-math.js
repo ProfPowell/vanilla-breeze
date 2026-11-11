@@ -125,7 +125,7 @@ export function fillTemplate(template, z, x, y, dpr) {
  * @param {number} y - Tile Y coordinate
  * @param {string} [tileUrlTemplate] - Optional URL template. When set it
  *   wins over `provider` — used by the first-party tile proxy pattern
- *   (see /docs/concepts/service-facade/).
+ *   (see /docs/extensibility/service-facade/).
  * @returns {string} Tile image URL
  */
 export function getTileUrl(provider, z, x, y, tileUrlTemplate) {

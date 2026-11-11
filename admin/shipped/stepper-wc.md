@@ -165,7 +165,7 @@ Plus:
 ```
 site/src/pages/docs/elements/custom-elements/stepper-wc/index.html
   — usage docs with the 4 modes
-site/src/pages/docs/concepts/numeric-inputs/index.html  (NEW)
+site/src/pages/docs/interaction/numeric-inputs/index.html  (NEW)
   — decision guide: input type=number → data-stepper → stepper-wc
 ```
 
@@ -173,7 +173,7 @@ site/src/pages/docs/concepts/numeric-inputs/index.html  (NEW)
 
 Both doc pages must clearly point authors at the right tier. **No copying spec content between them — link, don't duplicate.**
 
-1. **`/docs/concepts/numeric-inputs/`** (new, the canonical decision guide)
+1. **`/docs/interaction/numeric-inputs/`** (new, the canonical decision guide)
    - Lead with a decision table (the one at the top of this plan).
    - "When to use `<input type="number">`" — link to MDN.
    - "When to use `data-stepper`" — link to the attribute reference in `admin/syntax.md` and the attribute doc page once one exists.
@@ -203,7 +203,7 @@ Both doc pages must clearly point authors at the right tier. **No copying spec c
 - [ ] Register in `src/web-components/index.js` and `index.css`
 - [ ] Demo file for new-component scaffold (4 demos: one per mode)
 - [ ] Component doc page (`site/src/pages/docs/elements/custom-elements/stepper-wc/index.html`)
-- [ ] **Decision-guide doc page** (`site/src/pages/docs/concepts/numeric-inputs/index.html`) — cross-references `<input type="number">`, `data-stepper`, `<stepper-wc>`
+- [ ] **Decision-guide doc page** (`site/src/pages/docs/interaction/numeric-inputs/index.html`) — cross-references `<input type="number">`, `data-stepper`, `<stepper-wc>`
 - [ ] Update `admin/syntax.md` `data-stepper` row to point at the decision guide
 - [ ] Update `admin/future-wc.md` Interaction table row → Shipped
 - [ ] Add component to `webComponents.js`, `elements.js`, and `navigation.json` under Interaction

@@ -4,7 +4,7 @@
 
 import { randomUUID } from 'node:crypto';
 
-/** Standard error envelope per /docs/concepts/service-contracts/. */
+/** Standard error envelope per /docs/extensibility/service-contracts/. */
 export function err(res, status, code, message) {
   res.status(status).json({ error: code, message, status });
 }

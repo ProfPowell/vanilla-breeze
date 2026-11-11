@@ -301,7 +301,7 @@ export class RenderDynamicPages {
       );
     }
 
-    if (path.includes('docs/concepts/resilience-matrix')) {
+    if (path.includes('docs/architecture/resilience-matrix')) {
       const rendered = renderResilienceSections(this.data.resilience);
       this.file.src = this.file.src
         .replace(/<section>\s*<h2>Component Matrix<\/h2>[\s\S]*?<\/section>/, rendered.matrix)

@@ -1,7 +1,7 @@
 # /go/* dev stub
 
 Single-file Node.js server that implements every endpoint from
-[`/docs/concepts/service-contracts/`](../../../site/src/pages/docs/concepts/service-contracts.html).
+[`/docs/extensibility/service-contracts/`](../../../site/src/pages/docs/extensibility/service-contracts.html).
 In-memory storage, no dependencies, seeded with sample data so
 `<notification-wc>` and friends have something to render the moment
 you point them at it.
@@ -46,7 +46,7 @@ Or hand the URL directly to a component:
 
 ## Endpoints
 
-Mirror [`/docs/concepts/service-contracts/`](../../../site/src/pages/docs/concepts/service-contracts.html)
+Mirror [`/docs/extensibility/service-contracts/`](../../../site/src/pages/docs/extensibility/service-contracts.html)
 verbatim. Quick curl tour:
 
 ```bash

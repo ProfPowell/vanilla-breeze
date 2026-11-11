@@ -4,7 +4,7 @@
  * Add `data-vb-email-form="<template-name>"` to a form to intercept its
  * submit and POST `{ to, template, data }` to /go/email via VBService.
  * The template name maps to the renderer registered server-side
- * (see /docs/concepts/service-contracts/ §/go/email §Templates).
+ * (see /docs/extensibility/service-contracts/ §/go/email §Templates).
  *
  * Recipient address is read from `data-vb-email-to` on the form.
  *

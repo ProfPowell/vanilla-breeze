@@ -42,7 +42,12 @@ const VOCAB_PATH = resolve(__dirname, '../src/_data/vocabulary.json');
 
 // Only target prose pages. Index pages, layouts, fragments — skip.
 const PROSE_PATH_HINTS = [
-  '/docs/concepts/',
+  '/docs/architecture/',
+  '/docs/content-management/',
+  '/docs/extensibility/',
+  '/docs/interaction/',
+  '/docs/process/',
+  '/docs/shadows/',
   '/docs/elements/',
   '/docs/attributes/',
   '/docs/patterns/',

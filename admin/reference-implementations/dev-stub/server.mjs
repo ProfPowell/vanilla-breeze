@@ -2,7 +2,7 @@
 /**
  * VB /go/* dev stub — single-file Node.js server with in-memory storage.
  *
- * Implements every endpoint from /docs/concepts/service-contracts/ so you
+ * Implements every endpoint from /docs/extensibility/service-contracts/ so you
  * can develop notification-wc, page-watch, contact forms, newsletter UI,
  * etc. against a real responding backend without provisioning anything.
  *

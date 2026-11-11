@@ -26,7 +26,7 @@ rollout already solved elsewhere:
    `nav.items = [...]` instead of templating, escaping, and injecting
    markup themselves.
 
-Per the dual-mode contract documented at `/docs/concepts/data-api/`,
+Per the dual-mode contract documented at `/docs/architecture/data-api/`,
 nav-bar follows the standard shape: idempotent `.items` and `.current`
 setters, `:upgraded` event, source-tagged change events.
 

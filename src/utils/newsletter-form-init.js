@@ -30,7 +30,7 @@
  *   vb-newsletter-form:error           { mode, error, status?, body? }
  *   vb-newsletter-form:preferences     { email, subscriptions, available }
  *
- * Spec: /docs/concepts/service-contracts/ §/go/newsletter
+ * Spec: /docs/extensibility/service-contracts/ §/go/newsletter
  */
 
 import { VBService, VBServiceError } from '../lib/vb-service.js';

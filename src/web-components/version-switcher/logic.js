@@ -40,7 +40,7 @@ import { isDangerousUrl, sanitizeToFragment } from '../../lib/sanitize-html.js';
 // Compose pop-over for the picker surface (mirrors reaction-bar / selection-menu).
 import '../pop-over/logic.js';
 // The diff action composes <change-set> as the diff renderer, fed by the
-// shared text-diff utility (see /docs/concepts/diff-display/).
+// shared text-diff utility (see /docs/content-management/diff-display/).
 import '../change-set/logic.js';
 import { diffLines, renderDiffFragment } from '../../utils/text-diff.js';
 

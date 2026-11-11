@@ -47,7 +47,7 @@ That means the best path is:
 | --- | --- | --- |
 | Unified effect registration and DOM observation | [`src/lib/vb.js`](../../src/lib/vb.js) | Good foundation for opt-in enhancement hooks |
 | Built-in `scroll`, `hover`, `click`, and `time` triggers | [`src/lib/vb-triggers.js`](../../src/lib/vb-triggers.js) | Scroll entrance effects already exist |
-| Effect compositing and trigger independence | [`site/src/pages/docs/concepts/effect-compositing.njk`](../../site/src/pages/docs/concepts/effect-compositing.njk) | Useful for step reveals inside staged sections |
+| Effect compositing and trigger independence | [`site/src/pages/docs/architecture/effect-compositing.njk`](../../site/src/pages/docs/architecture/effect-compositing.njk) | Useful for step reveals inside staged sections |
 | Semantic layout attributes | [`src/custom-elements/layout-attributes.css`](../../src/custom-elements/layout-attributes.css) | Lets us build story sections without wrapper soup |
 | CSS scroll-linked sticky header shrink | [`src/custom-elements/layout-attributes.css`](../../src/custom-elements/layout-attributes.css), [`demos/examples/demos/scroll-shrink-header.html`](../../demos/examples/demos/scroll-shrink-header.html) | Proof that VB can ship scroll-driven enhancement cleanly |
 | `@property` token registration | [`src/main.css`](../../src/main.css) | Useful if we decide to animate custom properties later |
@@ -477,7 +477,7 @@ I would not add:
 - [`src/lib/vb-triggers.js`](../../src/lib/vb-triggers.js)
 - [`src/custom-elements/layout-attributes.css`](../../src/custom-elements/layout-attributes.css)
 - [`src/main.css`](../../src/main.css)
-- [`site/src/pages/docs/concepts/effect-compositing.njk`](../../site/src/pages/docs/concepts/effect-compositing.njk)
+- [`site/src/pages/docs/architecture/effect-compositing.njk`](../../site/src/pages/docs/architecture/effect-compositing.njk)
 - [`site/src/pages/docs/attributes/data-effect.njk`](../../site/src/pages/docs/attributes/data-effect.njk)
 - [`site/src/pages/docs/attributes/data-stagger.njk`](../../site/src/pages/docs/attributes/data-stagger.njk)
 - [`demos/examples/demos/scroll-shrink-header.html`](../../demos/examples/demos/scroll-shrink-header.html)

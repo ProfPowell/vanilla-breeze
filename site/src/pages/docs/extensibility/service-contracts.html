@@ -2,25 +2,25 @@
 layout: guide
 title: "Service Contracts"
 description: "JSON request/response schemas for every /go/ endpoint — what backend implementations must fulfill and what VBService consumers can rely on."
-guideGroup: Concepts
-currentPath: /docs/concepts/service-contracts/
+guideGroup: Extensibility
+currentPath: /docs/extensibility/service-contracts/
 ---
 
 <template slot="breadcrumb">
 <nav class="breadcrumb" aria-label="Breadcrumb">
   <ol>
     <li><a href="/docs/">Docs</a></li>
-    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li>Extensibility</li>
     <li><span aria-current="page">Service Contracts</span></li>
   </ol>
 </nav>
 </template>
-<p class="lead">JSON request/response schemas for every <a href="/docs/concepts/go-convention/"><code>/go/</code></a> endpoint. VB ships the contracts and a VBService client; you ship a backend that fulfils them. Pick the worker, framework, or service of your choice.</p>
+<p class="lead">JSON request/response schemas for every <a href="/docs/extensibility/go-convention/"><code>/go/</code></a> endpoint. VB ships the contracts and a VBService client; you ship a backend that fulfils them. Pick the worker, framework, or service of your choice.</p>
 
 <section>
   <h2>Common conventions</h2>
   <ul>
-    <li><strong>Content type</strong> &mdash; all requests and responses are <code>application/json</code>. <a href="/docs/concepts/vb-service/"><code>VBService</code></a> sets the request <code>content-type</code> automatically and parses JSON responses.</li>
+    <li><strong>Content type</strong> &mdash; all requests and responses are <code>application/json</code>. <a href="/docs/extensibility/vb-service/"><code>VBService</code></a> sets the request <code>content-type</code> automatically and parses JSON responses.</li>
     <li><strong>Authentication</strong> &mdash; out of scope for the contract. Inject auth via <code>VB.service.configure({ headers: { Authorization: '…' } })</code> and validate server-side however you like.</li>
     <li><strong>HTTP status codes</strong> &mdash; standard. <code>200</code> on read success, <code>201</code> on create, <code>202</code> on async accept, <code>204</code> when there is no body, <code>4xx/5xx</code> on errors.</li>
     <li><strong>Pagination</strong> &mdash; query params <code>limit</code>, <code>since</code> where listed. Beyond v1, add cursor-based pagination as needed.</li>
@@ -29,7 +29,7 @@ currentPath: /docs/concepts/service-contracts/
 
 <section>
   <h2>Error response</h2>
-  <p>Every <code>/go/</code> endpoint uses a single error envelope on non-2xx responses. <a href="/docs/concepts/vb-service/">VBService</a> wraps this in a <code>VBServiceError</code> with <code>{ status, body, role, path }</code> for consistent client-side handling.</p>
+  <p>Every <code>/go/</code> endpoint uses a single error envelope on non-2xx responses. <a href="/docs/extensibility/vb-service/">VBService</a> wraps this in a <code>VBServiceError</code> with <code>{ status, body, role, path }</code> for consistent client-side handling.</p>
   <code-block language="json" label="Error response shape" data-escape>{
   "error": "not_found",
   "message": "Subscription sub_abc123 not found",
@@ -204,7 +204,7 @@ currentPath: /docs/concepts/service-contracts/
 <section>
   <h2>Related</h2>
   <layout-grid data-layout-min="m" data-layout-gap="m">
-    <a href="/docs/concepts/go-convention/" class="section-card">
+    <a href="/docs/extensibility/go-convention/" class="section-card">
       <h3>/go/ Convention</h3>
       <p>The URL namespace these contracts live under, plus the <code>VBService</code> client that calls them.</p>
     </a>

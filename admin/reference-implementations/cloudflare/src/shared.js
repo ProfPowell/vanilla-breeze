@@ -19,7 +19,7 @@ export function json(body, status = 200, extraHeaders = {}) {
   });
 }
 
-/** Standard error envelope per /docs/concepts/service-contracts/. */
+/** Standard error envelope per /docs/extensibility/service-contracts/. */
 export function err(status, code, message) {
   return json({ error: code, message, status }, status);
 }

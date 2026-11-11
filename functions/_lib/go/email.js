@@ -8,7 +8,7 @@
  * Add Postmark, Sendgrid, SES, etc. by following the Resend block as a
  * template. The `template` field is just a string the backend interprets;
  * we ship a tiny built-in renderer with the four templates VB names in
- * /docs/concepts/service-contracts/.
+ * /docs/extensibility/service-contracts/.
  */
 
 import { json, err, readJson, newId } from './shared.js';

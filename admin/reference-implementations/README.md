@@ -1,6 +1,6 @@
 # Reference implementations
 
-Starter backends for the [`/go/*` service contracts](../../site/src/pages/docs/concepts/service-contracts.html).
+Starter backends for the [`/go/*` service contracts](../../site/src/pages/docs/extensibility/service-contracts.html).
 Each lives in its own subdirectory and follows the JSON shapes defined
 in the contract docs verbatim.
 

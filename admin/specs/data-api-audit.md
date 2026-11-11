@@ -2,7 +2,7 @@
 
 Captures the JS-first / HTML-first dual-mode contract status for every
 component in `src/web-components/` as of Phase 6 completion. Source of
-truth: `/docs/concepts/data-api/`.
+truth: `/docs/architecture/data-api/`.
 
 ## Legend
 
@@ -139,7 +139,7 @@ a consumer wants explicit exposure:
 ## Process for adding new dual-mode components
 
 1. Pick the shape from the four canonical patterns documented in
-   `/docs/concepts/data-api/`:
+   `/docs/architecture/data-api/`:
    - **Record** — one logical thing, `.data` setter via `VBRecord` mixin.
    - **Collection** — keyed list, `.items` setter via `VBCollection` mixin
      (or `diffByKey` directly for components that don't fit the mixin shape).

@@ -1,7 +1,7 @@
 # Cloudflare Worker — VB /go/* reference implementation
 
 Single-file Worker that implements every endpoint from
-[`/docs/concepts/service-contracts/`](../../../site/src/pages/docs/concepts/service-contracts.html)
+[`/docs/extensibility/service-contracts/`](../../../site/src/pages/docs/extensibility/service-contracts.html)
 on top of one KV namespace. Deploy as-is, then iterate.
 
 This is **a starter kit**, not VB's own production deployment. The

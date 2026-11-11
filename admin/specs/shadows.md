@@ -1,6 +1,6 @@
 ---
 title: Shadows — vanilla-breeze Token + Effects Layer (as built)
-description: Why shadows are tokens, not a web component, and the elevation ramp + data-shadow effects that shipped. This records the as-built system; user-facing docs live at /docs/concepts/shadows/.
+description: Why shadows are tokens, not a web component, and the elevation ramp + data-shadow effects that shipped. This records the as-built system; user-facing docs live at /docs/shadows/.
 author: handoff for Claude Code
 date: 2026-05-30
 status: as-built
@@ -15,7 +15,7 @@ tags:
 
 This started as a design question — **should there be a `shadow-wc`?** No. Shadows have no runtime behaviour to encapsulate, so a web component adds lifecycle cost for zero payoff. They ship as a **token + utility layer** instead. That conclusion was already true of VB (shadows were tokens), so the build was a *trimmed* version of the original exploration. This document records what actually shipped and corrects the early draft's mismatches with the codebase.
 
-> 💡 **Canonical reference:** the user-facing docs are at [`/docs/concepts/shadows/`](../../site/src/pages/docs/concepts/shadows.html). This spec is the rationale + where-things-live record.
+> 💡 **Canonical reference:** the user-facing docs are at [`/docs/shadows/`](../../site/src/pages/docs/shadows.html). This spec is the rationale + where-things-live record.
 
 ## Table of contents
 
@@ -115,7 +115,7 @@ src/tokens/shadows.css                         # elevation ramp (tokens layer) �
 src/tokens/extensions/shadow-effects.css       # NEW — data-shadow rules (@layer bundle-effects)
 src/main.css, src/main-core.css                # @import shadow-effects.css at TOP LEVEL
 demos/examples/demos/shadows.html              # NEW — ramp + effects demo
-site/src/pages/docs/concepts/shadows.html      # NEW — concept doc (canonical user docs)
+site/src/pages/docs/shadows.html      # NEW — concept doc (canonical user docs)
 site/src/pages/docs/concepts/index.html        # + Shadows card
 ```
 
