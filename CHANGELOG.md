@@ -23,6 +23,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Docs site glossary-term preview** stayed where it opened while the page scrolled away under it. It now closes on scroll or resize, and a term whose entry is on the current page (the glossary's own Related links) jumps straight to it.
 - **page-tools: floating button collided with a fab-stack** — On narrow screens the collapsed toolbar's button took the bottom corner for itself and sat on top of a `<fab-stack>` there (the docs site's settings gear). When the page has a `<fab-stack>` the button now joins it as its last child and returns home when the toolbar expands; its panel opens just above the button wherever the stack puts it, positioned before it paints. In the stack the button takes its neighbours' size and look.
 - **drop-down: split-toggle hover hid the chevron on a filled item** — Hovering the chevron button of the current nav item painted a fixed light-grey square under a white chevron. The hover is now a tint of the chevron's own colour, so it shows on any fill.
 - **Glossary: a targeted term drew two overlapping boxes** — Arriving at a term by its anchor outlined the term and its definition separately, with different edges, so the outlines crossed. The term and definition now share one left edge and highlight as a single tinted block with an accent bar. Letter groups have space between them, the sticky letter heading sits below a sticky site header instead of under it, and definitions keep a readable measure.
