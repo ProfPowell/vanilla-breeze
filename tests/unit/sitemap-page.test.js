@@ -78,7 +78,7 @@ test('recently changed pages show their date; branches and sections summarise', 
 });
 
 test('frontmatter titles are unquoted and unescaped', () => {
-  const meta = (title) => readMeta(`---\ntitle: ${title}\n---\n`).title;
+  const meta = (title) => readMeta(`---\ntitle: ${title}\n---\n`)?.title;
   assert.equal(meta('"data-effect=\\"animate-image\\""'), 'data-effect="animate-image"');
   assert.equal(meta("'it''s'"), "it's");
   assert.equal(meta('Plain title'), 'Plain title');
