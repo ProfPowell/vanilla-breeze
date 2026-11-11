@@ -1,0 +1,148 @@
+---
+layout: guide
+title: "Typefaces"
+description: "Which fonts Vanilla Breeze uses and how to change them: system font stacks, the font slots, loading your own font, the font packs, and what themes do."
+guideGroup: Styling
+currentPath: /docs/typefaces/
+toc: true
+---
+
+<section id="overview">
+<h2>Overview</h2>
+<p>Vanilla Breeze loads no fonts by default. Text is set in the fonts already on the reader's device, so a page shows its text at once and downloads nothing extra. Every font is named by a token, so you change a typeface by setting a token and never by restyling elements.</p>
+<p>This page is about which typeface is used. How type is sized, spaced and refined is covered in <a href="/docs/typography/">Typography</a>.</p>
+</section>
+
+<section id="system-stacks">
+<h2>System font stacks</h2>
+<p>Three tokens hold the font families. Each is a stack: the browser uses the first font in the list that the device has.</p>
+<table>
+  <thead>
+    <tr><th>Token</th><th>Stack</th><th>Used by</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--font-sans</code></td><td><code>system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif</code></td><td>All text, through <code>&lt;body&gt;</code></td></tr>
+    <tr><td><code>--font-serif</code></td><td><code>Charter, "Bitstream Charter", "Sitka Text", Cambria, serif</code></td><td>Nothing by default. It is there for you and for themes.</td></tr>
+    <tr><td><code>--font-mono</code></td><td><code>ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace</code></td><td><a href="/docs/elements/native/code/"><code>&lt;code&gt;</code></a>, <a href="/docs/elements/native/pre/"><code>&lt;pre&gt;</code></a>, <a href="/docs/elements/native/kbd/"><code>&lt;kbd&gt;</code></a> and other technical text</td></tr>
+  </tbody>
+</table>
+<p>For scripts other than Latin there are separate stacks: <code>--font-cjk</code>, <code>--font-arabic</code>, <code>--font-hebrew</code>, <code>--font-thai</code> and <code>--font-devanagari</code>. They apply by language, so set <a href="/docs/attributes/lang/"><code>lang</code></a> correctly. See <a href="/docs/i18n/">i18n</a>.</p>
+
+<code-block language="css" label="A serif site in one declaration" data-escape>:root {
+  --font-sans: var(--font-serif);
+}</code-block>
+</section>
+
+<section id="slots">
+<h2>Font slots</h2>
+<p>Beyond the three families there are named slots for particular roles. One of them is read by the library. The rest are names for a theme, a font pack or your own CSS to use.</p>
+<table>
+  <thead>
+    <tr><th>Slot</th><th>Default</th><th>Read by</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--font-heading</code></td><td>Not set</td><td>Every heading, <code>h1</code> to <code>h6</code></td></tr>
+    <tr><td><code>--font-display</code></td><td><code>var(--font-serif)</code></td><td>Your CSS and themes, for hero text and large titles</td></tr>
+    <tr><td><code>--font-body</code></td><td><code>var(--font-sans)</code></td><td>Your CSS and themes</td></tr>
+    <tr><td><code>--font-code</code></td><td><code>var(--font-mono)</code></td><td>Your CSS and themes</td></tr>
+    <tr><td><code>--vb-font-editorial</code></td><td><code>var(--font-serif)</code></td><td>Your CSS and themes, for pull quotes and section openers</td></tr>
+    <tr><td><code>--vb-font-dramatic</code></td><td><code>var(--font-serif)</code></td><td>Your CSS and themes, for high-contrast display text</td></tr>
+  </tbody>
+</table>
+
+<h3 id="heading-font">A separate heading face</h3>
+<p>Set <code>--font-heading</code> and every <a href="/docs/elements/native/headings/">heading</a> uses it. Leave it unset and a heading keeps the font of the text around it, which is why a heading inside a serif article is serif without any extra rule.</p>
+
+<code-block language="css" label="Serif headings over sans text" data-escape>:root {
+  --font-heading: var(--font-serif);
+}</code-block>
+
+<p>An element with its own <code>data-theme</code> clears the slot, so a themed card inside a page does not pick up the page's heading face.</p>
+</section>
+
+<section id="custom-fonts">
+<h2>Using your own font</h2>
+<p>Declare the font, then put it at the front of a stack. Keep the system fonts after it as the fallback.</p>
+
+<code-block language="css" label="A self-hosted variable font" data-escape>@font-face {
+  font-family: "Literata";
+  src: url("/fonts/literata-variable.woff2") format("woff2");
+  font-weight: 200 900;
+  font-display: swap;
+}
+
+:root {
+  --font-serif: "Literata", Charter, Cambria, serif;
+  --font-heading: var(--font-serif);
+}</code-block>
+
+<ul>
+  <li><strong>Host the file yourself.</strong> A font served from your own site needs no third-party connection and is covered by your own caching.</li>
+  <li><strong>Prefer one variable font to several static files.</strong> One file covers every weight.</li>
+  <li><strong>Use <code>font-display: swap</code>.</strong> Text shows in the fallback font until the file arrives.</li>
+  <li><strong>Preload only the font used above the fold.</strong> See <a href="/docs/performance/">Performance</a>.</li>
+  <li><strong>A font with one face still gets bold and italic.</strong> The library lets the browser synthesize them for emphasis. See <a href="/docs/typography/#emphasis">Typography: Emphasis</a>.</li>
+</ul>
+
+<h3 id="font-size-adjust">Matching the fallback</h3>
+<p>Fonts differ in how tall their lowercase letters are, so the same <code>font-size</code> can look larger or smaller and headings can wrap differently. <code>--font-size-adjust</code> is applied to <code>&lt;body&gt;</code> and defaults to <code>none</code>. Set it to even out a font that runs large or small. The pixel and monospace themes use values between 0.45 and 0.50.</p>
+
+<code-block language="css" label="Normalizing x-height" data-escape>:root {
+  --font-size-adjust: 0.5;
+}</code-block>
+</section>
+
+<section id="packs">
+<h2>Font packs</h2>
+<p>Three packs ship self-hosted variable fonts and set the tokens for you. Each is one stylesheet.</p>
+<table>
+  <thead>
+    <tr><th>Pack</th><th>Fonts</th><th>Sets</th><th>Size</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><a href="/docs/packs/fonts-foundation/">Foundation</a></td><td>Inter, Literata, Recursive</td><td><code>--font-sans</code>, <code>--font-serif</code>, <code>--font-mono</code></td><td>About 660 KB</td></tr>
+    <tr><td><a href="/docs/packs/fonts-display/">Display</a></td><td>Fraunces, Cormorant, Bodoni Moda</td><td><code>--font-display</code>, <code>--vb-font-editorial</code>, <code>--vb-font-dramatic</code></td><td>About 430 KB</td></tr>
+    <tr><td><a href="/docs/packs/fonts-expressive/">Expressive</a></td><td>Nabla, Honk, Kablammo</td><td><code>--vb-font-nabla</code>, <code>--vb-font-honk</code>, <code>--vb-font-kablammo</code></td><td>About 610 KB</td></tr>
+  </tbody>
+</table>
+<p>The sizes are the total of the font files. A browser downloads a font file only when text on the page uses it.</p>
+
+<code-block language="html" label="Loading a pack" data-escape><link rel="stylesheet" href="/cdn/packs/fonts-foundation.theme.css"></code-block>
+
+<p>The Display pack does not change your headings by itself. Point the heading slot at it:</p>
+
+<code-block language="css" label="Fraunces headings from the Display pack" data-escape>:root {
+  --font-heading: var(--font-display);
+}</code-block>
+</section>
+
+<section id="themes">
+<h2>Themes</h2>
+<p>A <a href="/docs/themes/">theme</a> can set any of the tokens above. A theme's value wins over a font pack, because themes sit in a later cascade layer. So the Terminal theme keeps its own monospace face when the Foundation pack is loaded.</p>
+<p>Themes differ in how they treat typefaces:</p>
+<ul>
+  <li><strong>System fonts only.</strong> Many themes change color and shape and leave the fonts alone.</li>
+  <li><strong>A web font loaded by the theme.</strong> Some themes load their fonts from Google Fonts when the theme stylesheet loads. That is a request to a third party.</li>
+  <li><strong>A named font that is not loaded.</strong> Some themes put a font such as Inter or JetBrains Mono first in a stack without loading it. Readers who have the font installed see it and everyone else sees the next font in the stack.</li>
+</ul>
+<p>To give any theme a typeface of your choosing, set the tokens after the theme loads:</p>
+
+<code-block language="css" label="Overriding a theme's fonts" data-escape>:root[data-theme~="nord"] {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-heading: var(--font-serif);
+}</code-block>
+<p>See <a href="/docs/themes/#custom-themes">Creating custom themes</a> and <a href="/docs/overrides/">Overrides</a>.</p>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+  <li><a href="/docs/typography/">Typography</a> &mdash; how type is sized, wrapped, emphasized and set for long reading</li>
+  <li><a href="/docs/tokens/#typography">Tokens: Typography</a> &mdash; every font, size and spacing token</li>
+  <li><a href="/docs/fluid-scaling/">Fluid Scaling</a> &mdash; type that scales with the viewport</li>
+  <li><a href="/docs/themes/">Themes</a> &mdash; the themes and how to write your own</li>
+  <li><a href="/docs/packs/">Packs</a> &mdash; how packs load and layer</li>
+  <li><a href="/docs/i18n/">i18n</a> &mdash; fonts and typography for other scripts</li>
+  <li><a href="/docs/performance/">Performance</a> &mdash; loading cost and budgets</li>
+</ul>
+</section>

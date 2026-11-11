@@ -1,17 +1,20 @@
 /**
  * Fonts Extension
  *
- * Custom font slots for display and heading typography.
- * Themes can override these to load external fonts.
+ * Font slots that themes, packs and authors can set.
  *
- * Note: This file only defines the token slots. Actual font loading
- * (e.g., Google Fonts <link> tags) must be done in the HTML head.
+ * --font-heading is read by the core: h1-h6 use it when it is set and
+ * inherit the surrounding text font when it is not (headings/styles.css).
+ * It has no default for that reason. :where([data-theme]) clears it, so a
+ * theme scoped to an element does not keep the heading face of the page
+ * around it; a theme's own --font-heading (in @layer bundle-theme) wins.
  *
- * Usage:
- *   h1, h2, h3 { font-family: var(--font-display); }
- *   h4, h5, h6 { font-family: var(--font-heading); }
- *   body { font-family: var(--font-body); }
- *   pre, code { font-family: var(--font-code); }
+ * The other slots are not read by the core. They are named places for a
+ * theme or your own CSS to use:
+ *   .hero h1 { font-family: var(--font-display); }
+ *
+ * This file only defines the slots. Loading a font (@font-face, a font
+ * pack, a <link>) is separate.
  *
  * Also on :where([data-theme]): every slot derives from --font-sans /
  * --font-serif / --font-mono, which themes set, and var() resolves where a
@@ -29,9 +32,6 @@
 
   /* Display font - for hero text, large titles */
   --font-display: var(--font-serif);
-
-  /* Heading font - for section headings */
-  --font-heading: var(--font-sans);
 
   /* Body font - for paragraph text (uses core --font-sans by default) */
   --font-body: var(--font-sans);
@@ -51,4 +51,10 @@
    * ======================================== */
 
   /* Variable font weight range - useful for variable fonts */
+}
+
+/* Heading font: unset by default so headings inherit. Cleared on a scoped
+   theme so it does not inherit the outer page's heading face. */
+:where([data-theme]) {
+  --font-heading: initial;
 }
