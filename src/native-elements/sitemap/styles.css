@@ -1,63 +1,194 @@
-/* sitemap: HTML sitemap tree structure */
+/* sitemap: the human-readable site map.
 
-nav[aria-label="Full site map"] ul {
-  list-style: none;
-  padding-inline-start: var(--size-m);
-  border-inline-start: var(--border-width-thin) solid var(--color-border);
-}
+   A nav of nested lists. Marked with data-sitemap (or the legacy English
+   aria-label), or as the nav inside a <site-map>, it renders as a quiet outline: plain text links, a hairline
+   down each nested level, and <details> branches that read as rows of the
+   outline, not as accordion panels. A top-level item marked
+   data-sitemap-section becomes a headed block whose groups sit side by side. */
 
-/* Root level — no indent, no border */
-nav[aria-label="Full site map"] > ul {
-  padding-inline-start: 0;
-  border-inline-start: none;
-}
+:is(
+  nav[data-sitemap],
+  nav[aria-label="Full site map"],
+  site-map:not([mode="ia-tree"]) > nav:not([data-sitemap-controls])
+) {
+  /* The current page is named by colour and weight; nav's filled pill and
+     underline are for menus. */
+  --_active-bg: transparent;
+  --_active-color: var(--color-interactive);
+  --_active-decoration: none;
 
-nav[aria-label="Full site map"] li {
-  padding-block: var(--size-3xs);
-  position: relative;
-}
+  & ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
 
-/* Connector tick mark */
-nav[aria-label="Full site map"] ul li::before {
-  content: "";
-  position: absolute;
-  inset-inline-start: calc(-1 * var(--size-m));
-  inset-block-start: calc(var(--size-m) + var(--size-xs));
-  width: var(--size-s);
-  border-block-start: var(--border-width-thin) solid var(--color-border);
-}
+  & li {
+    margin: 0;
+    padding: 0;
+  }
 
-/* Collapsible section trigger */
-nav[aria-label="Full site map"] details > summary {
-  cursor: var(--cursor-custom-pointer, pointer);
-  font-weight: var(--font-weight-medium, 500);
-  color: var(--color-text);
-  padding-block: var(--size-2xs);
-  list-style: none;
-  display: flex;
-  align-items: center;
-  gap: var(--size-xs);
-}
+  /* Nested levels: indented behind a hairline */
+  & ul ul {
+    margin-inline-start: var(--size-2xs);
+    padding-inline-start: var(--size-s);
+    border-inline-start: var(--border-width-thin) solid var(--color-border);
+  }
 
-nav[aria-label="Full site map"] details > summary::-webkit-details-marker {
-  display: none;
-}
+  /* Links are words in an outline, not nav's padded blocks */
+  & a {
+    display: inline-block;
+    padding: var(--size-3xs) 0;
+    color: var(--color-text);
+    line-height: 1.4;
+    text-decoration: none;
+  }
 
-/* Custom expand indicator */
-nav[aria-label="Full site map"] details > summary::before {
-  content: "+";
-  display: inline-block;
-  width: 1em;
-  color: var(--color-text-muted);
-  font-family: var(--font-mono);
-}
+  & a:hover {
+    background: none;
+    color: var(--color-interactive);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
 
-nav[aria-label="Full site map"] details[open] > summary::before {
-  content: "\2212"; /* minus sign */
-}
+  & a[aria-current="page"] {
+    font-weight: var(--font-weight-semibold, 600);
+  }
 
-/* Current page indicator */
-nav[aria-label="Full site map"] [aria-current="page"] {
-  color: var(--color-interactive);
-  font-weight: var(--font-weight-medium, 500);
+  /* A label for a branch that has no page of its own */
+  & [data-sitemap-label] {
+    display: inline-block;
+    padding: var(--size-3xs) 0;
+    color: var(--color-text-muted);
+    line-height: 1.4;
+  }
+
+  /* A page count beside a heading or a branch */
+  & :is(h2, summary) > small {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: normal;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --- Collapsible branches --- */
+
+  & details {
+    border: 0;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  & details > :not(summary) {
+    padding-inline-end: 0;
+    padding-block-end: var(--size-xs);
+  }
+
+  & summary {
+    display: inline-flex;
+    justify-content: flex-start;
+    align-items: baseline;
+    gap: var(--size-xs);
+    min-block-size: 0;
+    padding: var(--size-3xs) var(--size-2xs) var(--size-3xs) 0;
+    border-radius: var(--radius-s);
+    color: var(--color-text);
+    font-weight: var(--font-weight-medium, 500);
+    line-height: 1.4;
+    list-style: none;
+    cursor: var(--cursor-custom-pointer, pointer);
+  }
+
+  & summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /* One disclosure arrow, leading the label */
+  & summary::after {
+    content: none;
+  }
+
+  & summary::before {
+    content: "";
+    flex: none;
+    align-self: center;
+    inline-size: 0.4em;
+    block-size: 0.4em;
+    margin-inline: 0.15em 0.1em;
+    border-right: var(--border-width-medium) solid var(--color-text-muted);
+    border-bottom: var(--border-width-medium) solid var(--color-text-muted);
+    transform: rotate(-45deg);
+    transition: transform var(--duration-fast) var(--ease-default);
+  }
+
+  & summary:dir(rtl)::before {
+    transform: rotate(135deg);
+  }
+
+  & details[open] > summary::before {
+    transform: rotate(45deg);
+  }
+
+  & summary:hover {
+    color: var(--color-interactive);
+  }
+
+  /* A long run of leaf pages flows into columns */
+  & ul[data-sitemap-leaves] {
+    columns: 11rem auto;
+    column-gap: var(--size-l);
+    font-size: var(--font-size-s);
+  }
+
+  & ul[data-sitemap-leaves] > li {
+    break-inside: avoid;
+  }
+
+  /* --- Sections: a headed block per top-level area --- */
+
+  & > ul > li[data-sitemap-section] {
+    padding-block: var(--size-l);
+    border-block-start: var(--border-width-thin) solid var(--color-border);
+  }
+
+  & li[data-sitemap-section] > h2 {
+    display: flex;
+    align-items: baseline;
+    gap: var(--size-s);
+    margin-block: 0 var(--size-s);
+    font-size: var(--font-size-xl);
+    line-height: 1.2;
+  }
+
+  & li[data-sitemap-section] > h2 > a {
+    padding: 0;
+    color: inherit;
+    line-height: inherit;
+  }
+
+  /* Groups sit side by side; one that holds collapsible branches takes the
+     full row, so an opened branch has the width for its columns. */
+  & li[data-sitemap-section] > ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(13rem, 100%), 1fr));
+    gap: var(--size-m) var(--size-xl);
+    align-items: start;
+    /* The groups are the section's own row, not a nested level */
+    margin-inline-start: 0;
+    padding-inline-start: 0;
+    border-inline-start: 0;
+  }
+
+  & li[data-sitemap-section] > ul > li:has(details) {
+    grid-column: 1 / -1;
+  }
+
+  & li[data-sitemap-section] > ul > li > :is(a, [data-sitemap-label], details > summary) {
+    color: var(--color-text);
+    font-weight: var(--font-weight-semibold, 600);
+  }
+
+  & li[data-sitemap-section] > ul > li > a:hover {
+    color: var(--color-interactive);
+  }
 }

@@ -25,7 +25,7 @@ export default {
 
   // Custom plugins
   plugins: {
-    before: ['generate-sidebars', 'generate-topics'],
+    before: ['generate-sidebars', 'generate-topics', 'generate-sitemap-page'],
     // generate-api-tables must run before auto-link-glossary: api-tables
     // strips legacy `{% from "partials/attribute-table.njk" %}` import
     // lines. If auto-link runs first, it wraps the word "attribute" inside

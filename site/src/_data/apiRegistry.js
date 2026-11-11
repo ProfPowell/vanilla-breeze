@@ -13443,6 +13443,30 @@ export default {
         "description": "URL to JSON data (nav-enhance: { children: [{ title, href, children }] }, ia-tree: { title, pages }). Strings render as text; only http(s), relative and fragment hrefs become links."
       },
       {
+        "name": "data-label-expand",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Expand all",
+        "description": "[nav-enhance] Text of the expand-all button"
+      },
+      {
+        "name": "data-label-collapse",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Collapse all",
+        "description": "[nav-enhance] Text of the collapse-all button"
+      },
+      {
+        "name": "data-label-controls",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Sitemap controls",
+        "description": "[nav-enhance] Accessible name of the controls landmark"
+      },
+      {
         "name": "title",
         "kind": "host-api",
         "purpose": "config",
@@ -13519,6 +13543,30 @@ export default {
         "on": "li",
         "type": "string",
         "description": "[ia-tree] Page status: draft | ready | live | deprecated"
+      },
+      {
+        "name": "data-sitemap",
+        "on": "nav",
+        "type": "boolean",
+        "description": "[nav-enhance] Marks a sitemap nav for the outline styling outside a <site-map> (inside one, the child nav is styled without it)"
+      },
+      {
+        "name": "data-sitemap-section",
+        "on": "li",
+        "type": "boolean",
+        "description": "[nav-enhance] A top-level item that is a headed block: an <h2> followed by a <ul> of groups laid out side by side"
+      },
+      {
+        "name": "data-sitemap-leaves",
+        "on": "ul",
+        "type": "boolean",
+        "description": "[nav-enhance] A long run of leaf pages that flows into columns"
+      },
+      {
+        "name": "data-sitemap-label",
+        "on": "span",
+        "type": "boolean",
+        "description": "[nav-enhance] Label of a branch that has no page of its own"
       }
     ],
     "events": [

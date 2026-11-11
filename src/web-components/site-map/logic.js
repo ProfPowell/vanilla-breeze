@@ -1816,25 +1816,29 @@ class SiteMap extends VBElement {
 
     const controls = document.createElement('nav');
     controls.setAttribute('data-sitemap-controls', '');
-    controls.setAttribute('aria-label', 'Sitemap controls');
+    controls.setAttribute('aria-label', this.getAttribute('data-label-controls') ?? 'Sitemap controls');
 
     const expandBtn = document.createElement('button');
     expandBtn.type = 'button';
-    expandBtn.textContent = 'Expand all';
+    expandBtn.className = 'small secondary';
+    expandBtn.textContent = this.getAttribute('data-label-expand') ?? 'Expand all';
     this.listen(expandBtn, 'click', () => {
       for (const d of details()) d.open = true;
     });
 
     const collapseBtn = document.createElement('button');
     collapseBtn.type = 'button';
-    collapseBtn.textContent = 'Collapse all';
+    collapseBtn.className = 'small secondary';
+    collapseBtn.textContent = this.getAttribute('data-label-collapse') ?? 'Collapse all';
     this.listen(collapseBtn, 'click', () => {
       for (const d of details()) d.open = false;
       this.#autoExpandCurrent();
     });
 
     controls.append(expandBtn, collapseBtn);
-    this.prepend(controls);
+    // Directly above the tree they act on, below any heading and intro
+    const nav = this.#sitemapNav();
+    if (nav) nav.before(controls); else this.prepend(controls);
   }
 
   async #loadFromSrc() {

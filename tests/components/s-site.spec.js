@@ -707,4 +707,55 @@ test.describe('site-map nav-enhance', () => {
     await page.locator('#nm [data-sitemap-controls] button').first().click();
     await expect(page.locator('#nm details')).toHaveJSProperty('open', true);
   });
+
+  test('controls sit above the tree, below the heading, with overridable labels', async ({ page }) => {
+    await load(page, `<site-map id="nm" data-label-expand="Tout ouvrir" data-label-collapse="Tout fermer">
+      <h1>Plan</h1><p>Intro</p>
+      <nav aria-label="Plan du site"><ul><li><details><summary>Docs</summary><ul><li><a href="/a/">A</a></li></ul></details></li></ul></nav>
+    </site-map>`, { modules: ['site-map'] });
+    await page.waitForSelector('#nm [data-sitemap-controls] button');
+    const r = await page.evaluate(() => {
+      const nm = document.getElementById('nm');
+      return {
+        order: [...nm.children].map((el) => el.hasAttribute('data-sitemap-controls') ? 'controls' : el.localName),
+        labels: [...nm.querySelectorAll('[data-sitemap-controls] button')].map((b) => b.textContent),
+      };
+    });
+    expect(r.order).toEqual(['h1', 'p', 'controls', 'nav']);
+    expect(r.labels).toEqual(['Tout ouvrir', 'Tout fermer']);
+  });
+
+  test('the tree is an outline: inline links, one leading arrow, no accordion chrome', async ({ page }) => {
+    await load(page, `<site-map id="nm">
+      <nav aria-label="Plan du site"><ul>
+        <li data-sitemap-section><h2><a href="/docs/">Docs</a> <small>3 pages</small></h2><ul>
+          <li><a href="/a/">A</a></li>
+          <li><details open><summary>Many <small>2</small></summary><ul data-sitemap-leaves><li><a href="/m/1/">One</a></li><li><a href="/m/2/">Two</a></li></ul></details></li>
+        </ul></li>
+      </ul></nav>
+    </site-map>`, { modules: ['site-map'] });
+    await page.waitForSelector('#nm [data-sitemap-controls] button');
+    const r = await page.evaluate(() => {
+      const nm = document.getElementById('nm');
+      const cs = (sel, pseudo) => getComputedStyle(nm.querySelector(sel), pseudo);
+      const summary = nm.querySelector('summary').getBoundingClientRect();
+      const nav = nm.querySelector('nav:not([data-sitemap-controls])').getBoundingClientRect();
+      return {
+        linkPadding: cs('ul[data-sitemap-leaves] a').paddingInlineStart,
+        detailsBorder: cs('details').borderTopWidth,
+        trailingArrow: cs('summary', '::after').content,
+        leadingArrow: cs('summary', '::before').content,
+        summaryHugsLabel: summary.width < nav.width / 2,
+        groups: cs('li[data-sitemap-section] > ul').display,
+        fullRow: cs('li[data-sitemap-section] > ul > li:has(details)').gridColumnStart,
+      };
+    });
+    expect(r.linkPadding).toBe('0px');
+    expect(r.detailsBorder).toBe('0px');
+    expect(r.trailingArrow).toBe('none');
+    expect(r.leadingArrow).not.toBe('none');
+    expect(r.summaryHugsLabel).toBe(true);
+    expect(r.groups).toBe('grid');
+    expect(r.fullRow).toBe('1');
+  });
 });
