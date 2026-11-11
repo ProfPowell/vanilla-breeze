@@ -57,3 +57,22 @@ test('every page is linked, large branches collapse, titles are escaped', () => 
   assert.match(html, /Orphan &lt;b&gt;guide&lt;\/b&gt;/);
   assert.doesNotMatch(html, /&amp;lt;/);
 });
+
+test('recently changed pages show their date; branches and sections summarise', () => {
+  const dates = {
+    '/docs/grid/': '2026-11-10',
+    '/docs/layouts/': '2026-11-04',
+    '/docs/quick-start/': '2026-11-03',
+    '/docs/elements/native/el-1/': '2026-11-09',
+    '/docs/elements/native/el-2/': '2026-06-01',
+  };
+  const html = renderSitemap(buildSitemap(PAGES, NAV, dates), dates);
+  // Seven days ending on the newest change: Nov 4 to Nov 10
+  assert.match(html, /<a href="\/docs\/grid\/">Grid<\/a> <small data-sitemap-updated><time datetime="2026-11-10">Nov 10<\/time>/);
+  assert.match(html, /<a href="\/docs\/layouts\/">Layouts<\/a> <small data-sitemap-updated>/);
+  assert.match(html, /<li><a href="\/docs\/quick-start\/">Quick Start<\/a><\/li>/);
+  assert.match(html, /<li><a href="\/docs\/elements\/native\/el-2\/">el-2<\/a><\/li>/);
+  assert.match(html, /<summary>Native <small>14<\/small> <small data-sitemap-updated>1 updated<\/small><\/summary>/);
+  assert.match(html, /Guide<\/a> <small>3 pages<\/small> <small data-sitemap-updated>last change <time datetime="2026-11-10">Nov 10, 2026<\/time>/);
+  assert.match(html, /Pages changed in the week to Nov 10, 2026 show their date\./);
+});

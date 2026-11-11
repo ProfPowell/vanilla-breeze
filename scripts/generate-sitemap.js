@@ -51,7 +51,12 @@ function* walk(dir) {
   }
 }
 
-const today = new Date().toISOString().slice(0, 10);
+/* Real last-changed dates, from git (scripts/generate-page-dates.mjs). A URL
+   with no date gets no <lastmod>: stamping every page with the build date
+   told crawlers the whole site changed on every deploy. changefreq and
+   priority are left out because search engines ignore them. */
+const datesPath = join(repoRoot, 'site', 'data', 'page-dates.json');
+const pageDates = existsSync(datesPath) ? JSON.parse(readFileSync(datesPath, 'utf8')).pages ?? {} : {};
 const urls = new Set();
 
 for (const path of walk(pagesDir)) {
@@ -72,10 +77,8 @@ const sortedUrls = [...urls].sort();
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${sortedUrls.map(u => `  <url>
-    <loc>${SITE_URL}${u}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>${u === '/' ? '1.0' : '0.8'}</priority>
+    <loc>${SITE_URL}${u}</loc>${pageDates[u] ? `
+    <lastmod>${pageDates[u]}</lastmod>` : ''}
   </url>`).join('\n')}
 </urlset>
 `;

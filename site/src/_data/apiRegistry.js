@@ -13567,6 +13567,12 @@ export default {
         "on": "span",
         "type": "boolean",
         "description": "[nav-enhance] Label of a branch that has no page of its own"
+      },
+      {
+        "name": "data-sitemap-updated",
+        "on": "small",
+        "type": "boolean",
+        "description": "[nav-enhance] A muted note of when a page, branch or section last changed"
       }
     ],
     "events": [

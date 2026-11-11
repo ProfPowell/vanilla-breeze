@@ -16,6 +16,11 @@
  *     BIG direct children is a closed <details> with its page count, so the
  *     few hundred element and attribute pages do not bury the rest.
  *
+ * A page changed within RECENT_DAYS of the newest change shows its date, a
+ * collapsed branch says how many of its pages changed, and each section
+ * names its last change. The dates are git's, via site/data/page-dates.json
+ * (scripts/generate-page-dates.mjs), the same file sitemap.xml reads.
+ *
  * Runs after generate-topics so the generated topic pages are listed too.
  * /sitemap.xml (scripts/generate-sitemap.js) is the crawler's version; the
  * two share their exclusions.
@@ -32,6 +37,10 @@ const PAGES_SRC = resolve(SITE_ROOT, 'src/pages');
 const OUT_SRC = resolve(SITE_ROOT, 'src/pages/sitemap/index.html');
 const OUT_DIST = resolve(SITE_ROOT, 'dist/pages/sitemap/index.html');
 const NAV_PATH = resolve(SITE_ROOT, 'data/navigation.json');
+const DATES_PATH = resolve(SITE_ROOT, 'data/page-dates.json');
+
+/** Days back from the newest change that still count as recent. */
+const RECENT_DAYS = 7;
 
 /** A branch with more direct children than this collapses. */
 const BIG = 12;
@@ -145,7 +154,8 @@ export function sectionsFromNavigation(nav) {
  * Place every page in a section group and build the tree under it.
  * @param {{ url: string, title: string }[]} pages
  */
-export function buildSitemap(pages, nav) {
+export function buildSitemap(pages, nav, dates = {}) {
+  pages = pages.map((page) => ({ ...page, updated: dates[page.url] ?? '' }));
   const { sections, anchors } = sectionsFromNavigation(nav);
   const start = sections[0];
   const guide = sections.find((s) => s.label === 'Guide');
@@ -227,6 +237,35 @@ function splitByPrefix(node) {
   ]);
 }
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** "2026-11-09" → "Nov 9" (with the year when asked) */
+function fmtDate(iso, year = false) {
+  const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return '';
+  return `${MONTHS[Number(m[2]) - 1]} ${Number(m[3])}${year ? `, ${m[1]}` : ''}`;
+}
+
+/**
+ * The first day that counts as recent. It is measured back from the newest
+ * change in the data, not from the build day, so the same data always gives
+ * the same page.
+ */
+export function recentSince(dates) {
+  const newest = Object.values(dates).sort().at(-1);
+  if (!newest) return '9999';
+  const day = new Date(`${newest}T00:00:00Z`);
+  day.setUTCDate(day.getUTCDate() - (RECENT_DAYS - 1));
+  return day.toISOString().slice(0, 10);
+}
+
+/** Pages under a node, for counts and dates. */
+function pagesOf(node, out = []) {
+  if (node.page) out.push(node.page);
+  for (const child of node.children.values()) pagesOf(child, out);
+  return out;
+}
+
 function countPages(node) {
   let n = node.page ? 1 : 0;
   for (const child of node.children.values()) n += countPages(child);
@@ -239,21 +278,28 @@ function sortedChildren(node) {
   return [...node.children.values()].sort((a, b) => collator.compare(labelOf(a), labelOf(b)));
 }
 
-function renderNode(node, indent, groupLabel) {
+function renderNode(node, indent, since, groupLabel) {
   const pad = '  '.repeat(indent);
   const label = escHtml(groupLabel ?? labelOf(node));
   const href = node.page?.url ?? node.href;
   const link = href ? `<a href="${escHtml(href)}">${label}</a>` : `<span data-sitemap-label>${label}</span>`;
+  // A recently changed page carries its date; older ones stay bare
+  const date = node.page?.updated;
+  const stamp = date && date >= since
+    ? ` <small data-sitemap-updated><time datetime="${escHtml(date)}">${fmtDate(date)}</time></small>`
+    : '';
   const children = sortedChildren(node);
-  if (!children.length) return `${pad}<li>${link}</li>`;
+  if (!children.length) return `${pad}<li>${link}${stamp}</li>`;
 
-  const items = children.map((child) => renderNode(child, indent + 2)).join('\n');
+  const items = children.map((child) => renderNode(child, indent + 2, since)).join('\n');
   if (children.length > BIG) {
     // The branch's own page leads the list: a summary cannot also be a link.
-    const own = href ? `${pad}      <li>${link.replace(label, `${label} overview`)}</li>\n` : '';
+    const own = href ? `${pad}      <li>${link.replace(label, `${label} overview`)}${stamp}</li>\n` : '';
+    const recent = pagesOf(node).filter((p) => p.updated && p.updated >= since).length;
+    const churn = recent ? ` <small data-sitemap-updated>${recent} updated</small>` : '';
     return `${pad}<li>
 ${pad}  <details>
-${pad}    <summary>${label} <small>${countPages(node)}</small></summary>
+${pad}    <summary>${label} <small>${countPages(node)}</small>${churn}</summary>
 ${pad}    <ul data-sitemap-leaves>
 ${own}${items.replace(/^/gm, '  ')}
 ${pad}    </ul>
@@ -261,22 +307,28 @@ ${pad}  </details>
 ${pad}</li>`;
   }
   return `${pad}<li>
-${pad}  ${link}
+${pad}  ${link}${stamp}
 ${pad}  <ul>
 ${items}
 ${pad}  </ul>
 ${pad}</li>`;
 }
 
-export function renderSitemap(sections) {
+export function renderSitemap(sections, dates = {}) {
+  const since = recentSince(dates);
+  const newest = Object.values(dates).sort().at(-1);
   const total = sections.reduce((sum, s) => sum + s.groups.reduce((n, g) => n + countPages(g), 0), 0);
   const blocks = sections.map((section) => {
     const count = section.groups.reduce((n, g) => n + countPages(g), 0);
     const title = escHtml(section.label);
     const heading = section.href ? `<a href="${escHtml(section.href)}">${title}</a>` : title;
-    const groups = section.groups.map((g) => renderNode(g, 6, g.label)).join('\n');
+    const groups = section.groups.map((g) => renderNode(g, 6, since, g.label)).join('\n');
+    const latest = section.groups.flatMap((g) => pagesOf(g)).map((p) => p.updated).filter(Boolean).sort().at(-1);
+    const changed = latest
+      ? ` <small data-sitemap-updated>last change <time datetime="${escHtml(latest)}">${fmtDate(latest, true)}</time></small>`
+      : '';
     return `        <li data-sitemap-section>
-          <h2>${heading} <small>${count} ${count === 1 ? 'page' : 'pages'}</small></h2>
+          <h2>${heading} <small>${count} ${count === 1 ? 'page' : 'pages'}</small>${changed}</h2>
           <ul>
 ${groups}
           </ul>
@@ -292,7 +344,7 @@ currentPath: /sitemap/
 author: "Thomas A. Powell"
 authorUrl: "/team/tpowell/"
 published: "2026-04-24"
-lastModified: "2026-11-10"
+lastModified: "${newest || '2026-11-10'}"
 keywords: ["sitemap", "navigation", "structure"]
 license: "CC BY 4.0"
 licenseUrl: "https://creativecommons.org/licenses/by/4.0/"
@@ -306,7 +358,7 @@ concepts: ["sitemap", "content-lens"]
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
   <site-map>
     <h1>Sitemap</h1>
-    <p class="lead">All ${total} pages of the documentation, grouped by section. Search engines read <a href="/sitemap.xml">sitemap.xml</a>.</p>
+    <p class="lead">All ${total} pages of the documentation, grouped by section. ${newest ? `Pages changed in the week to ${fmtDate(newest, true)} show their date. ` : ''}Search engines read <a href="/sitemap.xml">sitemap.xml</a>.</p>
 
     <nav aria-label="Full site map" data-sitemap>
       <ul>
@@ -334,7 +386,8 @@ export class GenerateSitemapPage {
     }
     pages.sort((a, b) => a.url.localeCompare(b.url));
 
-    const html = renderSitemap(buildSitemap(pages, nav));
+    const dates = existsSync(DATES_PATH) ? JSON.parse(await readFile(DATES_PATH, 'utf-8')).pages ?? {} : {};
+    const html = renderSitemap(buildSitemap(pages, nav, dates), dates);
     /* Cook copies src/ to dist/ before the before-pass runs and then builds
        from dist/ (see generate-topics.js), so write both trees. */
     for (const out of [OUT_SRC, OUT_DIST]) {
