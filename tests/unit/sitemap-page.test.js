@@ -5,7 +5,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildSitemap, renderSitemap } from '../../site/plugins/generate-sitemap-page.js';
+import { buildSitemap, renderSitemap, readMeta } from '../../site/plugins/generate-sitemap-page.js';
 
 const NAV = {
   header: {
@@ -75,4 +75,11 @@ test('recently changed pages show their date; branches and sections summarise', 
   assert.match(html, /<summary>Native <small>14<\/small> <small data-sitemap-updated>1 updated<\/small><\/summary>/);
   assert.match(html, /Guide<\/a> <small>3 pages<\/small> <small data-sitemap-updated>last change <time datetime="2026-11-10">Nov 10, 2026<\/time>/);
   assert.match(html, /Pages changed in the week to Nov 10, 2026 show their date\./);
+});
+
+test('frontmatter titles are unquoted and unescaped', () => {
+  const meta = (title) => readMeta(`---\ntitle: ${title}\n---\n`).title;
+  assert.equal(meta('"data-effect=\\"animate-image\\""'), 'data-effect="animate-image"');
+  assert.equal(meta("'it''s'"), "it's");
+  assert.equal(meta('Plain title'), 'Plain title');
 });

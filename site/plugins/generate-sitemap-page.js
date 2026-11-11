@@ -77,15 +77,22 @@ function decodeEntities(text) {
     .replace(/&amp;/g, '&');
 }
 
-/** Frontmatter title and redirect only; values may be quoted. */
-function readMeta(text) {
+/**
+ * Frontmatter title and redirect only. A double-quoted YAML value may
+ * escape quotes and backslashes (title: "data-effect=\"animate-image\"").
+ */
+export function readMeta(text) {
   const match = text.match(FRONTMATTER_RE);
   if (!match) return null;
   const meta = {};
   for (const line of match[1].split(/\r?\n/)) {
     const m = line.match(/^(title|redirect)\s*:\s*(.*)$/);
     if (!m) continue;
-    meta[m[1]] = m[2].trim().replace(/^(["'])(.*)\1$/, '$2');
+    const raw = m[2].trim();
+    const quoted = raw.match(/^(["'])(.*)\1$/);
+    meta[m[1]] = !quoted ? raw
+      : quoted[1] === '"' ? quoted[2].replace(/\\(["\\])/g, '$1')
+      : quoted[2].replace(/''/g, "'");
   }
   return meta;
 }

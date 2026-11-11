@@ -26,6 +26,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Sitemap link text** showed backslashes for a page title with escaped quotes (`data-effect=\"animate-image\"`).
 - **Docs site Topics pages.** The pressed sort button was coral (it used the accent token and several tokens that do not exist); the sort control is now one joined row in the interactive colour with its label on the same line, and is named for what it sorts by (Name, Most articles, Latest, Oldest). The list is a grid with a one-line summary of each topic between its name and its article count and date. On a topic page the Includes / Related links read as one sentence (they were stacked blocks with stray commas), article titles are a sensible size and summaries are no longer escaped twice.
 - **Docs site glossary-term preview** stayed where it opened while the page scrolled away under it. It now closes on scroll or resize, and a term whose entry is on the current page (the glossary's own Related links) jumps straight to it.
 - **page-tools: floating button collided with a fab-stack** — On narrow screens the collapsed toolbar's button took the bottom corner for itself and sat on top of a `<fab-stack>` there (the docs site's settings gear). When the page has a `<fab-stack>` the button now joins it as its last child and returns home when the toolbar expands; its panel opens just above the button wherever the stack puts it, positioned before it paints. In the stack the button takes its neighbours' size and look.
