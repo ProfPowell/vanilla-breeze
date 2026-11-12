@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: code-playground integration
-description: "Drop a code-playground element into a Vanilla Breeze page — live HTML/CSS/JS editor with sandboxed preview, console output, and CodePen export. Theme-aware, no VB dependency."
+description: "Add the code-playground web component to a Vanilla Breeze page to give readers an HTML, CSS and JavaScript editor with a live preview and console."
 currentSection: resources
 currentPath: /docs/integrations/web-components/code-playground/
 ---
@@ -15,65 +15,202 @@ currentPath: /docs/integrations/web-components/code-playground/
 </nav>
 
 <h1>code-playground</h1>
-<p class="lead">A live HTML, CSS, and JavaScript editor with a sandboxed preview iframe, runtime console output, CodePen export, and theme-aware styling that fits naturally inside a Vanilla Breeze page.</p>
+<p class="lead">A web component with editors for HTML, CSS and JavaScript, a preview that runs the code in a sandboxed iframe, and a console that shows what the code logs. It reads Vanilla Breeze tokens directly, so its toolbar, panels and console match the active theme with no extra CSS.</p>
 
-<section>
-  <h2>Where to find it</h2>
+<nav class="subnav" aria-label="code-playground sections">
   <ul>
-    <li>npm: <a href="https://www.npmjs.com/package/@profpowell/code-playground"><code>@profpowell/code-playground</code></a></li>
-    <li>GitHub: <a href="https://github.com/ProfPowell/code-playground">ProfPowell/code-playground</a></li>
-    <li>Live demo: <a href="https://profpowell.github.io/code-playground/">profpowell.github.io/code-playground</a></li>
-    <li>License: MIT</li>
+    <li><a href="#at-a-glance">At a glance</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#reference">Reference</a></li>
+    <li><a href="#theming">With Vanilla Breeze</a></li>
+    <li><a href="#related">Related</a></li>
   </ul>
-</section>
+</nav>
 
-<section>
-  <h2>Install</h2>
-  <code-block language="bash" data-escape>npm install @profpowell/code-playground</code-block>
-  <code-block language="javascript" data-escape>import '@profpowell/code-playground';</code-block>
-  <p>Or via CDN ESM:</p>
-  <code-block language="html" data-escape>
-<script type="module" src="https://unpkg.com/@profpowell/code-playground"></script>
-  </code-block>
-</section>
-
-<section>
-  <h2>Demo</h2>
-  <p>The editor pane chrome, tab bar, and console adopt VB design tokens. Edit the code and the preview iframe re-renders live; the console below mirrors any <code>console.log</code> calls.</p>
-
-  <browser-window url="code-playground" src="/docs/integrations/web-components/demos/code-playground-basic.html"></browser-window>
-</section>
-
-<section>
-  <h2>Quick reference</h2>
+<section id="at-a-glance">
+  <h2>At a glance</h2>
   <table class="props-table">
-    <thead><tr><th>Feature</th><th>Attribute / Slot</th></tr></thead>
     <tbody>
-      <tr><td>HTML / CSS / JS panes</td><td><code>&lt;textarea slot="html"&gt;</code>, <code>slot="css"</code>, <code>slot="js"</code></td></tr>
-      <tr><td>Inherit page theme</td><td><code>inherit-theme</code></td></tr>
-      <tr><td>Persist edits in localStorage</td><td><code>persist="key-name"</code></td></tr>
-      <tr><td>External sources</td><td><code>html-src</code>, <code>css-src</code>, <code>js-src</code> attributes</td></tr>
-      <tr><td>Console output</td><td>Built-in; toggle visibility with <code>show-console</code> / <code>no-console</code>.</td></tr>
-      <tr><td>Open in CodePen</td><td>One-click export button.</td></tr>
+      <tr><th scope="row">Package</th><td><a href="https://www.npmjs.com/package/@profpowell/code-playground"><code>@profpowell/code-playground</code></a>, version <code>0.3.1</code></td></tr>
+      <tr><th scope="row">Elements</th><td><code>&lt;code-playground&gt;</code></td></tr>
+      <tr><th scope="row">Renders in</th><td>Shadow DOM. The starting code is read from <code>&lt;textarea&gt;</code> children in the light DOM. The preview runs in a sandboxed iframe.</td></tr>
+      <tr><th scope="row">Source</th><td><a href="https://github.com/ProfPowell/code-playground">github.com/ProfPowell/code-playground</a></td></tr>
+      <tr><th scope="row">Documentation</th><td><a href="https://profpowell.github.io/code-playground/">profpowell.github.io/code-playground</a></td></tr>
+      <tr><th scope="row">Licence</th><td>MIT</td></tr>
+      <tr><th scope="row">In Vanilla Breeze</th><td>Not bundled. Load it yourself.</td></tr>
     </tbody>
   </table>
-  <p>See the <a href="https://github.com/ProfPowell/code-playground/blob/main/README.md">README</a> for the full reference.</p>
 </section>
 
-<section>
+<section id="install">
+  <h2>Install</h2>
+  <p>Load the component from a CDN. The script fetches a second file from the same folder, <code>editor-runtime-B2MdwU5J.js</code>, which holds the CodeMirror editor.</p>
+  <code-block language="html" label="CDN" data-escape><script type="module" src="https://unpkg.com/@profpowell/code-playground@0.3.1/dist/code-playground.js"></script></code-block>
+  <p>Or install it from npm and import it in your own script.</p>
+  <code-block language="bash" label="npm" data-escape>npm install @profpowell/code-playground</code-block>
+  <code-block language="javascript" label="Import" data-escape>import '@profpowell/code-playground';</code-block>
+  <p>Until the script has run, the source textareas are ordinary visible form fields. Add this rule to a stylesheet in the <code>&lt;head&gt;</code> to hide them and reserve the space.</p>
+  <code-block language="css" label="Before the script loads" data-escape>code-playground:not(:defined) {
+  display: block;
+  min-block-size: 31rem;
+}
+
+code-playground:not(:defined) > * {
+  display: none;
+}</code-block>
+</section>
+
+<section id="demo">
+  <h2>Demo</h2>
+  <p>A playground on a Vanilla Breeze page. Edit any tab and the preview runs again. Press the button in the preview, then open the console bar to see the log.</p>
+  <browser-window url="code-playground-basic" src="/docs/integrations/web-components/demos/code-playground-basic.html" data-demo-height="xl"></browser-window>
+</section>
+
+<section id="usage">
   <h2>Usage</h2>
-  <code-block language="html" data-escape>
-<code-playground inherit-theme persist="intro-demo">
-  <textarea slot="html">
-    <h1>Hello</h1>
-    <p>Edit me.</p>
-  </textarea>
-  <textarea slot="css">
-    h1 { color: tomato; }
-  </textarea>
-  <textarea slot="js">
-    console.log('ready');
-  </textarea>
-</code-playground>
-  </code-block>
+  <p>Give the starting code in textareas, one per slot: <code>html</code>, <code>css</code>, <code>js</code>, and optionally <code>head</code> for extra tags in the preview's <code>&lt;head&gt;</code>. With <code>persist</code>, a reader's edits are saved in their browser under that key.</p>
+  <code-block language="html" label="Inline sources" data-escape><code-playground persist="intro-demo">
+  <textarea slot="html"><h1>Hello</h1><p>Edit me.</p></textarea>
+  <textarea slot="css">h1 { color: tomato; }</textarea>
+  <textarea slot="js">console.log('ready')</textarea>
+</code-playground></code-block>
+
+  <p>Or load the starting code from files.</p>
+  <code-block language="html" label="External sources" data-escape><code-playground
+  html-src="/examples/demo.html"
+  css-src="/examples/demo.css"
+  js-src="/examples/demo.js"
+  head-src="/examples/demo-head.html">
+</code-playground></code-block>
+
+  <p>For a short example inside a tutorial, <code>fit-preview</code> makes the preview as tall as its content instead of filling a fixed pane.</p>
+  <code-block language="html" label="Preview sized to its content" data-escape><code-playground fit-preview preview-position="bottom">
+  <textarea slot="html"><p>Short demo.</p></textarea>
+  <textarea slot="css">p { color: tomato; }</textarea>
+</code-playground></code-block>
+
+  <p>By default the playground picks its own height. Set a height on the element and the layout fills it, with the editor scrolling inside.</p>
+  <code-block language="css" label="Fixed height" data-escape>code-playground {
+  block-size: 70vh;
+  min-block-size: 30rem;
+}</code-block>
+</section>
+
+<section id="reference">
+  <h2>Reference</h2>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead><tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>mode</code></td><td><code>auto</code>, <code>light</code>, <code>dark</code></td><td><code>auto</code></td><td>Color scheme. <code>auto</code> follows the page.</td></tr>
+      <tr><td><code>run-mode</code></td><td><code>auto</code>, <code>manual</code></td><td><code>auto</code></td><td><code>auto</code> runs the preview after each edit. <code>manual</code> waits for the Run button.</td></tr>
+      <tr><td><code>debounce</code></td><td>Milliseconds</td><td><code>300</code></td><td>Pause after typing before the preview runs in <code>auto</code> mode.</td></tr>
+      <tr><td><code>preview-position</code></td><td><code>right</code>, <code>bottom</code></td><td><code>right</code></td><td>Where the preview sits relative to the editor.</td></tr>
+      <tr><td><code>show-console</code></td><td><code>false</code> to hide</td><td>Shown</td><td>Whether the console bar is available.</td></tr>
+      <tr><td><code>persist</code></td><td>A key of your choice</td><td>None</td><td>Saves edits, the active tab and the split position in the reader's browser. An edit to a panel is dropped if you later change that panel's authored source.</td></tr>
+      <tr><td><code>inherit-theme</code></td><td>Boolean</td><td>Off</td><td>Copies the page's <code>data-theme</code> and <code>data-mode</code> values onto the preview document's <code>&lt;html&gt;</code> element.</td></tr>
+      <tr><td><code>fit-preview</code></td><td>Boolean</td><td>Off</td><td>Sizes the preview to its content. The playground is as tall as the taller of the editor and the preview.</td></tr>
+      <tr><td><code>html-src</code>, <code>css-src</code>, <code>js-src</code>, <code>head-src</code></td><td>URL</td><td>None</td><td>Files to load the starting code from.</td></tr>
+      <tr><td><code>title</code></td><td>Text</td><td><code>Code Playground Preview</code></td><td>Title of the preview document, and of the downloaded file and the CodePen export.</td></tr>
+      <tr><td><code>base-url</code></td><td>URL</td><td>The host page's URL</td><td>Base for relative URLs in the preview.</td></tr>
+      <tr><td><code>download-filename</code></td><td>File name</td><td><code>playground.html</code></td><td>Name of the file saved by the download action.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Methods and properties</h3>
+  <table class="props-table">
+    <thead><tr><th scope="col">Member</th><th scope="col">Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>getValue()</code></td><td>Returns <code>{ html, css, js, head }</code> with the current code.</td></tr>
+      <tr><td><code>setValue(value)</code></td><td>Replaces the code in one or more panels. Pass only the keys to change.</td></tr>
+      <tr><td><code>value</code></td><td>Property form of <code>getValue()</code> and <code>setValue()</code>.</td></tr>
+      <tr><td><code>run()</code></td><td>Rebuilds the preview and runs the code.</td></tr>
+      <tr><td><code>softRun()</code></td><td>Runs the JavaScript again without rebuilding the iframe, when that is possible.</td></tr>
+      <tr><td><code>reset()</code></td><td>Returns every panel to its authored source and clears saved edits.</td></tr>
+      <tr><td><code>reloadSources(options)</code></td><td>Fetches the <code>*-src</code> files again. Returns a promise with <code>loaded</code> and <code>failed</code> lists.</td></tr>
+      <tr><td><code>copy(type)</code></td><td>Copies one panel to the clipboard: <code>html</code>, <code>css</code> or <code>js</code>. Defaults to the active tab.</td></tr>
+      <tr><td><code>copyConsole()</code></td><td>Copies the visible console output.</td></tr>
+      <tr><td><code>clearConsole()</code></td><td>Empties the console.</td></tr>
+      <tr><td><code>downloadHTML()</code></td><td>Saves the playground as one HTML file.</td></tr>
+      <tr><td><code>openInCodePen()</code></td><td>Sends the code to CodePen.</td></tr>
+      <tr><td><code>mode</code>, <code>runMode</code>, <code>previewPosition</code>, <code>debounce</code>, <code>persistKey</code>, <code>inheritTheme</code>, <code>showConsole</code>, <code>fitPreview</code>, <code>sourceUrls</code></td><td>Properties that mirror the attributes.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Events</h3>
+  <p>All events bubble and cross the shadow boundary.</p>
+  <table class="props-table">
+    <thead><tr><th scope="col">Event</th><th scope="col">Fired when</th><th scope="col">Detail</th></tr></thead>
+    <tbody>
+      <tr><td><code>code-playground:change</code></td><td>The reader edits a panel</td><td><code>{ panel, value, values }</code></td></tr>
+      <tr><td><code>code-playground:run</code></td><td>The preview starts a run</td><td><code>{ runId, values, executionMode }</code></td></tr>
+      <tr><td><code>code-playground:ready</code></td><td>The preview has finished loading</td><td>Includes <code>executionMode</code></td></tr>
+      <tr><td><code>code-playground:console</code></td><td>The preview code logs to the console</td><td><code>{ origin, level, text, timestamp, executionMode }</code></td></tr>
+      <tr><td><code>code-playground:error</code></td><td>The preview code throws an error</td><td>The same shape as <code>console</code></td></tr>
+      <tr><td><code>code-playground:sources-loaded</code></td><td>Files named by <code>*-src</code> have loaded</td><td><code>{ loaded, values }</code></td></tr>
+      <tr><td><code>code-playground:source-error</code></td><td>A <code>*-src</code> file fails to load</td><td><code>{ type, src, error }</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>CSS custom properties</h3>
+  <p>All properties start with <code>--cp-</code>. The table lists the suffix. The element also exposes four CSS parts for <code>::part()</code>: <code>toolbar</code>, <code>editor-panel</code>, <code>preview-panel</code> and <code>console-panel</code>.</p>
+  <table class="props-table">
+    <thead><tr><th scope="col">Group</th><th scope="col">Properties</th></tr></thead>
+    <tbody>
+      <tr><td>Surfaces</td><td><code>bg</code>, <code>panel-bg</code>, <code>editor-bg</code>, <code>preview-bg</code>, <code>toolbar-bg</code>, <code>hover-bg</code></td></tr>
+      <tr><td>Text and borders</td><td><code>text</code>, <code>muted</code>, <code>border</code>, <code>border-subtle</code></td></tr>
+      <tr><td>Accent and focus</td><td><code>accent</code>, <code>on-accent</code>, <code>focus</code></td></tr>
+      <tr><td>Console levels</td><td><code>level-log</code>, <code>level-info</code>, <code>level-warn</code>, <code>level-error</code>, <code>level-debug</code></td></tr>
+      <tr><td>Shape and fonts</td><td><code>radius</code>, <code>radius-inner</code>, <code>font-sans</code>, <code>font-mono</code>, <code>shadow</code>, <code>menu-shadow</code></td></tr>
+      <tr><td>Editor syntax colors</td><td><code>token-keyword</code>, <code>token-string</code>, <code>token-number</code>, <code>token-comment</code>, <code>token-tag</code>, <code>token-attribute</code>, <code>token-property</code>, <code>token-function</code></td></tr>
+    </tbody>
+  </table>
+  <p>See the <a href="https://profpowell.github.io/code-playground/">code-playground documentation</a> for the full detail.</p>
+</section>
+
+<section id="theming">
+  <h2>With Vanilla Breeze</h2>
+  <p>A token is a CSS custom property that holds one design value, such as <code>--color-surface</code>. The component defines each of its own <code>--cp-*</code> properties from a VB token, with a built-in value for pages that do not use Vanilla Breeze.</p>
+  <table class="props-table">
+    <thead><tr><th scope="col">VB token</th><th scope="col">Drives</th></tr></thead>
+    <tbody>
+      <tr><td><code>--color-surface</code></td><td>Playground background</td></tr>
+      <tr><td><code>--color-surface-raised</code></td><td>Toolbar and panel backgrounds</td></tr>
+      <tr><td><code>--color-surface-sunken</code></td><td>Editor background</td></tr>
+      <tr><td><code>--color-background</code></td><td>Background behind the preview</td></tr>
+      <tr><td><code>--color-border</code>, <code>--color-border-subtle</code></td><td>Borders and dividers</td></tr>
+      <tr><td><code>--color-text</code>, <code>--color-text-muted</code></td><td>Text and secondary text</td></tr>
+      <tr><td><code>--color-interactive</code>, <code>--color-interactive-hover</code></td><td>Accent color, used for the Run button, active controls and the editor selection, and the Run button's hover color</td></tr>
+      <tr><td><code>--color-text-on-interactive-auto</code>, then <code>--color-text-on-primary</code></td><td>Text on the Run button</td></tr>
+      <tr><td><code>--color-focus-ring</code></td><td>Focus outline</td></tr>
+      <tr><td><code>--color-info-text</code>, <code>--color-warning-text</code>, <code>--color-error-text</code>, <code>--color-success-text</code></td><td>Console colors for log and info, warn, error, and debug entries</td></tr>
+      <tr><td><code>--radius-m</code>, <code>--radius-s</code></td><td>Outer and inner corner radius</td></tr>
+      <tr><td><code>--font-sans</code>, <code>--font-mono</code></td><td>Interface font and editor font</td></tr>
+      <tr><td><code>--shadow-m</code></td><td>Shadow of the actions menu</td></tr>
+    </tbody>
+  </table>
+  <p>The order is: a <code>--cp-*</code> property you set on the element, then the VB token, then the built-in value. No token bridge is needed. A token bridge is a stylesheet rule that copies VB tokens onto a component's own properties, and this component already reads the tokens itself. The editor's syntax colors do not come from VB tokens. Set the <code>--cp-token-*</code> properties to change them.</p>
+  <p>Light or dark follows the page when <code>mode</code> is <code>auto</code>: the component watches <code>data-mode</code>, <code>data-theme</code> and the <code>dark</code> class on <code>&lt;html&gt;</code> and <code>&lt;body&gt;</code>, and the page's computed <code>color-scheme</code>.</p>
+  <p>The preview is a separate document in a sandboxed iframe. It does not load the Vanilla Breeze stylesheet, so VB tokens are not defined inside it. The <code>inherit-theme</code> attribute only copies the page's <code>data-theme</code> and <code>data-mode</code> values onto the preview's <code>&lt;html&gt;</code> element. To style the preview with Vanilla Breeze, add the VB stylesheet link through the <code>head</code> slot or <code>head-src</code>.</p>
+  <p>To change one playground, set the property on it.</p>
+  <code-block language="css" label="Override one playground" data-escape>code-playground[persist="intro-demo"] {
+  --cp-accent: var(--color-success);
+  --cp-radius: 0;
+  --cp-editor-bg: var(--color-surface);
+}</code-block>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="https://profpowell.github.io/code-playground/">code-playground documentation</a></li>
+    <li><a href="/docs/integrations/web-components/code-block/">code-block</a>: read-only highlighted code</li>
+    <li><a href="/docs/integrations/web-components/browser-console/">browser-console</a>: a console panel for the page itself</li>
+    <li><a href="/docs/integrations/web-components/browser-window/">browser-window</a>: a browser frame around a finished demo</li>
+    <li><a href="/docs/tokens/">Design tokens</a></li>
+    <li><a href="/docs/themes/">Themes</a></li>
+  </ul>
 </section>

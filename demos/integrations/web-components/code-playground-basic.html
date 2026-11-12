@@ -1,45 +1,80 @@
 <!doctype html>
 <html lang="en">
-<!-- [html-validate-disable heading-level: demo embeds mockup page content with its own <h1>] -->
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>code-playground + Vanilla Breeze — Basic Demo</title>
+  <title>code-playground on a Vanilla Breeze page</title>
   <link rel="stylesheet" href="/src/main.css" />
   <script type="module" src="/src/main.js"></script>
-  <script type="module" src="https://unpkg.com/@profpowell/code-playground"></script>
+  <script type="module" src="https://unpkg.com/@profpowell/code-playground@0.3.1/dist/code-playground.js"></script>
   <style>
     body {
-      padding: var(--size-l) var(--size-m);
+      padding: var(--size-m);
       background: var(--color-surface);
       color: var(--color-text);
-      font-family: var(--font-body);
-      max-inline-size: 90ch;
-      margin-inline: auto;
     }
+    h1 { font-size: var(--font-size-xl); }
     code-playground {
-      display: block;
-      block-size: 70vh;
-      min-block-size: 480px;
+      block-size: 30rem;
     }
-    h2 { font-size: var(--font-size-m); color: var(--color-text-muted); margin-block-end: var(--size-s); }
+    code-playground:not(:defined) {
+      display: block;
+    }
+    code-playground:not(:defined) > * {
+      display: none;
+    }
   </style>
 </head>
 <body>
-  <h1>code-playground + Vanilla Breeze — Basic Demo</h1>
-  <section>
-    <h2>VB-themed code-playground (panes, tab bar, console adopt active theme)</h2>
-    <code-playground inherit-theme persist="vb-integration-demo">
-      <textarea slot="html" aria-label="Editor">&lt;h1&gt;Hello, Vanilla Breeze&lt;/h1&gt;
-&lt;p&gt;Edit any pane on the left. The preview re-renders live.&lt;/p&gt;
-&lt;button type="button" id="ping"&gt;Click me&lt;/button&gt;</textarea>
-      <textarea slot="css" aria-label="Editor">body { font-family: system-ui; padding: 1rem; }
-h1 { color: var(--color-interactive, #2563eb); }
-button { padding: .5rem 1rem; }</textarea>
-      <textarea slot="js" aria-label="Editor">document.getElementById('ping').addEventListener('click', () =&gt; {
-  console.log('Pong!', new Date().toISOString());
-});</textarea>
-    </code-playground>
-  </section>
+  <main>
+    <layout-stack data-layout-gap="m">
+      <header>
+        <h1>Try it: a tip calculator</h1>
+        <p>Change the code in any tab. The preview updates as you type, and the console bar counts what the script logs.</p>
+      </header>
+
+      <code-playground title="Tip calculator">
+        <textarea slot="html" aria-label="HTML source">&lt;form id="tip"&gt;
+  &lt;label&gt;Bill &lt;input name="bill" type="number" value="48" min="0" step="0.01"&gt;&lt;/label&gt;
+  &lt;label&gt;Tip % &lt;input name="rate" type="number" value="18" min="0" max="100"&gt;&lt;/label&gt;
+  &lt;button&gt;Work it out&lt;/button&gt;
+&lt;/form&gt;
+&lt;p&gt;Total: &lt;output id="total"&gt;56.64&lt;/output&gt;&lt;/p&gt;</textarea>
+        <textarea slot="css" aria-label="CSS source">body {
+  font-family: system-ui, sans-serif;
+  padding: 1rem;
+}
+
+form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+input {
+  inline-size: 6rem;
+  font: inherit;
+}
+
+output {
+  font-weight: 700;
+}</textarea>
+        <textarea slot="js" aria-label="JavaScript source">const form = document.getElementById('tip');
+const total = document.getElementById('total');
+
+form.addEventListener('submit', (event) =&gt; {
+  event.preventDefault();
+  const bill = Number(form.elements.bill.value);
+  const rate = Number(form.elements.rate.value);
+  const sum = bill * (1 + rate / 100);
+  total.textContent = sum.toFixed(2);
+  console.log(`Bill ${bill} at ${rate}% comes to ${sum.toFixed(2)}`);
+});
+
+console.info('Tip calculator ready');</textarea>
+      </code-playground>
+    </layout-stack>
+  </main>
 </body>
 </html>

@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: marquee-wc integration
-description: "Drop a marquee-wc element into a Vanilla Breeze page — an accessible, constant-velocity successor to the marquee tag whose themed modes read VB tokens directly."
+description: "Use the marquee-wc element on a Vanilla Breeze page for scrolling content such as tickers, news bars and credit rolls, styled by the active theme."
 currentSection: resources
 currentPath: /docs/integrations/web-components/marquee-wc/
 ---
@@ -15,86 +15,210 @@ currentPath: /docs/integrations/web-components/marquee-wc/
 </nav>
 
 <h1>marquee-wc</h1>
-<p class="lead">The <code>&lt;marquee&gt;</code> tag reborn as an accessible, constant-velocity web component — tickers, breaking-news bars, credit rolls, dot-matrix boards, and 15 per-letter motion modes. It renders in light DOM and reads VB <code>--color-*</code>, <code>--font-*</code>, <code>--size-*</code> and <code>--radius-*</code> tokens directly, so no bridge is needed.</p>
+<p class="lead"><code>&lt;marquee-wc&gt;</code> scrolls its content at a constant speed, as a replacement for the retired <code>&lt;marquee&gt;</code> tag that pauses when asked and stops for reduced motion. Its modes (named looks such as a stock ticker or a news bar) take their colors, fonts and spacing from Vanilla Breeze tokens.</p>
 
-<section>
-  <h2>Where to find it</h2>
+<nav class="subnav" aria-label="marquee-wc sections">
   <ul>
-    <li>npm: <a href="https://www.npmjs.com/package/@profpowell/marquee-wc"><code>@profpowell/marquee-wc</code></a></li>
-    <li>GitHub: <a href="https://github.com/ProfPowell/marquee-wc">ProfPowell/marquee-wc</a></li>
-    <li>Live demos: <a href="https://profpowell.github.io/marquee-wc/">profpowell.github.io/marquee-wc</a></li>
-    <li>License: MIT</li>
+    <li><a href="#at-a-glance">At a glance</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#reference">Reference</a></li>
+    <li><a href="#theming">With Vanilla Breeze</a></li>
+    <li><a href="#accessibility">Accessibility</a></li>
+    <li><a href="#related">Related</a></li>
   </ul>
-</section>
+</nav>
 
-<section>
-  <h2>Install</h2>
-  <p>Via CDN — the component is light DOM, so load its stylesheet as well as the script:</p>
-  <code-block language="html" data-escape><link rel="stylesheet" href="https://unpkg.com/@profpowell/marquee-wc@1.7.1/dist/marquee-wc.css">
-<script type="module" src="https://unpkg.com/@profpowell/marquee-wc@1.7.1/dist/marquee-wc.js"></script></code-block>
-  <p>Or via npm:</p>
-  <code-block language="bash" data-escape>npm install @profpowell/marquee-wc</code-block>
-  <code-block language="javascript" data-escape>import '@profpowell/marquee-wc';
-import '@profpowell/marquee-wc/style.css';</code-block>
-  <p>Not currently bundled into Vanilla Breeze. There is no build coupling between the two repos; the interface is purely CSS custom properties.</p>
-</section>
-
-<section>
-  <h2>Demo</h2>
-  <p>A Vanilla Breeze page with a handful of <code>&lt;marquee-wc&gt;</code> modes. Surfaces, text, fonts and spacing all resolve from VB tokens, and text on coloured fills (<code>breaking-news</code>, <code>ransom</code> chips) uses <code>--color-text-on-*-auto</code> to stay readable. Switch the site theme to see them re-skin.</p>
-  <browser-window url="marquee-wc-basic" src="/docs/integrations/web-components/demos/marquee-wc-basic.html"></browser-window>
-</section>
-
-<section>
-  <h2>Quick reference</h2>
+<section id="at-a-glance">
+  <h2>At a glance</h2>
   <table class="props-table">
-    <thead><tr><th>Attribute / API</th><th>Purpose</th></tr></thead>
     <tbody>
-      <tr><td><code>mode</code></td><td>Surface theme (<code>ticker</code>, <code>breaking-news</code>, <code>code-block</code>, <code>screen-saver</code>, <code>credits</code>, <code>dot-matrix</code>) or per-letter motion (<code>bounce</code>, <code>wave</code>, <code>ransom</code>, <code>decode</code>, …).</td></tr>
-      <tr><td><code>direction</code></td><td><code>left</code> (default), <code>right</code>, <code>up</code>, <code>down</code>.</td></tr>
-      <tr><td><code>behavior</code></td><td><code>loop</code> (default), <code>slide</code>, <code>alternate</code>.</td></tr>
-      <tr><td><code>speed</code></td><td>Pixels per second (default 50). Velocity stays constant whatever the content length.</td></tr>
-      <tr><td><code>unit</code></td><td><code>letter</code> (default) or <code>word</code> — granularity for motion modes.</td></tr>
-      <tr><td><code>pause-on-hover</code></td><td>Pause on hover and on keyboard focus.</td></tr>
-      <tr><td><code>fade</code></td><td>Mask the leading and trailing edges.</td></tr>
-      <tr><td><code>reduced-motion</code></td><td><code>respect</code> (default) or <code>ignore</code>.</td></tr>
-      <tr><td><code>.start() / .stop() / .toggle()</code></td><td>Legacy <code>&lt;marquee&gt;</code>-compatible playback control.</td></tr>
-      <tr><td><code>--marquee-gap</code>, <code>--marquee-fade-size</code></td><td>Spacing overrides. Default to VB <code>--size-*</code> tokens.</td></tr>
-      <tr><td><code>--marquee-bg</code>, <code>--marquee-fg</code></td><td>Colour overrides for the themed modes. Beat the VB tokens.</td></tr>
+      <tr><th scope="row">Package</th><td><a href="https://www.npmjs.com/package/@profpowell/marquee-wc"><code>@profpowell/marquee-wc</code></a>, version <code>1.7.1</code></td></tr>
+      <tr><th scope="row">Elements</th><td><code>&lt;marquee-wc&gt;</code></td></tr>
+      <tr><th scope="row">Renders in</th><td>Light DOM</td></tr>
+      <tr><th scope="row">Source</th><td><a href="https://github.com/ProfPowell/marquee-wc">github.com/ProfPowell/marquee-wc</a></td></tr>
+      <tr><th scope="row">Documentation</th><td><a href="https://profpowell.github.io/marquee-wc/">profpowell.github.io/marquee-wc</a></td></tr>
+      <tr><th scope="row">Licence</th><td>MIT</td></tr>
+      <tr><th scope="row">In Vanilla Breeze</th><td>Not bundled. Load it yourself.</td></tr>
     </tbody>
   </table>
-  <p>Fires <code>marquee-start</code>, <code>marquee-pause</code> and <code>marquee-cycle</code>. See the <a href="https://profpowell.github.io/marquee-wc/api.html">API reference</a> for everything else.</p>
 </section>
 
-<section>
-  <h2>VB integration</h2>
-  <ul>
-    <li><strong>Tokens:</strong> themed modes read <code>--color-surface</code>, <code>--color-background</code>, <code>--color-text</code>, <code>--color-accent</code>, <code>--color-error</code>, <code>--font-mono</code>/<code>-sans</code>/<code>-serif</code>, <code>--radius-m</code>, and the <code>--size-*</code> scale. A <code>--marquee-*</code> override wins; otherwise the VB token applies; otherwise a built-in fallback.</li>
-    <li><strong>Cascade layer:</strong> all styles live in <code>@layer web-components</code>, so they slot into VB's layer order and theme packs can restyle marquees.</li>
-    <li><strong>Spacing:</strong> because gaps and paddings use <code>--size-*</code>, <code>data-fluid</code> and the <code>a11y-large-text</code> theme scale marquees along with the rest of the page.</li>
-    <li><strong>Reduced motion:</strong> both <code>prefers-reduced-motion</code> and VB's <code>&lt;html data-motion-reduced&gt;</code> toggle stop all motion, including the JS-driven <code>decode</code> scramble.</li>
-  </ul>
-  <p>Requires marquee-wc 1.7.0 or later; earlier versions predate the layer, spacing-token and motion-toggle support.</p>
+<section id="install">
+  <h2>Install</h2>
+  <p>From a CDN. The script is all you need: on first load it adds the component's styles to the page.</p>
+  <code-block language="html" label="CDN" data-escape><script type="module" src="https://unpkg.com/@profpowell/marquee-wc@1.7.1/dist/marquee-wc.js"></script></code-block>
+  <p>The package also ships the same styles as a file. Linking it is optional. It is useful when you want the styles in place before the script runs.</p>
+  <code-block language="html" label="Optional stylesheet" data-escape><link rel="stylesheet" href="https://unpkg.com/@profpowell/marquee-wc@1.7.1/dist/marquee-wc.css"/></code-block>
+  <p>Or with npm:</p>
+  <code-block language="bash" label="npm" data-escape>npm install @profpowell/marquee-wc</code-block>
+  <code-block language="javascript" label="Import" data-escape>import '@profpowell/marquee-wc';
+
+// Optional: the same styles as a stylesheet
+import '@profpowell/marquee-wc/style.css';</code-block>
 </section>
 
-<section>
-  <h2>marquee-wc or <code>data-effect="marquee"</code>?</h2>
-  <p>VB's built-in <a href="/docs/attributes/data-effect/#marquee"><code>data-effect="marquee"</code></a> is a CSS-only scroll for a simple strip of content. Reach for marquee-wc when you need constant velocity regardless of content length, vertical or alternating motion, auto-fill clones, off-screen pausing, playback events, or the themed and per-letter modes.</p>
+<section id="demo">
+  <h2>Demo</h2>
+  <p>Six modes on a Vanilla Breeze page. None of them sets a color or a font: surfaces, text and spacing come from the theme tokens.</p>
+  <browser-window url="marquee-wc-basic" src="/docs/integrations/web-components/demos/marquee-wc-basic.html" data-demo-height="l"></browser-window>
 </section>
 
-<section>
+<section id="usage">
   <h2>Usage</h2>
-  <code-block language="html" data-escape>
-<html data-theme="nord">
-  <body>
-    <marquee-wc mode="ticker" speed="60" pause-on-hover>
-      VB +1.2% · CSS +0.8% · HTML +2.4%
-    </marquee-wc>
+  <p>A ticker that pauses while the pointer is over it or while keyboard focus is inside it.</p>
+  <code-block language="html" label="Ticker" data-escape><marquee-wc mode="ticker" speed="60" pause-on-hover>
+  Docs build passed · 412 pages · 0 broken links · deployed 14:02
+</marquee-wc></code-block>
 
-    <marquee-wc direction="up" mode="credits">
-      <p>Directed by Vanilla Breeze</p>
-    </marquee-wc>
-  </body>
-</html></code-block>
-  <p>The original content stays in the accessibility tree; the clones added for seamless looping are <code>aria-hidden</code>, <code>inert</code>, and stripped of ids.</p>
+  <p>A news bar. The label on the left comes from the <code>--marquee-label</code> custom property.</p>
+  <code-block language="html" label="News bar with a custom label" data-escape><style>
+  .service-notice { --marquee-label: 'NOTICE'; }
+</style>
+
+<marquee-wc class="service-notice" mode="breaking-news" speed="70">
+  Scheduled maintenance tonight from 22:00 to 23:00 UTC.
+</marquee-wc></code-block>
+
+  <p>A vertical credit roll. Block content is allowed inside.</p>
+  <code-block language="html" label="Credit roll" data-escape><marquee-wc mode="credits" direction="up" speed="30">
+  <p>Written and directed by the docs team</p>
+  <p>Typeset in the theme's serif face</p>
+</marquee-wc></code-block>
+</section>
+
+<section id="reference">
+  <h2>Reference</h2>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>direction</code></td><td><code>left</code>, <code>right</code>, <code>up</code>, <code>down</code></td><td><code>left</code></td><td>Which way the content moves.</td></tr>
+      <tr><td><code>speed</code></td><td>Number</td><td><code>50</code></td><td>Pixels per second. The speed stays the same however long the content is.</td></tr>
+      <tr><td><code>behavior</code></td><td><code>loop</code>, <code>slide</code>, <code>alternate</code></td><td><code>loop</code></td><td><code>loop</code> repeats without end, <code>slide</code> moves in once and stops, <code>alternate</code> moves back and forth.</td></tr>
+      <tr><td><code>gap</code></td><td>CSS length</td><td>Set by the mode</td><td>Space between repeats. Overrides <code>--marquee-gap</code>.</td></tr>
+      <tr><td><code>pause-on-hover</code></td><td>Boolean</td><td>off</td><td>Pauses on hover and while keyboard focus is inside.</td></tr>
+      <tr><td><code>play-state</code></td><td><code>running</code>, <code>paused</code></td><td><code>running</code></td><td>Starts or stops the motion.</td></tr>
+      <tr><td><code>autofill</code></td><td>Boolean; <code>false</code> to opt out</td><td>on</td><td>Copies short content until it fills the visible width, so the loop has no empty stretch.</td></tr>
+      <tr><td><code>fade</code></td><td>Boolean</td><td>off</td><td>Fades the content out at both edges.</td></tr>
+      <tr><td><code>reduced-motion</code></td><td><code>respect</code>, <code>ignore</code></td><td><code>respect</code></td><td><code>ignore</code> keeps the motion running even when the reader has asked for reduced motion.</td></tr>
+      <tr><td><code>mode</code></td><td>A mode name</td><td>none</td><td>A visual or motion preset. See the list below.</td></tr>
+      <tr><td><code>unit</code></td><td><code>letter</code>, <code>word</code></td><td><code>letter</code></td><td>Whether the letter-motion modes animate each letter or each word.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Modes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Group</th><th scope="col">Modes</th><th scope="col">What they do</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Surface themes</td><td><code>ticker</code>, <code>breaking-news</code>, <code>code-block</code>, <code>screen-saver</code>, <code>credits</code>, <code>dot-matrix</code></td><td>Style the whole strip. <code>screen-saver</code> suits <code>behavior="alternate"</code> and <code>credits</code> suits <code>direction="up"</code>.</td></tr>
+      <tr><td>Letter motion</td><td><code>bounce</code>, <code>wave</code>, <code>march</code>, <code>pulse</code>, <code>ransom</code>, <code>pop</code>, <code>spin</code>, <code>rainbow</code>, <code>flip</code>, <code>glitch</code>, <code>leet</code>, <code>blink</code>, <code>chase</code>, <code>invert</code>, <code>decode</code></td><td>Split the text into letters, or words with <code>unit="word"</code>, and animate each one with a small delay while the strip scrolls.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Methods and properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Member</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>start()</code></td><td>Sets <code>play-state="running"</code>.</td></tr>
+      <tr><td><code>stop()</code></td><td>Sets <code>play-state="paused"</code>.</td></tr>
+      <tr><td><code>toggle()</code></td><td>Switches between running and paused.</td></tr>
+      <tr><td><code>refresh()</code></td><td>Measures the content again. Call it after you change the content with script.</td></tr>
+      <tr><td><code>direction</code>, <code>speed</code>, <code>behavior</code>, <code>playState</code>, <code>mode</code></td><td>Read-only. The current value of the matching attribute.</td></tr>
+      <tr><td><code>axis</code></td><td>Read-only. <code>x</code> or <code>y</code>, worked out from <code>direction</code>.</td></tr>
+    </tbody>
+  </table>
+  <p>To change a setting, set the attribute. The element reacts to attribute changes.</p>
+
+  <h3>Events</h3>
+  <p>All three events bubble and carry no detail.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Event</th><th scope="col">When</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>marquee-start</code></td><td>The marquee starts running.</td></tr>
+      <tr><td><code>marquee-pause</code></td><td>The marquee is paused.</td></tr>
+      <tr><td><code>marquee-cycle</code></td><td>One loop completes.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>CSS custom properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Property</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--marquee-gap</code></td><td>Space between repeats.</td></tr>
+      <tr><td><code>--marquee-fade-size</code></td><td>Width of the edge fade when <code>fade</code> is set.</td></tr>
+      <tr><td><code>--marquee-bg</code></td><td>Background of the surface themes.</td></tr>
+      <tr><td><code>--marquee-fg</code></td><td>Text color of the surface themes.</td></tr>
+      <tr><td><code>--marquee-label</code></td><td>Label text of <code>breaking-news</code>, as a quoted string. Default <code>'BREAKING'</code>.</td></tr>
+    </tbody>
+  </table>
+  <p>The element sets <code>--marquee-duration</code> and <code>--marquee-cycle-distance</code> itself. Do not set them.</p>
+  <p>The <a href="https://profpowell.github.io/marquee-wc/">marquee-wc documentation</a> shows every mode running and has the full detail.</p>
+</section>
+
+<section id="theming">
+  <h2>With Vanilla Breeze</h2>
+  <p>The component's styles name Vanilla Breeze tokens directly, so a themed page needs no setup.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Token</th><th scope="col">Drives</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--color-surface</code></td><td>Background of <code>ticker</code>.</td></tr>
+      <tr><td><code>--color-surface-sunken</code></td><td>Background of <code>code-block</code>.</td></tr>
+      <tr><td><code>--color-background</code></td><td>Background of <code>screen-saver</code>, <code>credits</code> and <code>dot-matrix</code>; letter color of <code>invert</code>.</td></tr>
+      <tr><td><code>--color-text</code></td><td>Text of <code>ticker</code>, <code>code-block</code> and <code>credits</code>.</td></tr>
+      <tr><td><code>--color-accent</code></td><td>Text of <code>screen-saver</code>, the lights of <code>dot-matrix</code>, the chips of <code>ransom</code>, and the highlight in <code>pop</code> and <code>chase</code>.</td></tr>
+      <tr><td><code>--color-error</code></td><td>Background of <code>breaking-news</code>.</td></tr>
+      <tr><td><code>--color-success</code></td><td>Text of <code>leet</code> and <code>decode</code>.</td></tr>
+      <tr><td><code>--color-text-on-error-auto</code>, <code>--color-text-on-accent-auto</code></td><td>Text on the <code>breaking-news</code> bar and on <code>ransom</code> chips. These tokens pick black or white to suit the fill.</td></tr>
+      <tr><td><code>--font-mono</code>, <code>--font-sans</code>, <code>--font-serif</code></td><td>Typeface of each mode: mono for <code>ticker</code>, <code>code-block</code>, <code>dot-matrix</code>, <code>leet</code> and <code>decode</code>; sans for <code>breaking-news</code>, <code>screen-saver</code> and <code>ransom</code>; serif for <code>credits</code>.</td></tr>
+      <tr><td><code>--font-size-s</code></td><td>Text size of <code>ticker</code> and <code>code-block</code>.</td></tr>
+      <tr><td><code>--size-xs</code> to <code>--size-3xl</code></td><td>Gaps, padding and fade widths.</td></tr>
+      <tr><td><code>--radius-m</code></td><td>Corner radius of <code>code-block</code>.</td></tr>
+    </tbody>
+  </table>
+  <p>For each value the styles use the first of these that is set: the <code>--marquee-*</code> property, then the Vanilla Breeze token, then a built-in default. Set the property on one element to change that element only.</p>
+  <code-block language="css" label="Override one instance" data-escape>.release-ticker {
+  --marquee-bg: var(--color-surface-sunken);
+  --marquee-fg: var(--color-primary);
+  --marquee-gap: var(--size-3xl);
+}</code-block>
+  <p>All the styles sit in the cascade layer <code>web-components</code>, which is one of Vanilla Breeze's own layers. Theme packs can therefore restyle a marquee, and your unlayered CSS overrides it without <code>!important</code>. Because spacing uses the <code>--size-*</code> scale, marquees grow and shrink with the rest of the page.</p>
+
+  <h3>marquee-wc or data-effect="marquee"</h3>
+  <p>Vanilla Breeze has a CSS-only scroll, <a href="/docs/attributes/data-effect/#marquee"><code>data-effect="marquee"</code></a>. Use it for a plain strip of content with no script. Use marquee-wc when you need the same speed whatever the content length, vertical or back-and-forth motion, automatic filling of short content, pausing while off screen, events, or any of the modes.</p>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Reduced motion.</strong> All motion stops when the operating system asks for reduced motion, and also when Vanilla Breeze's own setting puts <code>data-motion-reduced</code> on <code>&lt;html&gt;</code>. It keeps running only if you set <code>reduced-motion="ignore"</code>.</li>
+    <li><strong>Screen readers.</strong> Your original content stays in the accessibility tree and is read once. The copies added to make the loop continuous are <code>aria-hidden</code> and <code>inert</code>, and their <code>id</code> attributes are removed.</li>
+    <li><strong>Keyboard.</strong> The copies are out of the tab order. With <code>pause-on-hover</code>, the marquee also pauses while focus is on a link or control inside it.</li>
+    <li><strong>Idle cost.</strong> The marquee pauses while it is off screen and while the tab is hidden.</li>
+  </ul>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="https://profpowell.github.io/marquee-wc/">marquee-wc documentation and live demos</a></li>
+    <li><a href="/docs/integrations/web-components/blink-wc/">blink-wc</a>: the sibling component for blinking content, with the same API shape</li>
+    <li><a href="/docs/integrations/web-components/border-wc/">border-wc</a>: decorative borders, including a chase-light <code>marquee</code> effect</li>
+    <li><a href="/docs/attributes/data-effect/#marquee"><code>data-effect="marquee"</code></a>: the CSS-only scroll in Vanilla Breeze</li>
+    <li><a href="/docs/themes/">Vanilla Breeze themes</a> and <a href="/docs/tokens/">design tokens</a></li>
+  </ul>
 </section>

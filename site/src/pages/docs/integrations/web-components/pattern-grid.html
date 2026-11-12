@@ -1,0 +1,247 @@
+---
+layout: docs
+title: pattern-grid integration
+description: "Generate a grid of empty cells with the pattern-grid element and style them with Vanilla Breeze tokens to draw CSS patterns."
+currentSection: resources
+currentPath: /docs/integrations/web-components/pattern-grid/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/integrations/">Integrations</a></li>
+    <li><a href="/docs/integrations/web-components/">Web Components</a></li>
+    <li><span aria-current="page">pattern-grid</span></li>
+  </ol>
+</nav>
+
+<h1>pattern-grid</h1>
+<p class="lead">An element that fills itself with a set number of empty cells and leaves every visual decision to your CSS. It has no theming of its own, so the cells take whatever Vanilla Breeze tokens you use in the rules you write.</p>
+
+<nav class="subnav" aria-label="pattern-grid sections">
+  <ul>
+    <li><a href="#at-a-glance">At a glance</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#reference">Reference</a></li>
+    <li><a href="#theming">With Vanilla Breeze</a></li>
+    <li><a href="#accessibility">Accessibility</a></li>
+    <li><a href="#related">Related</a></li>
+  </ul>
+</nav>
+
+<section id="at-a-glance">
+  <h2>At a glance</h2>
+  <table class="props-table">
+    <tbody>
+      <tr><th scope="row">Package</th><td><a href="https://www.npmjs.com/package/@profpowell/pattern-grid"><code>@profpowell/pattern-grid</code></a> <code>0.3.0</code></td></tr>
+      <tr><th scope="row">Elements</th><td><code>&lt;pattern-grid&gt;</code>, plus two optional companions loaded from their own files: <code>&lt;seed-context&gt;</code> and <code>&lt;paint-worklet&gt;</code></td></tr>
+      <tr><th scope="row">Renders in</th><td>Light DOM</td></tr>
+      <tr><th scope="row">Source</th><td><a href="https://github.com/ProfPowell/pattern-grid">github.com/ProfPowell/pattern-grid</a></td></tr>
+      <tr><th scope="row">Documentation</th><td><a href="https://profpowell.github.io/pattern-grid/">profpowell.github.io/pattern-grid</a></td></tr>
+      <tr><th scope="row">Licence</th><td>MIT</td></tr>
+      <tr><th scope="row">In Vanilla Breeze</th><td>Not bundled. Load it yourself.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="install">
+  <h2>Install</h2>
+  <p>From a CDN. The script is all you need. The stylesheet is optional: it sets up the grid layout for you, as described under <a href="#usage">Usage</a>.</p>
+  <code-block language="html" label="CDN" data-escape><script type="module" src="https://unpkg.com/@profpowell/pattern-grid@0.3.0/dist/pattern-grid.js"></script></code-block>
+  <p>The optional stylesheet and the two companion elements are separate files:</p>
+  <code-block language="html" label="Optional files" data-escape><link rel="stylesheet" href="https://unpkg.com/@profpowell/pattern-grid@0.3.0/dist/pattern-grid.css">
+<script type="module" src="https://unpkg.com/@profpowell/pattern-grid@0.3.0/dist/seed-context.js"></script>
+<script type="module" src="https://unpkg.com/@profpowell/pattern-grid@0.3.0/dist/paint-worklet.js"></script></code-block>
+  <p>Or from npm:</p>
+  <code-block language="bash" label="npm" data-escape>npm install @profpowell/pattern-grid</code-block>
+  <code-block language="javascript" label="Import" data-escape>import '@profpowell/pattern-grid';
+
+// Optional
+import '@profpowell/pattern-grid/css';
+import '@profpowell/pattern-grid/seed-context';
+import '@profpowell/pattern-grid/paint-worklet';</code-block>
+</section>
+
+<section id="demo">
+  <h2>Demo</h2>
+  <p>Two grids colored only with Vanilla Breeze tokens: a ramp where each cell's color depends on its position, and a seeded random texture that is the same on every load.</p>
+  <browser-window url="pattern-grid-basic" src="/docs/integrations/web-components/demos/pattern-grid-basic.html" data-demo-height="l"></browser-window>
+</section>
+
+<section id="usage">
+  <h2>Usage</h2>
+  <p>The element creates the cells and nothing else. On its own it shows nothing: the cells are empty <code>&lt;i&gt;</code> elements with no size or color. This CSS makes the grid visible. The element sets <code>--pg-cols</code> and <code>--pg-rows</code> on itself for your rules to use.</p>
+  <code-block language="html" label="A grid and the CSS that shows it" data-escape><pattern-grid cells="8x8"></pattern-grid>
+
+<style>
+  pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--pg-cols), 1fr);
+  }
+  pattern-grid > i {
+    aspect-ratio: 1;
+    background: hsl(calc(sibling-index() / sibling-count() * 360) 70% 50%);
+  }
+</style></code-block>
+
+  <p>The CSS functions <code>sibling-index()</code> and <code>sibling-count()</code> give a cell its position and the number of cells, but not every browser has them. Add <code>shim="sibling"</code> and the element writes the same numbers as custom properties: <code>--i</code> on each cell, counting from 1, and <code>--n</code> on the grid.</p>
+  <code-block language="html" label="Position-based color in every browser" data-escape><pattern-grid cells="12x6" shim="sibling"></pattern-grid>
+
+<style>
+  pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--pg-cols), 1fr);
+  }
+  pattern-grid > i {
+    aspect-ratio: 1;
+    background: hsl(calc(var(--i) / var(--n) * 360) 70% 50%);
+  }
+</style></code-block>
+
+  <p>Wrap a grid in <code>&lt;seed-context&gt;</code> to give every cell random numbers. Each cell gets <code>--rand-0</code> to <code>--rand-7</code>, each between 0 and 1, and <code>--randi-0</code> to <code>--randi-7</code>, whole numbers from 0 to 99. The same <code>seed</code> produces the same numbers on every load.</p>
+  <code-block language="html" label="Seeded random cells" data-escape><seed-context seed="hello">
+  <pattern-grid cells="8x8"></pattern-grid>
+</seed-context>
+
+<style>
+  pattern-grid > i {
+    background: hsl(calc(var(--rand-0) * 360deg) 70% 50%);
+  }
+</style></code-block>
+  <p>Do not combine <code>shim="sibling"</code> with <code>&lt;seed-context&gt;</code> on the same grid. In version 0.3.0 the seed context replaces each cell's inline style, which removes <code>--i</code>.</p>
+
+  <p>To skip writing the layout rules, load the optional stylesheet. It makes the element a grid of square cells and reads four custom properties: <code>--pg-gap</code>, <code>--pg-bg</code>, <code>--pg-cell-aspect</code> and <code>--pg-aspect</code>.</p>
+</section>
+
+<section id="reference">
+  <h2>Reference</h2>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Attribute</th><th scope="col">Applies to</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>cells</code></td><td><code>pattern-grid</code></td><td><code>8x8</code> (columns by rows) or <code>64</code> (columns, one row)</td><td>None</td><td>Sets columns and rows together. When present, <code>cols</code> and <code>rows</code> are ignored.</td></tr>
+      <tr><td><code>cols</code></td><td><code>pattern-grid</code></td><td>1 to 256</td><td><code>1</code></td><td>Number of columns.</td></tr>
+      <tr><td><code>rows</code></td><td><code>pattern-grid</code></td><td>1 to 256</td><td><code>1</code></td><td>Number of rows.</td></tr>
+      <tr><td><code>cell</code></td><td><code>pattern-grid</code></td><td>Tag name</td><td><code>i</code></td><td>The element created for each cell. If the grid contains a <code>&lt;template&gt;</code> child, its content is cloned for each cell instead.</td></tr>
+      <tr><td><code>shim</code></td><td><code>pattern-grid</code></td><td><code>sibling</code></td><td>Off</td><td>Writes <code>--i</code> on each cell and <code>--n</code> on the grid, for browsers without <code>sibling-index()</code>.</td></tr>
+      <tr><td><code>seed</code></td><td><code>pattern-grid</code></td><td>Any string</td><td>None</td><td>Accepted, but version 0.3.0 does nothing with it on this element. Put <code>seed</code> on <code>&lt;seed-context&gt;</code>.</td></tr>
+      <tr><td><code>seed</code></td><td><code>seed-context</code></td><td>Any string</td><td>Empty string</td><td>Starting value for the random numbers. The same seed gives the same result.</td></tr>
+      <tr><td><code>count</code></td><td><code>seed-context</code></td><td>1 to 32</td><td><code>8</code></td><td>How many <code>--rand-N</code> and <code>--randi-N</code> pairs each cell gets.</td></tr>
+      <tr><td><code>src</code></td><td><code>paint-worklet</code></td><td>URL</td><td>None</td><td>A CSS Paint Worklet module to register, so cells can use <code>background: paint(name)</code>. A paint worklet is a script that draws an element's background.</td></tr>
+    </tbody>
+  </table>
+  <p>If the grid already contains exactly columns times rows child elements, the element keeps them and creates nothing. Cells written by hand therefore work before the script loads.</p>
+
+  <h3>Methods and properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Member</th><th scope="col">Applies to</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>cols</code>, <code>rows</code>, <code>cell</code></td><td><code>pattern-grid</code></td><td>Read or set the matching attributes.</td></tr>
+      <tr><td><code>total</code></td><td><code>pattern-grid</code></td><td>Read only. Columns times rows.</td></tr>
+      <tr><td><code>cellElements</code></td><td><code>pattern-grid</code></td><td>Read only. An array of the cells, in order.</td></tr>
+      <tr><td><code>render()</code></td><td><code>pattern-grid</code></td><td>Replaces all cells with new ones.</td></tr>
+      <tr><td><code>cellAt(index)</code>, <code>cellAt(x, y)</code></td><td><code>pattern-grid</code></td><td>Returns one cell by position in the list, or by column and row, both counting from 0. Returns <code>null</code> if there is none.</td></tr>
+      <tr><td><code>seed</code>, <code>count</code></td><td><code>seed-context</code></td><td>Read or set the matching attributes.</td></tr>
+      <tr><td><code>reseed()</code></td><td><code>seed-context</code></td><td>Writes the random numbers again on every grid it has filled.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Events</h3>
+  <p>All of these bubble.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Event</th><th scope="col">Detail</th><th scope="col">Fired when</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>pattern-grid:render</code></td><td><code>{ cols, rows, total }</code></td><td>The grid has created its cells.</td></tr>
+      <tr><td><code>seed-context:populated</code></td><td><code>{ target, count }</code></td><td>The seed context has written random numbers on a grid's cells.</td></tr>
+      <tr><td><code>paint-worklet:registered</code></td><td><code>{ src }</code></td><td>The worklet module loaded.</td></tr>
+      <tr><td><code>paint-worklet:error</code></td><td><code>{ src, error }</code></td><td>The module failed to load, or the browser has no Paint Worklet support.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>CSS custom properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Property</th><th scope="col">Set by</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--pg-cols</code>, <code>--pg-rows</code></td><td>The element, on itself</td><td>Number of columns and rows, for your layout rules.</td></tr>
+      <tr><td><code>--n</code></td><td>The element, with <code>shim="sibling"</code></td><td>Total number of cells.</td></tr>
+      <tr><td><code>--i</code></td><td>The element, on each cell, with <code>shim="sibling"</code></td><td>The cell's position, counting from 1.</td></tr>
+      <tr><td><code>--rand-N</code>, <code>--randi-N</code></td><td><code>seed-context</code>, on each cell</td><td>Random numbers: 0 to 1, and whole numbers 0 to 99.</td></tr>
+      <tr><td><code>--pg-gap</code></td><td>You; read by the optional stylesheet</td><td>Gap between cells. Default <code>0</code>.</td></tr>
+      <tr><td><code>--pg-bg</code></td><td>You; read by the optional stylesheet</td><td>Cell background. Default <code>transparent</code>.</td></tr>
+      <tr><td><code>--pg-cell-aspect</code></td><td>You; read by the optional stylesheet</td><td>Aspect ratio of each cell. Default <code>1</code>.</td></tr>
+      <tr><td><code>--pg-aspect</code></td><td>You; read by the optional stylesheet</td><td>Aspect ratio of the whole grid. Default is columns divided by rows.</td></tr>
+    </tbody>
+  </table>
+  <p>The <a href="https://profpowell.github.io/pattern-grid/">pattern-grid documentation</a> has the full detail, and its <a href="https://profpowell.github.io/pattern-grid/showcase.html">showcase</a> has worked patterns.</p>
+</section>
+
+<section id="theming">
+  <h2>With Vanilla Breeze</h2>
+  <p>pattern-grid has no theming of its own. It reads no Vanilla Breeze token and has no fallback order, because it ships no colors, fonts or spacing. The cells are plain light DOM elements, so page CSS reaches them directly and Vanilla Breeze tokens work in it like anywhere else.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">VB token</th><th scope="col">A use in a pattern</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--color-primary</code>, <code>--color-accent</code></td><td>The colors a pattern is mixed from. They change with the theme.</td></tr>
+      <tr><td><code>--color-surface</code>, <code>--color-surface-sunken</code></td><td>The quiet end of a ramp, so cells fade into the page in light and dark mode.</td></tr>
+      <tr><td><code>--size-3xs</code>, <code>--size-2xs</code></td><td>Gap between cells.</td></tr>
+      <tr><td><code>--radius-s</code>, <code>--radius-m</code></td><td>Corner radius of cells or of the whole grid.</td></tr>
+    </tbody>
+  </table>
+  <p>Style all grids with a rule on <code>pattern-grid</code>, and one grid with an id or other selector:</p>
+  <code-block language="css" label="Cells styled with VB tokens" data-escape>pattern-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--pg-cols), 1fr);
+  gap: var(--size-3xs);
+}
+
+pattern-grid > i {
+  aspect-ratio: 1;
+  border-radius: var(--radius-s);
+  background: var(--color-surface-sunken);
+}
+
+/* One instance: a ramp from the surface color to the theme's primary color.
+   Needs shim="sibling" on the element for --i and --n. */
+#ramp > i {
+  background: color-mix(
+    in oklch,
+    var(--color-primary) calc(var(--i) / var(--n) * 100%),
+    var(--color-surface)
+  );
+}</code-block>
+  <p>Because the colors are tokens, the pattern changes when the theme or the light and dark mode changes, with no script.</p>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The generated cells are empty and carry no role, label or keyboard behavior. A grid used as decoration should be hidden from assistive technology with <code>aria-hidden="true"</code>.</li>
+    <li>If a pattern carries meaning, give that meaning in text next to it. Color in empty cells is not available to a screen reader.</li>
+    <li>The element adds no motion. Any animation comes from your CSS, so wrap it in a <code>prefers-reduced-motion</code> query.</li>
+    <li><code>&lt;seed-context&gt;</code> fades cells in over 220 milliseconds when it fills them. Version 0.3.0 does not turn that fade off for reduced motion.</li>
+  </ul>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="https://profpowell.github.io/pattern-grid/">pattern-grid documentation</a> and <a href="https://profpowell.github.io/pattern-grid/showcase.html">showcase</a></li>
+    <li><a href="/docs/integrations/web-components/bg-wc/">bg-wc</a>: ready-made animated and generated backgrounds</li>
+    <li><a href="/docs/integrations/web-components/border-wc/">border-wc</a>: decorative borders</li>
+    <li><a href="/docs/integrations/web-components/screen-saver/">screen-saver</a>: full-screen generated art</li>
+    <li><a href="/docs/elements/custom-elements/grid/"><code>&lt;layout-grid&gt;</code></a>: the Vanilla Breeze element for laying out content in a grid</li>
+    <li><a href="/docs/tokens/">Vanilla Breeze tokens</a></li>
+  </ul>
+</section>

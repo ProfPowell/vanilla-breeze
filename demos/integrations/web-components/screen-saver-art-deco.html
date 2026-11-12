@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en" data-theme="art-deco">
+<html lang="en" data-theme="art-deco" data-theme-source="site">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>screen-saver + Vanilla Breeze — Art Deco</title>
-  <link rel="stylesheet" href="/src/main.css" />
-  <link rel="stylesheet" href="/src/tokens/themes/_extreme-art-deco.css" />
+  <title>screen-saver in a Vanilla Breeze page: Art deco</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/src/tokens/themes/_extreme-art-deco.css" data-vb-theme="art-deco"/>
   <script type="module" src="/src/main.js"></script>
   <script type="module" src="https://unpkg.com/@profpowell/screen-saver@1.1.1/dist/screen-saver.js"></script>
   <style>
@@ -13,25 +13,35 @@
       padding: var(--size-l) var(--size-m);
       background: var(--color-background);
       color: var(--color-text);
-      font-family: var(--font-sans);
+    }
+    main {
       max-inline-size: 60ch;
       margin-inline: auto;
+    }
+    h1 {
+      margin-block-start: 0;
     }
   </style>
 </head>
 <body>
-  <article>
-    <h1 style="margin-block-start: 0;">Art Deco theme</h1>
-    <p>The page is themed <code>art-deco</code>. The <code>screen-saver</code> below has <code>effect="art-deco"</code> and auto-activates on load. Move your cursor into the frame to dismiss it; leave the frame for ~2 seconds to retrigger.</p>
-    <p>The composition pulls <code>--color-primary</code>, <code>--color-accent</code>, <code>--color-warning</code>, and <code>--font-display</code> from the active theme.</p>
-  </article>
-  <screen-saver id="ss" effect="art-deco" timeout="2">The Golden Age</screen-saver>
+  <main>
+    <layout-stack data-layout-gap="m">
+      <h1>Grand Hotel lobby display</h1>
+      <p>This page uses the <code>art-deco</code> theme, and the screen saver uses the <code>art-deco</code> effect: arcs that fan out from the center around a line of text.</p>
+      <p>The arcs use <code>--color-primary</code>, <code>--color-accent</code> and <code>--color-warning</code>. The backdrop uses <code>--color-background</code> and the text uses <code>--font-display</code>.</p>
+      <p>The screen saver starts when this page loads. Move the pointer or press a key to dismiss it. It returns after two seconds without input.</p>
+      <p><button type="button" id="start">Start the screen saver</button></p>
+    </layout-stack>
+  </main>
+
+  <screen-saver effect="art-deco" timeout="2">The Golden Age</screen-saver>
 
   <script type="module">
-    customElements.whenDefined('screen-saver').then(() => {
-      const ss = document.getElementById('ss');
-      requestAnimationFrame(() => ss.activate());
-    });
+    await customElements.whenDefined('screen-saver');
+    const saver = document.querySelector('screen-saver');
+
+    document.getElementById('start').addEventListener('click', () => saver.activate());
+    requestAnimationFrame(() => saver.activate());
   </script>
 </body>
 </html>

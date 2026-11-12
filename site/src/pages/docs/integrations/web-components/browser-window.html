@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: browser-window integration
-description: "Drop a browser-window element into a Vanilla Breeze page — Safari-style window chrome for demos and tutorials with source viewing, full-screen, and CodePen export. Already a VB dependency."
+description: "Add the browser-window web component to a Vanilla Breeze page to frame a demo in browser or phone chrome, with a source view and a maximize mode."
 currentSection: resources
 currentPath: /docs/integrations/web-components/browser-window/
 ---
@@ -15,57 +15,184 @@ currentPath: /docs/integrations/web-components/browser-window/
 </nav>
 
 <h1>browser-window</h1>
-<p class="lead">A Safari-style browser window for demos and tutorials. Source code viewing, full-screen expand mode, CodePen export, automatic theme detection. Already a VB dependency, used to wrap every doc-page demo in this site (including this one).</p>
+<p class="lead">A web component that draws a browser window, or a phone or tablet, around a demo page or any HTML you put inside it. The Vanilla Breeze stylesheet sets the frame's colors, fonts and corner radius from the active theme.</p>
 
-<section>
-  <h2>Where to find it</h2>
+<nav class="subnav" aria-label="browser-window sections">
   <ul>
-    <li>npm: <a href="https://www.npmjs.com/package/@profpowell/browser-window"><code>@profpowell/browser-window</code></a></li>
-    <li>GitHub: <a href="https://github.com/ProfPowell/browser-window">ProfPowell/browser-window</a></li>
-    <li>Live demos: <a href="https://profpowell.github.io/browser-window/demos.html">profpowell.github.io/browser-window/demos</a></li>
-    <li>Based on: <a href="https://github.com/zachleat/browser-window">@zachleat/browser-window</a> with significant enhancements</li>
-    <li>License: MIT</li>
+    <li><a href="#at-a-glance">At a glance</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#reference">Reference</a></li>
+    <li><a href="#theming">With Vanilla Breeze</a></li>
+    <li><a href="#accessibility">Accessibility</a></li>
+    <li><a href="#related">Related</a></li>
+  </ul>
+</nav>
+
+<section id="at-a-glance">
+  <h2>At a glance</h2>
+  <table class="props-table">
+    <tbody>
+      <tr><th scope="row">Package</th><td><a href="https://www.npmjs.com/package/@profpowell/browser-window"><code>@profpowell/browser-window</code></a>, version <code>1.4.9</code></td></tr>
+      <tr><th scope="row">Elements</th><td><code>&lt;browser-window&gt;</code></td></tr>
+      <tr><th scope="row">Renders in</th><td>Shadow DOM. Content you place inside stays in the light DOM and is slotted into the frame. A page named by <code>src</code> loads in an iframe.</td></tr>
+      <tr><th scope="row">Source</th><td><a href="https://github.com/ProfPowell/browser-window">github.com/ProfPowell/browser-window</a>, based on <a href="https://github.com/zachleat/browser-window">@zachleat/browser-window</a></td></tr>
+      <tr><th scope="row">Documentation</th><td><a href="https://profpowell.github.io/browser-window/">profpowell.github.io/browser-window</a></td></tr>
+      <tr><th scope="row">Licence</th><td>MIT</td></tr>
+      <tr><th scope="row">In Vanilla Breeze</th><td>Not bundled. Vanilla Breeze lists it as a development dependency and imports it only in <code>src/doc-extras.js</code>, a bundle built for this docs site and left out of the npm package. You load the component yourself. The VB stylesheet does include the rules that theme it.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="install">
+  <h2>Install</h2>
+  <p>Load the component from a CDN. It is one file with no stylesheet.</p>
+  <code-block language="html" label="CDN" data-escape><script type="module" src="https://unpkg.com/@profpowell/browser-window@1.4.9/dist/browser-window.js"></script></code-block>
+  <p>Or install it from npm and import it in your own script.</p>
+  <code-block language="bash" label="npm" data-escape>npm install @profpowell/browser-window</code-block>
+  <code-block language="javascript" label="Import" data-escape>import '@profpowell/browser-window';</code-block>
+</section>
+
+<section id="demo">
+  <h2>Demo</h2>
+  <p>Two windows on a Vanilla Breeze page: one around inline content, one loading another page. The frame you are looking at is itself a <code>&lt;browser-window&gt;</code>.</p>
+  <browser-window url="browser-window-basic" src="/docs/integrations/web-components/demos/browser-window-basic.html" data-demo-height="xl"></browser-window>
+</section>
+
+<section id="usage">
+  <h2>Usage</h2>
+  <p>Load a page into the frame with <code>src</code>. This also adds a view-source button, a download link and a share menu with a CodePen export.</p>
+  <code-block language="html" label="Load a page" data-escape><browser-window src="/demos/pricing.html" url="https://example.com/pricing" title="Pricing"></browser-window></code-block>
+
+  <p>Or put content between the tags. The <code>url</code> attribute only sets the text in the address bar.</p>
+  <code-block language="html" label="Inline content" data-escape><browser-window url="https://example.com" shadow>
+  <img src="/images/home-screenshot.png" alt="The example.com home page">
+</browser-window></code-block>
+
+  <p>Set <code>device</code> to draw a phone or tablet instead of a browser window.</p>
+  <code-block language="html" label="Device frame" data-escape><browser-window device="pixel-9" orientation="landscape" device-color="silver" src="/demos/app.html"></browser-window></code-block>
+
+  <p>The window can be resized by dragging its bottom-right corner. Set a starting size in CSS.</p>
+  <code-block language="css" label="Starting size" data-escape>browser-window {
+  inline-size: 40rem;
+  block-size: 25rem;
+}</code-block>
+</section>
+
+<section id="reference">
+  <h2>Reference</h2>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead><tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>src</code></td><td>URL</td><td>None</td><td>Page to load in an iframe. Turns on the source view, download link and share menu.</td></tr>
+      <tr><td><code>url</code></td><td>Text</td><td>None</td><td>URL shown in the address bar. It is display only.</td></tr>
+      <tr><td><code>title</code></td><td>Text</td><td>The host name from <code>url</code></td><td>Title shown in the address bar.</td></tr>
+      <tr><td><code>mode</code></td><td><code>light</code>, <code>dark</code></td><td>Follows the page, then the operating system</td><td>Fixes the color scheme.</td></tr>
+      <tr><td><code>shadow</code></td><td>Boolean</td><td>Off</td><td>Adds a drop shadow.</td></tr>
+      <tr><td><code>device</code></td><td><code>iphone-16</code>, <code>iphone-16-pro-max</code>, <code>iphone-se</code>, <code>pixel-9</code>, <code>pixel-9-pro-xl</code>, <code>galaxy-s24</code>, <code>ipad-air</code>, <code>ipad-pro-13</code>, <code>ipad-mini</code></td><td>None</td><td>Draws a phone or tablet frame. An unknown name falls back to <code>iphone-16</code>.</td></tr>
+      <tr><td><code>device-color</code></td><td><code>midnight</code>, <code>silver</code>, <code>gold</code>, <code>blue</code>, <code>white</code></td><td><code>midnight</code></td><td>Color of the device frame.</td></tr>
+      <tr><td><code>orientation</code></td><td><code>portrait</code>, <code>landscape</code></td><td><code>portrait</code></td><td>Device orientation.</td></tr>
+      <tr><td><code>show-safe-areas</code></td><td>Boolean</td><td>Off</td><td>In device mode, tints the areas of the screen taken by the status bar and home indicator.</td></tr>
+      <tr><td><code>iframe-title</code></td><td>Text</td><td><code>title</code>, then <code>url</code>, then <code>Embedded page</code></td><td>Accessible name of the iframe.</td></tr>
+      <tr><td><code>allow</code></td><td>Permissions Policy list such as <code>camera; microphone</code></td><td>None</td><td>Passed to the iframe's <code>allow</code> attribute.</td></tr>
+      <tr><td><code>allowfullscreen</code></td><td>Boolean</td><td>Off</td><td>Lets the framed page use the Fullscreen API.</td></tr>
+      <tr><td><code>referrerpolicy</code></td><td>Referrer policy such as <code>no-referrer</code></td><td>None</td><td>Passed to the iframe.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Methods and properties</h3>
+  <table class="props-table">
+    <thead><tr><th scope="col">Member</th><th scope="col">Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>toggleMaximize()</code></td><td>Opens the window as a centered overlay, or restores it.</td></tr>
+      <tr><td><code>toggleMinimize()</code></td><td>Collapses the window to its header, or restores it.</td></tr>
+      <tr><td><code>toggleViewSource()</code></td><td>Switches between the rendered page and its source. Returns a promise.</td></tr>
+      <tr><td><code>copySourceCode()</code></td><td>Copies the fetched source to the clipboard. Returns a promise.</td></tr>
+      <tr><td><code>openInCodePen()</code></td><td>Sends the page's HTML, CSS and JavaScript to CodePen.</td></tr>
+      <tr><td><code>shareViaWebAPI()</code></td><td>Opens the system share sheet where the browser supports it.</td></tr>
+      <tr><td><code>url</code>, <code>src</code>, <code>mode</code>, <code>device</code>, <code>deviceColor</code>, <code>orientation</code>, <code>showSafeAreas</code></td><td>Properties that mirror the attributes of the same name.</td></tr>
+      <tr><td><code>browserTitle</code></td><td>Property for the <code>title</code> attribute.</td></tr>
+      <tr><td><code>isMaximized</code>, <code>isMinimized</code>, <code>showSource</code></td><td>Current state, as booleans.</td></tr>
+    </tbody>
+  </table>
+  <p>The component fires no custom events. It exposes two CSS parts for <code>::part()</code>: <code>header</code> and <code>content</code>.</p>
+
+  <h3>CSS custom properties</h3>
+  <p>All properties start with <code>--browser-window-</code>. The table lists the suffix.</p>
+  <table class="props-table">
+    <thead><tr><th scope="col">Group</th><th scope="col">Properties</th></tr></thead>
+    <tbody>
+      <tr><td>Surfaces</td><td><code>bg</code>, <code>header-bg</code>, <code>content-bg</code>, <code>url-bg</code>, <code>hover-bg</code>, <code>active-bg</code></td></tr>
+      <tr><td>Text and fonts</td><td><code>text-color</code>, <code>text-muted</code>, <code>font-family</code>, <code>mono-font</code></td></tr>
+      <tr><td>Border and shape</td><td><code>border-color</code>, <code>border-width</code>, <code>border-style</code>, <code>border-radius</code>, <code>inner-radius</code>, <code>shadow</code>, <code>margin</code></td></tr>
+      <tr><td>Controls</td><td><code>close-color</code>, <code>minimize-color</code>, <code>maximize-color</code>, <code>accent-color</code></td></tr>
+      <tr><td>Device mode</td><td><code>bezel-color</code>, <code>status-bar-color</code>, <code>home-indicator-color</code>, <code>safe-area-color</code></td></tr>
+      <tr><td>Stacking</td><td><code>z-index</code>, <code>overlay-z-index</code>, <code>menu-z-index</code></td></tr>
+    </tbody>
+  </table>
+  <p>See the <a href="https://profpowell.github.io/browser-window/">browser-window documentation</a> for default values and more examples.</p>
+</section>
+
+<section id="theming">
+  <h2>With Vanilla Breeze</h2>
+  <p>A token is a CSS custom property that holds one design value, such as <code>--color-surface</code>. Two things connect the component to Vanilla Breeze tokens.</p>
+  <p>First, the component itself reads seven VB tokens as fallbacks.</p>
+  <table class="props-table">
+    <thead><tr><th scope="col">VB token</th><th scope="col">Drives</th></tr></thead>
+    <tbody>
+      <tr><td><code>--color-surface</code></td><td>Window background, address bar background and content background</td></tr>
+      <tr><td><code>--color-surface-raised</code></td><td>Header background</td></tr>
+      <tr><td><code>--color-border</code></td><td>Border</td></tr>
+      <tr><td><code>--color-text</code></td><td>Text</td></tr>
+      <tr><td><code>--color-text-muted</code></td><td>Muted text, such as the address</td></tr>
+      <tr><td><code>--radius-m</code></td><td>Outer corner radius</td></tr>
+      <tr><td><code>--radius-s</code></td><td>Radius of the address bar and buttons</td></tr>
+    </tbody>
+  </table>
+  <p>Second, the VB stylesheet contains a token bridge: a rule with the selector <code>browser-window</code> that sets the component's <code>--browser-window-*</code> properties from VB tokens. It ships in <code>vanilla-breeze.css</code> and <code>vanilla-breeze-core.css</code>, so there is no extra file to load and no attribute to add. Besides the tokens above, the bridge sets these.</p>
+  <table class="props-table">
+    <thead><tr><th scope="col">VB token</th><th scope="col">Set on</th></tr></thead>
+    <tbody>
+      <tr><td><code>--color-surface-sunken</code></td><td>Address bar background</td></tr>
+      <tr><td><code>--color-surface-alt</code></td><td>Button hover background</td></tr>
+      <tr><td><code>--color-interactive</code></td><td>Accent color</td></tr>
+      <tr><td><code>--color-error</code>, <code>--color-warning</code>, <code>--color-success</code></td><td>The close, minimize and maximize buttons</td></tr>
+      <tr><td><code>--font-sans</code>, <code>--font-mono</code></td><td>Interface font and the font of the source view</td></tr>
+    </tbody>
+  </table>
+  <p>For each color the order is: the <code>--browser-window-*</code> property if it is set, then the VB token, then the component's built-in color. With VB loaded, the bridge is what sets the <code>--browser-window-*</code> properties.</p>
+  <p>Light or dark is chosen separately. With no <code>mode</code> attribute, the component follows the nearest <code>data-mode</code> on itself or an ancestor, then page-level signals such as <code>data-theme</code> on <code>&lt;html&gt;</code>, then the operating system preference. When the framed page is on the same origin, it sets that page's <code>color-scheme</code> to match.</p>
+  <p>The bridge sits in a cascade layer, so any rule you write outside a layer wins. To change one window, set the property on it.</p>
+  <code-block language="css" label="Override one window" data-escape>browser-window[url*="staging"] {
+  --browser-window-header-bg: var(--color-warning);
+  --browser-window-border-radius: 0;
+  --browser-window-shadow: var(--shadow-m);
+}</code-block>
+  <p>This docs site also styles the element with a <code>data-demo-height</code> attribute. That comes from the site's own stylesheet and is not part of the component.</p>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Every control is a button with an ARIA label and a visible focus indicator, and can be reached with the keyboard.</li>
+    <li>A maximized window has <code>role="dialog"</code> and <code>aria-modal</code>. <kbd>Escape</kbd> restores it, and also closes the share menu.</li>
+    <li>Animations are turned off when the reader has asked for reduced motion.</li>
+    <li>On touch devices the control buttons get larger touch targets, 44 pixels where there is room.</li>
+    <li>Give the iframe a clear name with <code>iframe-title</code> when the visible title is not enough for screen-reader users.</li>
   </ul>
 </section>
 
-<section>
-  <h2>Install</h2>
-  <code-block language="bash" data-escape>npm install @profpowell/browser-window</code-block>
-  <code-block language="javascript" data-escape>import '@profpowell/browser-window';</code-block>
-  <p>Already in Vanilla Breeze: imported by <code>src/doc-extras.js</code>, so any VB-built page can use <code>&lt;browser-window&gt;</code> directly.</p>
-</section>
-
-<section>
-  <h2>Demo</h2>
-  <p>The window chrome (frame, address bar, traffic-light buttons) reads VB color tokens and re-skins automatically when the theme changes. Inside the frame, drop any URL or any HTML you want to showcase.</p>
-
-  <browser-window url="browser-window" src="/docs/integrations/web-components/demos/browser-window-basic.html"></browser-window>
-</section>
-
-<section>
-  <h2>Quick reference</h2>
-  <table class="props-table">
-    <thead><tr><th>Feature</th><th>Attribute / mechanism</th></tr></thead>
-    <tbody>
-      <tr><td>Embed a URL</td><td><code>src="..."</code> renders an iframe.</td></tr>
-      <tr><td>Address-bar URL display</td><td><code>url="my-component"</code> shows in the URL slot.</td></tr>
-      <tr><td>Source viewer</td><td>Click the <kbd>&lt;/&gt;</kbd> button to view escaped HTML source.</td></tr>
-      <tr><td>Full-screen expand</td><td>Pop-out button toggles full-screen mode.</td></tr>
-      <tr><td>CodePen export</td><td>Send the embedded source to CodePen with one click.</td></tr>
-      <tr><td>Light / dark</td><td>Auto-detected from page theme.</td></tr>
-    </tbody>
-  </table>
-  <p>See the <a href="https://github.com/ProfPowell/browser-window/blob/main/README.md">README</a> for the full reference.</p>
-</section>
-
-<section>
-  <h2>Usage</h2>
-  <code-block language="html" data-escape>
-<browser-window url="my-component" src="/path/to/demo.html"></browser-window>
-
-<!-- Or with inline content -->
-<browser-window url="https://example.com">
-  <p>Anything inside the frame.</p>
-</browser-window>
-  </code-block>
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="https://profpowell.github.io/browser-window/">browser-window documentation</a></li>
+    <li><a href="/docs/integrations/web-components/code-block/">code-block</a>: show the source next to the framed demo</li>
+    <li><a href="/docs/integrations/web-components/terminal-window/">terminal-window</a>: a terminal frame in the same style</li>
+    <li><a href="/docs/integrations/web-components/browser-console/">browser-console</a>: show console output from a demo</li>
+    <li><a href="/docs/tokens/">Design tokens</a></li>
+    <li><a href="/docs/themes/">Themes</a></li>
+  </ul>
 </section>

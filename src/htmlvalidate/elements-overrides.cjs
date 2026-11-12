@@ -133,6 +133,21 @@ module.exports = {
   "marquee-wc":      { flow: true, permittedContent: ["@flow"] },
   // External @profpowell/border-wc (decorative edge effect), loaded from CDN in demos.
   "border-wc":       { flow: true, phrasing: true, permittedContent: ["@flow"] },
+  // External @profpowell/blink-wc (inline text effect), loaded from CDN in demos.
+  "blink-wc":        { flow: true, phrasing: true, permittedContent: ["@flow"] },
+  // External @profpowell/http-component, loaded from CDN in demos.
+  "http-transaction": { flow: true, permittedContent: ["@flow"] },
+  "http-console":    { flow: true, permittedContent: ["@flow"] },
+  "http-request":    { flow: true, permittedContent: ["@flow"] },
+  "http-response":   { flow: true, permittedContent: ["@flow"] },
+  "http-message":    { flow: true, permittedContent: ["@flow"] },
+  "http-waterfall":  { flow: true, permittedContent: ["@flow"] },
+  // External @profpowell/json-viewer, loaded from CDN in demos.
+  "json-viewer":     { flow: true, permittedContent: ["@flow"] },
+  // External @profpowell/pattern-grid and its companions, loaded from CDN in demos.
+  "pattern-grid":    { flow: true, permittedContent: ["@flow"] },
+  "seed-context":    { flow: true, permittedContent: ["@flow"] },
+  "paint-worklet":   { flow: true, permittedContent: ["@flow"] },
 
   // CSS-only custom elements (style + structure, no JS logic, no manifest).
   "token-swatch":    { flow: true, phrasing: true, permittedContent: ["@phrasing"] },

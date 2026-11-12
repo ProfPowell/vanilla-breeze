@@ -3,32 +3,65 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>image-editor + Vanilla Breeze — Basic Demo</title>
-  <link rel="stylesheet" href="/src/main.css" />
+  <title>image-editor in a Vanilla Breeze page</title>
+  <link rel="stylesheet" href="/src/main.css"/>
   <script type="module" src="/src/main.js"></script>
-  <script type="module" src="https://unpkg.com/@profpowell/image-editor"></script>
+  <script type="module" src="https://unpkg.com/@profpowell/image-editor@0.2.0/dist/image-editor.js"></script>
   <style>
     body {
-      padding: var(--size-l) var(--size-m);
+      padding: var(--size-m);
       background: var(--color-surface);
       color: var(--color-text);
-      font-family: var(--font-body);
-      max-inline-size: 90ch;
-      margin-inline: auto;
+    }
+    h1 {
+      font-size: var(--font-size-l);
+      margin-block: 0;
+    }
+    header p,
+    footer p {
+      color: var(--color-text-muted);
+      margin-block: 0;
     }
     image-editor {
       display: block;
-      block-size: 70vh;
-      min-block-size: 480px;
+      --image-editor-margin: 0;
     }
-    h2 { font-size: var(--font-size-m); color: var(--color-text-muted); margin-block-end: var(--size-s); }
   </style>
 </head>
 <body>
-  <h1>image-editor + Vanilla Breeze — Basic Demo</h1>
-  <section>
-    <h2>VB-themed image-editor (toolbar, panels, controls adopt active theme)</h2>
-    <image-editor src="/docs/alpenglow/images/hero-light.jpg"></image-editor>
-  </section>
+  <main>
+    <layout-stack data-layout-gap="s">
+      <header>
+        <h1>Edit the cover photo</h1>
+        <p>Crop, rotate or filter the photo, then export it as WebP. Drop another image on the editor to replace it.</p>
+      </header>
+      <image-editor
+        src="/docs/alpenglow/images/hero-light.jpg"
+        height="380"
+        format="webp"
+        quality="0.85"></image-editor>
+      <footer>
+        <p><output id="status">Loading the photo.</output></p>
+      </footer>
+    </layout-stack>
+  </main>
+
+  <script type="module">
+    const editor = document.querySelector('image-editor');
+    const status = document.getElementById('status');
+
+    editor.addEventListener('image-load', (event) => {
+      status.textContent = `Loaded a ${event.detail.width} by ${event.detail.height} pixel image.`;
+    });
+    editor.addEventListener('image-edit', (event) => {
+      status.textContent = `Last edit: ${event.detail.action}. Image is now ${editor.imageWidth} by ${editor.imageHeight} pixels.`;
+    });
+    editor.addEventListener('image-export', (event) => {
+      status.textContent = `Exported as ${event.detail.format}, ${Math.round(event.detail.size / 1024)} KB.`;
+    });
+    editor.addEventListener('image-load-error', () => {
+      status.textContent = 'The photo could not be loaded.';
+    });
+  </script>
 </body>
 </html>

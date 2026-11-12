@@ -3,17 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>epub-reader + Vanilla Breeze</title>
-  <link rel="stylesheet" href="/src/main.css" />
+  <title>epub-reader in a Vanilla Breeze page</title>
+  <link rel="stylesheet" href="/src/main.css"/>
   <script type="module" src="/src/main.js"></script>
   <script type="module" src="https://unpkg.com/@profpowell/epub-reader@0.1.0/src/epub-reader.js"></script>
   <style>
-    html, body { margin: 0; padding: 0; block-size: 100%; }
-    body { background: var(--color-background); }
-    epub-reader { block-size: 100vh; display: block; }
+    html,
+    body {
+      block-size: 100%;
+      margin: 0;
+    }
+    body {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      background: var(--color-surface);
+      color: var(--color-text);
+    }
+    body > header {
+      padding: var(--size-s) var(--size-m);
+      border-block-end: var(--border-width-thin) solid var(--color-border);
+    }
+    h1 {
+      font-size: var(--font-size-l);
+      margin-block: 0;
+    }
+    header p {
+      color: var(--color-text-muted);
+      margin-block: 0;
+    }
+    main {
+      display: grid;
+      min-block-size: 0;
+    }
   </style>
 </head>
 <body>
-  <epub-reader src="https://profpowell.github.io/epub-reader/samples/trees.epub"></epub-reader>
+  <header>
+    <h1>Reading room</h1>
+    <p><output id="status">Loading the book.</output></p>
+  </header>
+  <main>
+    <epub-reader src="https://profpowell.github.io/epub-reader/samples/trees.epub"></epub-reader>
+  </main>
+
+  <script type="module">
+    const reader = document.querySelector('epub-reader');
+    const status = document.getElementById('status');
+    let book = '';
+    let sections = 0;
+
+    reader.addEventListener('epub-loaded', (event) => {
+      const { metadata, spineLength } = event.detail;
+      book = metadata.creator ? `${metadata.title} by ${metadata.creator}` : metadata.title;
+      sections = spineLength;
+      status.textContent = `${book}. ${sections} sections.`;
+    });
+    reader.addEventListener('epub-navigate', (event) => {
+      const { index, title } = event.detail;
+      status.textContent = `${book}. Section ${index + 1} of ${sections}${title ? `: ${title}` : ''}.`;
+    });
+    reader.addEventListener('epub-error', () => {
+      status.textContent = 'The book could not be loaded.';
+    });
+  </script>
 </body>
 </html>

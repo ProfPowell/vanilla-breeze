@@ -1,0 +1,225 @@
+---
+layout: docs
+title: border-wc integration
+description: "Use the border-wc element on a Vanilla Breeze page to draw decorative and animated borders, such as hand-drawn outlines, stitching and neon glow, around any content."
+currentSection: resources
+currentPath: /docs/integrations/web-components/border-wc/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/integrations/">Integrations</a></li>
+    <li><a href="/docs/integrations/web-components/">Web Components</a></li>
+    <li><span aria-current="page">border-wc</span></li>
+  </ol>
+</nav>
+
+<h1>border-wc</h1>
+<p class="lead"><code>&lt;border-wc&gt;</code> draws one of 34 decorative border effects around its content, using SVG, canvas or layered CSS that a plain <code>border</code> cannot produce. It names no Vanilla Breeze tokens itself: it uses the text color and corner radius it inherits, and you pass theme tokens in through its custom properties.</p>
+
+<nav class="subnav" aria-label="border-wc sections">
+  <ul>
+    <li><a href="#at-a-glance">At a glance</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#reference">Reference</a></li>
+    <li><a href="#theming">With Vanilla Breeze</a></li>
+    <li><a href="#accessibility">Accessibility</a></li>
+    <li><a href="#related">Related</a></li>
+  </ul>
+</nav>
+
+<section id="at-a-glance">
+  <h2>At a glance</h2>
+  <table class="props-table">
+    <tbody>
+      <tr><th scope="row">Package</th><td><a href="https://www.npmjs.com/package/@profpowell/border-wc"><code>@profpowell/border-wc</code></a>, version <code>0.3.1</code></td></tr>
+      <tr><th scope="row">Elements</th><td><code>&lt;border-wc&gt;</code></td></tr>
+      <tr><th scope="row">Renders in</th><td>Light DOM. The effect is added as an extra child of the element.</td></tr>
+      <tr><th scope="row">Source</th><td><a href="https://github.com/ProfPowell/border-wc">github.com/ProfPowell/border-wc</a></td></tr>
+      <tr><th scope="row">Documentation</th><td><a href="https://profpowell.github.io/border-wc/">profpowell.github.io/border-wc</a></td></tr>
+      <tr><th scope="row">Licence</th><td>MIT</td></tr>
+      <tr><th scope="row">In Vanilla Breeze</th><td>Not bundled. Load it yourself.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="install">
+  <h2>Install</h2>
+  <p>From a CDN. The package has no stylesheet to load. Each effect is a separate file that the element fetches the first time it is used.</p>
+  <code-block language="html" label="CDN" data-escape><script type="module" src="https://unpkg.com/@profpowell/border-wc@0.3.1/dist/border-wc.js"></script></code-block>
+  <p>To apply effects with a <code>data-border-effect</code> attribute and no wrapper element, load the binder instead.</p>
+  <code-block language="html" label="CDN, attribute binder" data-escape><script type="module" src="https://unpkg.com/@profpowell/border-wc@0.3.1/dist/data-border-effect.js"></script></code-block>
+  <p>Or with npm:</p>
+  <code-block language="bash" label="npm" data-escape>npm install @profpowell/border-wc</code-block>
+  <code-block language="javascript" label="Import" data-escape>import '@profpowell/border-wc';
+
+// Optional: the data-border-effect attribute binder
+import '@profpowell/border-wc/attr';</code-block>
+  <p>Both entry points do nothing when imported on a server, so a framework that renders on the server can bundle them.</p>
+</section>
+
+<section id="demo">
+  <h2>Demo</h2>
+  <p>Six effects on a Vanilla Breeze page. One CSS rule gives every border the theme's primary color and medium corner radius.</p>
+  <browser-window url="border-wc-basic" src="/docs/integrations/web-components/demos/border-wc-basic.html" data-demo-height="l"></browser-window>
+</section>
+
+<section id="usage">
+  <h2>Usage</h2>
+  <p>Wrap content in the element and name an effect. Add <code>animate</code> to make the effect move.</p>
+  <code-block language="html" label="Wrap content" data-escape><border-wc effect="squiggle" animate>
+  <blockquote>The shape around the thing is the thing.</blockquote>
+</border-wc></code-block>
+
+  <p>Some effects have variants, chosen with <code>mode</code>.</p>
+  <code-block language="html" label="An effect variant" data-escape><border-wc effect="neon" mode="synthwave" thickness="3" animate>
+  <h2>Tonight: live set from 21:00</h2>
+</border-wc></code-block>
+
+  <p>With the binder loaded, put the effect on an existing element. Set its options with custom properties.</p>
+  <code-block language="html" label="As an attribute" data-escape><style>
+  .pull-quote {
+    --border-wc-color: var(--color-accent);
+    --border-wc-thickness: 3;
+  }
+</style>
+
+<article class="pull-quote" data-border-effect="stitching">
+  <p>Measure twice, cut once.</p>
+</article></code-block>
+</section>
+
+<section id="reference">
+  <h2>Reference</h2>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>effect</code></td><td>An effect name</td><td>none</td><td>Which border to draw. An unknown name draws nothing.</td></tr>
+      <tr><td><code>color</code></td><td>Any CSS color</td><td><code>currentColor</code></td><td>Color of the strokes or particles. A few effects, such as <code>neon</code> and <code>ticket</code>, use a color of their own when this is left at the default.</td></tr>
+      <tr><td><code>thickness</code></td><td>Number of pixels</td><td><code>2</code></td><td>Stroke width.</td></tr>
+      <tr><td><code>speed</code></td><td>Number of milliseconds</td><td><code>1000</code></td><td>Length of the animation.</td></tr>
+      <tr><td><code>radius</code></td><td>Number of pixels</td><td>The element's own computed <code>border-radius</code></td><td>Corner radius of the drawn border.</td></tr>
+      <tr><td><code>animate</code></td><td>Boolean</td><td>off</td><td>Plays the effect's entrance or looping animation.</td></tr>
+      <tr><td><code>mode</code></td><td>Depends on the effect</td><td>Depends on the effect</td><td>A variant of the effect. <code>neon</code> accepts <code>synthwave</code>; <code>barber</code> accepts <code>warning</code>, <code>candy</code> and <code>racing</code>; <code>marquee</code> accepts <code>chase</code>, <code>sparkle</code> and <code>random</code>.</td></tr>
+      <tr><td><code>motion</code></td><td><code>auto</code>, <code>reduce</code>, <code>force</code></td><td><code>auto</code></td><td><code>auto</code> follows the reader's reduced-motion setting. <code>reduce</code> always draws a still border. <code>force</code> always animates.</td></tr>
+      <tr><td><code>trigger</code></td><td><code>time</code>, <code>scroll</code></td><td><code>time</code></td><td>For <code>draw</code> only: reveal the border on a timer, or as the element scrolls into view.</td></tr>
+      <tr><td><code>eager</code></td><td>Boolean</td><td>off</td><td>Apply the effect as soon as the element is added. By default the element waits until it is within 200 pixels of the viewport, and removes the effect again when it leaves.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Effects</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Group</th><th scope="col">Effects</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Modern CSS</td><td><code>aurora</code>, <code>barber</code>, <code>chroma</code>, <code>wings</code>, <code>ants</code></td></tr>
+      <tr><td>Energy</td><td><code>lightning</code>, <code>neon</code>, <code>glitch</code>, <code>hud</code></td></tr>
+      <tr><td>Retro and craft</td><td><code>ascii</code>, <code>stitching</code>, <code>typewriter</code></td></tr>
+      <tr><td>Pattern</td><td><code>barbed-wire</code>, <code>rope</code>, <code>scallop</code>, <code>scoop</code>, <code>zigzag</code>, <code>wave</code>, <code>deco</code>, <code>memphis</code>, <code>opart</code></td></tr>
+      <tr><td>Eras</td><td><code>brutalist</code>, <code>aqua</code></td></tr>
+      <tr><td>Trippy</td><td><code>psychedelic</code>, <code>plasma</code>, <code>gooey</code></td></tr>
+      <tr><td>Marquee lights</td><td><code>sparks</code>, <code>marquee</code></td></tr>
+      <tr><td>Decoration attached to the box</td><td><code>washi</code>, <code>filmstrip</code>, <code>ticket</code>, <code>bunting</code></td></tr>
+      <tr><td>Originals</td><td><code>squiggle</code>, <code>draw</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Attribute binder</h3>
+  <p>The binder applies the same 34 effects to any element that carries <code>data-border-effect</code>, and watches the page for elements that are added, changed or removed. The attribute may hold several space-separated values; the binder uses the first one it knows and ignores the rest. Options come from the <code>--border-wc-*</code> custom properties.</p>
+  <p>The module also exports <code>bindBorderEffects(root)</code>, which scans a subtree on demand, and <code>stopWatching()</code>, which stops the binder from reacting to later page changes.</p>
+
+  <h3>Methods and properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Member</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>effect</code></td><td>Gets or sets the <code>effect</code> attribute.</td></tr>
+      <tr><td><code>refresh()</code></td><td>Reads the attributes and custom properties again and redraws the effect. Call it after you change a custom property.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Events</h3>
+  <p>Events are dispatched on the element and do not bubble.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Event</th><th scope="col">Detail</th><th scope="col">When</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>border-wc:effect-applied</code></td><td><code>{ effect }</code></td><td>An effect has been drawn.</td></tr>
+      <tr><td><code>border-wc:error</code></td><td><code>{ error }</code></td><td>An effect threw an error while being drawn.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>CSS custom properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Property</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--border-wc-color</code></td><td>Same as <code>color</code>.</td></tr>
+      <tr><td><code>--border-wc-thickness</code></td><td>Same as <code>thickness</code>. A number, with or without <code>px</code>.</td></tr>
+      <tr><td><code>--border-wc-speed</code></td><td>Same as <code>speed</code>. A number of milliseconds.</td></tr>
+      <tr><td><code>--border-wc-radius</code></td><td>Same as <code>radius</code>.</td></tr>
+      <tr><td><code>--washi-blend</code></td><td>Blend mode of the <code>washi</code> tape strips. Default <code>multiply</code>. Use <code>normal</code> on dark surfaces, where <code>multiply</code> nearly erases the tape.</td></tr>
+    </tbody>
+  </table>
+  <p>The <a href="https://profpowell.github.io/border-wc/api.html">border-wc API reference</a> has the full detail, and the <a href="https://profpowell.github.io/border-wc/">playground</a> shows every effect running.</p>
+</section>
+
+<section id="theming">
+  <h2>With Vanilla Breeze</h2>
+  <p>border-wc does not name any Vanilla Breeze token. It picks up the theme through three things it reads from the page.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">What it reads</th><th scope="col">Where Vanilla Breeze sets it</th><th scope="col">Drives</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>The inherited text color (<code>currentColor</code>)</td><td><code>--color-text</code>, or whatever <code>color</code> applies to the element</td><td>Default stroke color.</td></tr>
+      <tr><td>The element's computed <code>border-radius</code></td><td>Any rule you write, for example with <code>--radius-m</code></td><td>Default corner radius of the drawn border.</td></tr>
+      <tr><td><code>data-motion-reduced</code> on <code>&lt;html&gt;</code></td><td>The Vanilla Breeze motion setting</td><td>Still borders in place of animated ones.</td></tr>
+    </tbody>
+  </table>
+  <p>For color, thickness, speed and radius the element uses the first of these that has a value: the <code>--border-wc-*</code> property, then the attribute, then the built-in default. To follow the theme, point the properties at Vanilla Breeze tokens, for all borders or for one.</p>
+  <code-block language="css" label="Follow the theme" data-escape>border-wc {
+  --border-wc-color: var(--color-primary);
+  border-radius: var(--radius-m);
+}
+
+.featured-card {
+  --border-wc-color: var(--color-accent);
+  --border-wc-thickness: 4;
+}</code-block>
+  <p>The element reads these values when it draws the effect. If a theme switch changes them, call <code>refresh()</code> to redraw.</p>
+
+  <h3>border-wc or data-border-effect</h3>
+  <p>Vanilla Breeze has its own CSS-only <code>data-border-effect</code> attribute with six values: <code>spin</code>, <code>pulse</code>, <code>march</code>, <code>hue-cycle</code>, <code>breathe</code> and <code>trace</code>. Use those for light, always-on motion that needs no script. Use border-wc when you need an effect that CSS alone cannot draw.</p>
+  <p>The two share the attribute without conflict. The border-wc binder ignores the six Vanilla Breeze values, and Vanilla Breeze's CSS has no rules for the 34 border-wc names.</p>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Reduced motion.</strong> With <code>motion="auto"</code>, the default, effects draw without animation when the operating system asks for reduced motion, and also when Vanilla Breeze's own setting puts <code>data-motion-reduced</code> on <code>&lt;html&gt;</code>. If either changes while the page is open, the effect is drawn again to match.</li>
+    <li><strong>Overriding.</strong> <code>motion="reduce"</code> forces a still border. <code>motion="force"</code> animates regardless of the reader's setting, so keep it for content where the motion is the point.</li>
+    <li><strong>Pointer and keyboard.</strong> The drawn layer ignores pointer events and takes no focus. Links and controls inside the element work as usual.</li>
+  </ul>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="https://profpowell.github.io/border-wc/">border-wc documentation, playground and themed demos</a></li>
+    <li><a href="/docs/integrations/web-components/bg-wc/">bg-wc</a>: animated backgrounds from the same family</li>
+    <li><a href="/docs/integrations/web-components/marquee-wc/">marquee-wc</a> and <a href="/docs/integrations/web-components/blink-wc/">blink-wc</a>: scrolling and blinking content</li>
+    <li><a href="/docs/shadows/">Shadows in Vanilla Breeze</a>, including the CSS-only <code>data-shadow</code> effects</li>
+    <li><a href="/docs/themes/">Vanilla Breeze themes</a> and <a href="/docs/tokens/">design tokens</a></li>
+  </ul>
+</section>

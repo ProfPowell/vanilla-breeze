@@ -3,62 +3,82 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>code-block + Vanilla Breeze — Basic Demo</title>
+  <title>code-block on a Vanilla Breeze page</title>
   <link rel="stylesheet" href="/src/main.css" />
+  <link rel="stylesheet" href="https://unpkg.com/@profpowell/code-block@2.10.0/code-block.css" />
   <script type="module" src="/src/main.js"></script>
-  <script type="module" src="/src/doc-extras.js"></script>
+  <script type="module" src="https://unpkg.com/@profpowell/code-block@2.10.0/dist/code-block.js"></script>
   <style>
     body {
       padding: var(--size-l) var(--size-m);
       background: var(--color-surface);
       color: var(--color-text);
-      font-family: var(--font-body);
-      max-inline-size: 80ch;
+    }
+    main {
+      max-inline-size: 70ch;
       margin-inline: auto;
     }
-    h2 { font-size: var(--font-size-m); color: var(--color-text-muted); margin-block-end: var(--size-s); }
-    section + section { margin-block-start: var(--size-l); }
+    h1 { font-size: var(--font-size-xl); }
+    h2 { font-size: var(--font-size-m); color: var(--color-text-muted); }
   </style>
 </head>
 <body>
-  <h1>code-block + Vanilla Breeze — Basic Demo</h1>
-  <section>
-    <h2>JavaScript with line numbers + highlight + focus mode</h2>
-    <code-block language="javascript" line-numbers highlight-lines="2-3" focus-mode>
-function greet(name) {
-  const message = `Hello, ${name}!`;
-  console.log(message);
-  return message;
+  <main>
+    <layout-stack data-layout-gap="l">
+      <header>
+        <h1>Trail conditions widget</h1>
+        <p>Three ways to show the code for a small widget. Colors, fonts and corners come from the Vanilla Breeze theme.</p>
+      </header>
+
+      <section>
+        <h2>Line numbers, highlighted lines and focus mode</h2>
+        <code-block language="javascript" filename="conditions.js" show-lines highlight-lines="3-5" focus-mode>async function loadConditions(trailId) {
+  const response = await fetch(`/api/trails/${trailId}/conditions`);
+  if (!response.ok) {
+    throw new Error(`Trail ${trailId} returned ${response.status}`);
+  }
+  return response.json();
 }
 
-greet('Vanilla Breeze');
-    </code-block>
-  </section>
+const report = await loadConditions('skyline-loop');
+console.log(report.summary);</code-block>
+      </section>
 
-  <section>
-    <h2>HTML with filename header + copy button</h2>
-    <code-block language="html" filename="index.html" data-escape>
-&lt;!doctype html&gt;
-&lt;html lang="en"&gt;
-  &lt;body&gt;
-    &lt;bread-crumb&gt;
-      &lt;ol&gt;
-        &lt;li&gt;&lt;a href="/"&gt;Home&lt;/a&gt;&lt;/li&gt;
-        &lt;li&gt;&lt;span aria-current="page"&gt;Demo&lt;/span&gt;&lt;/li&gt;
-      &lt;/ol&gt;
-    &lt;/bread-crumb&gt;
-  &lt;/body&gt;
-&lt;/html&gt;
-    </code-block>
-  </section>
+      <section>
+        <h2>Several files as tabs, with a download button</h2>
+        <!-- [html-validate-disable-next no-unknown-elements -- code-block-group is defined by the code-block package loaded above] -->
+        <code-block-group show-download>
+          <code-block language="html" filename="index.html">&lt;article id="conditions"&gt;
+  &lt;h2&gt;Skyline Loop&lt;/h2&gt;
+  &lt;p&gt;&lt;output name="summary"&gt;Loading&lt;/output&gt;&lt;/p&gt;
+  &lt;p&gt;Updated &lt;time datetime="2026-06-14"&gt;June 14&lt;/time&gt;&lt;/p&gt;
+&lt;/article&gt;</code-block>
+          <code-block language="css" filename="conditions.css">#conditions {
+  padding: var(--size-m);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+}
 
-  <section>
-    <h2>Diff view</h2>
-    <code-block language="diff">
-- const old = 'before';
-+ const updated = 'after';
-  const same = true;
-    </code-block>
-  </section>
+#conditions output {
+  font-weight: 600;
+}</code-block>
+          <code-block language="json" filename="conditions.json">{
+  "trail": "skyline-loop",
+  "summary": "Dry and clear, snow above 2100 m",
+  "open": true,
+  "updated": "2026-06-14"
+}</code-block>
+        </code-block-group>
+      </section>
+
+      <section>
+        <h2>A diff</h2>
+        <code-block language="diff" label="Change in conditions.js">- const report = await loadConditions('skyline-loop');
++ const trailId = new URLSearchParams(location.search).get('trail');
++ const report = await loadConditions(trailId ?? 'skyline-loop');
+  console.log(report.summary);</code-block>
+      </section>
+    </layout-stack>
+  </main>
 </body>
 </html>

@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: image-editor integration
-description: "Drop an image-editor element into a Vanilla Breeze page — crop, rotate, filter, resize, and export images. Zero dependencies, theme-ready."
+description: "Crop, rotate, resize, filter and export images in a Vanilla Breeze page with the image-editor web component."
 currentSection: resources
 currentPath: /docs/integrations/web-components/image-editor/
 ---
@@ -15,57 +15,245 @@ currentPath: /docs/integrations/web-components/image-editor/
 </nav>
 
 <h1>image-editor</h1>
-<p class="lead">A zero-dependency image editor web component for cropping, rotating, filtering, resizing, and exporting images. Drag-and-drop, undo/redo, 35+ CSS custom properties, and full VB token compatibility.</p>
+<p class="lead"><code>&lt;image-editor&gt;</code> lets a visitor crop, rotate, flip, resize and filter an image in the browser, then export it. It reads Vanilla Breeze design tokens and follows the active theme and light or dark mode with no setup.</p>
 
-<section>
-  <h2>Where to find it</h2>
+<nav class="subnav" aria-label="image-editor sections">
   <ul>
-    <li>npm: <a href="https://www.npmjs.com/package/@profpowell/image-editor"><code>@profpowell/image-editor</code></a></li>
-    <li>GitHub: <a href="https://github.com/ProfPowell/image-editor">ProfPowell/image-editor</a></li>
-    <li>Live demo: <a href="https://profpowell.github.io/image-editor/">profpowell.github.io/image-editor</a></li>
-    <li>License: MIT</li>
+    <li><a href="#at-a-glance">At a glance</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#reference">Reference</a></li>
+    <li><a href="#theming">With Vanilla Breeze</a></li>
+    <li><a href="#accessibility">Accessibility</a></li>
+    <li><a href="#related">Related</a></li>
   </ul>
-</section>
+</nav>
 
-<section>
-  <h2>Install</h2>
-  <code-block language="bash" data-escape>npm install @profpowell/image-editor</code-block>
-  <code-block language="javascript" data-escape>import '@profpowell/image-editor';</code-block>
-  <p>Or via CDN:</p>
-  <code-block language="html" data-escape>
-<script type="module" src="https://unpkg.com/@profpowell/image-editor"></script>
-  </code-block>
-</section>
-
-<section>
-  <h2>Demo</h2>
-  <p>Drop an image onto the editor or use the built-in tools to crop, rotate, filter, and export. The toolbar and panels adopt the active VB theme.</p>
-
-  <browser-window url="image-editor" src="/docs/integrations/web-components/demos/image-editor-basic.html"></browser-window>
-</section>
-
-<section>
-  <h2>Quick reference</h2>
+<section id="at-a-glance">
+  <h2>At a glance</h2>
   <table class="props-table">
-    <thead><tr><th>Feature</th><th>Notes</th></tr></thead>
     <tbody>
-      <tr><td>Crop</td><td>Draggable handles with rule-of-thirds grid and aspect ratio presets.</td></tr>
-      <tr><td>Rotate / Flip</td><td>90° rotation; horizontal and vertical flip.</td></tr>
-      <tr><td>Filters</td><td>Brightness, contrast, saturation, blur, grayscale, sepia.</td></tr>
-      <tr><td>Resize</td><td>Aspect-ratio lock with common size presets.</td></tr>
-      <tr><td>Export</td><td>PNG, JPEG, or WebP with quality control.</td></tr>
-      <tr><td>Undo/Redo</td><td>Configurable history depth.</td></tr>
-      <tr><td>Drag-and-drop</td><td>Drop images directly onto the editor.</td></tr>
-      <tr><td>Themes</td><td>Light/dark mode with auto-detection; reads VB <code>--color-*</code>, <code>--size-*</code>, <code>--font-*</code>, <code>--shadow-*</code> tokens.</td></tr>
+      <tr><th scope="row">Package</th><td><a href="https://www.npmjs.com/package/@profpowell/image-editor">@profpowell/image-editor</a> <code>0.2.0</code></td></tr>
+      <tr><th scope="row">Elements</th><td><code>&lt;image-editor&gt;</code>, the editor. <code>&lt;image-convert&gt;</code>, a smaller element that only converts an image to another format. Each is a separate file.</td></tr>
+      <tr><th scope="row">Renders in</th><td>Shadow DOM</td></tr>
+      <tr><th scope="row">Dependencies</th><td>None</td></tr>
+      <tr><th scope="row">Source</th><td><a href="https://github.com/ProfPowell/image-editor">github.com/ProfPowell/image-editor</a></td></tr>
+      <tr><th scope="row">Documentation</th><td><a href="https://profpowell.github.io/image-editor/">profpowell.github.io/image-editor</a></td></tr>
+      <tr><th scope="row">Licence</th><td>MIT</td></tr>
+      <tr><th scope="row">In Vanilla Breeze</th><td>Not bundled. Load it yourself.</td></tr>
     </tbody>
   </table>
-  <p>See the <a href="https://github.com/ProfPowell/image-editor/blob/main/README.md">README</a> for the full attribute, method, event, and keyboard shortcut reference.</p>
 </section>
 
-<section>
-  <h2>Usage examples</h2>
-  <code-block language="html" data-escape>
-<image-editor src="photo.jpg" mode="dark" format="jpeg" quality="0.85"></image-editor>
-  </code-block>
-  <p>Per-instance overrides via <code>--image-editor-*</code> custom properties always win over inherited VB tokens.</p>
+<section id="install">
+  <h2>Install</h2>
+  <p>Load the editor from a CDN with one script tag. Add the second tag only if you use <code>&lt;image-convert&gt;</code>.</p>
+  <code-block language="html" label="CDN" data-escape><script type="module" src="https://unpkg.com/@profpowell/image-editor@0.2.0/dist/image-editor.js"></script>
+<script type="module" src="https://unpkg.com/@profpowell/image-editor@0.2.0/dist/image-convert.js"></script></code-block>
+  <p>Or install it from npm and import it in your own script.</p>
+  <code-block language="bash" label="npm" data-escape>npm install @profpowell/image-editor</code-block>
+  <code-block language="javascript" label="Import" data-escape>import '@profpowell/image-editor';
+import '@profpowell/image-editor/convert';</code-block>
+  <p>Use 0.2.0 or later. Version 0.1.0 could run script hidden in an image's metadata, and 0.2.0 fixes that.</p>
+</section>
+
+<section id="demo">
+  <h2>Demo</h2>
+  <p>The editor opens with a photo loaded. Try the crop, rotate and filter tools, then undo. The line under the editor reports the events it fires.</p>
+  <browser-window url="image-editor-basic" src="/docs/integrations/web-components/demos/image-editor-basic.html" data-demo-height="xl"></browser-window>
+</section>
+
+<section id="usage">
+  <h2>Usage</h2>
+  <p>Load an image and set the export format. The editor is 500 pixels tall unless you set <code>height</code>.</p>
+  <code-block language="html" label="Editor with an image" data-escape><image-editor
+  src="/images/harbor.jpg"
+  height="420"
+  format="webp"
+  quality="0.85"></image-editor></code-block>
+
+  <p>Leave out <code>src</code> to start with an empty drop zone. Content inside the element replaces the default message, and <code>aspect-ratio</code> locks the crop shape.</p>
+  <code-block language="html" label="Empty editor with a locked crop" data-escape><image-editor aspect-ratio="16:9">
+  <p>Drop a cover photo here, or click to choose one.</p>
+</image-editor></code-block>
+
+  <p>Read the edited image from script, for example to upload it.</p>
+  <code-block language="javascript" label="Export from script" data-escape>const editor = document.querySelector('image-editor');
+
+editor.addEventListener('image-edit', (event) => {
+  console.log('Edit applied:', event.detail.action);
+});
+
+const blob = await editor.getBlob('webp', 0.9);
+const body = new FormData();
+body.append('photo', blob, 'photo.webp');
+await fetch('/upload', { method: 'POST', body });</code-block>
+
+  <p>Use <code>&lt;image-convert&gt;</code> when visitors only need to change an image's format. They drop a file, pick a format and download the result.</p>
+  <code-block language="html" label="Format converter" data-escape><image-convert format="webp" quality="0.8" accept="image/png,image/jpeg"></image-convert></code-block>
+</section>
+
+<section id="reference">
+  <h2>Reference</h2>
+
+  <h3>Attributes</h3>
+  <p>Attributes of <code>&lt;image-editor&gt;</code>:</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>src</code></td><td>URL</td><td>None</td><td>The image to load.</td></tr>
+      <tr><td><code>mode</code></td><td><code>light</code>, <code>dark</code></td><td>Follows the page, then the system setting</td><td>Forces light or dark mode.</td></tr>
+      <tr><td><code>width</code></td><td>Number of pixels</td><td>Fills its container</td><td>Editor width.</td></tr>
+      <tr><td><code>height</code></td><td>Number of pixels</td><td><code>500</code></td><td>Editor height.</td></tr>
+      <tr><td><code>format</code></td><td><code>png</code>, <code>jpeg</code>, <code>webp</code>, <code>avif</code></td><td><code>png</code></td><td>The export format. PNG is used if the browser cannot write the format you ask for.</td></tr>
+      <tr><td><code>quality</code></td><td>0 to 1</td><td><code>0.92</code></td><td>Export quality for JPEG, WebP and AVIF.</td></tr>
+      <tr><td><code>max-history</code></td><td>Number</td><td><code>50</code></td><td>The most undo steps kept. History is also limited to 512 MB.</td></tr>
+      <tr><td><code>readonly</code></td><td>Boolean</td><td>Off</td><td>Turns off editing. The image can still be viewed.</td></tr>
+      <tr><td><code>no-toolbar</code></td><td>Boolean</td><td>Off</td><td>Hides the toolbar, for an editor driven from script. The empty drop zone still opens the file chooser.</td></tr>
+      <tr><td><code>aspect-ratio</code></td><td>Width and height, such as <code>16:9</code></td><td>None</td><td>Locks the crop to that shape.</td></tr>
+    </tbody>
+  </table>
+  <p>Attributes of <code>&lt;image-convert&gt;</code>:</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>mode</code></td><td><code>light</code>, <code>dark</code></td><td>Follows the page, then the system setting</td><td>Forces light or dark mode.</td></tr>
+      <tr><td><code>format</code></td><td><code>png</code>, <code>jpeg</code>, <code>webp</code>, <code>avif</code></td><td><code>webp</code></td><td>The output format selected at the start.</td></tr>
+      <tr><td><code>quality</code></td><td>0 to 1</td><td><code>0.85</code></td><td>Output quality for JPEG, WebP and AVIF.</td></tr>
+      <tr><td><code>accept</code></td><td>A file type list, as on a file input</td><td><code>image/*</code></td><td>The file types the visitor can choose.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Methods and properties</h3>
+  <p>Members of <code>&lt;image-editor&gt;</code>. The attributes above are also available as properties: <code>src</code>, <code>mode</code>, <code>format</code>, <code>quality</code>, <code>maxHistory</code>, <code>readonly</code>, <code>noToolbar</code> and <code>aspectRatio</code>.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Member</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>loadImage(source)</code></td><td>Loads an image from a URL, a <code>File</code> or a <code>Blob</code>. Returns a promise.</td></tr>
+      <tr><td><code>crop(x, y, w, h)</code>, <code>resize(w, h)</code></td><td>Crop to a region, or resize, in pixels.</td></tr>
+      <tr><td><code>rotate(degrees)</code>, <code>flipHorizontal()</code>, <code>flipVertical()</code></td><td>Rotate in steps of 90 degrees, or mirror the image.</td></tr>
+      <tr><td><code>applyFilter(name, value)</code>, <code>resetFilters()</code></td><td>Apply or clear filters. Names and ranges: <code>brightness</code> and <code>contrast</code> 0.5 to 2, <code>saturate</code> 0 to 3, <code>blur</code> 0 to 10 pixels, <code>grayscale</code> and <code>sepia</code> 0 to 100 percent.</td></tr>
+      <tr><td><code>undo()</code>, <code>redo()</code>, <code>reset()</code></td><td>Step through the edit history, or return to the image as loaded.</td></tr>
+      <tr><td><code>zoomTo(level)</code>, <code>zoomToFit()</code></td><td>Set the zoom, where 1 is 100 percent, or fit the image in the workspace.</td></tr>
+      <tr><td><code>getBlob(format?, quality?)</code>, <code>getDataURL(format?, quality?)</code></td><td>Return the edited image as a <code>Blob</code> (in a promise) or as a data URL.</td></tr>
+      <tr><td><code>download(filename?, format?, quality?)</code></td><td>Saves the edited image through the browser's download.</td></tr>
+      <tr><td><code>imageWidth</code>, <code>imageHeight</code>, <code>hasImage</code>, <code>isDirty</code></td><td>Read-only. The image size in pixels, whether an image is loaded, and whether it has been edited.</td></tr>
+      <tr><td><code>canUndo</code>, <code>canRedo</code>, <code>historyLength</code>, <code>zoomLevel</code>, <code>currentTool</code></td><td>Read-only. The state of the history, the zoom and the open tool.</td></tr>
+      <tr><td><code>sourceFormat</code>, <code>exifData</code></td><td>Read-only. The file type of the loaded image and its EXIF metadata (data a camera stores in the file). The metadata comes from the file, so treat it as untrusted.</td></tr>
+      <tr><td><code>supportedFormats</code>, <code>supportsFilters</code></td><td>Read-only. The formats this browser can export, and whether it can apply filters. Where it cannot, the Filters tool is hidden and <code>applyFilter()</code> does nothing.</td></tr>
+    </tbody>
+  </table>
+  <p><code>&lt;image-convert&gt;</code> has the properties <code>mode</code>, <code>format</code>, <code>quality</code>, <code>accept</code> and the read-only <code>supportedFormats</code>, and one method, <code>loadFile(file)</code>.</p>
+
+  <h3>Events</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Event</th><th scope="col">Detail</th><th scope="col">Fires when</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>image-load</code></td><td><code>{ width, height, src }</code></td><td>An image has loaded.</td></tr>
+      <tr><td><code>image-load-error</code></td><td><code>{ src, error }</code></td><td>An image failed to load.</td></tr>
+      <tr><td><code>image-edit</code></td><td><code>{ action, params }</code></td><td>An edit is applied.</td></tr>
+      <tr><td><code>image-export</code></td><td><code>{ format, quality, size }</code></td><td>The image is exported.</td></tr>
+      <tr><td><code>tool-change</code></td><td><code>{ tool, previous }</code></td><td>A tool is opened or closed.</td></tr>
+      <tr><td><code>zoom-change</code></td><td><code>{ level }</code></td><td>The zoom changes.</td></tr>
+      <tr><td><code>history-change</code></td><td><code>{ canUndo, canRedo, length }</code></td><td>The undo history changes.</td></tr>
+      <tr><td><code>convert-complete</code></td><td><code>{ sourceFormat, outputFormat, sourceSize, outputSize, filename }</code></td><td><code>&lt;image-convert&gt;</code> has converted and downloaded a file.</td></tr>
+      <tr><td><code>convert-error</code></td><td><code>{ filename, error }</code></td><td><code>&lt;image-convert&gt;</code> could not read a file as an image.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>CSS custom properties</h3>
+  <p>Every property of the editor starts with <code>--image-editor-</code>. The table groups them by the part they style and lists the rest of each name.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Part</th><th scope="col">Properties, after <code>--image-editor-</code></th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Frame</th><td><code>bg</code>, <code>border-color</code>, <code>border-radius</code>, <code>margin</code>, <code>font-family</code></td></tr>
+      <tr><th scope="row">Text</th><td><code>text-color</code>, <code>text-muted</code></td></tr>
+      <tr><th scope="row">Accent and focus</th><td><code>accent-color</code>, <code>on-accent-color</code>, <code>focus-color</code>, <code>slider-thumb</code></td></tr>
+      <tr><th scope="row">Toolbar</th><td><code>toolbar-bg</code>, <code>toolbar-border</code>, <code>toolbar-padding</code></td></tr>
+      <tr><th scope="row">Buttons</th><td><code>button-bg</code>, <code>button-color</code>, <code>button-hover-bg</code>, <code>button-active-bg</code>, <code>button-active-color</code>, <code>button-radius</code>, <code>button-disabled-opacity</code></td></tr>
+      <tr><th scope="row">Tool options bar</th><td><code>context-bg</code>, <code>context-border</code></td></tr>
+      <tr><th scope="row">Workspace</th><td><code>workspace-bg</code>, <code>workspace-check-color</code></td></tr>
+      <tr><th scope="row">Crop</th><td><code>crop-border</code>, <code>crop-handle-color</code>, <code>crop-grid-color</code>, <code>crop-overlay</code></td></tr>
+      <tr><th scope="row">Status bar</th><td><code>status-bg</code>, <code>status-color</code>, <code>status-font-size</code></td></tr>
+    </tbody>
+  </table>
+  <p><code>&lt;image-convert&gt;</code> has nine properties with the prefix <code>--image-convert-</code>: <code>bg</code>, <code>border-color</code>, <code>border-radius</code>, <code>margin</code>, <code>font-family</code>, <code>text-color</code>, <code>text-muted</code>, <code>accent-color</code> and <code>on-accent-color</code>.</p>
+  <p>See the <a href="https://profpowell.github.io/image-editor/api.html">image-editor API reference</a> for the full detail.</p>
+</section>
+
+<section id="theming">
+  <h2>With Vanilla Breeze</h2>
+  <p>The editor reads Vanilla Breeze tokens directly. Custom properties inherit into the shadow DOM, so no setup is needed. Theme and mode changes apply at once, without losing edits.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Token</th><th scope="col">Drives</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--color-surface</code></td><td>Editor background</td></tr>
+      <tr><td><code>--color-surface-raised</code></td><td>Toolbar, tool options bar and status bar background</td></tr>
+      <tr><td><code>--color-surface-sunken</code></td><td>Workspace behind the image</td></tr>
+      <tr><td><code>--color-border</code>, <code>--border-width-thin</code></td><td>Border color and width</td></tr>
+      <tr><td><code>--color-text</code>, <code>--color-text-muted</code></td><td>Text; button icons and the status bar</td></tr>
+      <tr><td><code>--color-interactive</code>, then <code>--color-primary</code></td><td>Accent color: the active tool, crop border and handles, slider thumbs</td></tr>
+      <tr><td><code>--color-text-on-interactive-auto</code>, then <code>--color-text-on-primary</code></td><td>Text on accent-colored buttons</td></tr>
+      <tr><td><code>--color-hover-bg</code></td><td>Button hover background</td></tr>
+      <tr><td><code>--focus-ring-color</code>, then <code>--color-focus-ring</code>; <code>--focus-ring-width</code></td><td>Focus outline</td></tr>
+      <tr><td><code>--font-sans</code>, <code>--font-size-xs</code>, <code>--font-size-s</code></td><td>Typeface and text sizes</td></tr>
+      <tr><td><code>--size-3xs</code> to <code>--size-xl</code></td><td>Padding, gaps and control sizes</td></tr>
+      <tr><td><code>--radius-s</code>, <code>--radius-m</code></td><td>Corner radius of buttons and of the editor frame</td></tr>
+      <tr><td><code>--duration-fast</code></td><td>Transition speed</td></tr>
+    </tbody>
+  </table>
+  <p>The fallback order for each value is: the <code>--image-editor-*</code> property if you set it, then the Vanilla Breeze token, then a built-in default. Without Vanilla Breeze the built-in defaults apply.</p>
+  <p>For light and dark mode the editor looks at <code>data-mode</code> on the nearest ancestor, then the inherited <code>color-scheme</code>, then the system setting. Setting <code>mode="dark"</code> on the editor also sets <code>data-mode</code> on it, so Vanilla Breeze works out its dark tokens for that element. The README notes one limit: Vanilla Breeze 0.5.0 can only scope <code>data-mode="dark"</code> regions, so <code>mode="light"</code> inside a dark page stays dark on that version.</p>
+  <code-block language="css" label="Override one editor" data-escape>image-editor.avatar {
+  --image-editor-accent-color: var(--color-accent);
+  --image-editor-toolbar-bg: var(--color-surface);
+  --image-editor-border-radius: var(--radius-l);
+  --image-editor-margin: 0;
+}</code-block>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The README states full keyboard navigation. Version 0.2.0 added keyboard access to the drop zone and the image workspace.</li>
+    <li>Toolbar buttons and inputs have text labels for screen readers, such as "Crop" and "Rotate right 90°".</li>
+    <li>Crop and pan work with touch as well as a mouse.</li>
+  </ul>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Key</th><th scope="col">Action</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><kbd>Ctrl</kbd> or <kbd>Cmd</kbd> + <kbd>Z</kbd></td><td>Undo</td></tr>
+      <tr><td><kbd>Ctrl</kbd> or <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></td><td>Redo</td></tr>
+      <tr><td><kbd>Escape</kbd></td><td>Cancel the current tool</td></tr>
+      <tr><td><kbd>Enter</kbd></td><td>Apply the crop</td></tr>
+      <tr><td>Arrow keys</td><td>Move the crop selection</td></tr>
+      <tr><td><kbd>Shift</kbd> + arrow keys</td><td>Move the crop selection by 10 pixels</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="https://profpowell.github.io/image-editor/">image-editor demos</a> and <a href="https://profpowell.github.io/image-editor/api.html">API reference</a></li>
+    <li><a href="/docs/integrations/web-components/pdf-viewer/">pdf-viewer</a>: show PDF documents in the page</li>
+    <li><a href="/docs/integrations/web-components/epub-reader/">epub-reader</a>: show EPUB books in the page</li>
+    <li><a href="/docs/elements/web-components/image-gallery/">image-gallery</a>: the Vanilla Breeze element for showing a set of images</li>
+    <li><a href="/docs/themes/">Themes</a>: how Vanilla Breeze themes and light and dark mode are applied</li>
+  </ul>
 </section>

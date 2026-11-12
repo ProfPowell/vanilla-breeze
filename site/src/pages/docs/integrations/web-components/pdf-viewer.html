@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: pdf-viewer integration
-description: "Drop a pdf-viewer element into a Vanilla Breeze page — PDF.js wrapped with navigation, zoom, search, thumbnails, and dark mode. Theme-pack aware."
+description: "Show a PDF in a Vanilla Breeze page with the pdf-viewer web component, which has page navigation, zoom, search and thumbnails."
 currentSection: resources
 currentPath: /docs/integrations/web-components/pdf-viewer/
 ---
@@ -15,67 +15,229 @@ currentPath: /docs/integrations/web-components/pdf-viewer/
 </nav>
 
 <h1>pdf-viewer</h1>
-<p class="lead">A standalone <code>&lt;pdf-viewer&gt;</code> web component wrapping <a href="https://mozilla.github.io/pdf.js/">PDF.js</a> with navigation, zoom, search, thumbnails, and dark mode. Drops into a Vanilla Breeze page with zero extra wiring.</p>
+<p class="lead"><code>&lt;pdf-viewer&gt;</code> shows a PDF document in the page with a toolbar for page navigation, zoom, search, thumbnails, download and print. Its toolbar, sidebar and borders read Vanilla Breeze design tokens, so they follow the active theme.</p>
 
-<section>
-  <h2>Where to find it</h2>
+<nav class="subnav" aria-label="pdf-viewer sections">
   <ul>
-    <li>npm: <a href="https://www.npmjs.com/package/@profpowell/pdf-viewer"><code>@profpowell/pdf-viewer</code></a></li>
-    <li>GitHub: <a href="https://github.com/ProfPowell/pdf-viewer">ProfPowell/pdf-viewer</a></li>
-    <li>Live demo: <a href="https://profpowell.github.io/pdf-viewer/">profpowell.github.io/pdf-viewer</a></li>
-    <li>License: MIT</li>
+    <li><a href="#at-a-glance">At a glance</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#reference">Reference</a></li>
+    <li><a href="#theming">With Vanilla Breeze</a></li>
+    <li><a href="#accessibility">Accessibility</a></li>
+    <li><a href="#related">Related</a></li>
   </ul>
+</nav>
+
+<section id="at-a-glance">
+  <h2>At a glance</h2>
+  <table class="props-table">
+    <tbody>
+      <tr><th scope="row">Package</th><td><a href="https://www.npmjs.com/package/@profpowell/pdf-viewer">@profpowell/pdf-viewer</a> <code>0.2.0</code>. The README marks it as alpha: the API may change before 1.0.</td></tr>
+      <tr><th scope="row">Elements</th><td><code>&lt;pdf-viewer&gt;</code></td></tr>
+      <tr><th scope="row">Renders in</th><td>Shadow DOM</td></tr>
+      <tr><th scope="row">Dependencies</th><td><a href="https://mozilla.github.io/pdf.js/">PDF.js</a>, the PDF renderer from Mozilla. It is bundled into the published file, so there is nothing else to load.</td></tr>
+      <tr><th scope="row">Source</th><td><a href="https://github.com/ProfPowell/pdf-viewer">github.com/ProfPowell/pdf-viewer</a></td></tr>
+      <tr><th scope="row">Documentation</th><td><a href="https://profpowell.github.io/pdf-viewer/">profpowell.github.io/pdf-viewer</a></td></tr>
+      <tr><th scope="row">Licence</th><td>MIT</td></tr>
+      <tr><th scope="row">In Vanilla Breeze</th><td>Not bundled. Load it yourself.</td></tr>
+    </tbody>
+  </table>
 </section>
 
-<section>
+<section id="install">
   <h2>Install</h2>
-  <code-block language="bash" data-escape>npm install @profpowell/pdf-viewer</code-block>
-  <code-block language="javascript" data-escape>import '@profpowell/pdf-viewer';</code-block>
-  <p>Or via CDN ESM:</p>
-  <code-block language="html" data-escape>
-<script type="module"
-  src="https://cdn.jsdelivr.net/npm/@profpowell/pdf-viewer/dist/pdf-viewer.js"></script>
-  </code-block>
+  <p>Load the component from a CDN with one script tag. The file is about 2.4 MB because it contains PDF.js.</p>
+  <code-block language="html" label="CDN" data-escape><script type="module" src="https://unpkg.com/@profpowell/pdf-viewer@0.2.0/dist/pdf-viewer.js"></script></code-block>
+  <p>Or install it from npm and import it in your own script.</p>
+  <code-block language="bash" label="npm" data-escape>npm install @profpowell/pdf-viewer</code-block>
+  <code-block language="javascript" label="Import" data-escape>import '@profpowell/pdf-viewer';</code-block>
 </section>
 
-<section>
+<section id="demo">
   <h2>Demo</h2>
-  <p>The component picks up VB color, spacing, typography, radius, and shadow tokens automatically. Switch the active theme on this site to see the toolbar/sidebar/borders re-skin in real time. The PDF page itself stays white in both light and dark mode by PDF/print convention.</p>
-
-  <browser-window url="pdf-viewer" src="/docs/integrations/web-components/demos/pdf-viewer-basic.html"></browser-window>
+  <p>A five-page sample document with the thumbnail sidebar open. Change the site theme to see the toolbar and sidebar change with it.</p>
+  <browser-window url="pdf-viewer-basic" src="/docs/integrations/web-components/demos/pdf-viewer-basic.html" data-demo-height="xl"></browser-window>
 </section>
 
-<section>
-  <h2>Quick reference</h2>
+<section id="usage">
+  <h2>Usage</h2>
+  <p>Point <code>src</code> at a PDF file. The viewer is 600 pixels tall unless you set a height in CSS.</p>
+  <code-block language="html" label="Basic viewer" data-escape><pdf-viewer src="/files/annual-report.pdf" title="Annual report"></pdf-viewer></code-block>
 
-  <h3>Common attributes</h3>
-  <table class="props-table">
-    <thead><tr><th>Attribute</th><th>Description</th></tr></thead>
-    <tbody>
-      <tr><td><code>src</code></td><td>URL of the PDF document.</td></tr>
-      <tr><td><code>page</code></td><td>Initial page number (1-based).</td></tr>
-      <tr><td><code>zoom</code></td><td>Number (<code>"1.5"</code>) or mode (<code>"fit-width"</code>, <code>"fit-page"</code>, <code>"auto"</code>).</td></tr>
-      <tr><td><code>mode</code></td><td><code>light</code> or <code>dark</code>; omit to follow page/system preference.</td></tr>
-      <tr><td><code>view</code></td><td><code>single</code> (default) or <code>continuous</code>.</td></tr>
-      <tr><td><code>show-thumbnails</code> / <code>show-search</code> / <code>show-toolbar</code></td><td>Toggle UI panels.</td></tr>
-      <tr><td><code>lazy</code></td><td>Defer loading until the component scrolls into view.</td></tr>
-    </tbody>
-  </table>
-  <p>See the <a href="https://github.com/ProfPowell/pdf-viewer/blob/main/README.md">README</a> for the full attribute, method, and event reference.</p>
+  <p>Open on a given page, fit the page to the width of the viewer, and show the thumbnail sidebar and the search bar.</p>
+  <code-block language="html" label="Start page, zoom and panels" data-escape><pdf-viewer
+  src="/files/annual-report.pdf"
+  page="3"
+  zoom="fit-width"
+  show-thumbnails
+  show-search></pdf-viewer></code-block>
+
+  <p>Load a file the visitor picks, and listen for the event that reports the page count.</p>
+  <code-block language="html" label="Load a local file" data-escape><input type="file" id="pick" accept="application/pdf"/>
+<pdf-viewer id="viewer"></pdf-viewer>
+
+<script type="module">
+  const viewer = document.getElementById('viewer');
+
+  document.getElementById('pick').addEventListener('change', (event) => {
+    viewer.setData(event.target.files[0]);
+  });
+
+  viewer.addEventListener('pdf-loaded', (event) => {
+    console.log(`${event.detail.pageCount} pages`);
+  });
+</script></code-block>
 </section>
 
-<section>
-  <h2>VB token consumption</h2>
-  <p>The component reads VB tokens directly. No mapping required:</p>
+<section id="reference">
+  <h2>Reference</h2>
+
+  <h3>Attributes</h3>
   <table class="props-table">
-    <thead><tr><th>Surface</th><th>VB tokens consumed</th></tr></thead>
+    <thead>
+      <tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">Purpose</th></tr>
+    </thead>
     <tbody>
-      <tr><td>Colors</td><td><code>--color-surface</code>, <code>--color-surface-raised</code>, <code>--color-surface-sunken</code>, <code>--color-surface-hover</code>, <code>--color-border</code>, <code>--color-text</code>, <code>--color-text-muted</code>, <code>--color-interactive</code></td></tr>
-      <tr><td>Typography</td><td><code>--font-sans</code>, <code>--font-size-2xs</code> – <code>--font-size-l</code></td></tr>
-      <tr><td>Spacing</td><td><code>--size-3xs</code> – <code>--size-m</code></td></tr>
-      <tr><td>Borders &amp; radii</td><td><code>--border-width-thin</code>, <code>--radius-xs</code>, <code>--radius-s</code>, <code>--radius-m</code></td></tr>
-      <tr><td>Shadows</td><td><code>--shadow-s</code>, <code>--shadow-m</code>, <code>--shadow-l</code></td></tr>
+      <tr><td><code>src</code></td><td>URL</td><td>None</td><td>The PDF document to load.</td></tr>
+      <tr><td><code>page</code></td><td>Number, starting at 1</td><td><code>1</code></td><td>The page shown.</td></tr>
+      <tr><td><code>zoom</code></td><td>A number such as <code>1.5</code>, or <code>fit-width</code>, <code>fit-page</code>, <code>auto</code></td><td><code>fit-width</code></td><td>The zoom level, as a number or a fit mode.</td></tr>
+      <tr><td><code>mode</code></td><td><code>light</code>, <code>dark</code></td><td>Follows the page, then the system setting</td><td>Forces the light or dark color scheme.</td></tr>
+      <tr><td><code>view</code></td><td><code>single</code>, <code>continuous</code></td><td><code>single</code></td><td>Shows one page at a time, or all pages in one scrolling column.</td></tr>
+      <tr><td><code>show-toolbar</code></td><td>Boolean. Set <code>show-toolbar="false"</code> to hide.</td><td>Shown</td><td>Shows the toolbar.</td></tr>
+      <tr><td><code>show-thumbnails</code></td><td>Boolean</td><td>Off</td><td>Opens the thumbnail sidebar.</td></tr>
+      <tr><td><code>show-search</code></td><td>Boolean</td><td>Off</td><td>Opens the search bar.</td></tr>
+      <tr><td><code>no-download</code></td><td>Boolean</td><td>Off</td><td>Hides the download button.</td></tr>
+      <tr><td><code>no-print</code></td><td>Boolean</td><td>Off</td><td>Hides the print button.</td></tr>
+      <tr><td><code>title</code></td><td>Text</td><td>None</td><td>The title shown in the toolbar. It is also the file name used for a download.</td></tr>
+      <tr><td><code>lazy</code></td><td>Boolean</td><td>Off</td><td>Waits to load the document until the viewer scrolls into view.</td></tr>
     </tbody>
   </table>
-  <p>Per-instance overrides via <code>--pdf-viewer-*</code> custom properties (e.g. <code>--pdf-viewer-accent-color</code>, <code>--pdf-viewer-toolbar-bg</code>, <code>--pdf-viewer-sidebar-width</code>) always win over VB tokens.</p>
+
+  <h3>Methods and properties</h3>
+  <p>The properties <code>src</code>, <code>page</code>, <code>zoom</code>, <code>mode</code> and <code>view</code> mirror the attributes of the same name and can be set from script.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Method</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>nextPage()</code>, <code>prevPage()</code>, <code>goToPage(n)</code></td><td>Move between pages.</td></tr>
+      <tr><td><code>getPageCount()</code>, <code>getCurrentPage()</code></td><td>Return the number of pages and the current page number.</td></tr>
+      <tr><td><code>zoomIn()</code>, <code>zoomOut()</code>, <code>setZoom(level)</code></td><td>Change the zoom. <code>setZoom()</code> takes a number or <code>'fit-width'</code>, <code>'fit-page'</code>, <code>'auto'</code>.</td></tr>
+      <tr><td><code>setData(source)</code></td><td>Loads a PDF from an <code>ArrayBuffer</code>, a <code>Uint8Array</code> or a <code>File</code>. Returns a promise.</td></tr>
+      <tr><td><code>openFile()</code></td><td>Opens the browser's file chooser so the visitor can pick a PDF.</td></tr>
+      <tr><td><code>download()</code>, <code>print()</code></td><td>Download or print the current document. Both return a promise.</td></tr>
+      <tr><td><code>search(query)</code>, <code>clearSearch()</code></td><td>Search the document text, and clear the search.</td></tr>
+      <tr><td><code>toggleFullscreen()</code>, <code>toggleThumbnails()</code>, <code>toggleSearch()</code></td><td>Turn fullscreen, the thumbnail sidebar and the search bar on or off.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Events</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Event</th><th scope="col">Detail</th><th scope="col">Fires when</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>pdf-loaded</code></td><td><code>{ url, pageCount, title }</code></td><td>The document has loaded.</td></tr>
+      <tr><td><code>pdf-load-error</code></td><td><code>{ url, error }</code></td><td>The document failed to load.</td></tr>
+      <tr><td><code>page-change</code></td><td><code>{ page, previousPage, pageCount }</code></td><td>The current page changes.</td></tr>
+      <tr><td><code>zoom-change</code></td><td><code>{ zoom, previousZoom }</code></td><td>The zoom level changes.</td></tr>
+      <tr><td><code>view-change</code></td><td><code>{ view }</code></td><td>The view switches between single and continuous.</td></tr>
+      <tr><td><code>file-opened</code></td><td><code>{ name, size }</code></td><td>The visitor opens a local file.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>CSS custom properties</h3>
+  <p>Set these on the element to change one viewer. Each one wins over the Vanilla Breeze token listed beside it.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Property</th><th scope="col">Controls</th><th scope="col">Falls back to</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--pdf-viewer-bg</code></td><td>Viewer background</td><td><code>--color-surface</code></td></tr>
+      <tr><td><code>--pdf-viewer-toolbar-bg</code></td><td>Toolbar background</td><td><code>--color-surface-raised</code></td></tr>
+      <tr><td><code>--pdf-viewer-sidebar-bg</code></td><td>Thumbnail sidebar background</td><td><code>--color-surface-sunken</code></td></tr>
+      <tr><td><code>--pdf-viewer-content-bg</code></td><td>The area behind the page</td><td>Built-in gray</td></tr>
+      <tr><td><code>--pdf-viewer-border-color</code></td><td>Borders</td><td><code>--color-border</code></td></tr>
+      <tr><td><code>--pdf-viewer-text-color</code>, <code>--pdf-viewer-text-muted</code></td><td>Text and secondary text</td><td><code>--color-text</code>, <code>--color-text-muted</code></td></tr>
+      <tr><td><code>--pdf-viewer-accent-color</code></td><td>Accent color for active controls</td><td><code>--color-interactive</code></td></tr>
+      <tr><td><code>--pdf-viewer-hover-bg</code></td><td>Button hover background</td><td>Built-in value</td></tr>
+      <tr><td><code>--pdf-viewer-font-family</code>, <code>--pdf-viewer-font-size</code></td><td>Typeface and base text size</td><td><code>--font-sans</code>; 14px</td></tr>
+      <tr><td><code>--pdf-viewer-shadow</code></td><td>Shadow under the page</td><td><code>--shadow-m</code> in light mode, <code>--shadow-l</code> in dark mode</td></tr>
+      <tr><td><code>--pdf-viewer-sidebar-width</code>, <code>--pdf-viewer-toolbar-height</code></td><td>Sidebar width and toolbar height</td><td>200px; 40px</td></tr>
+      <tr><td><code>--pdf-viewer-highlight</code>, <code>--pdf-viewer-highlight-active</code></td><td>Search matches, and the current match</td><td>Built-in yellow and orange</td></tr>
+    </tbody>
+  </table>
+  <p>The component also exposes four shadow parts for <code>::part()</code> selectors: <code>toolbar</code>, <code>content</code>, <code>sidebar</code> and <code>search</code>.</p>
+  <p>See the <a href="https://profpowell.github.io/pdf-viewer/">pdf-viewer documentation</a> for the full detail.</p>
+</section>
+
+<section id="theming">
+  <h2>With Vanilla Breeze</h2>
+  <p>The component reads Vanilla Breeze tokens directly. Custom properties inherit into the shadow DOM, so no setup is needed.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Token</th><th scope="col">Drives</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--color-surface</code></td><td>Viewer background</td></tr>
+      <tr><td><code>--color-surface-raised</code></td><td>Toolbar background</td></tr>
+      <tr><td><code>--color-surface-sunken</code></td><td>Thumbnail sidebar background</td></tr>
+      <tr><td><code>--color-border</code>, <code>--border-width-thin</code></td><td>Border color and width</td></tr>
+      <tr><td><code>--color-text</code>, <code>--color-text-muted</code></td><td>Text and secondary text</td></tr>
+      <tr><td><code>--color-interactive</code></td><td>Accent color</td></tr>
+      <tr><td><code>--color-error</code></td><td>The load error message</td></tr>
+      <tr><td><code>--font-sans</code></td><td>Typeface</td></tr>
+      <tr><td><code>--font-size-2xs</code>, <code>--font-size-xs</code>, <code>--font-size-l</code></td><td>Text sizes in the toolbar and overlays</td></tr>
+      <tr><td><code>--size-3xs</code>, <code>--size-2xs</code>, <code>--size-xs</code>, <code>--size-s</code>, <code>--size-m</code></td><td>Padding and gaps</td></tr>
+      <tr><td><code>--radius-xs</code>, <code>--radius-s</code>, <code>--radius-m</code></td><td>Corner radius of buttons, inputs and the viewer frame</td></tr>
+      <tr><td><code>--shadow-s</code>, <code>--shadow-m</code>, <code>--shadow-l</code></td><td>Shadows</td></tr>
+    </tbody>
+  </table>
+  <p>The fallback order for each value is: the <code>--pdf-viewer-*</code> property if you set it, then the Vanilla Breeze token, then a built-in default. Without Vanilla Breeze the built-in defaults apply.</p>
+  <p>Three of the names the component looks for are not Vanilla Breeze tokens: <code>--color-surface-hover</code>, <code>--font-size-sm</code> and <code>--font-size-base</code>. Button hover backgrounds and most text sizes therefore use the built-in defaults (13px and 14px text) on a Vanilla Breeze page. Set <code>--pdf-viewer-hover-bg</code> and <code>--pdf-viewer-font-size</code> to change them.</p>
+  <p>The page of the PDF stays white in light and dark mode. This is deliberate and matches how a PDF prints.</p>
+  <p>For light and dark mode the component watches <code>data-mode</code>, <code>data-theme</code> and a <code>dark</code> class on the page and updates when they change. Set the <code>mode</code> attribute to force one.</p>
+  <code-block language="css" label="Override one viewer" data-escape>pdf-viewer.report {
+  block-size: 32rem;
+  --pdf-viewer-accent-color: var(--color-accent);
+  --pdf-viewer-toolbar-bg: var(--color-surface);
+  --pdf-viewer-hover-bg: var(--color-hover-bg);
+  --pdf-viewer-sidebar-width: 10rem;
+}</code-block>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <p>The README has no accessibility notes. The points below come from the code of version 0.2.0.</p>
+  <ul>
+    <li>The element adds <code>tabindex="0"</code> to itself so it can take keyboard focus. The shortcuts work while focus is inside the viewer.</li>
+    <li>Every toolbar button has a text label for screen readers, such as "Next page" and "Zoom in".</li>
+  </ul>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Key</th><th scope="col">Action</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><kbd>Right arrow</kbd>, <kbd>Down arrow</kbd>, <kbd>Page Down</kbd></td><td>Next page</td></tr>
+      <tr><td><kbd>Left arrow</kbd>, <kbd>Up arrow</kbd>, <kbd>Page Up</kbd></td><td>Previous page</td></tr>
+      <tr><td><kbd>Home</kbd>, <kbd>End</kbd></td><td>First page, last page</td></tr>
+      <tr><td><kbd>+</kbd>, <kbd>-</kbd></td><td>Zoom in, zoom out</td></tr>
+      <tr><td><kbd>0</kbd></td><td>Fit to width</td></tr>
+      <tr><td><kbd>Ctrl</kbd> or <kbd>Cmd</kbd> + <kbd>F</kbd></td><td>Open or close the search bar</td></tr>
+      <tr><td><kbd>Escape</kbd></td><td>Close the search bar, or leave fullscreen</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="https://profpowell.github.io/pdf-viewer/">pdf-viewer documentation and demos</a></li>
+    <li><a href="/docs/integrations/web-components/epub-reader/">epub-reader</a>: the matching viewer for EPUB books</li>
+    <li><a href="/docs/integrations/web-components/image-editor/">image-editor</a>: view and edit images in the page</li>
+    <li><a href="/docs/themes/">Themes</a>: how Vanilla Breeze themes and light and dark mode are applied</li>
+    <li><a href="/docs/tokens/">Design tokens</a>: the tokens this component reads</li>
+  </ul>
 </section>

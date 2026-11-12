@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pattern-grid + Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="https://unpkg.com/@profpowell/pattern-grid@0.3.0/dist/pattern-grid.js"></script>
+  <script type="module" src="https://unpkg.com/@profpowell/pattern-grid@0.3.0/dist/seed-context.js"></script>
+  <style>
+    html, body { margin: 0; background: var(--color-background); }
+    main { padding: var(--size-l) var(--size-m); }
+    h1 { margin: 0; font-size: var(--font-size-l); }
+    h2 { margin: 0; font-size: var(--font-size-s); color: var(--color-text-muted); }
+    p { margin: 0; }
+
+    seed-context { display: block; }
+
+    /* pattern-grid ships no layout or color: this is all author CSS */
+    pattern-grid {
+      display: grid;
+      grid-template-columns: repeat(var(--pg-cols, 8), 1fr);
+      gap: var(--size-3xs);
+    }
+    pattern-grid > i {
+      display: block;
+      aspect-ratio: 1;
+      border-radius: var(--radius-s);
+      background: var(--color-surface-sunken);
+    }
+
+    /* Ramp: --i and --n come from shim="sibling" */
+    #ramp > i {
+      background: color-mix(
+        in oklch,
+        var(--color-primary) calc(var(--i, 0) / var(--n, 1) * 100%),
+        var(--color-surface)
+      );
+    }
+
+    /* Texture: --rand-0 and --rand-1 come from seed-context */
+    #texture > i {
+      background: color-mix(
+        in oklch,
+        var(--color-accent) calc(var(--rand-0, 0.5) * 100%),
+        var(--color-surface-sunken)
+      );
+      border-radius: calc(var(--rand-1, 0) * 50%);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <layout-stack data-layout-gap="l">
+      <header>
+        <h1>Patterns from theme tokens</h1>
+        <p>Each grid is a set of empty cells. The colors come from the Vanilla Breeze theme, so they change with it.</p>
+      </header>
+
+      <section>
+        <layout-stack data-layout-gap="s">
+          <h2>Ramp by cell position</h2>
+          <pattern-grid id="ramp" cells="16x4" shim="sibling" aria-hidden="true"></pattern-grid>
+        </layout-stack>
+      </section>
+
+      <section>
+        <layout-stack data-layout-gap="s">
+          <h2>Seeded random texture</h2>
+          <seed-context seed="vanilla-breeze" count="2">
+            <pattern-grid id="texture" cells="16x4" aria-hidden="true"></pattern-grid>
+          </seed-context>
+        </layout-stack>
+      </section>
+    </layout-stack>
+  </main>
+</body>
+</html>

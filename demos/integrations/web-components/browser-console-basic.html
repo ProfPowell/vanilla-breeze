@@ -3,49 +3,95 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>browser-console + Vanilla Breeze</title>
+  <title>browser-console on a Vanilla Breeze page</title>
   <link rel="stylesheet" href="/src/main.css" />
   <script type="module" src="/src/main.js"></script>
   <script type="module" src="https://unpkg.com/@profpowell/browser-console@1.1.1/dist/browser-console.js"></script>
   <style>
-    html, body { margin: 0; padding: var(--size-l) var(--size-m); background: var(--color-background); }
-    browser-console { display: block; max-inline-size: 80ch; margin-inline: auto; block-size: 60vh; }
-    .ctrls { max-inline-size: 80ch; margin: 0 auto var(--size-m); display: flex; gap: var(--size-s); flex-wrap: wrap; }
-    button { font: inherit; padding: var(--size-2xs) var(--size-s); background: var(--color-surface-raised); color: var(--color-text); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-s); cursor: pointer; }
-    button:hover { background: var(--color-hover-bg, var(--color-surface-raised)); }
+    body {
+      padding: var(--size-m);
+      background: var(--color-surface);
+      color: var(--color-text);
+    }
+    main {
+      max-inline-size: 80ch;
+      margin-inline: auto;
+    }
+    h1 { font-size: var(--font-size-xl); }
+    section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--size-xs);
+    }
+    browser-console {
+      block-size: 24rem;
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+      overflow: hidden;
+    }
   </style>
 </head>
 <body>
-  <nav class="ctrls">
-    <button type="button" id="log">console.log</button>
-    <button type="button" id="info">console.info</button>
-    <button type="button" id="warn">console.warn</button>
-    <button type="button" id="error">console.error</button>
-    <button type="button" id="table">console.table</button>
-    <button type="button" id="object">log object</button>
-  </nav>
+  <main>
+    <layout-stack data-layout-gap="m">
+      <header>
+        <h1>Checkout debug panel</h1>
+        <p>Each button runs a <code>console</code> call in this page. The panel below shows it, colored from the Vanilla Breeze theme.</p>
+      </header>
 
-  <browser-console></browser-console>
+      <section aria-label="Console calls">
+        <button type="button" id="log">log an order</button>
+        <button type="button" id="info">info</button>
+        <button type="button" id="warn">warn</button>
+        <button type="button" id="error">error</button>
+        <button type="button" id="table">table</button>
+        <button type="button" id="group">group and timer</button>
+      </section>
+
+      <browser-console max-logs="200"></browser-console>
+    </layout-stack>
+  </main>
 
   <script type="module">
-    document.getElementById('log').onclick = () => console.log('Hello from VB.', { ts: Date.now() });
-    document.getElementById('info').onclick = () => console.info('FYI:', 42, true, null);
-    document.getElementById('warn').onclick = () => console.warn('Cache miss — recomputing');
-    document.getElementById('error').onclick = () => console.error(new Error('Demo error: nothing to worry about'));
-    document.getElementById('table').onclick = () => console.table([
-      { theme: 'rough', surface: 'cream', text: 'ink' },
-      { theme: 'cyber', surface: 'midnight', text: 'neon' },
-      { theme: 'bauhaus', surface: 'off-white', text: 'black' },
-    ]);
-    document.getElementById('object').onclick = () => console.log({ str: 'hello', num: 3.14, bool: false, arr: [1,2,3], date: new Date(), regex: /vb-\w+/ });
+    const order = {
+      id: 'A-1042',
+      placed: new Date('2026-06-14T09:30:00'),
+      paid: false,
+      total: 86.5,
+      items: ['Trail map', 'Stove fuel', 'Headlamp'],
+      coupon: null,
+    };
 
-    // Auto-fire one of each so the demo isn't empty on first paint
-    requestAnimationFrame(() => {
-      console.log('browser-console mounted — try the buttons above.');
-      console.info('Severity color: info');
-      console.warn('Severity color: warn');
-      console.error('Severity color: error');
-    });
+    const actions = {
+      log: () => console.log('Order loaded', order),
+      info: () => console.info('Shipping rates refreshed', 3, 'carriers'),
+      warn: () => console.warn('Stock is low for', 'Headlamp'),
+      error: () => console.error(new Error('Card was declined')),
+      table: () => console.table([
+        { item: 'Trail map', qty: 1, price: 12.5 },
+        { item: 'Stove fuel', qty: 2, price: 9 },
+        { item: 'Headlamp', qty: 1, price: 56 },
+      ]),
+      group: () => {
+        console.group('Price check');
+        console.time('lookup');
+        console.log('Subtotal', 86.5);
+        console.log('Tax', 6.92);
+        console.timeEnd('lookup');
+        console.groupEnd();
+      },
+    };
+
+    for (const [id, run] of Object.entries(actions)) {
+      document.getElementById(id).addEventListener('click', run);
+    }
+
+    // Show a few entries on load so the panel is not empty.
+    await customElements.whenDefined('browser-console');
+    actions.log();
+    actions.info();
+    actions.warn();
+    actions.table();
   </script>
 </body>
 </html>

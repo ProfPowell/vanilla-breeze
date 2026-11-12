@@ -1,0 +1,260 @@
+---
+layout: docs
+title: http-component integration
+description: "Show HTTP requests, responses and request timelines on a Vanilla Breeze page with the http-component elements."
+currentSection: resources
+currentPath: /docs/integrations/web-components/http-component/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/integrations/">Integrations</a></li>
+    <li><a href="/docs/integrations/web-components/">Web Components</a></li>
+    <li><span aria-current="page">http-component</span></li>
+  </ol>
+</nav>
+
+<h1>http-component</h1>
+<p class="lead">A set of elements that display HTTP messages the way they travel on the wire: a request line or status line, then headers, then a body. It does not read Vanilla Breeze tokens: it has its own light and dark palettes, which you can override with CSS custom properties.</p>
+
+<nav class="subnav" aria-label="http-component sections">
+  <ul>
+    <li><a href="#at-a-glance">At a glance</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#reference">Reference</a></li>
+    <li><a href="#theming">With Vanilla Breeze</a></li>
+    <li><a href="#accessibility">Accessibility</a></li>
+    <li><a href="#related">Related</a></li>
+  </ul>
+</nav>
+
+<section id="at-a-glance">
+  <h2>At a glance</h2>
+  <table class="props-table">
+    <tbody>
+      <tr><th scope="row">Package</th><td><a href="https://www.npmjs.com/package/@profpowell/http-component"><code>@profpowell/http-component</code></a> <code>0.3.0</code></td></tr>
+      <tr><th scope="row">Elements</th><td><code>&lt;http-transaction&gt;</code> (also registered as <code>&lt;http-console&gt;</code>), <code>&lt;http-request&gt;</code>, <code>&lt;http-response&gt;</code>, <code>&lt;http-waterfall&gt;</code>, <code>&lt;http-message&gt;</code></td></tr>
+      <tr><th scope="row">Renders in</th><td>Shadow DOM</td></tr>
+      <tr><th scope="row">Source</th><td><a href="https://github.com/ProfPowell/http-component">github.com/ProfPowell/http-component</a></td></tr>
+      <tr><th scope="row">Documentation</th><td><a href="https://profpowell.github.io/http-component/">profpowell.github.io/http-component</a></td></tr>
+      <tr><th scope="row">Licence</th><td>MIT</td></tr>
+      <tr><th scope="row">In Vanilla Breeze</th><td>Not bundled. Load it yourself.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="install">
+  <h2>Install</h2>
+  <p>From a CDN. One script defines every element. There is no stylesheet to load.</p>
+  <code-block language="html" label="CDN" data-escape><script type="module" src="https://unpkg.com/@profpowell/http-component@0.3.0/dist/http-component.js"></script></code-block>
+  <p>Or from npm:</p>
+  <code-block language="bash" label="npm" data-escape>npm install @profpowell/http-component</code-block>
+  <code-block language="javascript" label="Import" data-escape>import '@profpowell/http-component';</code-block>
+</section>
+
+<section id="demo">
+  <h2>Demo</h2>
+  <p>A request and its response in one <code>&lt;http-transaction&gt;</code>, then four requests on a timeline in <code>&lt;http-waterfall&gt;</code>. All of the data is written in the page; nothing is fetched.</p>
+  <browser-window url="http-component-basic" src="/docs/integrations/web-components/demos/http-component-basic.html" data-demo-height="xl"></browser-window>
+</section>
+
+<section id="usage">
+  <h2>Usage</h2>
+  <p>Show a request and response pair by setting the <code>data</code> property of <code>&lt;http-transaction&gt;</code>. A body is a string; when the <code>Content-Type</code> header is JSON, HTML, CSS or JavaScript the body is syntax highlighted.</p>
+  <code-block language="html" label="Request and response pair" data-escape><http-transaction id="lookup"></http-transaction>
+
+<script type="module">
+  document.getElementById('lookup').data = {
+    request: {
+      method: 'GET',
+      url: '/api/users/123',
+      headers: { 'Accept': 'application/json' }
+    },
+    response: {
+      status: 200,
+      statusText: 'OK',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: 123, name: 'Ada Lovelace' }, null, 2)
+    }
+  };
+</script></code-block>
+
+  <p>Without JavaScript of your own, pass the same objects as JSON in the <code>request</code> and <code>response</code> attributes. Use <code>highlight</code> to mark a part and <code>box</code> to draw a labeled border around it.</p>
+  <code-block language="html" label="Attributes only, with emphasis" data-escape><http-transaction
+  request='{"method":"GET","url":"/api/users/123","headers":{"Accept":"application/json"}}'
+  response='{"status":404,"statusText":"Not Found","headers":{"Content-Type":"text/plain"},"body":"No such user"}'
+  highlight="response-line"
+  box="request-headers">
+</http-transaction></code-block>
+
+  <p>Show one message alone with <code>&lt;http-request&gt;</code> or <code>&lt;http-response&gt;</code>. Here the section names have no <code>request-</code> or <code>response-</code> prefix.</p>
+  <code-block language="html" label="A single response" data-escape><http-response
+  response='{"status":301,"statusText":"Moved Permanently","headers":{"Location":"https://example.com/new"}}'
+  highlight="status-line, header:location"
+  show-header="false">
+</http-response></code-block>
+
+  <p>Show several requests on a timeline by setting the <code>exchanges</code> property of <code>&lt;http-waterfall&gt;</code>. Each exchange is a request, a response and a <code>timing</code> object in milliseconds.</p>
+  <code-block language="html" label="Timeline of several requests" data-escape><http-waterfall id="timeline" view="waterfall"></http-waterfall>
+
+<script type="module">
+  document.getElementById('timeline').exchanges = [
+    {
+      request: { method: 'GET', url: '/api/users' },
+      response: { status: 200, statusText: 'OK' },
+      timing: { startTime: 0, endTime: 100, duration: 100 }
+    },
+    {
+      request: { method: 'POST', url: '/api/users' },
+      response: { status: 201, statusText: 'Created' },
+      timing: { startTime: 50, endTime: 150, duration: 100 }
+    }
+  ];
+</script></code-block>
+</section>
+
+<section id="reference">
+  <h2>Reference</h2>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Attribute</th><th scope="col">Applies to</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>theme</code></td><td>All elements</td><td><code>light</code>, <code>dark</code>, <code>auto</code></td><td><code>auto</code></td><td>Color palette. With <code>auto</code> or no value, the element checks the operating system color preference once, when it is added to the page, and rewrites the attribute to <code>light</code> or <code>dark</code>.</td></tr>
+      <tr><td><code>request</code></td><td><code>http-transaction</code>, <code>http-request</code></td><td>JSON object</td><td>None</td><td>The request: <code>method</code>, <code>url</code>, and optional <code>httpVersion</code>, <code>headers</code>, <code>body</code>. The <code>data</code> property wins when both are set.</td></tr>
+      <tr><td><code>response</code></td><td><code>http-transaction</code>, <code>http-response</code></td><td>JSON object</td><td>None</td><td>The response: <code>status</code>, <code>statusText</code>, and optional <code>httpVersion</code>, <code>headers</code>, <code>body</code>.</td></tr>
+      <tr><td><code>highlight</code></td><td><code>http-transaction</code>, <code>http-request</code>, <code>http-response</code></td><td>Comma-separated section names</td><td>None</td><td>Marks the named sections. See the section names below.</td></tr>
+      <tr><td><code>box</code></td><td><code>http-transaction</code>, <code>http-request</code>, <code>http-response</code></td><td>Comma-separated section names</td><td>None</td><td>Draws a labeled border around the named sections.</td></tr>
+      <tr><td><code>show-header</code></td><td><code>http-request</code>, <code>http-response</code></td><td><code>false</code> to hide</td><td>Shown</td><td>Shows or hides the "Request" or "Response" title bar.</td></tr>
+      <tr><td><code>view</code></td><td><code>http-waterfall</code></td><td><code>list</code>, <code>duration</code>, <code>waterfall</code></td><td>Chosen by the element, usually <code>duration</code></td><td>Display mode. Without the attribute, <code>resources</code> mode starts in <code>waterfall</code> and other modes start in <code>duration</code>.</td></tr>
+      <tr><td><code>requests</code></td><td><code>http-waterfall</code></td><td>JSON array of exchanges</td><td>None</td><td>The exchanges to list, as an attribute. The <code>exchanges</code> property does the same from JavaScript.</td></tr>
+      <tr><td><code>capture</code></td><td><code>http-waterfall</code></td><td><code>true</code> or empty</td><td>Off</td><td>Records every <code>fetch()</code> and <code>XMLHttpRequest</code> call the page makes and lists it.</td></tr>
+      <tr><td><code>resources</code></td><td><code>http-waterfall</code></td><td>Boolean</td><td>Off</td><td>Lists the requests the page itself made (document, stylesheets, scripts, images, fonts), read from the browser's Navigation Timing and Resource Timing data. No headers or bodies are available in this mode.</td></tr>
+      <tr><td><code>filter</code></td><td><code>http-waterfall</code></td><td>URL pattern, <code>*</code> as wildcard</td><td>None</td><td>Limits captured or listed requests to matching URLs.</td></tr>
+      <tr><td><code>max-entries</code></td><td><code>http-waterfall</code></td><td>Number</td><td><code>100</code></td><td>The most exchanges kept.</td></tr>
+      <tr><td><code>explorer</code></td><td><code>http-waterfall</code></td><td>Boolean</td><td>Closed</td><td>Opens the request builder, a form that sends a real request and adds the result to the list.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Section names for highlight and box</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">On <code>http-transaction</code></th><th scope="col">On <code>http-request</code> or <code>http-response</code></th><th scope="col">Part</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>request-line</code></td><td><code>request-line</code></td><td>The first line of the request: method, URL and version.</td></tr>
+      <tr><td><code>response-line</code></td><td><code>status-line</code></td><td>The first line of the response: version, status code and reason.</td></tr>
+      <tr><td><code>request-headers</code>, <code>response-headers</code></td><td><code>headers</code></td><td>All headers.</td></tr>
+      <tr><td><code>request-header:accept</code>, <code>response-header:location</code></td><td><code>header:accept</code></td><td>One header, by name. Case does not matter.</td></tr>
+      <tr><td><code>request-body</code>, <code>response-body</code></td><td><code>body</code></td><td>The body.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Methods and properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Member</th><th scope="col">Applies to</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data</code></td><td><code>http-transaction</code></td><td>An object with <code>request</code> and <code>response</code>. Setting it renders again.</td></tr>
+      <tr><td><code>data</code></td><td><code>http-request</code>, <code>http-response</code></td><td>The request or response object.</td></tr>
+      <tr><td><code>headers</code>, <code>body</code></td><td><code>http-message</code></td><td>An object of header names and values, and a body string. This element shows headers and a body with no first line, and has two slots, <code>before-headers</code> and <code>after-body</code>.</td></tr>
+      <tr><td><code>exchanges</code></td><td><code>http-waterfall</code></td><td>An array of exchanges, each with <code>request</code>, <code>response</code> and <code>timing</code> (<code>startTime</code>, <code>endTime</code>, <code>duration</code>).</td></tr>
+      <tr><td><code>view</code></td><td><code>http-waterfall</code></td><td>The current display mode.</td></tr>
+      <tr><td><code>startCapture()</code>, <code>stopCapture()</code></td><td><code>http-waterfall</code></td><td>Start or stop recording the page's <code>fetch()</code> and <code>XMLHttpRequest</code> calls.</td></tr>
+      <tr><td><code>togglePause()</code></td><td><code>http-waterfall</code></td><td>Pause or resume recording.</td></tr>
+      <tr><td><code>clearExchanges()</code></td><td><code>http-waterfall</code></td><td>Empty the list.</td></tr>
+      <tr><td><code>startResources()</code>, <code>stopResources()</code></td><td><code>http-waterfall</code></td><td>Start or stop listing the page's own requests.</td></tr>
+      <tr><td><code>toggleExplorer()</code></td><td><code>http-waterfall</code></td><td>Open or close the request builder.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Events</h3>
+  <p>All four are fired on <code>&lt;http-waterfall&gt;</code>. They do not bubble, so listen on the element itself.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Event</th><th scope="col">Detail</th><th scope="col">Fired when</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>request-sent</code></td><td><code>{ method, url, headers, body }</code></td><td>The request builder sends a request.</td></tr>
+      <tr><td><code>response-received</code></td><td>The exchange: <code>{ request, response, timing }</code></td><td>The request builder receives a response.</td></tr>
+      <tr><td><code>request-error</code></td><td><code>{ error }</code></td><td>The request builder's request fails.</td></tr>
+      <tr><td><code>resources-observed</code></td><td><code>{ exchanges }</code></td><td>The <code>resources</code> mode adds a batch of entries.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>CSS custom properties</h3>
+  <p>Each element declares its colors as custom properties on its own host. These are the main ones. Message elements also define variables for HTTP methods (<code>--method-get</code>, <code>--method-post</code> and so on), status classes (<code>--status-success</code>, <code>--status-redirect</code>, <code>--status-client-error</code>, <code>--status-server-error</code>) and body syntax colors (<code>--json-*</code>, <code>--html-*</code>, <code>--css-*</code>, <code>--js-*</code>).</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Property</th><th scope="col">Applies to</th><th scope="col">Drives</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--bg-primary</code></td><td><code>http-transaction</code>, <code>http-waterfall</code></td><td>Outer background.</td></tr>
+      <tr><td><code>--bg-secondary</code></td><td><code>http-request</code>, <code>http-response</code>, <code>http-waterfall</code></td><td>Message panel background; secondary surfaces in the waterfall.</td></tr>
+      <tr><td><code>--bg-header</code></td><td><code>http-request</code>, <code>http-response</code></td><td>Title bar background. The title text is always white.</td></tr>
+      <tr><td><code>--border-color</code></td><td>All elements</td><td>Borders.</td></tr>
+      <tr><td><code>--text-primary</code></td><td>All elements</td><td>Main text.</td></tr>
+      <tr><td><code>--text-secondary</code></td><td><code>http-waterfall</code></td><td>Sizes, durations and other secondary text.</td></tr>
+      <tr><td><code>--text-empty</code></td><td><code>http-transaction</code>, <code>http-request</code>, <code>http-response</code></td><td>The "No data" message.</td></tr>
+      <tr><td><code>--header-name</code>, <code>--header-value</code></td><td><code>http-request</code>, <code>http-response</code>, <code>http-message</code></td><td>Header names and values.</td></tr>
+      <tr><td><code>--url-color</code>, <code>--version-color</code></td><td><code>http-request</code></td><td>The URL and the protocol version in the request line.</td></tr>
+      <tr><td><code>--button-primary-bg</code></td><td><code>http-waterfall</code></td><td>Primary buttons, such as the active view and Send.</td></tr>
+    </tbody>
+  </table>
+  <p>The <a href="https://profpowell.github.io/http-component/api.html">http-component API reference</a> has the full detail.</p>
+</section>
+
+<section id="theming">
+  <h2>With Vanilla Breeze</h2>
+  <p>Version 0.3.0 reads no Vanilla Breeze token. Every color is a fixed value in one of two built-in palettes, and the fonts are fixed too (Courier New for messages, the system sans-serif stack for the waterfall).</p>
+  <p>The palette is chosen in this order:</p>
+  <ol>
+    <li>The <code>theme</code> attribute, when it is <code>light</code> or <code>dark</code>.</li>
+    <li>Otherwise the operating system color preference, read once when the element is added to the page.</li>
+  </ol>
+  <p>The elements do not look at the <code>data-mode</code> attribute that Vanilla Breeze uses to force light or dark mode. If your page sets <code>data-mode</code>, copy it to the <code>theme</code> attribute yourself:</p>
+  <code-block language="javascript" label="Follow the page mode" data-escape>const mode = document.documentElement.dataset.mode; // "light", "dark" or undefined
+if (mode) {
+  document
+    .querySelectorAll('http-transaction, http-request, http-response, http-waterfall')
+    .forEach((el) => el.setAttribute('theme', mode));
+}</code-block>
+  <p>To use Vanilla Breeze colors, set the component's custom properties on the element from page CSS. A rule in the page wins over the defaults the element sets on itself.</p>
+  <code-block language="css" label="Map VB tokens onto one message" data-escape>http-request,
+http-response {
+  --bg-secondary: var(--color-surface);
+  --border-color: var(--color-border);
+  --text-primary: var(--color-text);
+  --header-value: var(--color-text);
+  --text-empty: var(--color-text-muted);
+}</code-block>
+  <p>This reaches <code>&lt;http-request&gt;</code> and <code>&lt;http-response&gt;</code> that you write in the page. It does not reach the ones inside <code>&lt;http-transaction&gt;</code> or <code>&lt;http-waterfall&gt;</code>: those live in a shadow tree and set the same properties again on themselves. On <code>&lt;http-transaction&gt;</code> only the outer <code>--bg-primary</code> can be changed this way. For full control of colors, place a request and a response side by side yourself.</p>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Messages are rendered as text in a <code>&lt;pre&gt;</code> element, so they can be read, selected and copied. Highlighted sections use <code>&lt;mark&gt;</code>.</li>
+    <li>The waterfall's view switch, pause, clear, expand and request builder controls are native <code>&lt;button&gt;</code>, <code>&lt;select&gt;</code> and <code>&lt;input&gt;</code> elements, so they work from the keyboard.</li>
+    <li>The pause, clear and row expand buttons show a symbol only. Pause and clear have a <code>title</code>; the expand button has no text label in this version.</li>
+    <li>The active view is shown by color alone, and new captured requests are not announced to screen readers.</li>
+    <li>The colored timing phase bars are hidden from assistive technology with <code>aria-hidden</code>; the same numbers appear as text when a row is expanded.</li>
+    <li>The "Capturing" indicator pulses. The component has no <code>prefers-reduced-motion</code> rule, so the pulse does not stop for readers who ask for less motion.</li>
+  </ul>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="https://profpowell.github.io/http-component/">http-component documentation</a> and <a href="https://profpowell.github.io/http-component/demos.html">interactive demos</a></li>
+    <li><a href="/docs/integrations/web-components/browser-console/">browser-console</a>: show console output next to the requests that produced it</li>
+    <li><a href="/docs/integrations/web-components/json-viewer/">json-viewer</a>: explore a JSON response body as a collapsible tree</li>
+    <li><a href="/docs/integrations/web-components/code-block/">code-block</a>: show the code that makes a request</li>
+    <li><a href="/docs/tokens/">Vanilla Breeze tokens</a>: the <code>--color-*</code> names used in the override example</li>
+  </ul>
+</section>

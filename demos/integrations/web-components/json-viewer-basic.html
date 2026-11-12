@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>json-viewer + Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="https://unpkg.com/@profpowell/json-viewer@0.1.0/dist/json-viewer.js"></script>
+  <style>
+    html, body { margin: 0; background: var(--color-background); }
+    main { padding: var(--size-l) var(--size-m); }
+    h1 { margin: 0; font-size: var(--font-size-l); }
+    p { margin: 0; }
+
+    /* Point the viewer's hooks at Vanilla Breeze tokens */
+    json-viewer {
+      color-scheme: inherit;
+      --json-viewer-surface: var(--color-surface);
+      --json-viewer-text: var(--color-text);
+      --json-viewer-text-muted: var(--color-text-muted);
+      --json-viewer-border: var(--color-border);
+      --json-viewer-accent: var(--color-interactive);
+      --json-viewer-radius: var(--radius-m);
+      --json-viewer-font-mono: var(--font-mono);
+      --json-viewer-space-1: var(--size-2xs);
+      --json-viewer-space-2: var(--size-xs);
+      --json-viewer-space-3: var(--size-s);
+      --json-viewer-space-4: var(--size-m);
+      --max-height: 22rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <layout-stack data-layout-gap="m">
+      <header>
+        <h1>Order 1042</h1>
+        <p>The record the shop API returns for one order. Open a branch, press <kbd>/</kbd> to search, or select a key to see its path.</p>
+      </header>
+
+      <json-viewer id="order" expanded="2" show-sizes></json-viewer>
+    </layout-stack>
+  </main>
+
+  <script type="module">
+    await customElements.whenDefined('json-viewer');
+
+    document.getElementById('order').data = {
+      id: 1042,
+      status: 'shipped',
+      paid: true,
+      placed: '2026-03-14T09:30:00Z',
+      customer: {
+        name: 'Ada Lovelace',
+        email: 'ada@example.com',
+        newsletter: false
+      },
+      items: [
+        { sku: 'TEA-001', name: 'Earl Grey, 100 g', qty: 2, price: 7.5 },
+        { sku: 'MUG-014', name: 'Stoneware mug', qty: 1, price: 12 },
+        { sku: 'INF-003', name: 'Steel infuser', qty: 1, price: 6.25 }
+      ],
+      shipping: {
+        method: 'standard',
+        cost: 4.95,
+        address: {
+          street: '12 Analytical Row',
+          city: 'London',
+          postcode: 'N1 9GU',
+          country: 'GB'
+        },
+        tracking: null
+      },
+      total: 38.2,
+      notes: 'Leave with the neighbor at number 14 if nobody is home.'
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+---
+layout: docs
+title: json-viewer integration
+description: "Show JSON or any JavaScript value as a collapsible, searchable tree on a Vanilla Breeze page with the json-viewer element."
+currentSection: resources
+currentPath: /docs/integrations/web-components/json-viewer/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/integrations/">Integrations</a></li>
+    <li><a href="/docs/integrations/web-components/">Web Components</a></li>
+    <li><span aria-current="page">json-viewer</span></li>
+  </ol>
+</nav>
+
+<h1>json-viewer</h1>
+<p class="lead">An element that shows a JavaScript value as a tree you can expand, collapse, search and copy from. Its colors and spacing come from <code>--json-viewer-*</code> custom properties, which you point at Vanilla Breeze tokens with a few lines of CSS.</p>
+
+<nav class="subnav" aria-label="json-viewer sections">
+  <ul>
+    <li><a href="#at-a-glance">At a glance</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#reference">Reference</a></li>
+    <li><a href="#theming">With Vanilla Breeze</a></li>
+    <li><a href="#accessibility">Accessibility</a></li>
+    <li><a href="#related">Related</a></li>
+  </ul>
+</nav>
+
+<section id="at-a-glance">
+  <h2>At a glance</h2>
+  <table class="props-table">
+    <tbody>
+      <tr><th scope="row">Package</th><td><a href="https://www.npmjs.com/package/@profpowell/json-viewer"><code>@profpowell/json-viewer</code></a> <code>0.1.0</code></td></tr>
+      <tr><th scope="row">Elements</th><td><code>&lt;json-viewer&gt;</code></td></tr>
+      <tr><th scope="row">Renders in</th><td>Shadow DOM</td></tr>
+      <tr><th scope="row">Source</th><td><a href="https://github.com/ProfPowell/json-viewer">github.com/ProfPowell/json-viewer</a></td></tr>
+      <tr><th scope="row">Documentation</th><td><a href="https://profpowell.github.io/json-viewer/">profpowell.github.io/json-viewer</a></td></tr>
+      <tr><th scope="row">Licence</th><td>MIT</td></tr>
+      <tr><th scope="row">In Vanilla Breeze</th><td>Not bundled. Load it yourself.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="install">
+  <h2>Install</h2>
+  <p>From a CDN. There is no stylesheet to load.</p>
+  <code-block language="html" label="CDN" data-escape><script type="module" src="https://unpkg.com/@profpowell/json-viewer@0.1.0/dist/json-viewer.js"></script></code-block>
+  <p>Or from npm:</p>
+  <code-block language="bash" label="npm" data-escape>npm install @profpowell/json-viewer</code-block>
+  <code-block language="javascript" label="Import" data-escape>import '@profpowell/json-viewer';</code-block>
+</section>
+
+<section id="demo">
+  <h2>Demo</h2>
+  <p>An order record shown as a tree, two levels open, with item counts. The viewer's colors, radius, font and spacing are mapped to Vanilla Breeze tokens in the page's CSS.</p>
+  <browser-window url="json-viewer-basic" src="/docs/integrations/web-components/demos/json-viewer-basic.html" data-demo-height="l"></browser-window>
+</section>
+
+<section id="usage">
+  <h2>Usage</h2>
+  <p>Write the JSON inside the element. The viewer reads its own text content when it has no <code>data</code> or <code>src</code>.</p>
+  <code-block language="html" label="Inline JSON" data-escape><json-viewer expanded="2" show-sizes>
+  {
+    "order": 1042,
+    "paid": true,
+    "items": [
+      { "sku": "TEA-001", "qty": 2 },
+      { "sku": "MUG-014", "qty": 1 }
+    ]
+  }
+</json-viewer></code-block>
+
+  <p>Set the <code>data</code> property from JavaScript. This accepts any value, including ones JSON cannot hold: <code>Map</code>, <code>Set</code>, <code>Date</code>, <code>BigInt</code> and objects that refer to themselves. Set it after the element is defined, as here.</p>
+  <code-block language="html" label="Data from JavaScript" data-escape><json-viewer id="order" show-types></json-viewer>
+
+<script type="module">
+  await customElements.whenDefined('json-viewer');
+
+  const viewer = document.getElementById('order');
+  viewer.data = {
+    order: 1042,
+    placed: new Date('2026-03-14T09:30:00Z'),
+    tags: new Set(['gift', 'priority']),
+    items: [{ sku: 'TEA-001', qty: 2 }]
+  };
+
+  viewer.expand('items');          // open one branch by path
+  viewer.addEventListener('json-viewer:keyclick', (event) => {
+    console.log(event.detail.path, event.detail.value);
+  });
+</script></code-block>
+
+  <p>Load JSON from a URL with <code>src</code>. The viewer fetches it and shows the result, or an <code>error</code> object if the fetch fails.</p>
+  <code-block language="html" label="Fetch from a URL" data-escape><json-viewer src="/data/order-1042.json" expanded="false" show-indices></json-viewer></code-block>
+</section>
+
+<section id="reference">
+  <h2>Reference</h2>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data</code></td><td>JSON string</td><td>None</td><td>The value to show. If the string is not valid JSON it is shown as a plain string. Use the <code>data</code> property for values JSON cannot hold.</td></tr>
+      <tr><td><code>src</code></td><td>URL</td><td>None</td><td>Fetched as JSON when the element is added to the page and whenever the attribute changes.</td></tr>
+      <tr><td><code>expanded</code></td><td>Whole number, <code>true</code>, <code>false</code></td><td><code>1</code></td><td>How many levels start open. <code>true</code> or an empty value opens every level; <code>false</code> opens none.</td></tr>
+      <tr><td><code>mode</code></td><td><code>tree</code>, <code>raw</code></td><td><code>tree</code></td><td><code>raw</code> shows indented JSON text instead of the tree. The toolbar's Raw button switches this attribute.</td></tr>
+      <tr><td><code>show-types</code></td><td>Boolean</td><td>Off</td><td>Adds a type label, such as <code>string</code> or <code>array</code>, after each value.</td></tr>
+      <tr><td><code>show-sizes</code></td><td>Boolean</td><td>Off</td><td>Shows the number of items in each array and object.</td></tr>
+      <tr><td><code>show-indices</code></td><td>Boolean</td><td>Off</td><td>Shows the position number before each array item.</td></tr>
+      <tr><td><code>indent</code></td><td>Whole number, in <code>ch</code> units</td><td><code>2</code></td><td>Indentation of each tree level, and the spacing of raw mode and copied JSON.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Methods and properties</h3>
+  <p>A path names one node: <code>users[0].name</code> for objects and arrays, <code>cache@0</code> for the first entry of a <code>Map</code> or <code>Set</code>, and <code>$</code> for the root. In a pattern, <code>*</code> matches one segment and <code>**</code> matches any number.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Member</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data</code></td><td>The value to show. Setting it removes the <code>data</code> attribute and renders again.</td></tr>
+      <tr><td><code>expand(matcher)</code>, <code>collapse(matcher)</code></td><td>Open or close the branches that match. The matcher is a path, a pattern with <code>*</code> or <code>**</code>, a <code>RegExp</code>, or a function that receives a path and returns true or false.</td></tr>
+      <tr><td><code>expandAll()</code>, <code>collapseAll()</code></td><td>Open or close every branch.</td></tr>
+      <tr><td><code>search(query, options)</code></td><td>Finds the query in keys and values, opens and scrolls to the first match, and returns an object with <code>next()</code>, <code>prev()</code>, <code>current</code> and <code>count</code>. Options: <code>regex</code> and <code>caseSensitive</code>, both off by default.</td></tr>
+      <tr><td><code>entryAt(path)</code></td><td>Returns <code>{ key, value }</code> for a path. For a <code>Map</code> entry the key is the original key object, not a string.</td></tr>
+      <tr><td><code>copy(text)</code></td><td>Writes the text to the clipboard. With no argument it copies the whole value as JSON, writing each <code>BigInt</code> as a string ending in <code>n</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Events</h3>
+  <p>Both events bubble and cross the shadow boundary, so you can listen on any ancestor.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Event</th><th scope="col">Detail</th><th scope="col">Fired when</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>json-viewer:keyclick</code></td><td><code>{ path, key, value }</code></td><td>A key is activated. The viewer also shows the key's path in a bar under the toolbar.</td></tr>
+      <tr><td><code>json-viewer:valueclick</code></td><td><code>{ path, value, type }</code></td><td>A value is clicked.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>CSS custom properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Property</th><th scope="col">Built-in default</th><th scope="col">Drives</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--json-viewer-surface</code></td><td><code>light-dark(#ffffff, #1c1917)</code></td><td>Background of the viewer, toolbar and inputs; text on pressed buttons.</td></tr>
+      <tr><td><code>--json-viewer-text</code></td><td><code>light-dark(#1c1917, #f4f4f5)</code></td><td>Main text.</td></tr>
+      <tr><td><code>--json-viewer-text-muted</code></td><td><code>light-dark(#71717a, #a1a1aa)</code></td><td>Disclosure arrows, sizes, type labels, indices, the match count.</td></tr>
+      <tr><td><code>--json-viewer-border</code></td><td><code>light-dark(#e7e5e4, #3f3f46)</code></td><td>Outer border, dividers, button borders, the guide line beside open branches.</td></tr>
+      <tr><td><code>--json-viewer-accent</code></td><td><code>light-dark(#0f766e, #2dd4bf)</code></td><td>Hover and focus borders, pressed buttons, search match highlight.</td></tr>
+      <tr><td><code>--json-viewer-radius</code></td><td><code>0.5rem</code></td><td>Corner radius. Buttons use 60% of it.</td></tr>
+      <tr><td><code>--json-viewer-font-mono</code></td><td><code>ui-monospace</code>, then a list of monospace fonts</td><td>Font of the whole viewer.</td></tr>
+      <tr><td><code>--json-viewer-space-1</code> to <code>--json-viewer-space-4</code></td><td><code>0.25rem</code>, <code>0.5rem</code>, <code>0.75rem</code>, <code>1rem</code></td><td>Gaps and padding.</td></tr>
+      <tr><td><code>--json-viewer-key</code></td><td><code>light-dark(#7e22ce, #c084fc)</code></td><td>Object keys.</td></tr>
+      <tr><td><code>--json-viewer-string</code></td><td><code>light-dark(#15803d, #4ade80)</code></td><td>Strings, dates and regular expressions.</td></tr>
+      <tr><td><code>--json-viewer-number</code></td><td><code>light-dark(#1d4ed8, #60a5fa)</code></td><td>Numbers and <code>BigInt</code> values.</td></tr>
+      <tr><td><code>--json-viewer-boolean</code></td><td><code>light-dark(#a16207, #fbbf24)</code></td><td>Booleans and symbols.</td></tr>
+      <tr><td><code>--json-viewer-null</code></td><td><code>light-dark(#71717a, #a1a1aa)</code></td><td><code>null</code>.</td></tr>
+      <tr><td><code>--json-viewer-punct</code></td><td><code>light-dark(#52525b, #a1a1aa)</code></td><td>Brackets, braces and colons.</td></tr>
+      <tr><td><code>--max-height</code></td><td><code>none</code></td><td>Maximum height of the tree area. Beyond it the tree scrolls and the toolbar stays in place.</td></tr>
+    </tbody>
+  </table>
+  <p>The shadow tree also exposes five parts for <code>::part()</code> styling: <code>toolbar</code>, <code>search</code>, <code>path-bar</code>, <code>path</code> and <code>body</code>.</p>
+  <p>The <a href="https://profpowell.github.io/json-viewer/">json-viewer documentation</a> has the full detail.</p>
+</section>
+
+<section id="theming">
+  <h2>With Vanilla Breeze</h2>
+  <p>Each value in the viewer is resolved in three steps:</p>
+  <ol>
+    <li>The public hook, for example <code>--json-viewer-surface</code>.</li>
+    <li>A fallback named <code>--vb-*</code>, for example <code>--vb-surface</code>.</li>
+    <li>A built-in value, written with <code>light-dark()</code> for colors.</li>
+  </ol>
+  <p>The package README calls step 2 the Vanilla Breeze fallback. In version 0.1.0 the literal names it reads are <code>--vb-surface</code>, <code>--vb-text</code>, <code>--vb-text-muted</code>, <code>--vb-border</code>, <code>--vb-accent</code>, <code>--vb-radius</code>, <code>--vb-font-mono</code>, <code>--vb-space-1</code> to <code>--vb-space-4</code>, and <code>--vb-json-key</code>, <code>--vb-json-string</code>, <code>--vb-json-number</code>, <code>--vb-json-boolean</code>, <code>--vb-json-null</code>, <code>--vb-json-punct</code>.</p>
+  <p><strong>Vanilla Breeze does not define any of those names.</strong> Its tokens are <code>--color-*</code>, <code>--size-*</code>, <code>--font-*</code> and <code>--radius-*</code>. So on a Vanilla Breeze page step 2 never matches, and the viewer shows its built-in colors unless you set step 1 yourself. This table gives the mapping:</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Set this hook</th><th scope="col">To this VB token</th><th scope="col">Drives</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--json-viewer-surface</code></td><td><code>--color-surface</code></td><td>Background.</td></tr>
+      <tr><td><code>--json-viewer-text</code></td><td><code>--color-text</code></td><td>Main text.</td></tr>
+      <tr><td><code>--json-viewer-text-muted</code></td><td><code>--color-text-muted</code></td><td>Secondary text.</td></tr>
+      <tr><td><code>--json-viewer-border</code></td><td><code>--color-border</code></td><td>Borders and dividers.</td></tr>
+      <tr><td><code>--json-viewer-accent</code></td><td><code>--color-interactive</code></td><td>Focus, pressed and match colors.</td></tr>
+      <tr><td><code>--json-viewer-radius</code></td><td><code>--radius-m</code></td><td>Corners.</td></tr>
+      <tr><td><code>--json-viewer-font-mono</code></td><td><code>--font-mono</code></td><td>Font.</td></tr>
+      <tr><td><code>--json-viewer-space-1</code> to <code>-4</code></td><td><code>--size-2xs</code>, <code>--size-xs</code>, <code>--size-s</code>, <code>--size-m</code></td><td>Gaps and padding. These four tokens have the same default sizes as the viewer's built-in values.</td></tr>
+    </tbody>
+  </table>
+  <p>Put the mapping in page CSS. A rule on <code>json-viewer</code> covers every instance; a rule on an id or other selector covers one.</p>
+  <code-block language="css" label="Map json-viewer to VB tokens" data-escape>json-viewer {
+  color-scheme: inherit;
+  --json-viewer-surface: var(--color-surface);
+  --json-viewer-text: var(--color-text);
+  --json-viewer-text-muted: var(--color-text-muted);
+  --json-viewer-border: var(--color-border);
+  --json-viewer-accent: var(--color-interactive);
+  --json-viewer-radius: var(--radius-m);
+  --json-viewer-font-mono: var(--font-mono);
+  --json-viewer-space-1: var(--size-2xs);
+  --json-viewer-space-2: var(--size-xs);
+  --json-viewer-space-3: var(--size-s);
+  --json-viewer-space-4: var(--size-m);
+}
+
+/* One instance: a taller limit and a different key color */
+#order {
+  --max-height: 24rem;
+  --json-viewer-key: var(--color-primary);
+}</code-block>
+  <p>The <code>color-scheme: inherit</code> line matters when the page forces a mode with <code>data-mode</code>. The viewer sets <code>color-scheme: light dark</code> on itself, which makes every <code>light-dark()</code> value inside it follow the operating system preference. That includes its built-in value colors (keys, strings, numbers) and any Vanilla Breeze token whose value is a <code>light-dark()</code> pair. Inheriting the scheme from the page keeps them in step with the mode the page is showing.</p>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Each branch is a native <code>&lt;details&gt;</code> element, so Enter or Space on its summary opens and closes it. Branches below the starting depth are built the first time they open.</li>
+    <li>Keys are buttons. They can be reached with Tab, and activating one shows its path.</li>
+    <li>Press <kbd>/</kbd> while focus is in the viewer to open search. In the search field, <kbd>Enter</kbd> goes to the next match, <kbd>Shift</kbd> + <kbd>Enter</kbd> to the previous one, and <kbd>Escape</kbd> closes search.</li>
+    <li>The toolbar has <code>role="toolbar"</code> and each button has an <code>aria-label</code>. The Search and Raw buttons report their state with <code>aria-pressed</code>.</li>
+    <li>The tree area has <code>role="tree"</code> and each node has <code>role="treeitem"</code>. The match count and the path bar are polite live regions, so changes are announced.</li>
+    <li>The per-row copy buttons appear on hover or focus within the row and are left out of the Tab order. The toolbar's Copy button is reachable by keyboard.</li>
+    <li>With <code>prefers-reduced-motion: reduce</code> the disclosure arrow does not animate. Moving to a search match still scrolls smoothly.</li>
+    <li>Links in the data (strings that start with <code>http://</code> or <code>https://</code>) open in a new tab.</li>
+  </ul>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="https://profpowell.github.io/json-viewer/">json-viewer documentation</a></li>
+    <li><a href="/docs/integrations/web-components/http-component/">http-component</a>: show the request and response that carried the JSON</li>
+    <li><a href="/docs/integrations/web-components/code-block/">code-block</a>: show JSON as highlighted source text instead of a tree</li>
+    <li><a href="/docs/integrations/web-components/browser-console/">browser-console</a>: show logged values in a console panel</li>
+    <li><a href="/docs/tokens/">Vanilla Breeze tokens</a>: the <code>--color-*</code>, <code>--size-*</code>, <code>--font-*</code> and <code>--radius-*</code> names used in the mapping</li>
+    <li><a href="/docs/elements/native/details/"><code>&lt;details&gt;</code></a>: the native element each branch is built from</li>
+  </ul>
+</section>

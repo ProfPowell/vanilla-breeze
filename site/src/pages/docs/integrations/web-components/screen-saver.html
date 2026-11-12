@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: screen-saver integration
-description: "Drop a screen-saver element into a Vanilla Breeze page — 17 idle-overlay effects, with five themed variants (bauhaus, memphis, art-deco, brutalist, kawaii) that inherit VB tokens automatically."
+description: "Cover an idle Vanilla Breeze page with an animated screen saver using the screen-saver web component and its 17 effects."
 currentSection: resources
 currentPath: /docs/integrations/web-components/screen-saver/
 ---
@@ -15,109 +15,234 @@ currentPath: /docs/integrations/web-components/screen-saver/
 </nav>
 
 <h1>screen-saver</h1>
-<p class="lead">A standalone web component that overlays an idle page with one of 17 effects. Five of those effects (<code>bauhaus</code>, <code>memphis</code>, <code>art-deco</code>, <code>brutalist</code>, <code>kawaii</code>) are designed to pair with the matching Vanilla Breeze theme — they read VB <code>--color-*</code> and <code>--font-*</code> tokens through the shadow DOM, so no extra wiring is needed.</p>
+<p class="lead"><code>&lt;screen-saver&gt;</code> covers the page with an animated effect after the visitor has been idle for a set time, and goes away when they move the mouse or press a key. Five of its 17 effects are drawn in the colors and typefaces of the matching Vanilla Breeze theme, and others can use theme colors on request.</p>
 
-<section>
-  <h2>Where to find it</h2>
+<nav class="subnav" aria-label="screen-saver sections">
   <ul>
-    <li>npm: <a href="https://www.npmjs.com/package/@profpowell/screen-saver"><code>@profpowell/screen-saver</code></a></li>
-    <li>GitHub: <a href="https://github.com/ProfPowell/screen-saver">ProfPowell/screen-saver</a></li>
-    <li>License: MIT</li>
+    <li><a href="#at-a-glance">At a glance</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#reference">Reference</a></li>
+    <li><a href="#theming">With Vanilla Breeze</a></li>
+    <li><a href="#accessibility">Accessibility</a></li>
+    <li><a href="#related">Related</a></li>
+  </ul>
+</nav>
+
+<section id="at-a-glance">
+  <h2>At a glance</h2>
+  <table class="props-table">
+    <tbody>
+      <tr><th scope="row">Package</th><td><a href="https://www.npmjs.com/package/@profpowell/screen-saver">@profpowell/screen-saver</a> <code>1.1.1</code></td></tr>
+      <tr><th scope="row">Elements</th><td><code>&lt;screen-saver&gt;</code></td></tr>
+      <tr><th scope="row">Renders in</th><td>Shadow DOM</td></tr>
+      <tr><th scope="row">Dependencies</th><td>None. One effect, <code>tunnel</code>, downloads the Three.js 3D library from unpkg the first time it runs.</td></tr>
+      <tr><th scope="row">Source</th><td><a href="https://github.com/ProfPowell/screen-saver">github.com/ProfPowell/screen-saver</a></td></tr>
+      <tr><th scope="row">Documentation</th><td><a href="https://profpowell.github.io/screen-saver/">profpowell.github.io/screen-saver</a></td></tr>
+      <tr><th scope="row">Licence</th><td>MIT</td></tr>
+      <tr><th scope="row">In Vanilla Breeze</th><td>Not bundled. Load it yourself.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="install">
+  <h2>Install</h2>
+  <p>Load the component from a CDN with one script tag.</p>
+  <code-block language="html" label="CDN" data-escape><script type="module" src="https://unpkg.com/@profpowell/screen-saver@1.1.1/dist/screen-saver.js"></script></code-block>
+  <p>Or install it from npm and import it in your own script.</p>
+  <code-block language="bash" label="npm" data-escape>npm install @profpowell/screen-saver</code-block>
+  <code-block language="javascript" label="Import" data-escape>import '@profpowell/screen-saver';</code-block>
+</section>
+
+<section id="demo">
+  <h2>Demo</h2>
+  <p>Each demo is a Vanilla Breeze page with one theme applied and the matching effect. The screen saver starts as soon as the demo loads. Move the pointer over a demo to dismiss it, then hold still for two seconds to bring it back.</p>
+
+  <h3>Bauhaus</h3>
+  <browser-window url="screen-saver-bauhaus" src="/docs/integrations/web-components/demos/screen-saver-bauhaus.html" data-demo-height="m"></browser-window>
+
+  <h3>Memphis</h3>
+  <browser-window url="screen-saver-memphis" src="/docs/integrations/web-components/demos/screen-saver-memphis.html" data-demo-height="m"></browser-window>
+
+  <h3>Art deco</h3>
+  <browser-window url="screen-saver-art-deco" src="/docs/integrations/web-components/demos/screen-saver-art-deco.html" data-demo-height="m"></browser-window>
+
+  <h3>Brutalist</h3>
+  <browser-window url="screen-saver-brutalist" src="/docs/integrations/web-components/demos/screen-saver-brutalist.html" data-demo-height="m"></browser-window>
+
+  <h3>Kawaii</h3>
+  <browser-window url="screen-saver-kawaii" src="/docs/integrations/web-components/demos/screen-saver-kawaii.html" data-demo-height="m"></browser-window>
+</section>
+
+<section id="usage">
+  <h2>Usage</h2>
+  <p>Put one <code>&lt;screen-saver&gt;</code> anywhere in the page. It takes no space until it starts, then covers the whole viewport. The text inside the element is the text the effect shows.</p>
+  <code-block language="html" label="Start after three minutes" data-escape><screen-saver effect="bounce3d" timeout="180">Back soon</screen-saver></code-block>
+
+  <p>Pair a themed effect with its Vanilla Breeze theme. The effect takes its colors and typeface from the theme.</p>
+  <code-block language="html" label="Themed effect" data-escape><html lang="en" data-theme="bauhaus">
+  <body>
+    <main>...</main>
+    <screen-saver effect="bauhaus">Form follows function</screen-saver>
+  </body>
+</html></code-block>
+
+  <p>Add <code>palette="theme"</code> to make an effect that normally cycles through rainbow colors use the theme's colors.</p>
+  <code-block language="html" label="Theme colors in a classic effect" data-escape><screen-saver effect="mystify" palette="theme"></screen-saver></code-block>
+
+  <p>Start and stop it from script, and listen for its events.</p>
+  <code-block language="javascript" label="Control from script" data-escape>const saver = document.querySelector('screen-saver');
+
+document.querySelector('#preview').addEventListener('click', () => {
+  saver.activate();
+});
+
+saver.addEventListener('screensaver-deactivate', (event) => {
+  console.log(`Shown for ${event.detail.duration} ms`);
+});</code-block>
+</section>
+
+<section id="reference">
+  <h2>Reference</h2>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>timeout</code></td><td>Number of seconds</td><td><code>180</code></td><td>How long the visitor must be idle before the screen saver starts.</td></tr>
+      <tr><td><code>effect</code></td><td>An effect name from the table below</td><td><code>bounce3d</code></td><td>The effect to show. An unknown name shows <code>bounce3d</code>.</td></tr>
+      <tr><td><code>speed</code></td><td>Number</td><td><code>1</code></td><td>Multiplies the animation speed. <code>2</code> is twice as fast.</td></tr>
+      <tr><td><code>background</code></td><td>A CSS color, or an image URL</td><td>None</td><td>The backdrop behind the effect. A value that starts with <code>http</code>, <code>/</code> or <code>data:</code> is used as an image.</td></tr>
+      <tr><td><code>palette</code></td><td><code>rainbow</code>, <code>theme</code></td><td><code>rainbow</code></td><td>With <code>theme</code>, effects that pick colors in script use Vanilla Breeze color tokens.</td></tr>
+    </tbody>
+  </table>
+  <p>The 17 effects, in groups:</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Group</th><th scope="col">Effects</th><th scope="col">Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Text</th><td><code>bounce3d</code>, <code>matrix</code>, <code>ascii-glitch</code></td><td>Built around the text inside the element. With no text they show the site's host name.</td></tr>
+      <tr><th scope="row">Classic</th><td><code>starfield</code>, <code>plasma</code>, <code>fireworks</code>, <code>bubbles</code>, <code>pipes</code>, <code>mystify</code></td><td>Drawn on a canvas. No text needed.</td></tr>
+      <tr><th scope="row">Scenes</th><td><code>tunnel</code>, <code>slideshow</code>, <code>snow</code></td><td>No text needed. <code>slideshow</code> reads <code>data-images</code> (a comma-separated list of URLs), <code>data-duration</code> and <code>data-transition</code> (milliseconds, default 5000 and 1000). <code>snow</code> reads <code>data-background</code> (an image URL), <code>data-snowflakes</code> (default 200) and <code>data-wind</code>.</td></tr>
+      <tr><th scope="row">Themed</th><td><code>bauhaus</code>, <code>memphis</code>, <code>art-deco</code>, <code>brutalist</code>, <code>kawaii</code></td><td>Each is designed for the Vanilla Breeze theme of the same name. See <a href="#theming">With Vanilla Breeze</a>.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Methods and properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Member</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>activate()</code>, <code>deactivate()</code></td><td>Start and stop the screen saver from script.</td></tr>
+      <tr><td><code>isActive</code></td><td>Read-only. Whether the screen saver is showing.</td></tr>
+      <tr><td><code>timeout</code>, <code>effect</code>, <code>speed</code>, <code>background</code>, <code>palette</code></td><td>Mirror the attributes of the same name. Changing <code>effect</code> or <code>palette</code> while the screen saver is showing switches at once.</td></tr>
+      <tr><td><code>ScreenSaver.registerEffect(name, effectClass)</code></td><td>Static. Adds your own effect, a class that extends the exported <code>Effect</code> class, under a name you can use in the <code>effect</code> attribute.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Events</h3>
+  <p>Both events bubble.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Event</th><th scope="col">Detail</th><th scope="col">Fires when</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>screensaver-activate</code></td><td>None</td><td>The screen saver starts.</td></tr>
+      <tr><td><code>screensaver-deactivate</code></td><td><code>{ duration }</code>, in milliseconds</td><td>The screen saver is dismissed.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>CSS custom properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Property</th><th scope="col">Default</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--screen-saver-bg</code></td><td><code>rgba(0, 0, 0, 0.95)</code></td><td>The backdrop that covers the page. The five themed effects paint their own backdrop over it.</td></tr>
+      <tr><td><code>--screen-saver-text-color</code></td><td>Depends on the effect</td><td>Color of the text.</td></tr>
+      <tr><td><code>--screen-saver-font-family</code></td><td>Depends on the effect</td><td>Typeface of the text.</td></tr>
+      <tr><td><code>--screen-saver-font-size</code></td><td><code>4rem</code></td><td>Size of the text.</td></tr>
+      <tr><td><code>--screen-saver-z-index</code></td><td><code>999999</code></td><td>Stacking order of the overlay.</td></tr>
+    </tbody>
+  </table>
+  <p>See the <a href="https://profpowell.github.io/screen-saver/">screen-saver documentation</a> for the full detail.</p>
+</section>
+
+<section id="theming">
+  <h2>With Vanilla Breeze</h2>
+  <p>The effects read Vanilla Breeze tokens at the moment the screen saver starts. Custom properties inherit into the shadow DOM, so no setup is needed. How much of the theme an effect picks up depends on the effect.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Effects</th><th scope="col">Follows the theme?</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>bauhaus</code>, <code>memphis</code>, <code>art-deco</code>, <code>brutalist</code>, <code>kawaii</code></td><td>Yes, always. Shapes, backdrop and text all come from tokens. The <code>palette</code> attribute makes no difference.</td></tr>
+      <tr><td><code>matrix</code>, <code>starfield</code>, <code>ascii-glitch</code></td><td>Yes, in part. The falling characters, the stars and the text use tokens. The backdrop stays dark.</td></tr>
+      <tr><td><code>bounce3d</code>, <code>fireworks</code>, <code>bubbles</code>, <code>pipes</code>, <code>mystify</code>, <code>plasma</code>, <code>tunnel</code></td><td>Only with <code>palette="theme"</code>. Without it they use built-in rainbow colors.</td></tr>
+      <tr><td><code>slideshow</code>, <code>snow</code></td><td>No. They show images or their own scene. Only the optional text uses tokens.</td></tr>
+    </tbody>
+  </table>
+
+  <p>The tokens and what they drive:</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Token</th><th scope="col">Drives</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--color-primary</code>, <code>--color-accent</code>, <code>--color-success</code>, <code>--color-warning</code>, <code>--color-info</code>, <code>--color-error</code></td><td>The color set for <code>memphis</code>, and for <code>bounce3d</code>, <code>fireworks</code>, <code>bubbles</code>, <code>pipes</code> and <code>mystify</code> with <code>palette="theme"</code>. <code>bauhaus</code> and <code>art-deco</code> each use three of them. <code>plasma</code> and <code>tunnel</code> use the first one or two.</td></tr>
+      <tr><td><code>--color-primary-subtle</code>, <code>--color-accent-subtle</code>, <code>--color-success-subtle</code></td><td>The pastel shapes in <code>kawaii</code></td></tr>
+      <tr><td><code>--color-background</code></td><td>The backdrop of the five themed effects</td></tr>
+      <tr><td><code>--color-text</code></td><td>Text in most effects, the blocks in <code>brutalist</code>, the stars in <code>starfield</code></td></tr>
+      <tr><td><code>--color-success</code></td><td>The falling characters and the text in <code>matrix</code></td></tr>
+      <tr><td><code>--font-display</code>, <code>--font-sans</code>, <code>--font-mono</code></td><td>The typeface of the text. Most effects use the display face. <code>brutalist</code> and <code>ascii-glitch</code> use the monospace face.</td></tr>
+    </tbody>
+  </table>
+  <p>The fallback order for text color and typeface is: the <code>--screen-saver-*</code> property if you set it, then the Vanilla Breeze token, then a built-in default. <code>--screen-saver-bg</code>, <code>--screen-saver-font-size</code> and <code>--screen-saver-z-index</code> have no Vanilla Breeze token behind them. Without Vanilla Breeze the built-in defaults apply.</p>
+  <code-block language="css" label="Override one screen saver" data-escape>screen-saver {
+  --screen-saver-bg: var(--color-surface-sunken);
+  --screen-saver-text-color: var(--color-accent);
+  --screen-saver-font-family: var(--font-mono);
+  --screen-saver-font-size: var(--font-size-3xl);
+}</code-block>
+
+  <h3>Recommended theme pairings</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Effect</th><th scope="col">Vanilla Breeze theme</th><th scope="col">Needs text?</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>bauhaus</code></td><td><code>bauhaus</code></td><td>Yes</td></tr>
+      <tr><td><code>memphis</code></td><td><code>memphis</code></td><td>No</td></tr>
+      <tr><td><code>art-deco</code></td><td><code>art-deco</code></td><td>Yes</td></tr>
+      <tr><td><code>brutalist</code></td><td><code>brutalist</code></td><td>Yes</td></tr>
+      <tr><td><code>kawaii</code></td><td><code>kawaii</code></td><td>No</td></tr>
+    </tbody>
+  </table>
+  <p>An effect that needs text shows the site's host name when the element is empty. The other 12 effects work with any theme.</p>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Every effect checks the visitor's reduced-motion setting (<code>prefers-reduced-motion: reduce</code>) when it starts. With that setting on, the screen saver still appears but shows a still picture or a plain backdrop and does not animate. <code>slideshow</code> stays on its first image.</li>
+    <li>Moving the mouse, pressing a mouse button, pressing any key or touching the screen dismisses the screen saver. Input in the first half second after it starts is ignored, so the movement that started it does not also dismiss it.</li>
+    <li>Mouse, keyboard, touch, scroll and wheel input all count as activity and restart the idle timer.</li>
+    <li>The overlay has the <code>dialog</code> role and the label "Screen saver". It is hidden from screen readers until it starts.</li>
   </ul>
 </section>
 
-<section>
-  <h2>Install</h2>
-  <p>Via CDN:</p>
-  <code-block language="html" data-escape><script type="module" src="https://unpkg.com/@profpowell/screen-saver@1.1.1/dist/screen-saver.js"></script></code-block>
-  <p>Or via npm:</p>
-  <code-block language="bash" data-escape>npm install @profpowell/screen-saver</code-block>
-  <code-block language="javascript" data-escape>import '@profpowell/screen-saver';</code-block>
-  <p>Not currently bundled into Vanilla Breeze — wire it in yourself. There is no build coupling between the two repos; the interface is purely CSS custom properties.</p>
-</section>
-
-<section>
-  <h2>Demos</h2>
-  <p>Each demo below loads a Vanilla Breeze page with a single theme applied on <code>&lt;html data-theme="…"&gt;</code> and drops in a single <code>&lt;screen-saver&gt;</code> with the matching effect. Each iframe <strong>auto-activates the screen-saver on load</strong> so the themed effect is immediately visible. Move your cursor into a frame to dismiss; let it idle ~2 seconds to retrigger.</p>
-
-  <h3>Bauhaus</h3>
-  <browser-window url="screen-saver-bauhaus" src="/docs/integrations/web-components/demos/screen-saver-bauhaus.html"></browser-window>
-
-  <h3>Memphis</h3>
-  <browser-window url="screen-saver-memphis" src="/docs/integrations/web-components/demos/screen-saver-memphis.html"></browser-window>
-
-  <h3>Art Deco</h3>
-  <browser-window url="screen-saver-art-deco" src="/docs/integrations/web-components/demos/screen-saver-art-deco.html"></browser-window>
-
-  <h3>Brutalist</h3>
-  <browser-window url="screen-saver-brutalist" src="/docs/integrations/web-components/demos/screen-saver-brutalist.html"></browser-window>
-
-  <h3>Kawaii</h3>
-  <browser-window url="screen-saver-kawaii" src="/docs/integrations/web-components/demos/screen-saver-kawaii.html"></browser-window>
-</section>
-
-<section>
-  <h2>Recommended theme pairings</h2>
-  <table class="props-table">
-    <thead>
-      <tr><th>Effect</th><th>Recommended VB theme</th><th>Requires slot text?</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><code>bauhaus</code></td><td><code>bauhaus</code></td><td>yes</td></tr>
-      <tr><td><code>memphis</code></td><td><code>memphis</code></td><td>no</td></tr>
-      <tr><td><code>art-deco</code></td><td><code>art-deco</code></td><td>yes</td></tr>
-      <tr><td><code>brutalist</code></td><td><code>brutalist</code></td><td>yes</td></tr>
-      <tr><td><code>kawaii</code></td><td><code>kawaii</code></td><td>no</td></tr>
-    </tbody>
-  </table>
-  <p>The 12 non-themed effects (<code>matrix</code>, <code>starfield</code>, <code>snow</code>, <code>fireworks</code>, <code>bounce3d</code>, <code>bubbles</code>, <code>pipes</code>, <code>mystify</code>, <code>plasma</code>, <code>tunnel</code>, <code>ascii-glitch</code>, <code>slideshow</code>) work with any VB theme — use whichever fits the page.</p>
-</section>
-
-<section>
-  <h2>The <code>palette</code> attribute</h2>
-  <p>Six effects ship with a hardcoded rainbow palette: <code>bounce3d</code>, <code>fireworks</code>, <code>bubbles</code>, <code>pipes</code>, <code>mystify</code>, <code>plasma</code>. To make them cycle through VB semantic colors instead of the rainbow, opt in:</p>
-  <code-block language="html" data-escape><screen-saver effect="bounce3d" palette="theme">Hello</screen-saver></code-block>
-  <p>The five themed effects above ignore this attribute — they always read VB tokens directly.</p>
-</section>
-
-<section>
-  <h2>Quick reference</h2>
-  <table class="props-table">
-    <thead><tr><th>Attribute / property</th><th>Purpose</th></tr></thead>
-    <tbody>
-      <tr><td><code>effect</code></td><td>Which of the 17 effects to render. Required.</td></tr>
-      <tr><td><code>timeout</code></td><td>Idle seconds before activation. Defaults to 180.</td></tr>
-      <tr><td><code>palette="theme"</code></td><td>For JS-palette effects: cycle through VB semantic tokens instead of the rainbow.</td></tr>
-      <tr><td><code>--screen-saver-text-color</code></td><td>Override for text. Beats <code>--color-text</code>.</td></tr>
-      <tr><td><code>--screen-saver-bg</code></td><td>Override for backdrop. Beats <code>--color-background</code>.</td></tr>
-      <tr><td><code>--screen-saver-font-family</code></td><td>Override font. Beats <code>--font-sans</code> / <code>--font-display</code>.</td></tr>
-      <tr><td><code>--screen-saver-font-size</code></td><td>Override font size.</td></tr>
-      <tr><td><code>--screen-saver-z-index</code></td><td>Override stacking. Defaults are high.</td></tr>
-    </tbody>
-  </table>
-  <p>For the full token list see the <a href="https://github.com/ProfPowell/screen-saver/blob/main/README.md">README</a>.</p>
-</section>
-
-<section>
-  <h2>Usage</h2>
-  <code-block language="html" data-escape>
-<html data-theme="bauhaus">
-  <body>
-    <!-- your page content -->
-
-    <screen-saver effect="bauhaus" timeout="180">Form follows function</screen-saver>
-  </body>
-</html></code-block>
-  <p>The element is a sibling of your content — it overlays the viewport when idle and dismisses on the next pointer or key event. Custom properties declared on <code>:root</code> (which is what VB themes do) inherit through the shadow boundary, so no piercing is required.</p>
-</section>
-
-<section>
-  <h2>Reduced motion</h2>
-  <p>Every effect respects <code>prefers-reduced-motion: reduce</code>:</p>
+<section id="related">
+  <h2>Related</h2>
   <ul>
-    <li>Most fall back to a static composition with no animation.</li>
-    <li><code>bauhaus</code>, <code>kawaii</code>, <code>memphis</code> lay out their sprites in a static grid.</li>
-    <li><code>brutalist</code> shows all words at once instead of slamming them in.</li>
-    <li><code>art-deco</code> drops the inhale/exhale scaling.</li>
+    <li><a href="https://profpowell.github.io/screen-saver/">screen-saver documentation and demos</a></li>
+    <li><a href="/docs/integrations/web-components/bg-wc/">bg-wc</a>: animated backgrounds that sit behind page content</li>
+    <li><a href="/docs/integrations/web-components/marquee-wc/">marquee-wc</a>: scrolling text, another retro effect</li>
+    <li><a href="/docs/themes/">Themes</a>: the Vanilla Breeze themes, including the ones these effects pair with</li>
+    <li><a href="/docs/accessibility/">Accessibility</a>: how Vanilla Breeze handles reduced motion</li>
   </ul>
 </section>

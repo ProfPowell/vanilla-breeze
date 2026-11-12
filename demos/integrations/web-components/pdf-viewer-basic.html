@@ -3,37 +3,59 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pdf-viewer + Vanilla Breeze — Basic Demo</title>
-  <link rel="stylesheet" href="/src/main.css" />
+  <title>pdf-viewer in a Vanilla Breeze page</title>
+  <link rel="stylesheet" href="/src/main.css"/>
   <script type="module" src="/src/main.js"></script>
-  <script type="module"
-    src="https://cdn.jsdelivr.net/npm/@profpowell/pdf-viewer/dist/pdf-viewer.js"></script>
+  <script type="module" src="https://unpkg.com/@profpowell/pdf-viewer@0.2.0/dist/pdf-viewer.js"></script>
   <style>
     body {
-      padding: var(--size-l) var(--size-m);
+      padding: var(--size-m);
       background: var(--color-surface);
       color: var(--color-text);
-      font-family: var(--font-body);
-      max-inline-size: 80ch;
-      margin-inline: auto;
+    }
+    h1 {
+      font-size: var(--font-size-l);
+      margin-block: 0;
+    }
+    header p {
+      color: var(--color-text-muted);
+      margin-block: 0;
     }
     pdf-viewer {
       display: block;
-      block-size: 70vh;
-      min-block-size: 480px;
+      block-size: clamp(20rem, 62dvh, 36rem);
     }
-    h2 { font-size: var(--font-size-m); color: var(--color-text-muted); margin-block-end: var(--size-s); }
   </style>
 </head>
 <body>
-  <h1>pdf-viewer + Vanilla Breeze — Basic Demo</h1>
-  <section>
-    <h2>VB-themed pdf-viewer (toolbar, sidebar, borders adopt active theme)</h2>
-    <pdf-viewer
-      src="./assets/sample.pdf"
-      show-thumbnails
-      show-search
-      title="Sample PDF"></pdf-viewer>
-  </section>
+  <main>
+    <layout-stack data-layout-gap="s">
+      <header>
+        <h1>Viewer guide</h1>
+        <p>A five-page guide to the viewer. Use the toolbar to change page, zoom or search. Click the viewer, then press the arrow keys to turn pages.</p>
+      </header>
+      <pdf-viewer
+        src="./assets/sample.pdf"
+        title="Viewer guide"
+        show-thumbnails
+        no-print></pdf-viewer>
+      <p><output id="status">Loading the document.</output></p>
+    </layout-stack>
+  </main>
+
+  <script type="module">
+    const viewer = document.querySelector('pdf-viewer');
+    const status = document.getElementById('status');
+
+    viewer.addEventListener('pdf-loaded', (event) => {
+      status.textContent = `Page 1 of ${event.detail.pageCount}`;
+    });
+    viewer.addEventListener('page-change', (event) => {
+      status.textContent = `Page ${event.detail.page} of ${event.detail.pageCount}`;
+    });
+    viewer.addEventListener('pdf-load-error', () => {
+      status.textContent = 'The document could not be loaded.';
+    });
+  </script>
 </body>
 </html>

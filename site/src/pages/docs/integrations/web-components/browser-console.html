@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: browser-console integration
-description: "Drop a browser-console element into a Vanilla Breeze page — a zero-dependency in-page console that captures global console.* calls and renders them in the active VB theme."
+description: "Add the browser-console web component to a Vanilla Breeze page to show the page's console output in a panel with filters, search and expandable values."
 currentSection: resources
 currentPath: /docs/integrations/web-components/browser-console/
 ---
@@ -15,75 +15,173 @@ currentPath: /docs/integrations/web-components/browser-console/
 </nav>
 
 <h1>browser-console</h1>
-<p class="lead">A zero-dependency web component that captures global <code>console.*</code> calls and renders them as a styled, filterable, themable in-page console — with syntax-highlighted values, <code>console.table</code> rendering, timers, groups, and stack traces. VB ships a <code>--bc-*</code> token bridge so the console picks up the active theme automatically (surface, text, border, plus dedicated severity and value-type colors).</p>
+<p class="lead">A web component that captures the page's <code>console</code> calls and shows them in a panel, with color for each log level and value type, tables, timers, groups and stack traces. The Vanilla Breeze stylesheet sets all of its colors from the active theme.</p>
 
-<section>
-  <h2>Where to find it</h2>
+<nav class="subnav" aria-label="browser-console sections">
   <ul>
-    <li>npm: <a href="https://www.npmjs.com/package/@profpowell/browser-console"><code>@profpowell/browser-console</code></a></li>
-    <li>GitHub: <a href="https://github.com/ProfPowell/browser-console">ProfPowell/browser-console</a></li>
-    <li>Live demos: <a href="https://profpowell.github.io/browser-console/">profpowell.github.io/browser-console</a></li>
-    <li>License: MIT</li>
+    <li><a href="#at-a-glance">At a glance</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#reference">Reference</a></li>
+    <li><a href="#theming">With Vanilla Breeze</a></li>
+    <li><a href="#accessibility">Accessibility</a></li>
+    <li><a href="#related">Related</a></li>
   </ul>
-</section>
+</nav>
 
-<section>
-  <h2>Install</h2>
-  <p>Via CDN:</p>
-  <code-block language="html" data-escape><script type="module" src="https://unpkg.com/@profpowell/browser-console@1.1.1/dist/browser-console.js"></script></code-block>
-  <p>Or via npm:</p>
-  <code-block language="bash" data-escape>npm install @profpowell/browser-console</code-block>
-  <code-block language="javascript" data-escape>import '@profpowell/browser-console';</code-block>
-  <p>Not currently bundled into Vanilla Breeze. VB does ship a <code>--bc-*</code> bridge in <code>src/utils/external-components.css</code> mapping all <code>--bc-*</code> tokens onto the active VB theme — so the moment you add the script, theming is automatic.</p>
-</section>
-
-<section>
-  <h2>Demo</h2>
-  <p>A live <code>&lt;browser-console&gt;</code> with buttons that emit <code>console.log</code>, <code>info</code>, <code>warn</code>, <code>error</code>, <code>table</code>, and a mixed-value object. Severity colors (log/info/warn/error) and value-type accents (string/number/boolean/regex/element) all resolve from VB tokens. Switch the site theme to see the console re-skin.</p>
-  <browser-window url="browser-console-basic" src="/docs/integrations/web-components/demos/browser-console-basic.html"></browser-window>
-</section>
-
-<section>
-  <h2>Quick reference</h2>
+<section id="at-a-glance">
+  <h2>At a glance</h2>
   <table class="props-table">
-    <thead><tr><th>Attribute / API</th><th>Purpose</th></tr></thead>
     <tbody>
-      <tr><td><code>auto-hook</code></td><td>Boolean, default <code>true</code>. Patches global <code>console.*</code> on mount; set to <code>"false"</code> to opt out and feed logs manually.</td></tr>
-      <tr><td><code>theme</code></td><td><code>"dark"</code> or <code>"light"</code>. Default <code>"dark"</code>. With the VB bridge active, theming follows VB anyway — set this only when you want to pin one mode.</td></tr>
-      <tr><td><code>.maxLogs</code></td><td>Property — scrollback cap (default 1000).</td></tr>
-      <tr><td><code>.setFilter("log" | "info" | "warn" | "error" | null)</code></td><td>Show only one severity (or all when <code>null</code>).</td></tr>
-      <tr><td><code>.setSearchQuery(str)</code></td><td>Substring filter across log messages.</td></tr>
-      <tr><td><code>.clearLogs()</code></td><td>Wipe the visible output.</td></tr>
-      <tr><td><code>.hookConsole() / .unhookConsole()</code></td><td>Manually patch / unpatch the global console.</td></tr>
-      <tr><td><code>.feed.addLog({method, data, timestamp})</code></td><td>Push a log without going through <code>window.console</code>.</td></tr>
+      <tr><th scope="row">Package</th><td><a href="https://www.npmjs.com/package/@profpowell/browser-console"><code>@profpowell/browser-console</code></a>, version <code>1.1.1</code></td></tr>
+      <tr><th scope="row">Elements</th><td><code>&lt;browser-console&gt;</code></td></tr>
+      <tr><th scope="row">Renders in</th><td>Shadow DOM</td></tr>
+      <tr><th scope="row">Source</th><td><a href="https://github.com/ProfPowell/browser-console">github.com/ProfPowell/browser-console</a></td></tr>
+      <tr><th scope="row">Documentation</th><td><a href="https://profpowell.github.io/browser-console/">profpowell.github.io/browser-console</a></td></tr>
+      <tr><th scope="row">Licence</th><td>MIT</td></tr>
+      <tr><th scope="row">In Vanilla Breeze</th><td>Not bundled. Load it yourself. The VB stylesheet includes the rules that theme it.</td></tr>
     </tbody>
   </table>
-  <p>Captures the full <code>console.*</code> surface: <code>log/info/warn/error/debug/table/time/timeEnd/timeLog/group/groupEnd/groupCollapsed/trace/count/countReset/dir/clear/assert</code>.</p>
 </section>
 
-<section>
-  <h2>VB integration</h2>
-  <p>browser-console exposes a <code>--bc-*</code> custom property surface — backgrounds, severity colors, value-type accents, scrollbars, table chrome — but it does not read VB tokens directly. The bridge in <code>src/utils/external-components.css</code> maps:</p>
-  <ul>
-    <li>Surfaces &amp; chrome → <code>--color-surface</code>, <code>--color-surface-raised</code>, <code>--color-border</code>, <code>--color-text</code>, <code>--color-text-muted</code></li>
-    <li>Severity → <code>--color-text</code> (log), <code>--color-info</code>, <code>--color-warning</code>, <code>--color-danger</code></li>
-    <li>Warn / error row tints → <code>color-mix()</code> with <code>--color-warning</code> / <code>--color-danger</code></li>
-    <li>Value-type accents → <code>--color-success</code> (strings), <code>--color-info</code> (numbers/dates), <code>--color-warning</code> (booleans), <code>--color-accent</code> (functions), <code>--color-danger</code> (regex), <code>--color-primary</code> (DOM elements)</li>
-  </ul>
-  <p>Override any individual <code>--bc-*</code> token on the element or in a theme block to customize a single console instance.</p>
+<section id="install">
+  <h2>Install</h2>
+  <p>Load the component from a CDN. It is one file with no dependencies and no stylesheet.</p>
+  <code-block language="html" label="CDN" data-escape><script type="module" src="https://unpkg.com/@profpowell/browser-console@1.1.1/dist/browser-console.js"></script></code-block>
+  <p>Or install it from npm and import it in your own script.</p>
+  <code-block language="bash" label="npm" data-escape>npm install @profpowell/browser-console</code-block>
+  <code-block language="javascript" label="Import" data-escape>import '@profpowell/browser-console';</code-block>
 </section>
 
-<section>
+<section id="demo">
+  <h2>Demo</h2>
+  <p>A console panel on a Vanilla Breeze page. The buttons call <code>console</code> methods in the page, and the panel shows each call.</p>
+  <browser-window url="browser-console-basic" src="/docs/integrations/web-components/demos/browser-console-basic.html" data-demo-height="xl"></browser-window>
+</section>
+
+<section id="usage">
   <h2>Usage</h2>
-  <code-block language="html" data-escape>
-<!-- Auto-capture every console.* call site-wide -->
-<browser-console></browser-console>
+  <p>Add the element and give it a height. It fills the height of its container, so without one it has no room to show logs. From the moment it is on the page it captures every <code>console</code> call the page makes. The calls still reach the browser's own console.</p>
+  <code-block language="html" label="Capture the page's console" data-escape><browser-console></browser-console>
 
-<!-- Or feed logs manually -->
-<browser-console id="log" auto-hook="false"></browser-console>
 <script type="module">
-  const c = document.getElementById('log');
-  c.feed.addLog({ method: 'info', data: ['Hello from the app boot sequence.'], timestamp: Date.now() });
+  console.log('Cart loaded', { items: 3, total: 42.5 });
+  console.warn('Stock is low for item 1182');
 </script></code-block>
-  <p>Give the element a definite block size (e.g. <code>block-size: 60vh</code>) — it does not auto-expand.</p>
+  <code-block language="css" label="Give it a height" data-escape>browser-console {
+  block-size: 25rem;
+}</code-block>
+
+  <p>To show only entries you choose, turn off capture and add entries yourself.</p>
+  <code-block language="html" label="Add entries by hand" data-escape><browser-console id="build-log" auto-hook="false"></browser-console>
+
+<script type="module">
+  const panel = document.getElementById('build-log');
+  await customElements.whenDefined('browser-console');
+  panel.addLog({ method: 'info', data: ['Build started'], timestamp: new Date() });
+  panel.addLog({ method: 'error', data: ['Missing file', 'styles/print.css'], timestamp: new Date() });
+</script></code-block>
+</section>
+
+<section id="reference">
+  <h2>Reference</h2>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead><tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>auto-hook</code></td><td><code>false</code> to turn off</td><td>On</td><td>Captures the page's <code>console</code> calls as soon as the element is added to the page.</td></tr>
+      <tr><td><code>theme</code></td><td><code>dark</code>, <code>light</code></td><td><code>dark</code></td><td>Chooses the component's built-in palette. See the theming section for how this behaves with Vanilla Breeze.</td></tr>
+      <tr><td><code>max-logs</code></td><td>Number</td><td><code>1000</code></td><td>Most entries kept. Older entries are dropped.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Methods and properties</h3>
+  <table class="props-table">
+    <thead><tr><th scope="col">Member</th><th scope="col">Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>hookConsole()</code></td><td>Starts capturing <code>console</code> calls.</td></tr>
+      <tr><td><code>unhookConsole()</code></td><td>Stops capturing and restores the original <code>console</code> methods. Also runs when the element is removed.</td></tr>
+      <tr><td><code>addLog(entry)</code></td><td>Adds an entry. <code>entry</code> is <code>{ method, data, timestamp }</code>, where <code>data</code> is an array of values and <code>timestamp</code> is a <code>Date</code>.</td></tr>
+      <tr><td><code>clearLogs()</code></td><td>Removes all entries.</td></tr>
+      <tr><td><code>setFilter(level)</code></td><td>Shows one level: <code>'log'</code>, <code>'info'</code>, <code>'warn'</code> or <code>'error'</code>. Pass <code>null</code> to show all.</td></tr>
+      <tr><td><code>setSearchQuery(text)</code></td><td>Shows only entries that contain the text.</td></tr>
+      <tr><td><code>setTheme(theme)</code></td><td>Sets the <code>theme</code> attribute to <code>'light'</code> or <code>'dark'</code>.</td></tr>
+      <tr><td><code>copyLogs()</code></td><td>Copies the visible entries to the clipboard as plain text. Returns a promise.</td></tr>
+      <tr><td><code>getExpansionStates()</code>, <code>restoreExpansionStates(states)</code></td><td>Reads and restores which objects and groups are expanded, as a <code>Map</code>.</td></tr>
+      <tr><td><code>logs</code></td><td>Array of captured entries.</td></tr>
+      <tr><td><code>filter</code>, <code>searchQuery</code>, <code>theme</code>, <code>maxLogs</code></td><td>Current filter level, search text, theme and entry limit.</td></tr>
+    </tbody>
+  </table>
+  <p>The component fires no custom events. It captures <code>log</code>, <code>info</code>, <code>warn</code>, <code>error</code>, <code>debug</code>, <code>table</code>, <code>dir</code>, <code>trace</code>, <code>assert</code>, <code>clear</code>, <code>time</code>, <code>timeEnd</code>, <code>timeLog</code>, <code>count</code>, <code>countReset</code>, <code>group</code>, <code>groupCollapsed</code> and <code>groupEnd</code>.</p>
+
+  <h3>CSS custom properties</h3>
+  <p>All 34 properties start with <code>--bc-</code>. The table lists the suffix. Set them on the element or on any ancestor.</p>
+  <table class="props-table">
+    <thead><tr><th scope="col">Group</th><th scope="col">Properties</th></tr></thead>
+    <tbody>
+      <tr><td>Backgrounds</td><td><code>bg-primary</code> (panel), <code>bg-secondary</code> (header), <code>bg-tertiary</code> (inputs and stack traces), <code>bg-hover</code>, <code>bg-warn</code>, <code>bg-error</code></td></tr>
+      <tr><td>Text and borders</td><td><code>text-primary</code>, <code>text-secondary</code>, <code>border-color</code></td></tr>
+      <tr><td>Log levels</td><td><code>color-log</code>, <code>color-info</code>, <code>color-warn</code>, <code>color-error</code>, <code>color-debug</code>, <code>color-table</code>, <code>color-time</code></td></tr>
+      <tr><td>Value types</td><td><code>value-string</code>, <code>value-number</code>, <code>value-boolean</code>, <code>value-null</code>, <code>value-function</code>, <code>value-date</code>, <code>value-regexp</code>, <code>value-element</code></td></tr>
+      <tr><td>Controls and tables</td><td><code>btn-bg</code>, <code>btn-border</code>, <code>btn-hover</code>, <code>btn-active</code>, <code>table-border</code>, <code>table-header-bg</code>, <code>table-row-hover</code></td></tr>
+      <tr><td>Scrollbar</td><td><code>scrollbar-track</code>, <code>scrollbar-thumb</code>, <code>scrollbar-thumb-hover</code></td></tr>
+    </tbody>
+  </table>
+  <p>See the <a href="https://profpowell.github.io/browser-console/">browser-console documentation</a> for the full detail.</p>
+</section>
+
+<section id="theming">
+  <h2>With Vanilla Breeze</h2>
+  <p>A token is a CSS custom property that holds one design value, such as <code>--color-surface</code>. This component does not read VB tokens itself. Each color is a <code>--bc-*</code> property with a built-in dark or light value behind it.</p>
+  <p>The connection is a token bridge in the VB stylesheet: a rule with the selector <code>browser-console</code> that sets every <code>--bc-*</code> property from a VB token. It ships in <code>vanilla-breeze.css</code> and <code>vanilla-breeze-core.css</code>, so there is no extra file to load and no attribute to add.</p>
+  <table class="props-table">
+    <thead><tr><th scope="col">VB token</th><th scope="col">Set on</th></tr></thead>
+    <tbody>
+      <tr><td><code>--color-surface</code></td><td>Panel background and scrollbar track</td></tr>
+      <tr><td><code>--color-surface-raised</code></td><td>Header, inputs, buttons and table header</td></tr>
+      <tr><td><code>--color-hover-bg</code></td><td>Hover background of rows and buttons</td></tr>
+      <tr><td><code>--color-text</code></td><td>Text, and the accent of <code>log</code> and <code>table</code> entries</td></tr>
+      <tr><td><code>--color-text-muted</code></td><td>Timestamps and labels, <code>debug</code> and timer entries, and <code>null</code> values</td></tr>
+      <tr><td><code>--color-border</code></td><td>Borders, table borders and the scrollbar thumb</td></tr>
+      <tr><td><code>--color-info</code></td><td><code>info</code> entries, numbers and dates</td></tr>
+      <tr><td><code>--color-warning</code></td><td><code>warn</code> entries and their row tint, and booleans</td></tr>
+      <tr><td><code>--color-error</code></td><td><code>error</code> entries and their row tint, and regular expressions</td></tr>
+      <tr><td><code>--color-success</code></td><td>Strings</td></tr>
+      <tr><td><code>--color-accent</code></td><td>Functions</td></tr>
+      <tr><td><code>--color-primary</code></td><td>DOM elements</td></tr>
+      <tr><td><code>--color-interactive</code></td><td>Active filter button and focus outline</td></tr>
+    </tbody>
+  </table>
+  <p>The order is: the <code>--bc-*</code> property if it is set, then the built-in color for the current <code>theme</code>. With VB loaded, the bridge sets all 34 properties, so the panel follows the VB theme in both light and dark mode. The <code>theme</code> attribute and the theme button in the panel's header then change none of those colors.</p>
+  <p>Without the VB stylesheet the panel is dark by default and does not follow the page. Set <code>theme="light"</code> for the light palette.</p>
+  <p>The bridge sits in a cascade layer, so any rule you write outside a layer wins. To change one panel, set the property on it.</p>
+  <code-block language="css" label="Override one panel" data-escape>browser-console#build-log {
+  --bc-bg-primary: var(--color-surface-sunken);
+  --bc-color-error: var(--color-primary);
+  --bc-value-string: var(--color-text);
+}</code-block>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The list of entries has <code>role="log"</code> and is a polite live region, so screen readers announce new entries without interrupting.</li>
+    <li>The header is a toolbar with a labeled search field. The filter buttons report which one is active with <code>aria-pressed</code>.</li>
+    <li>Objects, arrays, groups and stack traces can be expanded from the keyboard: move to one with <kbd>Tab</kbd>, then press <kbd>Enter</kbd> or <kbd>Space</kbd>.</li>
+    <li>Transitions are turned off when the reader has asked for reduced motion.</li>
+  </ul>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="https://profpowell.github.io/browser-console/">browser-console documentation</a></li>
+    <li><a href="/docs/integrations/web-components/code-playground/">code-playground</a>: an editor with its own console for the code it runs</li>
+    <li><a href="/docs/integrations/web-components/terminal-window/">terminal-window</a>: a terminal for command-line examples</li>
+    <li><a href="/docs/integrations/web-components/browser-window/">browser-window</a>: a browser frame for a demo page</li>
+    <li><a href="/docs/tokens/">Design tokens</a></li>
+    <li><a href="/docs/themes/">Themes</a></li>
+  </ul>
 </section>

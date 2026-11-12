@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>http-component + Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="https://unpkg.com/@profpowell/http-component@0.3.0/dist/http-component.js"></script>
+  <style>
+    html, body { margin: 0; background: var(--color-background); }
+    main { padding: var(--size-l) var(--size-m); }
+    h1 { margin: 0; font-size: var(--font-size-l); }
+    h2 { margin: 0; font-size: var(--font-size-s); color: var(--color-text-muted); }
+    p { margin: 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <layout-stack data-layout-gap="l">
+      <header>
+        <h1>Creating a user over HTTP</h1>
+        <p>The client posts JSON. The server answers 201 and says where the new record lives.</p>
+      </header>
+
+      <section>
+        <layout-stack data-layout-gap="s">
+          <h2>One request and its response</h2>
+          <http-transaction id="create-user" highlight="response-line, response-header:location"></http-transaction>
+        </layout-stack>
+      </section>
+
+      <section>
+        <layout-stack data-layout-gap="s">
+          <h2>The whole page load on a timeline</h2>
+          <http-waterfall id="timeline" view="waterfall"></http-waterfall>
+        </layout-stack>
+      </section>
+    </layout-stack>
+  </main>
+
+  <script type="module">
+    const transaction = document.getElementById('create-user');
+    const timeline = document.getElementById('timeline');
+
+    // Follow a forced Vanilla Breeze mode; otherwise the elements use the OS preference.
+    const mode = document.documentElement.dataset.mode;
+    if (mode === 'light' || mode === 'dark') {
+      transaction.setAttribute('theme', mode);
+      timeline.setAttribute('theme', mode);
+    }
+
+    transaction.data = {
+      request: {
+        method: 'POST',
+        url: '/api/users',
+        headers: {
+          'Host': 'api.example.com',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ name: 'Ada Lovelace', role: 'editor' }, null, 2)
+      },
+      response: {
+        status: 201,
+        statusText: 'Created',
+        headers: {
+          'Content-Type': 'application/json',
+          'Location': '/api/users/124'
+        },
+        body: JSON.stringify({ id: 124, name: 'Ada Lovelace', role: 'editor' }, null, 2)
+      }
+    };
+
+    timeline.exchanges = [
+      {
+        request: { method: 'GET', url: '/users/new', headers: { 'Accept': 'text/html' } },
+        response: { status: 200, statusText: 'OK', headers: { 'Content-Type': 'text/html' } },
+        timing: { startTime: 0, endTime: 120, duration: 120 }
+      },
+      {
+        request: { method: 'GET', url: '/assets/site.css', headers: { 'Accept': 'text/css' } },
+        response: { status: 200, statusText: 'OK', headers: { 'Content-Type': 'text/css' } },
+        timing: { startTime: 130, endTime: 190, duration: 60 }
+      },
+      {
+        request: { method: 'GET', url: '/api/session', headers: { 'Accept': 'application/json' } },
+        response: { status: 401, statusText: 'Unauthorized', headers: { 'Content-Type': 'application/json' } },
+        timing: { startTime: 140, endTime: 230, duration: 90 }
+      },
+      {
+        request: { method: 'POST', url: '/api/users', headers: { 'Content-Type': 'application/json' } },
+        response: { status: 201, statusText: 'Created', headers: { 'Location': '/api/users/124' } },
+        timing: { startTime: 420, endTime: 610, duration: 190 }
+      }
+    ];
+  </script>
+</body>
+</html>

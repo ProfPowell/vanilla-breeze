@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: terminal-window integration
-description: "Drop a terminal-window element into a Vanilla Breeze page — a zero-dependency styled terminal with prompts, typing animation, and an extensible command registry that inherits VB tokens."
+description: "Add the terminal-window web component to a Vanilla Breeze page to show a working terminal with your own commands, ANSI colors and a typing effect."
 currentSection: resources
 currentPath: /docs/integrations/web-components/terminal-window/
 ---
@@ -15,77 +15,236 @@ currentPath: /docs/integrations/web-components/terminal-window/
 </nav>
 
 <h1>terminal-window</h1>
-<p class="lead">A zero-dependency vanilla-JS web component that renders a styled terminal with prompts, ANSI color, optional typing animation, and a registry for custom commands — ideal for documentation demos, tutorials, and interactive CLI mockups. It honors Vanilla Breeze surface, text, border, and <code>--font-mono</code> tokens via the VB external-components bridge, with a full set of <code>--terminal-window-*</code> properties for per-instance overrides.</p>
+<p class="lead">A web component that simulates a terminal: readers type commands, and you decide in JavaScript what each command prints. It reads Vanilla Breeze surface, text, border and radius tokens directly, and the VB stylesheet maps the prompt, cursor and status colors as well.</p>
 
-<section>
-  <h2>Where to find it</h2>
+<nav class="subnav" aria-label="terminal-window sections">
   <ul>
-    <li>npm: <a href="https://www.npmjs.com/package/@profpowell/terminal-window"><code>@profpowell/terminal-window</code></a></li>
-    <li>GitHub: <a href="https://github.com/ProfPowell/terminal-window">ProfPowell/terminal-window</a></li>
-    <li>Live demos: <a href="https://profpowell.github.io/terminal-window/">profpowell.github.io/terminal-window</a></li>
-    <li>License: MIT</li>
+    <li><a href="#at-a-glance">At a glance</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#reference">Reference</a></li>
+    <li><a href="#theming">With Vanilla Breeze</a></li>
+    <li><a href="#accessibility">Accessibility</a></li>
+    <li><a href="#related">Related</a></li>
+  </ul>
+</nav>
+
+<section id="at-a-glance">
+  <h2>At a glance</h2>
+  <table class="props-table">
+    <tbody>
+      <tr><th scope="row">Package</th><td><a href="https://www.npmjs.com/package/@profpowell/terminal-window"><code>@profpowell/terminal-window</code></a>, version <code>2.1.0</code></td></tr>
+      <tr><th scope="row">Elements</th><td><code>&lt;terminal-window&gt;</code></td></tr>
+      <tr><th scope="row">Renders in</th><td>Shadow DOM</td></tr>
+      <tr><th scope="row">Source</th><td><a href="https://github.com/ProfPowell/terminal-window">github.com/ProfPowell/terminal-window</a></td></tr>
+      <tr><th scope="row">Documentation</th><td><a href="https://profpowell.github.io/terminal-window/">profpowell.github.io/terminal-window</a></td></tr>
+      <tr><th scope="row">Licence</th><td>MIT</td></tr>
+      <tr><th scope="row">In Vanilla Breeze</th><td>Not bundled. Load it yourself. The VB stylesheet includes the rules that theme it.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="install">
+  <h2>Install</h2>
+  <p>Load the component from a CDN. It is one file with no dependencies and no stylesheet.</p>
+  <code-block language="html" label="CDN" data-escape><script type="module" src="https://unpkg.com/@profpowell/terminal-window@2.1.0/dist/terminal-window.js"></script></code-block>
+  <p>Or install it from npm and import it in your own script.</p>
+  <code-block language="bash" label="npm" data-escape>npm install @profpowell/terminal-window</code-block>
+  <code-block language="javascript" label="Import" data-escape>import '@profpowell/terminal-window';</code-block>
+</section>
+
+<section id="demo">
+  <h2>Demo</h2>
+  <p>A terminal on a Vanilla Breeze page with two custom commands and the built-in file commands. Click in it and type <code>help</code>, <code>status</code> or <code>ls</code>.</p>
+  <browser-window url="terminal-window-basic" src="/docs/integrations/web-components/demos/terminal-window-basic.html" data-demo-height="l"></browser-window>
+</section>
+
+<section id="usage">
+  <h2>Usage</h2>
+  <p>Add the element and give it a height. It fills the height of its container. The built-in commands are <code>help</code>, <code>clear</code>, <code>echo</code> and <code>history</code>.</p>
+  <code-block language="html" label="A basic terminal" data-escape><terminal-window
+  title="deploy"
+  prompt="user@host:~$ "
+  welcome="Type 'help' to list the commands.">
+</terminal-window></code-block>
+  <code-block language="css" label="Give it a height" data-escape>terminal-window {
+  block-size: 24rem;
+}</code-block>
+
+  <p>Register your own commands in JavaScript. A handler receives the words typed after the command name as an array, and the terminal itself. The string it returns is printed. A handler can be <code>async</code>.</p>
+  <code-block language="javascript" label="Custom commands" data-escape>await customElements.whenDefined('terminal-window');
+const terminal = document.querySelector('terminal-window');
+
+terminal.registerCommand('greet', (args) => `Hello, ${args[0] || 'World'}!`);
+
+terminal.registerCommand('deploy', async (args, term) => {
+  await term.print('Uploading files', 'info');
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await term.print('Deployed', 'success');
+});
+
+terminal.registerAlias('hi', 'greet');</code-block>
+
+  <p>For a scripted demonstration, make the terminal read-only and run commands from code. Note that <code>typing-effect</code> must be written with the value <code>true</code>.</p>
+  <code-block language="html" label="A scripted, read-only terminal" data-escape><terminal-window id="tour" readonly enable-vfs typing-effect="true" typing-speed="20"></terminal-window>
+
+<script type="module">
+  await customElements.whenDefined('terminal-window');
+  const tour = document.getElementById('tour');
+  await tour.executeSequence(['mkdir notes', 'cd notes', 'touch todo.txt', 'ls'], 800);
+</script></code-block>
+</section>
+
+<section id="reference">
+  <h2>Reference</h2>
+
+  <h3>Attributes</h3>
+  <p>"Boolean" means the attribute is on when present. Where the table says <code>false</code> to turn off, the feature is on unless the attribute is set to <code>false</code>.</p>
+  <table class="props-table">
+    <thead><tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>mode</code></td><td><code>dark</code>, <code>light</code></td><td>Follows the page, then the operating system, then <code>light</code></td><td>Fixes the color scheme.</td></tr>
+      <tr><td><code>theme</code></td><td><code>dark</code>, <code>light</code></td><td>None</td><td>Older name for <code>mode</code>. Used when <code>mode</code> is not set.</td></tr>
+      <tr><td><code>title</code></td><td>Text</td><td><code>Terminal</code></td><td>Title in the header.</td></tr>
+      <tr><td><code>prompt</code></td><td>Text</td><td><code>$ </code></td><td>Text shown before the input.</td></tr>
+      <tr><td><code>welcome</code></td><td>Text</td><td>None</td><td>Message printed when the terminal loads.</td></tr>
+      <tr><td><code>autofocus</code></td><td>Boolean</td><td>Off</td><td>Focuses the input when the terminal loads.</td></tr>
+      <tr><td><code>readonly</code></td><td>Boolean</td><td>Off</td><td>Turns off typed input. Commands can still be run from code.</td></tr>
+      <tr><td><code>cursor-style</code></td><td><code>block</code>, <code>underline</code>, <code>bar</code></td><td><code>block</code></td><td>Cursor shape.</td></tr>
+      <tr><td><code>cursor-blink</code></td><td><code>false</code> to turn off</td><td>On</td><td>Blinks the cursor.</td></tr>
+      <tr><td><code>typing-effect</code></td><td><code>true</code> to turn on</td><td>Off</td><td>Prints output one character at a time. The bare attribute does not turn it on.</td></tr>
+      <tr><td><code>typing-speed</code></td><td>Milliseconds per character</td><td><code>30</code></td><td>Speed of the typing effect.</td></tr>
+      <tr><td><code>force-animations</code></td><td>Boolean</td><td>Off</td><td>Keeps the typing effect and cursor blink even when the reader has asked for reduced motion. Meant for testing.</td></tr>
+      <tr><td><code>font-family</code></td><td>CSS font list</td><td><code>'Consolas', 'Monaco', 'Courier New', monospace</code></td><td>Font of the terminal text.</td></tr>
+      <tr><td><code>font-size</code></td><td>CSS length</td><td><code>14px</code></td><td>Size of the terminal text.</td></tr>
+      <tr><td><code>line-height</code></td><td>Number</td><td><code>1.4</code></td><td>Line height of the terminal text.</td></tr>
+      <tr><td><code>max-lines</code></td><td>Number</td><td><code>1000</code></td><td>Most output lines kept.</td></tr>
+      <tr><td><code>show-header</code></td><td><code>false</code> to hide</td><td>Shown</td><td>The header bar.</td></tr>
+      <tr><td><code>show-controls</code></td><td><code>false</code> to hide</td><td>Shown</td><td>The close, minimize and fullscreen buttons.</td></tr>
+      <tr><td><code>show-copy</code></td><td><code>false</code> to hide</td><td>Shown</td><td>The copy button and its menu.</td></tr>
+      <tr><td><code>show-theme-toggle</code></td><td><code>false</code> to hide</td><td>Shown</td><td>The light and dark toggle button.</td></tr>
+      <tr><td><code>enable-vfs</code></td><td>Boolean</td><td>Off</td><td>Adds a virtual file system, held in memory, with the commands <code>ls</code>, <code>cd</code>, <code>pwd</code>, <code>mkdir</code>, <code>touch</code>, <code>rm</code> and <code>cat</code>.</td></tr>
+      <tr><td><code>persist-history</code></td><td>Boolean</td><td>Off</td><td>Saves the command history in the reader's browser.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Methods and properties</h3>
+  <table class="props-table">
+    <thead><tr><th scope="col">Method</th><th scope="col">Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>registerCommand(name, handler)</code></td><td>Adds a command. <code>handler(args, terminal)</code> returns the text to print, or a promise of it.</td></tr>
+      <tr><td><code>unregisterCommand(name)</code></td><td>Removes a command.</td></tr>
+      <tr><td><code>registerAlias(alias, command)</code></td><td>Makes <code>alias</code> run another command string.</td></tr>
+      <tr><td><code>executeCommand(input, addToHistory)</code></td><td>Runs a command line as if it were typed. Returns a promise.</td></tr>
+      <tr><td><code>executeSequence(commands, delay)</code></td><td>Runs several command lines in turn, waiting <code>delay</code> milliseconds after each. The default is 1000.</td></tr>
+      <tr><td><code>print(text, type)</code></td><td>Prints text. <code>type</code> is <code>'output'</code> (the default), <code>'error'</code>, <code>'info'</code> or <code>'success'</code>. ANSI escape codes in the text set colors and bold, italic and underline.</td></tr>
+      <tr><td><code>updateLastLine(text)</code></td><td>Replaces the last printed line. Use it for progress output.</td></tr>
+      <tr><td><code>clear()</code></td><td>Clears the output.</td></tr>
+      <tr><td><code>toggleMode()</code>, <code>setTheme(theme)</code></td><td>Switches between light and dark, or sets one.</td></tr>
+      <tr><td><code>setPrompt(text)</code>, <code>setCursorStyle(style)</code>, <code>setCursorBlink(on)</code>, <code>setReadonly(on)</code></td><td>Change the matching setting.</td></tr>
+      <tr><td><code>setTypingEffect(on, speed)</code>, <code>skipTypingEffect()</code>, <code>setForceAnimations(on)</code></td><td>Control the typing effect.</td></tr>
+      <tr><td><code>setInputMask(on)</code></td><td>Shows asterisks in place of typed characters, for password prompts.</td></tr>
+      <tr><td><code>getHistory()</code>, <code>setHistory(list)</code>, <code>clearHistory()</code></td><td>Read, replace and clear the command history.</td></tr>
+      <tr><td><code>getContent()</code>, <code>copyContent(mode)</code></td><td>Returns the terminal text, or copies it. <code>mode</code> is <code>'all'</code>, <code>'commands'</code>, <code>'output'</code> or <code>'selection'</code>.</td></tr>
+      <tr><td><code>focus()</code>, <code>scrollToBottom()</code></td><td>Focus the input, or scroll to the newest line.</td></tr>
+      <tr><td><code>close()</code>, <code>minimize()</code>, <code>toggleFullscreen()</code></td><td>The actions of the three window buttons. <code>close()</code> hides the element.</td></tr>
+      <tr><td><code>setI18n(strings)</code></td><td>Replaces button labels and messages, for translation.</td></tr>
+    </tbody>
+  </table>
+  <p>The element has three slots: <code>title</code>, <code>actions</code> (extra header buttons) and <code>before-output</code>.</p>
+
+  <h3>Events</h3>
+  <table class="props-table">
+    <thead><tr><th scope="col">Event</th><th scope="col">Fired when</th><th scope="col">Detail</th></tr></thead>
+    <tbody>
+      <tr><td><code>command</code></td><td>A command is run</td><td><code>{ command, args, input }</code></td></tr>
+      <tr><td><code>command-result</code></td><td>A command finishes</td><td><code>{ command, args, result }</code></td></tr>
+      <tr><td><code>command-error</code></td><td>A command fails or is not found</td><td><code>{ command, error }</code></td></tr>
+      <tr><td><code>output</code></td><td>A line is printed</td><td><code>{ type, content }</code></td></tr>
+      <tr><td><code>copy</code></td><td>Content is copied</td><td><code>{ text, mode }</code></td></tr>
+      <tr><td><code>interrupt</code></td><td>The reader presses <kbd>Ctrl</kbd>+<kbd>C</kbd></td><td>None</td></tr>
+      <tr><td><code>close</code></td><td>The terminal is closed</td><td>None</td></tr>
+      <tr><td><code>minimize</code></td><td>The terminal is minimized or restored</td><td><code>{ minimized }</code></td></tr>
+      <tr><td><code>fullscreen</code></td><td>Fullscreen is turned on or off</td><td><code>{ fullscreen }</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>CSS custom properties</h3>
+  <p>There are 43 properties, all starting with <code>--terminal-window-</code>. The table lists the suffix. Set them on the element or on any ancestor.</p>
+  <table class="props-table">
+    <thead><tr><th scope="col">Group</th><th scope="col">Properties</th></tr></thead>
+    <tbody>
+      <tr><td>Window</td><td><code>bg</code>, <code>header-bg</code>, <code>secondary-bg</code>, <code>border-color</code>, <code>border-radius</code>, <code>inner-radius</code>, <code>text-color</code>, <code>text-muted</code>, <code>text-secondary</code>, <code>font-family</code></td></tr>
+      <tr><td>Terminal text</td><td><code>prompt-color</code>, <code>cursor-color</code>, <code>command-color</code>, <code>output-color</code>, <code>error-color</code>, <code>info-color</code>, <code>success-color</code>, <code>selection-bg</code></td></tr>
+      <tr><td>Buttons</td><td><code>btn-bg</code>, <code>btn-hover-bg</code>, <code>btn-text</code></td></tr>
+      <tr><td>Window controls</td><td><code>control-close</code>, <code>control-minimize</code>, <code>control-maximize</code></td></tr>
+      <tr><td>Scrollbar</td><td><code>scrollbar-track</code>, <code>scrollbar-thumb</code>, <code>scrollbar-thumb-hover</code></td></tr>
+      <tr><td>ANSI colors</td><td><code>ansi-black</code>, <code>ansi-red</code>, <code>ansi-green</code>, <code>ansi-yellow</code>, <code>ansi-blue</code>, <code>ansi-magenta</code>, <code>ansi-cyan</code>, <code>ansi-white</code>, and a <code>ansi-bright-</code> form of each</td></tr>
+    </tbody>
+  </table>
+  <p>The inner elements are also exposed as CSS parts for <code>::part()</code>, including <code>terminal</code>, <code>header</code>, <code>controls</code>, <code>title</code>, <code>body</code>, <code>output</code>, <code>input-line</code>, <code>prompt</code> and <code>cursor</code>. See the <a href="https://profpowell.github.io/terminal-window/">terminal-window documentation</a> for the full detail.</p>
+</section>
+
+<section id="theming">
+  <h2>With Vanilla Breeze</h2>
+  <p>A token is a CSS custom property that holds one design value, such as <code>--color-surface</code>. Two things connect the component to Vanilla Breeze tokens.</p>
+  <p>First, the component itself reads these VB tokens as fallbacks.</p>
+  <table class="props-table">
+    <thead><tr><th scope="col">VB token</th><th scope="col">Drives</th></tr></thead>
+    <tbody>
+      <tr><td><code>--color-surface</code></td><td>Terminal background</td></tr>
+      <tr><td><code>--color-surface-raised</code></td><td>Header and secondary backgrounds</td></tr>
+      <tr><td><code>--color-border</code></td><td>Borders</td></tr>
+      <tr><td><code>--color-text</code></td><td>Main text</td></tr>
+      <tr><td><code>--color-text-muted</code></td><td>Muted text</td></tr>
+      <tr><td><code>--radius-m</code></td><td>Outer corner radius</td></tr>
+      <tr><td><code>--radius-s</code></td><td>Radius of buttons and menus</td></tr>
+    </tbody>
+  </table>
+  <p>Second, the VB stylesheet contains a token bridge: a rule with the selector <code>terminal-window</code> that sets the component's <code>--terminal-window-*</code> properties from VB tokens. It ships in <code>vanilla-breeze.css</code> and <code>vanilla-breeze-core.css</code>, so there is no extra file to load and no attribute to add. Besides the tokens above, the bridge sets these.</p>
+  <table class="props-table">
+    <thead><tr><th scope="col">VB token</th><th scope="col">Set on</th></tr></thead>
+    <tbody>
+      <tr><td><code>--color-success</code></td><td>Prompt, success messages and the fullscreen button</td></tr>
+      <tr><td><code>--color-error</code></td><td>Error messages and the close button</td></tr>
+      <tr><td><code>--color-warning</code></td><td>The minimize button</td></tr>
+      <tr><td><code>--color-info</code></td><td>Info messages</td></tr>
+      <tr><td><code>--color-interactive</code></td><td>Cursor and text selection</td></tr>
+      <tr><td><code>--color-text</code>, <code>--color-text-muted</code></td><td>Typed commands, and printed output</td></tr>
+    </tbody>
+  </table>
+  <p>For each value the order is: the <code>--terminal-window-*</code> property if it is set, then the VB token where the component reads one, then the built-in color for the current mode. The bridge does not set the ANSI colors, the header button colors or the scrollbar colors, so those keep the component's built-in values.</p>
+  <p>The font is an exception. The component and the bridge both point <code>--terminal-window-font-family</code> at <code>--font-mono</code>, but in version 2.1.0 the element also applies its <code>font-family</code> attribute, default included, directly to the terminal, and that wins. To use the VB monospace font, set the attribute.</p>
+  <code-block language="html" label="Use the VB monospace font" data-escape><terminal-window font-family="var(--font-mono)"></terminal-window></code-block>
+  <p>Light or dark is chosen separately. With no <code>mode</code> or <code>theme</code> attribute, the component follows <code>data-mode</code>, <code>data-theme</code> or a <code>dark</code> class on <code>&lt;html&gt;</code> or <code>&lt;body&gt;</code>, then the page's computed <code>color-scheme</code>, then the operating system preference. It updates when these change.</p>
+  <p>The bridge sits in a cascade layer, so any rule you write outside a layer wins. To change one terminal, set the property on it.</p>
+  <code-block language="css" label="Override one terminal" data-escape>terminal-window#tour {
+  --terminal-window-prompt-color: var(--color-primary);
+  --terminal-window-cursor-color: var(--color-primary);
+  --terminal-window-border-radius: 0;
+}</code-block>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Keyboard: <kbd>Enter</kbd> runs the command, the up and down arrows step through the history, <kbd>Tab</kbd> completes a command name, and <kbd>Ctrl</kbd>+<kbd>C</kbd> cancels the current line or skips a typing effect in progress. <kbd>Escape</kbd> leaves fullscreen.</li>
+    <li>The output area has <code>role="log"</code> and is a polite live region, so screen readers announce new lines. Errors and state changes such as "cleared" are announced as well.</li>
+    <li>The header buttons have ARIA labels. The copy menu is a labeled menu that can be used with the arrow keys.</li>
+    <li>When the reader has asked for reduced motion, the typing effect is skipped and the cursor stops blinking. The <code>force-animations</code> attribute overrides this and is meant for testing only.</li>
+    <li>Use <code>setI18n()</code> to translate the labels and announcements.</li>
   </ul>
 </section>
 
-<section>
-  <h2>Install</h2>
-  <p>Via CDN:</p>
-  <code-block language="html" data-escape><script type="module" src="https://unpkg.com/@profpowell/terminal-window@2.1.0/dist/terminal-window.js"></script></code-block>
-  <p>Or via npm:</p>
-  <code-block language="bash" data-escape>npm install @profpowell/terminal-window</code-block>
-  <code-block language="javascript" data-escape>import '@profpowell/terminal-window';</code-block>
-  <p>Not currently bundled into Vanilla Breeze — wire it in yourself. VB ships a <code>--terminal-window-*</code> bridge in <code>src/utils/external-components.css</code>, so theme inheritance is automatic the moment you include the script.</p>
-</section>
-
-<section>
-  <h2>Demo</h2>
-  <p>A live <code>&lt;terminal-window&gt;</code> with a welcome banner, typing animation, and the built-in <code>help</code>, <code>clear</code>, <code>echo</code>, and <code>history</code> commands. The window chrome reads VB surface and border tokens; the prompt uses <code>--color-success</code>. Switch the site theme to see the chrome re-skin.</p>
-  <browser-window url="terminal-window-basic" src="/docs/integrations/web-components/demos/terminal-window-basic.html"></browser-window>
-</section>
-
-<section>
-  <h2>Quick reference — common attributes</h2>
-  <table class="props-table">
-    <thead><tr><th>Attribute</th><th>Default</th><th>Purpose</th></tr></thead>
-    <tbody>
-      <tr><td><code>title</code></td><td><code>"Terminal"</code></td><td>Title text in the window header.</td></tr>
-      <tr><td><code>prompt</code></td><td><code>"$ "</code></td><td>Prompt prefix shown before user input.</td></tr>
-      <tr><td><code>welcome</code></td><td>—</td><td>One-line welcome banner printed on mount.</td></tr>
-      <tr><td><code>typing-effect</code></td><td>off</td><td>Boolean — animate output characters.</td></tr>
-      <tr><td><code>typing-speed</code></td><td><code>30</code></td><td>Milliseconds per character when typing-effect is on.</td></tr>
-      <tr><td><code>cursor-style</code></td><td><code>block</code></td><td><code>block</code>, <code>underline</code>, or <code>bar</code>.</td></tr>
-      <tr><td><code>cursor-blink</code></td><td>on</td><td>Boolean — blink the input cursor.</td></tr>
-      <tr><td><code>readonly</code></td><td>off</td><td>Boolean — disable input, useful for static transcripts.</td></tr>
-      <tr><td><code>max-lines</code></td><td><code>1000</code></td><td>Scrollback buffer cap.</td></tr>
-      <tr><td><code>enable-vfs</code></td><td>off</td><td>Boolean — enable the built-in virtual filesystem commands (<code>ls</code>, <code>cd</code>, <code>pwd</code>, <code>mkdir</code>, <code>touch</code>, <code>rm</code>, <code>cat</code>).</td></tr>
-      <tr><td><code>persist-history</code></td><td>off</td><td>Boolean — store command history in <code>localStorage</code>.</td></tr>
-    </tbody>
-  </table>
-  <p>See the <a href="https://github.com/ProfPowell/terminal-window/blob/main/README.md">README</a> for the full attribute list and JS API (<code>registerCommand</code>, <code>print</code>, <code>setTypingEffect</code>, etc.).</p>
-</section>
-
-<section>
-  <h2>VB integration</h2>
-  <p>VB's <code>src/utils/external-components.css</code> contains a <code>terminal-window {…}</code> block mapping VB tokens onto the <code>--terminal-window-*</code> surface. No per-page wiring required — drop the script in and the terminal picks up the active theme automatically. Per-instance overrides still win: set any <code>--terminal-window-*</code> token on the element itself or in a theme block to customize a single terminal.</p>
-</section>
-
-<section>
-  <h2>Usage</h2>
-  <code-block language="html" data-escape>
-<terminal-window
-  title="my-app"
-  prompt="user@host:~$ "
-  welcome="Welcome — type 'help' to begin."
-  typing-effect
-  typing-speed="20">
-</terminal-window>
-
-<!-- Or register a custom command -->
-<script type="module">
-  const term = document.querySelector('terminal-window');
-  term.registerCommand('deploy', {
-    description: 'Deploy to production',
-    run: () => term.print('Deploying… done.'),
-  });
-</script></code-block>
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="https://profpowell.github.io/terminal-window/">terminal-window documentation</a></li>
+    <li><a href="/docs/integrations/web-components/browser-window/">browser-window</a>: a browser frame in the same style</li>
+    <li><a href="/docs/integrations/web-components/browser-console/">browser-console</a>: a panel for the page's console output</li>
+    <li><a href="/docs/integrations/web-components/code-block/">code-block</a>: static, highlighted code and shell commands</li>
+    <li><a href="/docs/tokens/">Design tokens</a></li>
+    <li><a href="/docs/themes/">Themes</a></li>
+  </ul>
 </section>

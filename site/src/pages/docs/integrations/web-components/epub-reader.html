@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: epub-reader integration
-description: "Drop an epub-reader element into a Vanilla Breeze page — a dependency-free EPUB 3 viewer with TOC sidebar, toolbar, and keyboard navigation that reads VB tokens automatically."
+description: "Read an EPUB book inside a Vanilla Breeze page with the epub-reader web component, which has a contents sidebar, search, bookmarks and highlights."
 currentSection: resources
 currentPath: /docs/integrations/web-components/epub-reader/
 ---
@@ -15,81 +15,199 @@ currentPath: /docs/integrations/web-components/epub-reader/
 </nav>
 
 <h1>epub-reader</h1>
-<p class="lead">A dependency-free EPUB 3 reader built from vanilla web platform primitives. Drop <code>&lt;epub-reader src="book.epub"&gt;</code> into any page for a Shadow-DOM viewer with TOC sidebar, toolbar, progress bar, and keyboard navigation. It reads Vanilla Breeze design tokens directly, so it inherits the active theme with zero extra wiring.</p>
+<p class="lead"><code>&lt;epub-reader&gt;</code> opens an EPUB book (the common e-book file format) and shows it with a contents sidebar, a toolbar, search, bookmarks and highlights. It reads Vanilla Breeze design tokens for its own controls and for the text of the book, so both follow the active theme.</p>
 
-<section>
-  <h2>Where to find it</h2>
+<nav class="subnav" aria-label="epub-reader sections">
   <ul>
-    <li>npm: <a href="https://www.npmjs.com/package/@profpowell/epub-reader"><code>@profpowell/epub-reader</code></a></li>
-    <li>GitHub: <a href="https://github.com/ProfPowell/epub-reader">ProfPowell/epub-reader</a></li>
-    <li>Live demos: <a href="https://profpowell.github.io/epub-reader/">profpowell.github.io/epub-reader</a></li>
-    <li>License: MIT</li>
+    <li><a href="#at-a-glance">At a glance</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#reference">Reference</a></li>
+    <li><a href="#theming">With Vanilla Breeze</a></li>
+    <li><a href="#accessibility">Accessibility</a></li>
+    <li><a href="#related">Related</a></li>
   </ul>
+</nav>
+
+<section id="at-a-glance">
+  <h2>At a glance</h2>
+  <table class="props-table">
+    <tbody>
+      <tr><th scope="row">Package</th><td><a href="https://www.npmjs.com/package/@profpowell/epub-reader">@profpowell/epub-reader</a> <code>0.1.0</code></td></tr>
+      <tr><th scope="row">Elements</th><td><code>&lt;epub-reader&gt;</code></td></tr>
+      <tr><th scope="row">Renders in</th><td>Light DOM. Each chapter of the book is shown in a sandboxed <code>&lt;iframe&gt;</code>, so the book's own styles stay separate from the page.</td></tr>
+      <tr><th scope="row">Dependencies</th><td>None</td></tr>
+      <tr><th scope="row">Source</th><td><a href="https://github.com/ProfPowell/epub-reader">github.com/ProfPowell/epub-reader</a></td></tr>
+      <tr><th scope="row">Documentation</th><td><a href="https://profpowell.github.io/epub-reader/">profpowell.github.io/epub-reader</a></td></tr>
+      <tr><th scope="row">Licence</th><td>MIT</td></tr>
+      <tr><th scope="row">In Vanilla Breeze</th><td>Not bundled. Load it yourself.</td></tr>
+    </tbody>
+  </table>
 </section>
 
-<section>
+<section id="install">
   <h2>Install</h2>
-  <p>Via CDN:</p>
-  <code-block language="html" data-escape><script type="module" src="https://unpkg.com/@profpowell/epub-reader@0.1.0/src/epub-reader.js"></script></code-block>
-  <p>Or via npm:</p>
-  <code-block language="bash" data-escape>npm install @profpowell/epub-reader</code-block>
-  <code-block language="javascript" data-escape>import '@profpowell/epub-reader';</code-block>
-  <p>Not currently bundled into Vanilla Breeze — wire it in yourself. There is no build coupling between the two repos; the interface is purely CSS custom properties.</p>
+  <p>Load the component from a CDN with one script tag. The package has no build step, so the file is served from its <code>src/</code> folder and imports its sibling modules from there.</p>
+  <code-block language="html" label="CDN" data-escape><script type="module" src="https://unpkg.com/@profpowell/epub-reader@0.1.0/src/epub-reader.js"></script></code-block>
+  <p>Or install it from npm and import it in your own script.</p>
+  <code-block language="bash" label="npm" data-escape>npm install @profpowell/epub-reader</code-block>
+  <code-block language="javascript" label="Import" data-escape>import '@profpowell/epub-reader';</code-block>
+  <p>The component needs a browser with <code>DecompressionStream</code>, which it uses to unpack the book: Chrome 80, Firefox 113, Safari 16.4 or later.</p>
 </section>
 
-<section>
+<section id="demo">
   <h2>Demo</h2>
-  <p>A live <code>&lt;epub-reader&gt;</code> loading a small sample EPUB. The toolbar, sidebar, progress bar, and content area all pick up VB tokens (surface, text, border, interactive, font-mono). Switch the site theme to see the reader chrome re-skin.</p>
-  <browser-window url="epub-reader-basic" src="/docs/integrations/web-components/demos/epub-reader-basic.html"></browser-window>
+  <p>The reader loads a short sample book from the component's own site. Change the site theme, then move to another chapter, to see the controls and the book text change with it.</p>
+  <browser-window url="epub-reader-basic" src="/docs/integrations/web-components/demos/epub-reader-basic.html" data-demo-height="l"></browser-window>
 </section>
 
-<section>
-  <h2>Quick reference</h2>
-  <table class="props-table">
-    <thead><tr><th>Attribute / API</th><th>Purpose</th></tr></thead>
-    <tbody>
-      <tr><td><code>src</code></td><td>URL of an EPUB to auto-load.</td></tr>
-      <tr><td><code>start</code></td><td>Spine index to open first (default <code>0</code>).</td></tr>
-      <tr><td><code>hide-toc</code></td><td>Boolean — start with the TOC sidebar collapsed.</td></tr>
-      <tr><td><code>allow-scripts</code></td><td>Boolean — adds <code>allow-scripts</code> to the chapter iframe sandbox. Off by default for security.</td></tr>
-      <tr><td><code>.open(source)</code></td><td>Programmatic open. Accepts a URL or <code>ArrayBuffer</code>.</td></tr>
-      <tr><td><code>.next() / .prev()</code></td><td>Navigate spine.</td></tr>
-      <tr><td><code>.goToIndex(i, fragment?)</code></td><td>Jump to a specific spine entry.</td></tr>
-      <tr><td><code>epub-loaded / epub-navigate / epub-error</code></td><td>Bubbling, composed CustomEvents.</td></tr>
-    </tbody>
-  </table>
-  <p>See the <a href="https://github.com/ProfPowell/epub-reader/blob/main/README.md">README</a> for the full reference.</p>
-</section>
-
-<section>
-  <h2>VB tokens consumed</h2>
-  <p>The component reads VB tokens directly through shadow-DOM inheritance — no bridge file needed.</p>
-  <table class="props-table">
-    <thead><tr><th>Token group</th><th>Tokens</th></tr></thead>
-    <tbody>
-      <tr><td>Surfaces</td><td><code>--color-background</code>, <code>--color-surface</code>, <code>--color-surface-raised</code></td></tr>
-      <tr><td>Text</td><td><code>--color-text</code>, <code>--color-text-muted</code></td></tr>
-      <tr><td>Interactive</td><td><code>--color-interactive</code>, <code>--color-interactive-text</code>, <code>--color-danger</code></td></tr>
-      <tr><td>Chrome</td><td><code>--color-border</code>, <code>--border-width-thin</code>, <code>--radius-s</code>, <code>--radius-m</code>, <code>--radius-full</code>, <code>--shadow-l</code></td></tr>
-      <tr><td>Typography</td><td><code>--font-mono</code>, <code>--font-size-2xs</code>, <code>--font-size-xs</code>, <code>--font-size-s</code>, <code>--font-size-m</code>, <code>--font-weight-semibold</code></td></tr>
-      <tr><td>Spacing</td><td><code>--size-3xs</code>, <code>--size-2xs</code>, <code>--size-s</code>, <code>--size-m</code></td></tr>
-    </tbody>
-  </table>
-  <p>The single component-specific override is <code>--reader-hl-color</code> (selection / highlight color).</p>
-</section>
-
-<section>
+<section id="usage">
   <h2>Usage</h2>
-  <code-block language="html" data-escape>
-<!-- Auto-load a remote EPUB -->
-<epub-reader src="https://example.com/book.epub"></epub-reader>
+  <p>Point <code>src</code> at an EPUB file. A file on another site must allow cross-origin requests.</p>
+  <code-block language="html" label="Load a book from a URL" data-escape><epub-reader src="/books/field-guide.epub"></epub-reader></code-block>
 
-<!-- Or open programmatically -->
-<epub-reader id="reader" hide-toc></epub-reader>
+  <p>The reader fills the height of its parent and is never shorter than 20rem. Give it a height in CSS when the parent has none.</p>
+  <code-block language="css" label="Set a height" data-escape>epub-reader {
+  block-size: 36rem;
+}</code-block>
+
+  <p>Open a file the visitor picks, and listen for the event that reports the book's details.</p>
+  <code-block language="html" label="Open a local file" data-escape><input type="file" id="pick" accept=".epub"/>
+<epub-reader id="reader"></epub-reader>
+
 <script type="module">
   const reader = document.getElementById('reader');
-  document.querySelector('input[type=file]')
-    .addEventListener('change', e => reader.open(e.target.files[0]));
+
+  document.getElementById('pick').addEventListener('change', (event) => {
+    reader.open(event.target.files[0]);
+  });
+
+  reader.addEventListener('epub-loaded', (event) => {
+    console.log(event.detail.metadata.title, event.detail.spineLength);
+  });
 </script></code-block>
-  <p>Give the element a definite block size (via CSS) — it does not auto-expand. <code>block-size: 100vh</code> for a full-page reader, or any other fixed/percent height that fits your layout.</p>
+</section>
+
+<section id="reference">
+  <h2>Reference</h2>
+  <p>Two terms appear below. The <dfn>spine</dfn> is the ordered list of chapter files in an EPUB. A <dfn>spine index</dfn> is a position in that list, starting at 0.</p>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>src</code></td><td>URL</td><td>None</td><td>The EPUB file to load. Changing it loads the new book.</td></tr>
+      <tr><td><code>start</code></td><td>Number</td><td><code>0</code></td><td>The spine index to open first.</td></tr>
+      <tr><td><code>hide-toc</code></td><td>Boolean</td><td>Off</td><td>Starts with the contents sidebar hidden.</td></tr>
+      <tr><td><code>allow-scripts</code></td><td>Boolean</td><td>Off</td><td>Lets scripts inside the book run, for interactive books such as quizzes. A script in the book can then reach the host page, so turn it on only for books you trust.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Methods and properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Member</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>open(source)</code></td><td>Loads a book from a URL, a <code>File</code>, a <code>Blob</code> or an <code>ArrayBuffer</code>. It replaces any open book.</td></tr>
+      <tr><td><code>close()</code></td><td>Unloads the book and frees the memory it used.</td></tr>
+      <tr><td><code>next()</code>, <code>prev()</code></td><td>Move to the next or previous chapter.</td></tr>
+      <tr><td><code>goToIndex(index, fragment?)</code>, <code>goToPath(path)</code></td><td>Jump to a spine index, or to a file path inside the book such as <code>chapter2.xhtml#sec1</code>.</td></tr>
+      <tr><td><code>search(query, options?)</code></td><td>Searches the whole book. Resolves with a list of matches and the text around each one.</td></tr>
+      <tr><td><code>find(open)</code></td><td>Opens or closes the find bar for the current chapter.</td></tr>
+      <tr><td><code>typography</code>, <code>resetTypography()</code></td><td>Reading settings applied to the book text: typeface, text size, line height, paragraph spacing and justification. Assign an object with the settings you want to change.</td></tr>
+      <tr><td><code>bookmarks</code>, <code>toggleBookmark(label?)</code>, <code>removeBookmark(id)</code>, <code>goToBookmark(id)</code></td><td>Read, add, remove and open bookmarks for the current book.</td></tr>
+      <tr><td><code>highlights</code>, <code>removeHighlight(id)</code>, <code>goToHighlight(id)</code></td><td>Read, remove and open highlights for the current book.</td></tr>
+      <tr><td><code>getLibrary()</code>, <code>openFromLibrary(id)</code>, <code>removeFromLibrary(id)</code>, <code>clearLibrary()</code></td><td>Work with the library, the list of books the reader has stored in the browser.</td></tr>
+      <tr><td><code>getStorageEstimate()</code></td><td>Resolves with how much browser storage is in use, or <code>null</code> where the browser cannot say.</td></tr>
+    </tbody>
+  </table>
+  <p>The reader saves reading settings in <code>localStorage</code>. It saves opened books, reading positions, bookmarks and highlights in IndexedDB, the browser's built-in database. Nothing is sent to a server.</p>
+
+  <h3>Events</h3>
+  <p>All events bubble and cross shadow DOM boundaries.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Event</th><th scope="col">Detail</th><th scope="col">Fires when</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>epub-loaded</code></td><td><code>{ metadata, spineLength, toc }</code></td><td>A book has loaded.</td></tr>
+      <tr><td><code>epub-navigate</code></td><td><code>{ index, path, title }</code></td><td>The reader moves to another chapter.</td></tr>
+      <tr><td><code>epub-error</code></td><td><code>{ error }</code></td><td>A book failed to load.</td></tr>
+      <tr><td><code>epub-position-restored</code></td><td><code>{ spineIndex, scrollFraction, bookId }</code></td><td>The reader returns to the place saved for this book.</td></tr>
+      <tr><td><code>epub-typography-change</code></td><td><code>{ typography }</code></td><td>A reading setting changes.</td></tr>
+      <tr><td><code>epub-bookmarks-change</code></td><td><code>{ bookmarks }</code></td><td>A bookmark is added or removed.</td></tr>
+      <tr><td><code>epub-highlights-change</code></td><td><code>{ highlights }</code></td><td>A highlight is added or removed.</td></tr>
+      <tr><td><code>epub-library-change</code></td><td><code>{ reason, id }</code></td><td>A book is added to or removed from the library, or the library is cleared.</td></tr>
+    </tbody>
+  </table>
+  <p>The component has no CSS custom properties of its own. See the <a href="https://profpowell.github.io/epub-reader/">epub-reader documentation</a> for the full detail.</p>
+</section>
+
+<section id="theming">
+  <h2>With Vanilla Breeze</h2>
+  <p>The reader renders in light DOM and its styles use Vanilla Breeze tokens directly. For the text of the book it reads four tokens from the element and applies them inside the chapter each time a chapter loads.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Token</th><th scope="col">Drives</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--color-background</code></td><td>Reader background, and the page background of the book</td></tr>
+      <tr><td><code>--color-text</code></td><td>Reader text, and the text of the book</td></tr>
+      <tr><td><code>--color-interactive</code></td><td>Active buttons, the current contents entry, and links in the book</td></tr>
+      <tr><td><code>--color-border</code>, <code>--border-width-thin</code></td><td>Borders in the reader, and rules in the book</td></tr>
+      <tr><td><code>--color-surface</code>, <code>--color-surface-raised</code></td><td>Toolbar, sidebar and panel backgrounds, and button backgrounds</td></tr>
+      <tr><td><code>--color-text-muted</code></td><td>Secondary text and button labels</td></tr>
+      <tr><td><code>--font-mono</code></td><td>Monospace text in the panels</td></tr>
+      <tr><td><code>--font-size-2xs</code>, <code>--font-size-xs</code>, <code>--font-size-s</code>, <code>--font-size-m</code>, <code>--font-weight-semibold</code></td><td>Text sizes and weight in the toolbar and panels</td></tr>
+      <tr><td><code>--size-3xs</code>, <code>--size-2xs</code>, <code>--size-s</code>, <code>--size-m</code></td><td>Padding and gaps</td></tr>
+      <tr><td><code>--radius-s</code>, <code>--radius-m</code>, <code>--radius-full</code></td><td>Corner radius of buttons and panels</td></tr>
+      <tr><td><code>--shadow-l</code></td><td>Shadow under the floating panels</td></tr>
+    </tbody>
+  </table>
+  <p>There is no component-level property to set first. Each value is the Vanilla Breeze token, then a built-in default. Without Vanilla Breeze the built-in defaults apply.</p>
+  <p>Two of the names the component looks for are not Vanilla Breeze tokens: <code>--color-danger</code> (error messages) and <code>--color-interactive-text</code> (text on active buttons). Those use the built-in defaults unless you define them.</p>
+  <p>To change one reader, set the tokens on the element. They apply to that reader and to the book inside it.</p>
+  <code-block language="css" label="Override one reader" data-escape>epub-reader.novel {
+  block-size: 40rem;
+  --color-background: var(--color-surface-sunken);
+  --color-interactive: var(--color-accent);
+  --color-interactive-text: var(--color-text-on-primary);
+}</code-block>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <p>The README names keyboard navigation as a feature. The detail below comes from the code of version 0.1.0.</p>
+  <ul>
+    <li>The element sets <code>tabindex="0"</code> on itself so it can take keyboard focus. The shortcuts work while focus is inside the reader.</li>
+    <li>The toolbar has the <code>toolbar</code> role and every button has a text label, such as "Next chapter" and "Search book".</li>
+    <li>The chapter counter, the find count and the search results are live regions, so a screen reader announces them when they change.</li>
+  </ul>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Key</th><th scope="col">Action</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><kbd>Right arrow</kbd>, <kbd>Page Down</kbd>, <kbd>Space</kbd></td><td>Next chapter, or next page in paginated layout</td></tr>
+      <tr><td><kbd>Left arrow</kbd>, <kbd>Page Up</kbd></td><td>Previous chapter, or previous page in paginated layout</td></tr>
+      <tr><td><kbd>B</kbd></td><td>Add or remove a bookmark at the current place</td></tr>
+      <tr><td><kbd>Ctrl</kbd> or <kbd>Cmd</kbd> + <kbd>F</kbd></td><td>Open the find bar for the current chapter</td></tr>
+      <tr><td><kbd>Escape</kbd></td><td>Close the find bar</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="https://profpowell.github.io/epub-reader/">epub-reader documentation and demos</a></li>
+    <li><a href="/docs/integrations/web-components/pdf-viewer/">pdf-viewer</a>: the matching viewer for PDF documents</li>
+    <li><a href="/docs/elements/web-components/reader-view/">reader-view</a>: the Vanilla Breeze element for reading long articles, whose control styles this component borrows</li>
+    <li><a href="/docs/themes/">Themes</a>: how Vanilla Breeze themes and light and dark mode are applied</li>
+    <li><a href="/docs/tokens/">Design tokens</a>: the tokens this component reads</li>
+  </ul>
 </section>

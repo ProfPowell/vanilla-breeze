@@ -1,0 +1,231 @@
+---
+layout: docs
+title: blink-wc integration
+description: "Use the blink-wc element on a Vanilla Breeze page for blinking content such as neon signs, terminal cursors and warning panels, styled by the active theme."
+currentSection: resources
+currentPath: /docs/integrations/web-components/blink-wc/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/integrations/">Integrations</a></li>
+    <li><a href="/docs/integrations/web-components/">Web Components</a></li>
+    <li><span aria-current="page">blink-wc</span></li>
+  </ol>
+</nav>
+
+<h1>blink-wc</h1>
+<p class="lead"><code>&lt;blink-wc&gt;</code> makes its content blink, as a replacement for the retired <code>&lt;blink&gt;</code> tag that can be paused and stops for reduced motion. Its modes (named looks such as a neon sign or a terminal cursor) take their colors, fonts and corner radius from Vanilla Breeze tokens.</p>
+
+<nav class="subnav" aria-label="blink-wc sections">
+  <ul>
+    <li><a href="#at-a-glance">At a glance</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#reference">Reference</a></li>
+    <li><a href="#theming">With Vanilla Breeze</a></li>
+    <li><a href="#accessibility">Accessibility</a></li>
+    <li><a href="#related">Related</a></li>
+  </ul>
+</nav>
+
+<section id="at-a-glance">
+  <h2>At a glance</h2>
+  <table class="props-table">
+    <tbody>
+      <tr><th scope="row">Package</th><td><a href="https://www.npmjs.com/package/@profpowell/blink-wc"><code>@profpowell/blink-wc</code></a>, version <code>1.5.2</code></td></tr>
+      <tr><th scope="row">Elements</th><td><code>&lt;blink-wc&gt;</code></td></tr>
+      <tr><th scope="row">Renders in</th><td>Light DOM</td></tr>
+      <tr><th scope="row">Source</th><td><a href="https://github.com/ProfPowell/blink-wc">github.com/ProfPowell/blink-wc</a></td></tr>
+      <tr><th scope="row">Documentation</th><td><a href="https://profpowell.github.io/blink-wc/">profpowell.github.io/blink-wc</a></td></tr>
+      <tr><th scope="row">Licence</th><td>MIT</td></tr>
+      <tr><th scope="row">In Vanilla Breeze</th><td>Not bundled. Load it yourself.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="install">
+  <h2>Install</h2>
+  <p>From a CDN. Load both files: the component renders in the light DOM and the script does not add the styles for you.</p>
+  <code-block language="html" label="CDN" data-escape><link rel="stylesheet" href="https://unpkg.com/@profpowell/blink-wc@1.5.2/dist/blink-wc.css"/>
+<script type="module" src="https://unpkg.com/@profpowell/blink-wc@1.5.2/dist/blink-wc.js"></script></code-block>
+  <p>Or with npm:</p>
+  <code-block language="bash" label="npm" data-escape>npm install @profpowell/blink-wc</code-block>
+  <code-block language="javascript" label="Import" data-escape>import '@profpowell/blink-wc';
+import '@profpowell/blink-wc/style.css';</code-block>
+</section>
+
+<section id="demo">
+  <h2>Demo</h2>
+  <p>Six modes on a Vanilla Breeze page. None of them sets a color or a font: both come from the theme tokens.</p>
+  <browser-window url="blink-wc-basic" src="/docs/integrations/web-components/demos/blink-wc-basic.html" data-demo-height="l"></browser-window>
+</section>
+
+<section id="usage">
+  <h2>Usage</h2>
+  <p>With no attributes, the content switches fully on and off once a second. <code>behavior="pulse"</code> fades instead, and <code>count</code> stops it after a set number of blinks.</p>
+  <code-block language="html" label="Plain blink and a soft pulse" data-escape><blink-wc>Recording</blink-wc>
+
+<blink-wc behavior="pulse" rate="2s" count="5">3 new replies</blink-wc></code-block>
+
+  <p>A mode styles the element as well as animating it.</p>
+  <code-block language="html" label="Surface themes" data-escape><blink-wc mode="warning">Unsaved changes</blink-wc>
+
+<blink-wc mode="terminal">npm run build</blink-wc></code-block>
+
+  <p>The letter modes animate each letter in turn. Add <code>unit="word"</code> to animate whole words.</p>
+  <code-block language="html" label="Letter and word motion" data-escape><blink-wc mode="wave">Now boarding</blink-wc>
+
+<blink-wc mode="cascade" unit="word">One word at a time</blink-wc></code-block>
+</section>
+
+<section id="reference">
+  <h2>Reference</h2>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>rate</code></td><td>CSS time</td><td><code>1s</code></td><td>Length of one blink cycle.</td></tr>
+      <tr><td><code>behavior</code></td><td><code>blink</code>, <code>pulse</code>, <code>flicker</code>, <code>steps</code></td><td><code>blink</code></td><td><code>blink</code> is a hard on and off, <code>pulse</code> a soft fade, <code>flicker</code> an uneven flutter. <code>steps</code> turns on the step engine described below.</td></tr>
+      <tr><td><code>min-opacity</code></td><td>0 to 1</td><td>Set by the mode</td><td>Opacity of the "off" phase.</td></tr>
+      <tr><td><code>count</code></td><td>Number</td><td><code>infinite</code></td><td>Blink this many times, then stop.</td></tr>
+      <tr><td><code>steps</code></td><td>Number, 2 or more</td><td><code>2</code></td><td>Number of steps in one cycle of the step engine.</td></tr>
+      <tr><td><code>step-durations</code></td><td>List of weights, such as <code>3 1 1</code></td><td>Equal</td><td>How long each step holds, as shares of the cycle.</td></tr>
+      <tr><td><code>step-by</code></td><td><code>element</code>, <code>letter</code>, <code>word</code></td><td><code>element</code></td><td>Whether the whole text steps together or each letter or word steps in turn.</td></tr>
+      <tr><td><code>pause-on-hover</code></td><td>Boolean</td><td>off</td><td>Pauses on hover and while keyboard focus is inside.</td></tr>
+      <tr><td><code>play-state</code></td><td><code>running</code>, <code>paused</code></td><td><code>running</code></td><td>Starts or stops the blinking.</td></tr>
+      <tr><td><code>reduced-motion</code></td><td><code>respect</code>, <code>ignore</code></td><td><code>respect</code></td><td><code>ignore</code> keeps the blinking running even when the reader has asked for reduced motion.</td></tr>
+      <tr><td><code>mode</code></td><td>A mode name</td><td>none</td><td>A visual or motion preset. See the list below.</td></tr>
+      <tr><td><code>unit</code></td><td><code>letter</code>, <code>word</code></td><td><code>letter</code></td><td>Whether the letter modes animate each letter or each word.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Modes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Group</th><th scope="col">Modes</th><th scope="col">What they do</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Surface themes</td><td><code>neon</code>, <code>crt</code>, <code>terminal</code>, <code>warning</code>, <code>alert</code>, <code>police</code>, <code>vegas</code></td><td>Style the whole element: a glowing sign, a green screen, a block cursor after steady text, an amber or red panel, a red and blue light bar, a gold sign.</td></tr>
+      <tr><td>Letter motion</td><td><code>wave</code>, <code>twinkle</code>, <code>sparkle</code>, <code>rainbow</code>, <code>chase</code>, <code>glitch</code>, <code>cascade</code>, <code>typewriter</code>, <code>zoom</code>, <code>flip3d</code>, <code>swing</code>, <code>shake</code>, <code>heartbeat</code></td><td>Split the text into letters, or words with <code>unit="word"</code>, and animate each one with a small delay.</td></tr>
+      <tr><td>Script-driven</td><td><code>morse</code>, <code>decode</code></td><td><code>morse</code> blinks the text out in Morse code with a dot and dash caption. <code>decode</code> runs through random characters, then settles on the real text.</td></tr>
+      <tr><td>Step modes</td><td><code>extrude</code>, <code>collapse</code>, <code>outline</code>, <code>morph</code>, <code>depth</code>, <code>revolve</code></td><td>Use the step engine, so each step of the cycle has its own look.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>The step engine</h3>
+  <p>A step is one stage of the blink cycle. With <code>behavior="steps"</code>, or any step mode, the element moves through its steps during one <code>rate</code> cycle and sets <code>data-step="0"</code>, <code>data-step="1"</code> and so on in turn. You style each step with CSS. A plain blink is the two-step case.</p>
+  <code-block language="html" label="A three-step traffic light" data-escape><style>
+  .signal :is(.blink-content, .blink-char)[data-step='0'] { color: var(--color-success); }
+  .signal :is(.blink-content, .blink-char)[data-step='1'] { color: var(--color-warning); }
+  .signal :is(.blink-content, .blink-char)[data-step='2'] { color: var(--color-error); }
+</style>
+
+<blink-wc class="signal" behavior="steps" steps="3" step-durations="6 1 4" rate="11s">●</blink-wc></code-block>
+
+  <h3>Methods and properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Member</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>start()</code></td><td>Sets <code>play-state="running"</code>.</td></tr>
+      <tr><td><code>stop()</code></td><td>Sets <code>play-state="paused"</code>.</td></tr>
+      <tr><td><code>toggle()</code></td><td>Switches between running and paused.</td></tr>
+      <tr><td><code>refresh()</code></td><td>Renders the content again. Call it after you change the content with script.</td></tr>
+      <tr><td><code>rate</code>, <code>behavior</code>, <code>steps</code>, <code>playState</code>, <code>mode</code></td><td>Read-only. The current value of the matching attribute.</td></tr>
+    </tbody>
+  </table>
+  <p>To change a setting, set the attribute. The element reacts to attribute changes.</p>
+
+  <h3>Events</h3>
+  <p>All three events bubble and carry no detail.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Event</th><th scope="col">When</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>blink-start</code></td><td>The blinking starts running.</td></tr>
+      <tr><td><code>blink-pause</code></td><td>The blinking is paused.</td></tr>
+      <tr><td><code>blink-cycle</code></td><td>One blink completes.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>CSS custom properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Property</th><th scope="col">Default</th><th scope="col">Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--blink-rate</code></td><td><code>1s</code></td><td>Length of one cycle. The element writes this from the <code>rate</code> attribute as an inline style, so change the attribute, not the property.</td></tr>
+      <tr><td><code>--blink-min-opacity</code></td><td><code>0</code></td><td>Opacity of the "off" phase.</td></tr>
+      <tr><td><code>--blink-stagger</code></td><td><code>0.08s</code></td><td>Delay between one letter and the next in the letter modes.</td></tr>
+      <tr><td><code>--blink-step-ease</code></td><td><code>0s</code></td><td>Length of the transition between steps. <code>0s</code> is a hard cut.</td></tr>
+      <tr><td><code>--blink-step-timing</code></td><td><code>ease</code></td><td>Timing function of the transition between steps.</td></tr>
+      <tr><td><code>--blink-dot</code></td><td><code>170</code></td><td>Length of one Morse dot, in milliseconds.</td></tr>
+      <tr><td><code>--blink-bg</code></td><td>Set by the mode</td><td>Background of the surface themes.</td></tr>
+      <tr><td><code>--blink-fg</code></td><td>Set by the mode</td><td>Text color of the modes.</td></tr>
+    </tbody>
+  </table>
+  <p>The <a href="https://profpowell.github.io/blink-wc/">blink-wc documentation</a> shows every mode running and has the full detail.</p>
+</section>
+
+<section id="theming">
+  <h2>With Vanilla Breeze</h2>
+  <p>The component's stylesheet names Vanilla Breeze tokens directly, so a themed page needs no setup. Tokens resolve on each element, so light and dark mode both work.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th scope="col">Token</th><th scope="col">Drives</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--color-accent</code></td><td>Text of <code>neon</code>, <code>extrude</code>, <code>outline</code> and <code>depth</code>; the cursor of <code>terminal</code> and <code>typewriter</code>; the lit letter in <code>chase</code>.</td></tr>
+      <tr><td><code>--color-primary</code></td><td>The shadow block of <code>extrude</code>, and the fallback when no accent is set.</td></tr>
+      <tr><td><code>--color-success</code></td><td>The glow color of <code>crt</code>; text of <code>morse</code> and <code>decode</code>.</td></tr>
+      <tr><td><code>--color-warning</code></td><td>Panel of <code>warning</code>.</td></tr>
+      <tr><td><code>--color-error</code></td><td>Panel of <code>alert</code>.</td></tr>
+      <tr><td><code>--color-text</code></td><td>Text of <code>terminal</code>.</td></tr>
+      <tr><td><code>--color-surface-sunken</code>, <code>--color-surface</code></td><td>Background of <code>terminal</code>.</td></tr>
+      <tr><td><code>--font-mono</code>, <code>--font-sans</code></td><td>Typeface of each mode: mono for <code>crt</code>, <code>terminal</code>, <code>morse</code> and <code>decode</code>; sans for the other surface themes and <code>extrude</code>.</td></tr>
+      <tr><td><code>--radius-m</code></td><td>Corner radius of the panels.</td></tr>
+    </tbody>
+  </table>
+  <p>For each value the styles use the first of these that is set: the <code>--blink-*</code> property, then the Vanilla Breeze token, then a built-in default. Text on the <code>warning</code> and <code>alert</code> panels is worked out as black or white from the panel color, so it stays readable with any theme and with your own <code>--blink-bg</code>.</p>
+  <code-block language="css" label="Override one instance" data-escape>.build-status {
+  --blink-fg: var(--color-success);
+  --blink-min-opacity: 0.4;
+}
+
+.quota-warning {
+  --blink-bg: var(--color-info);
+}</code-block>
+  <p>All the styles sit in the cascade layer <code>web-components</code>, which is one of Vanilla Breeze's own layers. Theme packs can therefore restyle the component, and your unlayered CSS overrides it without <code>!important</code>.</p>
+
+  <h3>blink-wc or data-effect="blink"</h3>
+  <p>Vanilla Breeze has a CSS-only blink, <a href="/docs/attributes/data-effect/#blink"><code>data-effect="blink"</code></a>, which stops by itself after about five seconds. Use it to draw the eye to one thing once, with no script. Use blink-wc when you need a themed look, letter-by-letter motion, the step engine, script control or events.</p>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <p>Blinking content is a real hazard for some readers, which is why browsers dropped <code>&lt;blink&gt;</code>. Keep blinking areas small and slow: below about three flashes a second, and never across the whole screen.</p>
+  <ul>
+    <li><strong>Reduced motion.</strong> All animation stops and the text shows in full when the operating system asks for reduced motion, and also when Vanilla Breeze's own setting puts <code>data-motion-reduced</code> on <code>&lt;html&gt;</code>. The change applies at once, with no reload. It keeps blinking only if you set <code>reduced-motion="ignore"</code>.</li>
+    <li><strong>Screen readers.</strong> The text is read once, as written. The letter and word modes hide their animated pieces from assistive technology and expose a visually hidden copy of the text instead. Content that holds links or other controls is left as you wrote it. The terminal cursor, the typewriter caret and the Morse caption are not announced.</li>
+    <li><strong>Keyboard.</strong> With <code>pause-on-hover</code>, the blinking also pauses while focus is on a link or control inside the element.</li>
+    <li><strong>Idle cost.</strong> The blinking pauses while the element is off screen and while the tab is hidden.</li>
+  </ul>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="https://profpowell.github.io/blink-wc/">blink-wc documentation and live demos</a></li>
+    <li><a href="/docs/integrations/web-components/marquee-wc/">marquee-wc</a>: the sibling component for scrolling content, with the same API shape</li>
+    <li><a href="/docs/integrations/web-components/border-wc/">border-wc</a>: decorative and animated borders</li>
+    <li><a href="/docs/attributes/data-effect/#blink"><code>data-effect="blink"</code></a>: the CSS-only blink in Vanilla Breeze</li>
+    <li><a href="/docs/themes/">Vanilla Breeze themes</a> and <a href="/docs/tokens/">design tokens</a></li>
+  </ul>
+</section>

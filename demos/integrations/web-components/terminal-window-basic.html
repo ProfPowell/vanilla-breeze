@@ -3,23 +3,76 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>terminal-window + Vanilla Breeze</title>
+  <title>terminal-window on a Vanilla Breeze page</title>
   <link rel="stylesheet" href="/src/main.css" />
   <script type="module" src="/src/main.js"></script>
   <script type="module" src="https://unpkg.com/@profpowell/terminal-window@2.1.0/dist/terminal-window.js"></script>
   <style>
-    html, body { margin: 0; padding: var(--size-l) var(--size-m); background: var(--color-background); }
-    terminal-window { display: block; max-inline-size: 80ch; margin-inline: auto; }
+    body {
+      padding: var(--size-m);
+      background: var(--color-surface);
+      color: var(--color-text);
+    }
+    main {
+      max-inline-size: 80ch;
+      margin-inline: auto;
+    }
+    h1 { font-size: var(--font-size-xl); }
+    terminal-window {
+      block-size: 22rem;
+    }
   </style>
 </head>
 <body>
-  <terminal-window
-    title="vb.test"
-    prompt="$ "
-    welcome="Welcome to Vanilla Breeze — type 'help' to see built-in commands."
-    typing-effect
-    typing-speed="20"
-    max-lines="500">
-  </terminal-window>
+  <main>
+    <layout-stack data-layout-gap="m">
+      <header>
+        <h1>Trail server console</h1>
+        <p>Click in the terminal and type <code>help</code>, <code>status</code>, <code>report skyline</code> or <code>ls</code>. The window colors come from the Vanilla Breeze theme.</p>
+      </header>
+
+      <terminal-window
+        title="trail-server"
+        prompt="ranger@basecamp:~$ "
+        welcome="Trail server 2.4 ready. Type 'help' to list the commands."
+        font-family="var(--font-mono)"
+        typing-effect="true"
+        typing-speed="12"
+        enable-vfs
+        max-lines="300">
+      </terminal-window>
+    </layout-stack>
+  </main>
+
+  <script type="module">
+    await customElements.whenDefined('terminal-window');
+    const terminal = document.querySelector('terminal-window');
+
+    const trails = {
+      skyline: { state: 'open', note: 'Dry and clear, snow above 2100 m' },
+      canyon: { state: 'closed', note: 'Bridge repair until Friday' },
+    };
+
+    terminal.registerCommand('status', async (args, term) => {
+      await term.print('Sensors online: 12 of 12', 'success');
+      await term.print('Last sync: 4 minutes ago', 'info');
+      return 'Trails open: 1 of 2';
+    });
+
+    terminal.registerCommand('report', async (args, term) => {
+      const trail = trails[args[0]];
+      if (!trail) {
+        await term.print(`report: unknown trail "${args[0] ?? ''}". Try skyline or canyon.`, 'error');
+        return;
+      }
+      await term.print(`${args[0]}: ${trail.state}`, trail.state === 'open' ? 'success' : 'error');
+      return trail.note;
+    });
+
+    terminal.registerAlias('st', 'status');
+
+    // Run one command on load so the terminal shows some output.
+    terminal.executeCommand('status', false);
+  </script>
 </body>
 </html>

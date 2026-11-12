@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: code-block integration
-description: "Drop a code-block element into a Vanilla Breeze page — syntax-highlighted code with copy, line numbers, focus mode, diff support, and multi-file tabs. Already a VB dependency."
+description: "Add the code-block web component to a Vanilla Breeze page to show syntax-highlighted code with a copy button, line numbers, line highlighting and file tabs."
 currentSection: resources
 currentPath: /docs/integrations/web-components/code-block/
 ---
@@ -15,58 +15,215 @@ currentPath: /docs/integrations/web-components/code-block/
 </nav>
 
 <h1>code-block</h1>
-<p class="lead">A syntax-highlighted code block with copy-to-clipboard, line numbers, focus mode, diff support, and multi-file tabs. Already used throughout these docs and shipped as a VB dependency, but independently usable on any HTML page.</p>
+<p class="lead">A web component that shows source code with syntax highlighting, a copy button, optional line numbers and tabs for several files. The Vanilla Breeze stylesheet sets its colors, fonts and corner radius from the active theme, so it needs no extra styling on a VB page.</p>
 
-<section>
-  <h2>Where to find it</h2>
+<nav class="subnav" aria-label="code-block sections">
   <ul>
-    <li>npm: <a href="https://www.npmjs.com/package/@profpowell/code-block"><code>@profpowell/code-block</code></a></li>
-    <li>GitHub: <a href="https://github.com/ProfPowell/code-block">ProfPowell/code-block</a></li>
-    <li>Live demo: <a href="https://profpowell.github.io/code-block/">profpowell.github.io/code-block</a></li>
-    <li>License: MIT</li>
+    <li><a href="#at-a-glance">At a glance</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#reference">Reference</a></li>
+    <li><a href="#theming">With Vanilla Breeze</a></li>
+    <li><a href="#accessibility">Accessibility</a></li>
+    <li><a href="#related">Related</a></li>
   </ul>
-</section>
+</nav>
 
-<section>
-  <h2>Install</h2>
-  <code-block language="bash" data-escape>npm install @profpowell/code-block</code-block>
-  <code-block language="javascript" data-escape>import '@profpowell/code-block';</code-block>
-  <p>Already in Vanilla Breeze: import is already done by <code>src/doc-extras.js</code>, so any VB-built page can use <code>&lt;code-block&gt;</code> directly without additional setup.</p>
-</section>
-
-<section>
-  <h2>Demo</h2>
-  <p>The block chrome (header, copy button, focus dim) reads VB color and spacing tokens. Theme switching re-skins the chrome; the syntax-highlight palette is governed separately by the highlight.js theme attached on the host.</p>
-
-  <browser-window url="code-block" src="/docs/integrations/web-components/demos/code-block-basic.html"></browser-window>
-</section>
-
-<section>
-  <h2>Quick reference</h2>
+<section id="at-a-glance">
+  <h2>At a glance</h2>
   <table class="props-table">
-    <thead><tr><th>Feature</th><th>Attribute</th></tr></thead>
     <tbody>
-      <tr><td>Multi-file tabs</td><td>Wrap blocks in <code>&lt;code-block-group&gt;</code></td></tr>
-      <tr><td>Line highlighting</td><td><code>highlight-lines="3,5-7"</code></td></tr>
-      <tr><td>Focus mode (dim non-highlighted lines)</td><td><code>focus-mode</code></td></tr>
-      <tr><td>Line numbers</td><td><code>line-numbers</code></td></tr>
-      <tr><td>Filename header</td><td><code>filename="src/foo.js"</code></td></tr>
-      <tr><td>Lazy highlighting</td><td><code>lazy</code></td></tr>
-      <tr><td>Diff support</td><td><code>language="diff"</code> with <code>+</code>/<code>-</code> prefixes</td></tr>
-      <tr><td>Open in CodePen</td><td><code>codepen</code> attribute</td></tr>
+      <tr><th scope="row">Package</th><td><a href="https://www.npmjs.com/package/@profpowell/code-block"><code>@profpowell/code-block</code></a>, version <code>2.10.0</code></td></tr>
+      <tr><th scope="row">Elements</th><td><code>&lt;code-block&gt;</code> and <code>&lt;code-block-group&gt;</code></td></tr>
+      <tr><th scope="row">Renders in</th><td>Shadow DOM</td></tr>
+      <tr><th scope="row">Source</th><td><a href="https://github.com/ProfPowell/code-block">github.com/ProfPowell/code-block</a></td></tr>
+      <tr><th scope="row">Documentation</th><td><a href="https://profpowell.github.io/code-block/">profpowell.github.io/code-block</a></td></tr>
+      <tr><th scope="row">Licence</th><td>MIT</td></tr>
+      <tr><th scope="row">In Vanilla Breeze</th><td>Not bundled. Vanilla Breeze lists it as a development dependency and imports it only in <code>src/doc-extras.js</code>, a bundle built for this docs site and left out of the npm package. You load the component yourself. The VB stylesheet does include the rules that theme it.</td></tr>
     </tbody>
   </table>
-  <p>See the <a href="https://github.com/ProfPowell/code-block/blob/main/README.md">README</a> for the complete attribute and CSS-property reference.</p>
 </section>
 
-<section>
+<section id="install">
+  <h2>Install</h2>
+  <p>Load the component from a CDN. The stylesheet is optional: it styles the element before the script has run, so the code does not show as a line of inline text and then jump.</p>
+  <code-block language="html" label="CDN" data-escape><link rel="stylesheet" href="https://unpkg.com/@profpowell/code-block@2.10.0/code-block.css">
+<script type="module" src="https://unpkg.com/@profpowell/code-block@2.10.0/dist/code-block.js"></script></code-block>
+  <p>Or install it from npm and import it in your own script.</p>
+  <code-block language="bash" label="npm" data-escape>npm install @profpowell/code-block</code-block>
+  <code-block language="javascript" label="Import" data-escape>import '@profpowell/code-block';
+import '@profpowell/code-block/code-block.css'; // optional, needs a bundler that handles CSS</code-block>
+</section>
+
+<section id="demo">
+  <h2>Demo</h2>
+  <p>Three blocks on a Vanilla Breeze page: highlighted lines with focus mode, a tabbed group of files, and a diff.</p>
+  <browser-window url="code-block-basic" src="/docs/integrations/web-components/demos/code-block-basic.html" data-demo-height="xl"></browser-window>
+</section>
+
+<section id="usage">
   <h2>Usage</h2>
-  <p>Wrap a code-block element around the snippet you want to highlight. Pass the language, optional <code>line-numbers</code>, <code>highlight-lines</code>, and <code>focus-mode</code>:</p>
-  <pre><code>&lt;code-block language="javascript" line-numbers highlight-lines="2-3" focus-mode&gt;
-function greet(name) {
+  <p>Put the code between the tags and name the language. The component reads the element's text, so write <code>&lt;</code> and <code>&amp;</code> in the code as <code>&amp;lt;</code> and <code>&amp;amp;</code>.</p>
+  <pre><code>&lt;code-block language="javascript" show-lines highlight-lines="2-3" focus-mode&gt;function greet(name) {
   const message = `Hello, ${name}!`;
   console.log(message);
   return message;
-}
+}&lt;/code-block&gt;</code></pre>
+
+  <p>To avoid escaping markup by hand, put the code in a <code>&lt;textarea&gt;</code> child. The component takes the code from the textarea and removes it.</p>
+  <pre><code>&lt;code-block language="html" filename="index.html"&gt;
+  &lt;textarea&gt;&lt;main&gt;
+  &lt;h1&gt;Trail report&lt;/h1&gt;
+&lt;/main&gt;&lt;/textarea&gt;
 &lt;/code-block&gt;</code></pre>
+
+  <p>Wrap several blocks in <code>&lt;code-block-group&gt;</code> to show them as tabs. Each tab is named from the block's <code>filename</code>, then its <code>label</code>, then its language.</p>
+  <pre><code>&lt;code-block-group show-download&gt;
+  &lt;code-block language="html" filename="index.html"&gt;...&lt;/code-block&gt;
+  &lt;code-block language="css" filename="styles.css"&gt;...&lt;/code-block&gt;
+&lt;/code-block-group&gt;</code></pre>
+
+  <p>Load the code from a file with <code>src</code>. The language and file name are taken from the URL unless you set them.</p>
+  <pre><code>&lt;code-block src="/examples/greet.js" show-lines&gt;&lt;/code-block&gt;</code></pre>
+</section>
+
+<section id="reference">
+  <h2>Reference</h2>
+
+  <h3>Attributes</h3>
+  <p>Attributes of <code>&lt;code-block&gt;</code>. A boolean attribute is on when present.</p>
+  <table class="props-table">
+    <thead><tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>language</code></td><td><code>html</code>, <code>xml</code>, <code>xhtml</code>, <code>svg</code>, <code>markup</code>, <code>css</code>, <code>javascript</code>, <code>js</code>, <code>typescript</code>, <code>ts</code>, <code>json</code>, <code>yaml</code>, <code>yml</code>, <code>php</code>, <code>python</code>, <code>py</code>, <code>bash</code>, <code>shell</code>, <code>sh</code>, <code>zsh</code>, <code>markdown</code>, <code>http</code>, <code>diff</code>, <code>csv</code>, <code>plaintext</code>, <code>text</code>, <code>txt</code></td><td><code>plaintext</code></td><td>Language used for highlighting.</td></tr>
+      <tr><td><code>label</code></td><td>Text</td><td>The file name, else the language in capitals</td><td>Label shown in the header.</td></tr>
+      <tr><td><code>filename</code></td><td>Text</td><td>None</td><td>File name shown in the header and used as the tab name in a group.</td></tr>
+      <tr><td><code>theme</code></td><td><code>light</code>, <code>dark</code></td><td>Follows the page, else <code>light</code></td><td>Fixes the color scheme. Leave it off to follow the page.</td></tr>
+      <tr><td><code>show-lines</code></td><td>Boolean</td><td>Off</td><td>Shows line numbers.</td></tr>
+      <tr><td><code>start-line</code></td><td>Number, 1 or more</td><td><code>1</code></td><td>Number given to the first line shown.</td></tr>
+      <tr><td><code>end-line</code></td><td>Number</td><td>None</td><td>Shows only the lines from <code>start-line</code> to this line of the source.</td></tr>
+      <tr><td><code>highlight-lines</code></td><td>List such as <code>3,5-7</code></td><td>None</td><td>Lines to highlight.</td></tr>
+      <tr><td><code>focus-mode</code></td><td>Boolean</td><td>Off</td><td>Dims and slightly blurs the lines that are not highlighted.</td></tr>
+      <tr><td><code>collapsed</code></td><td>Boolean</td><td>Off</td><td>Starts collapsed, with a button to show the rest.</td></tr>
+      <tr><td><code>max-lines</code></td><td>Number</td><td><code>10</code></td><td>Lines visible while collapsed.</td></tr>
+      <tr><td><code>max-height</code></td><td>CSS length such as <code>300px</code></td><td>None</td><td>Limits the height and scrolls the code inside.</td></tr>
+      <tr><td><code>wrap</code></td><td>Boolean</td><td>Off</td><td>Wraps long lines instead of scrolling sideways.</td></tr>
+      <tr><td><code>copy-text</code></td><td>Text</td><td><code>Copy</code></td><td>Text of the copy button.</td></tr>
+      <tr><td><code>copied-text</code></td><td>Text</td><td><code>Copied!</code></td><td>Text shown after a successful copy.</td></tr>
+      <tr><td><code>no-copy</code></td><td>Boolean</td><td>Off</td><td>Hides the copy button and stops the code from being selected.</td></tr>
+      <tr><td><code>show-share</code></td><td>Boolean</td><td>Off</td><td>Shows a share button with a menu that can open the code in CodePen.</td></tr>
+      <tr><td><code>show-download</code></td><td>Boolean</td><td>Off</td><td>Shows a button that downloads the code as a file.</td></tr>
+      <tr><td><code>lazy</code></td><td>Boolean</td><td>Off</td><td>Waits to highlight until the block is near the visible part of the page.</td></tr>
+      <tr><td><code>src</code></td><td>URL</td><td>None</td><td>Fetches the code from a file instead of using the element's content.</td></tr>
+    </tbody>
+  </table>
+  <p><code>&lt;code-block-group&gt;</code> accepts <code>theme</code>, <code>show-share</code> and <code>show-download</code>, and applies its theme to the blocks inside it.</p>
+
+  <h3>Methods and properties</h3>
+  <table class="props-table">
+    <thead><tr><th scope="col">Member</th><th scope="col">On</th><th scope="col">Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>getCode()</code></td><td>Block</td><td>Returns the current code as a string.</td></tr>
+      <tr><td><code>setCode(code)</code></td><td>Block</td><td>Replaces the code and renders again.</td></tr>
+      <tr><td><code>copyCode()</code></td><td>Block</td><td>Copies the code to the clipboard. Returns a promise.</td></tr>
+      <tr><td><code>downloadCode()</code></td><td>Block, group</td><td>Downloads the code as a file. On a group, downloads the active block.</td></tr>
+      <tr><td><code>openInCodePen()</code></td><td>Block, group</td><td>Opens the code in CodePen. A group sends the HTML, CSS and JavaScript of all its blocks.</td></tr>
+      <tr><td><code>toggleCollapsed()</code></td><td>Block</td><td>Collapses or expands the block.</td></tr>
+      <tr><td><code>render()</code></td><td>Block, group</td><td>Renders the component again.</td></tr>
+      <tr><td><code>CodeBlock.getSupportedLanguages()</code></td><td>Class (static)</td><td>Returns the list of language names.</td></tr>
+      <tr><td><code>activeIndex</code></td><td>Group</td><td>Index of the selected tab. Readable and writable.</td></tr>
+      <tr><td><code>selectTab(index)</code></td><td>Group</td><td>Selects a tab.</td></tr>
+      <tr><td><code>getActiveBlock()</code></td><td>Group</td><td>Returns the block shown in the selected tab.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Events</h3>
+  <table class="props-table">
+    <thead><tr><th scope="col">Event</th><th scope="col">Fired by</th><th scope="col">Detail</th></tr></thead>
+    <tbody>
+      <tr><td><code>code-loaded</code></td><td>Block, when a <code>src</code> file has loaded</td><td><code>{ url, code }</code></td></tr>
+      <tr><td><code>code-load-error</code></td><td>Block, when a <code>src</code> file fails to load</td><td><code>{ url, error }</code></td></tr>
+      <tr><td><code>tab-change</code></td><td>Group, when the selected tab changes</td><td><code>{ index, block }</code></td></tr>
+    </tbody>
+  </table>
+  <p>All three events bubble.</p>
+
+  <h3>CSS custom properties</h3>
+  <p>The component has more than 60 custom properties, all starting with <code>--cb-</code>. Set them on the element or on any ancestor.</p>
+  <table class="props-table">
+    <thead><tr><th scope="col">Group</th><th scope="col">Examples</th></tr></thead>
+    <tbody>
+      <tr><td>Container</td><td><code>--cb-bg</code>, <code>--cb-code-bg</code>, <code>--cb-border-color</code>, <code>--cb-border-radius</code>, <code>--cb-margin</code>, <code>--cb-shadow</code></td></tr>
+      <tr><td>Type</td><td><code>--cb-font-family</code>, <code>--cb-ui-font-family</code>, <code>--cb-font-size</code>, <code>--cb-line-height</code>, <code>--cb-text-color</code></td></tr>
+      <tr><td>Header</td><td><code>--cb-header-bg</code>, <code>--cb-header-padding</code>, <code>--cb-label-color</code>, <code>--cb-filename-color</code></td></tr>
+      <tr><td>Buttons</td><td><code>--cb-button-bg</code>, <code>--cb-button-color</code>, <code>--cb-button-border</code>, <code>--cb-button-radius</code>, <code>--cb-button-hover-bg</code>, <code>--cb-focus-color</code>, <code>--cb-success-color</code>, <code>--cb-error-color</code></td></tr>
+      <tr><td>Code area and line numbers</td><td><code>--cb-code-padding</code>, <code>--cb-line-numbers-bg</code>, <code>--cb-line-numbers-color</code></td></tr>
+      <tr><td>Syntax colors</td><td><code>--cb-keyword</code>, <code>--cb-string</code>, <code>--cb-comment</code>, <code>--cb-function</code>, <code>--cb-number</code>, <code>--cb-attribute</code>, <code>--cb-tag</code>, <code>--cb-meta</code>, <code>--cb-builtin</code></td></tr>
+      <tr><td>Highlight and focus mode</td><td><code>--cb-highlight-bg</code>, <code>--cb-highlight-border</code>, <code>--cb-highlight-gutter</code>, <code>--cb-focus-dim-opacity</code>, <code>--cb-focus-blur</code></td></tr>
+      <tr><td>Diff</td><td><code>--cb-diff-add-bg</code>, <code>--cb-diff-add-text</code>, <code>--cb-diff-remove-bg</code>, <code>--cb-diff-remove-text</code></td></tr>
+      <tr><td>Collapse and scrollbar</td><td><code>--cb-expand-bg</code>, <code>--cb-expand-color</code>, <code>--cb-scrollbar-track</code>, <code>--cb-scrollbar-thumb</code></td></tr>
+    </tbody>
+  </table>
+  <p>The package also exports <code>@profpowell/code-block/ssr</code>, a Node module that renders blocks to HTML at build time. See the <a href="https://profpowell.github.io/code-block/">code-block documentation</a> for that and for the full property list.</p>
+</section>
+
+<section id="theming">
+  <h2>With Vanilla Breeze</h2>
+  <p>A token is a CSS custom property that holds one design value, such as <code>--color-surface</code>. Two things connect the component to Vanilla Breeze tokens.</p>
+  <p>First, the component itself reads five VB tokens as fallbacks, so it picks up a VB theme even without any VB rule aimed at it.</p>
+  <table class="props-table">
+    <thead><tr><th scope="col">VB token</th><th scope="col">Drives</th></tr></thead>
+    <tbody>
+      <tr><td><code>--color-surface</code></td><td>Code area background</td></tr>
+      <tr><td><code>--color-surface-raised</code></td><td>Outer background and header background</td></tr>
+      <tr><td><code>--color-text</code></td><td>Code text and button text</td></tr>
+      <tr><td><code>--color-text-muted</code></td><td>Comment color</td></tr>
+      <tr><td><code>--color-border</code></td><td>Borders</td></tr>
+    </tbody>
+  </table>
+  <p>Second, the VB stylesheet contains a token bridge: a rule with the selector <code>code-block</code> that sets the component's <code>--cb-*</code> properties from VB tokens. It ships in <code>vanilla-breeze.css</code> and <code>vanilla-breeze-core.css</code>, so there is no extra file to load and no attribute to add. The bridge covers more than the five fallbacks.</p>
+  <table class="props-table">
+    <thead><tr><th scope="col">VB token</th><th scope="col">Set on</th></tr></thead>
+    <tbody>
+      <tr><td><code>--color-surface</code>, <code>--color-surface-raised</code></td><td>Backgrounds of the block, header, line numbers, buttons and scrollbar track</td></tr>
+      <tr><td><code>--color-text</code>, <code>--color-text-muted</code></td><td>Code text, file name, label, comments and button text</td></tr>
+      <tr><td><code>--color-border</code></td><td>Borders and the scrollbar thumb</td></tr>
+      <tr><td><code>--color-interactive</code></td><td>Button hover, focus ring, expand link and the highlighted-line border</td></tr>
+      <tr><td><code>--color-primary</code></td><td>Keywords, functions, attributes and built-in names</td></tr>
+      <tr><td><code>--color-accent</code></td><td>Strings, numbers, tags and meta tokens</td></tr>
+      <tr><td><code>--radius-m</code>, <code>--radius-s</code></td><td>Corner radius of the block, and of buttons and menus</td></tr>
+      <tr><td><code>--font-mono</code>, <code>--font-sans</code></td><td>Code font and interface font</td></tr>
+    </tbody>
+  </table>
+  <p>For each value the order is: the <code>--cb-*</code> property if it is set, then the VB token, then the component's built-in color. With VB loaded, the bridge is what sets the <code>--cb-*</code> properties.</p>
+  <p>Light or dark is chosen separately. With no <code>theme</code> attribute, the component follows the nearest ancestor with <code>data-mode</code>, then <code>data-theme</code>, <code>data-mode</code> or a <code>dark</code> class on <code>&lt;html&gt;</code> or <code>&lt;body&gt;</code>, then the page's computed <code>color-scheme</code>. It updates when these change.</p>
+  <p>The bridge sits in a cascade layer, so any rule you write outside a layer wins. To change one block, set the property on it.</p>
+  <code-block language="css" label="Override one block" data-escape>code-block[filename="deploy.sh"] {
+  --cb-border-radius: 0;
+  --cb-keyword: var(--color-error);
+  --cb-font-size: var(--font-size-s);
+}</code-block>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The copy, download and share buttons have ARIA labels, and the copy button's label changes to report success or failure.</li>
+    <li>Buttons show a focus ring. Set its color with <code>--cb-focus-color</code>.</li>
+    <li>Line numbers are hidden from screen readers, so only the code is read.</li>
+    <li>In a group, the tabs use the <code>tablist</code> and <code>tab</code> roles. The left and right arrow keys move between tabs, and <kbd>Home</kbd> and <kbd>End</kbd> go to the first and last.</li>
+  </ul>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="https://profpowell.github.io/code-block/">code-block documentation</a></li>
+    <li><a href="/docs/integrations/web-components/browser-window/">browser-window</a>: a browser frame for the demo that the code produces</li>
+    <li><a href="/docs/integrations/web-components/code-playground/">code-playground</a>: editable code with a live preview</li>
+    <li><a href="/docs/integrations/web-components/terminal-window/">terminal-window</a>: a terminal for command-line examples</li>
+    <li><a href="/docs/tokens/">Design tokens</a></li>
+    <li><a href="/docs/themes/">Themes</a></li>
+  </ul>
 </section>
