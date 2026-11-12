@@ -29,7 +29,9 @@ const SUBSETS = ['latin', 'latin-ext'];
 /**
  * variants name the Fontsource face: "wght-normal" is the upright variable
  * file, "opsz-normal" adds the optical-size axis, "400-normal" is a static
- * weight. Keep the list to what a theme actually uses.
+ * weight. Keep the list to what a theme actually uses. A face a theme sets as
+ * body text carries its italic too, so emphasis is drawn and not slanted by
+ * the browser; a file is only downloaded when italic text renders.
  *
  * @type {{ id: string, family: string, pkg: string, version: string, variants: string[] }[]}
  */
@@ -37,25 +39,25 @@ export const FAMILIES = [
   // Variable
   { id: 'big-shoulders-display', family: 'Big Shoulders Display', pkg: '@fontsource-variable/big-shoulders-display', version: '5.3.0', variants: ['wght-normal'] },
   { id: 'caveat', family: 'Caveat', pkg: '@fontsource-variable/caveat', version: '5.3.0', variants: ['wght-normal'] },
-  { id: 'dm-sans', family: 'DM Sans', pkg: '@fontsource-variable/dm-sans', version: '5.3.0', variants: ['wght-normal'] },
-  { id: 'exo-2', family: 'Exo 2', pkg: '@fontsource-variable/exo-2', version: '5.3.0', variants: ['wght-normal'] },
+  { id: 'dm-sans', family: 'DM Sans', pkg: '@fontsource-variable/dm-sans', version: '5.3.0', variants: ['wght-normal', 'wght-italic'] },
+  { id: 'exo-2', family: 'Exo 2', pkg: '@fontsource-variable/exo-2', version: '5.3.0', variants: ['wght-normal', 'wght-italic'] },
   { id: 'fira-code', family: 'Fira Code', pkg: '@fontsource-variable/fira-code', version: '5.3.0', variants: ['wght-normal'] },
   { id: 'fraunces', family: 'Fraunces', pkg: '@fontsource-variable/fraunces', version: '5.3.0', variants: ['wght-normal'] },
-  { id: 'inter', family: 'Inter', pkg: '@fontsource-variable/inter', version: '5.3.0', variants: ['wght-normal'] },
-  { id: 'jetbrains-mono', family: 'JetBrains Mono', pkg: '@fontsource-variable/jetbrains-mono', version: '5.3.0', variants: ['wght-normal'] },
-  { id: 'josefin-sans', family: 'Josefin Sans', pkg: '@fontsource-variable/josefin-sans', version: '5.3.0', variants: ['wght-normal'] },
-  { id: 'lora', family: 'Lora', pkg: '@fontsource-variable/lora', version: '5.3.0', variants: ['wght-normal'] },
-  { id: 'merriweather', family: 'Merriweather', pkg: '@fontsource-variable/merriweather', version: '5.3.0', variants: ['wght-normal'] },
+  { id: 'inter', family: 'Inter', pkg: '@fontsource-variable/inter', version: '5.3.0', variants: ['wght-normal', 'wght-italic'] },
+  { id: 'jetbrains-mono', family: 'JetBrains Mono', pkg: '@fontsource-variable/jetbrains-mono', version: '5.3.0', variants: ['wght-normal', 'wght-italic'] },
+  { id: 'josefin-sans', family: 'Josefin Sans', pkg: '@fontsource-variable/josefin-sans', version: '5.3.0', variants: ['wght-normal', 'wght-italic'] },
+  { id: 'lora', family: 'Lora', pkg: '@fontsource-variable/lora', version: '5.3.0', variants: ['wght-normal', 'wght-italic'] },
+  { id: 'merriweather', family: 'Merriweather', pkg: '@fontsource-variable/merriweather', version: '5.3.0', variants: ['wght-normal', 'wght-italic'] },
   { id: 'newsreader', family: 'Newsreader', pkg: '@fontsource-variable/newsreader', version: '5.3.0', variants: ['wght-normal', 'wght-italic'] },
-  { id: 'nunito', family: 'Nunito', pkg: '@fontsource-variable/nunito', version: '5.3.0', variants: ['wght-normal'] },
+  { id: 'nunito', family: 'Nunito', pkg: '@fontsource-variable/nunito', version: '5.3.0', variants: ['wght-normal', 'wght-italic'] },
   { id: 'orbitron', family: 'Orbitron', pkg: '@fontsource-variable/orbitron', version: '5.3.0', variants: ['wght-normal'] },
   { id: 'playfair-display', family: 'Playfair Display', pkg: '@fontsource-variable/playfair-display', version: '5.3.0', variants: ['wght-normal'] },
   { id: 'shantell-sans', family: 'Shantell Sans', pkg: '@fontsource-variable/shantell-sans', version: '5.3.0', variants: ['wght-normal', 'wght-italic'] },
   { id: 'source-code-pro', family: 'Source Code Pro', pkg: '@fontsource-variable/source-code-pro', version: '5.3.1', variants: ['wght-normal'] },
   // Static
-  { id: 'barlow-condensed', family: 'Barlow Condensed', pkg: '@fontsource/barlow-condensed', version: '5.3.0', variants: ['400-normal', '500-normal', '600-normal', '700-normal'] },
+  { id: 'barlow-condensed', family: 'Barlow Condensed', pkg: '@fontsource/barlow-condensed', version: '5.3.0', variants: ['400-normal', '400-italic', '500-normal', '600-normal', '700-normal', '700-italic'] },
   { id: 'courier-prime', family: 'Courier Prime', pkg: '@fontsource/courier-prime', version: '5.3.0', variants: ['400-normal', '700-normal'] },
-  { id: 'dm-serif-display', family: 'DM Serif Display', pkg: '@fontsource/dm-serif-display', version: '5.3.0', variants: ['400-normal'] },
+  { id: 'dm-serif-display', family: 'DM Serif Display', pkg: '@fontsource/dm-serif-display', version: '5.3.0', variants: ['400-normal', '400-italic'] },
   { id: 'flow-block', family: 'Flow Block', pkg: '@fontsource/flow-block', version: '5.3.0', variants: ['400-normal'] },
   { id: 'ibm-plex-mono', family: 'IBM Plex Mono', pkg: '@fontsource/ibm-plex-mono', version: '5.3.0', variants: ['400-normal', '700-normal'] },
   { id: 'press-start-2p', family: 'Press Start 2P', pkg: '@fontsource/press-start-2p', version: '5.3.0', variants: ['400-normal'] },
