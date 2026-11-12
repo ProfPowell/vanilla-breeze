@@ -6,6 +6,17 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- **Themes ship real italics for their body typefaces.** Inter, Nunito, DM Sans, Josefin Sans, Exo 2, Lora, Merriweather, JetBrains Mono, Barlow Condensed and DM Serif Display now include their italic files, so `<em>` and `<cite>` are drawn by the typeface and not slanted by the browser. An italic file is downloaded only when a page has italic text. The package grows by about 1.1 MB.
+- **Integration guide pages use the full docs canvas**, like the other docs pages, in place of a narrower fixed column.
+- **`<icon-wc>`'s `basePath` property returns an absolute URL** when it is derived from the bundle location.
+
+### Added
+- **Grid Identity guide: two purpose-built demos.** A landing page that labels its named areas and shows that source order does not move them, and a three-tier page that highlights the page, main and component tiers in turn.
+
+### Fixed
+- **Icons and packs load from where the bundle was loaded.** A page that loads Vanilla Breeze from a CDN or a sub-path requested `/cdn/icons/...` and `/cdn/packs/...` on its own origin and got 404s, so `<icon-wc>`, `[data-icon]` and the icons inside `<theme-picker>` were blank unless `data-icon-path` was set. They now resolve beside the loaded script. `data-icon-path` and `base-path` still override.
+
 ## [0.6.2] - 2026-11-11
 
 0.6.2 makes every theme ship its own fonts: no theme calls Google Fonts, themes load the typefaces they name, and eight themes gain a face. Headings read `--font-heading`, so a theme or page can set a separate heading typeface. `<theme-picker>`, `<site-index>`, `<time-index>` and `<glossary-index>` are simplified, with breaking changes marked under Changed, and `<site-search>`, `<mobile-menu>` and `<notification-wc>` work better on a phone. The docs gain a Typefaces guide, a regrouped Guide section, rewritten Principles, Typography and Grid Identity pages, and integration guides for sixteen related web components. The package grows to about 6.5 MB because of the font files.
