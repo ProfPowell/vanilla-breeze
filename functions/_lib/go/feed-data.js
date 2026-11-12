@@ -2,6 +2,14 @@
 export default {
   "items": [
     {
+      "id": "0.6.2",
+      "type": "update",
+      "title": "v0.6.2",
+      "body": "0.6.2 makes every theme ship its own fonts: no theme calls Google Fonts, themes load the typefaces they name, and eight themes gain a face. Headings read `--font-heading`, so a theme or page can set a separate heading typeface. `<theme-picker>`, `<site-index>`, `<time-index>`…",
+      "url": "https://vanilla-breeze.com/changelog/#v0-6-2",
+      "date": "2026-11-11"
+    },
+    {
       "id": "0.6.1",
       "type": "update",
       "title": "v0.6.1",

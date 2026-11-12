@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-11-11
+
+0.6.2 makes every theme ship its own fonts: no theme calls Google Fonts, themes load the typefaces they name, and eight themes gain a face. Headings read `--font-heading`, so a theme or page can set a separate heading typeface. `<theme-picker>`, `<site-index>`, `<time-index>` and `<glossary-index>` are simplified, with breaking changes marked under Changed, and `<site-search>`, `<mobile-menu>` and `<notification-wc>` work better on a phone. The docs gain a Typefaces guide, a regrouped Guide section, rewritten Principles, Typography and Grid Identity pages, and integration guides for sixteen related web components. The package grows to about 6.5 MB because of the font files.
+
 ### Changed
 
 - **Grid Identity guide rebuilt.** The page opens with the idea in one example, replaces the tier cards with a table, and gains a live demo that switches one page between all eight templates and shows the grid area each region receives. It now says which elements each template places, and that an element with no area (an `<aside>` under `sidebar-left`) collapses into a zero-width track, and that a `hidden` element still keeps its column. The regions and media sections get focused demos. Every demo window was 265px tall and showed little of the layout; they now have proper heights. The catch-all "Quick Reference" is split into Modifiers, Container names, Accessibility and Related.
