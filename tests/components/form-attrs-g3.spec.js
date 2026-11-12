@@ -342,7 +342,9 @@ test.describe('data-wizard', () => {
     await page.fill('#email', 'a@b.co');
     await page.fill('#pw', 'secret');
     await page.click('[data-wizard-next]');
-    await expect.poll(() => page.evaluate(() => localStorage.getItem('vb:wizard:w'))).not.toBeNull();
+    // Typing already stores step 0, so wait for the entry written by the
+    // step change and not just for any entry.
+    await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('vb:wizard:w') ?? 'null')?.data?.step)).toBe(1);
     const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('vb:wizard:w')));
     expect(typeof stored.timestamp).toBe('number');
     expect(stored.data.step).toBe(1);
