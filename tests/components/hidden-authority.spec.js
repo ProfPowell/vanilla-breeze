@@ -55,7 +55,7 @@ test.describe('[hidden] authority', () => {
 
   test('changelog version filter hides the other releases', async ({ page }) => {
     await page.goto('/changelog/');
-    const select = page.locator('time-index [data-timeline-controls] select');
+    const select = page.locator('time-index [data-timeline-controls] select[data-timeline-version]');
     await expect(select).toBeVisible();
     await select.selectOption('v0.3.0');
     await expect(page.locator('section#v0-3-0')).toBeVisible();
