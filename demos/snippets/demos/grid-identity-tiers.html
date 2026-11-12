@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Grid Identity: three tiers nested</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    html, body { min-block-size: 100%; }
+    body { --layout-gap: var(--size-xs); padding: var(--size-xs); background: var(--color-surface); }
+
+    /* One outline style per tier */
+    [data-tier] {
+      padding: var(--size-s) var(--size-m);
+      border: var(--border-width-thin) dashed var(--color-border-strong);
+      border-radius: var(--radius-m);
+      background: var(--color-surface-raised);
+    }
+    [data-tier="main"] { border-style: solid; }
+    [data-tier="component"] { border-style: dotted; background: var(--color-surface); }
+    body > main { padding: var(--size-xs); }
+
+    /* The chosen tier is drawn in the primary color; the others keep
+       their quiet outlines */
+    body[data-highlight="page"] [data-tier="page"],
+    body[data-highlight="main"] [data-tier="main"],
+    body[data-highlight="component"] [data-tier="component"] {
+      border: var(--border-width-medium) solid var(--color-primary);
+      background: var(--color-primary-subtle);
+    }
+
+    [data-area] { display: block; font-size: var(--font-size-xs); color: var(--color-text-muted); }
+    h1 { font-size: var(--font-size-xl); margin: 0; }
+    p { margin: 0; }
+    main > aside ul { margin: 0; padding-inline-start: var(--size-m); font-size: var(--font-size-s); }
+    button:not([aria-pressed="true"]) {
+      background: transparent;
+      color: var(--color-text);
+      border: var(--border-width-thin) solid var(--color-border-strong);
+    }
+  </style>
+</head>
+<body data-page-layout="sidebar-left" data-layout-gap="xs">
+  <header data-tier="page">
+    <strong>&lt;header&gt;</strong>
+    <code data-area></code>
+  </header>
+
+  <nav data-tier="page" aria-label="Demo navigation">
+    <strong>&lt;nav&gt;</strong>
+    <code data-area></code>
+  </nav>
+
+  <main data-tier="page" data-layout="sidebar-right" data-layout-gap="xs">
+    <article data-tier="main" data-layout="regions" data-layout-gap="s">
+      <header data-tier="component">
+        <h1>Three tiers, one page</h1>
+        <code data-area></code>
+      </header>
+      <p><code data-area></code></p>
+      <section data-tier="component">
+        <layout-stack data-layout-gap="s">
+          <p>The body places this <code>&lt;main&gt;</code>. The main places this <code>&lt;article&gt;</code> beside a table of contents. The article places its own header, content and footer.</p>
+          <layout-cluster data-layout-gap="xs" id="tiers" role="group" aria-label="Highlight a tier">
+            <button type="button" class="small" data-highlight="" aria-pressed="true">All</button>
+            <button type="button" class="small" data-highlight="page">Page tier</button>
+            <button type="button" class="small" data-highlight="main">Main tier</button>
+            <button type="button" class="small" data-highlight="component">Component tier</button>
+          </layout-cluster>
+          <p id="tier-note" role="status">Each box prints how it was placed.</p>
+          <code data-area></code>
+        </layout-stack>
+      </section>
+      <footer data-tier="component">
+        <small>Filed under Layout</small>
+        <code data-area></code>
+      </footer>
+    </article>
+
+    <aside data-tier="main" aria-label="On this page">
+      <strong>&lt;aside&gt;</strong>
+      <ul>
+        <li>Page tier</li>
+        <li>Main tier</li>
+        <li>Component tier</li>
+      </ul>
+      <code data-area></code>
+    </aside>
+  </main>
+
+  <footer data-tier="page">
+    <strong>&lt;footer&gt;</strong>
+    <code data-area></code>
+  </footer>
+
+  <script type="module">
+    const body = document.body;
+    const notes = {
+      '': 'Each box prints how it was placed.',
+      'page': 'Page tier: data-page-layout="sidebar-left" on <body> places header, nav, main and footer in body-* areas.',
+      'main': 'Main tier: data-layout="sidebar-right" on <main> places the article and the aside in main-* areas.',
+      'component': 'Component tier: data-layout="regions" on the <article> puts its header first, its section in the middle and its footer last. No named areas.',
+    };
+    const regionRole = { header: 'first', section: 'grows to fill', footer: 'last' };
+
+    /* The area label is the last [data-area] that belongs to this box and
+       not to a nested one. */
+    for (const element of document.querySelectorAll('[data-tier]')) {
+      const label = [...element.querySelectorAll('[data-area]')].filter((code) => code.closest('[data-tier]') === element).at(-1);
+      if (!label) continue;
+      label.textContent = element.dataset.tier === 'component'
+        ? `regions: ${regionRole[element.localName]}`
+        : `<${element.localName}> grid-area: ${getComputedStyle(element).gridRowStart}`;
+    }
+    /* <main> has no room for a label of its own: every child is placed. */
+    const main = body.querySelector(':scope > main');
+    const article = main.querySelector(':scope > article');
+    article.querySelector(':scope > p > [data-area]').textContent += `, inside <main> grid-area: ${getComputedStyle(main).gridRowStart}`;
+
+    for (const button of document.querySelectorAll('#tiers button')) {
+      button.addEventListener('click', () => {
+        const tier = button.dataset.highlight;
+        if (tier) body.dataset.highlight = tier;
+        else delete body.dataset.highlight;
+        for (const other of document.querySelectorAll('#tiers button')) other.setAttribute('aria-pressed', String(other === button));
+        document.getElementById('tier-note').textContent = notes[tier];
+      });
+    }
+  </script>
+</body>
+</html>

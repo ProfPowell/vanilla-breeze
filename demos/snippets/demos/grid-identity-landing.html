@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Grid Identity: landing template and named areas</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    html, body { min-block-size: 100%; }
+    body { padding: var(--size-xs); background: var(--color-surface); }
+
+    /* Outline every direct child and label the grid area it landed in */
+    body > :is(header, nav, main, section, footer) {
+      padding: var(--size-s) var(--size-m);
+      border: var(--border-width-thin) dashed var(--color-border-strong);
+      border-radius: var(--radius-m);
+      background: var(--color-surface-raised);
+    }
+    /* Children placed by name, not by element type */
+    body > [data-layout-area] {
+      border-style: solid;
+      border-color: var(--color-primary);
+      background: var(--color-surface);
+    }
+    [data-area] { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+    h1 { font-size: var(--font-size-2xl); margin: 0; }
+    h2 { font-size: var(--font-size-l); margin: 0; }
+    h3 { font-size: var(--font-size-m); margin: 0; }
+    p { margin: 0; }
+    body > header, body > nav, body > footer { font-size: var(--font-size-s); }
+    body > nav ul { display: flex; flex-wrap: wrap; gap: var(--size-m); margin: 0; padding: 0; list-style: none; }
+    [data-layout-area="hero"] { padding-block: var(--size-xl); text-align: center; }
+    [data-layout-area="cta"] { text-align: center; }
+    button:not([aria-pressed="true"]) {
+      background: transparent;
+      color: var(--color-text);
+      border: var(--border-width-thin) solid var(--color-border-strong);
+    }
+  </style>
+</head>
+<body data-page-layout="landing" data-layout-gap="xs">
+  <header>
+    <layout-cluster data-layout-gap="s" data-layout-justify="between">
+      <strong>Northwind Coffee</strong>
+      <code data-area></code>
+    </layout-cluster>
+  </header>
+
+  <nav aria-label="Demo navigation">
+    <layout-cluster data-layout-gap="s" data-layout-justify="between">
+      <ul>
+        <li><a href="#beans">Beans</a></li>
+        <li><a href="#plans">Plans</a></li>
+        <li><a href="#start">Start</a></li>
+      </ul>
+      <code data-area></code>
+    </layout-cluster>
+  </nav>
+
+  <section data-layout-area="hero" aria-labelledby="hero-title">
+    <layout-stack data-layout-gap="s">
+      <h1 id="hero-title">Fresh beans, every two weeks</h1>
+      <p>Roasted on Monday and at your door by Thursday.</p>
+      <code data-area></code>
+    </layout-stack>
+  </section>
+
+  <main>
+    <layout-stack data-layout-gap="s">
+      <h2 id="beans">How it works</h2>
+      <p>Pick a roast, choose how often, and change or pause whenever you like. The sections around this one have no element of their own, so each takes <code>data-layout-area</code>.</p>
+      <layout-cluster data-layout-gap="xs">
+        <button type="button" class="small" id="order" aria-pressed="false">Move the call to action first in the source</button>
+      </layout-cluster>
+      <p id="order-note" role="status">Source order: hero, main, feature, cta.</p>
+      <code data-area></code>
+    </layout-stack>
+  </main>
+
+  <section data-layout-area="feature" aria-labelledby="plans">
+    <layout-stack data-layout-gap="s">
+      <h2 id="plans">Plans</h2>
+      <layout-grid data-layout-min="s" data-layout-gap="s">
+        <article><h3>Single origin</h3><p>One farm each delivery.</p></article>
+        <article><h3>House blend</h3><p>The same cup every time.</p></article>
+        <article><h3>Decaf</h3><p>Water processed.</p></article>
+      </layout-grid>
+      <code data-area></code>
+    </layout-stack>
+  </section>
+
+  <section data-layout-area="cta" aria-labelledby="start">
+    <layout-stack data-layout-gap="s">
+      <h2 id="start">Start with a free bag</h2>
+      <p><a href="#start" class="button">Choose a roast</a></p>
+      <code data-area></code>
+    </layout-stack>
+  </section>
+
+  <footer>
+    <layout-cluster data-layout-gap="s" data-layout-justify="between">
+      <span>Northwind Coffee, a demo page</span>
+      <code data-area></code>
+    </layout-cluster>
+  </footer>
+
+  <script type="module">
+    const body = document.body;
+    const cta = body.querySelector('[data-layout-area="cta"]');
+    const hero = body.querySelector('[data-layout-area="hero"]');
+    const footer = body.querySelector(':scope > footer');
+    const button = document.getElementById('order');
+    const note = document.getElementById('order-note');
+
+    /* Print the grid area each child resolved to */
+    function label() {
+      for (const element of body.querySelectorAll(':scope > :is(header, nav, main, section, footer)')) {
+        const how = element.hasAttribute('data-layout-area') ? 'from data-layout-area' : `from <${element.localName}>`;
+        element.querySelector('[data-area]').textContent = `grid-area: ${getComputedStyle(element).gridRowStart} (${how})`;
+      }
+    }
+
+    /* The template decides the position, so moving the element in the
+       source changes nothing on screen. */
+    button.addEventListener('click', () => {
+      const first = button.getAttribute('aria-pressed') !== 'true';
+      if (first) body.insertBefore(cta, hero);
+      else body.insertBefore(cta, footer);
+      button.setAttribute('aria-pressed', String(first));
+      note.textContent = first
+        ? 'Source order: cta, hero, main, feature. The page looks the same, because the area sets the position. Keyboard and screen reader order follow the source, so keep it matching the visual order in real pages.'
+        : 'Source order: hero, main, feature, cta.';
+      label();
+    });
+
+    label();
+  </script>
+</body>
+</html>
