@@ -1,99 +1,73 @@
 ---
 layout: guide
 title: "Grid Identity"
-description: "HTML declares structure, CSS assigns layout. Semantic elements auto-register to grid areas based on their type — no classes needed."
+description: "Write semantic HTML and let CSS place it. A header, nav, main, aside and footer take their grid areas from what they are, with no classes."
 guideGroup: Layouts
 toc: true
 currentPath: /docs/grid-identity/
 ---
 
-
-<!-- Section 1: The Concept -->
   <section id="concept">
-    <h2>The Concept</h2>
-    <p>VB's grid identity system implements the CSS Zen Garden principle: the same semantic HTML transforms through pure CSS. Write <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code>, and <code>&lt;footer&gt;</code>, and the layout assigns them to grid areas automatically.</p>
+    <h2>How it works</h2>
+    <p>In most layout systems you tell each element where to go with a class. Here an element's place comes from what it is. Write <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code> and <code>&lt;footer&gt;</code>, choose a template on their parent, and each element goes to the grid area that carries its name. That is the element's <dfn>grid identity</dfn>.</p>
+    <p>Change the template and the same markup becomes a different layout. No element needs to change.</p>
 
-    <status-message data-variant="info">
-      <span data-content>
-        <strong data-title>Zen Garden Principle</strong>
-        <span data-description>HTML declares structure. CSS assigns layout. JavaScript handles behavior. Each concern stays in its proper layer.</span>
-      </span>
-    </status-message>
+    <code-block language="html" label="The whole idea" data-escape><body data-page-layout="sidebar-left">
+  <header>Site header</header>   <!-- goes to body-header -->
+  <nav>Navigation</nav>          <!-- goes to body-nav -->
+  <main>Content</main>           <!-- goes to body-main -->
+  <footer>Site footer</footer>   <!-- goes to body-footer -->
+</body></code-block>
 
-    <h3>Three Tiers</h3>
-    <p>Grid identity works at three levels, each scoped to a different container:</p>
-
-    <ul class="unstyled" data-layout="grid" data-layout-min="m" data-layout-gap="m">
-      <li>
-        <layout-card data-variant="outlined" data-padding="m">
-          <layout-stack data-layout-gap="2xs">
-            <h4>Tier 1: Page</h4>
-            <code>data-page-layout</code>
-            <p>Body-level structure. Areas: <code>body-header</code>, <code>body-nav</code>, <code>body-main</code>, <code>body-aside</code>, <code>body-footer</code> (plus <code>hero</code>, <code>feature</code>, <code>cta</code> in <code>landing</code>)</p>
-          </layout-stack>
-        </layout-card>
-      </li>
-      <li>
-        <layout-card data-variant="outlined" data-padding="m">
-          <layout-stack data-layout-gap="2xs">
-            <h4>Tier 2: Main</h4>
-            <code>main[data-layout="sidebar-left|sidebar-right"]</code>
-            <p>A sidebar inside the content area. Areas: <code>main-nav</code>, <code>main-article</code>, <code>main-aside</code></p>
-          </layout-stack>
-        </layout-card>
-      </li>
-      <li>
-        <layout-card data-variant="outlined" data-padding="m">
-          <layout-stack data-layout-gap="2xs">
-            <h4>Tier 3: Component</h4>
-            <code>data-layout="regions"</code>
-            <p>Generalized structure on any element: header first, footer last, everything else in between</p>
-          </layout-stack>
-        </layout-card>
-      </li>
-    </ul>
-  </section>
-
-  <!-- Section 2: Page-Level Identity -->
-  <section id="page-level">
-    <h2>Page-Level Identity</h2>
-    <p>Apply <a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> to the <code>&lt;body&gt;</code> element. Direct semantic children are auto-assigned to grid areas based on their element type. It is VB's only page-template system; the full reference (modifiers, mobile drawer, accessibility) is on the attribute page.</p>
-
-    <browser-window
-      src="/docs/examples/demos/grid-identity.html"
-      url="https://vanilla-breeze.com/grid-identity"
-      title="Page templates"
-      shadow>
-    </browser-window>
-
-    <h3>Available Templates</h3>
+    <h3 id="three-tiers">Three tiers</h3>
+    <p>The idea applies at three levels. Each is scoped to its own container, so they nest without clashing.</p>
     <table>
       <thead>
         <tr>
-          <th>Template</th>
-          <th>Token</th>
-          <th>Description</th>
+          <th scope="col">Tier</th>
+          <th scope="col">Set with</th>
+          <th scope="col">Places</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td><code>stack</code></td><td><code>--tpl-stack</code></td><td>Single column, mobile-first</td></tr>
-        <tr><td><code>sidebar-left</code></td><td><code>--tpl-sidebar-left</code></td><td>Two-column with left navigation</td></tr>
-        <tr><td><code>sidebar-right</code></td><td><code>--tpl-sidebar-right</code></td><td>Two-column with right sidebar</td></tr>
-        <tr><td><code>holy-grail</code></td><td><code>--tpl-holy-grail</code></td><td>Three-column classic layout</td></tr>
-        <tr><td><code>app-shell</code></td><td><code>--tpl-app-shell</code></td><td>Vertical nav bar for apps</td></tr>
-        <tr><td><code>dashboard</code></td><td><code>--tpl-dashboard</code></td><td>Header across the top, nav beside main; the nav becomes a drawer on small screens</td></tr>
-        <tr><td><code>article</code></td><td><code>--tpl-article</code></td><td>Centered content for reading</td></tr>
-        <tr><td><code>landing</code></td><td><code>--tpl-landing</code></td><td>Marketing page with named sections</td></tr>
+        <tr>
+          <th scope="row"><a href="#page-level">Page</a></th>
+          <td><code>data-page-layout</code> on <code>&lt;body&gt;</code></td>
+          <td>The page regions, in areas named <code>body-header</code>, <code>body-nav</code>, <code>body-main</code>, <code>body-aside</code> and <code>body-footer</code></td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="#main-level">Main</a></th>
+          <td><code>data-layout="sidebar-left"</code> or <code>"sidebar-right"</code> on <code>&lt;main&gt;</code></td>
+          <td>A sidebar inside the content area, in areas named <code>main-nav</code>, <code>main-article</code> and <code>main-aside</code></td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="#component-level">Component</a></th>
+          <td><code>data-layout="regions"</code> or <code>"media"</code> on any element</td>
+          <td>The parts of one component, by element type: header first, footer last, a figure beside its content</td>
+        </tr>
       </tbody>
     </table>
-    <p>A bare <code>data-page-layout</code> (no value) uses the <code>stack</code> template. The <code>--tpl-*</code> tokens are declared on the <code>[data-page-layout]</code> host, not on <code>:root</code>: to replace a template, set the token on the host (for example <code>body { --tpl-sidebar-left: …; }</code>).</p>
+  </section>
 
-    <h3>Grid Identity Mapping</h3>
+  <section id="page-level">
+    <h2>Page level</h2>
+    <p>Put <a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> on <code>&lt;body&gt;</code>. Its direct children are placed by element type. This is the only page-template system in Vanilla Breeze. This page explains the idea; the <a href="/docs/attributes/data-page-layout/">attribute page</a> is the full reference for modifiers, the mobile drawer and custom properties.</p>
+    <p>Try it. The demo's markup stays the same while the buttons change the template. Each region prints the grid area it was given.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/grid-identity-templates.html"
+      url="grid-identity-templates"
+      title="One page, eight templates"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+
+    <h3 id="mapping">Which element goes where</h3>
     <table>
       <thead>
         <tr>
-          <th>Element</th>
-          <th>Grid Area</th>
+          <th scope="col">Element</th>
+          <th scope="col">Grid area</th>
         </tr>
       </thead>
       <tbody>
@@ -106,61 +80,74 @@ currentPath: /docs/grid-identity/
         <tr><td><code>&lt;nav class="bottom"&gt;</code></td><td><code>auto</code> (flows in the next free cell)</td></tr>
       </tbody>
     </table>
-    <p>Only <em>direct children</em> of the <code>data-page-layout</code> element are assigned. Other children (a <code>&lt;section&gt;</code>, a custom element) are auto-placed unless they take <code>data-layout-area</code>.</p>
+    <p>Only <em>direct children</em> of the <code>data-page-layout</code> element are placed. Other children, such as a <code>&lt;section&gt;</code> or a custom element, flow into the next free cell unless they take <code>data-layout-area</code>.</p>
 
-    <h3>Example</h3>
-    <code-block language="html" label="Page-level identity" data-escape><body data-page-layout="sidebar-left">
-  <header>Site header</header>
-  <nav>Navigation</nav>
-  <main>Content</main>
-  <footer>Site footer</footer>
-</body></code-block>
+    <h3 id="templates">Templates</h3>
+    <p>A template has areas for some elements and not others. Use the elements in the "Places" column.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Template</th>
+          <th scope="col">Shape</th>
+          <th scope="col">Places</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>stack</code></td><td>One column. Also what a bare <code>data-page-layout</code> gives.</td><td>header, nav, main, aside, footer</td></tr>
+        <tr><td><code>sidebar-left</code></td><td>Navigation column, then main</td><td>header, nav, main, footer</td></tr>
+        <tr><td><code>sidebar-right</code></td><td>Main, then a sidebar column</td><td>header, main, aside, footer</td></tr>
+        <tr><td><code>holy-grail</code></td><td>Three columns: nav, main, aside</td><td>header, nav, main, aside, footer</td></tr>
+        <tr><td><code>app-shell</code></td><td>A navigation bar the full height of the page, beside header and main</td><td>header, nav, main</td></tr>
+        <tr><td><code>dashboard</code></td><td>Header across the top, nav beside main. The nav becomes a drawer on small screens.</td><td>header, nav, main</td></tr>
+        <tr><td><code>article</code></td><td>One centered column for reading</td><td>header, main, footer</td></tr>
+        <tr><td><code>landing</code></td><td>One column with extra <a href="#named-areas">named areas</a> for marketing sections</td><td>header, nav, main, footer, plus <code>hero</code>, <code>feature</code> and <code>cta</code></td></tr>
+      </tbody>
+    </table>
+    <p>An element the template has no area for is pushed into an extra track at the edge of the grid. That track has no width, so the element collapses and its content is lost from view. An <code>&lt;aside&gt;</code> under <code>sidebar-left</code> is the usual case. Leave such elements out, or choose a template that places them.</p>
+    <p>Each template is a custom property named <code>--tpl-<var>name</var></code>, for example <code>--tpl-sidebar-left</code>. The properties are declared on the <code>[data-page-layout]</code> element and not on <code>:root</code>, so to replace a template, set the property on that element: <code>body { --tpl-sidebar-left: &hellip;; }</code>.</p>
 
-    <h3>Content-Aware Adaptation</h3>
-    <p>Layouts automatically adapt when elements are absent. CSS <code>:has()</code> selectors detect what children are present and adjust the grid template accordingly.</p>
+    <h3 id="adaptation">When an element is missing</h3>
+    <p>A template drops a column when the element for it is absent. The styles use <code>:has()</code> to see which children are present.</p>
     <ul>
-      <li><code>sidebar-left</code> without <code>&lt;nav&gt;</code> &#x2192; single column</li>
-      <li><code>sidebar-right</code> without <code>&lt;aside&gt;</code> &#x2192; single column</li>
-      <li><code>holy-grail</code> without <code>&lt;aside&gt;</code> &#x2192; two columns (nav + main)</li>
-      <li><code>holy-grail</code> without <code>&lt;nav&gt;</code> &#x2192; two columns (main + aside)</li>
-      <li><code>holy-grail</code> without both &#x2192; single column</li>
+      <li><code>sidebar-left</code> without <code>&lt;nav&gt;</code>: one column.</li>
+      <li><code>sidebar-right</code> without <code>&lt;aside&gt;</code>: one column.</li>
+      <li><code>holy-grail</code> without <code>&lt;aside&gt;</code>: two columns, nav and main.</li>
+      <li><code>holy-grail</code> without <code>&lt;nav&gt;</code>: two columns, main and aside.</li>
+      <li><code>holy-grail</code> without both: one column.</li>
     </ul>
+    <p>So one template can serve pages that have a sidebar and pages that do not. The element must be absent from the markup: a <code>hidden</code> element still counts as present and keeps its column. To drop the nav column while keeping the element, set <code>data-sidebar="hidden"</code> on the layout.</p>
 
-    <code-block language="html" label=":has() adaptation" data-escape><!-- No nav present → layout adapts to single column automatically -->
+        <code-block language="html" label=":has() adaptation" data-escape><!-- No nav in the markup, so the template uses one column -->
 <body data-page-layout="sidebar-left">
   <header>Site header</header>
-  <!-- <nav> removed → :has() adapts columns -->
   <main>Full-width content</main>
   <footer>Footer</footer>
 </body></code-block>
 
-    <p>Below 48rem, <code>sidebar-left</code>, <code>sidebar-right</code>, <code>holy-grail</code> and <code>dashboard</code> collapse to the stack shape (the dashboard nav becomes an off-canvas drawer) and <code>app-shell</code> moves its nav to the bottom, unless <code>data-layout-nowrap</code> is set. <code>stack</code>, <code>article</code> and <code>landing</code> are already one column.</p>
+
+    <h3 id="small-screens">Small screens</h3>
+    <p>Below 48rem, <code>sidebar-left</code>, <code>sidebar-right</code>, <code>holy-grail</code> and <code>dashboard</code> collapse to the stack shape, and the dashboard nav becomes an off-canvas drawer. <code>app-shell</code> moves its nav to the bottom. Set <code>data-layout-nowrap</code> to keep the wide shape. <code>stack</code>, <code>article</code> and <code>landing</code> are already one column.</p>
   </section>
 
-  <!-- Section 3: Named Area Overrides -->
   <section id="named-areas">
-    <h2>Named Area Overrides</h2>
-    <p>Use <code>data-layout-area</code> to place a child of a page layout in a named area. Only the <code>landing</code> template defines extra areas, so these are the values that work:</p>
+    <h2>Named areas</h2>
+    <p>Some sections have no element of their own: a hero, a feature list, a call to action. For these, <code>data-layout-area</code> places a child in an area by name. Only the <code>landing</code> template defines extra areas, so three values work:</p>
 
     <table>
       <thead>
         <tr>
-          <th>Value</th>
-          <th>Use Case</th>
+          <th scope="col">Value</th>
+          <th scope="col">Use</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td><code>hero</code></td><td>Hero section on landing pages</td></tr>
-        <tr><td><code>feature</code></td><td>Feature showcase section</td></tr>
-        <tr><td><code>cta</code></td><td>Call-to-action section</td></tr>
+        <tr><td><code>hero</code></td><td>The opening section, between the nav and main</td></tr>
+        <tr><td><code>feature</code></td><td>A feature section, after main</td></tr>
+        <tr><td><code>cta</code></td><td>A call to action, before the footer</td></tr>
       </tbody>
     </table>
-    <p>An area name that the active template does not define creates an implicit, zero-width grid track, so the child disappears. Use the semantic elements (<code>&lt;nav&gt;</code>, <code>&lt;aside&gt;</code>, …) for the standard regions instead.</p>
 
-    <h3>Landing Page Example</h3>
-    <p>The <code>landing</code> page template defines areas for <code>hero</code>, <code>feature</code>, and <code>cta</code>. Use <code>data-layout-area</code> to assign sections to these areas.</p>
-
-    <code-block language="html" label="Named area overrides on landing page" data-escape><body data-page-layout="landing" data-layout-gap="none">
+        <code-block language="html" label="Named area overrides on landing page" data-escape><body data-page-layout="landing" data-layout-gap="none">
   <header>...</header>
   <section data-layout-area="hero">Hero content</section>
   <section data-layout-area="feature">Features grid</section>
@@ -168,32 +155,41 @@ currentPath: /docs/grid-identity/
   <footer>...</footer>
 </body></code-block>
 
-    <status-message data-variant="info">
-      <span data-content>
-        <strong data-title>When to use explicit vs auto</strong>
-        <span data-description>Use auto identity (the default) for standard page structure. Use <code>data-layout-area</code> when you need sections that do not map to standard semantic elements, or when using the <code>landing</code> template.</span>
-      </span>
-    </status-message>
+
+    <p>A name that the active template does not define has the same effect as an element with no area: the child lands in an extra track with no width and disappears. For the standard regions, use the elements (<code>&lt;nav&gt;</code>, <code>&lt;aside&gt;</code> and so on) and not <code>data-layout-area</code>.</p>
 
     <browser-window
       src="/docs/examples/demos/page-layout-landing.html"
-      url="https://vanilla-breeze.com/landing"
+      url="page-layout-landing"
       title="Landing page template"
+      data-demo-height="xl"
       shadow>
     </browser-window>
   </section>
 
-  <!-- Section 4: Main-Level Identity -->
   <section id="main-level">
-    <h2>Main-Level Identity</h2>
-    <p>A <code>&lt;main&gt;</code> with <code>data-layout="sidebar-left"</code> or <code>data-layout="sidebar-right"</code> creates a second tier of grid identity. Only these two values assign <code>main-*</code> areas, and only to direct <code>nav</code>, <code>article</code> and <code>aside</code> children.</p>
+    <h2>Main level</h2>
+    <p>A <code>&lt;main&gt;</code> with <code>data-layout="sidebar-left"</code> or <code>data-layout="sidebar-right"</code> is a second tier. Only these two values assign <code>main-*</code> areas, and only to direct <code>nav</code>, <code>article</code> and <code>aside</code> children. Use it for a table of contents beside an article, or section navigation inside the content area.</p>
 
-    <h3>Main-Level Grid Areas</h3>
+        <code-block language="html" label="Main-level sidebar with identity" data-escape><main data-layout="sidebar-right">
+  <article>
+    <!-- goes to main-article -->
+    <h1>Page Content</h1>
+    <p>Article body...</p>
+  </article>
+  <aside>
+    <!-- goes to main-aside -->
+    <nav>Table of contents</nav>
+  </aside>
+</main></code-block>
+
+
+    <h3 id="main-areas">Which element goes where</h3>
     <table>
       <thead>
         <tr>
-          <th>Element</th>
-          <th>Grid Area</th>
+          <th scope="col">Element</th>
+          <th scope="col">Grid area</th>
         </tr>
       </thead>
       <tbody>
@@ -203,13 +199,14 @@ currentPath: /docs/grid-identity/
       </tbody>
     </table>
 
-    <h3>Available Main-Level Templates</h3>
+
+    <h3 id="main-templates">Templates</h3>
     <table>
       <thead>
         <tr>
-          <th>Template</th>
-          <th>Grid</th>
-          <th>Use Case</th>
+          <th scope="col">Template</th>
+          <th scope="col">Columns</th>
+          <th scope="col">Use</th>
         </tr>
       </thead>
       <tbody>
@@ -218,35 +215,30 @@ currentPath: /docs/grid-identity/
       </tbody>
     </table>
 
-    <code-block language="html" label="Main-level sidebar with identity" data-escape><main data-layout="sidebar-right">
-  <article>
-    <!-- auto → main-article area -->
-    <h1>Page Content</h1>
-    <p>Article body...</p>
-  </article>
-  <aside>
-    <!-- auto → main-aside area -->
-    <nav>Table of contents</nav>
-  </aside>
-</main></code-block>
 
-    <p>Main-level templates also support <code>:has()</code> adaptation: if the nav or aside is absent, the layout falls back to a single column. Below 48rem (unless <code>data-layout-nowrap</code> is set on the main) they stack in the order article, aside, nav, so a leading <code>&lt;nav&gt;</code> moves below the article visually while staying first in the reading order.</p>
+    <p>These templates adapt in the same way as the page templates: if the nav or aside is absent, the layout falls back to a single column. Below 48rem (unless <code>data-layout-nowrap</code> is set on the main) they stack in the order article, aside, nav, so a leading <code>&lt;nav&gt;</code> moves below the article visually while staying first in the reading order.</p>
     <p>Other children of these mains (a <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code> or <code>&lt;footer&gt;</code>) get no area and are auto-placed. For a header/content/footer structure, use <code>regions</code> on an inner element (below).</p>
   </section>
 
-  <!-- Section 5: Component-Level Regions -->
   <section id="component-level">
-    <h2>Component-Level Regions</h2>
-    <p>Two layouts extend the idea down to individual components. Both are component layouts that work on any element, and both place children by element type rather than by named areas.</p>
+    <h2>Component level</h2>
+    <p>Two layouts carry the idea down to a single component. They work on any element and place children by element type, with no named areas.</p>
 
-    <h3>Regions</h3>
-    <p><code>data-layout="regions"</code> arranges any element as a header / content / footer column. Semantic children find their place without extra attributes.</p>
+    <h3 id="regions">Regions</h3>
+    <p><code>data-layout="regions"</code> arranges an element as a column with a header, content and a footer.</p>
+
+        <code-block language="html" label="Regions layout" data-escape><article data-layout="regions" data-layout-gap="m">
+  <header>Card Title</header>          <!-- first -->
+  <section><p>Content...</p></section>  <!-- grows -->
+  <footer>Updated 2h ago</footer>       <!-- last -->
+</article></code-block>
+
 
     <table>
       <thead>
         <tr>
-          <th>Child</th>
-          <th>Placement</th>
+          <th scope="col">Child</th>
+          <th scope="col">Placement</th>
         </tr>
       </thead>
       <tbody>
@@ -258,16 +250,20 @@ currentPath: /docs/grid-identity/
     </table>
     <p>The header and footer are moved visually with <code>order</code>; put them first and last in the source too, so the reading order matches.</p>
 
-    <code-block language="html" label="Regions layout" data-escape><article data-layout="regions" data-layout-gap="m">
-  <header>Card Title</header>          <!-- first -->
-  <section><p>Content...</p></section>  <!-- grows -->
-  <footer>Updated 2h ago</footer>       <!-- last -->
-</article></code-block>
 
-    <h3>Grid of Region Cards</h3>
-    <p>The big win: combine <code>data-layout="grid"</code> with <code>data-layout="regions"</code> articles for card lists where each card auto-structures itself.</p>
 
-    <code-block language="html" label="Grid + regions card list" data-escape><section data-layout="grid" data-layout-min="m" data-layout-gap="m" aria-label="Features">
+    <h3 id="region-cards">A grid of region cards</h3>
+    <p>Regions are most useful inside a grid. The grid makes the cards equal in height, and each card pins its footer to the bottom, so the footers line up however much text a card holds.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/grid-identity-regions.html"
+      url="grid-identity-regions"
+      title="Region cards in a grid"
+      data-demo-height="l"
+      shadow>
+    </browser-window>
+
+        <code-block language="html" label="Grid + regions card list" data-escape><section data-layout="grid" data-layout-min="m" data-layout-gap="m" aria-label="Features">
   <article data-layout="regions" data-layout-gap="s">
     <header>Performance</header>
     <section><p>Optimized for speed.</p></section>
@@ -280,21 +276,29 @@ currentPath: /docs/grid-identity/
   </article>
 </section></code-block>
 
+
+    <h3 id="media">Media object</h3>
+    <p><code>data-layout="media"</code> places a figure beside its content: an avatar next to a comment, a thumbnail next to a summary.</p>
+
     <browser-window
-      src="/docs/examples/demos/regions-basic.html"
-      url="https://vanilla-breeze.com/regions"
-      title="Component regions"
+      src="/docs/snippets/demos/grid-identity-media.html"
+      url="grid-identity-media"
+      title="Media objects"
+      data-demo-height="l"
       shadow>
     </browser-window>
 
-    <h3>Media Object</h3>
-    <p><code>data-layout="media"</code> places a figure and content side by side &mdash; the most common component pattern on the web.</p>
+        <code-block language="html" label="Media object" data-escape><article data-layout="media" data-layout-gap="m">
+  <img src="/src/assets/placeholders/photo-article-compact-1-80x80.svg" alt="" width="48" height="48">
+  <p><strong>Jane Doe</strong> published a new article about grid identity.</p>
+</article></code-block>
+
 
     <table>
       <thead>
         <tr>
-          <th>Child</th>
-          <th>Placement</th>
+          <th scope="col">Child</th>
+          <th scope="col">Placement</th>
         </tr>
       </thead>
       <tbody>
@@ -303,16 +307,12 @@ currentPath: /docs/grid-identity/
       </tbody>
     </table>
 
-    <code-block language="html" label="Media object" data-escape><article data-layout="media" data-layout-gap="m">
-  <img src="/src/assets/placeholders/photo-article-compact-1-80x80.svg" alt="" width="48" height="48">
-  <p><strong>Jane Doe</strong> published a new article about grid identity.</p>
-</article></code-block>
 
     <table>
       <thead>
         <tr>
-          <th>Modifier</th>
-          <th>Effect</th>
+          <th scope="col">Modifier</th>
+          <th scope="col">Effect</th>
         </tr>
       </thead>
       <tbody>
@@ -322,67 +322,52 @@ currentPath: /docs/grid-identity/
       </tbody>
     </table>
 
-    <p>Media objects stack vertically when their nearest query container is narrower than 25rem. With <code>data-layout-reverse</code> the figure moves to the end visually; screen readers still meet it first, so keep the figure decorative (<code>alt=""</code>) or make sure the order makes sense either way.</p>
 
-    <browser-window
-      src="/docs/examples/demos/media-basic.html"
-      url="https://vanilla-breeze.com/media"
-      title="Media object"
-      shadow>
-    </browser-window>
+    <p>Media objects stack vertically when their nearest query container is narrower than 25rem. With <code>data-layout-reverse</code> the figure moves to the end visually; screen readers still meet it first, so keep the figure decorative (<code>alt=""</code>) or make sure the order makes sense either way.</p>
   </section>
 
-  <!-- Section 6: Composing Tiers -->
   <section id="composing-tiers">
-    <h2>Composing Tiers</h2>
-    <p>The full power of grid identity appears when you nest all three tiers. Each tier is scoped to its own container, so area names never collide.</p>
+    <h2>All three together</h2>
+    <p>The tiers nest. The page and main tiers use different area names (<code>body-*</code> and <code>main-*</code>), and the component tier places by element type, so nothing clashes.</p>
 
-    <code-block language="html" label="Three-tier nesting" data-escape><body data-page-layout="sidebar-left">        <!-- Tier 1: page -->
+        <code-block language="html" label="Three-tier nesting" data-escape><body data-page-layout="sidebar-left">        <!-- Tier 1: page -->
   <header>Site Header</header>
   <nav>Primary Navigation</nav>
   <main data-layout="sidebar-right">            <!-- Tier 2: main -->
     <article data-layout="regions" data-layout-gap="l"> <!-- Tier 3: component -->
       <header><h1>Article Title</h1></header>
       <section><p>Article body...</p></section>
-      <footer>Published Jan 2025</footer>
+      <footer>Filed under Layout</footer>
     </article>
     <aside><nav>Table of Contents</nav></aside>
   </main>
   <footer>Site Footer</footer>
 </body></code-block>
 
-    <p>In this example:</p>
-    <ul>
-      <li><strong>Tier 1</strong> &mdash; <code>data-page-layout="sidebar-left"</code> on body places the header, nav, main, and footer into page-level grid areas.</li>
-      <li><strong>Tier 2</strong> &mdash; <code>data-layout="sidebar-right"</code> on main creates a secondary sidebar for the table of contents, using <code>main-article</code> and <code>main-aside</code> areas.</li>
-      <li><strong>Tier 3</strong> &mdash; <code>data-layout="regions"</code> on article places its header first, the section in the middle and the footer last.</li>
-    </ul>
 
-    <status-message data-variant="info">
-      <span data-content>
-        <strong data-title>No collisions</strong>
-        <span data-description>The page and main tiers use namespaced area names (<code>body-*</code>, <code>main-*</code>), and the component tier places by element type, so they compose freely without conflict.</span>
-      </span>
-    </status-message>
+    <ul>
+      <li><strong>Page:</strong> <code>data-page-layout="sidebar-left"</code> on the body places the header, nav, main and footer.</li>
+      <li><strong>Main:</strong> <code>data-layout="sidebar-right"</code> on main puts the table of contents beside the article, in <code>main-article</code> and <code>main-aside</code>.</li>
+      <li><strong>Component:</strong> <code>data-layout="regions"</code> on the article places its header first, the section in the middle and the footer last.</li>
+    </ul>
 
     <browser-window
       src="/docs/examples/demos/nested-grid-identity.html"
-      url="https://vanilla-breeze.com/nested-grid-identity"
-      title="Three-tier nesting"
+      url="nested-grid-identity"
+      title="Three tiers nested"
+      data-demo-height="xl"
       shadow>
     </browser-window>
   </section>
 
-  <!-- Section 7: Quick Reference -->
-  <section id="quick-reference">
-    <h2>Quick Reference</h2>
-
-    <h3>Utilities</h3>
+  <section id="modifiers">
+    <h2>Modifiers</h2>
+    <p>These attributes adjust a page layout or its regions.</p>
     <table>
       <thead>
         <tr>
-          <th>Attribute</th>
-          <th>Effect</th>
+          <th scope="col">Attribute</th>
+          <th scope="col">Effect</th>
         </tr>
       </thead>
       <tbody>
@@ -396,15 +381,18 @@ currentPath: /docs/grid-identity/
       </tbody>
     </table>
 
-    <h3>Named Containers</h3>
-    <p>Page layout regions have named containers for targeted <code>@container</code> queries. This lets component authors write precision queries that target a specific region rather than the nearest anonymous container.</p>
+  </section>
+
+  <section id="containers">
+    <h2>Container names</h2>
+    <p>The regions are named <a href="/docs/attributes/data-container/">query containers</a>. A component can ask how wide "the main region" is, by name, and not only how wide its nearest container is.</p>
 
     <table>
       <thead>
         <tr>
-          <th>Context</th>
-          <th>Element</th>
-          <th>Container Name</th>
+          <th scope="col">In</th>
+          <th scope="col">Element</th>
+          <th scope="col">Container name</th>
         </tr>
       </thead>
       <tbody>
@@ -418,49 +406,55 @@ currentPath: /docs/grid-identity/
       </tbody>
     </table>
 
-    <p>Example: adapt typography when the main content area is narrow:</p>
-    <code-block language="css" label="Targeted container query" data-escape>@container region-main (width < 40rem) {
+
+    <p>For example, to change a grid when the main region is narrow:</p>
+        <code-block language="css" label="Targeted container query" data-escape>@container region-main (width < 40rem) {
   .article-grid {
     grid-template-columns: 1fr;
   }
 }</code-block>
 
-    <p>For other elements that need containment, use the <a href="/docs/attributes/data-container/"><code>data-container</code></a> attribute:</p>
-    <code-block language="html" label="Explicit container opt-in" data-escape><li data-container="card">
+
+    <p>To make any other element a container, use the <a href="/docs/attributes/data-container/"><code>data-container</code></a> attribute. Its named presets are <code>card</code>, <code>panel</code> and <code>media</code>; with no value the container has no name.</p>
+        <code-block language="html" label="Explicit container opt-in" data-escape><li data-container="card">
   <!-- Named container (container-name: card) -->
   <p>Content that responds to container width</p>
 </li></code-block>
 
-    <p>Available presets: <code>card</code>, <code>panel</code>, <code>media</code>. Use the boolean form <code>data-container</code> (no value) for anonymous containment.</p>
+  </section>
 
-    <h3>Accessibility</h3>
+  <section id="accessibility">
+    <h2>Accessibility</h2>
     <ul>
       <li>Grid placement changes where regions appear, not their order in the DOM. Keyboard and screen-reader order follow the source, so write header, nav, main, aside, footer in reading order.</li>
       <li>The page regions are landmarks because of their elements (<code>main</code>, <code>nav</code>, <code>aside</code>, and <code>header</code>/<code>footer</code> as direct children of <code>body</code>), not because of the grid. Give each <code>nav</code> and <code>aside</code> an <code>aria-label</code> when there is more than one.</li>
       <li>Collapsed mobile layouts and the dashboard drawer are covered on <a href="/docs/attributes/data-page-layout/#accessibility"><code>data-page-layout</code></a>.</li>
     </ul>
 
-    <h3>Related Pages</h3>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
     <layout-grid data-layout-min="m" data-layout-gap="m">
-      <a href="/docs/semantic-layouts/" class="section-card">
-        <h4>Semantic Layouts</h4>
-        <p>Component-level data-layout attributes.</p>
+      <a href="/docs/attributes/data-page-layout/" class="section-card">
+        <h3>data-page-layout</h3>
+        <p>The full reference: templates, modifiers and the mobile drawer.</p>
       </a>
       <a href="/docs/attributes/data-layout/" class="section-card">
-        <h4>data-layout</h4>
-        <p>Every layout value and modifier.</p>
+        <h3>data-layout</h3>
+        <p>Every component layout value and modifier.</p>
       </a>
-      <a href="/docs/attributes/data-page-layout/" class="section-card">
-        <h4>data-page-layout</h4>
-        <p>Page templates, modifiers and the mobile drawer.</p>
+      <a href="/docs/semantic-layouts/" class="section-card">
+        <h3>Semantic Layouts</h3>
+        <p>Layout attributes on the elements you already have.</p>
       </a>
       <a href="/docs/patterns/application/shells/" class="section-card">
-        <h4>Shell Patterns</h4>
-        <p>Page layout patterns in practice.</p>
+        <h3>Shell patterns</h3>
+        <p>Page layouts in complete application shells.</p>
       </a>
       <a href="/docs/examples/" class="section-card">
-        <h4>Demos</h4>
-        <p>Interactive layout demonstrations.</p>
+        <h3>Demos</h3>
+        <p>Full example pages for each layout.</p>
       </a>
     </layout-grid>
   </section>

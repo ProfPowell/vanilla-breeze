@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Grid Identity: one page, eight templates</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    html, body { min-block-size: 100%; }
+    body { --layout-gap: var(--size-xs); padding: var(--size-xs); background: var(--color-surface); }
+
+    /* Outline each region and show which grid area it landed in */
+    body > :is(header, nav, main, aside, footer) {
+      padding: var(--size-s) var(--size-m);
+      border: var(--border-width-thin) dashed var(--color-border-strong);
+      border-radius: var(--radius-m);
+      background: var(--color-surface-raised);
+    }
+    body > main { background: var(--color-surface); border-style: solid; }
+    body > :is(header, nav, aside, footer) > strong { display: block; }
+    [data-area] { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+    h1 { font-size: var(--font-size-xl); margin: 0; }
+    h2 { font-size: var(--font-size-s); margin: 0; color: var(--color-text-muted); }
+    main p { margin: 0; }
+    /* Unpressed buttons are quiet, so the pressed one stands out */
+    button:not([aria-pressed="true"]) {
+      background: transparent;
+      color: var(--color-text);
+      border: var(--border-width-thin) solid var(--color-border-strong);
+    }
+  </style>
+</head>
+<body data-page-layout="sidebar-left" data-layout-gap="xs">
+  <header>
+    <strong>&lt;header&gt;</strong>
+    <code data-area></code>
+  </header>
+
+  <nav aria-label="Demo navigation">
+    <strong>&lt;nav&gt;</strong>
+    <code data-area></code>
+  </nav>
+
+  <main>
+    <layout-stack data-layout-gap="m">
+      <header>
+        <h1>One page, eight templates</h1>
+        <p>The markup never changes. Only the value of <code>data-page-layout</code> on <code>&lt;body&gt;</code> does: <code id="current">sidebar-left</code></p>
+      </header>
+
+      <section aria-labelledby="pick">
+        <layout-stack data-layout-gap="xs">
+          <h2 id="pick">Template</h2>
+          <layout-cluster data-layout-gap="xs" id="templates">
+            <button type="button" class="small" data-template="stack">stack</button>
+            <button type="button" class="small" data-template="sidebar-left" aria-pressed="true">sidebar-left</button>
+            <button type="button" class="small" data-template="sidebar-right">sidebar-right</button>
+            <button type="button" class="small" data-template="holy-grail">holy-grail</button>
+            <button type="button" class="small" data-template="app-shell">app-shell</button>
+            <button type="button" class="small" data-template="dashboard">dashboard</button>
+            <button type="button" class="small" data-template="article">article</button>
+            <button type="button" class="small" data-template="landing">landing</button>
+          </layout-cluster>
+        </layout-stack>
+      </section>
+
+      <section aria-labelledby="remove">
+        <layout-stack data-layout-gap="xs">
+          <h2 id="remove">Take an element out and the columns adapt</h2>
+          <layout-cluster data-layout-gap="xs">
+            <button type="button" class="small" data-toggle="nav" aria-pressed="true">&lt;nav&gt; present</button>
+            <button type="button" class="small" data-toggle="aside" aria-pressed="true">&lt;aside&gt; present</button>
+          </layout-cluster>
+        </layout-stack>
+      </section>
+
+      <p>This region is <strong>&lt;main&gt;</strong>: <code data-area></code></p>
+    </layout-stack>
+  </main>
+
+  <aside aria-label="Demo sidebar">
+    <strong>&lt;aside&gt;</strong>
+    <code data-area></code>
+  </aside>
+
+  <footer>
+    <strong>&lt;footer&gt;</strong>
+    <code data-area></code>
+  </footer>
+
+  <script type="module">
+    const body = document.body;
+    const main = body.querySelector(':scope > main');
+    const order = ['header', 'nav', 'main', 'aside', 'footer'];
+    const regions = Object.fromEntries(order.map((name) => [name, body.querySelector(`:scope > ${name}`)]));
+
+    /* The elements each template has a grid area for */
+    const places = {
+      'stack': ['header', 'nav', 'main', 'aside', 'footer'],
+      'sidebar-left': ['header', 'nav', 'main', 'footer'],
+      'sidebar-right': ['header', 'main', 'aside', 'footer'],
+      'holy-grail': ['header', 'nav', 'main', 'aside', 'footer'],
+      'app-shell': ['header', 'nav', 'main'],
+      'dashboard': ['header', 'nav', 'main'],
+      'article': ['header', 'main', 'footer'],
+      'landing': ['header', 'nav', 'main', 'footer'],
+    };
+    const removed = new Set();
+
+    function sync() {
+      const template = body.dataset.pageLayout;
+      const placed = places[template];
+
+      /* Keep only the regions this template places, in source order */
+      for (const name of order) {
+        const element = regions[name];
+        if (placed.includes(name) && !removed.has(name)) body.insertBefore(element, null);
+        else element.remove();
+      }
+      body.append(document.querySelector('script[type="module"]'));
+
+      for (const button of document.querySelectorAll('[data-template]')) {
+        button.setAttribute('aria-pressed', String(button.dataset.template === template));
+      }
+      for (const button of document.querySelectorAll('[data-toggle]')) {
+        const name = button.dataset.toggle;
+        const available = placed.includes(name);
+        button.disabled = !available;
+        button.setAttribute('aria-pressed', String(available && !removed.has(name)));
+        button.textContent = !available ? `<${name}> has no area here` : `<${name}> ${removed.has(name) ? 'removed' : 'present'}`;
+      }
+      document.getElementById('current').textContent = template;
+
+      /* Print the grid area each region resolved to */
+      for (const element of body.querySelectorAll(':scope > :is(header, nav, main, aside, footer)')) {
+        element.querySelector('[data-area]').textContent = `grid-area: ${getComputedStyle(element).gridRowStart}`;
+      }
+    }
+
+    for (const button of document.querySelectorAll('[data-template]')) {
+      button.addEventListener('click', () => {
+        body.dataset.pageLayout = button.dataset.template;
+        sync();
+      });
+    }
+
+    for (const button of document.querySelectorAll('[data-toggle]')) {
+      button.addEventListener('click', () => {
+        const name = button.dataset.toggle;
+        if (removed.has(name)) removed.delete(name);
+        else removed.add(name);
+        sync();
+      });
+    }
+
+    sync();
+  </script>
+</body>
+</html>
