@@ -273,7 +273,20 @@ for (const { name, demo, selector, run, expected } of BEHAVIOUR) {
       const el = document.querySelector(`${sel}[data-upgraded]`);
       if (!el) return { error: 'no upgraded element' };
       const count = () => el.querySelectorAll('*').length;
-      const before = count();
+      // Nested components and injected helpers can still be settling when the
+      // host reports upgraded (seen on CI: 434 before, 433 after). Measure
+      // only once the subtree holds still for three samples.
+      const settled = async () => {
+        let last = count();
+        for (let same = 0, tries = 0; same < 3 && tries < 40; tries++) {
+          await new Promise((r) => setTimeout(r, 50));
+          const now = count();
+          same = now === last ? same + 1 : 0;
+          last = now;
+        }
+        return last;
+      };
+      const before = await settled();
       for (let i = 0; i < 2; i++) {
         const parent = el.parentNode;
         const next = el.nextSibling;
@@ -282,8 +295,7 @@ for (const { name, demo, selector, run, expected } of BEHAVIOUR) {
         // it in teardown(), so the old next sibling may be gone.
         parent.insertBefore(el, next?.parentNode === parent ? next : null);
       }
-      await new Promise((r) => setTimeout(r, 50));
-      const after = count();
+      const after = await settled();
       // eslint-disable-next-line no-new-func
       const act = new Function('el', `${helpers}\nreturn (async () => {\n${body}\n})();`);
       try {
