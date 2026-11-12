@@ -149,21 +149,14 @@
       }
     }
 
-    /* Integration guide pages mix prose, tables and embedded demos. Without
-       a unified width the page jumps between the full fluid canvas and the
-       narrow layout-text measure, reading erratically. Pin one content
-       column so every block aligns to the same edges. The two catalog pages
-       (the index and the web components overview) are card grids like the
-       other Resources index pages, so they keep the full canvas. Scoped via
-       the layout's data-path hook. */
-    main[data-path^="/docs/integrations/"]:not([data-path="/docs/integrations/"], [data-path="/docs/integrations/web-components/"]) {
-      --canvas-width: var(--content-normal);
-
-      /* layout-text otherwise clamps prose to --measure-normal (65ch), far
-         narrower than the column — let it fill the shared column instead. */
-      & layout-text {
-        max-inline-size: none;
-      }
+    /* Integration guide pages use the same full canvas as the other docs
+       pages. The Astro and Eleventy guides wrap their prose in layout-text,
+       which would clamp it to --measure-normal (65ch) while the tables and
+       demos beside it run the full column; let it fill the column so every
+       block aligns to the same edges. Scoped via the layout's data-path
+       hook. */
+    main[data-path^="/docs/integrations/"] layout-text {
+      max-inline-size: none;
     }
 
     footer.minimal {
