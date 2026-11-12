@@ -240,7 +240,8 @@ test.describe('site-search', () => {
       return { h: st.getBoundingClientRect().height, gap: foot.top - wrap.bottom, rule: getComputedStyle(d.querySelector('.input-wrapper')).borderBlockEndWidth };
     });
     expect(empty.h).toBe(0);
-    expect(empty.gap).toBe(0);
+    // Sub-pixel layout leaves float noise on Linux (9.5e-7 seen on CI).
+    expect(Math.abs(empty.gap)).toBeLessThan(0.01);
     expect(empty.rule).toBe('0px');
 
     await page.locator('#s input').fill('table');
