@@ -139,7 +139,7 @@ async function resolveIcon(base, set, name) {
  * @attr {string} set - Icon set; defaults to the nearest data-icon-set, then lucide
  * @attr {string} size - Icon size: xs, sm, md, lg, xl, 2xl (default: md)
  * @attr {string} label - Accessible label for functional icons
- * @attr {string} base-path - Icon base URL; defaults to <html data-icon-path>, then /cdn/icons
+ * @attr {string} base-path - Icon base URL; defaults to <html data-icon-path>, then the icons/ folder beside the loaded bundle
  * @attr {boolean} data-flip-rtl - Mirror the glyph horizontally in RTL contexts
  */
 class IconWc extends HTMLElement {
@@ -211,7 +211,7 @@ class IconWc extends HTMLElement {
         return this.getAttribute('label');
     }
 
-    /** @returns {string} `base-path` attribute, else <html data-icon-path>, else /cdn/icons */
+    /** @returns {string} `base-path` attribute, else <html data-icon-path>, else icons/ beside the loaded bundle */
     get basePath() {
         return this.getAttribute('base-path') || resolveIconBase();
     }

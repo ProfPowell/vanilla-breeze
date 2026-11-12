@@ -38,4 +38,23 @@ describe('icon-url', () => {
     assert.equal(resolveIconBase(doc(undefined, '/vb/cdn/icons')), '/vb/cdn/icons');
     assert.equal(resolveIconBase(doc(undefined, undefined)), '/cdn/icons');
   });
+
+  it('makes the derived base absolute against the document, so CSS resolves it the same way', () => {
+    const d = doc(undefined, undefined);
+    d.baseURI = 'https://example.test/app/page.html';
+    assert.equal(resolveIconBase(d), 'https://example.test/cdn/icons');
+  });
+
+  it('follows the bundle that is running (CDN or subpath install)', () => {
+    const g = /** @type {any} */ (globalThis);
+    g.window = { __VB_THEME_BASE: 'https://unpkg.com/vanilla-breeze@1.0.0/dist/cdn/' };
+    try {
+      const d = doc(undefined, undefined);
+      d.baseURI = 'https://example.test/';
+      assert.equal(resolveIconBase(d), 'https://unpkg.com/vanilla-breeze@1.0.0/dist/cdn/icons');
+      assert.equal(resolveIconBase(doc(undefined, '/own/icons')), '/own/icons');
+    } finally {
+      delete g.window;
+    }
+  });
 });

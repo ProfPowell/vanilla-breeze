@@ -107,7 +107,7 @@ crumbLabel: Web Components
         <tr>
           <td><code>base-path</code></td>
           <td>string</td>
-          <td><code>&lt;html data-icon-path&gt;</code>, else <code>"/cdn/icons"</code></td>
+          <td><code>&lt;html data-icon-path&gt;</code>, else <code>icons/</code> beside the loaded bundle</td>
           <td>Icon base URL for this one icon. Usually you set <code>data-icon-path</code> on <code>&lt;html&gt;</code> instead.</td>
         </tr>
         <tr>
@@ -163,12 +163,10 @@ crumbLabel: Web Components
     <p>The alternative sets are small. When the requested set does not contain an icon, <code>&lt;icon-wc&gt;</code> renders the Lucide icon of the same name instead. To avoid a failed request per missing icon, it reads the set's name manifest (<code>&lt;base-path&gt;/&lt;set&gt;.json</code>, loaded once per set) and goes straight to Lucide for names it does not list. The <code>custom</code> set skips the manifest, so you can add files to it without regenerating anything. Missing icons are remembered, so each one is requested at most once per page.</p>
 
     <h3>Serving icons from another path</h3>
-    <p>The default base path <code>/cdn/icons</code> is root-absolute and does <strong>not</strong> follow <code>&lt;base href&gt;</code>. When the icons live elsewhere (an npm install copied into your assets, a GitHub Pages sub-path, a CDN), set <code>data-icon-path</code> on <code>&lt;html&gt;</code>. It applies to every <code>&lt;icon-wc&gt;</code> and every <code>[data-icon]</code>.</p>
+    <p>Icons load from the <code>icons/</code> folder beside the Vanilla Breeze script the page loaded. A page that links <code>https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.js</code> gets its icons from that CDN, and a page that serves the bundle from <code>/my-repo/cdn/</code> gets them from <code>/my-repo/cdn/icons</code>, with no setting. The location is read from the <code>&lt;script src&gt;</code> whose name contains <code>vanilla-breeze</code>; without one the base is <code>/cdn/icons</code>.</p>
+    <p>Set <code>data-icon-path</code> on <code>&lt;html&gt;</code> when the icons live somewhere else, such as a copy in your own assets, or when you bundle Vanilla Breeze into your own script. It applies to every <code>&lt;icon-wc&gt;</code> and every <code>[data-icon]</code>, and it does <strong>not</strong> follow <code>&lt;base href&gt;</code>.</p>
 
-    <code-block language="html" show-lines label="Icons under a sub-path or a package copy" data-escape><!-- GitHub Pages project site -->
-<html lang="en" data-icon-path="/my-repo/cdn/icons">
-
-<!-- Copied from node_modules/vanilla-breeze/dist/cdn/icons -->
+    <code-block language="html" show-lines label="Icons from a copy in your own assets" data-escape><!-- Copied from node_modules/vanilla-breeze/dist/cdn/icons -->
 <html lang="en" data-icon-path="/assets/vb/icons"></code-block>
   </section>
 
@@ -424,8 +422,8 @@ console.log(icon.name);     // "menu"
 console.log(icon.set);      // "lucide" (or the nearest data-icon-set)
 console.log(icon.size);     // "md"
 console.log(icon.label);    // null or "Close"
-console.log(icon.basePath); // "/cdn/icons" (or <html data-icon-path>)
-console.log(icon.iconPath); // "/cdn/icons/lucide/menu.svg"
+console.log(icon.basePath); // "https://example.com/cdn/icons" (or <html data-icon-path>)
+console.log(icon.iconPath); // "https://example.com/cdn/icons/lucide/menu.svg"
 
 // Change icon dynamically
 icon.setAttribute('name', 'settings');

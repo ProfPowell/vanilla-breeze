@@ -3,6 +3,8 @@
  * Kept DOM-light so it is unit-testable without a browser.
  */
 
+import { getCdnBase } from './theme-loader.js';
+
 /**
  * @param {{basePath:string,set:string,name:string}} p
  * @returns {string}
@@ -25,9 +27,23 @@ export function resolveIconSet(el, doc = document) {
 }
 
 /**
+ * Where the icon files live. An explicit `data-icon-path` on <html> wins.
+ * Otherwise the icons sit beside the bundle that is running, so a page that
+ * loads Vanilla Breeze from a CDN or a subpath asks that location and not its
+ * own "/cdn/icons". The derived URL is absolute because the [data-icon]
+ * enhancer hands it to CSS, where a relative URL would resolve against the
+ * stylesheet.
+ *
  * @param {Document} [doc]
- * @returns {string} Icon base path from `data-icon-path`, or '/cdn/icons'.
+ * @returns {string} Icon base URL, no trailing slash.
  */
 export function resolveIconBase(doc = document) {
-  return doc.documentElement.dataset.iconPath || '/cdn/icons';
+  const own = doc.documentElement.dataset.iconPath;
+  if (own) return own;
+  const base = `${getCdnBase()}/icons`;
+  try {
+    return new URL(base, doc.baseURI).href;
+  } catch {
+    return base;
+  }
 }

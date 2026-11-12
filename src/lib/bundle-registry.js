@@ -5,6 +5,8 @@
  * components, and activate full bundles at runtime.
  */
 
+import { getCdnBase } from './theme-loader.js'
+
 // ─── Effect registry ─────────────────────────────────────────────────────────
 
 const effects = new Map()
@@ -127,7 +129,8 @@ export function registerComponent(tag, impl, opts = {}) {
 }
 
 /**
- * Activate a full pack by loading its CSS and JS from the CDN path.
+ * Activate a full pack by loading its CSS and JS from the packs/ folder beside
+ * the loaded bundle (a CDN or subpath install asks that location).
  * Convention: cdn/packs/{name}.full.css and cdn/packs/{name}.full.js
  *
  * @param {string} bundleName
@@ -135,7 +138,7 @@ export function registerComponent(tag, impl, opts = {}) {
  * @returns {Promise<void>}
  */
 export async function activateBundle(bundleName, opts = {}) {
-  const base = opts.basePath ?? '/cdn/packs'
+  const base = opts.basePath ?? `${getCdnBase()}/packs`
 
   // Load CSS
   const cssHref = `${base}/${bundleName}.full.css`
