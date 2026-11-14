@@ -21,6 +21,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - **`<page-tools>`** drops its toolbar role while collapsed to the floating button.
 - **`<markdown-editor>`** panes and a labelled **`<compare-surface>`** are named groups; the **`<carousel-wc>`** slide track is a group named "Slides" (`data-label-track`).
 - **Only the current item carries `aria-current`** in `<carousel-wc>` indicators and `<glossary-index>` links; `<content-lens>` hides inactive lenses with `hidden` alone; `<site-index>` empty letters carry no `aria-disabled`.
+- **`<recently-visited>`: the page link moved out of `<summary>`.** With anchor visits shown, a page's summary only opens and closes its group, and the link to the page is the first item inside it. A link inside a summary competed with the toggle.
+- **`<audio-player>`: shortcuts work from any control in the player, and the player is no longer an extra tab stop.** A key the focused control uses itself (Space on a button, arrows on a slider, anything in a text field) goes only to that control.
+- **`<site-map>` visual view: Enter follows the active node's link.** It fires a cancelable `site-map:select` first. A node without a link still expands or collapses, as Space does.
+- **`<text-reader>`: Escape hides the toolbar only when focus is in the reader.** It was handled for the whole page.
+- **`<date-picker>` announces the month and year in the locale's own order** ("2026年4月" in Japanese), and names the day grid the same way.
+- **`<glossary-wc>` disabled letters stay in the tab order**, so a keyboard user can reach one and hear that it is disabled.
+- **`<image-map>`: Left and Right Arrow reverse in right-to-left.** **`<page-tools>`: the collapsed popover is announced as a toolbar.** **`<theme-picker>`: the theme select and swatch groups take their name from their visible label.**
 - **`<icon-wc>`'s `basePath` property returns an absolute URL** when it is derived from the bundle location.
 
 ### Added
