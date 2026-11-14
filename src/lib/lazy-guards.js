@@ -119,20 +119,71 @@ export const CORE_GUARDS = /** @type {const} */ ([
 ]);
 
 /**
+ * Guards that have not matched yet, and the one observer that watches for
+ * them. A page can add `data-focus-trap`, `data-copy` or any other guarded
+ * attribute after load (a panel built by script, a route change, a chat
+ * message). Without this the module would never load, because nothing on the
+ * page matched at boot.
+ *
+ * @type {Set<LazyGuard>}
+ */
+const pending = new Set();
+/** @type {MutationObserver | null} */
+let lateObserver = null;
+let lateCheck = 0;
+
+/** Re-test the unmatched guards; stop observing once none are left. */
+function checkPending() {
+  lateCheck = 0;
+  for (const guard of pending) {
+    if (!document.querySelector(guard.selector)) continue;
+    pending.delete(guard);
+    guard.load();
+  }
+  if (!pending.size) {
+    lateObserver?.disconnect();
+    lateObserver = null;
+  }
+}
+
+/**
+ * Watch the document for the first match of each pending guard. Mutations
+ * only schedule a check, so a burst of changes (an animation writing styles,
+ * a list rendering) costs one pass over the unmatched selectors.
+ */
+function watchPending() {
+  if (lateObserver || !pending.size || typeof MutationObserver === 'undefined') return;
+  const target = document.documentElement;
+  if (!target) return;
+  lateObserver = new MutationObserver(() => {
+    if (!lateCheck) lateCheck = window.setTimeout(checkPending, 100);
+  });
+  lateObserver.observe(target, { childList: true, subtree: true, attributes: true });
+}
+
+/**
  * Fire a set of guards against the current document.
  *
- * Guards are evaluated once, at entry-point boot. Modules that also need to
- * catch markup injected later register themselves with the shared
- * MutationObserver in utils/_init-registry.js once loaded.
+ * A guard that matches loads its module at once. One that does not is kept
+ * and re-tested when the document changes, until its first match. After a
+ * module has loaded, its own registration with utils/_init-registry.js
+ * handles markup added later.
  *
  * @param {readonly LazyGuard[]} guards
- * @param {Document | Element} [root=document] - Scope to query.
+ * @param {Document | Element} [root=document] - Scope to query. Late
+ *   matching applies to the document scope only.
  * @returns {void}
  */
 export function runGuards(guards, root = document) {
   for (const guard of guards) {
-    if (root.querySelector(guard.selector)) guard.load();
+    if (root.querySelector(guard.selector)) {
+      pending.delete(guard);
+      guard.load();
+    } else if (root === document) {
+      pending.add(guard);
+    }
   }
+  if (root === document) watchPending();
 }
 
 /**

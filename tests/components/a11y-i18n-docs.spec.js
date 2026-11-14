@@ -54,6 +54,28 @@ test.describe('public helpers', () => {
   });
 });
 
+test.describe('utilities added after load', () => {
+  test('a guarded attribute that first appears later still loads its module', async ({ page }) => {
+    // Nothing on this page has data-focus-trap at boot.
+    await page.goto(`${DEMO}/a11y-names.html`);
+    expect(await page.locator('[data-focus-trap]').count()).toBe(0);
+    await page.evaluate(() => {
+      const panel = document.createElement('section');
+      panel.id = 'late';
+      panel.setAttribute('data-focus-trap', '');
+      panel.innerHTML = '<button type="button" id="late-a">A</button><button type="button" id="late-b">B</button>';
+      document.body.append(panel);
+    });
+    // The trap moves focus in once its module has loaded...
+    await expect(page.locator('#late-a')).toBeFocused();
+    // ...and Tab from the last control wraps to the first.
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#late-b')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#late-a')).toBeFocused();
+  });
+});
+
 test.describe('demos', () => {
   test('focus trap keeps Tab inside the open panel and returns focus on close', async ({ page }) => {
     await page.goto(`${DEMO}/a11y-focus-trap.html`);
