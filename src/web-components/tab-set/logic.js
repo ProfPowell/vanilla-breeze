@@ -237,7 +237,9 @@ class TabSet extends VBElement {
       // <summary> exposes an implicit button role; aria-expanded is the
       // supported state attribute for it. aria-selected belongs to tab/
       // option roles, which this component deliberately does not apply.
-      summary.setAttribute('tabindex', detail.open ? '0' : '-1');
+      // Every summary stays in the tab order. They are announced as
+      // buttons, so a screen reader user expects Tab to reach each one; the
+      // arrow keys are an addition, not the only way across.
       summary.setAttribute('aria-expanded', detail.open ? 'true' : 'false');
     });
   }

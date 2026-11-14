@@ -100,7 +100,7 @@ Each `<details>` holds one `<summary>` and **exactly one** panel element; use `<
 ### Keyboard Only
 
 - **Behavior:** Tab to reach summaries, Enter/Space to toggle (native). After JS upgrade: Arrow Left/Right to navigate between tabs (plus Up/Down with `data-orientation="vertical"`), Home/End to jump to first/last tab. Arrows activate automatically.
-- **Tab order:** Summaries receive focus in document order. After upgrade, inactive summaries have `tabindex="-1"` and the active summary has `tabindex="0"`, following roving tabindex pattern.
+- **Tab order:** Summaries receive focus in document order. Every summary stays a tab stop after upgrade, because each is announced as a button; arrow keys, Home and End move between them as well.
 - **Key bindings:** ArrowRight (next tab; previous in RTL), ArrowLeft (previous tab; next in RTL), ArrowDown/ArrowUp (next/previous, vertical only), Home (first tab), End (last tab), Enter/Space (activate -- native; re-activating the open tab is a no-op)
 - **Acceptable:** Yes
 
@@ -122,7 +122,7 @@ Each `<details>` holds one `<summary>` and **exactly one** panel element; use `<
 
 - WCAG 2.1 AA compliant
 - Built entirely on native HTML semantics -- no ARIA role overrides
-- Focus management via roving tabindex pattern
+- Every tab stays in the tab order; arrow keys, Home and End also move between tabs
 - Reduced motion: transitions disabled via `prefers-reduced-motion: reduce`
 - Forced colors: the selected tab's border uses `Highlight` (also in the extreme-neumorphism theme, whose shadow cue is dropped)
 - Print (`utils/print.css`): every panel prints in source order under its tab label, styled as a heading

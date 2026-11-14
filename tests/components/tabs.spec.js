@@ -110,24 +110,21 @@ test.describe('tab-set — ARIA contracts', () => {
     await expect(summaries.nth(2)).toHaveAttribute('aria-expanded', 'false');
   });
 
-  test('tabindex follows roving pattern', async ({ page }) => {
+  test('every tab stays in the tab order (no roving tabindex)', async ({ page }) => {
     await page.goto(demoPage);
     await page.waitForSelector('tab-set[data-upgraded]');
 
-    const summaries = page.locator('tab-set summary');
+    const summaries = page.locator('tab-set').first().locator(':scope > details > summary');
+    const count = await summaries.count();
+    for (let i = 0; i < count; i++) await expect(summaries.nth(i)).not.toHaveAttribute('tabindex', /.*/);
 
-    // Active tab gets tabindex 0, inactive get -1
-    await expect(summaries.first()).toHaveAttribute('tabindex', '0');
-    await expect(summaries.nth(1)).toHaveAttribute('tabindex', '-1');
-    await expect(summaries.nth(2)).toHaveAttribute('tabindex', '-1');
-
-    // Switch to second tab
-    await summaries.nth(1).click();
-    await page.waitForTimeout(200);
-
-    await expect(summaries.first()).toHaveAttribute('tabindex', '-1');
-    await expect(summaries.nth(1)).toHaveAttribute('tabindex', '0');
-    await expect(summaries.nth(2)).toHaveAttribute('tabindex', '-1');
+    // The tabs are announced as buttons, so Tab has to reach a closed one.
+    // Enter on it opens its panel.
+    await summaries.nth(1).focus();
+    await expect(summaries.nth(1)).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(summaries.nth(1)).toHaveAttribute('aria-expanded', 'true');
+    await expect(summaries.first()).not.toHaveAttribute('tabindex', /.*/);
   });
 
   test('no role overrides on native elements', async ({ page }) => {

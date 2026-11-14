@@ -84,7 +84,7 @@ crumbLabel: Web Components
       <li>Native <code>&lt;details&gt;/&lt;summary&gt;</code> semantics are preserved (no role overrides)</li>
       <li><code>aria-controls</code> and <code>aria-labelledby</code> link each tab to its panel</li>
       <li><code>aria-expanded</code> state is managed on each summary</li>
-      <li><code>tabindex</code> is managed for roving focus</li>
+      <li>Every tab stays in the tab order</li>
       <li>Keyboard navigation (arrow keys, Home, End) is enabled</li>
       <li>A labelled host gets <code>role="group"</code></li>
     </ul>
@@ -228,13 +228,13 @@ tabs.addEventListener('tab-set:change', (event) => {
       <li><code>aria-controls</code> on each <code>&lt;summary&gt;</code> points to its panel</li>
       <li><code>aria-labelledby</code> on each panel points back to its summary</li>
       <li><code>aria-expanded</code> reflects which tab is currently open</li>
-      <li><code>tabindex</code> is managed via the roving tabindex pattern (active tab gets <code>0</code>, others get <code>-1</code>)</li>
+      <li>Every tab stays in the tab order. The tabs are announced as buttons, so <kbd>Tab</kbd> reaches each one and <kbd>Enter</kbd> or <kbd>Space</kbd> opens it. The arrow keys are a faster way across, not the only one.</li>
       <li>A host with <code>aria-label</code> or <code>aria-labelledby</code> (and no role of its own) gets <code>role="group"</code>, so the name is announced. An unlabelled tab-set gets no role: <code>aria-label</code> on a role-less element is ignored.</li>
       <li>In forced-colors mode the selected tab's border uses the system <code>Highlight</code> colour.</li>
     </ul>
 
     <h3>Screen Reader Behavior</h3>
-    <p>Screen readers will recognize the native disclosure widgets and allow users to navigate between tabs using the roving tabindex pattern.</p>
+    <p>Screen readers announce each tab as a button that is expanded or collapsed, and name the open panel after its tab. Because the tabs are buttons and not <code>role="tab"</code>, a screen reader gives no hint that arrow keys work, which is why <kbd>Tab</kbd> also reaches every one.</p>
 
     <code-block language="html" show-lines label="Accessibility" data-escape><!-- Label the set: the host becomes a named group -->
 <tab-set aria-label="Product information">
