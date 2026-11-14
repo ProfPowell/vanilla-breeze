@@ -641,20 +641,17 @@ class ImageMapWc extends VBElement {
     const current = anchors.indexOf(/** @type {HTMLElement} */ (document.activeElement));
     if (current === -1) return;
 
-    switch (e.key) {
-      case 'ArrowDown':
-      case 'ArrowRight': {
-        e.preventDefault();
-        anchors[current < anchors.length - 1 ? current + 1 : 0]?.focus();
-        break;
-      }
-      case 'ArrowUp':
-      case 'ArrowLeft': {
-        e.preventDefault();
-        anchors[current > 0 ? current - 1 : anchors.length - 1]?.focus();
-        break;
-      }
-    }
+    // Left/Right follow the writing direction; Up/Down stay in DOM order.
+    const rtl = getComputedStyle(this).direction === 'rtl';
+    let step = 0;
+    if (e.key === 'ArrowDown') step = 1;
+    else if (e.key === 'ArrowUp') step = -1;
+    else if (e.key === 'ArrowRight') step = rtl ? -1 : 1;
+    else if (e.key === 'ArrowLeft') step = rtl ? 1 : -1;
+    if (!step) return;
+
+    e.preventDefault();
+    anchors[(current + step + anchors.length) % anchors.length]?.focus();
   };
 
   /** Escape dismisses a visible tooltip wherever focus is (WCAG 1.4.13). */

@@ -409,7 +409,7 @@ class TextReader extends VBElement {
     this.#toolbar = toolbar;
 
     this.listen(document, 'pointerdown', this.#onToolbarOutsidePointerDown);
-    this.listen(document, 'keydown', this.#onToolbarKeyDown);
+    this.listen(this, 'keydown', this.#onToolbarKeyDown);
   }
 
   #handleTriggerClick() {
@@ -488,12 +488,15 @@ class TextReader extends VBElement {
   };
 
   #onToolbarKeyDown = (e) => {
-    if (e.key === 'Escape' && this.#toolbar && !this.#toolbar.hidden) {
-      const focusInside = this.#toolbar.contains(document.activeElement)
-        || this.#triggerBtn === document.activeElement;
-      this.#hideToolbar();
-      if (focusInside) this.#triggerBtn?.focus();
-    }
+    if (e.key !== 'Escape' || e.defaultPrevented) return;
+    if (!this.#toolbar || this.#toolbar.hidden) return;
+    // Only the reader's own Escape: the toolbar is a child of the host (shown
+    // in the top layer), so the trigger and toolbar are both inside `this`.
+    if (!this.contains(/** @type {Node} */ (e.target))) return;
+    // Consumed, so an enclosing dialog or popover does not close as well.
+    e.preventDefault();
+    this.#hideToolbar();
+    this.#triggerBtn?.focus();
   };
 
   // ---------- target resolution ----------

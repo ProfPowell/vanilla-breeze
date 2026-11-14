@@ -104,8 +104,9 @@ test.describe('date-picker — locale follows the nearest lang', () => {
   test('calendar month label follows the document language', async ({ page }) => {
     const { box } = await render(page, 'ja');
     await box.press('ArrowDown');
-    // The label also holds the year as visually hidden text.
-    await expect(page.locator('#dp .calendar-month')).toContainText('4月');
+    // Visible month name, plus the spoken month and year in Japanese order.
+    await expect(page.locator('#dp .calendar-month [aria-hidden="true"]')).toHaveText('4月');
+    await expect(page.locator('#dp .calendar-month .visually-hidden')).toHaveText('2026年4月');
   });
 
   test('parses month names in the document language', async ({ page }) => {

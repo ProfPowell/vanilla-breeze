@@ -2764,7 +2764,6 @@ export default {
       "manages": [
         "role=\"group\"",
         "role=\"status\"",
-        "tabindex",
         "aria-label",
         "aria-keyshortcuts",
         "aria-pressed",
@@ -2780,21 +2779,21 @@ export default {
             "Space"
           ],
           "action": "Play or pause",
-          "when": "Focus on the player itself, not on one of its controls"
+          "when": "Focus anywhere inside the player, except on a button, the playlist summary or a text field"
         },
         {
           "keys": [
             "ArrowLeft"
           ],
           "action": "Seek back 10 seconds",
-          "when": "Focus on the player itself, not on one of its controls"
+          "when": "Focus anywhere inside the player, except on the seek or volume slider or a text field"
         },
         {
           "keys": [
             "ArrowRight"
           ],
           "action": "Seek forward 10 seconds",
-          "when": "Focus on the player itself, not on one of its controls"
+          "when": "Focus anywhere inside the player, except on the seek or volume slider or a text field"
         },
         {
           "keys": [
@@ -2802,7 +2801,7 @@ export default {
             "M"
           ],
           "action": "Mute or unmute",
-          "when": "Focus on the player itself, not on one of its controls"
+          "when": "Focus anywhere inside the player, except in a text field"
         }
       ]
     }
@@ -6947,7 +6946,7 @@ export default {
         "hidden"
       ],
       "provide": "An <input type=\"date\"> with a <label for> (or an aria-label); the label is passed to the generated combobox",
-      "announces": "The month and year in the calendar header, politely, when the displayed month or year changes",
+      "announces": "The month and year in the locale's own format, politely, when the displayed month or year changes",
       "keyboard": [
         {
           "keys": [
@@ -10579,18 +10578,30 @@ export default {
       "keyboard": [
         {
           "keys": [
-            "ArrowDown",
-            "ArrowRight"
+            "ArrowDown"
           ],
           "action": "Move to the next hotspot, wrapping to the first",
           "when": "Focus on a hotspot"
         },
         {
           "keys": [
-            "ArrowUp",
-            "ArrowLeft"
+            "ArrowUp"
           ],
           "action": "Move to the previous hotspot, wrapping to the last",
+          "when": "Focus on a hotspot"
+        },
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Move to the next hotspot, wrapping to the first (reversed in right-to-left)",
+          "when": "Focus on a hotspot"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Move to the previous hotspot, wrapping to the last (reversed in right-to-left)",
           "when": "Focus on a hotspot"
         },
         {
@@ -16498,7 +16509,13 @@ export default {
         },
         {
           "keys": [
-            "Enter",
+            "Enter"
+          ],
+          "action": "Follow the active node's link, or expand or collapse a node that has no link",
+          "when": "ia-tree mode with data-view=\"visual\", focus on the diagram"
+        },
+        {
+          "keys": [
             "Space"
           ],
           "action": "Expand or collapse the active node",
@@ -18402,8 +18419,8 @@ export default {
           "keys": [
             "Escape"
           ],
-          "action": "Hide the floating toolbar, returning focus to the trigger when focus was inside it",
-          "when": "variant=\"icon\" with the toolbar showing, focus anywhere on the page"
+          "action": "Hide the floating toolbar and move focus to the trigger",
+          "when": "variant=\"icon\" with the toolbar showing, focus on the trigger or inside the toolbar"
         }
       ]
     }
@@ -18540,6 +18557,7 @@ export default {
         "aria-expanded",
         "aria-controls",
         "aria-label",
+        "aria-labelledby",
         "aria-busy",
         "aria-hidden"
       ],

@@ -146,13 +146,18 @@ class PageTools extends VBElement {
   }
 
   #syncAriaOrientation() {
-    /* Collapsed, the host holds only the floating button and the named
-       popover, so it is not a toolbar (an authored role is left alone). */
+    /* Collapsed, the host holds only the floating button and the popover,
+       so the popover (where the roving keys work) is the toolbar instead.
+       An authored host role is left alone and the popover stays plain. */
     if (this.#collapsed && this.#ownsRole) {
       this.removeAttribute('role');
       this.removeAttribute('aria-orientation');
+      this.#popover?.setAttribute('role', 'toolbar');
+      this.#popover?.setAttribute('aria-orientation', this.#keyOrientation());
       return;
     }
+    this.#popover?.removeAttribute('role');
+    this.#popover?.removeAttribute('aria-orientation');
     if (this.#ownsRole) this.setAttribute('role', 'toolbar');
     this.setAttribute('aria-orientation', this.#keyOrientation());
   }

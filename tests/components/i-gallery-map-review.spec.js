@@ -254,6 +254,24 @@ test.describe('image-map', () => {
     expect(page.url()).not.toContain('#hall');
   });
 
+  test('ArrowLeft/ArrowRight follow the writing direction; ArrowDown does not', async ({ page }) => {
+    await load(page, MAP(), { tag: 'image-map' });
+    const anchors = page.locator('#m .image-map-anchor');
+    await anchors.nth(0).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(anchors.nth(1)).toBeFocused();
+    await page.keyboard.press('ArrowLeft');
+    await expect(anchors.nth(0)).toBeFocused();
+
+    await page.evaluate(() => document.getElementById('m').setAttribute('dir', 'rtl'));
+    await page.keyboard.press('ArrowLeft');
+    await expect(anchors.nth(1)).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await expect(anchors.nth(0)).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await expect(anchors.nth(1)).toBeFocused();
+  });
+
   test('tooltip is hidden (out of a11y tree) when closed; per-area description', async ({ page }) => {
     await load(page, MAP(), { tag: 'image-map' });
     const tip = page.locator('#m .image-map-tooltip');

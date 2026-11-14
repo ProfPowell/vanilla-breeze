@@ -198,8 +198,24 @@ test.describe('renderer', () => {
     await expect(anchors).toHaveAttribute('aria-pressed', 'true');
     await expect(anchors).toHaveAttribute('aria-label', 'Show anchor visits');
     await expect(anchors).toBeFocused();
-    await expect(page.locator('details[data-url="/docs/b/"] .recently-visited-anchors a')).toHaveAttribute('href', '/docs/b/#intro');
+    await expect(page.locator('details[data-url="/docs/b/"] .recently-visited-anchors li:not(.recently-visited-page) a')).toHaveAttribute('href', '/docs/b/#intro');
     await expect(page.locator('details[data-url="/docs/b/"] summary small')).toContainText('1 anchor');
+  });
+
+  test('a page with anchor visits keeps its link out of the summary', async ({ page }) => {
+    await load(page, '<recently-visited></recently-visited>', { seed: SEED });
+    await page.locator('[data-recently-visited-anchors]').click();
+    const details = page.locator('details[data-url="/docs/b/"]');
+    await expect(details.locator('summary a')).toHaveCount(0);
+    const title = await details.locator('summary .recently-visited-title').textContent();
+    expect(title?.trim()).not.toBe('');
+
+    // The summary only toggles; the page link is the first item in the panel
+    await details.locator('summary .recently-visited-title').click();
+    await expect(details).toHaveAttribute('open', '');
+    const first = details.locator('.recently-visited-anchors > li').first().locator('a');
+    await expect(first).toHaveAttribute('href', '/docs/b/');
+    await expect(first).toHaveText(title ?? '');
   });
 
   test('clear keeps focus, uses aria-disabled, and syncs a second instance', async ({ page }) => {

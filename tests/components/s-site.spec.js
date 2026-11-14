@@ -714,6 +714,65 @@ test.describe('site-map ia-tree', () => {
   });
 });
 
+test.describe('site-map visual keyboard', () => {
+  const VISUAL = IA.replace('mode="ia-tree"', 'mode="ia-tree" data-view="visual"');
+
+  test('visual mode: Enter follows the active node\'s link; Space still toggles', async ({ page }) => {
+    await load(page, VISUAL, { modules: ['site-map'] });
+    await page.waitForSelector('#sm svg[role="tree"]');
+    await page.locator('#sm svg[role="tree"]').focus();
+
+    // Space collapses the root and does not navigate
+    const before = page.url();
+    await page.keyboard.press('Space');
+    await expect(page.locator('#sm svg[role="tree"] [data-node-id="0"]')).toHaveAttribute('aria-expanded', 'false');
+    expect(page.url()).toBe(before);
+    await page.locator('#sm svg[role="tree"]').focus();
+    await page.keyboard.press('Space');
+    await expect(page.locator('#sm svg[role="tree"] [data-node-id="0"]')).toHaveAttribute('aria-expanded', 'true');
+
+    await page.locator('#sm svg[role="tree"]').focus();
+    await page.keyboard.press('ArrowDown');
+    await page.evaluate(() => {
+      document.addEventListener('site-map:select', (e) => {
+        sessionStorage.setItem('sm-select', JSON.stringify(/** @type {CustomEvent} */ (e).detail));
+      }, { once: true });
+    });
+    await page.keyboard.press('Enter');
+    await page.waitForURL('**/docs/about/');
+    expect(JSON.parse(await page.evaluate(() => sessionStorage.getItem('sm-select')))).toEqual({
+      href: '/docs/about/', pageType: 'page', template: '',
+    });
+  });
+
+  test('visual mode: a cancelled site-map:select stops Enter navigating; a node with no link toggles', async ({ page }) => {
+    await load(page, VISUAL.replace('<a href="/docs/home/">Home</a>', 'Home'), { modules: ['site-map'] });
+    await page.waitForSelector('#sm svg[role="tree"]');
+    const before = page.url();
+    await page.locator('#sm svg[role="tree"]').focus();
+
+    // Root has children and no link: Enter toggles
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#sm svg[role="tree"] [data-node-id="0"]')).toHaveAttribute('aria-expanded', 'false');
+    await page.locator('#sm svg[role="tree"]').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#sm svg[role="tree"] [data-node-id="0"]')).toHaveAttribute('aria-expanded', 'true');
+
+    await page.locator('#sm svg[role="tree"]').focus();
+    await page.keyboard.press('ArrowDown');
+    await page.evaluate(() => {
+      document.addEventListener('site-map:select', (e) => {
+        e.preventDefault();
+        /** @type {any} */ (window).__smSelect = /** @type {CustomEvent} */ (e).detail.href;
+      });
+    });
+    await page.keyboard.press('Enter');
+    await expect.poll(() => page.evaluate(() => /** @type {any} */ (window).__smSelect)).toBe('/docs/about/');
+    await page.waitForTimeout(100);
+    expect(page.url()).toBe(before);
+  });
+});
+
 test.describe('site-map nav-enhance', () => {
   test('src mode replaces the sitemap nav (not the controls) and adds controls', async ({ page }) => {
     await page.route('**/sitemap-data.json', (route) => route.fulfill({

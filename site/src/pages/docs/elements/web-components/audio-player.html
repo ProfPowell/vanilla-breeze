@@ -219,7 +219,7 @@ player.addEventListener('audio-player:track-change', (e) => {
       <tr><td><kbd>M</kbd></td><td>Toggle mute</td></tr>
     </tbody>
   </table>
-  <p>The player itself is a tab stop (<code>tabindex="0"</code>, exposed as a group named “Audio player” with <code>aria-keyshortcuts</code>) so the shortcuts have somewhere to live. Shortcuts apply when the player itself (or a non-interactive part of it) has focus. When focus is on a control — the seek or volume slider, the play or mute button, the playlist <code>&lt;summary&gt;</code> or a track link — keys keep their native behavior, so arrow keys step the focused slider and <kbd>Space</kbd> activates the focused control.</p>
+  <p>Shortcuts apply when focus is anywhere inside the player. The player itself is not a tab stop: it is exposed as a group named “Audio player” with <code>aria-keyshortcuts</code>, and <kbd>Tab</kbd> moves straight to its controls. A key that the focused control uses itself is left to that control: <kbd>Space</kbd> on the play or mute button or the playlist <code>&lt;summary&gt;</code> activates only that control, and the arrow keys on the seek or volume slider adjust only that slider. Every other shortcut still works from those controls, so <kbd>M</kbd> mutes from the seek slider and the arrow keys seek from the play button. Keys typed in a text field, <code>&lt;select&gt;</code> or <code>&lt;textarea&gt;</code> placed inside the player are never treated as shortcuts.</p>
 </section>
 
 <section>
@@ -253,11 +253,11 @@ player.addEventListener('audio-player:track-change', (e) => {
   <h2>Accessibility</h2>
   <ul>
     <li>All controls have <code>aria-label</code> attributes</li>
-    <li>The focusable host has <code>role="group"</code> and the label “Audio player” (author-supplied <code>role</code>, <code>aria-label</code> or <code>aria-labelledby</code> are kept)</li>
+    <li>The host has <code>role="group"</code> and the label “Audio player” (author-supplied <code>role</code>, <code>aria-label</code> or <code>aria-labelledby</code> are kept)</li>
     <li>The seek slider announces the position as text, e.g. “1:05 of 3:20” (<code>aria-valuetext</code>), updated during playback and seeking</li>
     <li>The mute button keeps the stable label “Mute” and reports its state with <code>aria-pressed</code></li>
     <li>Load failures show a visible message in a <code>role="status"</code> region, so screen readers announce it politely</li>
-    <li>Keyboard navigable: every control is a native focusable element, and the documented shortcuts never override a focused control's own keys</li>
+    <li>Keyboard navigable: every control is a native focusable element, the host adds no extra tab stop, and the shortcuts work from any control without overriding that control's own keys</li>
     <li>Respects <code>prefers-reduced-motion</code></li>
     <li>Falls back to fully accessible native <code>&lt;audio&gt;</code> without JS</li>
   </ul>

@@ -48,8 +48,12 @@ import { activateTrack, markActivePlayed, nextTrack, trackItems } from '../../li
  * </audio-player>
  */
 
-/** Real key targets that keep their native keyboard behaviour. */
-const INTERACTIVE = 'input, button, a[href], summary, select, textarea, audio, [contenteditable]:not([contenteditable="false"])'
+/** Controls that take every key themselves (typing, option and radio arrows). */
+const TAKES_ALL_KEYS = 'input:not([type="range"]), select, textarea, audio, [contenteditable]:not([contenteditable="false"])'
+/** Controls that Space activates. */
+const SPACE_ACTIVATED = 'button, summary, [role="button"]'
+/** Controls that the arrow keys adjust. */
+const ARROW_ADJUSTED = 'input[type="range"], [role="slider"]'
 
 class AudioPlayerElement extends VBElement {
 
@@ -719,15 +723,11 @@ class AudioPlayerElement extends VBElement {
       this.#syncMuted()
     })
 
-    // Keyboard shortcuts. Events from shadow controls are retargeted to the
-    // host, so e.target is useless here: walk the composed path up to the host
-    // and bail if the real target sits inside an interactive control (volume
-    // or seek slider, mute/play button, playlist <summary>, track links...).
-    // Those keep their native key behaviour; shortcuts only fire when focus is
-    // on the host itself or a non-interactive part.
+    // Keyboard shortcuts, from anywhere inside the player. A key the focused
+    // control uses itself is left to that control, so nothing is handled twice.
     this.addEventListener('keydown', (e) => {
       if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return
-      if (this.#fromInteractive(e)) return
+      if (this.#keyBelongsToControl(e)) return
 
       switch (e.key) {
         case ' ':
@@ -754,11 +754,8 @@ class AudioPlayerElement extends VBElement {
       }
     })
 
-    // The host is the focus target for the shortcuts above (they never fire
-    // from inside a control, so dropping the tab stop would make them
-    // unreachable). Give that tab stop a role and name so it isn't announced
-    // as an anonymous focusable element.
-    if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '0')
+    // The host is a named group, not a tab stop: the shortcuts above work
+    // from the controls inside it.
     if (!this.hasAttribute('role')) this.setAttribute('role', 'group')
     if (!this.hasAttribute('aria-label') && !this.hasAttribute('aria-labelledby')) {
       this.setAttribute('aria-label', 'Audio player')
@@ -769,14 +766,19 @@ class AudioPlayerElement extends VBElement {
   }
 
   /**
-   * True when a key event originated inside an interactive control that lives
-   * within this player (light or shadow DOM), up to but excluding the host.
-   * @param {Event} e
+   * True when the control the key event came from (light or shadow DOM, up to
+   * but excluding the host) uses that key itself. Events from shadow controls
+   * are retargeted to the host, so this walks the composed path.
+   * @param {KeyboardEvent} e
    */
-  #fromInteractive(e) {
+  #keyBelongsToControl(e) {
+    const arrow = e.key === 'ArrowLeft' || e.key === 'ArrowRight'
     for (const node of e.composedPath()) {
       if (node === this) return false
-      if (node instanceof Element && node.matches(INTERACTIVE)) return true
+      if (!(node instanceof Element)) continue
+      if (node.matches(TAKES_ALL_KEYS)) return true
+      if (e.key === ' ' && node.matches(SPACE_ACTIVATED)) return true
+      if (arrow && node.matches(ARROW_ADJUSTED)) return true
     }
     return false
   }

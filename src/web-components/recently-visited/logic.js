@@ -252,10 +252,20 @@ class RecentlyVisited extends VBElement {
         const count = g.anchors.length;
         const noun = this.#label(plural.select(count) === 'one' ? 'anchor-one' : 'anchor-other');
         meta.append(`${num.format(count)} ${noun} · `, timeEl(g.ts, rtf));
-        summary.append(link, meta);
+        /* The title is plain text here — a link inside <summary> would
+           fight the disclosure toggle; the page link is the first item
+           in the panel. */
+        const title = document.createElement('span');
+        title.className = 'recently-visited-title';
+        title.textContent = link.textContent;
+        summary.append(title, meta);
 
         const ul = document.createElement('ul');
         ul.className = 'recently-visited-anchors';
+        const pli = document.createElement('li');
+        pli.className = 'recently-visited-page';
+        pli.append(link);
+        ul.append(pli);
         for (const a of g.anchors) {
           const ali = document.createElement('li');
           const alink = document.createElement('a');

@@ -136,4 +136,44 @@ test.describe('text-reader', () => {
     expect(display).toBe('block');
   });
 
+
+  test('Escape hides the icon toolbar only when focus is inside the reader', async ({ page }) => {
+    await page.goto('/docs/examples/demos/text-reader-icon.html');
+    await page.waitForSelector('text-reader[variant="icon"][data-upgraded]');
+
+    const reader = page.locator('text-reader[variant="icon"]').first();
+    const toolbar = reader.locator('[data-text-reader-toolbar]');
+    // Speech can't run headless, so show the toolbar the way the component does.
+    const show = () => toolbar.evaluate((el) => {
+      el.hidden = false;
+      if (el.popover && !el.matches(':popover-open')) el.showPopover();
+    });
+    await page.evaluate(() => {
+      const outside = document.createElement('button');
+      outside.id = 'outside-reader';
+      outside.textContent = 'Outside';
+      document.body.prepend(outside);
+      window.__escPrevented = [];
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') window.__escPrevented.push(e.defaultPrevented);
+      });
+    });
+
+    // Focus elsewhere on the page: the toolbar stays and the key is untouched.
+    await show();
+    await page.locator('#outside-reader').focus();
+    await page.keyboard.press('Escape');
+    expect(await toolbar.evaluate((el) => el.hidden)).toBe(false);
+
+    // Focus inside the toolbar: it hides and focus moves to the trigger.
+    await toolbar.locator('button:not([hidden]):not([disabled])').first().focus();
+    await page.keyboard.press('Escape');
+    expect(await toolbar.evaluate((el) => el.hidden)).toBe(true);
+    expect(await reader.evaluate((el) => el.contains(document.activeElement)
+      && !document.activeElement.closest('[data-text-reader-toolbar]'))).toBe(true);
+
+    // Toolbar already hidden: Escape on the trigger is not consumed.
+    await page.keyboard.press('Escape');
+    expect(await page.evaluate(() => window.__escPrevented)).toEqual([false, true, false]);
+  });
 });

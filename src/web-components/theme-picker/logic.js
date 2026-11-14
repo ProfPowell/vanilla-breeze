@@ -206,8 +206,8 @@ class ThemePicker extends VBElement {
       </fieldset>
 
       <fieldset class="section">
-        <legend>${themeLabel}${this.#swatches ? ' <span class="theme-name" aria-hidden="true"></span>' : ''}</legend>
-        ${this.#swatches ? this.#renderThemeGrid(brand) : this.#renderThemeSelect(brand, themeLabel)}
+        <legend id="${this.#name('legend')}">${themeLabel}${this.#swatches ? ' <span class="theme-name" aria-hidden="true"></span>' : ''}</legend>
+        ${this.#swatches ? this.#renderThemeGrid(brand) : this.#renderThemeSelect(brand)}
       </fieldset>
     `;
   }
@@ -225,14 +225,17 @@ class ThemePicker extends VBElement {
     return [...groups.slice(0, -1), { label: last.label, tier: last.tier, themes: [...last.themes, current] }];
   }
 
-  /** Default: the themes in one <select>, grouped when there are groups. */
-  #renderThemeSelect(brand, label) {
+  /**
+   * Default: the themes in one <select>, grouped when there are groups.
+   * The legend is its only name source (no aria-label repeating the text).
+   */
+  #renderThemeSelect(brand) {
     const groups = this.#groupsFor(brand);
     const options = (themes) => themes.map(t => `
       <option value="${esc(t.id)}" ${brand === t.id ? 'selected' : ''}>${esc(t.name)}</option>
     `).join('');
     return `
-      <select class="theme-select" name="theme-brand-select" aria-label="${label}">
+      <select class="theme-select" name="theme-brand-select" aria-labelledby="${this.#name('legend')}">
         ${groups.length === 1 ? options(groups[0].themes) : groups.map(group => `
           <optgroup label="${esc(group.label)}">${options(group.themes)}</optgroup>
         `).join('')}
@@ -244,10 +247,10 @@ class ThemePicker extends VBElement {
   #renderThemeGrid(brand) {
     return `
       <div class="themes">
-        ${this.#groupsFor(brand).map(group => `
+        ${this.#groupsFor(brand).map((group, i) => `
           <div class="theme-category">
-            <span class="category-label">${esc(group.label)}</span>
-            <div class="swatch-grid" role="radiogroup" aria-label="${esc(group.label)}">
+            <span class="category-label" id="${this.#name(`group-${i}`)}">${esc(group.label)}</span>
+            <div class="swatch-grid" role="radiogroup" aria-labelledby="${this.#name(`group-${i}`)}">
               ${group.themes.map(t => this.#renderSwatch(t, brand)).join('')}
             </div>
           </div>

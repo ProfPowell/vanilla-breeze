@@ -715,6 +715,8 @@ class SiteMap extends VBElement {
       nodes.push({
         label: anchor?.textContent?.trim() || li.firstChild?.textContent?.trim() || '',
         href: anchor?.getAttribute('href') || '',
+        // Source link, followed by Enter in the chart
+        anchor: anchor?.hasAttribute('href') ? anchor : null,
         pageType: li.getAttribute('data-page-type') || 'page',
         template: li.getAttribute('data-template') || '',
         status: li.getAttribute('data-status') || '',
@@ -1313,7 +1315,23 @@ class SiteMap extends VBElement {
         if (prevSibling) this.#focusVisualNode(prevSibling);
         break;
       }
-      case 'Enter':
+      case 'Enter': {
+        // Follow the node's link; a node without one toggles
+        handled = true;
+        const node = this.#findNodeById(current, this.#visualData);
+        if (node?.anchor) {
+          // Same event a click on the node sends; cancelling it stops the navigation
+          const go = this.dispatchEvent(new CustomEvent('site-map:select', {
+            bubbles: true,
+            cancelable: true,
+            detail: { href: node.href, pageType: node.pageType, template: node.template },
+          }));
+          if (go) node.anchor.click();
+        } else if (node && node.children.length > 0) {
+          this.#toggleCollapse(current);
+        }
+        break;
+      }
       case ' ': {
         // Toggle collapse/expand
         handled = true;
@@ -1594,7 +1612,7 @@ class SiteMap extends VBElement {
         const tg = /** @type {SVGGElement} */ (document.createElementNS(NS, 'g'));
         tg.setAttribute('data-toggle', nodeId);
         tg.setAttribute('class', 'sm-vtoggle');
-        // Pointer affordance; keyboard users toggle with Enter/Space on the treeitem
+        // Pointer affordance; keyboard users toggle with Space on the treeitem
         tg.setAttribute('aria-hidden', 'true');
 
         const toggleCircle = document.createElementNS(NS, 'circle');

@@ -550,12 +550,15 @@ class GlossaryWc extends VBElement {
         a.setAttribute('data-active', '');
         a.removeAttribute('aria-disabled');
         a.removeAttribute('role');
+        a.removeAttribute('tabindex');
       } else {
         // No visible term for this letter (filtered out): a disabled link.
         a.removeAttribute('href');
         a.removeAttribute('data-active');
         a.setAttribute('role', 'link');
         a.setAttribute('aria-disabled', 'true');
+        // An <a> without href is not focusable; keep it reachable by keyboard.
+        a.setAttribute('tabindex', '0');
       }
     }
   }

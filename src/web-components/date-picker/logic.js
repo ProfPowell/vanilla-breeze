@@ -583,8 +583,9 @@ class DatePicker extends VBElement {
     const titleArea = document.createElement('span');
     titleArea.className = 'calendar-title';
 
-    // Only the month text is live (with the year as hidden text); the year
-    // <select> sits beside it, outside the live region.
+    // Live label: the visible month name is aria-hidden and a hidden span
+    // holds the locale's own "month year" text, so that is what is spoken.
+    // The year <select> sits beside it, outside the live region.
     this.#monthLabel = document.createElement('span');
     this.#monthLabel.className = 'calendar-month';
     this.#monthLabel.id = `${calendarId}-title`;
@@ -665,13 +666,23 @@ class DatePicker extends VBElement {
       month = EN_MONTHS[this.#viewMonth].charAt(0).toUpperCase()
         + EN_MONTHS[this.#viewMonth].slice(1);
     }
+    // Spoken text in the locale's own order ("2026年4月", not "4月 2026").
+    let spoken;
+    try {
+      spoken = new Intl.DateTimeFormat(this.#locale, { month: 'long', year: 'numeric' })
+        .format(new Date(this.#viewYear, this.#viewMonth, 1));
+    } catch {
+      spoken = `${month} ${this.#viewYear}`;
+    }
     // Rewrite only on change so a re-render does not re-announce.
-    const year = ` ${this.#viewYear}`;
-    if (this.#monthLabel.firstChild?.nodeValue !== month || this.#monthLabel.lastElementChild?.textContent !== year) {
-      const hiddenYear = document.createElement('span');
-      hiddenYear.className = 'visually-hidden';
-      hiddenYear.textContent = year;
-      this.#monthLabel.replaceChildren(month, hiddenYear);
+    if (this.#monthLabel.lastElementChild?.textContent !== spoken) {
+      const visible = document.createElement('span');
+      visible.setAttribute('aria-hidden', 'true');
+      visible.textContent = month;
+      const hidden = document.createElement('span');
+      hidden.className = 'visually-hidden';
+      hidden.textContent = spoken;
+      this.#monthLabel.replaceChildren(visible, hidden);
     }
 
     if (!this.#yearSelect.querySelector(`option[value="${this.#viewYear}"]`)) {

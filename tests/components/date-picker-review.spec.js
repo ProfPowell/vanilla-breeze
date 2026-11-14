@@ -162,11 +162,23 @@ test('the live month title excludes the year select and names the grid', async (
   await openGrid(page);
   const live = page.locator('#dp [aria-live]');
   await expect(live).toHaveCount(1);
-  await expect(live).toHaveText('April 2026');
+  // Sighted users see the month; the spoken text is the hidden span
+  await expect(live.locator('[aria-hidden="true"]')).toHaveText('April');
+  await expect(live.locator('.visually-hidden')).toHaveText('April 2026');
   expect(await live.locator('select').count()).toBe(0);
   await expect(page.locator('#dp table[role="grid"]')).toHaveAccessibleName('April 2026');
   await page.keyboard.press('PageDown');
-  await expect(live).toHaveText('May 2026');
+  await expect(live.locator('.visually-hidden')).toHaveText('May 2026');
+  await expect(page.locator('#dp table[role="grid"]')).toHaveAccessibleName('May 2026');
+});
+
+test('the spoken month and year use the locale order', async ({ page }) => {
+  await load(page, BASIC, { lang: 'ja' });
+  await openGrid(page);
+  const live = page.locator('#dp [aria-live]');
+  await expect(live.locator('[aria-hidden="true"]')).toHaveText('4月');
+  await expect(live.locator('.visually-hidden')).toHaveText('2026年4月');
+  await expect(page.locator('#dp table[role="grid"]')).toHaveAccessibleName('2026年4月');
 });
 
 test('Home/End go to the week edges for a Monday-first locale', async ({ page }) => {

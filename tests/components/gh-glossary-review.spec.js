@@ -309,6 +309,29 @@ test.describe('glossary-wc', () => {
     await expect(page.locator('.gloss-jump-letter[aria-disabled]')).toHaveCount(0);
   });
 
+  test('a disabled letter stays in the tab order and does nothing when activated', async ({ page }) => {
+    await load(page, BASIC);
+    await page.locator('glossary-wc input').fill('micro');
+    const disabled = page.locator('.gloss-jump-letter[aria-disabled="true"]').first();
+    await expect(disabled).toHaveAttribute('tabindex', '0');
+    await expect(disabled).toHaveAttribute('role', 'link');
+    await expect(page.locator('.gloss-jump-letter:not([aria-disabled])')).not.toHaveAttribute('tabindex');
+
+    const before = page.url();
+    await disabled.focus();
+    await expect(disabled).toBeFocused();
+    await page.keyboard.press('Enter');
+    // Playwright will not click an aria-disabled element without force.
+    await disabled.click({ force: true });
+    expect(page.url()).toBe(before);
+    expect(new URL(page.url()).hash).toBe('');
+
+    // Enabled again: the href is back and the tabindex is gone
+    await page.locator('glossary-wc input').fill('');
+    await expect(page.locator('.gloss-jump-letter[tabindex]')).toHaveCount(0);
+    await expect(page.locator('.gloss-jump-letter:not([href])')).toHaveCount(0);
+  });
+
   test('a link into a collapsed category expands it; jump letters are >= 24px', async ({ page }) => {
     const url = await load(page, BASIC, { base: 'https://cdn.example/' });
     const domain = page.locator('.gloss-category[data-category="Domain"]');

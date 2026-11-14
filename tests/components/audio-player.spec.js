@@ -123,13 +123,42 @@ test.describe('audio-player keyboard', () => {
     expect(await page.locator('audio-player').getAttribute('state')).not.toBe('playing');
   });
 
-  test('Space and ArrowRight on the focused host still act as shortcuts', async ({ page }) => {
+  test('shortcuts work with focus on an inner button', async ({ page }) => {
     await load(page, PLAYLIST);
-    await page.locator('audio-player').focus();
+    await page.evaluate(() => document.querySelector('audio-player').shadowRoot.querySelector('.play-btn').focus());
     await page.keyboard.press('ArrowRight');
     await expect.poll(async () => (await state(page)).time).toBe(10);
+    await page.keyboard.press('m');
+    await expect(page.locator('audio-player')).toHaveAttribute('muted', '');
+  });
+
+  test('Space on the play button toggles playback once', async ({ page }) => {
+    await load(page, PLAYLIST);
+    await page.evaluate(() => document.querySelector('audio-player').shadowRoot.querySelector('.play-btn').focus());
     await page.keyboard.press(' ');
     await expect(page.locator('audio-player')).toHaveAttribute('state', 'playing');
+    expect((await state(page)).paused).toBe(false);
+  });
+
+  test('Space on a slider plays, and M on a slider mutes', async ({ page }) => {
+    await load(page, PLAYLIST);
+    await page.evaluate(() => document.querySelector('audio-player').shadowRoot.querySelector('input.volume').focus());
+    await page.keyboard.press('m');
+    await expect(page.locator('audio-player')).toHaveAttribute('muted', '');
+    await page.keyboard.press(' ');
+    await expect(page.locator('audio-player')).toHaveAttribute('state', 'playing');
+  });
+
+  test('the host is not in the tab order', async ({ page }) => {
+    await load(page, `<button id="before">Before</button>${PLAYLIST}`);
+    expect(await page.locator('audio-player').evaluate((el) => el.hasAttribute('tabindex'))).toBe(false);
+    await page.locator('#before').focus();
+    await page.keyboard.press('Tab');
+    const onInnerControl = await page.evaluate(() => {
+      const host = document.querySelector('audio-player');
+      return document.activeElement === host && !!host.shadowRoot.activeElement;
+    });
+    expect(onInnerControl).toBe(true);
   });
 });
 
@@ -182,17 +211,16 @@ test.describe('audio-player accessibility', () => {
     expect(await btn()).toEqual({ pressed: 'true', label: 'Mute' });
     await expect(page.locator('audio-player')).toHaveAttribute('muted', '');
     // The M shortcut and programmatic changes stay in sync too
-    await page.locator('audio-player').focus();
+    await shadow(page, '.mute-btn', (el) => el.focus());
     await page.keyboard.press('m');
     expect(await btn()).toEqual({ pressed: 'false', label: 'Mute' });
     await page.evaluate(() => { document.querySelector('audio-player audio').muted = true; });
     await expect.poll(btn).toEqual({ pressed: 'true', label: 'Mute' });
   });
 
-  test('the focusable host is a named group', async ({ page }) => {
+  test('the host is a named group', async ({ page }) => {
     await load(page, PLAYLIST);
     const host = page.locator('audio-player');
-    await expect(host).toHaveAttribute('tabindex', '0');
     await expect(host).toHaveAttribute('role', 'group');
     await expect(host).toHaveAttribute('aria-label', 'Audio player');
   });

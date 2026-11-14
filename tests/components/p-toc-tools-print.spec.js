@@ -96,7 +96,7 @@ test.describe('page-tools', () => {
     expect(open.width).toBeGreaterThan(40);
   });
 
-  test('collapsed host is not a toolbar; the role returns when it expands', async ({ page }) => {
+  test('collapsed host is not a toolbar, the popover is; the role returns when it expands', async ({ page }) => {
     await page.setViewportSize({ width: 400, height: 800 });
     await load(page, TOOLS);
     await page.waitForSelector('page-tools[data-collapsed]');
@@ -106,14 +106,24 @@ test.describe('page-tools', () => {
         role: pt.getAttribute('role'),
         orientation: pt.getAttribute('aria-orientation'),
         popoverName: document.querySelector('.page-tools-popover').getAttribute('aria-label'),
+        popoverRole: document.querySelector('.page-tools-popover').getAttribute('role'),
+        popoverOrientation: document.querySelector('.page-tools-popover').getAttribute('aria-orientation'),
       };
     });
-    expect(collapsed).toEqual({ role: null, orientation: null, popoverName: 'Page tools' });
+    expect(collapsed).toEqual({
+      role: null, orientation: null,
+      popoverName: 'Page tools', popoverRole: 'toolbar', popoverOrientation: 'vertical',
+    });
 
     await page.setViewportSize({ width: 1200, height: 800 });
     await page.waitForSelector('page-tools:not([data-collapsed])');
     await expect(page.locator('page-tools')).toHaveAttribute('role', 'toolbar');
     await expect(page.locator('page-tools')).toHaveAttribute('aria-orientation', 'horizontal');
+    const expanded = await page.evaluate(() => {
+      const panel = document.querySelector('.page-tools-popover');
+      return [panel.getAttribute('role'), panel.getAttribute('aria-orientation')];
+    });
+    expect(expanded).toEqual([null, null]);
   });
 
   test('Escape from a tool returns focus to the FAB', async ({ page }) => {

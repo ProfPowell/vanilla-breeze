@@ -79,7 +79,7 @@ Part of the **UX Planning Pack**.
 - Search input sits in a `<search>` landmark with an `aria-label`
 - Category toggles use `aria-expanded` / `aria-controls`; matches in collapsed categories are revealed while searching
 - One `aria-live="polite"` region announces the match count (and the total when cleared); count badges are `aria-hidden`
-- Jump-bar letters are derived from the terms with `Intl.Collator` for the element's `lang` (digits/symbols under `#`), are ≥24px targets, and are `aria-disabled` while no visible term starts with them
+- Jump-bar letters are derived from the terms with `Intl.Collator` for the element's `lang` (digits/symbols under `#`), are ≥24px targets, and are `aria-disabled` while no visible term starts with them (they stay in the tab order, and activating one does nothing)
 - `prefers-reduced-motion: reduce` disables transitions
 - Print styles hide search and jump bar, show all terms
 
