@@ -142,7 +142,7 @@ bell.notifications = [
   </table>
 
   <h3>Labels</h3>
-  <p>Every English string in the panel can be overridden on the element with <code>data-label-*</code>: <code>trigger</code> (Notifications), <code>unread</code> ({n} unread), <code>title</code> (Notifications), <code>mark-all</code> (Mark all read), <code>tabs</code> (Notification categories), <code>all</code> (All), <code>watching</code> (Watching), <code>empty</code> (No notifications), <code>watch-empty</code>, <code>last-checked</code> (Last checked: {date}), <code>never</code> (&mdash;), <code>changed</code> (Changed), <code>unwatch</code> (Unwatch {title}) and <code>new</code> (New notification, the toast fallback).</p>
+  <p>Every English string in the panel can be overridden on the element with <code>data-label-*</code>: <code>trigger</code> (Notifications), <code>unread</code> ({n} unread), <code>title</code> (Notifications), <code>mark-all</code> (Mark all read), <code>tabs</code> (Notification categories), <code>all</code> (All), <code>watching</code> (Watching), <code>empty</code> (No notifications), <code>watch-empty</code>, <code>last-checked</code> (Last checked: {date}), <code>never</code> (&mdash;), <code>changed</code> (Changed), <code>unwatch</code> (Unwatch {title}), <code>new</code> (New notification, the toast fallback) and <code>added</code> (New notification: {title}. {n} unread, the screen reader announcement).</p>
 </section>
 
 <section>
@@ -167,6 +167,8 @@ bell.notifications = [
   <h2>Accessibility</h2>
   <ul>
     <li>The bell trigger gets <code>aria-haspopup="dialog"</code>, <code>aria-controls</code> and <code>aria-expanded</code>. Its accessible name includes the unread count (&ldquo;Notifications, 3 unread&rdquo;); the visual badge is <code>aria-hidden</code>.</li>
+    <li>A notification that arrives after the page has loaded (from polling, the <code>notifications</code> setter or a <code>notification-wc:new</code> event) is announced politely to screen readers with its title and the unread count. The notifications present on load are not announced, and neither is marking them read. When <code>toast-new</code> shows a toast for it, the toast is the announcement.</li>
+    <li>A banner has <code>role="status"</code>, or <code>role="alert"</code> for the <code>error</code> variant, so a banner that appears after load is announced.</li>
     <li>Opening moves focus into the drawer (<code>role="dialog"</code>, named by its heading). <kbd>Esc</kbd> closes it and returns focus to the trigger; tabbing out of the component or clicking outside also closes it, returning focus to the trigger if it was inside the drawer.</li>
     <li>The All / Watching switcher is a full tabs pattern: <code>role="tablist"</code>, tabs with <code>aria-controls</code>, <code>role="tabpanel"</code> panels, and <kbd>&larr;</kbd> <kbd>&rarr;</kbd> <kbd>Home</kbd> <kbd>End</kbd> with a roving tabindex.</li>
     <li>After upgrade the static articles are re-rendered as rows inside the drawer and the originals are hidden, so the content is reachable through the drawer, not by page heading navigation.</li>

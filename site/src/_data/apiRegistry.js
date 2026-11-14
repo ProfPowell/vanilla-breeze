@@ -1889,7 +1889,7 @@ export default {
         "aria-controls",
         "aria-labelledby"
       ],
-      "provide": "A <details> element with a <summary> for each panel",
+      "provide": "A <details> element with a <summary> for each panel; panels are region landmarks only when there are six or fewer",
       "keyboard": [
         {
           "keys": [
@@ -2271,7 +2271,7 @@ export default {
         "aria-busy",
         "hidden"
       ],
-      "announces": "Each new message and the reply as it streams in, politely, through the role=\"log\" thread",
+      "announces": "Each new message, politely, through the role=\"log\" thread; the thread is aria-busy while a reply streams, so the reply is read when it is complete",
       "keyboard": [
         {
           "keys": [
@@ -2284,7 +2284,7 @@ export default {
           "keys": [
             "Escape"
           ],
-          "action": "Stop the reply that is being generated",
+          "action": "Stop the reply that is being generated; the draft in the message field is kept",
           "when": "While a reply is streaming"
         }
       ]
@@ -3554,6 +3554,48 @@ export default {
         },
         {
           "keys": [
+            "Home"
+          ],
+          "action": "Move focus to the first day of the week row within the month",
+          "when": "Focus on a day"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move focus to the last day of the week row within the month",
+          "when": "Focus on a day"
+        },
+        {
+          "keys": [
+            "PageUp"
+          ],
+          "action": "Move focus to the same day in the previous month",
+          "when": "Focus on a day"
+        },
+        {
+          "keys": [
+            "PageDown"
+          ],
+          "action": "Move focus to the same day in the next month",
+          "when": "Focus on a day"
+        },
+        {
+          "keys": [
+            "Shift+PageUp"
+          ],
+          "action": "Move focus to the same day in the previous year",
+          "when": "Focus on a day"
+        },
+        {
+          "keys": [
+            "Shift+PageDown"
+          ],
+          "action": "Move focus to the same day in the next year",
+          "when": "Focus on a day"
+        },
+        {
+          "keys": [
             "Enter",
             "Space"
           ],
@@ -3786,6 +3828,14 @@ export default {
           "scale"
         ],
         "description": "View Transition animation between slides"
+      },
+      {
+        "name": "data-label-track",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Slides",
+        "description": "Accessible name of the focusable slide track"
       }
     ],
     "structure": [
@@ -3876,7 +3926,7 @@ export default {
         "tabindex",
         "hidden"
       ],
-      "provide": "An aria-label on the carousel when the default \"Carousel\" does not describe it; an aria-label on a slide replaces the generated \"n of total\"",
+      "provide": "An aria-label on the carousel when the default \"Carousel\" does not describe it; an aria-label on a slide replaces the generated \"n of total\"; data-label-track renames the slide track (default \"Slides\")",
       "announces": "The slide position (\"Slide 2 of 5\"), politely, after a slide change; silent while autoplay is running",
       "keyboard": [
         {
@@ -4649,6 +4699,14 @@ export default {
         "description": "Initial input/copy format. The Format selector inside the panel switches it at runtime."
       },
       {
+        "name": "data-label-area-value",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Saturation {s}%, lightness {l}%",
+        "description": "Template for the aria-valuetext of the saturation and lightness area; {s} and {l} are replaced with the saturation and lightness percentages."
+      },
+      {
         "name": "open",
         "kind": "host-api",
         "purpose": "output-state",
@@ -4753,6 +4811,34 @@ export default {
         },
         {
           "keys": [
+            "Home"
+          ],
+          "action": "Set saturation to 0",
+          "when": "Focus on the saturation and lightness area"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Set saturation to 100",
+          "when": "Focus on the saturation and lightness area"
+        },
+        {
+          "keys": [
+            "PageUp"
+          ],
+          "action": "Increase lightness by 10",
+          "when": "Focus on the saturation and lightness area"
+        },
+        {
+          "keys": [
+            "PageDown"
+          ],
+          "action": "Decrease lightness by 10",
+          "when": "Focus on the saturation and lightness area"
+        },
+        {
+          "keys": [
             "ArrowRight",
             "ArrowUp"
           ],
@@ -4765,6 +4851,34 @@ export default {
             "ArrowDown"
           ],
           "action": "Decrease hue by 1 degree",
+          "when": "Focus on the hue slider"
+        },
+        {
+          "keys": [
+            "PageUp"
+          ],
+          "action": "Increase hue by 10 degrees",
+          "when": "Focus on the hue slider"
+        },
+        {
+          "keys": [
+            "PageDown"
+          ],
+          "action": "Decrease hue by 10 degrees",
+          "when": "Focus on the hue slider"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Set hue to 0 degrees",
+          "when": "Focus on the hue slider"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Set hue to 360 degrees",
           "when": "Focus on the hue slider"
         },
         {
@@ -4974,7 +5088,7 @@ export default {
           "keys": [
             "Enter"
           ],
-          "action": "Select the active option; in multiple mode with custom values, add the typed text as a tag"
+          "action": "Select the active option; in multiple mode with custom values, add the typed text as a tag. With no active option and nothing to add, Enter submits the form"
         },
         {
           "keys": [
@@ -5347,7 +5461,7 @@ export default {
       {
         "name": "comment-box:cancel",
         "detail": "{ value }",
-        "description": "Cancel button clicked"
+        "description": "Cancel button clicked, or Escape pressed while the Cancel button is shown"
       },
       {
         "name": "comment-box:input",
@@ -5437,6 +5551,13 @@ export default {
           ],
           "action": "Submit the comment",
           "when": "Focus in the comment field"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Cancel, as the Cancel button does",
+          "when": "data-show-cancel is set and focus is in the comment field or on its buttons"
         }
       ]
     }
@@ -5686,7 +5807,7 @@ export default {
         "name": "aria-label",
         "kind": "aria",
         "purpose": "config",
-        "description": "Used as the slider handle's accessible name when label is absent"
+        "description": "Used as the slider handle's accessible name when label is absent. A host with aria-label or aria-labelledby and no role of its own gets role=\"group\""
       }
     ],
     "structure": [
@@ -5719,6 +5840,7 @@ export default {
       "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/slider/",
       "manages": [
         "role=\"slider\"",
+        "role=\"group\"",
         "tabindex",
         "aria-label",
         "aria-orientation",
@@ -6016,8 +6138,7 @@ export default {
     "a11y": {
       "pattern": "Native form controls",
       "manages": [
-        "hidden",
-        "aria-hidden"
+        "hidden"
       ],
       "provide": "A data-lens-label on each lens when its data-lens-name does not read well as a radio label"
     }
@@ -6130,9 +6251,11 @@ export default {
       "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/button/",
       "manages": [
         "inert",
-        "aria-pressed"
+        "aria-pressed",
+        "role=\"button\"",
+        "tabindex"
       ],
-      "provide": "Explicit [data-swap] triggers should be <button> elements with a text label; without triggers a \"Show back\" toggle button is generated",
+      "provide": "Explicit [data-swap] triggers should be <button> elements with a text label (any other element is given role=\"button\" and tabindex=\"0\"); without triggers a \"Show back\" toggle button is generated",
       "keyboard": [
         {
           "keys": [
@@ -6140,7 +6263,7 @@ export default {
             "Space"
           ],
           "action": "Swap faces and move focus to the first control on the face now showing",
-          "when": "Focus on a [data-swap] trigger"
+          "when": "Focus on a [data-swap] trigger (native behaviour of a button or link; handled by the component on other elements)"
         },
         {
           "keys": [
@@ -6819,11 +6942,12 @@ export default {
         "aria-invalid",
         "aria-hidden",
         "aria-live",
+        "aria-atomic",
         "tabindex",
         "hidden"
       ],
       "provide": "An <input type=\"date\"> with a <label for> (or an aria-label); the label is passed to the generated combobox",
-      "announces": "The month name in the calendar header, politely, when the displayed month changes",
+      "announces": "The month and year in the calendar header, politely, when the displayed month or year changes",
       "keyboard": [
         {
           "keys": [
@@ -6850,20 +6974,29 @@ export default {
           "keys": [
             "Tab"
           ],
-          "action": "Close the calendar and move on"
+          "action": "Close the calendar and move on",
+          "when": "Focus on the text input"
+        },
+        {
+          "keys": [
+            "Tab",
+            "Shift+Tab"
+          ],
+          "action": "Move through the previous month button, the year select, the next month button and the day grid, wrapping within the calendar",
+          "when": "Focus in the calendar"
         },
         {
           "keys": [
             "ArrowRight"
           ],
-          "action": "Move to the next day",
+          "action": "Move to the next day (reversed in right-to-left)",
           "when": "Focus in the day grid"
         },
         {
           "keys": [
             "ArrowLeft"
           ],
-          "action": "Move to the previous day",
+          "action": "Move to the previous day (reversed in right-to-left)",
           "when": "Focus in the day grid"
         },
         {
@@ -7064,6 +7197,7 @@ export default {
     "a11y": {
       "pattern": "Native list with roving tabindex",
       "manages": [
+        "role=\"button\"",
         "role=\"group\"",
         "aria-label",
         "tabindex"
@@ -7152,6 +7286,14 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "CSS length reserved for the diagram before render to prevent layout shift"
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Diagram syntax error: {message}",
+        "description": "Text of the error note, also announced to screen readers; {message} is the first line of the parser error."
       }
     ],
     "events": [
@@ -7198,11 +7340,10 @@ export default {
       "pattern": "Figure with labelled SVG",
       "manages": [
         "aria-labelledby",
-        "aria-describedby",
-        "role=\"status\""
+        "aria-describedby"
       ],
       "provide": "A caption attribute, or accTitle and accDescr lines in the Mermaid source, to name and describe the diagram",
-      "announces": "A syntax error message, in a role=\"status\" paragraph, when the diagram source fails to parse"
+      "announces": "The syntax error message, politely, when the diagram source fails to parse; the message is also shown in a paragraph below the diagram"
     }
   },
   "dl": {
@@ -7983,6 +8124,7 @@ export default {
         "aria-controls",
         "aria-label",
         "aria-current",
+        "aria-selected",
         "aria-hidden",
         "tabindex",
         "hidden"
@@ -10165,7 +10307,15 @@ export default {
         "purpose": "config",
         "type": "string",
         "default": "Image {n} of {total}",
-        "description": "Counter text template, announced politely on navigation; {n} and {total} are replaced."
+        "description": "Counter text template; {n} and {total} are replaced. Announced on navigation when the image has no alt text."
+      },
+      {
+        "name": "data-label-announce",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{alt}, {n} of {total}",
+        "description": "Text announced politely when the lightbox image changes; {alt}, {n} and {total} are replaced."
       }
     ],
     "events": [
@@ -10222,14 +10372,12 @@ export default {
       "pattern": "Native dialog",
       "manages": [
         "aria-label",
-        "aria-live",
-        "aria-atomic",
         "aria-expanded",
         "aria-controls",
         "hidden"
       ],
       "provide": "Thumbnail links that each contain an <img> with alt text",
-      "announces": "The position counter (for example \"Image 2 of 8\"), politely, when the lightbox image changes",
+      "announces": "The new image's alt text and position (for example \"Sunset over the bay, 2 of 8\"), politely, when the lightbox image changes; the position counter alone when the image has no alt text",
       "keyboard": [
         {
           "keys": [
@@ -10756,6 +10904,7 @@ export default {
     "a11y": {
       "pattern": "Native form controls",
       "manages": [
+        "role=\"group\"",
         "aria-label",
         "aria-describedby"
       ],
@@ -11372,6 +11521,14 @@ export default {
         "description": "Panel mode: Toast text when a new notification has no title or body."
       },
       {
+        "name": "data-label-added",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "New notification: {title}. {n} unread",
+        "description": "Panel mode: Text announced to screen readers when a notification arrives after the page has loaded ({title} = its title, {n} = unread count)."
+      },
+      {
         "name": "data-label-variant-info",
         "kind": "data",
         "purpose": "config",
@@ -11508,6 +11665,8 @@ export default {
         "aria-controls",
         "aria-label",
         "role=\"dialog\"",
+        "role=\"status\"",
+        "role=\"alert\"",
         "aria-labelledby",
         "role=\"tablist\"",
         "role=\"tab\"",
@@ -11519,6 +11678,7 @@ export default {
         "hidden",
         "popover"
       ],
+      "announces": "In panel mode, the title of a notification that arrives after setup and the unread count, politely; in banner mode, the banner when it appears, through role=\"status\" (role=\"alert\" for the error variant)",
       "provide": "In banner mode, a dismiss button with an accessible name; in panel mode, an accessible name on an authored trigger",
       "keyboard": [
         {
@@ -12618,7 +12778,7 @@ export default {
             "ArrowRight",
             "ArrowDown"
           ],
-          "action": "Go to the next step",
+          "action": "Go to the next step (ArrowRight and ArrowLeft are reversed in right-to-left)",
           "when": "Focus not in a form field"
         },
         {
@@ -12626,7 +12786,7 @@ export default {
             "ArrowLeft",
             "ArrowUp"
           ],
-          "action": "Go to the previous step",
+          "action": "Go to the previous step (ArrowRight and ArrowLeft are reversed in right-to-left)",
           "when": "Focus not in a form field"
         },
         {
@@ -13426,6 +13586,14 @@ export default {
         "type": "string",
         "default": "(error)",
         "description": "Visually hidden status text for errored steps."
+      },
+      {
+        "name": "data-label-announce",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Step {n} of {total}: {label}",
+        "description": "Text announced to screen readers when the current step changes; {n}, {total} and {label} (the step's label text)."
       }
     ],
     "events": [
@@ -13517,6 +13685,7 @@ export default {
         "aria-hidden"
       ],
       "provide": "An <ol> whose items carry a text label for each step",
+      "announces": "The new current step (for example \"Step 2 of 4: Profile\"), politely, when the current step changes after setup",
       "keyboard": [
         {
           "keys": [
@@ -15589,7 +15758,7 @@ export default {
         "purpose": "config",
         "type": "string",
         "default": "Share this page",
-        "description": "Accessible name of the share nav"
+        "description": "Accessible name of the share button group"
       },
       {
         "name": "data-label-share-on",
@@ -15691,8 +15860,9 @@ export default {
     ],
     "structure": [],
     "a11y": {
-      "pattern": "Native buttons in a navigation landmark",
+      "pattern": "Native buttons in a named group",
       "manages": [
+        "role=\"group\"",
         "aria-label",
         "aria-hidden"
       ],
@@ -16219,7 +16389,6 @@ export default {
         "role=\"tree\"",
         "role=\"treeitem\"",
         "role=\"group\"",
-        "role=\"toolbar\"",
         "aria-expanded",
         "aria-current",
         "aria-label",
@@ -17900,8 +18069,7 @@ export default {
         "role=\"group\"",
         "aria-controls",
         "aria-labelledby",
-        "aria-expanded",
-        "tabindex roving"
+        "aria-expanded"
       ],
       "provide": "Child <details> elements, each with a <summary> and a <section> panel",
       "keyboard": [
@@ -17924,14 +18092,14 @@ export default {
             "ArrowDown"
           ],
           "action": "Open and focus the next tab, wrapping to the first",
-          "when": "Focus on a tab, data-orientation=\"vertical\""
+          "when": "Focus on a tab, data-orientation=\"vertical\" (the left and right arrows work too)"
         },
         {
           "keys": [
             "ArrowUp"
           ],
           "action": "Open and focus the previous tab, wrapping to the last",
-          "when": "Focus on a tab, data-orientation=\"vertical\""
+          "when": "Focus on a tab, data-orientation=\"vertical\" (the left and right arrows work too)"
         },
         {
           "keys": [
@@ -18366,6 +18534,7 @@ export default {
       "pattern": "Non-modal dialog with native form controls",
       "manages": [
         "role=\"dialog\"",
+        "role=\"group\"",
         "role=\"radiogroup\"",
         "aria-haspopup",
         "aria-expanded",
@@ -20298,7 +20467,7 @@ export default {
         "hidden"
       ],
       "provide": "A child <video>, with a captions <track> where speech is present; set aria-label when the default player name does not fit",
-      "announces": "Playing, paused, ended and buffering states, politely; the playback speed when it changes",
+      "announces": "Playing, paused, ended and buffering states, politely; the playback speed, once, when it is changed with the speed button",
       "keyboard": [
         {
           "keys": [
@@ -20630,6 +20799,7 @@ export default {
     "a11y": {
       "pattern": "Native table with roving focus across events",
       "manages": [
+        "role=\"button\"",
         "role=\"group\"",
         "aria-label",
         "aria-current",

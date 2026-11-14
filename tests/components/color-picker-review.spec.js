@@ -147,6 +147,40 @@ test('colour area exposes slider value semantics', async ({ page }) => {
   await expect(area).toHaveAttribute('aria-valuetext', /^Saturation \d+%, lightness \d+%$/);
 });
 
+test('sliders handle Home, End, PageUp and PageDown', async ({ page }) => {
+  await load(page, LABELLED);
+  await page.locator('.color-trigger').click();
+  const area = page.getByRole('slider', { name: 'Saturation and lightness' });
+  const lightness = async () => Number(/lightness (\d+)%/.exec(await area.getAttribute('aria-valuetext'))[1]);
+  await area.press('Home');
+  await expect(area).toHaveAttribute('aria-valuenow', '0');
+  await area.press('End');
+  await expect(area).toHaveAttribute('aria-valuenow', '100');
+  // #6366f1 has a lightness near 66%, so neither Page key clamps.
+  const before = await lightness();
+  await area.press('PageDown');
+  expect(await lightness()).toBe(before - 10);
+  await area.press('PageUp');
+  expect(await lightness()).toBe(before);
+
+  const hue = page.getByRole('slider', { name: 'Hue' });
+  await hue.press('Home');
+  await expect(hue).toHaveAttribute('aria-valuenow', '0');
+  await hue.press('PageUp');
+  await expect(hue).toHaveAttribute('aria-valuenow', '10');
+  await hue.press('PageDown');
+  await expect(hue).toHaveAttribute('aria-valuenow', '0');
+  await hue.press('End');
+  await expect(hue).toHaveAttribute('aria-valuenow', '360');
+});
+
+test('data-label-area-value translates the area value text', async ({ page }) => {
+  await load(page, LABELLED.replace('<color-picker', '<color-picker data-label-area-value="Sättigung {s} %, Helligkeit {l} %"'));
+  await page.locator('.color-trigger').click();
+  const area = page.getByRole('slider', { name: 'Saturation and lightness' });
+  await expect(area).toHaveAttribute('aria-valuetext', /^Sättigung \d+ %, Helligkeit \d+ %$/);
+});
+
 test('swatches are toggle buttons in a group, current one pressed', async ({ page }) => {
   await load(page, LABELLED);
   await page.locator('.color-trigger').click();

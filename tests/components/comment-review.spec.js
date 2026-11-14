@@ -150,6 +150,21 @@ test.describe('comment-box', () => {
     expect(await page.locator('comment-box [role="toolbar"]').count()).toBe(0);
   });
 
+  test('Escape fires comment-box:cancel only when the Cancel button is shown', async ({ page }) => {
+    await load(page, '<comment-box id="a" data-show-cancel></comment-box><comment-box id="b"></comment-box>', ['comment-box']);
+    await editorReady(page);
+    await page.waitForSelector('#b markdown-editor[data-upgraded] textarea', { state: 'attached' });
+    await page.evaluate(() => {
+      window.__cancels = [];
+      document.addEventListener('comment-box:cancel', (e) => window.__cancels.push(e.target.id));
+    });
+    await page.locator('#b textarea').focus();
+    await page.keyboard.press('Escape');
+    await page.locator('#a textarea').focus();
+    await page.keyboard.press('Escape');
+    expect(await page.evaluate(() => window.__cancels)).toEqual(['a']);
+  });
+
   test('a disabled fieldset disables the editor and buttons', async ({ page }) => {
     await load(page, '<form><fieldset disabled><comment-box data-show-cancel></comment-box></fieldset></form>', ['comment-box']);
     await editorReady(page);
@@ -259,6 +274,17 @@ test.describe('comment-thread', () => {
     await page.locator('#c2 .comment-reply').click();
     await page.waitForSelector('#c2 .comment-reply-form markdown-editor[data-upgraded] textarea', { state: 'attached' });
     await page.locator('#c2 .comment-box-cancel').click();
+    await expect(page.locator('#c2 .comment-reply-form')).toHaveCount(0);
+    await expect(page.locator('#c2 .comment-reply')).toBeFocused();
+  });
+
+  test('Escape in the reply form cancels it and returns focus to Reply', async ({ page }) => {
+    await load(page, THREAD, ['comment-thread']);
+    await page.waitForSelector('#t[data-upgraded]');
+    await page.locator('#c2 .comment-reply').click();
+    await page.waitForSelector('#c2 .comment-reply-form markdown-editor[data-upgraded] textarea', { state: 'attached' });
+    await page.locator('#c2 .comment-reply-form textarea').focus();
+    await page.keyboard.press('Escape');
     await expect(page.locator('#c2 .comment-reply-form')).toHaveCount(0);
     await expect(page.locator('#c2 .comment-reply')).toBeFocused();
   });

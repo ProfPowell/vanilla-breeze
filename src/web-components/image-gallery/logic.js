@@ -22,6 +22,7 @@
  * @attr {string}  data-label-show-details  - Info button name, collapsed (default "Show image details")
  * @attr {string}  data-label-hide-details  - Info button name, expanded (default "Hide image details")
  * @attr {string}  data-label-counter       - Counter template; {n}/{total} (default "Image {n} of {total}")
+ * @attr {string}  data-label-announce      - Announced on navigation; {alt}/{n}/{total} (default "{alt}, {n} of {total}")
  *
  * @example
  * <image-gallery>
@@ -39,6 +40,7 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { startSwapTransition } from '../../utils/swap-transition.js';
+import { announce } from '../../lib/announce.js';
 
 let galleryId = 0;
 let warnedMissingAlt = false;
@@ -52,6 +54,7 @@ const LABELS = {
   ShowDetails: 'Show image details',
   HideDetails: 'Hide image details',
   Counter: 'Image {n} of {total}',
+  Announce: '{alt}, {n} of {total}',
 };
 
 /**
@@ -380,8 +383,6 @@ class ImageGallery extends VBElement {
 
     const counter = document.createElement('span');
     counter.className = 'gallery-counter';
-    counter.setAttribute('aria-live', 'polite');
-    counter.setAttribute('aria-atomic', 'true');
     this.#counter = counter;
 
     // Close button — a plain button (no invoker attributes) so the
@@ -540,7 +541,23 @@ class ImageGallery extends VBElement {
       this.#loadImage(index);
     }
 
+    this.#announceImage();
     this.#preloadAdjacent(index);
+  }
+
+  /** Tell screen readers which image is now shown: its alt text and position. */
+  #announceImage() {
+    const item = this.#items[this.#currentIndex];
+    if (!item || !this.#dialog) return;
+    const n = this.#currentIndex + 1;
+    const total = this.#items.length;
+    const alt = (item.alt || '').trim();
+    const text = alt
+      ? this.#label('Announce').replace('{alt}', () => alt).replace('{n}', String(n)).replace('{total}', String(total))
+      : this.#counterText(n, total);
+    // The modal dialog makes the rest of the page inert, so the live region
+    // has to live inside it.
+    announce(text, { root: this.#dialog });
   }
 
   #updateControls() {

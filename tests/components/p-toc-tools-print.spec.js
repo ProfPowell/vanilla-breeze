@@ -94,7 +94,26 @@ test.describe('page-tools', () => {
       aboveFab: true, endAligned: true, nearFab: true, notAtOrigin: true,
     });
     expect(open.width).toBeGreaterThan(40);
-    expect(await page.getAttribute('page-tools', 'aria-orientation')).toBe('vertical');
+  });
+
+  test('collapsed host is not a toolbar; the role returns when it expands', async ({ page }) => {
+    await page.setViewportSize({ width: 400, height: 800 });
+    await load(page, TOOLS);
+    await page.waitForSelector('page-tools[data-collapsed]');
+    const collapsed = await page.evaluate(() => {
+      const pt = document.querySelector('page-tools');
+      return {
+        role: pt.getAttribute('role'),
+        orientation: pt.getAttribute('aria-orientation'),
+        popoverName: document.querySelector('.page-tools-popover').getAttribute('aria-label'),
+      };
+    });
+    expect(collapsed).toEqual({ role: null, orientation: null, popoverName: 'Page tools' });
+
+    await page.setViewportSize({ width: 1200, height: 800 });
+    await page.waitForSelector('page-tools:not([data-collapsed])');
+    await expect(page.locator('page-tools')).toHaveAttribute('role', 'toolbar');
+    await expect(page.locator('page-tools')).toHaveAttribute('aria-orientation', 'horizontal');
   });
 
   test('Escape from a tool returns focus to the FAB', async ({ page }) => {

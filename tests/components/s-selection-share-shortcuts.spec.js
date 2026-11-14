@@ -292,7 +292,8 @@ test.describe('share-wc', () => {
       data-label-copy="Link kopieren" data-label-copied="Kopiert!" data-label-link-copied="Link kopiert"></share-wc>`,
     { modules: ['share-wc'] });
     await page.waitForSelector('share-wc[data-upgraded]', { state: 'attached' });
-    await expect(page.locator('#s nav')).toHaveAttribute('aria-label', 'Diese Seite teilen');
+    await expect(page.locator('#s [role="group"]')).toHaveAttribute('aria-label', 'Diese Seite teilen');
+    await expect(page.locator('#s nav')).toHaveCount(0);
     await expect(page.locator('#s [data-platform="x"]')).toHaveAccessibleName('Auf X teilen');
     const copy = page.locator('#s [data-platform="copy"]');
     await expect(copy).toHaveAccessibleName('Link kopieren');

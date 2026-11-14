@@ -203,14 +203,32 @@ test.describe('RTL', () => {
 });
 
 test.describe('naming', () => {
-  test('authored aria-labelledby wins; indicators are a named group; track unlabelled', async ({ page }) => {
+  test('authored aria-labelledby wins; indicators and track are named groups', async ({ page }) => {
     await page.clock.install();
     await load(page, AUTOPLAY);
     const c = page.locator('carousel-wc');
     await expect(c).toHaveAttribute('data-upgraded', '');
     expect(await c.getAttribute('aria-label')).toBeNull();
     await expect(c.locator('.carousel-indicators')).toHaveAttribute('role', 'group');
-    expect(await c.locator('.carousel-track').getAttribute('aria-label')).toBeNull();
+    const track = c.locator('.carousel-track');
+    await expect(track).toHaveAttribute('role', 'group');
+    await expect(track).toHaveAttribute('aria-label', 'Slides');
+    await expect(track).toHaveAttribute('tabindex', '0');
+  });
+
+  test('data-label-track renames the track', async ({ page }) => {
+    await load(page, `<carousel-wc data-label-track="Diapositives">${SLIDES}</carousel-wc>`);
+    await expect(page.locator('carousel-wc .carousel-track')).toHaveAttribute('aria-label', 'Diapositives');
+  });
+
+  test('only the active indicator has aria-current', async ({ page }) => {
+    await load(page, `<carousel-wc>${SLIDES}</carousel-wc>`);
+    const dots = page.locator('carousel-wc .carousel-dot');
+    await expect(dots.nth(0)).toHaveAttribute('aria-current', 'true');
+    await expect(page.locator('carousel-wc .carousel-dot[aria-current]')).toHaveCount(1);
+    await page.evaluate(() => /** @type {any} */ (document.querySelector('carousel-wc')).goTo(2, false));
+    await expect(dots.nth(2)).toHaveAttribute('aria-current', 'true');
+    await expect(page.locator('carousel-wc .carousel-dot[aria-current]')).toHaveCount(1);
   });
 
   test('falls back to "Carousel" when unlabelled', async ({ page }) => {

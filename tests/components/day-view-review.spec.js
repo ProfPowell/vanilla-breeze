@@ -229,12 +229,12 @@ const KB = `
     <calendar-event><time datetime="11:00">11:00</time> Three</calendar-event>
   </day-view>`;
 
-test('events get role=group + a name and exactly one tab stop', async ({ page }) => {
+test('events get role=button (group when they hold controls) + a name and exactly one tab stop', async ({ page }) => {
   await load(page, KB);
   const r = await page.evaluate(() => [...document.querySelectorAll('calendar-event')].map((e) => ({
     role: e.getAttribute('role'), label: e.getAttribute('aria-label'), tabindex: e.getAttribute('tabindex'),
   })));
-  expect(r.map((e) => e.role)).toEqual(['group', 'group', 'group']);
+  expect(r.map((e) => e.role)).toEqual(['group', 'button', 'button']);
   expect(r[0].label).toBe('9:00 One');
   expect(r.map((e) => e.tabindex)).toEqual(['0', '-1', '-1']);
 });
@@ -353,7 +353,7 @@ test('week-view: Enter/Home/End, role/name, roving reset on reconnect and setter
     };
   });
   expect(r.clicks).toEqual(['2026-04-08']);
-  expect(r.role).toBe('group');
+  expect(r.role).toBe('button');
   expect(r.afterReconnect).toBe(1);
   expect(r.upgraded).toBe(true);
   expect(r.derivedDate).toBe('2026-04-07');

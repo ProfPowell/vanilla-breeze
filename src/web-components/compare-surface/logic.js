@@ -44,7 +44,7 @@ function parsePosition(raw) {
 }
 
 class CompareSurface extends VBElement {
-  static observedAttributes = ['position', 'label', 'aria-label'];
+  static observedAttributes = ['position', 'label', 'aria-label', 'aria-labelledby'];
 
   /** @type {HTMLElement | null} */
   #divider = null;
@@ -52,6 +52,8 @@ class CompareSurface extends VBElement {
   #reflecting = false;
   /** Integer position currently applied. */
   #position = 50;
+  /** True when the component added role="group" (so only ours is removed). */
+  #ownsRole = false;
 
   setup() {
     const children = [...this.children].filter((c) => !c.classList.contains('comparison-divider'));
@@ -69,6 +71,7 @@ class CompareSurface extends VBElement {
     this.#divider.setAttribute('aria-orientation', 'horizontal');
     this.#divider.setAttribute('tabindex', '0');
     this.#syncLabel();
+    this.#syncHostRole();
     this.appendChild(this.#divider);
 
     // Apply the author's position without reflecting or dispatching.
@@ -87,6 +90,8 @@ class CompareSurface extends VBElement {
     this.#divider?.remove();
     this.#divider = null;
     this.#dragging = false;
+    if (this.#ownsRole) this.removeAttribute('role');
+    this.#ownsRole = false;
   }
 
   /**
@@ -101,6 +106,22 @@ class CompareSurface extends VBElement {
       this.#apply(parsePosition(newVal));
     } else {
       this.#syncLabel();
+      this.#syncHostRole();
+    }
+  }
+
+  /**
+   * aria-label / aria-labelledby are prohibited on a role-less (generic)
+   * host; a labelled compare-surface is a named group around the slider.
+   */
+  #syncHostRole() {
+    const named = this.hasAttribute('aria-label') || this.hasAttribute('aria-labelledby');
+    if (named && !this.hasAttribute('role')) {
+      this.setAttribute('role', 'group');
+      this.#ownsRole = true;
+    } else if (!named && this.#ownsRole) {
+      this.removeAttribute('role');
+      this.#ownsRole = false;
     }
   }
 

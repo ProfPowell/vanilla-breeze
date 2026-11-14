@@ -52,6 +52,8 @@ import { parseTime, parseDuration, layoutColumns, eventLabel, DEFAULT_DURATION_M
 const DEFAULT_START_HOUR = 7;
 const DEFAULT_END_HOUR = 19;
 const NAV_KEYS = ['ArrowDown', 'ArrowUp', 'Home', 'End'];
+// Content that cannot sit inside role="button"
+const INTERACTIVE = 'a[href], button, input, select, textarea, summary, audio[controls], video[controls], [tabindex], [contenteditable]';
 
 
 /**
@@ -264,12 +266,16 @@ class DayView extends VBElement {
   /**
    * Give each event a role + name and reset the roving tabindex so exactly
    * one event is a tab stop (keeps the current stop across reconnects).
+   * Events are activatable, so they are buttons; one that holds its own
+   * links or controls stays a group, since a button cannot contain them.
    */
   #prepareEvents() {
     const events = this.#events();
     const current = events.find((el) => el.getAttribute('tabindex') === '0');
     for (const el of events) {
-      if (!el.hasAttribute('role')) el.setAttribute('role', 'group');
+      if (!el.hasAttribute('role')) {
+        el.setAttribute('role', el.querySelector(INTERACTIVE) ? 'group' : 'button');
+      }
       if (!el.hasAttribute('aria-label') || ownLabels.has(el)) {
         const label = eventLabel(el);
         ownLabels.set(el, label);

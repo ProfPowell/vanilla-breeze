@@ -715,7 +715,14 @@ class PageTour extends VBElement {
     const inField = !!origin?.closest(EDITABLE);
     const modified = e.altKey || e.ctrlKey || e.metaKey;
 
-    switch (e.key) {
+    // Left/right follow the page's reading direction
+    let key = e.key;
+    if (getComputedStyle(document.documentElement).direction === 'rtl') {
+      if (key === 'ArrowRight') key = 'ArrowLeft';
+      else if (key === 'ArrowLeft') key = 'ArrowRight';
+    }
+
+    switch (key) {
       case 'Escape':
         if (this.#isSkippable(this.#steps[this.#currentStep])) {
           e.preventDefault();

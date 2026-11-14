@@ -153,9 +153,19 @@ class SiteMap extends VBElement {
     this.#buildHeader();
 
     // 5. Add tree container class
+    // The <nav> stays a landmark; the root list is the tree, so tree items
+    // sit directly under it (nested lists are groups).
     nav.classList.add('sm-tree');
-    nav.setAttribute('role', 'tree');
-    nav.setAttribute('aria-label', this.getAttribute('title') || 'Site map');
+    const treeLabel = this.getAttribute('title') || 'Site map';
+    if (!nav.hasAttribute('aria-label') && !nav.hasAttribute('aria-labelledby')) {
+      nav.setAttribute('aria-label', treeLabel);
+      nav.setAttribute('data-sm-labelled', '');
+    }
+    const rootList = nav.querySelector('ul');
+    if (rootList) {
+      rootList.setAttribute('role', 'tree');
+      rootList.setAttribute('aria-label', treeLabel);
+    }
     this.#treeContainer = /** @type {HTMLElement} */ (nav);
 
     // 6. Apply collapsed state
@@ -210,8 +220,14 @@ class SiteMap extends VBElement {
     }
     if (this.#treeContainer) {
       this.#treeContainer.classList.remove('sm-tree');
-      this.#treeContainer.removeAttribute('role');
-      this.#treeContainer.removeAttribute('aria-label');
+      // Only drop a nav label this component added
+      if (this.#treeContainer.hasAttribute('data-sm-labelled')) {
+        this.#treeContainer.removeAttribute('aria-label');
+        this.#treeContainer.removeAttribute('data-sm-labelled');
+      }
+      const rootList = this.#treeContainer.querySelector('ul[role="tree"]');
+      rootList?.removeAttribute('role');
+      rootList?.removeAttribute('aria-label');
     }
     // Move each authored anchor back to its <li> before dropping the
     // generated wrapper — removing .sm-node-content with the anchor inside
@@ -1053,7 +1069,8 @@ class SiteMap extends VBElement {
   #buildToolbar() {
     const bar = document.createElement('div');
     bar.className = 'sm-vtoolbar';
-    bar.setAttribute('role', 'toolbar');
+    // A group, not a toolbar: every control is its own Tab stop
+    bar.setAttribute('role', 'group');
     bar.setAttribute('aria-label', 'Site map controls');
 
     const icon = (svg) =>

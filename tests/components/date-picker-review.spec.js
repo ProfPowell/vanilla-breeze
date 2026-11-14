@@ -120,6 +120,55 @@ test('arrow keys move by day and week', async ({ page }) => {
   expect(await focusedDate(page)).toBe('2026-04-15');
 });
 
+test('RTL: ArrowLeft moves to the next day, ArrowRight to the previous', async ({ page }) => {
+  await load(page, BASIC.replace('<form id="f">', '<form id="f" dir="rtl">'));
+  await openGrid(page);
+  await page.keyboard.press('ArrowLeft');
+  expect(await focusedDate(page)).toBe('2026-04-16');
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
+  expect(await focusedDate(page)).toBe('2026-04-14');
+});
+
+test('Tab cycles through the calendar controls and wraps; Escape closes', async ({ page }) => {
+  await load(page, BASIC);
+  await openGrid(page);
+  const prev = page.getByRole('button', { name: 'Previous month' });
+  const next = page.getByRole('button', { name: 'Next month' });
+  const year = page.locator('#dp .calendar-year');
+  const day = page.locator('#dp td button[tabindex="0"]');
+  await page.keyboard.press('Tab');
+  await expect(prev).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(year).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(next).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(day).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(next).toBeFocused();
+  // A header button used from the keyboard keeps focus.
+  await page.keyboard.press('Enter');
+  await expect(next).toBeFocused();
+  await expect(day).toHaveAttribute('data-date', '2026-05-15');
+  await expect(page.locator('#dp .date-input')).toHaveAttribute('aria-expanded', 'true');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#dp .date-input')).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('#dp .date-input')).toBeFocused();
+});
+
+test('the live month title excludes the year select and names the grid', async ({ page }) => {
+  await load(page, BASIC);
+  await openGrid(page);
+  const live = page.locator('#dp [aria-live]');
+  await expect(live).toHaveCount(1);
+  await expect(live).toHaveText('April 2026');
+  expect(await live.locator('select').count()).toBe(0);
+  await expect(page.locator('#dp table[role="grid"]')).toHaveAccessibleName('April 2026');
+  await page.keyboard.press('PageDown');
+  await expect(live).toHaveText('May 2026');
+});
+
 test('Home/End go to the week edges for a Monday-first locale', async ({ page }) => {
   await load(page, BASIC, { lang: 'en-GB' });
   // Locale weekday headers, Monday first

@@ -582,11 +582,14 @@ class DatePicker extends VBElement {
     // Title area: month label + year dropdown
     const titleArea = document.createElement('span');
     titleArea.className = 'calendar-title';
-    titleArea.id = `${calendarId}-title`;
-    titleArea.setAttribute('aria-live', 'polite');
 
+    // Only the month text is live (with the year as hidden text); the year
+    // <select> sits beside it, outside the live region.
     this.#monthLabel = document.createElement('span');
     this.#monthLabel.className = 'calendar-month';
+    this.#monthLabel.id = `${calendarId}-title`;
+    this.#monthLabel.setAttribute('aria-live', 'polite');
+    this.#monthLabel.setAttribute('aria-atomic', 'true');
 
     this.#yearSelect = document.createElement('select');
     this.#yearSelect.className = 'calendar-year';
@@ -654,12 +657,21 @@ class DatePicker extends VBElement {
   }
 
   #renderMonth() {
+    let month;
     try {
-      this.#monthLabel.textContent = new Intl.DateTimeFormat(this.#locale, { month: 'long' })
+      month = new Intl.DateTimeFormat(this.#locale, { month: 'long' })
         .format(new Date(this.#viewYear, this.#viewMonth, 1));
     } catch {
-      this.#monthLabel.textContent = EN_MONTHS[this.#viewMonth].charAt(0).toUpperCase()
+      month = EN_MONTHS[this.#viewMonth].charAt(0).toUpperCase()
         + EN_MONTHS[this.#viewMonth].slice(1);
+    }
+    // Rewrite only on change so a re-render does not re-announce.
+    const year = ` ${this.#viewYear}`;
+    if (this.#monthLabel.firstChild?.nodeValue !== month || this.#monthLabel.lastElementChild?.textContent !== year) {
+      const hiddenYear = document.createElement('span');
+      hiddenYear.className = 'visually-hidden';
+      hiddenYear.textContent = year;
+      this.#monthLabel.replaceChildren(month, hiddenYear);
     }
 
     if (!this.#yearSelect.querySelector(`option[value="${this.#viewYear}"]`)) {
@@ -776,6 +788,10 @@ class DatePicker extends VBElement {
     this.#viewYear = this.#focusedDate.getFullYear();
     this.#viewMonth = this.#focusedDate.getMonth();
     this.#renderMonth();
+    // Keyboard users stay on the header button to step again; a pointer
+    // click moves focus into the grid.
+    const active = document.activeElement;
+    if (active?.matches('.calendar-nav:focus-visible') && this.#calendar.contains(active)) return;
     this.#focusDate(this.#focusedDate);
   }
 
@@ -1028,9 +1044,16 @@ class DatePicker extends VBElement {
 
   /** @type {(e: KeyboardEvent) => void} */
   #handleCalendarKeydown = (e) => {
-    // Combobox pattern: Tab closes calendar and leaves the component
+    // Dialog pattern: Tab cycles through the header controls and the
+    // grid's roving day; Escape is the way out.
     if (e.key === 'Tab') {
-      this.#close();
+      const stops = /** @type {HTMLElement[]} */ ([...this.#calendar.querySelectorAll(
+        '.calendar-header button, .calendar-header select, tbody button[tabindex="0"]')]);
+      if (!stops.length) return;
+      const i = stops.indexOf(/** @type {HTMLElement} */ (document.activeElement));
+      const to = i < 0 ? 0 : (i + (e.shiftKey ? -1 : 1) + stops.length) % stops.length;
+      e.preventDefault();
+      stops[to].focus();
       return;
     }
 
@@ -1044,13 +1067,15 @@ class DatePicker extends VBElement {
     let next;
     // Column of the focused day relative to the locale's first weekday
     const col = (fd.getDay() - this.#firstDayOfWeek + 7) % 7;
+    // Columns run right-to-left in RTL: mirror the horizontal arrows.
+    const fwd = getComputedStyle(this).direction === 'rtl' ? -1 : 1;
 
     switch (e.key) {
       case 'ArrowRight':
-        next = new Date(fd.getFullYear(), fd.getMonth(), fd.getDate() + 1);
+        next = new Date(fd.getFullYear(), fd.getMonth(), fd.getDate() + fwd);
         break;
       case 'ArrowLeft':
-        next = new Date(fd.getFullYear(), fd.getMonth(), fd.getDate() - 1);
+        next = new Date(fd.getFullYear(), fd.getMonth(), fd.getDate() - fwd);
         break;
       case 'ArrowDown':
         next = new Date(fd.getFullYear(), fd.getMonth(), fd.getDate() + 7);

@@ -250,13 +250,16 @@ class AIChat extends VBElement {
     /* Escape anywhere inside the host aborts the in-flight stream. The
        textarea stays enabled while streaming (chat-window re-enables it right
        after dispatching chat-window:send; further sends are dropped above),
-       so focus is normally still in the textarea and Escape reaches us. */
+       so focus is normally still in the textarea. Capture phase, and the
+       event stops here: chat-input's own Escape would also clear the draft. */
     this.listen(this, 'keydown', (/** @type {KeyboardEvent} */ e) => {
-      if (e.key === 'Escape' && this.#abortCtl) {
-        e.preventDefault();
-        this.#abortCtl.abort();
-      }
-    });
+      if (e.key !== 'Escape' || !this.#abortCtl) return;
+      // IME: Escape cancels the composition, not the reply.
+      if (e.isComposing || e.keyCode === 229) return;
+      e.preventDefault();
+      e.stopPropagation();
+      this.#abortCtl.abort();
+    }, { capture: true });
     /* Visible Stop button (swapped in for Send while a reply streams). */
     if (this.#stopBtn) {
       this.listen(this.#stopBtn, 'click', () => {
@@ -488,7 +491,10 @@ class AIChat extends VBElement {
     this.#abortCtl = ctl;
     this.#setState('streaming');
     this.#syncStreamControls();
-    typingElement.setAttribute('aria-busy', 'true');
+    // Busy on the live region itself, so the reply is read once when it is
+    // complete rather than chunk by chunk.
+    const thread = this.querySelector('chat-thread');
+    thread?.setAttribute('aria-busy', 'true');
     this.#refreshContextRibbon();
 
     let acc = '';
@@ -528,7 +534,7 @@ class AIChat extends VBElement {
       this.#setState('error');
       this.dispatchEvent(new CustomEvent('ai-chat:error', { detail: { error: err }, bubbles: true }));
     } finally {
-      typingElement.removeAttribute('aria-busy');
+      thread?.removeAttribute('aria-busy');
       // Only clear the controller if it is still ours (teardown/reset may
       // have replaced or cleared it meanwhile).
       if (this.#abortCtl === ctl) this.#abortCtl = null;
@@ -582,7 +588,6 @@ class AIChat extends VBElement {
     const bubble = typingElement.querySelector('chat-bubble');
     if (bubble) bubble.textContent = text;
     typingElement.removeAttribute('data-status');
-    typingElement.removeAttribute('aria-label');
   }
 
   /**

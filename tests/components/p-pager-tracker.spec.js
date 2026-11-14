@@ -328,6 +328,21 @@ test.describe('progress-tracker', () => {
     await expect(page.locator('#pt li').nth(2)).toContainText('(offen)');
   });
 
+  test('a step change is announced; the initial step is not', async ({ page }) => {
+    await load(page, `
+      <progress-tracker id="pt" data-current="account" data-clickable>
+        <ol><li data-step="account">Account</li><li data-step="profile">Profile</li><li data-step="confirm">Confirm</li></ol>
+      </progress-tracker>`);
+    expect(await page.locator('[data-vb-announcer]').count()).toBe(0);
+    await page.evaluate(() => document.getElementById('pt').setAttribute('data-current', 'profile'));
+    const region = page.locator('[data-vb-announcer="polite"]');
+    await expect(region).toHaveText('Step 2 of 3: Profile');
+    // Going back by click announces too, with the author's template.
+    await page.evaluate(() => document.getElementById('pt').setAttribute('data-label-announce', 'Schritt {n} von {total}: {label}'));
+    await page.locator('#pt li[data-step="account"] button').click();
+    await expect(region).toHaveText('Schritt 1 von 3: Account');
+  });
+
   test('error connector uses the error colour; forced colors keep connectors', async ({ page }) => {
     await load(page, `
       <progress-tracker id="pt" data-current="3">

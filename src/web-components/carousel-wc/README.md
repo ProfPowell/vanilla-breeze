@@ -63,6 +63,7 @@ After upgrade, the component builds a track, prev/next buttons, dot indicators, 
 | `start` | number | 0 | Initial slide index |
 | `persist` | string | -- | localStorage key for slide persistence |
 | `transition` | string | -- | View Transition type: "fade", "slide", "scale" |
+| `data-label-track` | string | "Slides" | Accessible name of the focusable slide track |
 
 Name the region with `aria-label` or `aria-labelledby`; without either it falls back to "Carousel".
 
@@ -102,7 +103,7 @@ Name the region with `aria-label` or `aria-labelledby`; without either it falls 
 
 ### Screen Reader
 
-- **ARIA roles:** `region` with `aria-roledescription="carousel"` on the host, `group` with `aria-roledescription="slide"` on each slide, `group` named "Slide indicators" around the dot buttons (which use `aria-current`)
+- **ARIA roles:** `region` with `aria-roledescription="carousel"` on the host, `group` with `aria-roledescription="slide"` on each slide, `group` named "Slides" on the focusable track (`data-label-track` renames it), `group` named "Slide indicators" around the dot buttons (the active one has `aria-current="true"`)
 - **Live regions:** a region announces "Slide X of Y" on change; `aria-live="off"` while rotating, `"polite"` when paused or manual
 - **Announced state changes:** Current slide index announced on navigation, autoplay play/pause via events
 - **Tested with:** VoiceOver (macOS)

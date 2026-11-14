@@ -259,6 +259,18 @@ test.describe('theme-picker', () => {
     const orphanRadios = await page.evaluate(() =>
       [...document.querySelectorAll('#p input[type=radio]')].filter((i) => !i.closest('[role=radiogroup]')).length);
     expect(orphanRadios).toBe(0);
+    // The mode set is named once: the fieldset is the radiogroup, named by its legend
+    const mode = await page.evaluate(() => {
+      const group = document.querySelector('#p input[data-field="mode"]').closest('[role=radiogroup]');
+      return {
+        tag: group.localName,
+        legend: !!group.querySelector(':scope > legend')?.textContent.trim(),
+        ariaLabel: group.hasAttribute('aria-label'),
+        nested: group.querySelectorAll('[role=radiogroup]').length,
+      };
+    });
+    expect(mode).toEqual({ tag: 'fieldset', legend: true, ariaLabel: false, nested: 0 });
+    await expect(page.locator('#p .panel')).toHaveAttribute('role', 'dialog');
     await page.locator('#p [data-trigger]').click();
     await expect(page.locator('#p')).toHaveAttribute('open', '');
     await page.locator('#after').focus();

@@ -449,6 +449,8 @@ test.describe('glossary-index', () => {
     await page.evaluate(() => document.getElementById('glossary-p').scrollIntoView({ block: 'start' }));
     const current = page.locator('.glossary-jump a[aria-current="true"]');
     await expect(current).toHaveCount(1);
+    // Other letters carry no aria-current at all (not "false")
+    await expect(page.locator('.glossary-jump a[aria-current]')).toHaveCount(1);
     const style = await page.evaluate(() => {
       const on = /** @type {Element} */ (document.querySelector('.glossary-jump a[aria-current="true"]'));
       const off = /** @type {Element} */ (document.querySelector('.glossary-jump a:not([aria-current="true"])'));

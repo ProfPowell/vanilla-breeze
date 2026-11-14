@@ -137,6 +137,24 @@ test.describe('image-gallery', () => {
     await expect(first).toBeFocused();
   });
 
+  test('navigation announces alt text and position from inside the dialog; the counter is not live', async ({ page }) => {
+    await load(page, GALLERY.replace('alt="Coast"', 'alt=""'), { tag: 'image-gallery' });
+    await page.locator('#g > a').first().click();
+    await expect(page.locator('#g dialog')).toHaveJSProperty('open', true);
+    const counter = page.locator('#g .gallery-counter');
+    expect(await counter.getAttribute('aria-live')).toBeNull();
+    // The page behind a modal dialog is inert, so the region is in the dialog.
+    const region = page.locator('#g dialog [data-vb-announcer="polite"]');
+    await page.keyboard.press('ArrowRight');
+    await expect(region).toHaveText('Hill, 2 of 3');
+    // No alt text: the counter text alone.
+    await page.keyboard.press('ArrowRight');
+    await expect(region).toHaveText('Image 3 of 3');
+    await page.evaluate(() => document.getElementById('g').setAttribute('data-label-announce', '{alt} ({n}/{total})'));
+    await page.keyboard.press('Home');
+    await expect(region).toHaveText('Forest (1/3)');
+  });
+
   test('morph transition: close button closes after the transition and focus returns', async ({ page }) => {
     await load(page, GALLERY.replace(' transition="none"', ''), { tag: 'image-gallery' });
     const first = page.locator('#g > a').first();

@@ -146,8 +146,8 @@ class ContentLens extends VBElement {
 
     for (const [key, el] of this.#lenses) {
       const isActive = key === name;
+      // `hidden` alone takes an inactive lens out of the accessibility tree.
       el.toggleAttribute('hidden', !isActive);
-      el.setAttribute('aria-hidden', isActive ? 'false' : 'true');
     }
 
     if (this.#controls) {

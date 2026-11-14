@@ -188,7 +188,9 @@ test.describe('carousel-wc — indicators', () => {
     await dots.nth(2).click();
     await expect(liveRegion).toContainText('Slide 3');
     await expect(dots.nth(2)).toHaveAttribute('aria-current', 'true');
-    await expect(dots.first()).toHaveAttribute('aria-current', 'false');
+    // Inactive dots carry no aria-current at all
+    await expect(dots.first()).not.toHaveAttribute('aria-current', /.*/);
+    await expect(indicators.locator('[aria-current]')).toHaveCount(1);
   });
 });
 

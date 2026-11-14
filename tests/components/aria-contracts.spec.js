@@ -173,22 +173,28 @@ test.describe('combo-box ARIA contracts', () => {
 test.describe('context-menu ARIA contracts', () => {
   const page_url = '/docs/examples/demos/context-menu-basic.html';
 
-  test('trigger has aria-expanded="false" initially', async ({ page }) => {
+  // The demo's trigger is a <p>. aria-expanded is not valid on an element
+  // without a role, so the component leaves it off and only makes the
+  // paragraph focusable. Triggers with a role are covered in
+  // context-menu-review.spec.js.
+  test('a plain trigger is focusable and carries no popup state', async ({ page }) => {
     await page.goto(page_url);
     await page.waitForSelector('context-menu[data-upgraded]');
 
     const trigger = page.locator('context-menu [data-trigger]').first();
-    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(trigger).toHaveAttribute('tabindex', '0');
+    await expect(trigger).not.toHaveAttribute('aria-expanded', /.*/);
   });
 
-  test('trigger has aria-expanded="true" after right-click', async ({ page }) => {
+  test('right-click opens the menu', async ({ page }) => {
     await page.goto(page_url);
     await page.waitForSelector('context-menu[data-upgraded]');
 
     const trigger = page.locator('context-menu [data-trigger]').first();
     await trigger.click({ button: 'right' });
 
-    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await page.waitForSelector('context-menu[data-open]', { state: 'attached' });
+    await expect(page.locator('context-menu [role="menu"]').first()).toBeVisible();
   });
 });
 

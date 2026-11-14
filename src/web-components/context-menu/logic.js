@@ -40,6 +40,9 @@ let contextMenuSeq = 0;
 /** Natively focusable (or author-managed) triggers keep their tab order. */
 const FOCUSABLE = 'a[href], button, input, select, textarea, summary, iframe, [tabindex], [contenteditable]:not([contenteditable="false"])';
 
+/** Elements with a native interactive role keep it. */
+const NATIVE_INTERACTIVE = 'a[href], button, input, select, textarea, summary';
+
 /** @param {Element} item */
 function isDisabled(item) {
   return item.hasAttribute('data-disabled') || item.getAttribute('aria-disabled') === 'true'
@@ -63,6 +66,8 @@ class ContextMenuWc extends VBElement {
   #activeIndex = -1;
   #isOpen = false;
   /** @type {Array<() => void>} */ #unbindFns = [];
+  /** True when setup() added role="button" to the trigger (teardown removes only ours). */
+  #statefulTrigger = false;
 
   setup() {
     const trigger = /** @type {HTMLElement | null} */ (this.querySelector(':scope > [data-trigger]'));
@@ -95,9 +100,17 @@ class ContextMenuWc extends VBElement {
     // ARIA
     this.#menu.setAttribute('role', 'menu');
     if (!this.#menu.id) this.#menu.id = `ctx-menu-list-${++contextMenuSeq}`;
-    this.#trigger.setAttribute('aria-haspopup', 'menu');
-    this.#trigger.setAttribute('aria-expanded', 'false');
-    this.#trigger.setAttribute('aria-controls', this.#menu.id);
+    // The popup states are only valid on something with a role: a native
+    // control or a trigger the author gave one. A paragraph or section stays
+    // what it is. Making it a button would turn its content into the name of
+    // a control, which is worse than a context menu that is not announced
+    // (a native one is not announced either).
+    this.#statefulTrigger = this.#trigger.hasAttribute('role') || this.#trigger.matches(NATIVE_INTERACTIVE);
+    if (this.#statefulTrigger) {
+      this.#trigger.setAttribute('aria-haspopup', 'menu');
+      this.#trigger.setAttribute('aria-expanded', 'false');
+      this.#trigger.setAttribute('aria-controls', this.#menu.id);
+    }
     // Keyboard reachability: a <p>/<section> trigger is not focusable, and
     // Shift+F10 / the ContextMenu key only reach a focused element.
     if (!this.#trigger.matches(FOCUSABLE)) {
@@ -336,7 +349,7 @@ class ContextMenuWc extends VBElement {
   #openAt(x, y) {
     this.#isOpen = true;
     this.setAttribute('data-open', '');
-    this.#trigger?.setAttribute('aria-expanded', 'true');
+    if (this.#statefulTrigger) this.#trigger?.setAttribute('aria-expanded', 'true');
 
     // Initial position at cursor (bottom-right of cursor by default).
     this.#popover.style.top = `${y}px`;
@@ -369,7 +382,7 @@ class ContextMenuWc extends VBElement {
     const restoreFocus = this.#focusIsInMenu();
     this.#isOpen = false;
     this.removeAttribute('data-open');
-    this.#trigger?.setAttribute('aria-expanded', 'false');
+    if (this.#statefulTrigger) this.#trigger?.setAttribute('aria-expanded', 'false');
     this.#activeIndex = -1;
 
     /** @type {any} */ (this.#popover)?.hide();
@@ -445,7 +458,7 @@ class ContextMenuWc extends VBElement {
     if (!this.#isOpen) return;
     this.#isOpen = false;
     this.removeAttribute('data-open');
-    this.#trigger?.setAttribute('aria-expanded', 'false');
+    if (this.#statefulTrigger) this.#trigger?.setAttribute('aria-expanded', 'false');
     this.#activeIndex = -1;
     // Escape (native light-dismiss) leaves focus on a hidden item or <body>;
     // an outside click has already moved focus where the user clicked.

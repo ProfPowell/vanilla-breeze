@@ -88,6 +88,37 @@ test('slider a11y: valuetext, Home/End/PageUp/PageDown, label', async ({ page })
   await expect(d).toHaveAttribute('aria-label', 'Renamed');
 });
 
+test('a labelled host is a named group; an unlabelled or author-roled host is left alone', async ({ page }) => {
+  await load(page, `
+    <compare-surface id="named" aria-label="Kitchen before and after">${PANELS}</compare-surface>
+    <compare-surface id="plain">${PANELS}</compare-surface>
+    <compare-surface id="own" role="figure" aria-label="Own role">${PANELS}</compare-surface>`);
+  const named = page.locator('#named');
+  await expect(named).toHaveAttribute('role', 'group');
+  await expect(named.locator('.comparison-divider')).toHaveAttribute('aria-label', 'Kitchen before and after');
+  await expect(page.locator('#plain')).not.toHaveAttribute('role', /.*/);
+  await expect(page.locator('#own')).toHaveAttribute('role', 'figure');
+
+  // The role follows the name, and teardown removes only a role the component added
+  await page.evaluate(() => document.querySelector('#plain').setAttribute('aria-label', 'Now named'));
+  await expect(page.locator('#plain')).toHaveAttribute('role', 'group');
+  await page.evaluate(() => document.querySelector('#plain').removeAttribute('aria-label'));
+  await expect(page.locator('#plain')).not.toHaveAttribute('role', /.*/);
+  const detached = await page.evaluate(() => {
+    const out = [];
+    for (const id of ['named', 'own']) {
+      const el = document.getElementById(id);
+      const parent = el.parentElement;
+      el.remove();
+      out.push(el.getAttribute('role'));
+      parent.append(el);
+    }
+    return out;
+  });
+  expect(detached).toEqual([null, 'figure']);
+  await expect(named).toHaveAttribute('role', 'group');
+});
+
 test('LTR: divider, clip and pointer agree (position from left)', async ({ page }) => {
   await load(page, `<compare-surface position="25">${PANELS}</compare-surface>`);
   const geo = await page.evaluate(() => {

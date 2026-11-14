@@ -11,7 +11,8 @@
  * Child attributes:
  * @attr {string} data-face - "front" or "back" on child elements
  * @attr {boolean} data-swap - Marks an element as a swap trigger (on children),
- *                              or enables swap behavior on any element (on the element itself)
+ *                              or enables swap behavior on any element (on the element itself).
+ *                              A trigger that is not a button or link gets role="button" and tabindex="0".
  * @attr {boolean} data-swap-toggle - Direct-child toggle button used when there are no
  *                              [data-swap] triggers (generated as "Show back" if absent)
  *
@@ -116,11 +117,26 @@ function initSwapBehavior(el) {
     if (toggle && !toggle.hasAttribute('data-swap')) toggle.remove();
     toggle = null;
     triggers.forEach(trigger => {
+      const native = trigger.matches(NATIVE_TRIGGER);
       listen(trigger, 'click', (e) => {
         e.stopPropagation();
-        toggleSwap(el, 'pointer');
+        // detail === 0: a native control activated from the keyboard or AT
+        const keyboard = native && /** @type {MouseEvent} */ (e).detail === 0;
+        toggleSwap(el, keyboard ? 'keyboard' : 'pointer');
       });
+      // Native buttons and links turn Enter/Space into a click already; a
+      // keydown handler as well would swap twice on one press.
+      if (native) return;
+      if (!trigger.hasAttribute('role')) {
+        trigger.setAttribute('role', 'button');
+        cleanups.push(() => trigger.removeAttribute('role'));
+      }
+      if (!trigger.hasAttribute('tabindex')) {
+        trigger.setAttribute('tabindex', '0');
+        cleanups.push(() => trigger.removeAttribute('tabindex'));
+      }
       listen(trigger, 'keydown', (e) => {
+        if (e.target !== trigger) return;
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           toggleSwap(el, 'keyboard');
@@ -154,6 +170,9 @@ function initSwapBehavior(el) {
     cleanups.length = 0;
   };
 }
+
+/** Triggers whose native activation already turns Enter/Space into a click */
+const NATIVE_TRIGGER = 'button, a[href], summary, input:is([type="button"], [type="submit"], [type="reset"])';
 
 /** Interactive descendants that keep their own click behaviour */
 const INTERACTIVE = 'a[href], button, input, select, textarea, label, summary, [contenteditable=""], [contenteditable="true"], [tabindex]';

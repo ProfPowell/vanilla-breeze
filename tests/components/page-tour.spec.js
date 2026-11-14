@@ -187,6 +187,20 @@ test.describe('page-tour — keyboard', () => {
     await expect(page.locator('.page-tour-step-count')).toHaveText('Step 1 of 4');
   });
 
+  test('ArrowLeft and ArrowRight swap when the page is right-to-left', async ({ page }) => {
+    await page.goto(basicPage);
+    await page.evaluate(() => { document.documentElement.dir = 'rtl'; });
+    await startTour(page);
+
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.locator('.page-tour-step-count')).toHaveText('Step 2 of 4');
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('.page-tour-step-count')).toHaveText('Step 1 of 4');
+    // Up/down keep their meaning
+    await page.keyboard.press('ArrowDown');
+    await expect(page.locator('.page-tour-step-count')).toHaveText('Step 2 of 4');
+  });
+
   test('Home goes to first step', async ({ page }) => {
     await page.goto(basicPage);
     await startTour(page);

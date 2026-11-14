@@ -105,6 +105,64 @@ test.describe('explicit [data-swap] triggers', () => {
     await expect(page.locator('#hide')).toBeFocused();
   });
 
+  test('one key press on a native button trigger swaps once', async ({ page }) => {
+    await load(page, EXPLICIT);
+    await page.evaluate(() => {
+      window.__swaps = [];
+      document.querySelector('#cs').addEventListener('content-swap:swap',
+        (e) => window.__swaps.push(/** @type {CustomEvent} */ (e).detail));
+    });
+    await page.locator('#show').focus();
+    await page.keyboard.press('Space');
+    await expect(page.locator('#hide')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#show')).toBeFocused();
+    expect(await page.evaluate(() => window.__swaps)).toEqual([
+      { swapped: true, source: 'keyboard' },
+      { swapped: false, source: 'keyboard' },
+    ]);
+    // Native buttons keep their own semantics
+    await expect(page.locator('#show')).not.toHaveAttribute('role', /./);
+    await expect(page.locator('#show')).not.toHaveAttribute('tabindex', /./);
+  });
+
+  test('a non-button trigger gets role=button and tabindex, swaps on Enter/Space, and is restored on disconnect', async ({ page }) => {
+    await load(page, `
+      <content-swap transition="fade" id="cs">
+        <section data-face="front"><p>Front</p><span data-swap id="show">Show answer</span></section>
+        <section data-face="back"><p>Back</p><span data-swap id="hide" role="link" tabindex="-1">Back</span></section>
+      </content-swap>`);
+    const cs = page.locator('#cs');
+    const show = page.locator('#show');
+    await expect(cs).toHaveAttribute('data-upgraded', '');
+    await expect(show).toHaveAttribute('role', 'button');
+    await expect(show).toHaveAttribute('tabindex', '0');
+    // Authored role / tabindex are kept
+    await expect(page.locator('#hide')).toHaveAttribute('role', 'link');
+    await expect(page.locator('#hide')).toHaveAttribute('tabindex', '-1');
+
+    await show.focus();
+    const swapped = await nextSwap(page, '#cs');
+    await page.keyboard.press('Space');
+    expect(await swapped()).toEqual({ swapped: true, source: 'keyboard' });
+    await expect(page.locator('#hide')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(cs).not.toHaveAttribute('swapped', '');
+
+    const after = await page.evaluate(() => {
+      const el = document.querySelector('#cs');
+      const parent = el.parentElement;
+      el.remove();
+      const show = el.querySelector('#show');
+      const hide = el.querySelector('#hide');
+      const out = [show.hasAttribute('role'), show.hasAttribute('tabindex'), hide.getAttribute('role')];
+      parent.append(el);
+      return out;
+    });
+    expect(after).toEqual([false, false, 'link']);
+    await expect(show).toHaveAttribute('role', 'button');
+  });
+
   test('attribute form detects its explicit triggers', async ({ page }) => {
     await load(page, `
       <article data-swap data-transition="fade" id="host">

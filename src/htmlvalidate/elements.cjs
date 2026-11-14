@@ -506,7 +506,8 @@ module.exports = {
       "gap": { enum: ["xs", "s", "m", "l", "xl"] },
       "start": {},
       "persist": {},
-      "transition": { enum: ["fade", "slide", "scale"] }
+      "transition": { enum: ["fade", "slide", "scale"] },
+      "data-label-track": {}
     }
   },
 
@@ -568,7 +569,8 @@ module.exports = {
     attributes: {
       "name": {},
       "disabled": { boolean: true },
-      "format": { enum: ["hex", "rgb", "hsl", "oklch"] }
+      "format": { enum: ["hex", "rgb", "hsl", "oklch"] },
+      "data-label-area-value": {}
     }
   },
 
@@ -749,7 +751,8 @@ module.exports = {
       "caption": {},
       "loading": {},
       "data-theme-base": {},
-      "min-height": {}
+      "min-height": {},
+      "data-label-error": {}
     }
   },
 
@@ -982,7 +985,8 @@ module.exports = {
       "data-label-next": {},
       "data-label-show-details": {},
       "data-label-hide-details": {},
-      "data-label-counter": {}
+      "data-label-counter": {},
+      "data-label-announce": {}
     }
   },
 
@@ -1095,6 +1099,7 @@ module.exports = {
       "data-label-changed": {},
       "data-label-unwatch": {},
       "data-label-new": {},
+      "data-label-added": {},
       "data-label-variant-info": {},
       "data-label-variant-success": {},
       "data-label-variant-warning": {},
@@ -1286,7 +1291,8 @@ module.exports = {
       "data-label-complete": {},
       "data-label-current": {},
       "data-label-upcoming": {},
-      "data-label-error": {}
+      "data-label-error": {},
+      "data-label-announce": {}
     }
   },
 

@@ -46,6 +46,23 @@ const SINGLE = `<form id="f">
   <button type="reset">Reset</button>
 </form>`;
 
+test('Enter submits the form unless it selects an option', async ({ page }) => {
+  await load(page, SINGLE);
+  await page.evaluate(() => {
+    window.__submits = 0;
+    document.getElementById('f').addEventListener('submit', (e) => { e.preventDefault(); window.__submits++; });
+  });
+  const input = page.locator('#fruit');
+  await input.focus();
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#cb')).not.toHaveAttribute('open', '');
+  expect(await page.evaluate(() => window.__submits)).toBe(0);
+  // List closed, nothing active: Enter is an ordinary implicit submit.
+  await page.keyboard.press('Enter');
+  expect(await page.evaluate(() => window.__submits)).toBe(1);
+});
+
 test('re-choosing the selected option closes the list', async ({ page }) => {
   await load(page, SINGLE);
   const input = page.locator('#fruit');

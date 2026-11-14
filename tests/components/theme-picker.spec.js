@@ -29,8 +29,11 @@ test.describe('theme-picker', () => {
     await expect(picker).toBeVisible();
 
     /* The panel should be visible immediately (no trigger needed) */
-    const panel = picker.locator('.panel[role="dialog"]');
+    /* Always visible, so it is a named group rather than a dialog */
+    const panel = picker.locator('.panel');
     await expect(panel).toBeVisible();
+    await expect(panel).toHaveAttribute('role', 'group');
+    await expect(panel).toHaveAttribute('aria-label', /\S/);
   });
 
   test('reconnect does not duplicate the panel', async ({ page }) => {
@@ -39,7 +42,7 @@ test.describe('theme-picker', () => {
 
     const panelCountBefore = await page.evaluate(() => {
       const picker = document.querySelector('theme-picker');
-      return picker.querySelectorAll('.panel[role="dialog"]').length;
+      return picker.querySelectorAll('.panel[role="group"]').length;
     });
 
     /* Remove and re-append the element */
@@ -54,7 +57,7 @@ test.describe('theme-picker', () => {
 
     const panelCountAfter = await page.evaluate(() => {
       const picker = document.querySelector('theme-picker');
-      return picker.querySelectorAll('.panel[role="dialog"]').length;
+      return picker.querySelectorAll('.panel[role="group"]').length;
     });
 
     expect(panelCountAfter).toBe(panelCountBefore);

@@ -289,6 +289,24 @@ test.describe('keyboard', () => {
     expect(await page.locator('#ep [role="option"][tabindex="0"]').count()).toBe(1);
   });
 
+  test('aria-selected follows the roving option; every option states it', async ({ page }) => {
+    await load(page, BASIC);
+    await page.click('#ep [data-trigger]');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowRight');
+    const r = await page.evaluate(() => {
+      const options = [...document.querySelectorAll('#ep [role="option"]')];
+      const selected = options.filter((o) => o.getAttribute('aria-selected') === 'true');
+      return {
+        allStated: options.every((o) => ['true', 'false'].includes(o.getAttribute('aria-selected'))),
+        selected: selected.length,
+        selectedIsFocused: selected[0] === document.activeElement,
+        selectedIsTabStop: selected[0]?.getAttribute('tabindex') === '0',
+      };
+    });
+    expect(r).toEqual({ allStated: true, selected: 1, selectedIsFocused: true, selectedIsTabStop: true });
+  });
+
   test('Recently used participates in layout navigation', async ({ page }) => {
     await load(page, BASIC, { recents: ['rocket', 'fire', 'tada'] });
     await page.click('#ep [data-trigger]');

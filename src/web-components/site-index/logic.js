@@ -247,7 +247,8 @@ class SiteIndex extends VBElement {
       } else {
         const span = document.createElement('span');
         span.textContent = letter;
-        span.setAttribute('aria-disabled', 'true');
+        // Plain text, not a control: a styling hook only, no ARIA state
+        span.setAttribute('data-empty', '');
         li.append(span);
       }
 

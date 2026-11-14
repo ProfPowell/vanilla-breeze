@@ -104,7 +104,8 @@ test.describe('date-picker — locale follows the nearest lang', () => {
   test('calendar month label follows the document language', async ({ page }) => {
     const { box } = await render(page, 'ja');
     await box.press('ArrowDown');
-    await expect(page.locator('#dp').getByText('4月', { exact: true })).toBeVisible();
+    // The label also holds the year as visually hidden text.
+    await expect(page.locator('#dp .calendar-month')).toContainText('4月');
   });
 
   test('parses month names in the document language', async ({ page }) => {

@@ -105,6 +105,9 @@ function readHour(value, fallback) {
 /** @type {WeakMap<Element, string>} */
 const ownLabels = new WeakMap();
 
+/** Content a button role cannot contain; an event holding any of it stays a group. */
+const EVENT_CONTROLS = 'a[href], button, input, select, textarea, summary, audio[controls], video[controls], [tabindex], [contenteditable]';
+
 class WeekView extends VBElement {
   static observedAttributes = REBUILD_ATTRS;
 
@@ -276,7 +279,10 @@ class WeekView extends VBElement {
     const events = this.#events();
     const current = events.find((el) => el.getAttribute('tabindex') === '0');
     for (const el of events) {
-      if (!el.hasAttribute('role')) el.setAttribute('role', 'group');
+      // An event is activatable (Enter/Space fires week-view:event-click), so
+      // it is a button, unless it holds controls of its own, which a button
+      // cannot contain. Same rule as day-view.
+      if (!el.hasAttribute('role')) el.setAttribute('role', el.querySelector(EVENT_CONTROLS) ? 'group' : 'button');
       if (!el.hasAttribute('aria-label') || ownLabels.has(el)) {
         const label = eventLabel(el);
         ownLabels.set(el, label);

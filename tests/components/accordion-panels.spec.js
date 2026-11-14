@@ -97,3 +97,41 @@ test('a lone <p> or <ul> answer is wrapped, keeping its own semantics', async ({
   // An authored <div> is still reused as the panel
   await expect(page.locator('#wrap')).toHaveAttribute('role', 'region');
 });
+
+test('panels are region landmarks only with six or fewer panels', async ({ page }) => {
+  const panel = (n) => `<details><summary>Q${n}</summary><div class="panel">Answer ${n}</div></details>`;
+  const range = (count) => Array.from({ length: count }, (_, i) => panel(i + 1)).join('');
+  await load(page, `
+    <accordion-wc id="six">${range(6)}</accordion-wc>
+    <accordion-wc id="seven">${range(7)}</accordion-wc>`);
+  await page.waitForSelector('#seven[data-upgraded]');
+
+  const six = page.locator('#six .panel');
+  await expect(six).toHaveCount(6);
+  for (const p of await six.all()) {
+    await expect(p).toHaveAttribute('role', 'region');
+    await expect(p).toHaveAttribute('aria-labelledby', /.+/);
+  }
+
+  const seven = page.locator('#seven .panel');
+  for (const p of await seven.all()) {
+    await expect(p).not.toHaveAttribute('role', /.*/);
+    await expect(p).not.toHaveAttribute('aria-labelledby', /.*/);
+  }
+  // The summary keeps its state and its pointer to the panel
+  const summary = page.locator('#seven summary').first();
+  await expect(summary).toHaveAttribute('aria-expanded', 'false');
+  await expect(summary).toHaveAttribute('aria-controls', /.+/);
+
+  // Growing past six and reconnecting drops the roles added earlier
+  await page.evaluate((html) => {
+    const el = document.querySelector('#six');
+    const parent = el.parentElement;
+    el.insertAdjacentHTML('beforeend', html);
+    el.remove();
+    parent.prepend(el);
+  }, panel(7));
+  await page.waitForSelector('#six[data-upgraded]');
+  await expect(page.locator('#six [role="region"]')).toHaveCount(0);
+  await expect(page.locator('#six .panel[aria-labelledby]')).toHaveCount(0);
+});

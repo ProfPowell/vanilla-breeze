@@ -161,7 +161,8 @@ class ThemePicker extends VBElement {
     // Create panel
     this.#panel = document.createElement('div');
     this.#panel.className = 'panel';
-    this.#panel.setAttribute('role', 'dialog');
+    // Inline, the panel is an always-visible form, not a dialog
+    this.#panel.setAttribute('role', this.#isInline ? 'group' : 'dialog');
     this.#panel.setAttribute('aria-label', this.#label('panel'));
 
     if (!this.#isInline) {
@@ -189,9 +190,9 @@ class ThemePicker extends VBElement {
     const themeLabel = esc(this.#label('theme'));
 
     return `
-      <fieldset class="section">
+      <fieldset class="section" role="radiogroup">
         <legend>${modeLabel}</legend>
-        <div class="segmented" role="radiogroup" aria-label="${modeLabel}">
+        <div class="segmented">
           ${MODES.map(m => `
             <label class="seg">
               <input type="radio" name="${this.#name('mode')}" data-field="mode" value="${m.id}" ${mode === m.id ? 'checked' : ''} />

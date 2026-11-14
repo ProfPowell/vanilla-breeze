@@ -156,7 +156,7 @@ test.describe('video-player a11y', () => {
     const host = page.locator('video-player');
     await expect(host).toHaveAttribute('role', 'group');
     await expect(host).toHaveAttribute('aria-label', 'Video player');
-    await expect(host).toHaveAttribute('aria-keyshortcuts', /Space.*M F C/);
+    await expect(host).toHaveAttribute('aria-keyshortcuts', 'Space k ArrowLeft ArrowRight ArrowUp ArrowDown m f c');
     const mute = host.locator('.mute-btn');
     await expect(mute).toHaveAttribute('aria-pressed', 'false');
     await host.focus();
@@ -164,6 +164,19 @@ test.describe('video-player a11y', () => {
     await expect(mute).toHaveAttribute('aria-pressed', 'true');
     await mute.click();
     await expect(mute).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  test('a speed change is announced once; no live region inside the button', async ({ page }) => {
+    await load(page, PLAYER());
+    await ready(page);
+    const speed = page.locator('video-player .speed-btn');
+    expect(await speed.locator('[aria-live]').count()).toBe(0);
+    expect(await page.locator('[data-vb-announcer]').count()).toBe(0);
+    await speed.click();
+    const label = await speed.getAttribute('aria-label');
+    expect(label).toMatch(/^Playback speed [\d.]+x$/);
+    expect(label).not.toBe('Playback speed 1x');
+    await expect(page.locator('[data-vb-announcer="polite"]')).toHaveText(label);
   });
 
   test('authored <video muted> is reflected', async ({ page }) => {

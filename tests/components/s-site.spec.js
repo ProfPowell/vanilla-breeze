@@ -430,7 +430,9 @@ test.describe('site-index', () => {
         hintA: ix.querySelector('.index-jump a[href="#index-a"]')?.title,
         // A linked letter and an empty one share a box and a row
         linked: box(ix.querySelector('.index-jump a[href="#index-a"]')),
-        empty: box(ix.querySelector('.index-jump span[aria-disabled]')),
+        empty: box(ix.querySelector('.index-jump span[data-empty]')),
+        // Empty letters are plain text: no ARIA state on a role-less span
+        emptyAria: ix.querySelectorAll('.index-jump span[aria-disabled]').length,
         refPadding: getComputedStyle(ix.querySelector('.index-refs a')).paddingBlockStart,
       };
     });
@@ -440,6 +442,7 @@ test.describe('site-index', () => {
     expect(r.termBadges).toBe(0);
     expect(r.hintA).toBe('4 terms');
     expect(r.linked).toEqual(r.empty);
+    expect(r.emptyAria).toBe(0);
     expect(r.refPadding).toBe('0px');
   });
 
@@ -613,6 +616,30 @@ test.describe('site-map ia-tree', () => {
     expect(r.statusText).toEqual(['Live: ', 'Draft: ']);
   });
 
+  test('nav stays a landmark; the root list is the tree and nested lists are groups', async ({ page }) => {
+    await load(page, IA, { modules: ['site-map'] });
+    await page.waitForSelector('site-map[data-upgraded]');
+    const r = await page.evaluate(() => {
+      const nav = document.querySelector('#sm > nav');
+      const root = nav.querySelector('ul');
+      return {
+        navRole: nav.getAttribute('role'),
+        navLabel: nav.getAttribute('aria-label'),
+        rootRole: root.getAttribute('role'),
+        rootLabel: root.getAttribute('aria-label'),
+        topItems: [...root.children].every((li) => li.getAttribute('role') === 'treeitem'),
+        nested: [...root.querySelectorAll('ul')].map((ul) => ul.getAttribute('role')),
+      };
+    });
+    expect(r.navRole).toBeNull();
+    expect(r.navLabel).toBeTruthy();
+    expect(r.rootRole).toBe('tree');
+    expect(r.rootLabel).toBeTruthy();
+    expect(r.topItems).toBe(true);
+    expect(r.nested.length).toBeGreaterThan(0);
+    expect(r.nested.every((role) => role === 'group')).toBe(true);
+  });
+
   test('Enter on a treeitem follows its link', async ({ page }) => {
     await load(page, IA, { modules: ['site-map'] });
     await page.waitForSelector('site-map[data-upgraded]');
@@ -681,6 +708,9 @@ test.describe('site-map ia-tree', () => {
     expect(await page.evaluate(() => document.activeElement?.classList.contains('sm-vtoolbar-slider'))).toBe(true);
     expect(await page.evaluate(() => document.getElementById('sm').dataset.detail)).toBe('4');
     expect(await page.locator('#sm .sm-vtoolbar').count()).toBe(1);
+    // Every control is its own Tab stop, so the bar is a named group
+    await expect(page.locator('#sm .sm-vtoolbar')).toHaveAttribute('role', 'group');
+    await expect(page.locator('#sm .sm-vtoolbar')).toHaveAttribute('aria-label', 'Site map controls');
   });
 });
 

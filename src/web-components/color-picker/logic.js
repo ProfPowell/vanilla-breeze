@@ -468,6 +468,12 @@ class ColorPicker extends VBElement {
       case 'ArrowLeft':  e.preventDefault(); this.#s = clamp(this.#s - step, 0, 100); break;
       case 'ArrowUp':    e.preventDefault(); this.#l = clamp(this.#l + step, 0, 100); break;
       case 'ArrowDown':  e.preventDefault(); this.#l = clamp(this.#l - step, 0, 100); break;
+      // Home/End follow aria-valuenow (saturation); Page keys take the
+      // vertical axis so both channels have a large step.
+      case 'Home':       e.preventDefault(); this.#s = 0; break;
+      case 'End':        e.preventDefault(); this.#s = 100; break;
+      case 'PageUp':     e.preventDefault(); this.#l = clamp(this.#l + 10, 0, 100); break;
+      case 'PageDown':   e.preventDefault(); this.#l = clamp(this.#l - 10, 0, 100); break;
       default: return;
     }
     this.#commit('keyboard');
@@ -510,6 +516,10 @@ class ColorPicker extends VBElement {
         e.preventDefault();
         this.#h = (this.#h - step + 361) % 361;
         break;
+      case 'PageUp':   e.preventDefault(); this.#h = clamp(this.#h + 10, 0, 360); break;
+      case 'PageDown': e.preventDefault(); this.#h = clamp(this.#h - 10, 0, 360); break;
+      case 'Home':     e.preventDefault(); this.#h = 0; break;
+      case 'End':      e.preventDefault(); this.#h = 360; break;
       default: return;
     }
     this.#commit('keyboard');
@@ -655,7 +665,8 @@ class ColorPicker extends VBElement {
     // Area ARIA
     this.#colorArea.setAttribute('aria-valuenow', String(sat));
     this.#colorArea.setAttribute('aria-valuetext',
-      `Saturation ${sat}%, lightness ${lig}%`);
+      (this.getAttribute('data-label-area-value') || 'Saturation {s}%, lightness {l}%')
+        .replaceAll('{s}', String(sat)).replaceAll('{l}', String(lig)));
 
     // Hue thumb
     this.#hueThumb.style.left = `${(this.#h / 360) * 100}%`;

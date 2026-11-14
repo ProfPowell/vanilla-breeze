@@ -137,6 +137,44 @@ test('notification-wc: trigger name carries the unread count', async ({ page }) 
   await expect(trigger).toHaveAccessibleName('Notifications');
 });
 
+test('notification-wc: a notification added after setup is announced; the initial set and mark-read are not', async ({ page }) => {
+  await load(page, PANEL.replace('id="n"', 'id="n" data-label-added="Neu: {title} ({n})"'));
+  await panelReady(page);
+  await page.waitForTimeout(300); // setup settles after the watch list loads
+  expect(await page.locator('[data-vb-announcer]').count()).toBe(0);
+  await page.evaluate(() => {
+    document.getElementById('n').notifications = [{ id: 'c', title: 'Deploy finished', date: '2026-04-13' }];
+  });
+  const region = page.locator('[data-vb-announcer="polite"]');
+  await expect(region).toHaveText('Neu: Deploy finished (3)');
+  await page.evaluate(() => { document.querySelector('[data-vb-announcer="polite"]').textContent = ''; });
+  await page.locator('#n > [data-trigger]').click();
+  await page.locator('#n .notification-mark-all').click();
+  await page.waitForTimeout(150);
+  await expect(region).toHaveText('');
+});
+
+test('notification-wc: banner host is role=status, role=alert for the error variant', async ({ page }) => {
+  await load(page, `<notification-wc id="b" mode="banner" persist="mn-test-role" variant="info">
+      <strong>Hi</strong> <button type="button" value="dismiss">Dismiss</button>
+    </notification-wc>`);
+  await page.evaluate(() => localStorage.clear());
+  await page.waitForSelector('#b[data-upgraded]');
+  await expect(page.locator('#b')).toHaveAttribute('role', 'status');
+  await page.evaluate(() => document.getElementById('b').setAttribute('variant', 'error'));
+  await expect(page.locator('#b')).toHaveAttribute('role', 'alert');
+  // Leaving banner mode (mode is read on connect) drops the role.
+  await page.evaluate(() => {
+    const b = document.getElementById('b');
+    const parent = b.parentNode;
+    b.remove();
+    b.setAttribute('mode', 'panel');
+    parent.append(b);
+  });
+  await page.waitForFunction(() => document.querySelector('#b .notification-panel'));
+  expect(await page.locator('#b').getAttribute('role')).toBeNull();
+});
+
 test('notification-wc: focus moves into the dialog and Escape returns it', async ({ page }) => {
   await load(page, PANEL);
   await panelReady(page);

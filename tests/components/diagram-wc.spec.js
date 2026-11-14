@@ -142,7 +142,7 @@ test('error with nothing rendered: <pre> source shown + error note + event', asy
       error: d.hasAttribute('data-error'),
       preVisible: pre ? getComputedStyle(pre).display !== 'none' : false,
       note: d.querySelector('.dwc-error')?.textContent,
-      noteRole: d.querySelector('.dwc-error')?.getAttribute('role'),
+      noteRole: d.querySelector('.dwc-error')?.getAttribute('role') ?? null,
       figure: !!d.querySelector('.dwc-figure'),
       detailSource: detail.source,
     };
@@ -150,7 +150,9 @@ test('error with nothing rendered: <pre> source shown + error note + event', asy
   expect(r.error).toBe(true);
   expect(r.preVisible).toBe(true);
   expect(r.note).toBe('Diagram syntax error: Parse error on line 1:');
-  expect(r.noteRole).toBe('status');
+  // The note is plain text; the shared announcer reads it.
+  expect(r.noteRole).toBeNull();
+  await expect(page.locator('[data-vb-announcer="polite"]')).toHaveText('Diagram syntax error: Parse error on line 1:');
   expect(r.figure).toBe(false);
   expect(r.detailSource).toBe('INVALID diagram');
 });

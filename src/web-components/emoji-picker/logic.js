@@ -348,6 +348,7 @@ class EmojiPicker extends VBElement {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.setAttribute('role', 'option');
+    btn.setAttribute('aria-selected', 'false');
     btn.tabIndex = -1;
     btn.dataset.shortcode = entry.shortcode;
     btn.setAttribute('aria-label', entry.name);
@@ -380,7 +381,8 @@ class EmojiPicker extends VBElement {
       el.replaceChildren(...nodes);
     }
     this.#builtExtended = this.#data.extendedCount();
-    this.#activeCell = null;
+    // Clears the old stop too, so a surviving cell is not left selected
+    this.#setActiveCell(null, false);
   }
 
   #renderRecents() {
@@ -394,7 +396,7 @@ class EmojiPicker extends VBElement {
     }
     if (nodes.length) nodes.unshift(this.#makeHeading('recent'));
     this.#recentGroup.replaceChildren(...nodes);
-    this.#activeCell = null;
+    this.#setActiveCell(null, false);
   }
 
   // ── Filtering ──────────────────────────────────────────────────────
@@ -457,10 +459,15 @@ class EmojiPicker extends VBElement {
    * @param {boolean} focus
    */
   #setActiveCell(cell, focus) {
-    if (this.#activeCell && this.#activeCell !== cell) this.#activeCell.tabIndex = -1;
+    if (this.#activeCell && this.#activeCell !== cell) {
+      this.#activeCell.tabIndex = -1;
+      this.#activeCell.setAttribute('aria-selected', 'false');
+    }
     this.#activeCell = cell;
     if (!cell) return;
     cell.tabIndex = 0;
+    // Selection follows the roving stop, so an option always states it
+    cell.setAttribute('aria-selected', 'true');
     if (focus) {
       cell.focus({ preventScroll: true });
       cell.scrollIntoView({ block: 'nearest' });

@@ -6,7 +6,7 @@
  * may return to completed ones. Presentational: emits `progress-tracker:step`
  * when the current step changes (programmatically via attr or by activating a
  * completed step). Authors own form state; this component just renders +
- * announces progress.
+ * announces progress (the new step is announced when the current step changes).
  *
  * Authors write a native ordered list inside the element, so the steps are
  * a real list (and read as one) before and without JavaScript:
@@ -36,6 +36,7 @@
  * @attr {string}  data-label-current  - Hidden status text (default "" — aria-current="step" conveys it)
  * @attr {string}  data-label-upcoming - Hidden status text (default "(not started)")
  * @attr {string}  data-label-error    - Hidden status text (default "(error)")
+ * @attr {string}  data-label-announce - Announced on a step change, {n}/{total}/{label} (default "Step {n} of {total}: {label}")
  *
  * Per-step attributes (on `<li>`):
  *   data-step  (stable id; defaults to the 1-based position)
@@ -46,6 +47,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { announce } from '../../lib/announce.js';
 
 const STATUS_DEFAULTS = {
   complete: '(completed)',
@@ -92,8 +94,11 @@ class ProgressTracker extends VBElement {
   attributeChangedCallback(/** @type {string} */ name, /** @type {string|null} */ oldVal, /** @type {string|null} */ newVal) {
     // Ignore the attribute replay that precedes the first connect (upgrade).
     if (oldVal === newVal || !this.hasAttribute('data-upgraded')) return;
+    const before = name === 'data-current' ? this.#indexOf(this.#steps(), oldVal) ?? 0 : -1;
     this.#refresh();
-    if (name !== 'data-current' || this.#suppressStepEvent) return;
+    if (name !== 'data-current') return;
+    this.#announceStep(before);
+    if (this.#suppressStepEvent) return;
     this.dispatchEvent(new CustomEvent('progress-tracker:step', {
       bubbles: true,
       detail: {
@@ -102,6 +107,19 @@ class ProgressTracker extends VBElement {
         source: 'attr',
       },
     }));
+  }
+
+  /**
+   * Tell screen readers which step is now current (aria-current moving is silent).
+   * @param {number} before index that was current before the change
+   */
+  #announceStep(before) {
+    const steps = this.#steps();
+    const i = this.#currentIndex(steps);
+    if (!steps[i] || i === before) return;
+    const label = (steps[i].querySelector('.pt-label')?.textContent || '').trim();
+    const tpl = this.getAttribute('data-label-announce') ?? 'Step {n} of {total}: {label}';
+    announce(fill(tpl, i + 1, steps.length).replace(/\{label\}/g, () => label));
   }
 
   // ── Structure ─────────────────────────────────────────────────────

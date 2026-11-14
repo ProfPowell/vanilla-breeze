@@ -1,6 +1,6 @@
 /**
  * <ai-chat> — reconnect idempotency, one-request-at-a-time, Escape-to-stop,
- * the visible Stop button, aria-busy on the streaming message, endpoint
+ * the visible Stop button, aria-busy on the live region while streaming, endpoint
  * conversation history (messages[], spec v1.1), the {content} deep-link
  * token, context-ribbon refresh and the abort signal on LanguageModel.create.
  *
@@ -110,7 +110,10 @@ test('a second send while streaming is ignored, and Escape stops the stream', as
   await send(page, 'one');
   await expect(host).toHaveAttribute('data-state', 'streaming');
   const typing = page.locator('chat-message[data-role="agent"]');
-  await expect(typing).toHaveAttribute('aria-busy', 'true');
+  // Busy is on the live region, not the message.
+  const thread = page.locator('ai-chat chat-thread');
+  await expect(thread).toHaveAttribute('aria-busy', 'true');
+  await expect(typing).not.toHaveAttribute('aria-busy', /.*/);
 
   await send(page, 'two');
   await page.waitForTimeout(150);
@@ -124,7 +127,9 @@ test('a second send while streaming is ignored, and Escape stops the stream', as
   await page.locator('chat-input textarea').press('Escape');
   await expect(host).toHaveAttribute('data-state', 'ready');
   await expect(typing.locator('chat-bubble')).toHaveText('(stopped)');
-  await expect(typing).not.toHaveAttribute('aria-busy', /.*/);
+  await expect(thread).not.toHaveAttribute('aria-busy', /.*/);
+  // One Escape stops the reply only; the draft is kept.
+  await expect(page.locator('chat-input textarea')).toHaveValue('two');
   ep.releases.forEach((r) => r());
 
   // The controller was released, so the next send goes through.
@@ -133,7 +138,7 @@ test('a second send while streaming is ignored, and Escape stops the stream', as
   ep.releases.forEach((r) => r());
   await expect(page.locator('chat-message[data-role="agent"]').nth(1).locator('chat-bubble')).toHaveText('Reply 2');
   await expect(host).toHaveAttribute('data-state', 'ready');
-  await expect(page.locator('chat-message[aria-busy]')).toHaveCount(0);
+  await expect(page.locator('ai-chat [aria-busy]')).toHaveCount(0);
 });
 
 test('a visible Stop button replaces Send while streaming and aborts the reply', async ({ page }) => {
@@ -156,7 +161,7 @@ test('a visible Stop button replaces Send while streaming and aborts the reply',
   await expect(host).toHaveAttribute('data-state', 'ready');
   const typing = page.locator('chat-message[data-role="agent"]');
   await expect(typing.locator('chat-bubble')).toHaveText('(stopped)');
-  await expect(typing).not.toHaveAttribute('aria-busy', /.*/);
+  await expect(page.locator('ai-chat chat-thread')).not.toHaveAttribute('aria-busy', /.*/);
   await expect(stopBtn).toBeHidden();
   await expect(sendBtn).toBeVisible();
   // Focus lands back in the textarea, not on <body>.

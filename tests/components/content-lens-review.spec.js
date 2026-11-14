@@ -140,6 +140,19 @@ test('content-lens:change fires on switches only, not on setup or reconnect', as
   expect(r.active).toBe('one');
 });
 
+test('inactive lenses are hidden with `hidden` only; no aria-hidden on any lens', async ({ page }) => {
+  await load(page, `<content-lens data-lens-storage="t-${Math.random()}">
+    <section data-lens-name="one"><p>One</p></section>
+    <section data-lens-name="two"><p>Two</p></section>
+  </content-lens>`);
+  await page.waitForSelector('content-lens[data-upgraded]');
+  const state = () => page.evaluate(() => [...document.querySelectorAll('content-lens > [data-lens-name]')]
+    .map((el) => [el.hasAttribute('hidden'), el.getAttribute('aria-hidden')]));
+  expect(await state()).toEqual([[false, null], [true, null]]);
+  await page.evaluate(() => /** @type {any} */ (document.querySelector('content-lens')).setLens('two'));
+  expect(await state()).toEqual([[true, null], [false, null]]);
+});
+
 test('lens names needing CSS escaping still check their chip', async ({ page }) => {
   await load(page, `<content-lens data-lens-storage="t-${Math.random()}">
     <section data-lens-name='a"b'><p>Quoted</p></section>

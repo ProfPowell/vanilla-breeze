@@ -42,7 +42,7 @@ test.describe('share-wc', () => {
     await expect(el).toHaveAttribute('data-tier-resolved', 'platforms');
   });
 
-  test('reconnect does not duplicate nav or buttons', async ({ page }) => {
+  test('reconnect does not duplicate the group or buttons', async ({ page }) => {
     const errors = [];
     page.on('pageerror', err => errors.push(err.message));
 
@@ -69,9 +69,10 @@ test.describe('share-wc', () => {
     const countAfter = await el.locator('button[data-platform]').count();
     expect(countAfter).toBe(countBefore);
 
-    // Count nav elements — should be exactly 1
-    const navCount = await el.locator('nav').count();
-    expect(navCount).toBe(1);
+    // One named group, and no navigation landmark around the buttons
+    expect(await el.locator('[role="group"]').count()).toBe(1);
+    await expect(el.locator('[role="group"]')).toHaveAttribute('aria-label', /\S/);
+    expect(await el.locator('nav').count()).toBe(0);
 
     expect(errors).toEqual([]);
   });

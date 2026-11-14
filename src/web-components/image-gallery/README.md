@@ -46,6 +46,7 @@ Without JavaScript, `<a href>` thumbnails link directly to full images. CSS prov
 | transition | morph, fade, none | morph | View Transition type |
 | data-label-dialog / -close / -prev / -next / -show-details / -hide-details | string | English | UI strings |
 | data-label-counter | string | `Image {n} of {total}` | Counter template |
+| data-label-announce | string | `{alt}, {n} of {total}` | Text announced when the lightbox image changes |
 
 ## JavaScript API
 

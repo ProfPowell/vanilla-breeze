@@ -26,6 +26,7 @@
  * @attr {string}  loading         - "lazy" defers render until in viewport
  * @attr {string}  data-theme-base - Mermaid base theme: base|default|dark|forest|neutral. Default "base".
  * @attr {string}  min-height      - CSS length reserved before render (prevents layout shift)
+ * @attr {string}  data-label-error - Error note template, {message} (default "Diagram syntax error: {message}")
  *
  * @fires diagram-wc:ready          - { svg, type, source }
  * @fires diagram-wc:error          - { error, source, type }
@@ -43,6 +44,7 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { viewTransitionSwap } from '../../lib/vb-view-transition.js';
 import { buildMermaidConfig } from '../../lib/diagram-tokens.js';
+import { announce } from '../../lib/announce.js';
 
 export { enhanceMermaidFences } from './enhance.js';
 
@@ -355,16 +357,22 @@ class DiagramWc extends VBElement {
     }
 
     // Replace any prior error rather than stacking them up.
-    this.querySelector(':scope > .dwc-error')?.remove();
+    const prior = this.querySelector(':scope > .dwc-error');
+    const priorText = prior?.textContent;
+    prior?.remove();
 
     const msg = document.createElement('p');
     msg.className = 'dwc-error';
-    msg.setAttribute('role', 'status');
     // Keep just the headline of Mermaid's parser error — the full token
     // dump is in the event detail for callers who want it.
     const headline = (err.message || String(err)).split('\n')[0].slice(0, 240);
-    msg.textContent = `Diagram syntax error: ${headline}`;
+    const tpl = this.getAttribute('data-label-error') ?? 'Diagram syntax error: {message}';
+    msg.textContent = tpl.replace(/\{message\}/g, () => headline);
     this.appendChild(msg);
+    // A region inserted with its text already set is often not read, so the
+    // shared announcer says it. Not repeated while the same error persists
+    // (live editing re-renders on every change).
+    if (msg.textContent !== priorText) announce(msg.textContent);
 
     this.dispatchEvent(new CustomEvent('diagram-wc:error', {
       bubbles: true,

@@ -29,11 +29,16 @@ import { VBElement } from '../../lib/vb-element.js';
 
 let accordionVtId = 0;
 
+/** APG: region landmarks on more than about six panels are clutter. */
+const MAX_REGION_PANELS = 6;
+
 class AccordionWc extends VBElement {
   #details = [];
   #summaries = [];
   #panels = [];
   #vtEnabled = false;
+  /** Panels whose role="region" setup() added (dropped again past the limit). */
+  #regions = new WeakSet();
 
   setup() {
     this.#details = [...this.querySelectorAll(':scope > details')];
@@ -171,6 +176,7 @@ class AccordionWc extends VBElement {
   }
 
   #setup() {
+    const useRegions = this.#details.length <= MAX_REGION_PANELS;
     this.#details.forEach((detail, i) => {
       const summary = this.#summaries[i];
       const panel = this.#panels[i];
@@ -187,8 +193,17 @@ class AccordionWc extends VBElement {
 
         summary.setAttribute('aria-expanded', detail.open ? 'true' : 'false');
         summary.setAttribute('aria-controls', panelId);
-        panel.setAttribute('aria-labelledby', headingId);
-        panel.setAttribute('role', 'region');
+        if (useRegions) {
+          panel.setAttribute('aria-labelledby', headingId);
+          panel.setAttribute('role', 'region');
+          this.#regions.add(panel);
+        } else if (this.#regions.has(panel)) {
+          // Panels were added since the last setup. aria-labelledby is not
+          // allowed on a role-less element, so it goes with the role.
+          panel.removeAttribute('role');
+          panel.removeAttribute('aria-labelledby');
+          this.#regions.delete(panel);
+        }
       } else {
         summary.setAttribute('aria-expanded', detail.open ? 'true' : 'false');
       }

@@ -444,7 +444,6 @@ class ChatWindow extends VBElement {
       messageEl.appendChild(bubble);
     }
     this.#fillBubble(bubble, content);
-    messageEl.removeAttribute('aria-label');
     if (error) messageEl.setAttribute('data-status', 'error');
     else messageEl.removeAttribute('data-status');
     this.#scrollToBottom();

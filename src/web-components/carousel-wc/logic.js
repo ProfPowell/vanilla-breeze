@@ -17,6 +17,7 @@
  * @attr {number}  start          - Initial slide index (default: 0)
  * @attr {string}  persist        - localStorage key for slide persistence
  * @attr {string}  transition     - VT type: "fade" (default), "slide", "scale"
+ * @attr {string}  data-label-track - Accessible name of the focusable slide track (default: "Slides")
  *
  * @example
  * <carousel-wc>
@@ -95,12 +96,13 @@ class CarouselWc extends VBElement {
       this.setAttribute('aria-label', 'Carousel');
     }
 
-    // Build track. It is focusable so arrow keys work, but it is a plain
-    // scroll container: no role, so no aria-label (names on generics are
-    // ignored or flagged by assistive tech).
+    // Build track. It is focusable so arrow keys work; a focus stop needs a
+    // role and a name, so it is a named group.
     this.#track = document.createElement('div');
     this.#track.className = 'carousel-track';
     this.#track.setAttribute('tabindex', '0');
+    this.#track.setAttribute('role', 'group');
+    this.#track.setAttribute('aria-label', this.dataset.labelTrack || 'Slides');
 
     // item-width as a CSS length → custom property consumed by styles.css
     const itemWidth = this.getAttribute('item-width');
@@ -157,7 +159,7 @@ class CarouselWc extends VBElement {
         dot.type = 'button';
         dot.className = 'carousel-dot';
         dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
-        dot.setAttribute('aria-current', i === 0 ? 'true' : 'false');
+        if (i === 0) dot.setAttribute('aria-current', 'true');
         this.listen(dot, 'click', () => this.goTo(i));
         this.#indicators.appendChild(dot);
       });
@@ -533,9 +535,14 @@ class CarouselWc extends VBElement {
       const dots = this.#indicators.children;
       for (let i = 0; i < dots.length; i++) {
         const active = i === this.#currentIndex;
-        dots[i].setAttribute('aria-current', active ? 'true' : 'false');
-        if (active) dots[i].setAttribute('data-active', '');
-        else dots[i].removeAttribute('data-active');
+        // aria-current is only present on the active dot
+        if (active) {
+          dots[i].setAttribute('aria-current', 'true');
+          dots[i].setAttribute('data-active', '');
+        } else {
+          dots[i].removeAttribute('aria-current');
+          dots[i].removeAttribute('data-active');
+        }
       }
     }
   }

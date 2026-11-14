@@ -58,10 +58,15 @@ class PageTools extends VBElement {
   #rovingRaf = 0;
   /** @type {Element | null} */
   #current = null;
+  /** The toolbar role was set here, not authored (kept across reconnects). */
+  #ownsRole = false;
 
   setup() {
     /* Toolbar semantics */
-    if (!this.hasAttribute('role')) this.setAttribute('role', 'toolbar');
+    if (!this.hasAttribute('role')) {
+      this.setAttribute('role', 'toolbar');
+      this.#ownsRole = true;
+    }
     if (!this.getAttribute('aria-label')) this.setAttribute('aria-label', 'Page tools');
 
     /* Resolve auto orientation */
@@ -141,6 +146,14 @@ class PageTools extends VBElement {
   }
 
   #syncAriaOrientation() {
+    /* Collapsed, the host holds only the floating button and the named
+       popover, so it is not a toolbar (an authored role is left alone). */
+    if (this.#collapsed && this.#ownsRole) {
+      this.removeAttribute('role');
+      this.removeAttribute('aria-orientation');
+      return;
+    }
+    if (this.#ownsRole) this.setAttribute('role', 'toolbar');
     this.setAttribute('aria-orientation', this.#keyOrientation());
   }
 

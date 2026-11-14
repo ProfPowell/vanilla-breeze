@@ -45,6 +45,7 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { VBStore } from '../../lib/vb-store.js';
 import { VBService, VBServiceError } from '../../lib/vb-service.js';
+import { announce } from '../../lib/announce.js';
 
 const TYPE_ICONS = {
   update: 'package',
@@ -72,6 +73,8 @@ const LABELS = {
   changed: 'Changed',
   unwatch: 'Unwatch {title}',
   new: 'New notification',
+  // Announced when a notification arrives after setup
+  added: 'New notification: {title}. {n} unread',
   // Banner: visually hidden prefix so the variant isn't conveyed by colour alone
   'variant-info': 'Information:',
   'variant-success': 'Success:',
@@ -158,17 +161,30 @@ class NotificationWc extends VBElement {
   #watches = [];
   /** @type {Array<any>} Notifications ingested from document-level notification-wc:new (page-watch) */
   #ingested = [];
+  /** @type {Set<string>} Ids already rendered, so only later arrivals are announced */
+  #knownIds = new Set();
+  /** True once the initial set (static + first fetch) is in; arrivals after this are announced. */
+  #settled = false;
+  /** True while the host carries the banner role this component set. */
+  #bannerRole = false;
 
   setup() {
     const gen = ++this.#gen;
     this.#mode = this.getAttribute('mode') === 'banner' ? 'banner' : 'panel';
     if (this.#mode === 'banner') this.#setupBanner(gen);
-    else this.#setupPanel(gen);
+    else {
+      if (this.#bannerRole) {
+        this.removeAttribute('role');
+        this.#bannerRole = false;
+      }
+      this.#setupPanel(gen);
+    }
     return true;
   }
 
   teardown() {
     this.#gen++;
+    this.#settled = false;
     if (this.#pollTimer != null) {
       clearInterval(this.#pollTimer);
       this.#pollTimer = null;
@@ -186,6 +202,7 @@ class NotificationWc extends VBElement {
     if (name === 'variant') {
       this.dataset.variant = newValue || 'info';
       this.#syncVariantPrefix();
+      this.#syncBannerRole();
     }
     if (name === 'position') this.dataset.position = newValue || 'top';
   }
@@ -259,6 +276,7 @@ class NotificationWc extends VBElement {
     this.dataset.variant = this.getAttribute('variant') || 'info';
     this.dataset.position = this.getAttribute('position') || 'top';
     this.#syncVariantPrefix();
+    this.#syncBannerRole();
 
     // Hide if previously dismissed (and not yet expired)
     if (persist) {
@@ -277,6 +295,12 @@ class NotificationWc extends VBElement {
     // Hook the dismiss button(s)
     const dismiss = this.querySelector('[value="dismiss"], [data-dismiss]');
     if (dismiss) this.listen(dismiss, 'click', this.#handleDismiss);
+  }
+
+  /** A banner that appears is announced: politely, or at once for the error variant. */
+  #syncBannerRole() {
+    this.setAttribute('role', this.dataset.variant === 'error' ? 'alert' : 'status');
+    this.#bannerRole = true;
   }
 
   /**
@@ -356,6 +380,7 @@ class NotificationWc extends VBElement {
         this.#pollTimer = setInterval(() => this.#fetchDynamic(gen), poll);
       }
     }
+    this.#settled = true;
   }
 
   async #loadReadState() {
@@ -488,6 +513,23 @@ class NotificationWc extends VBElement {
     list.innerHTML = items.map((n) => this.#renderItem(n, lang)).join('');
     if (footer) footer.hidden = items.length > 0;
     this.#updateBadge(items);
+    this.#announceNew(items);
+  }
+
+  /**
+   * Announce notifications that arrived after setup. The initial set and
+   * re-renders after marking read add no new ids, so they stay silent.
+   * @param {Array<any>} items
+   */
+  #announceNew(items) {
+    const fresh = items.filter((n) => !this.#knownIds.has(n.id));
+    for (const n of fresh) this.#knownIds.add(n.id);
+    if (!this.#settled) return;
+    // Items are newest first; the count covers several arriving together.
+    const first = fresh.find((n) => !this.#readIds.has(n.id));
+    if (!first) return;
+    const unread = items.filter((n) => !this.#readIds.has(n.id)).length;
+    announce(this.#label('added', { title: first.title || this.#label('new'), n: unread }));
   }
 
   #renderItem(n, lang) {
@@ -834,6 +876,8 @@ class NotificationWc extends VBElement {
             variant: n.type === 'alert' || n.type === 'stewardship' ? 'warning' : 'info',
             duration: 5000,
           });
+          // The toast announces itself; don't say it twice.
+          this.#knownIds.add(n.id);
         }
       }
       prevSeen.add(n.id);

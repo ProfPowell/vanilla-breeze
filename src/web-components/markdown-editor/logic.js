@@ -182,10 +182,13 @@ class MarkdownEditor extends VBElement {
 
     this.#editorPane = document.createElement('section');
     this.#editorPane.className = 'md-editor-pane';
+    // Named groups: a labelled <section> would add two region landmarks per editor.
+    this.#editorPane.setAttribute('role', 'group');
     this.#editorPane.append(...authoredNodes);
 
     this.#previewPane = document.createElement('section');
     this.#previewPane.className = 'md-preview-pane';
+    this.#previewPane.setAttribute('role', 'group');
 
     this.#viewer = document.createElement('markdown-viewer');
     // Same base direction as the source: the textarea's explicit dir, else

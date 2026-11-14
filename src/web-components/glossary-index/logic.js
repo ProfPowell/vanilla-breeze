@@ -346,7 +346,9 @@ class GlossaryIndex extends VBElement {
       else break;
     }
     for (const link of this.querySelectorAll('.glossary-jump a')) {
-      link.setAttribute('aria-current', link.getAttribute('href') === `#${current.id}` ? 'true' : 'false');
+      // Only the current letter carries aria-current.
+      if (link.getAttribute('href') === `#${current.id}`) link.setAttribute('aria-current', 'true');
+      else link.removeAttribute('aria-current');
     }
   }
 

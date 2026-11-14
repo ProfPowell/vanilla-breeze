@@ -1291,8 +1291,9 @@ class CalendarWc extends VBElement {
   /** @param {KeyboardEvent} e */
   #handleKey(e) {
     const steps = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 7, ArrowUp: -7 };
+    const jumps = ['Home', 'End', 'PageUp', 'PageDown'];
     let step = steps[/** @type {keyof typeof steps} */ (e.key)];
-    if (!step) return;
+    if (!step && !jumps.includes(e.key)) return;
 
     // Start from the day that has focus, not the first tabindex="0".
     const target = /** @type {Element | null} */ (e.target);
@@ -1303,12 +1304,34 @@ class CalendarWc extends VBElement {
 
     e.preventDefault();
 
-    // Columns run right-to-left in RTL: mirror the horizontal arrows.
-    if (Math.abs(step) === 1 && getComputedStyle(this).direction === 'rtl') step = -step;
+    let newDate;
+    if (step) {
+      // Columns run right-to-left in RTL: mirror the horizontal arrows.
+      if (Math.abs(step) === 1 && getComputedStyle(this).direction === 'rtl') step = -step;
+      newDate = addDays(date, step);
+    } else if (e.key === 'Home' || e.key === 'End') {
+      // First / last day of the focused day's week row, kept inside its
+      // month (outside days are not focusable). A disabled end falls back
+      // towards the focused day.
+      const col = (date.getDay() - this.#firstDayOfWeek + 7) % 7;
+      const last = daysInMonth(date.getFullYear(), date.getMonth());
+      const day = e.key === 'Home'
+        ? Math.max(1, date.getDate() - col)
+        : Math.min(last, date.getDate() + 6 - col);
+      newDate = new Date(date.getFullYear(), date.getMonth(), day);
+      step = e.key === 'Home' ? 1 : -1;
+    } else {
+      // Same day of the previous / next month (year with Shift), clamped
+      // to the length of the target month.
+      step = e.key === 'PageDown' ? 1 : -1;
+      const months = step * (e.shiftKey ? 12 : 1);
+      const first = new Date(date.getFullYear(), date.getMonth() + months, 1);
+      newDate = new Date(first.getFullYear(), first.getMonth(),
+        Math.min(date.getDate(), daysInMonth(first.getFullYear(), first.getMonth())));
+    }
 
-    // Walk in the arrow's direction, skipping disabled days, until an
+    // Walk in the key's direction, skipping disabled days, until an
     // enabled day is found or a min/max bound is hit.
-    let newDate = addDays(date, step);
     for (let tries = 0; tries < 366; tries++, newDate = addDays(newDate, step)) {
       if (this.#minDate && newDate < this.#minDate) return;
       if (this.#maxDate && newDate > this.#maxDate) return;

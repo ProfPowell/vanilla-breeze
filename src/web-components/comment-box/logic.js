@@ -168,6 +168,7 @@ class CommentBox extends VBElement {
     // Wire button events.
     this.listen(this.#submitBtn, 'click', this.#onSubmit);
     if (this.#cancelBtn) this.listen(this.#cancelBtn, 'click', this.#onCancel);
+    this.listen(this, 'keydown', this.#onEscape);
 
     // Wire textarea events. markdown-editor adopts (moves) the authored
     // textarea and keeps the same object across reconnects; re-binding on
@@ -268,6 +269,19 @@ class CommentBox extends VBElement {
       e.preventDefault();
       this.#onSubmit();
     }
+  };
+
+  /** Escape does what the Cancel button does, when there is one. */
+  #onEscape = (/** @type {KeyboardEvent} */ e) => {
+    if (e.key !== 'Escape' || e.defaultPrevented || e.isComposing) return;
+    if (!this.#cancelBtn || this.#cancelBtn.disabled) return;
+    const target = /** @type {Node | null} */ (e.target);
+    // Toolbar widgets (pickers, menus) use Escape for their own popups.
+    if (target && this.#toolbar?.contains(target)) return;
+    // With data-tab-indent the editor uses Escape to release Tab.
+    if (target === this.#ta && this.#editor?.hasAttribute('data-tab-indent')) return;
+    e.preventDefault();
+    this.#onCancel();
   };
 
   #onSubmit = () => {

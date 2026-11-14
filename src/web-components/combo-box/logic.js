@@ -347,12 +347,15 @@ class ComboBox extends VBElement {
         if (this.#isOpen) { e.preventDefault(); this.#focusOption(this.#filteredOptions.length - 1); }
         break;
       case 'Enter':
-        e.preventDefault();
+        // Only consume Enter when it does something here; otherwise it
+        // submits the surrounding form like any text input.
         if (this.#isOpen && this.#activeIndex >= 0 && this.#filteredOptions[this.#activeIndex]) {
+          e.preventDefault();
           const option = this.#filteredOptions[this.#activeIndex];
           if (this.#isMultiple) this.#addTag(option.getAttribute('data-value'), option.textContent.trim());
           else this.#selectOption(option);
         } else if (this.#isMultiple && this.hasAttribute('custom') && this.#input.value.trim()) {
+          e.preventDefault();
           const text = this.#input.value.trim();
           this.#addTag(text, text);
         }

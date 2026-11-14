@@ -83,6 +83,42 @@ test('arrow keys skip disabled days', async ({ page }) => {
   await expect(page.locator('button[data-date="2026-04-18"]')).toBeFocused();
 });
 
+test('Home, End and the Page keys move within the week, month and year', async ({ page }) => {
+  // en: weeks start on Sunday, so 2026-04-15 (Wed) sits in the row 12..18.
+  await load(page, '<calendar-wc data-month="4" data-year="2026"></calendar-wc>');
+  await page.locator('button[data-date="2026-04-15"]').focus();
+  await page.keyboard.press('Home');
+  await expect(page.locator('button[data-date="2026-04-12"]')).toBeFocused();
+  await page.keyboard.press('End');
+  await expect(page.locator('button[data-date="2026-04-18"]')).toBeFocused();
+  await page.keyboard.press('PageDown');
+  await expect(page.locator('button[data-date="2026-05-18"]')).toBeFocused();
+  await page.keyboard.press('PageUp');
+  await page.keyboard.press('PageUp');
+  await expect(page.locator('button[data-date="2026-03-18"]')).toBeFocused();
+  await page.keyboard.press('Shift+PageDown');
+  await expect(page.locator('button[data-date="2027-03-18"]')).toBeFocused();
+  await page.keyboard.press('Shift+PageUp');
+  await expect(page.locator('button[data-date="2026-03-18"]')).toBeFocused();
+});
+
+test('Home and End stay inside the month on a partial week row', async ({ page }) => {
+  // April 2026 starts on a Wednesday: the first row holds 1..4.
+  await load(page, '<calendar-wc data-month="4" data-year="2026"></calendar-wc>');
+  await page.locator('button[data-date="2026-04-02"]').focus();
+  await page.keyboard.press('Home');
+  await expect(page.locator('button[data-date="2026-04-01"]')).toBeFocused();
+  await page.keyboard.press('End');
+  await expect(page.locator('button[data-date="2026-04-04"]')).toBeFocused();
+});
+
+test('PageDown clamps to the last day of a shorter month', async ({ page }) => {
+  await load(page, '<calendar-wc data-month="1" data-year="2026"></calendar-wc>');
+  await page.locator('button[data-date="2026-01-31"]').focus();
+  await page.keyboard.press('PageDown');
+  await expect(page.locator('button[data-date="2026-02-28"]')).toBeFocused();
+});
+
 test('display mode: Enter opens the day detail, focus moves in and returns on Escape', async ({ page }) => {
   await load(page, `<calendar-wc data-month="4" data-year="2026" data-events='${EVENTS}'></calendar-wc>`);
   const day = page.locator('button[data-date="2026-04-10"]');

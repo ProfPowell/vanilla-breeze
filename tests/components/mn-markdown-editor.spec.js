@@ -192,13 +192,15 @@ test('preview is not a live region; labels and direction', async ({ page }) => {
       live: ed.querySelectorAll('[aria-live]').length,
       sourceLabel: ed.querySelector('.md-editor-pane').getAttribute('aria-label'),
       previewLabel: pane.getAttribute('aria-label'),
+      // Named groups, not region landmarks
+      roles: [ed.querySelector('.md-editor-pane').getAttribute('role'), pane.getAttribute('role')],
       taDir: ed.textarea.dir,
       autoPreview: dirOf('#ed .md-content'),
       authoredPreview: dirOf('#ltr .md-content'),
     };
   });
   expect(r).toEqual({
-    live: 0, sourceLabel: 'Source', previewLabel: 'Aperçu', taDir: 'auto',
+    live: 0, sourceLabel: 'Source', previewLabel: 'Aperçu', roles: ['group', 'group'], taDir: 'auto',
     autoPreview: 'rtl', authoredPreview: 'rtl',
   });
   await page.evaluate(() => document.getElementById('ed')?.setAttribute('data-label-preview', 'Vorschau'));

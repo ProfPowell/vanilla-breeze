@@ -58,6 +58,7 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { getLocale } from '../../lib/i18n.js';
+import { announce } from '../../lib/announce.js';
 
 const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2]
 const IDLE_TIMEOUT = 3000
@@ -338,7 +339,7 @@ class VideoPlayerElement extends VBElement {
             </span>
             <span class="spacer"></span>
             <button part="speed-button" class="speed-btn" type="button" aria-label="Playback speed 1x">
-              <span aria-live="polite">1x</span>
+              <span>1x</span>
             </button>
             <button part="captions-button" class="captions-btn" type="button" aria-label="Captions" aria-pressed="false">
               <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">
@@ -428,7 +429,7 @@ class VideoPlayerElement extends VBElement {
       this.setAttribute('aria-label', this.#label('player'))
     }
     if (!this.hasAttribute('aria-keyshortcuts')) {
-      this.setAttribute('aria-keyshortcuts', 'Space K ArrowLeft ArrowRight ArrowUp ArrowDown M F C')
+      this.setAttribute('aria-keyshortcuts', 'Space k ArrowLeft ArrowRight ArrowUp ArrowDown m f c')
     }
   }
 
@@ -1078,6 +1079,8 @@ class VideoPlayerElement extends VBElement {
       const rate = /** @type {number} */ (PLAYBACK_RATES[this.#rateIndex])
       this.#video.playbackRate = rate
       this.#updateSpeedLabel()
+      // Said once here; a live region inside the button competed with its name.
+      announce(this.#speedBtn.getAttribute('aria-label') || '')
       this.#emit('video-player:speed', { rate })
     })
 
