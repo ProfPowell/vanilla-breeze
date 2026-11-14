@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Accessible names</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+
+    /* Demo only: draw what a screen reader is given. */
+    body[data-reveal] .visually-hidden {
+      position: static;
+      inline-size: auto;
+      block-size: auto;
+      margin: 0;
+      overflow: visible;
+      clip: auto;
+      white-space: normal;
+    }
+    body[data-reveal] .visually-hidden,
+    body[data-reveal] [aria-label]::after {
+      padding-inline: var(--size-2xs);
+      border: var(--border-width-thin) dashed var(--color-primary);
+      border-radius: var(--radius-s);
+      background: var(--color-primary-subtle);
+      color: var(--color-text);
+      font-size: var(--font-size-s);
+      font-weight: var(--font-weight-normal);
+    }
+    body[data-reveal] [aria-label]::after {
+      content: attr(aria-label);
+      margin-inline-start: var(--size-2xs);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+    <header data-layout="cluster" data-layout-justify="between" data-layout-gap="m">
+      <h1>Inbox</h1>
+      <button type="button" id="reveal" aria-pressed="false" class="secondary">Show what a screen reader is given</button>
+    </header>
+
+    <section data-layout="stack" data-layout-gap="s">
+      <h2 class="visually-hidden">Message actions</h2>
+      <menu data-layout="cluster" data-layout-gap="xs">
+        <li><button type="button" aria-label="Archive"><icon-wc name="archive"></icon-wc></button></li>
+        <li><button type="button" aria-label="Delete"><icon-wc name="trash-2"></icon-wc></button></li>
+        <li><button type="button"><icon-wc name="reply"></icon-wc> <span class="visually-hidden">Reply to Mira Chen</span></button></li>
+        <li><button type="button"><icon-wc name="flag" aria-hidden="true"></icon-wc> Flag</button></li>
+      </menu>
+    </section>
+
+    <form role="search" data-layout="cluster" data-layout-gap="xs">
+      <label for="find" class="visually-hidden">Search messages</label>
+      <input type="search" id="find" name="q" placeholder="Search" />
+      <button type="submit" aria-label="Search"><icon-wc name="search"></icon-wc></button>
+    </form>
+
+    <fieldset data-segmented>
+      <legend class="visually-hidden">Show</legend>
+      <label><input type="radio" name="show" value="all" checked /> All</label>
+      <label><input type="radio" name="show" value="unread" /> Unread</label>
+      <label><input type="radio" name="show" value="flagged" /> Flagged</label>
+    </fieldset>
+
+    <p>
+      <a href="https://example.com/policy" target="_blank" rel="noopener">Retention policy <span class="visually-hidden">(opens in a new tab)</span></a>
+      and the
+      <a href="/files/archive-guide.pdf" download>archive guide <span class="visually-hidden">(PDF, 2.4&nbsp;MB)</span></a>.
+    </p>
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const button = document.getElementById('reveal');
+    button.addEventListener('click', () => {
+      const on = button.getAttribute('aria-pressed') !== 'true';
+      button.setAttribute('aria-pressed', String(on));
+      document.body.toggleAttribute('data-reveal', on);
+    });
+  </script>
+</body>
+</html>

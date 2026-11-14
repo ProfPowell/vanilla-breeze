@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Live regions</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    #log { min-block-size: 8rem; }
+    #log li[data-politeness="assertive"] { color: var(--color-error); }
+  </style>
+</head>
+<body>
+  <layout-grid data-layout-min="m" data-layout-gap="l">
+
+    <layout-stack data-layout-gap="m">
+      <h1>Basket</h1>
+      <menu data-layout="cluster" data-layout-gap="xs">
+        <li><button type="button" data-add="Notebook">Add notebook</button></li>
+        <li><button type="button" data-add="Pen">Add pen</button></li>
+        <li><button type="button" class="secondary" id="empty">Empty basket</button></li>
+      </menu>
+      <p><output id="count" role="status">Your basket is empty.</output></p>
+
+      <form id="pay" data-layout="cluster" data-layout-gap="xs" data-layout-align="end" novalidate>
+        <form-field>
+          <label for="code">Discount code</label>
+          <input type="text" id="code" name="code" />
+        </form-field>
+        <button type="submit">Apply</button>
+      </form>
+      <p><output id="error" role="alert"></output></p>
+    </layout-stack>
+
+    <layout-card data-padding="m">
+      <layout-stack data-layout-gap="s">
+        <h2>What a screen reader announces</h2>
+        <ol id="log" aria-hidden="true"></ol>
+      </layout-stack>
+    </layout-card>
+
+  </layout-grid>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const items = [];
+    const count = document.getElementById('count');
+    const error = document.getElementById('error');
+    const log = document.getElementById('log');
+
+    function note(text, politeness) {
+      if (!text) return;
+      const li = document.createElement('li');
+      li.dataset.politeness = politeness;
+      li.textContent = politeness === 'assertive' ? `Interrupts: ${text}` : `When idle: ${text}`;
+      log.append(li);
+    }
+
+    // The log mirrors the two regions. Nothing here talks to a screen reader:
+    // changing the text of a status or alert region is the whole mechanism.
+    new MutationObserver(() => note(count.textContent, 'polite')).observe(count, { childList: true, characterData: true, subtree: true });
+    new MutationObserver(() => note(error.textContent, 'assertive')).observe(error, { childList: true, characterData: true, subtree: true });
+
+    function render() {
+      count.textContent = items.length
+        ? `${items.length} ${items.length === 1 ? 'item' : 'items'} in your basket. Last added: ${items.at(-1)}.`
+        : 'Your basket is empty.';
+    }
+
+    document.querySelectorAll('[data-add]').forEach((button) => {
+      button.addEventListener('click', () => { items.push(button.dataset.add); render(); });
+    });
+    document.getElementById('empty').addEventListener('click', () => { items.length = 0; render(); });
+    document.getElementById('pay').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const code = e.target.elements.code.value.trim();
+      error.textContent = '';
+      error.textContent = code ? `The code ${code} has expired.` : 'Enter a discount code.';
+    });
+  </script>
+</body>
+</html>

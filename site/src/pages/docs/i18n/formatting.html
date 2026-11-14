@@ -1,0 +1,114 @@
+---
+layout: guide
+title: "Locale and Formatting"
+description: "How dates, numbers, currency and file sizes are formatted for the reader, how the locale is chosen, and how to use another calendar."
+guideGroup: Internationalization
+currentPath: /docs/i18n/formatting/
+toc: true
+---
+
+  <section id="formatting">
+    <h2>Formatting values</h2>
+    <p>Write the value in a form a machine can read and let the browser write it for the reader. The format attributes replace the text of a <code>&lt;time&gt;</code> or <code>&lt;data&gt;</code> element using the <code>Intl</code> formatters. The text you write inside the element is what shows before the script runs, and if it never does.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/data-locale.html"
+      url="data-locale"
+      title="One value, five locales"
+      data-demo-height="m"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Format attributes" data-escape><time datetime="2026-03-09" data-format-date="long">March 9, 2026</time>
+
+<data value="1234567.89" data-format-number>1,234,567.89</data>
+
+<data value="1249.5" data-format-number="currency" data-currency="EUR">€1,249.50</data>
+
+<data value="5242880" data-format-bytes>5 MB</data></code-block>
+    <table>
+      <thead>
+        <tr><th>Attribute</th><th>On</th><th>Formats</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><a href="/docs/attributes/data-format-date/"><code>data-format-date</code></a></td><td><code>&lt;time&gt;</code></td><td>Dates, times and relative times such as <q>3 days ago</q></td></tr>
+        <tr><td><a href="/docs/attributes/data-format-number/"><code>data-format-number</code></a></td><td><code>&lt;data&gt;</code></td><td>Numbers, currency, percentages and compact forms</td></tr>
+        <tr><td><a href="/docs/attributes/data-format-bytes/"><code>data-format-bytes</code></a></td><td><code>&lt;data&gt;</code></td><td>File sizes</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="resolution">
+    <h2>How the locale is chosen</h2>
+    <p>The format attributes and the date components all ask one function, <code>getLocale(el)</code>, which looks in this order:</p>
+<ol>
+  <li><code>data-locale</code> on the element itself (format utilities such as <a href="/docs/attributes/data-format-number/"><code>data-format-number</code></a>, <a href="/docs/attributes/data-format-date/"><code>data-format-date</code></a> and <a href="/docs/attributes/data-format-bytes/"><code>data-format-bytes</code></a>)</li>
+  <li>the nearest ancestor with a <a href="/docs/attributes/lang/"><code>lang</code></a> attribute (<code>el.closest('[lang]')</code>)</li>
+  <li><code>&lt;html lang&gt;</code></li>
+  <li><code>navigator.language</code></li>
+  <li><code>'en'</code> fallback</li>
+</ol>
+<p>So a <code>&lt;section lang="de"&gt;</code> formats its numbers and dates in German even on an English page, and <code>data-locale</code> overrides a single element:</p>
+
+<code-block language="html" label="Which locale applies" data-escape><html lang="en">
+  <!-- Uses <html lang>: en -->
+  <data value="1234.56" data-format-number>1,234.56</data>
+
+  <!-- Nearest [lang] wins: de -->
+  <section lang="de">
+    <data value="1234.56" data-format-number>1.234,56</data>
+  </section>
+
+  <!-- data-locale overrides this one element -->
+  <data value="1234.56" data-format-number data-locale="fr">1 234,56</data>
+</html></code-block>
+
+<p>Components that read the nearest <code>lang</code> (<code>&lt;calendar-wc&gt;</code>, <code>&lt;week-view&gt;</code>, <code>&lt;day-view&gt;</code>, <code>&lt;date-picker&gt;</code>) pass it through <code>usableLocale()</code> first. A malformed tag such as the POSIX-style <code>lang="en_US"</code> makes every <code>Intl</code> constructor throw, so those components fall back to <code>en-US</code> rather than failing to render. Write BCP 47 tags with hyphens: <code>en-US</code>, <code>ja-JP</code>.</p>
+
+  </section>
+
+  <section id="calendars">
+    <h2>Other calendars</h2>
+<p>Locales are passed straight to <code>Intl</code>, so a BCP 47 calendar extension works with no extra configuration. Setting <code>lang="ja-JP-u-ca-japanese"</code> on <code>&lt;html&gt;</code> switches every date utility to the Japanese era calendar (和暦) at once:</p>
+
+<table>
+  <thead>
+    <tr><th><code>&lt;html lang&gt;</code></th><th><code>data-format-date</code></th><th><code>data-format-date="short"</code></th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>ja-JP</code></td><td>2026/10/21</td><td>2026/10/21</td></tr>
+    <tr><td><code>ja-JP-u-ca-japanese</code></td><td>令和8年10月21日</td><td>R8/10/21</td></tr>
+  </tbody>
+</table>
+
+<p>The extension is invisible to everything else that reads <code>lang</code>. <code>:lang(ja)</code> still matches, so the CJK typography and ruby rules apply unchanged, and <code>Intl.RelativeTimeFormat</code> and <code>Intl.NumberFormat</code> ignore the calendar and keep working. To use the era calendar for one element only, put the same tag in its <code>data-locale</code> (format utilities) or <code>lang</code> (<code>&lt;date-picker&gt;</code>).</p>
+
+<code-block language="html" label="Japanese era calendar" data-escape><html lang="ja-JP-u-ca-japanese">
+  <time datetime="2026-10-21" data-format-date>令和8年10月21日</time>
+  <time datetime="2026-10-21" data-format-date="short">R8/10/21</time>
+</html></code-block>
+
+<p>Intl formats era dates but cannot parse them. <a href="/docs/elements/web-components/date-picker/"><code>&lt;date-picker&gt;</code></a> accepts typed era dates when its locale is Japanese (<code>令和8年10月21日</code>, <code>令和元年5月1日</code>, <code>R8/10/21</code>) as well as the Gregorian <code>2026年10月21日</code> form.</p>
+
+  </section>
+
+  <section id="script">
+    <h2>Locale in script</h2>
+    <p>The same functions are exported for your own code, so a custom component formats the way the rest of the page does.</p>
+    <code-block language="js" label="Locale functions" data-escape>import { getLocale, usableLocale } from 'vanilla-breeze';
+
+getLocale();            // the page: <html lang>, then navigator.language, then 'en'
+getLocale(el);          // nearest lang above el, then the same chain
+usableLocale('en_US');  // 'en-US': a tag Intl would reject falls back instead of throwing
+
+new Intl.DateTimeFormat(getLocale(el), { dateStyle: 'long' }).format(date);</code-block>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/time/"><code>&lt;time&gt;</code></a> and <a href="/docs/elements/native/data/"><code>&lt;data&gt;</code></a></li>
+      <li><a href="/docs/elements/web-components/date-picker/"><code>&lt;date-picker&gt;</code></a></li>
+      <li><a href="/docs/attributes/lang/"><code>lang</code></a></li>
+    </ul>
+  </section>

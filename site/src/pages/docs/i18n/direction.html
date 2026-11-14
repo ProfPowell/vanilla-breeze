@@ -1,0 +1,100 @@
+---
+layout: guide
+title: "Direction"
+description: "How right-to-left layout works: the dir attribute, logical properties, the parts that mirror and text of mixed direction."
+guideGroup: Internationalization
+currentPath: /docs/i18n/direction/
+toc: true
+---
+
+  <section id="dir">
+    <h2>The dir attribute</h2>
+    <p>Arabic, Hebrew, Persian and Urdu are written right to left. Set <a href="/docs/attributes/dir/"><code>dir="rtl"</code></a> on <code>&lt;html&gt;</code>, or on one element for a passage, and the layout follows. The demo changes that one attribute and nothing else. The text stays in English so you can compare the two.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/i18n-direction.html"
+      url="direction"
+      title="One layout, both directions"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="A right-to-left page" data-escape><html lang="ar" dir="rtl"></code-block>
+    <p><code>lang</code> does not set direction. Set both. Direction belongs in the markup and not in CSS, because the browser's text algorithm and assistive technology read the attribute.</p>
+  </section>
+
+  <section id="logical">
+    <h2>Logical properties</h2>
+    <p>The library's styles name the start and end of a line, never left and right. Start is the left edge in English and the right edge in Arabic, so the same rule is correct in both.</p>
+    <code-block language="css" label="Physical and logical" data-escape>/* Correct in one direction only */
+.card { padding-left: 1rem; margin-right: auto; text-align: left; }
+
+/* Correct in both */
+.card { padding-inline-start: 1rem; margin-inline-end: auto; text-align: start; }</code-block>
+    <p>Write your own CSS the same way and it mirrors with the rest. The layout elements, such as <code>&lt;layout-sidebar&gt;</code> and <code>&lt;layout-cluster&gt;</code>, are built on flexbox and grid, which follow the direction without any extra rule.</p>
+  </section>
+
+  <section id="mirrors">
+    <h2>What mirrors</h2>
+    <p>Some parts need more than logical properties, because they point somewhere. The library flips these with <code>:dir(rtl)</code>.</p>
+    <table>
+      <thead>
+        <tr><th>Part</th><th>In right-to-left</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Breadcrumb separators, list arrow markers, disclosure markers</td><td>Point the other way</td></tr>
+        <tr><td>Switches, range inputs, progress bars</td><td>Fill from the right</td></tr>
+        <tr><td>Blockquote and callout borders, sidebars</td><td>Move to the other edge</td></tr>
+        <tr><td>Carousels, reels and sliders</td><td>Advance from right to left</td></tr>
+        <tr><td>Arrow keys in tabs, carousels, sliders, steppers and splitters</td><td><kbd>Left Arrow</kbd> moves forward and <kbd>Right Arrow</kbd> moves back</td></tr>
+      </tbody>
+    </table>
+    <p>Some things must not mirror: a clock, a media player's play button, a chart's time axis, and any icon that shows a real object. The library leaves those alone.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/nav-rtl.html"
+      url="nav-rtl"
+      title="Navigation, right to left"
+      data-demo-height="l"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section id="mixed">
+    <h2>Text of mixed direction</h2>
+    <p>A user name, a product title or a search term can be in any script. Dropped into a sentence of the other direction, its punctuation and numbers can end up on the wrong side. Wrap text of unknown direction in <a href="/docs/elements/native/bdi/"><code>&lt;bdi&gt;</code></a>, which isolates it from its surroundings.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/bdi-examples.html"
+      url="bdi"
+      title="Isolating text of unknown direction"
+      data-demo-height="l"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Isolate what you did not write" data-escape><p><bdi>إيان</bdi>: 3 posts</p>
+<p><bdi>Mira</bdi>: 12 posts</p></code-block>
+    <p>For a form field that may be typed in either direction, <a href="/docs/attributes/dir/"><code>dir="auto"</code></a> sets the direction from the first strong character, and <a href="/docs/attributes/dirname/"><code>dirname</code></a> sends the direction to the server with the value.</p>
+  </section>
+
+  <section id="script">
+    <h2>Direction in script</h2>
+    <p><code>isRTL()</code> answers whether a language is written right to left, from its tag.</p>
+    <code-block language="js" label="isRTL()" data-escape>import { isRTL } from 'vanilla-breeze';
+
+isRTL('ar');     // true
+isRTL('he-IL');  // true
+isRTL('en');     // false
+
+document.documentElement.dir = isRTL(locale) ? 'rtl' : 'ltr';</code-block>
+    <p>In CSS, select on direction with <code>:dir(rtl)</code>. It matches inherited direction, which <code>[dir="rtl"]</code> does not.</p>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/attributes/dir/"><code>dir</code></a> and <a href="/docs/attributes/dirname/"><code>dirname</code></a></li>
+      <li><a href="/docs/elements/native/bdi/"><code>&lt;bdi&gt;</code></a> and <a href="/docs/elements/native/bdo/"><code>&lt;bdo&gt;</code></a></li>
+      <li><a href="/docs/accessibility/keyboard/#component-keys">Keys by component</a>, which notes each key that reverses</li>
+    </ul>
+  </section>

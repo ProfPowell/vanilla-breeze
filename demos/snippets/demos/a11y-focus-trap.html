@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Focus trap</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+    <header data-layout="cluster" data-layout-justify="between" data-layout-gap="m">
+      <h1>Shipping address</h1>
+      <button type="button" id="edit">Edit address</button>
+    </header>
+
+    <p id="summary">Ada Okafor, 14 Quay Street, Bristol BS1 4DJ</p>
+
+    <layout-card data-padding="l" id="panel" data-focus-trap="no-autofocus" hidden>
+      <form id="form" data-layout="stack" data-layout-gap="m">
+        <h2>Edit address</h2>
+        <form-field>
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" value="Ada Okafor" />
+        </form-field>
+        <form-field>
+          <label for="street">Street</label>
+          <input type="text" id="street" name="street" value="14 Quay Street" />
+        </form-field>
+        <form-field>
+          <label for="city">City and postcode</label>
+          <input type="text" id="city" name="city" value="Bristol BS1 4DJ" />
+        </form-field>
+        <footer data-layout="cluster" data-layout-gap="s">
+          <button type="submit">Save</button>
+          <button type="button" class="secondary" id="cancel">Cancel</button>
+          <small>Press <kbd data-hotkey="escape">Esc</kbd> to cancel</small>
+        </footer>
+      </form>
+    </layout-card>
+
+    <p>These links sit after the panel. While it is open, <kbd>Tab</kbd> cannot reach them: <a href="#orders">Orders</a>, <a href="#returns">Returns</a>, <a href="#help">Help</a>.</p>
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const panel = document.getElementById('panel');
+    const form = document.getElementById('form');
+    const summary = document.getElementById('summary');
+
+    const edit = document.getElementById('edit');
+
+    // data-focus-trap keeps Tab and Shift+Tab inside the panel. Opening and
+    // closing are the page's job: move focus in, and put it back after.
+    function open() {
+      panel.hidden = false;
+      form.elements.name.focus();
+    }
+    function close() {
+      panel.hidden = true;
+      edit.focus();
+    }
+
+    edit.addEventListener('click', open);
+    document.getElementById('cancel').addEventListener('click', close);
+    panel.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      summary.textContent = [form.elements.name.value, form.elements.street.value, form.elements.city.value].join(', ');
+      close();
+    });
+  </script>
+</body>
+</html>

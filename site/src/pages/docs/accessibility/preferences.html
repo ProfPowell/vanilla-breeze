@@ -1,0 +1,140 @@
+---
+layout: guide
+title: "Preferences and Themes"
+description: "How Vanilla Breeze follows the reader's system settings for motion, contrast, transparency and forced colors, and the three accessibility themes you can offer."
+guideGroup: Accessibility
+currentPath: /docs/accessibility/preferences/
+toc: true
+---
+
+  <section id="system">
+    <h2>System preferences</h2>
+    <p>Readers set these once in their operating system or browser. The library reads them with media queries and needs nothing from you.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Preference</th>
+          <th>Media query</th>
+          <th>What changes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Reduce motion</td>
+          <td><code>prefers-reduced-motion: reduce</code></td>
+          <td>Every duration token becomes <code>0ms</code>, so transitions built on the tokens end at once. Smooth scrolling is turned off. Components that animate on their own, such as carousels and tickers, stop.</td>
+        </tr>
+        <tr>
+          <td>Increase contrast</td>
+          <td><code>prefers-contrast: more</code></td>
+          <td>Muted text and borders darken, and the focus ring widens to 3px.</td>
+        </tr>
+        <tr>
+          <td>Reduce transparency</td>
+          <td><code>prefers-reduced-transparency: reduce</code></td>
+          <td>Translucent and blurred surfaces become solid.</td>
+        </tr>
+        <tr>
+          <td>Forced colors</td>
+          <td><code>forced-colors: active</code></td>
+          <td>The browser replaces every color with the reader's palette. The library adds borders and outlines where a shape was drawn with background color alone, so controls and states stay visible.</td>
+        </tr>
+        <tr>
+          <td>Dark or light</td>
+          <td><code>prefers-color-scheme</code></td>
+          <td>Every color token has a light and a dark value. See <a href="/docs/themes/">Themes</a>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="motion">
+    <h2>Motion</h2>
+    <p>Motion in the library is written against duration tokens. That makes reduced motion one rule and not one per component, and it covers your own CSS when you use the same tokens.</p>
+    <code-block language="css" label="Use the tokens and reduced motion is handled" data-escape>.panel {
+  transition: opacity var(--duration-normal) var(--ease-default);
+}
+
+/* Shipped by the library: you do not write this */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+  }
+}</code-block>
+    <p>A site can also offer its own switch. Put <code>data-motion-reduced</code> on <code>&lt;html&gt;</code> and the same tokens go to zero whatever the system says. <a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a> writes that attribute and remembers the choice.</p>
+    <p>For an animation that does not use the tokens, write the query yourself and remove the movement, keeping any change of state the reader needs to see.</p>
+  </section>
+
+  <section id="themes">
+    <h2>Accessibility themes</h2>
+    <p>Three themes are opt-in, for readers who want more than the defaults. Each is a token in <code>data-theme</code>, and they combine with each other and with any other theme.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/a11y-preferences.html"
+      url="accessibility-themes"
+      title="Accessibility themes and reduced motion"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Theme</th>
+          <th>Token</th>
+          <th>What it changes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="/docs/themes/#high-contrast">High contrast</a></td>
+          <td><code>a11y-high-contrast</code></td>
+          <td>Text at 7:1 or better against its surface (WCAG AAA), darker borders, a 3px focus ring, no shadows</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/themes/#large-text">Large text</a></td>
+          <td><code>a11y-large-text</code></td>
+          <td>Base text 25% larger, controls at least 44px, more space between elements</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/themes/#dyslexia">Dyslexia-friendly</a></td>
+          <td><code>a11y-dyslexia</code></td>
+          <td>Atkinson Hyperlegible, wider letter and word spacing, taller lines, shorter measure, no justified text</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" label="Combining themes" data-escape><!-- One accessibility theme -->
+<html data-theme="a11y-high-contrast">
+
+<!-- With a decorative theme, and with each other -->
+<html data-theme="forest a11y-high-contrast a11y-large-text"></code-block>
+    <p>The typeface for the dyslexia-friendly theme is served with the library and downloads only when the theme is in use.</p>
+  </section>
+
+  <section id="offering">
+    <h2>Letting readers choose</h2>
+    <p><a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a> gives readers the three themes, light and dark mode and a reduced motion switch, and stores what they pick. This site uses it: open the gear button at the corner of the page.</p>
+    <code-block language="html" label="Reader settings" data-escape><settings-panel></settings-panel></code-block>
+    <p>If you build your own control, set the tokens on <code>&lt;html&gt;</code> as the demo above does. Treat a stored choice as an addition to the system preference, never as a replacement for it.</p>
+  </section>
+
+  <section id="color">
+    <h2>Color</h2>
+    <p>The semantic color tokens are tested for AA contrast against the surfaces they are meant for: 4.5:1 for text, 3:1 for large text and for the edges of controls. That holds while you stay on the tokens.</p>
+    <code-block language="css" label="Pairs that are tested together" data-escape>color: var(--color-text);            /* on --color-surface and --color-background */
+color: var(--color-text-muted);      /* the same surfaces */
+color: var(--color-text-on-primary); /* on --color-primary */</code-block>
+    <p>Two things stay with you. Check the contrast of any color you introduce. And where color carries meaning, add a second cue: an icon, a word or a shape. The library's own states do this. An invalid field has a message as well as a red border, and a link in running text is underlined as well as colored.</p>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/themes/">Themes</a> and <a href="/docs/tokens/">Tokens</a></li>
+      <li><a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a> and <a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a></li>
+      <li><a href="/docs/accessibility/testing/#emulate">Emulating preferences</a> in browser developer tools</li>
+    </ul>
+  </section>

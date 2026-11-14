@@ -1,0 +1,103 @@
+---
+layout: guide
+title: "Translation"
+description: "How to translate the strings components generate and the text of a page, and how to keep code and names out of machine translation."
+guideGroup: Internationalization
+currentPath: /docs/i18n/translation/
+toc: true
+---
+
+  <section id="component-strings">
+    <h2>Component strings</h2>
+    <p>Your content is yours to translate. A component also generates text of its own: the name of a calendar's <q>Next month</q> button, a rating's <q>4 stars</q>, a validation message. Each of those strings has an English default and a <code>data-label-*</code> attribute that replaces it.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/i18n-labels.html"
+      url="component-strings"
+      title="English defaults and German labels"
+      data-demo-height="l"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Translated strings on a date picker" data-escape><form-field>
+  <label for="when">Reisedatum</label>
+  <date-picker
+    data-label-toggle="Kalender öffnen"
+    data-label-dialog="Datum wählen"
+    data-label-prev="Vorheriger Monat"
+    data-label-next="Nächster Monat">
+    <input type="date" id="when" name="when" />
+  </date-picker>
+</form-field></code-block>
+    <p>Three things to know:</p>
+    <ul>
+      <li><strong>Where the attribute goes.</strong> A component reads <code>data-label-*</code> from its own element. Attribute utilities such as <a href="/docs/attributes/data-hotkey/"><code>data-hotkey</code></a> read it from the nearest ancestor that has it, so one attribute on <code>&lt;html&gt;</code> covers the page.</li>
+      <li><strong>Placeholders.</strong> A string can contain tokens in braces, such as <code>{n}</code> or <code>{date}</code>, which the component fills in. Keep them in the translation and move them where the grammar needs them.</li>
+      <li><strong>Plurals.</strong> Where a count is involved, the attribute name ends in a plural category from <code>Intl.PluralRules</code>: <code>data-label-one</code>, <code>data-label-few</code>, <code>data-label-other</code>. Supply the categories the language has.</li>
+    </ul>
+    <code-block language="html" label="Plural categories" data-escape><star-rating lang="de" label="Reise bewerten"
+  data-label-one="{n} Stern"
+  data-label-other="{n} Sterne"></star-rating></code-block>
+    <p>The attributes for each component are listed in the table on its page. Dates, month names and weekday names need no attribute. They come from <code>Intl</code>, in the language set by <a href="/docs/i18n/formatting/#resolution">the nearest <code>lang</code></a>.</p>
+  </section>
+
+  <section id="page-strings">
+    <h2>Page strings</h2>
+    <p>The most reliable translated page is one the server sends already translated, with its own URL and its own <code>lang</code>. Do that where you can.</p>
+    <p>For an application that switches language without a reload, <code>VbI18n</code> swaps strings in place. Mark each element with a key and give the class your messages. Nothing runs until you create it.</p>
+    <code-block language="html" label="Keys in markup" data-escape><nav>
+  <a href="/" data-i18n="nav.home">Home</a>
+</nav>
+
+<!-- Set an attribute and not the text -->
+<input type="search" data-i18n="search.placeholder" data-i18n-attr="placeholder" placeholder="Search" />
+
+<!-- Values for placeholders in the message -->
+<p data-i18n="welcome" data-i18n-vars='{"name":"Ada"}'>Hello, Ada</p></code-block>
+    <code-block language="js" label="VbI18n" data-escape>import { VbI18n } from 'vanilla-breeze';
+
+const i18n = new VbI18n({
+  locale: 'fr',
+  fallbackLocale: 'en',
+  messages: {
+    en: { 'nav.home': 'Home', welcome: 'Hello, {name}' },
+    fr: { 'nav.home': 'Accueil', welcome: 'Bonjour, {name}' },
+  },
+});
+
+i18n.apply();                  // translate every [data-i18n] in the document
+i18n.t('welcome', { name });   // one string, for use in script
+
+await i18n.load('de', '/messages/de.json');  // fetch more messages
+i18n.setLocale('de');          // apply, and fire vb:locale-change on document</code-block>
+    <p>The English text in the markup is the fallback. It shows before the script runs and for any key with no translation. When you change language this way, update <code>lang</code> and <code>dir</code> on <code>&lt;html&gt;</code> as well, so typography, formatting and direction follow.</p>
+  </section>
+
+  <section id="translate-no">
+    <h2>Text that must not be translated</h2>
+    <p>Browsers and translation services translate whatever they find. Code, commands, product names and user names should stay as written. The <a href="/docs/attributes/translate/"><code>translate</code></a> attribute says so. It is an HTML attribute and no stylesheet can set it, so it has to be in your markup.</p>
+    <code-block language="html" label="translate=&quot;no&quot;" data-escape><p>Install <span translate="no">Vanilla Breeze</span> from npm.</p>
+<p>Run <code translate="no">npm install</code> first.</p>
+<pre translate="no"><code>const greeting = 'Hello';</code></pre>
+<p>Signed in as <span translate="no">ada_okafor</span>.</p></code-block>
+    <p>Add it to <code>&lt;code&gt;</code>, <code>&lt;kbd&gt;</code>, <code>&lt;samp&gt;</code>, <code>&lt;pre&gt;</code> and <code>&lt;var&gt;</code> content, and to names and identifiers in running text.</p>
+  </section>
+
+  <section id="writing">
+    <h2>Writing for translation</h2>
+    <ul>
+      <li><strong>Do not build sentences from pieces.</strong> Word order differs between languages. Translate the whole sentence with a placeholder in it.</li>
+      <li><strong>Leave room.</strong> German and Finnish run a third longer than English. The layout elements wrap and grow, so avoid fixed widths on anything that holds text.</li>
+      <li><strong>Keep text out of images.</strong> It cannot be translated, resized or read aloud.</li>
+      <li><strong>Use the elements.</strong> <code>&lt;q&gt;</code>, <code>&lt;time&gt;</code> and <code>&lt;data&gt;</code> localize themselves. Typed quotation marks and hand-formatted dates do not.</li>
+    </ul>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/attributes/translate/"><code>translate</code></a> and <a href="/docs/attributes/lang/"><code>lang</code></a></li>
+      <li><a href="/docs/accessibility/names-and-announcements/">Names, Roles and Announcements</a>, since most component strings are accessible names</li>
+      <li><a href="/docs/content-management/link-relations/">Link Relations</a> for <code>hreflang</code> and alternate-language links</li>
+    </ul>
+  </section>

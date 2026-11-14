@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>One article, five languages</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <fieldset data-segmented>
+      <legend class="visually-hidden">Language</legend>
+      <label><input type="radio" name="lang" value="en-US" checked /> English</label>
+      <label><input type="radio" name="lang" value="de" /> <span lang="de">Deutsch</span></label>
+      <label><input type="radio" name="lang" value="fr" /> <span lang="fr">Français</span></label>
+      <label><input type="radio" name="lang" value="ja" /> <span lang="ja">日本語</span></label>
+      <label><input type="radio" name="lang" value="ar" /> <span lang="ar">العربية</span></label>
+    </fieldset>
+
+    <p><code id="markup">&lt;article lang="en-US" dir="ltr"&gt;</code></p>
+
+    <layout-card data-padding="l">
+      <article id="story" lang="en-US" dir="ltr" data-layout="stack" data-layout-gap="m">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <ol>
+            <li><a href="#" data-t="home">Home</a></li>
+            <li><a href="#" data-t="news">News</a></li>
+            <li><span aria-current="page" data-t="title">Night trains return</span></li>
+          </ol>
+        </nav>
+        <h1 data-t="title">Night trains return</h1>
+        <p><time datetime="2026-03-09" data-format-date="long">March 9, 2026</time></p>
+        <p data-t="body">The operator said <q>demand has doubled</q> since the first route reopened.</p>
+        <dl>
+          <dt data-t="fare">Fare from</dt>
+          <dd><data value="1249.5" data-format-number="currency" data-currency="EUR">€1,249.50</data></dd>
+          <dt data-t="riders">Passengers last year</dt>
+          <dd><data value="2460000" data-format-number>2,460,000</data></dd>
+        </dl>
+        <p><a href="#" class="button" data-t="more">Read the timetable</a></p>
+      </article>
+    </layout-card>
+
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    // The translated strings are the only thing this script supplies. The
+    // fonts, quotation marks, date, number and currency formats and the
+    // mirrored layout all follow from lang and dir.
+    const text = {
+      'en-US': { home: 'Home', news: 'News', title: 'Night trains return', body: 'The operator said <q>demand has doubled</q> since the first route reopened.', fare: 'Fare from', riders: 'Passengers last year', more: 'Read the timetable' },
+      de: { home: 'Start', news: 'Nachrichten', title: 'Die Nachtzüge kehren zurück', body: 'Der Betreiber sagte, <q>die Nachfrage hat sich verdoppelt</q>, seit die erste Strecke wieder fährt.', fare: 'Preis ab', riders: 'Fahrgäste im Vorjahr', more: 'Fahrplan lesen' },
+      fr: { home: 'Accueil', news: 'Actualités', title: 'Le retour des trains de nuit', body: 'L’exploitant affirme que <q>la demande a doublé</q> depuis la réouverture de la première ligne.', fare: 'À partir de', riders: 'Voyageurs l’an dernier', more: 'Consulter les horaires' },
+      ja: { home: 'ホーム', news: 'ニュース', title: '夜行列車が復活', body: '運行会社は、最初の路線の再開以来<q>需要は倍増した</q>と述べた。', fare: '運賃', riders: '昨年の乗客数', more: '時刻表を見る' },
+      ar: { home: 'الرئيسية', news: 'الأخبار', title: 'عودة القطارات الليلية', body: 'قالت الشركة المشغّلة إن <q>الطلب تضاعف</q> منذ إعادة فتح الخط الأول.', fare: 'السعر يبدأ من', riders: 'عدد الركاب العام الماضي', more: 'اقرأ جدول المواعيد' },
+    };
+
+    const story = document.getElementById('story');
+    const markup = document.getElementById('markup');
+
+    function show(lang) {
+      const dir = lang === 'ar' ? 'rtl' : 'ltr';
+      story.lang = lang;
+      story.dir = dir;
+      for (const el of story.querySelectorAll('[data-t]')) el.innerHTML = text[lang][el.dataset.t];
+      markup.textContent = `<article lang="${lang}" dir="${dir}">`;
+    }
+
+    document.querySelectorAll('input[name="lang"]').forEach((radio) => {
+      radio.addEventListener('change', () => show(radio.value));
+    });
+  </script>
+</body>
+</html>

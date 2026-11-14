@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>One layout, both directions</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <header data-layout="cluster" data-layout-justify="between" data-layout-gap="m">
+      <fieldset data-segmented>
+        <legend class="visually-hidden">Direction</legend>
+        <label><input type="radio" name="dir" value="ltr" checked /> Left to right</label>
+        <label><input type="radio" name="dir" value="rtl" /> Right to left</label>
+      </fieldset>
+      <code id="markup">&lt;section dir="ltr"&gt;</code>
+    </header>
+
+    <section id="stage" dir="ltr" data-layout="stack" data-layout-gap="l">
+
+      <nav class="breadcrumb" data-separator="arrow" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="#">Account</a></li>
+          <li><a href="#">Orders</a></li>
+          <li><span aria-current="page">Order 4471</span></li>
+        </ol>
+      </nav>
+
+      <layout-sidebar data-layout-gap="l" data-layout-sidebar-width="narrow">
+        <nav aria-label="Order sections">
+          <ul>
+            <li><a href="#" aria-current="page">Summary</a></li>
+            <li><a href="#">Delivery</a></li>
+            <li><a href="#">Invoice</a></li>
+          </ul>
+        </nav>
+
+        <layout-stack data-layout-gap="m">
+          <blockquote>
+            <p>Leave the parcel with the neighbour at number 12.</p>
+          </blockquote>
+
+          <details>
+            <summary>Delivery instructions</summary>
+            <p>Ring twice. The courier calls ahead on the day.</p>
+          </details>
+
+          <ul data-marker="arrow">
+            <li>Packed on Monday</li>
+            <li>Shipped on Tuesday</li>
+          </ul>
+
+          <form data-layout="stack" data-layout-gap="s">
+            <label><input type="checkbox" role="switch" checked /> Text me when it ships</label>
+            <form-field>
+              <label for="tip">Courier tip</label>
+              <input type="range" id="tip" min="0" max="10" value="3" />
+            </form-field>
+            <footer data-layout="cluster" data-layout-justify="end" data-layout-gap="s">
+              <button type="button" class="secondary">Back</button>
+              <button type="submit">Continue</button>
+            </footer>
+          </form>
+
+          <progress value="65" max="100" aria-label="Order progress">65%</progress>
+        </layout-stack>
+      </layout-sidebar>
+
+    </section>
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const stage = document.getElementById('stage');
+    const markup = document.getElementById('markup');
+    stage.querySelector('form').addEventListener('submit', (e) => e.preventDefault());
+    document.querySelectorAll('input[name="dir"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        stage.dir = radio.value;
+        markup.textContent = `<section dir="${radio.value}">`;
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+---
+layout: guide
+title: "Names, Roles and Announcements"
+description: "How to name controls, hide text visually without hiding it from screen readers, announce changes, and what each component sets for you."
+guideGroup: Accessibility
+currentPath: /docs/accessibility/names-and-announcements/
+toc: true
+---
+
+  <section id="names">
+    <h2>Accessible names</h2>
+    <p>Every control needs a name that a screen reader can speak and that voice control can target. Visible text is the best name, because every reader gets the same one. Where a design has no room for text, the name still has to exist in the markup.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/a11y-names.html"
+      url="accessible-names"
+      title="Names you cannot see"
+      data-demo-height="m"
+      shadow>
+    </browser-window>
+
+    <p>Press the button in the demo to draw the names that are present but not displayed.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Need</th>
+          <th>Use</th>
+          <th>Why</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Name an icon-only button</td>
+          <td><code>aria-label</code> on the button</td>
+          <td>The shortest form. Use a <code>.visually-hidden</code> span when the name contains markup or has to pass through the same translation step as the page text.</td>
+        </tr>
+        <tr>
+          <td>An icon beside visible text</td>
+          <td>Nothing</td>
+          <td>The text names the control. <a href="/docs/elements/web-components/icons/"><code>&lt;icon-wc&gt;</code></a> hides itself from screen readers unless you give it a label.</td>
+        </tr>
+        <tr>
+          <td>Label an input that has no visible label</td>
+          <td><code>&lt;label class="visually-hidden"&gt;</code></td>
+          <td>A placeholder is not a label. It disappears on input and many screen readers do not read it as the name.</td>
+        </tr>
+        <tr>
+          <td>Name a group of radios or checkboxes</td>
+          <td><code>&lt;legend&gt;</code>, hidden with <code>.visually-hidden</code> if the design has no place for it</td>
+          <td>A <code>&lt;fieldset&gt;</code> without a legend has no name.</td>
+        </tr>
+        <tr>
+          <td>Give a section a heading that only screen readers need</td>
+          <td><code>&lt;h2 class="visually-hidden"&gt;</code></td>
+          <td>Screen reader users move through a page by heading. An <code>aria-label</code> on the section does not appear in that list.</td>
+        </tr>
+        <tr>
+          <td>Say that a link opens a new tab or downloads a file</td>
+          <td>A <code>.visually-hidden</code> span inside the link</td>
+          <td>Sighted readers get the icon. Everyone else needs the words before they follow the link.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="visually-hidden">
+    <h2>Hiding text visually</h2>
+    <p><code>.visually-hidden</code> is in the core stylesheet. It removes an element from the display and keeps it in the accessibility tree.</p>
+    <code-block language="html" label="Names that are not displayed" data-escape><!-- Icon-only button -->
+<button type="button" aria-label="Archive">
+  <icon-wc name="archive"></icon-wc>
+</button>
+
+<!-- Search field with no visible label -->
+<form role="search">
+  <label for="find" class="visually-hidden">Search messages</label>
+  <input type="search" id="find" name="q" placeholder="Search" />
+  <button type="submit" aria-label="Search"><icon-wc name="search"></icon-wc></button>
+</form>
+
+<!-- Group name -->
+<fieldset data-segmented>
+  <legend class="visually-hidden">Show</legend>
+  <label><input type="radio" name="show" value="all" checked /> All</label>
+  <label><input type="radio" name="show" value="unread" /> Unread</label>
+</fieldset>
+
+<!-- Link that opens a new tab -->
+<a href="https://example.com/policy" target="_blank" rel="noopener">
+  Retention policy <span class="visually-hidden">(opens in a new tab)</span>
+</a></code-block>
+    <p>Three ways to hide content do different things. Pick by who should lose it.</p>
+    <table>
+      <thead>
+        <tr><th>Technique</th><th>Sighted readers</th><th>Screen readers</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>.visually-hidden</code></td><td>Hidden</td><td>Read</td></tr>
+        <tr><td><code>aria-hidden="true"</code></td><td>Shown</td><td>Skipped</td></tr>
+        <tr><td><a href="/docs/attributes/hidden/"><code>hidden</code></a> or <code>display: none</code></td><td>Hidden</td><td>Skipped</td></tr>
+      </tbody>
+    </table>
+    <p>Never put <code>aria-hidden="true"</code> on something focusable. The reader can still tab to it and hears nothing.</p>
+  </section>
+
+  <section id="announcements">
+    <h2>Announcing changes</h2>
+    <p>When content changes without a page load, a sighted reader sees it and a screen reader user does not, unless the change happens inside a live region. Changing the text of a live region is the whole mechanism.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/a11y-live-region.html"
+      url="live-regions"
+      title="Status and alert"
+      data-demo-height="m"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Two live regions" data-escape><!-- Announced when the screen reader is idle -->
+<output role="status">2 items in your basket.</output>
+
+<!-- Interrupts. Keep it for errors that block the reader. -->
+<output role="alert">The code SPRING has expired.</output></code-block>
+    <p>Two rules keep announcements reliable:</p>
+    <ul>
+      <li><strong>The region is in the page before its text changes.</strong> A region inserted with its message already in it is often not announced.</li>
+      <li><strong>Polite is the default.</strong> An alert cuts off whatever is being read. Use it for a failure the reader has to act on, and for little else.</li>
+    </ul>
+
+    <h3 id="announce">The shared live region</h3>
+    <p>Components and utilities announce through one function, and your code can use it too. It keeps one region per politeness level in the document, so the region exists before the first message, and it repeats a message that is sent twice.</p>
+    <code-block language="js" label="announce()" data-escape>import { announce } from 'vanilla-breeze';
+
+announce('Copied to clipboard');
+announce('Upload failed', { politeness: 'assertive' });</code-block>
+
+    <h3 id="component-announcements">What components announce</h3>
+    <p>Generated from the data kept beside each component.</p>
+
+    <!-- generated:a11y-announcements -->
+  </section>
+
+  <section id="roles">
+    <h2>Roles and states by component</h2>
+    <p>Each component sets the roles and states its pattern needs. This table lists them, names the pattern, and says what is left to you. It is generated from the data kept beside each component, and a release check compares it with the component's code.</p>
+    <p>A pattern name that begins with <q>Native</q> means the component adds little or no ARIA, because the element underneath already carries the role. Patterns that link out follow the <a href="https://www.w3.org/WAI/ARIA/apg/">ARIA Authoring Practices Guide</a>.</p>
+
+    <!-- generated:a11y-aria -->
+
+    <p>For the states the library styles on your own markup, such as <code>aria-pressed</code>, <code>aria-expanded</code> and <code>aria-busy</code>, see <a href="/docs/attributes/aria-states/">ARIA states</a>.</p>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/label/"><code>&lt;label&gt;</code></a> and <a href="/docs/elements/native/output/"><code>&lt;output&gt;</code></a></li>
+      <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> for text alternatives</li>
+      <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> for link text and the new-tab indicator</li>
+      <li><a href="/docs/attributes/hidden/"><code>hidden</code></a>, <a href="/docs/attributes/inert/"><code>inert</code></a> and <a href="/docs/attributes/aria-states/">ARIA states</a></li>
+    </ul>
+  </section>

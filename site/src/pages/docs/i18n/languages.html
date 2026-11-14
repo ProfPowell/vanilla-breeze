@@ -1,0 +1,142 @@
+---
+layout: guide
+title: "Languages and Scripts"
+description: "How the lang attribute selects typography for each script, quotation marks for each language and the display of ruby annotations."
+guideGroup: Internationalization
+currentPath: /docs/i18n/languages/
+toc: true
+---
+
+  <section id="lang">
+    <h2>The lang attribute</h2>
+    <p>Set <a href="/docs/attributes/lang/"><code>lang</code></a> on <code>&lt;html&gt;</code> for the page and on any element whose content is in another language. The rules below are written with <code>:lang()</code>, which matches the element and everything inside it, so one attribute on a section is enough.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/i18n-quotes.html"
+      url="i18n-typography"
+      title="Typography by language"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section id="scripts">
+    <h2>Typography by script</h2>
+    <p>Scripts differ in more than their letters. Chinese, Japanese and Korean text has no spaces to break lines at. Arabic and Thai have marks above and below the line that collide at a Latin line height. For each script the library sets a typeface stack, a line height and line-breaking rules.</p>
+    <code-block language="html" label="Typography follows lang" data-escape><html lang="ja">
+  <!-- CJK typeface stack, line-height 1.8, breaks between any two characters -->
+</html>
+
+<section lang="ar" dir="rtl">
+  <!-- Arabic typeface stack, line-height 1.9 -->
+</section></code-block>
+
+<h3 id="supported-scripts">Supported scripts</h3>
+<table>
+  <thead>
+    <tr><th>Script</th><th>Languages</th><th>Token</th><th>Line height</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>CJK</td><td><code>zh</code>, <code>ja</code>, <code>ko</code></td><td><code>--font-cjk</code></td><td>1.8</td></tr>
+    <tr><td>Arabic</td><td><code>ar</code>, <code>fa</code>, <code>ur</code>, <code>ps</code></td><td><code>--font-arabic</code></td><td>1.9</td></tr>
+    <tr><td>Hebrew</td><td><code>he</code>, <code>yi</code></td><td><code>--font-hebrew</code></td><td>1.75</td></tr>
+    <tr><td>Thai</td><td><code>th</code></td><td><code>--font-thai</code></td><td>2.0</td></tr>
+    <tr><td>Devanagari</td><td><code>hi</code>, <code>mr</code>, <code>sa</code>, <code>ne</code></td><td><code>--font-devanagari</code></td><td>1.75</td></tr>
+  </tbody>
+</table>
+
+<h3 id="font-tokens">Typeface tokens</h3>
+<p>Each script has a token that holds its typeface stack. The defaults name fonts that ship with the common operating systems. Override a token to use a font you serve.</p>
+
+<code-block language="css" label="Font token overrides" data-escape>:root {
+  --font-cjk: "Noto Sans CJK SC", "PingFang SC", system-ui, sans-serif;
+  --font-arabic: "Noto Sans Arabic", "Segoe UI", system-ui, sans-serif;
+  --font-hebrew: "Noto Sans Hebrew", "Segoe UI", system-ui, sans-serif;
+  --font-thai: "Noto Sans Thai", "Leelawadee UI", system-ui, sans-serif;
+  --font-devanagari: "Noto Sans Devanagari", system-ui, sans-serif;
+}</code-block>
+
+    <p>The <a href="/docs/typography/">Typography</a> guide covers the type system for Latin text. <a href="/docs/typefaces/">Typefaces</a> lists the fonts served with the library.</p>
+  </section>
+
+  <section id="quotes">
+    <h2>Quotation marks</h2>
+    <p>The <a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a> element draws the quotation marks of the language it is in. Write <code>&lt;q&gt;</code> and leave the marks out of your text. The same sentence is then correct in every translation.</p>
+    <code-block language="html" label="Quotation marks follow lang" data-escape><p lang="en">She said <q>hello</q>.</p>
+<p lang="de">Sie sagte <q>hallo</q>.</p>
+<p lang="fr">Elle a dit <q>bonjour</q>.</p>
+<p lang="ja">彼女は<q>こんにちは</q>と言いました。</p></code-block>
+
+<table>
+  <thead>
+    <tr><th>Language</th><th>Outer</th><th>Inner</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>English (US)</td><td>&ldquo;...&rdquo;</td><td>&lsquo;...&rsquo;</td></tr>
+    <tr><td>English (GB, AU, NZ)</td><td>&lsquo;...&rsquo;</td><td>&ldquo;...&rdquo;</td></tr>
+    <tr><td>German</td><td>&bdquo;...&ldquo;</td><td>&sbquo;...&lsquo;</td></tr>
+    <tr><td>Swiss German (de-CH)</td><td>&laquo;...&raquo;</td><td>&lsaquo;...&rsaquo;</td></tr>
+    <tr><td>French</td><td>&laquo;&#x202F;...&#x202F;&raquo;</td><td>&lsaquo;&#x202F;...&#x202F;&rsaquo;</td></tr>
+    <tr><td>Italian / Spanish / Portuguese (pt-PT)</td><td>&laquo;...&raquo;</td><td>&ldquo;...&rdquo;</td></tr>
+    <tr><td>Portuguese (pt, pt-BR)</td><td>&ldquo;...&rdquo;</td><td>&lsquo;...&rsquo;</td></tr>
+    <tr><td>Polish</td><td>&bdquo;...&rdquo;</td><td>&laquo;...&raquo;</td></tr>
+    <tr><td>Japanese / Chinese Traditional (zh-Hant, TW, HK, MO)</td><td>&#x300C;...&#x300D;</td><td>&#x300E;...&#x300F;</td></tr>
+    <tr><td>Chinese Simplified (zh, zh-Hans)</td><td>&ldquo;...&rdquo;</td><td>&lsquo;...&rsquo;</td></tr>
+    <tr><td>Korean</td><td>&ldquo;...&rdquo;</td><td>&lsquo;...&rsquo;</td></tr>
+    <tr><td>Russian</td><td>&laquo;...&raquo;</td><td>&bdquo;...&ldquo;</td></tr>
+    <tr><td>Arabic</td><td>&laquo;...&raquo;</td><td>&lsquo;...&rsquo;</td></tr>
+    <tr><td>Any other language</td><td colspan="2">Browser default (<code>quotes: auto</code>)</td></tr>
+  </tbody>
+</table>
+
+  </section>
+
+  <section id="ruby">
+    <h2>Ruby annotations</h2>
+    <p><a href="/docs/elements/native/ruby/"><code>&lt;ruby&gt;</code></a> places a small reading aid above or beside a character, as furigana does in Japanese and pinyin in Chinese.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/ruby-visibility.html"
+      url="ruby-visibility"
+      title="Ruby visibility"
+      data-demo-height="m"
+      shadow>
+    </browser-window>
+
+<p>Annotations are visible by default. Put <code>data-ruby</code> on <code>&lt;html&gt;</code>, any ancestor, or the <code>&lt;ruby&gt;</code> itself to change that for its subtree; the nearest <code>data-ruby</code> wins:</p>
+
+<table>
+  <thead>
+    <tr><th>Value</th><th>Behavior</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>(absent)</td><td>Visible (browser default)</td></tr>
+    <tr><td><code>show</code></td><td>Visible; undoes an outer <code>hide</code> or <code>auto</code></td></tr>
+    <tr><td><code>hide</code></td><td>Visually hidden, still in the accessibility tree</td></tr>
+    <tr><td><code>auto</code></td><td>Visible when the annotation's own language is CJK (<code>ja</code>, <code>zh</code>, <code>ko</code>, <code>yue</code>, <code>wuu</code>), visually hidden otherwise</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Ruby visibility control" data-escape><html lang="ja" data-ruby="auto">
+<body>
+  <!-- Visible: the annotation's language is ja -->
+  <ruby>漢<rt>かん</rt></ruby><ruby>字<rt>じ</rt></ruby>
+
+  <!-- English section: hidden in auto mode -->
+  <section lang="en">
+    <ruby>ruby<rt>annotation</rt></ruby>
+  </section>
+</body>
+</html></code-block>
+
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/attributes/lang/"><code>lang</code></a> for the full list of what the attribute drives</li>
+      <li><a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a>, <a href="/docs/elements/native/ruby/"><code>&lt;ruby&gt;</code></a>, <a href="/docs/elements/native/rt/"><code>&lt;rt&gt;</code></a> and <a href="/docs/elements/native/rp/"><code>&lt;rp&gt;</code></a></li>
+      <li><a href="/docs/elements/native/wbr/"><code>&lt;wbr&gt;</code></a> for a break opportunity in a long word</li>
+      <li><a href="/docs/examples/demos/i18n-typography.html">The full typography demo</a></li>
+    </ul>
+  </section>

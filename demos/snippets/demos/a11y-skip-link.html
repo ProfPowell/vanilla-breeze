@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Skip link and focus order</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { background: var(--color-surface); }
+    body > header { padding: var(--size-m) var(--size-l); border-block-end: var(--border-width-thin) solid var(--color-border); }
+    main { padding: var(--size-l); }
+    main:focus { outline: none; }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <header data-layout="cluster" data-layout-justify="between" data-layout-gap="m">
+    <strong>Harbor Books</strong>
+    <nav aria-label="Main">
+      <ul data-layout="cluster" data-layout-gap="m">
+        <li><a href="#new">New</a></li>
+        <li><a href="#fiction">Fiction</a></li>
+        <li><a href="#history">History</a></li>
+        <li><a href="#children">Children</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#account">Account</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <layout-stack data-layout-gap="m">
+      <h1>Staff picks</h1>
+      <p>Press <strong>Start at the top</strong>, then press <kbd>Tab</kbd>. The first stop is a link you could not see before. Press <kbd>Enter</kbd> on it and focus lands here, past the six header links.</p>
+      <p><button type="button" id="restart" class="secondary">Start at the top</button></p>
+      <form data-layout="cluster" data-layout-gap="s" data-layout-align="end">
+        <form-field>
+          <label for="q">Search the shelves</label>
+          <input type="search" id="q" name="q" />
+        </form-field>
+        <button type="submit">Search</button>
+        <button type="button" class="secondary">Browse all</button>
+      </form>
+      <p><a href="#picks">This month's list</a> has twelve titles.</p>
+    </layout-stack>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    // Demo only: put the keyboard back at the start of the document, where a
+    // reader arriving from the address bar begins.
+    document.getElementById('restart').addEventListener('click', () => {
+      document.body.tabIndex = -1;
+      document.body.focus();
+      document.body.removeAttribute('tabindex');
+    });
+  </script>
+</body>
+</html>

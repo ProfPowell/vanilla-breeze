@@ -1,0 +1,89 @@
+---
+layout: guide
+title: "Internationalization Overview"
+description: "How Vanilla Breeze follows the language, script, direction and locale of a page, and what is left to you."
+guideGroup: Internationalization
+currentPath: /docs/i18n/
+toc: true
+---
+
+  <section id="approach">
+    <h2>The approach</h2>
+    <p>The web platform already knows most of what internationalization needs: the <a href="/docs/attributes/lang/"><code>lang</code></a> and <a href="/docs/attributes/dir/"><code>dir</code></a> attributes, the <code>:lang()</code> and <code>:dir()</code> selectors, logical properties, the <code>Intl</code> formatters and the ruby elements. Vanilla Breeze uses them throughout, so a page changes language when its markup says so and not through a setting in script.</p>
+    <p>In the demo, the buttons change two attributes on the article and swap in translated text. The typeface, line height, quotation marks, date, number and currency formats and the mirrored layout all follow from those two attributes.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/i18n-switcher.html"
+      url="i18n-switcher"
+      title="One article, five languages"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section id="responsibilities">
+    <h2>What is handled and what you provide</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Area</th>
+          <th>The library handles</th>
+          <th>You provide</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row"><a href="/docs/i18n/languages/">Languages and scripts</a></th>
+          <td>A typeface stack, line height and line-breaking rules for each script; quotation marks for each language; ruby annotation display</td>
+          <td><code>lang</code> on <code>&lt;html&gt;</code> and on any passage in another language</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/i18n/direction/">Direction</a></th>
+          <td>Layout written with logical properties; icons, markers and arrow keys that follow the direction</td>
+          <td><code>dir="rtl"</code> where the language is written right to left; <code>&lt;bdi&gt;</code> around text whose direction you do not know</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/i18n/formatting/">Locale and formatting</a></th>
+          <td>Dates, numbers, currency and file sizes formatted for the nearest <code>lang</code>; calendars and date pickers in the reader's locale</td>
+          <td>Machine-readable values in <code>&lt;time datetime&gt;</code> and <code>&lt;data value&gt;</code></td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/i18n/translation/">Translation</a></th>
+          <td>An attribute for every string a component generates; a small class for swapping page strings</td>
+          <td>The translations, and <code>translate="no"</code> on text that must stay as written</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="start">
+    <h2>Where to start</h2>
+    <p>One attribute does most of the work. Set the language of the page, and mark any passage in a different language.</p>
+    <code-block language="html" label="Declare the language" data-escape><html lang="en">
+  ...
+  <p>The French call it <span lang="fr">l'esprit de l'escalier</span>.</p>
+</html></code-block>
+    <p>Write language tags in BCP 47 form with hyphens: <code>en-GB</code>, <code>pt-BR</code>, <code>zh-Hant</code>. A screen reader uses the tag to choose a voice, the browser uses it for hyphenation and spell checking, and the library uses it for everything on the pages below.</p>
+  </section>
+
+  <section id="pages">
+    <h2>In this section</h2>
+    <layout-grid data-layout-min="m" data-layout-gap="m">
+      <a href="/docs/i18n/languages/" class="section-card">
+        <h3>Languages and Scripts</h3>
+        <p>Typography per script, quotation marks per language and ruby annotations.</p>
+      </a>
+      <a href="/docs/i18n/direction/" class="section-card">
+        <h3>Direction</h3>
+        <p>Right-to-left layout, logical properties and mixed-direction text.</p>
+      </a>
+      <a href="/docs/i18n/formatting/" class="section-card">
+        <h3>Locale and Formatting</h3>
+        <p>Dates, numbers and currency, how the locale is chosen, and other calendars.</p>
+      </a>
+      <a href="/docs/i18n/translation/" class="section-card">
+        <h3>Translation</h3>
+        <p>Translating component strings and page text, and protecting what must not change.</p>
+      </a>
+    </layout-grid>
+  </section>

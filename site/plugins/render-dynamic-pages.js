@@ -283,6 +283,106 @@ function renderChangelog(markdown) {
     </section>`;
 }
 
+// --- Accessibility tables -------------------------------------------------
+// Generated from the a11y block in each component's api.json (see
+// scripts/build-api-registry.js for the shape). api-drift-check verifies every
+// key and attribute named there against the component's source.
+
+const A11Y_KEYBOARD_MARKER = '<!-- generated:a11y-keyboard -->';
+const A11Y_ARIA_MARKER = '<!-- generated:a11y-aria -->';
+const A11Y_ANNOUNCE_MARKER = '<!-- generated:a11y-announcements -->';
+const REGISTRY_PATH = resolve(import.meta.dirname, '../src/_data/apiRegistry.js');
+
+const KEY_LABELS = {
+  // No-break spaces keep a two-word key on one line in a narrow column.
+  ArrowUp: 'Up Arrow', ArrowDown: 'Down Arrow', ArrowLeft: 'Left Arrow', ArrowRight: 'Right Arrow',
+  PageUp: 'Page Up', PageDown: 'Page Down', Escape: 'Esc', Meta: 'Cmd', ContextMenu: 'Menu key',
+};
+
+/** "Shift+Tab" becomes nested <kbd>; a bare "+" or a trailing "++" is the plus key. */
+function renderKey(key) {
+  if (key === 'Printable character') return 'Any character';
+  const parts = key === '+' ? ['+'] : key.endsWith('++') ? [...key.slice(0, -2).split('+'), '+'] : key.split('+');
+  const caps = parts.map((part) => `<kbd>${escapeHtml(KEY_LABELS[part] ?? part)}</kbd>`);
+  return caps.length > 1 ? `<kbd>${caps.join('+')}</kbd>` : caps[0];
+}
+
+/** Inline code for anything that looks like markup or an attribute. */
+function codeify(text) {
+  return escapeHtml(text).replace(/&lt;[a-z][\w-]*(?:(?!&gt;).)*?&gt;|\b(?:aria|data)-[\w-]+(?:=&quot;[^&]*&quot;)?|\brole=&quot;[^&]*&quot;/g, (m) => `<code>${m}</code>`);
+}
+
+function a11yComponents(registry, webComponents) {
+  const hrefs = new Map();
+  for (const group of Object.values(webComponents ?? {})) {
+    for (const item of Array.isArray(group) ? group : []) hrefs.set(item.name, item.href);
+  }
+  return Object.values(registry)
+    .filter((m) => m.a11y)
+    .sort((a, b) => a.element.localeCompare(b.element))
+    .map((m) => ({ name: m.element, href: hrefs.get(m.element), ...m.a11y }));
+}
+
+function componentLabel(c) {
+  const tag = `<code>&lt;${escapeHtml(c.name)}&gt;</code>`;
+  return c.href ? `<a href="${c.href}">${tag}</a>` : tag;
+}
+
+function patternLabel(c) {
+  return c.patternUrl ? `<a href="${escapeHtml(c.patternUrl)}">${escapeHtml(c.pattern)}</a>` : escapeHtml(c.pattern);
+}
+
+function renderA11yKeyboard(components) {
+  const withKeys = components.filter((c) => c.keyboard?.length);
+  const blocks = withKeys.map((c) => {
+    const hasWhen = c.keyboard.some((row) => row.when);
+    const rows = c.keyboard.map((row) => (
+      `<tr><td>${row.keys.map(renderKey).join(' or ')}</td><td>${codeify(row.action)}</td>${hasWhen ? `<td>${row.when ? codeify(row.when) : '&mdash;'}</td>` : ''}</tr>`
+    )).join('\n');
+    return `<details id="keys-${escapeHtml(c.name)}">
+  <summary><code>&lt;${escapeHtml(c.name)}&gt;</code> <small>${escapeHtml(c.pattern)}</small></summary>
+  <table>
+    <thead><tr><th>Key</th><th>Action</th>${hasWhen ? '<th>When</th>' : ''}</tr></thead>
+    <tbody>
+${rows}
+    </tbody>
+  </table>
+  ${c.href ? `<p><a href="${c.href}">${escapeHtml(c.name)} documentation</a></p>` : ''}
+</details>`;
+  }).join('\n');
+  return `<p>${withKeys.length} components handle keys of their own. Open one to see them.</p>
+<layout-stack data-layout-gap="xs">
+${blocks}
+</layout-stack>`;
+}
+
+function renderA11yAria(components) {
+  const rows = components.map((c) => {
+    const manages = c.manages?.length ? c.manages.map((item) => `<code>${escapeHtml(item)}</code>`).join(', ') : '&mdash;';
+    return `<tr><td>${componentLabel(c)}</td><td>${patternLabel(c)}</td><td>${manages}</td><td>${c.provide ? codeify(c.provide) : '&mdash;'}</td></tr>`;
+  }).join('\n');
+  return `<data-table>
+  <table>
+    <thead><tr><th>Component</th><th>Pattern</th><th>Sets for you</th><th>You provide</th></tr></thead>
+    <tbody>
+${rows}
+    </tbody>
+  </table>
+</data-table>`;
+}
+
+function renderA11yAnnouncements(components) {
+  const rows = components.filter((c) => c.announces).map((c) => (
+    `<tr><td>${componentLabel(c)}</td><td>${codeify(c.announces)}</td></tr>`
+  )).join('\n');
+  return `<table>
+  <thead><tr><th>Component</th><th>Announces</th></tr></thead>
+  <tbody>
+${rows}
+  </tbody>
+</table>`;
+}
+
 export class RenderDynamicPages {
   constructor({ file, data }) {
     this.file = file;
@@ -307,6 +407,15 @@ export class RenderDynamicPages {
         .replace(/<section>\s*<h2>Component Matrix<\/h2>[\s\S]*?<\/section>/, rendered.matrix)
         .replace(/<section>\s*<h2>Dimensions<\/h2>[\s\S]*?<\/section>/, rendered.dimensions)
         .replace(/<section>\s*<h2>Component Notes<\/h2>[\s\S]*?<\/section>/, rendered.notes);
+    }
+
+    if ([A11Y_KEYBOARD_MARKER, A11Y_ARIA_MARKER, A11Y_ANNOUNCE_MARKER].some((marker) => this.file.src.includes(marker))) {
+      const { default: registry } = await import(REGISTRY_PATH);
+      const components = a11yComponents(registry, this.data.webComponents);
+      this.file.src = this.file.src
+        .replace(A11Y_KEYBOARD_MARKER, () => renderA11yKeyboard(components))
+        .replace(A11Y_ARIA_MARKER, () => renderA11yAria(components))
+        .replace(A11Y_ANNOUNCE_MARKER, () => renderA11yAnnouncements(components));
     }
 
     if (this.file.src.includes(CHANGELOG_MARKER)) {

@@ -1,0 +1,113 @@
+---
+layout: guide
+title: "Keyboard and Focus"
+description: "The focus ring, skip links, tab order, focus containment and the keys each component handles."
+guideGroup: Accessibility
+currentPath: /docs/accessibility/keyboard/
+toc: true
+---
+
+  <section id="focus-ring">
+    <h2>The focus ring</h2>
+    <p>Every focusable element shows an outline when it takes keyboard focus. The rule uses <code>:focus-visible</code>, so a mouse click on a button does not draw it and a <kbd>Tab</kbd> press does. Three tokens set its look everywhere at once.</p>
+    <code-block language="css" label="Focus ring tokens" data-escape>:root {
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring-color: var(--color-primary);
+}</code-block>
+    <p>The high contrast theme and the system's increased-contrast setting both widen the ring to 3px. Do not remove the outline. If it clashes with a design, change the tokens.</p>
+  </section>
+
+  <section id="skip-link">
+    <h2>Skip link</h2>
+    <p>A reader using a keyboard should not have to tab through the whole header on every page. A skip link is the first focusable element in <code>&lt;body&gt;</code>. It stays off screen until it takes focus, and it moves focus to the main content.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/a11y-skip-link.html"
+      url="skip-link"
+      title="Skip link"
+      data-demo-height="m"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Skip link markup" data-escape><body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <header>...</header>
+  <main id="main" tabindex="-1">
+    ...
+  </main>
+</body></code-block>
+    <p>The <code>.skip-link</code> class is part of the core stylesheet. Two details make it work:</p>
+    <ul>
+      <li><strong>The target takes focus.</strong> <code>&lt;main&gt;</code> is not focusable by default. <code>tabindex="-1"</code> lets the browser move focus there, so the next <kbd>Tab</kbd> continues from the content and not from the top.</li>
+      <li><strong>It comes first.</strong> Anything focusable before it has to be passed to reach it.</li>
+    </ul>
+    <p>A page with several large regions can have more than one. They stack in source order.</p>
+    <code-block language="html" label="More than one skip link" data-escape><a href="#main" class="skip-link">Skip to main content</a>
+<a href="#search" class="skip-link">Skip to search</a></code-block>
+    <p>Landmarks such as <code>&lt;main&gt;</code> and <code>&lt;nav&gt;</code> let screen reader users jump between regions, but they give sighted keyboard users nothing. A page needs both.</p>
+  </section>
+
+  <section id="tab-order">
+    <h2>Tab order</h2>
+    <p>Focus follows source order. Layout elements such as <a href="/docs/elements/custom-elements/sidebar/"><code>&lt;layout-sidebar&gt;</code></a> place content with CSS and never reorder the keyboard path, so write the markup in reading order and let the layout arrange it.</p>
+    <table>
+      <thead>
+        <tr><th>To do this</th><th>Use</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Make an element focusable from script, but not a tab stop</td><td><a href="/docs/attributes/tabindex/"><code>tabindex="-1"</code></a></td></tr>
+        <tr><td>Add a custom control to the tab order</td><td><code>tabindex="0"</code>, and only when no native element fits</td></tr>
+        <tr><td>Take a region out of the tab order while it stays visible</td><td><a href="/docs/attributes/inert/"><code>inert</code></a></td></tr>
+        <tr><td>Remove content for everyone</td><td><a href="/docs/attributes/hidden/"><code>hidden</code></a></td></tr>
+      </tbody>
+    </table>
+    <p>Never use a positive <code>tabindex</code>. It pulls the element out of source order and every later change to the page has to account for it.</p>
+  </section>
+
+  <section id="containment">
+    <h2>Keeping focus inside</h2>
+    <p>A modal <a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> opened with <code>showModal()</code> contains focus, closes on <kbd>Esc</kbd> and returns focus to the element that opened it. The browser does all three. Use it for anything modal.</p>
+    <p>For a region that is not a dialog, such as an inline editing panel, add <a href="/docs/attributes/data-focus-trap/"><code>data-focus-trap</code></a>. <kbd>Tab</kbd> and <kbd>Shift</kbd>+<kbd>Tab</kbd> then cycle inside it.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/a11y-focus-trap.html"
+      url="focus-trap"
+      title="An inline panel that keeps focus"
+      data-demo-height="l"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="A focus trap on an inline panel" data-escape><layout-card id="panel" data-focus-trap="no-autofocus" hidden>
+  <form>
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" />
+    <button type="submit">Save</button>
+    <button type="button">Cancel</button>
+  </form>
+</layout-card></code-block>
+    <p>With an empty value the trap also moves focus to the first control, or to the one marked <code>autofocus</code>, as soon as it is found. <code>no-autofocus</code> leaves that to you, which suits a panel that is in the page from the start and hidden. Whichever you use, give the reader a way out: a cancel button and <kbd>Esc</kbd>, and return focus to the control that opened the panel.</p>
+  </section>
+
+  <section id="shortcuts">
+    <h2>Shortcuts</h2>
+    <p><a href="/docs/attributes/data-hotkey/"><code>data-hotkey</code></a> on a <code>&lt;kbd&gt;</code> shows a key combination the way the reader's platform writes it, <kbd data-hotkey="meta+k">Ctrl+K</kbd> for example, and gives screen readers the spelled-out names. <a href="/docs/elements/web-components/shortcuts/"><code>&lt;short-cuts&gt;</code></a> lists every shortcut a page defines in a dialog opened with <kbd>?</kbd>.</p>
+    <p>A shortcut made of a single character can fire by accident for people who use speech input. Keep single-key shortcuts to a component that has focus, or let readers turn them off.</p>
+  </section>
+
+  <section id="component-keys">
+    <h2>Keys by component</h2>
+    <p>This list is generated from the data kept beside each component, and a release check compares it with the component's code. It lists keys the component handles itself. Keys the browser already handles, such as <kbd>Enter</kbd> on a button, appear only where they are the main way to operate the component.</p>
+
+    <!-- generated:a11y-keyboard -->
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/attributes/tabindex/"><code>tabindex</code></a>, <a href="/docs/attributes/inert/"><code>inert</code></a>, <a href="/docs/attributes/autofocus/"><code>autofocus</code></a> and <a href="/docs/attributes/accesskey/"><code>accesskey</code></a></li>
+      <li><a href="/docs/attributes/data-focus-trap/"><code>data-focus-trap</code></a> and <a href="/docs/attributes/data-hotkey/"><code>data-hotkey</code></a></li>
+      <li><a href="/docs/snippets/html/page-shell/">Page shell snippet</a>, which has the skip link in place</li>
+    </ul>
+  </section>

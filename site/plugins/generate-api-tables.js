@@ -16,7 +16,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 let registry = null;
 async function getRegistry() {
   if (!registry) {
-    const mod = await import(resolve(__dirname, '../data/apiRegistry.js'));
+    const mod = await import(resolve(__dirname, '../src/_data/apiRegistry.js'));
     registry = mod.default || mod;
   }
   return registry;

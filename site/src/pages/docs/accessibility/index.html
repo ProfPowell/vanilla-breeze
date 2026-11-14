@@ -1,0 +1,144 @@
+---
+layout: guide
+title: "Accessibility Overview"
+description: "What Vanilla Breeze does for accessibility, what you still provide, the standard it aims at and the checks that hold it there."
+guideGroup: Accessibility
+currentPath: /docs/accessibility/
+toc: true
+---
+
+  <section id="approach">
+    <h2>The approach</h2>
+    <p>Vanilla Breeze starts from native HTML. A <code>&lt;button&gt;</code> is already focusable and announced, a <code>&lt;dialog&gt;</code> already contains focus, and a <code>&lt;details&gt;</code> already reports whether it is open. The library styles those elements and builds its components on them, so most accessibility comes from the markup and not from script.</p>
+    <p>The target is <a href="https://www.w3.org/TR/WCAG22/">WCAG 2.2</a> Level AA. Three opt-in <a href="/docs/accessibility/preferences/#themes">accessibility themes</a> go further, to Level AAA contrast, larger text and targets, and a typeface made for legibility.</p>
+  </section>
+
+  <section id="responsibilities">
+    <h2>What is handled and what you provide</h2>
+    <p>A library can make its own parts accessible. It cannot write your content. This table marks the line.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Area</th>
+          <th>The library handles</th>
+          <th>You provide</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row"><a href="/docs/accessibility/keyboard/">Keyboard and focus</a></th>
+          <td>A visible focus ring on every control, the skip link style, focus containment in dialogs, arrow-key handling in each composite component</td>
+          <td>The skip link itself, a source order that matches the reading order</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/accessibility/names-and-announcements/">Names, roles and announcements</a></th>
+          <td>Roles and states inside each component, one shared live region for announcements, the <code>.visually-hidden</code> class</td>
+          <td>Labels for controls, text alternatives for images, headings that describe their sections</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/accessibility/preferences/">Preferences and themes</a></th>
+          <td>Reduced motion, increased contrast, reduced transparency and forced colors, all read from the system; three accessibility themes</td>
+          <td>A way for readers to choose a theme, if you want one (<a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a> is ready made)</td>
+        </tr>
+        <tr>
+          <th scope="row">Color</th>
+          <td>Semantic color tokens that meet AA contrast against their surfaces in light and dark, under every bundled theme</td>
+          <td>Contrast for any color you add, and a second cue wherever color carries meaning</td>
+        </tr>
+        <tr>
+          <th scope="row">Forms</th>
+          <td>Label, hint and error wiring through <a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a>; validation messages written into a live region</td>
+          <td>A <code>&lt;label&gt;</code> for every control, and error text that says how to fix the problem</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/i18n/">Language and direction</a></th>
+          <td>Typography per script, right-to-left layout, locale-aware formatting</td>
+          <td><code>lang</code> on the page and on any passage in another language</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="forms">
+    <h2>Forms</h2>
+    <p>Wrap each control and its label in <code>&lt;form-field&gt;</code>. The hint and the error are <code>&lt;output&gt;</code> elements. The component connects them to the control with <code>aria-describedby</code>, sets <code>aria-invalid</code> when validation fails and writes the message into the error output. Because that output is a polite live region, the message is announced when it appears.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/form-field-css-validation.html"
+      url="form-field-validation"
+      title="Labels, hints and errors"
+      data-demo-height="m"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="A field with a hint and an error" data-escape><form-field>
+  <label for="email">Email</label>
+  <input type="email" id="email" name="email" required />
+  <output class="hint" for="email">We only use this to send your receipt.</output>
+  <output class="error" for="email" aria-live="polite"></output>
+</form-field></code-block>
+    <p>The <a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a> page covers validation timing, grouped controls and custom messages.</p>
+  </section>
+
+  <section id="enforcement">
+    <h2>What holds it in place</h2>
+    <p>These checks run on every change to the library. A failure blocks the release.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Check</th>
+          <th>What it catches</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Markup conformance</td>
+          <td>Skipped heading levels, form controls outside a <code>&lt;form-field&gt;</code>, <code>&lt;div&gt;</code> where an element with meaning exists, in every demo and documentation page</td>
+        </tr>
+        <tr>
+          <td>Contrast tests</td>
+          <td>Text and control colors below AA, measured in a browser under each bundled theme in light and dark</td>
+        </tr>
+        <tr>
+          <td>Component tests</td>
+          <td>Keyboard operation, focus movement, roles and states, right-to-left layout, reduced motion and forced colors</td>
+        </tr>
+        <tr>
+          <td>Manifest check</td>
+          <td>A key or ARIA attribute listed in the tables on these pages that the component's code no longer contains</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/architecture/resilience-matrix/">Resilience Matrix</a></td>
+          <td>Records what each component does without JavaScript and without CSS</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Automated checks find a minority of accessibility problems. <a href="/docs/accessibility/testing/">Testing</a> lists what to check by hand on your own pages.</p>
+  </section>
+
+  <section id="report">
+    <h2>Report a problem</h2>
+    <p>If something in the library is hard to use with a keyboard, a screen reader, magnification or voice control, <a href="https://github.com/profpowell/vanilla-breeze/issues">open an issue on GitHub</a> and label it <q>accessibility</q>. Say which browser and assistive technology you used.</p>
+  </section>
+
+  <section id="pages">
+    <h2>In this section</h2>
+    <layout-grid data-layout-min="m" data-layout-gap="m">
+      <a href="/docs/accessibility/keyboard/" class="section-card">
+        <h3>Keyboard and Focus</h3>
+        <p>The focus ring, skip links, focus containment and the keys every component handles.</p>
+      </a>
+      <a href="/docs/accessibility/names-and-announcements/" class="section-card">
+        <h3>Names, Roles and Announcements</h3>
+        <p>Labelling controls, hiding text visually, live regions and what each component sets for you.</p>
+      </a>
+      <a href="/docs/accessibility/preferences/" class="section-card">
+        <h3>Preferences and Themes</h3>
+        <p>Reduced motion, contrast and forced colors, and the three accessibility themes.</p>
+      </a>
+      <a href="/docs/accessibility/testing/" class="section-card">
+        <h3>Testing</h3>
+        <p>A short manual pass, the screen reader pairings worth using and how to emulate preferences.</p>
+      </a>
+    </layout-grid>
+  </section>

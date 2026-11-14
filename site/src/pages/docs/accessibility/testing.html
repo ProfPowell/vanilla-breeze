@@ -1,0 +1,130 @@
+---
+layout: guide
+title: "Testing Accessibility"
+description: "A short manual pass for your own pages, how to emulate reader preferences, which screen readers to use and what automated tools do and do not find."
+guideGroup: Accessibility
+currentPath: /docs/accessibility/testing/
+toc: true
+---
+
+  <section id="manual">
+    <h2>A ten-minute manual pass</h2>
+    <p>The library's parts are tested before release. Your pages combine them with your content, and that combination is what readers meet. These checks need no tools and find the problems that matter most.</p>
+    <ol>
+      <li><strong>Put the mouse away.</strong> Tab from the top of the page to the bottom. Can you reach and operate everything, and can you always see where focus is?</li>
+      <li><strong>Try the skip link.</strong> The first <kbd>Tab</kbd> should show it, and <kbd>Enter</kbd> should land you in the main content.</li>
+      <li><strong>Open and close everything.</strong> Dialogs, menus and panels should take focus when they open and give it back when they close. <kbd>Esc</kbd> should close them.</li>
+      <li><strong>Zoom to 200%.</strong> Then narrow the window to 320 pixels. Nothing should be cut off or need sideways scrolling to read.</li>
+      <li><strong>Read the headings alone.</strong> Do they outline the page, in order, with no level skipped?</li>
+      <li><strong>Read the links alone.</strong> Does each one say where it goes without the sentence around it?</li>
+      <li><strong>Look at each image.</strong> Does its <code>alt</code> say what the image is for, or is it empty because the image is decoration?</li>
+      <li><strong>Submit each form wrong.</strong> Is the error next to the field, in words, and does it say how to fix it?</li>
+      <li><strong>Turn on reduced motion and forced colors.</strong> Is every control and state still visible?</li>
+      <li><strong>Switch the theme.</strong> Check light, dark and high contrast.</li>
+    </ol>
+  </section>
+
+  <section id="emulate">
+    <h2>Emulating preferences</h2>
+    <p>Browser developer tools can switch each preference without changing your system settings. In Chrome or Edge, open DevTools, press <kbd data-hotkey="meta+shift+p">Ctrl+Shift+P</kbd> and type <q>Rendering</q> to show the Rendering panel.</p>
+    <table>
+      <thead>
+        <tr><th>Setting in the Rendering panel</th><th>Tests</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Emulate CSS media feature <code>prefers-reduced-motion</code></td><td>Animations and transitions stop</td></tr>
+        <tr><td>Emulate CSS media feature <code>prefers-contrast</code></td><td>Borders and muted text strengthen</td></tr>
+        <tr><td>Emulate CSS media feature <code>forced-colors</code></td><td>Controls and states survive the reader's palette</td></tr>
+        <tr><td>Emulate CSS media feature <code>prefers-color-scheme</code></td><td>Light and dark</td></tr>
+        <tr><td>Emulate vision deficiencies</td><td>Whether meaning depends on color alone</td></tr>
+      </tbody>
+    </table>
+    <p>Firefox has the color scheme switch and a contrast checker in its Accessibility panel. Safari has the color scheme and reduced motion overrides in the Elements tab of Web Inspector.</p>
+  </section>
+
+  <section id="screen-readers">
+    <h2>Screen readers</h2>
+    <p>Test with at least one. Each screen reader is developed against a particular browser, and results in other pairings are less reliable.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Platform</th>
+          <th>Screen reader</th>
+          <th>Browser</th>
+          <th>Start and stop</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>macOS</td>
+          <td>VoiceOver, built in</td>
+          <td>Safari</td>
+          <td><kbd>Cmd</kbd>+<kbd>F5</kbd></td>
+        </tr>
+        <tr>
+          <td>Windows</td>
+          <td><a href="https://www.nvaccess.org/">NVDA</a>, free</td>
+          <td>Firefox or Chrome</td>
+          <td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>N</kbd></td>
+        </tr>
+        <tr>
+          <td>Windows</td>
+          <td>JAWS</td>
+          <td>Chrome or Edge</td>
+          <td>From the Start menu</td>
+        </tr>
+        <tr>
+          <td>iOS</td>
+          <td>VoiceOver, built in</td>
+          <td>Safari</td>
+          <td>Settings, Accessibility</td>
+        </tr>
+        <tr>
+          <td>Android</td>
+          <td>TalkBack, built in</td>
+          <td>Chrome</td>
+          <td>Settings, Accessibility</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>A first session can be short. Move through the page by heading, then by landmark, then tab through the controls. Listen for three things: each control says what it is, what it is called and what state it is in.</p>
+  </section>
+
+  <section id="automated">
+    <h2>Automated tools</h2>
+    <p>Automated checkers are fast and repeatable, and they find a minority of problems. They can tell that an image has no <code>alt</code>. They cannot tell that the <code>alt</code> is wrong. Run one in development and one in your build, and do the manual pass as well.</p>
+    <ul>
+      <li><a href="https://www.deque.com/axe/devtools/">axe DevTools</a>, a browser extension, for the page in front of you</li>
+      <li><a href="https://wave.webaim.org/">WAVE</a>, a browser extension that marks problems on the page itself</li>
+      <li>Lighthouse, in Chrome DevTools</li>
+      <li><a href="https://github.com/pa11y/pa11y">Pa11y</a> or <a href="https://github.com/dequelabs/axe-core">axe-core</a>, from the command line and in continuous integration</li>
+    </ul>
+  </section>
+
+  <section id="library-tests">
+    <h2>What the library tests</h2>
+    <p>Each component has browser tests for its keyboard operation, its roles and states and its focus handling. Pages are measured for contrast under every bundled theme, in light and dark. Layouts and components are run right to left, with reduced motion and with forced colors. Markup rules reject skipped heading levels and unlabelled form controls in every demo. <a href="/docs/accessibility/#enforcement">What holds it in place</a> has the list.</p>
+    <p>None of that tests your content. The manual pass above does.</p>
+  </section>
+
+  <section id="resources">
+    <h2>Resources</h2>
+    <layout-grid data-layout-min="m" data-layout-gap="m">
+      <a href="https://www.w3.org/WAI/WCAG22/quickref/" class="section-card">
+        <h3>WCAG Quick Reference</h3>
+        <p>Every success criterion, with techniques, in a list you can filter.</p>
+      </a>
+      <a href="https://www.w3.org/WAI/ARIA/apg/" class="section-card">
+        <h3>ARIA Authoring Practices</h3>
+        <p>The W3C patterns the components follow, with keyboard tables.</p>
+      </a>
+      <a href="https://webaim.org/" class="section-card">
+        <h3>WebAIM</h3>
+        <p>Articles, a contrast checker and screen reader survey results.</p>
+      </a>
+      <a href="https://www.a11yproject.com/" class="section-card">
+        <h3>The A11Y Project</h3>
+        <p>A community checklist and plain explanations.</p>
+      </a>
+    </layout-grid>
+  </section>

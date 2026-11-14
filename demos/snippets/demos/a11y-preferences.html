@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Accessibility themes and reduced motion</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-background); }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <fieldset>
+      <legend>Reader settings</legend>
+      <layout-cluster data-layout-gap="m">
+        <label><input type="checkbox" data-theme-token="a11y-high-contrast" /> High contrast</label>
+        <label><input type="checkbox" data-theme-token="a11y-large-text" /> Large text</label>
+        <label><input type="checkbox" data-theme-token="a11y-dyslexia" /> Dyslexia-friendly</label>
+        <label><input type="checkbox" id="motion" /> Reduce motion</label>
+      </layout-cluster>
+    </fieldset>
+
+    <p><code id="markup">&lt;html&gt;</code></p>
+
+    <layout-card data-padding="l">
+      <layout-stack data-layout-gap="m">
+        <h1>Renew your library card</h1>
+        <p>Cards last three years. Renewing keeps your loans, your holds and your reading history. <a href="#fees">Fees and waivers</a> are listed below.</p>
+        <p><small>Last renewed 4 March 2024. Renewal takes about two minutes.</small></p>
+        <form data-layout="cluster" data-layout-gap="s" data-layout-align="end">
+          <form-field>
+            <label for="card">Card number</label>
+            <input type="text" id="card" inputmode="numeric" placeholder="8 digits" />
+          </form-field>
+          <button type="submit">Renew</button>
+          <button type="button" class="secondary">Find my number</button>
+        </form>
+        <accordion-wc>
+          <details>
+            <summary>Fees and waivers</summary>
+            <p>Renewal is free. A replacement card costs £2, waived for anyone under 18 or over 65.</p>
+          </details>
+          <details>
+            <summary>What you need</summary>
+            <p>Your card number and proof of your current address.</p>
+          </details>
+        </accordion-wc>
+      </layout-stack>
+    </layout-card>
+
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const root = document.documentElement;
+    const markup = document.getElementById('markup');
+    const boxes = [...document.querySelectorAll('[data-theme-token]')];
+    const motion = document.getElementById('motion');
+
+    function apply() {
+      // Keep any decorative theme the page already has; only the a11y tokens change.
+      const kept = (root.dataset.theme ?? '').split(/\s+/).filter((t) => t && !t.startsWith('a11y-'));
+      const tokens = [...kept, ...boxes.filter((b) => b.checked).map((b) => b.dataset.themeToken)];
+      if (tokens.length) root.dataset.theme = tokens.join(' ');
+      else delete root.dataset.theme;
+      root.toggleAttribute('data-motion-reduced', motion.checked);
+
+      const attrs = [
+        tokens.length ? ` data-theme="${tokens.join(' ')}"` : '',
+        motion.checked ? ' data-motion-reduced' : '',
+      ].join('');
+      markup.textContent = `<html${attrs}>`;
+    }
+
+    [...boxes, motion].forEach((box) => box.addEventListener('change', apply));
+    document.querySelector('form').addEventListener('submit', (e) => e.preventDefault());
+  </script>
+</body>
+</html>
