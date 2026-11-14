@@ -10,6 +10,17 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - **Themes ship real italics for their body typefaces.** Inter, Nunito, DM Sans, Josefin Sans, Exo 2, Lora, Merriweather, JetBrains Mono, Barlow Condensed and DM Serif Display now include their italic files, so `<em>` and `<cite>` are drawn by the typeface and not slanted by the browser. An italic file is downloaded only when a page has italic text. The package grows by about 1.1 MB.
 - **Integration guide pages use the full docs canvas**, like the other docs pages, in place of a narrower fixed column.
 - **Accessibility and Internationalization are now two documentation sections of five pages each.** Accessibility has an overview, Keyboard and Focus, Names, Roles and Announcements, Preferences and Themes, and Testing. Internationalization has an overview, Languages and Scripts, Direction, Locale and Formatting, and Translation. The Accessibility Utilities page is folded into the keyboard and names pages, and `/docs/accessibility-utilities/` is gone.
+- **`<tab-set>`: every tab is a tab stop.** The tabs are native `<summary>` buttons, so a screen reader gives no hint that arrow keys work. The roving `tabindex` is gone: Tab reaches each tab, Enter or Space opens it, and the arrow keys, Home and End still move between tabs.
+- **`<date-picker>`: Tab stays in the open calendar.** Tab and Shift+Tab move through the previous and next month buttons, the year select and the day grid, where they used to close the calendar. Escape closes it. Left and Right Arrow are reversed in right-to-left, and the calendar announces the month and year without the year select inside the live region.
+- **`<share-wc>` wraps its buttons in a named group**, not a `<nav>`, so each instance no longer adds a navigation landmark. Style `.share-group` where you styled `share-wc nav`.
+- **`<context-menu>`: a plain trigger keeps its own semantics.** A `<p>` or `<section>` trigger is made focusable and no longer carries `aria-haspopup` and `aria-expanded`, which are not valid without a role. Native controls and triggers with a `role` keep them.
+- **`<day-view>` and `<week-view>` events are buttons**, since Enter and Space activate them. An event that holds links or controls of its own stays a group.
+- **`<accordion-wc>` panels are region landmarks only with six or fewer panels.**
+- **`<site-map>`**: in `ia-tree` mode the `<nav>` stays a landmark and the root list is the tree; the visual-mode controls are a named group, not a toolbar.
+- **`<theme-picker>`**: the inline variant's panel is a named group, not a dialog, and the color-mode group is named once.
+- **`<page-tools>`** drops its toolbar role while collapsed to the floating button.
+- **`<markdown-editor>`** panes and a labelled **`<compare-surface>`** are named groups; the **`<carousel-wc>`** slide track is a group named "Slides" (`data-label-track`).
+- **Only the current item carries `aria-current`** in `<carousel-wc>` indicators and `<glossary-index>` links; `<content-lens>` hides inactive lenses with `hidden` alone; `<site-index>` empty letters carry no `aria-disabled`.
 - **`<icon-wc>`'s `basePath` property returns an absolute URL** when it is derived from the bundle location.
 
 ### Added
@@ -19,8 +30,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - **`<slide-accept data-label-required>`** translates the validation message, which was fixed English.
 - **Eight demos for the new pages**: skip link, focus trap, accessible names, live regions, accessibility themes, a five-language article, a direction switch and translated component strings.
 - **Grid Identity guide: two purpose-built demos.** A landing page that labels its named areas and shows that source order does not move them, and a three-tier page that highlights the page, main and component tiers in turn.
+- **More keys.** `<calendar-wc>`: Home and End move within the week, Page Up and Page Down by month, with Shift by year. `<color-picker>`: Home, End, Page Up and Page Down on both sliders. `<comment-box>`: Escape cancels when the Cancel button is shown. `<page-tour>`: Left and Right Arrow swap in right-to-left.
+- **More announcements.** `<notification-wc>` announces a notification that arrives after load and gives banners `role="status"` (`role="alert"` for errors). `<progress-tracker>` announces a step change. `<image-gallery>` announces the image's alt text and position. `<diagram-wc>` announces syntax errors. `<video-player>` announces a speed change once. Each string has a `data-label-*` override.
+- **`<emoji-picker>` options state `aria-selected`**, and the focused option is the selected one.
+- **Utilities load when their attribute first appears after page load.** A page that adds `data-focus-trap`, `data-copy` or any other attribute utility from script, with none present at load, now gets it.
 
 ### Fixed
+- **`<combo-box>`: Enter submits the surrounding form** when no option is active. It was always swallowed.
+- **`<ai-chat>`: Escape while a reply streams stops the reply and keeps the draft**, and the reply is read once when complete, not in fragments.
+- **`<content-swap>`: Enter or Space on a button trigger swaps once**, and a trigger that is not a button or link is focusable and exposed as a button.
 - **`<carousel-wc>` buttons no longer submit a surrounding form.** The generated previous, next and indicator buttons are `type="button"`.
 - **`<ai-chat>` announces its notices**, such as the model being unavailable.
 - **`<reaction-bar>` without a palette no longer tells assistive technology its button opens a popup.**
