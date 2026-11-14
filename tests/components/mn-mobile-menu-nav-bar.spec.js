@@ -383,10 +383,13 @@ test.describe('docs layouts: skip link', () => {
 
   test('skip link is off-screen until focused, then visible', async ({ page }) => {
     const { readFileSync } = await import('node:fs');
-    const head = readFileSync(join(REPO, 'site', 'src', 'includes', 'head.html'), 'utf8');
-    const css = head.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? '';
+    // The rule ships in the core stylesheet (src/utils/skip-link.css); the
+    // site head no longer carries a copy.
+    const css = readFileSync(join(REPO, 'src', 'utils', 'skip-link.css'), 'utf8');
     expect(css).toContain('.skip-link');
-    await load(page, `<style>${css}</style><a href="#main" class="skip-link">Skip to main content</a>
+    const head = readFileSync(join(REPO, 'site', 'src', 'includes', 'head.html'), 'utf8');
+    expect(head).not.toContain('.skip-link');
+    await load(page, `<a href="#main" class="skip-link">Skip to main content</a>
       <header><a href="/">Brand</a></header><main id="main"><p>Content</p></main>`);
     const box = () => page.locator('.skip-link').boundingBox();
     expect((await box()).y + (await box()).height).toBeLessThanOrEqual(0);

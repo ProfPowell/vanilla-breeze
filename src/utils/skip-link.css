@@ -1,0 +1,29 @@
+/* Skip link: the first focusable element in <body>, pointing at the main
+   content (<a href="#main" class="skip-link">). Off screen until it takes
+   keyboard focus, so sighted keyboard users can jump past the header and
+   pointer users never see it. Several links stack in source order. */
+.skip-link {
+  position: absolute;
+  inset-block-start: var(--size-xs);
+  inset-inline-start: var(--size-xs);
+  z-index: 1000;
+  padding: var(--size-s) var(--size-m);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-s);
+  box-shadow: var(--shadow-m);
+  text-decoration: none;
+  transform: translateY(calc(-100% - 2rem));
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+@media (forced-colors: active) {
+  .skip-link { border-color: CanvasText; }
+}

@@ -43,6 +43,11 @@ import './effects/flipboard.js';
 import './effects/stamp.js';
 import './effects/rating.js';
 export { VB } from './lib/vb.js';
+// Locale helpers and the string-swap class, for application code that formats
+// or translates alongside the library.
+export { VbI18n, getLocale, usableLocale, isRTL } from './lib/i18n.js';
+// The shared screen-reader live region the components announce through.
+export { announce } from './lib/announce.js';
 
 // Initialize theme system early to prevent FOUC
 // init() is async — loads saved theme CSS before applying
