@@ -9,12 +9,22 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 - **Themes ship real italics for their body typefaces.** Inter, Nunito, DM Sans, Josefin Sans, Exo 2, Lora, Merriweather, JetBrains Mono, Barlow Condensed and DM Serif Display now include their italic files, so `<em>` and `<cite>` are drawn by the typeface and not slanted by the browser. An italic file is downloaded only when a page has italic text. The package grows by about 1.1 MB.
 - **Integration guide pages use the full docs canvas**, like the other docs pages, in place of a narrower fixed column.
+- **Accessibility and Internationalization are now two documentation sections of five pages each.** Accessibility has an overview, Keyboard and Focus, Names, Roles and Announcements, Preferences and Themes, and Testing. Internationalization has an overview, Languages and Scripts, Direction, Locale and Formatting, and Translation. The Accessibility Utilities page is folded into the keyboard and names pages, and `/docs/accessibility-utilities/` is gone.
 - **`<icon-wc>`'s `basePath` property returns an absolute URL** when it is derived from the bundle location.
 
 ### Added
+- **Keyboard and ARIA tables generated from component data.** Each component's `api.json` has an `a11y` block naming the pattern it implements, the roles and states it sets, what the author provides, what it announces and the keys it handles. The Accessibility pages render their tables from it, and the API drift check fails when a listed key or attribute no longer appears in the component's source.
+- **`.skip-link` is in the core stylesheet.** `<a href="#main" class="skip-link">` is off screen until it takes keyboard focus; no CSS to copy.
+- **`VbI18n`, `getLocale`, `usableLocale`, `isRTL` and `announce` are exported** from the main, core and autoload bundles, so `import { announce } from 'vanilla-breeze'` works.
+- **`<slide-accept data-label-required>`** translates the validation message, which was fixed English.
+- **Eight demos for the new pages**: skip link, focus trap, accessible names, live regions, accessibility themes, a five-language article, a direction switch and translated component strings.
 - **Grid Identity guide: two purpose-built demos.** A landing page that labels its named areas and shows that source order does not move them, and a three-tier page that highlights the page, main and component tiers in turn.
 
 ### Fixed
+- **`<carousel-wc>` buttons no longer submit a surrounding form.** The generated previous, next and indicator buttons are `type="button"`.
+- **`<ai-chat>` announces its notices**, such as the model being unavailable.
+- **`<reaction-bar>` without a palette no longer tells assistive technology its button opens a popup.**
+- **API tables on component pages use the current manifest.** The table generator read a copy of the registry that was last written in March.
 - **Icons and packs load from where the bundle was loaded.** A page that loads Vanilla Breeze from a CDN or a sub-path requested `/cdn/icons/...` and `/cdn/packs/...` on its own origin and got 404s, so `<icon-wc>`, `[data-icon]` and the icons inside `<theme-picker>` were blank unless `data-icon-path` was set. They now resolve beside the loaded script. `data-icon-path` and `base-path` still override.
 
 ## [0.6.2] - 2026-11-11
