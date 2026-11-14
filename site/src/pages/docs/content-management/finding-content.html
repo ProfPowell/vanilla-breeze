@@ -1,0 +1,169 @@
+---
+layout: guide
+title: "Finding Content"
+description: "Search, indexes, maps and switchable views that help a reader find a page on a large site, and the data each one needs."
+guideGroup: Content Management
+currentPath: /docs/content-management/finding-content/
+toc: true
+---
+
+  <section id="ways">
+    <h2>Several ways in</h2>
+    <p>Readers look for a page in different ways. One knows a word in it. One knows the subject. One knows who wrote it, or that it was new last week, or that they had it open yesterday. A site with many pages should offer more than one of these routes.</p>
+    <p>Each route is one component. They fall into three groups by where their data comes from, and that decides what you have to build.</p>
+    <table>
+      <thead>
+        <tr><th>Reader knows</th><th>Component</th><th>Data source</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">A word or phrase</th>
+          <td><a href="/docs/elements/web-components/site-search/"><code>&lt;site-search&gt;</code></a></td>
+          <td>A <a href="https://pagefind.app/">Pagefind</a> index, built after your pages</td>
+        </tr>
+        <tr>
+          <th scope="row">A term, alphabetically</th>
+          <td><a href="/docs/elements/web-components/site-index/"><code>&lt;site-index&gt;</code></a></td>
+          <td>An index you write as links, or a JSON file</td>
+        </tr>
+        <tr>
+          <th scope="row">Where it sits in the site</th>
+          <td><a href="/docs/elements/web-components/site-map/"><code>&lt;site-map&gt;</code></a></td>
+          <td>A nested list of links you write, or a JSON file</td>
+        </tr>
+        <tr>
+          <th scope="row">When it was released</th>
+          <td><a href="/docs/elements/web-components/time-index/"><code>&lt;time-index&gt;</code></a></td>
+          <td>A changelog you write</td>
+        </tr>
+        <tr>
+          <th scope="row">The subject</th>
+          <td><a href="/docs/elements/web-components/topic-map/"><code>&lt;topic-map&gt;</code></a></td>
+          <td>The site index, plus a vocabulary file</td>
+        </tr>
+        <tr>
+          <th scope="row">The author</th>
+          <td><a href="/docs/elements/web-components/author-index/"><code>&lt;author-index&gt;</code></a></td>
+          <td>The site index</td>
+        </tr>
+        <tr>
+          <th scope="row">How it was made or reviewed</th>
+          <td><a href="/docs/elements/web-components/trust-filter/"><code>&lt;trust-filter&gt;</code></a></td>
+          <td>The site index</td>
+        </tr>
+        <tr>
+          <th scope="row">That they read it before</th>
+          <td><a href="/docs/elements/web-components/recently-visited/"><code>&lt;recently-visited&gt;</code></a></td>
+          <td>History kept in the reader's own browser</td>
+        </tr>
+        <tr>
+          <th scope="row">That it is widely read</th>
+          <td><a href="/docs/elements/web-components/popularity-index/"><code>&lt;popularity-index&gt;</code></a></td>
+          <td>An analytics endpoint you run</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The <dfn>site index</dfn> is one JSON file with a record per page. <a href="/docs/content-management/page-metadata/#site-index">Page Metadata</a> describes its shape. The library reads it and does not write it.</p>
+  </section>
+
+  <section id="lens">
+    <h2>One list, several views</h2>
+    <p><a href="/docs/elements/web-components/content-lens/"><code>&lt;content-lens&gt;</code></a> holds several of these components and shows one at a time, with a row of buttons to switch. Give it the address of the site index once in <code>data-lens-src</code> and it passes that to each child that has no source of its own.</p>
+
+    <browser-window
+      src="/docs/examples/demos/content-lens.html"
+      url="content-lens"
+      title="Five views of one site index"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="A switchable browse page" data-escape><content-lens data-lens-default="topic" data-lens-src="/pages.json">
+  <topic-map data-lens-name="topic" data-lens-label="By topic" data-heading-level="0"></topic-map>
+  <author-index data-lens-name="author" data-lens-label="By author"></author-index>
+  <trust-filter data-lens-name="trust" data-lens-label="By review"></trust-filter>
+  <recently-visited data-lens-name="recent" data-lens-label="Recently visited" data-heading-level="0"></recently-visited>
+</content-lens></code-block>
+    <ul>
+      <li>Each child needs <code>data-lens-name</code>. <code>data-lens-label</code> sets the button text. Without it the name is used.</li>
+      <li><code>data-lens-default</code> names the view shown first. The reader's last choice is kept for the browser session and wins on a return visit.</li>
+      <li><code>data-heading-level="0"</code> removes a child's own heading where the button already names it. <code>&lt;topic-map&gt;</code>, <code>&lt;recently-visited&gt;</code> and <code>&lt;popularity-index&gt;</code> accept it.</li>
+      <li>Every child also works alone, outside <code>&lt;content-lens&gt;</code>, with its own <code>data-lens-src</code>.</li>
+    </ul>
+  </section>
+
+  <section id="search">
+    <h2>Search</h2>
+    <p><code>&lt;site-search&gt;</code> is the dialog and the keyboard handling for <a href="https://pagefind.app/">Pagefind</a>, a search that runs in the browser against an index of static files. The component does not create the index. Run Pagefind over your built site as the last build step.</p>
+    <code-block language="html" label="A search button in the header" data-escape><site-search>
+  <button type="button" data-trigger>
+    <icon-wc name="search"></icon-wc>
+    Search
+  </button>
+</site-search></code-block>
+    <p>The button opens a modal dialog. <kbd>Ctrl</kbd> + <kbd>K</kbd> (<kbd>Command</kbd> + <kbd>K</kbd> on a Mac) opens it from anywhere on the page. Arrow keys move through the results and <kbd>Enter</kbd> follows one.</p>
+    <p>The component loads <code>/pagefind/pagefind.js</code>. If your site is served from a sub-path, set <code>data-pagefind-path</code> to the folder that holds that file. When the index is missing, the dialog says that search is unavailable.</p>
+  </section>
+
+  <section id="authored">
+    <h2>Indexes you write</h2>
+    <p>Three components improve a list that is already in the page. The list is plain links, so it works without script and search engines can follow it. The component adds the controls.</p>
+    <table>
+      <thead>
+        <tr><th>Component</th><th>You write</th><th>It adds</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row"><code>&lt;site-index&gt;</code></th>
+          <td>An alphabetical list of terms, each with links to the pages that cover it</td>
+          <td>A filter box, a row of letters to jump by, and an optional limit per letter with a <q>show more</q> control</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>&lt;site-map&gt;</code></th>
+          <td>A nested list of the site's pages</td>
+          <td>A mark on the current page (<code>current</code> takes its path), with its branch opened, and controls to expand or collapse every branch. A second mode, <code>mode="ia-tree"</code>, turns the list into a tree or chart with page-type and status badges, for planning a site's structure.</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>&lt;time-index&gt;</code></th>
+          <td>A changelog: a list of dated entries</td>
+          <td>Relative dates, a newest-first or oldest-first control, and with <code>versions</code> a filter by version</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><code>&lt;site-index&gt;</code> and <code>&lt;site-map&gt;</code> can also take their content from a JSON file through <code>src</code>, which replaces the list in the page. <code>&lt;time-index&gt;</code> can add a <q>recently updated pages</q> list from a JSON file named in <code>updates-src</code>.</p>
+
+    <browser-window
+      src="/docs/examples/demos/site-index.html"
+      url="site-index"
+      title="A keyword index with a filter"
+      data-demo-height="l"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section id="generated">
+    <h2>Views of the site index</h2>
+    <p>These three fetch the site index and build their display from it.</p>
+    <ul>
+      <li><strong><code>&lt;author-index&gt;</code></strong> groups pages under each author, with a filter box. <code>sort="count"</code> puts the most prolific author first. If you write a list inside it, that list is shown when the fetch fails.</li>
+      <li><strong><code>&lt;topic-map&gt;</code></strong> shows pages as a tree of subjects. It needs a second file, the vocabulary (<code>/vocabulary.json</code> unless you set <code>data-vocabulary-src</code>), which lists each concept's <code>@id</code>, its <code>skos:prefLabel</code> and its broader or narrower concepts. A page appears under every id in its <code>concepts</code> array.</li>
+      <li><strong><code>&lt;trust-filter&gt;</code></strong> filters pages by how they were made, what review they had, their status and whether they carry a signature. Ticking two values in one group widens the list. Ticking values in two groups narrows it. <q>Has signature</q> means a signature is declared in the index. Only <code>&lt;page-info&gt;</code>, on the page itself, checks one.</li>
+    </ul>
+  </section>
+
+  <section id="reader">
+    <h2>Views of reader activity</h2>
+    <p><a href="/docs/elements/web-components/recently-visited/"><code>&lt;recently-visited&gt;</code></a> lists pages this reader has opened. The history is kept in the browser's local storage and is never sent anywhere. A page is recorded only if it has <code>&lt;meta name="vb:track-history" content="on"&gt;</code> or contains the component. The panel gives the reader controls to pause recording and to clear the list. <code>data-vb-no-track</code> on <code>&lt;html&gt;</code> turns recording off for the site.</p>
+    <p><a href="/docs/elements/web-components/popularity-index/"><code>&lt;popularity-index&gt;</code></a> lists the most visited pages. It fetches <code>/api/analytics/popular</code>, or the address in <code>analytics-src</code>, and expects <code>{ "pages": [{ "url", "title", "views" }] }</code>. You run that endpoint. When it does not answer, the component sets <code>data-state="unavailable"</code> on itself, so one rule can hide the panel.</p>
+    <code-block language="css" label="Hide the panel when there is no data" data-escape>popularity-index[data-state="unavailable"] { display: none; }</code-block>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/content-management/page-metadata/">Page Metadata</a>, for the tags and the site index these views are built from</li>
+      <li><a href="/docs/content-management/glossary-terms/">Glossary Terms</a>, for a filterable glossary</li>
+      <li><a href="/docs/extensibility/analytics/">Analytics</a>, for where visit counts come from</li>
+      <li>This site's own <a href="/index-of/">keyword index</a> and <a href="/sitemap/">sitemap</a>, built with <code>&lt;site-index&gt;</code> and <code>&lt;site-map&gt;</code></li>
+    </ul>
+  </section>

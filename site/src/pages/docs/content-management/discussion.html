@@ -1,0 +1,174 @@
+---
+layout: guide
+title: "Comments and Reactions"
+description: "How the comment thread, the comment form and the reaction bar fit together, and the events your code handles to save what readers write."
+guideGroup: Content Management
+currentPath: /docs/content-management/discussion/
+toc: true
+---
+
+  <section id="division">
+    <h2>Display here, storage with you</h2>
+    <p>Three components cover reader response. None of them saves anything. Each one shows state you give it and fires an event when the reader does something. Your code sends that to a server and tells the component the result.</p>
+    <table>
+      <thead>
+        <tr><th>Component</th><th>Shows</th><th>You write</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row"><a href="/docs/elements/web-components/comment-thread/"><code>&lt;comment-thread&gt;</code></a></th>
+          <td>A list of comments with author, time, nesting, and Reply, Edit and Delete actions</td>
+          <td>One <code>&lt;article data-comment&gt;</code> per comment</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/elements/web-components/comment-box/"><code>&lt;comment-box&gt;</code></a></th>
+          <td>A Markdown editor with a preview and Submit and Cancel buttons</td>
+          <td>Nothing, or a wrapping <code>&lt;form&gt;</code></td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/elements/web-components/reaction-bar/"><code>&lt;reaction-bar&gt;</code></a></th>
+          <td>Emoji chips with counts, and a button that opens a palette of reactions to add</td>
+          <td>One <code>&lt;button&gt;</code> per reaction and a <code>&lt;template&gt;</code> for the palette</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The demo uses a mock server: a short delay, then the component is told the action succeeded. Reply to a comment, add a reaction and watch the event log underneath.</p>
+
+    <browser-window
+      src="/docs/examples/demos/comment-thread-issue.html"
+      url="comments"
+      title="A thread with replies and reactions"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section id="thread">
+    <h2>A thread</h2>
+    <p>Render each comment as an <code>&lt;article data-comment&gt;</code> with an <code>id</code>. Its attributes carry the facts and a child marked <code>data-comment-body</code> carries the text. The component adds the header, a relative time and the action buttons around what you wrote.</p>
+    <code-block language="html" label="Two comments and a reply form" data-escape><comment-thread aria-label="Comments on this recipe">
+  <article data-comment id="c1" data-author="Noor Haddad"
+           data-time="2026-11-10T08:00:00Z">
+    <section data-comment-body>
+      <p>Worked well with spelt flour. I needed a little less water.</p>
+    </section>
+  </article>
+
+  <article data-comment id="c2" data-author="Sam Reyes"
+           data-time="2026-11-10T09:30:00Z" data-parent="c1" data-mine>
+    <section data-comment-body>
+      <p>Good to know. How much less?</p>
+    </section>
+  </article>
+
+  <template data-reply-form>
+    <comment-box submit-label="Reply" data-show-cancel></comment-box>
+  </template>
+</comment-thread></code-block>
+    <table>
+      <thead>
+        <tr><th>Attribute on the comment</th><th>Effect</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-author</code>, <code>data-author-href</code>, <code>data-author-avatar</code></td><td>The name, an optional profile link and an optional avatar</td></tr>
+        <tr><td><code>data-time</code></td><td>An ISO 8601 time, shown as a relative time in the page's language</td></tr>
+        <tr><td><code>data-parent</code></td><td>The id of the comment this one replies to. Replies are indented under it.</td></tr>
+        <tr><td><code>data-mine</code></td><td>The current reader wrote it. Edit and Delete appear.</td></tr>
+        <tr><td><code>data-edited</code></td><td>A time of last edit. An <q>edited</q> mark appears.</td></tr>
+      </tbody>
+    </table>
+    <p><code>data-disabled</code> on the thread removes every action, for a closed discussion.</p>
+
+    <h3 id="thread-events">Handling the actions</h3>
+    <p>The thread fires three events. For a reply, pass the promise of your save to <code>waitUntil()</code>. The form shows as busy until it settles, closes when it resolves and keeps the reader's text when it rejects.</p>
+    <code-block language="js" label="Saving a reply" data-escape>const thread = document.querySelector('comment-thread');
+
+thread.addEventListener('comment-thread:reply', (event) => {
+  const { parentId, value } = event.detail;
+
+  const saved = fetch('/api/comments', {
+    method: 'POST',
+    body: JSON.stringify({ parentId, body: value }),
+  })
+    .then((response) => response.json())
+    .then((comment) => {
+      thread.addComment({
+        id: comment.id,
+        author: comment.author,
+        time: comment.time,
+        bodyText: comment.body,
+        parentId,
+        mine: true,
+      });
+    });
+
+  event.detail.waitUntil(saved);
+});
+
+thread.addEventListener('comment-thread:delete-request', (event) => {
+  // Confirm, delete on the server, then:
+  thread.removeComment(event.detail.commentId);
+});</code-block>
+    <p><code>comment-thread:edit-request</code> carries the comment's id and current text. Show an editor of your choice, then call <code>updateComment(id, { bodyText, edited })</code>.</p>
+    <p><code>addComment()</code> and <code>updateComment()</code> take the text as <code>bodyText</code>, which is inserted as plain text, or as <code>bodyHtml</code>, which goes through the library's sanitizer first. Use <code>bodyText</code> unless your server has already turned the reader's Markdown into HTML.</p>
+  </section>
+
+  <section id="box">
+    <h2>The comment form</h2>
+    <p><code>&lt;comment-box&gt;</code> is the form for a new top-level comment, and the thread clones it from the <code>&lt;template data-reply-form&gt;</code> for replies. It is a form control: give it a <code>name</code> inside a <code>&lt;form&gt;</code> and its text is submitted with the form, with <code>required</code>, <code>data-min-length</code> and <code>data-max-length</code> as its validation.</p>
+    <p>Used alone, listen for <code>comment-box:submit</code>. It follows the same rule as a reply: do nothing and the box clears, call <code>waitUntil(promise)</code> to hold it busy until your save settles, or call <code>preventDefault()</code> to keep the text.</p>
+
+    <browser-window
+      src="/docs/examples/demos/comment-box-basic.html"
+      url="comment-box"
+      title="The comment form on its own"
+      data-demo-height="l"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section id="reactions">
+    <h2>Reactions</h2>
+    <p>Write a <code>&lt;button&gt;</code> for each reaction that already has a count, and a <code>&lt;template data-palette&gt;</code> listing every reaction a reader may add. <code>data-reaction</code> is the name your server knows it by. <code>data-label</code> gives the emoji a spoken name.</p>
+    <code-block language="html" label="Reactions on an article" data-escape><reaction-bar aria-label="Reactions to this recipe">
+  <button type="button" data-reaction="thumbsup" data-label="Thumbs up" data-count="12" data-mine>👍</button>
+  <button type="button" data-reaction="heart" data-label="Heart" data-count="4">❤️</button>
+
+  <template data-palette>
+    <button type="button" data-reaction="thumbsup" data-label="Thumbs up">👍</button>
+    <button type="button" data-reaction="heart" data-label="Heart">❤️</button>
+    <button type="button" data-reaction="hooray" data-label="Hooray">🎉</button>
+  </template>
+</reaction-bar></code-block>
+    <p>A click fires <code>reaction-bar:toggle</code> with the reaction, whether it is being added or removed, and the count and <code>mine</code> state from before the click. The chip then waits, ignoring further clicks, until you call <code>setCount()</code>. Call it with the new values when the save succeeds and with the old values when it fails.</p>
+    <code-block language="js" label="Saving a reaction" data-escape>document.addEventListener('reaction-bar:toggle', async (event) => {
+  const bar = event.target.closest('reaction-bar');
+  const { reaction, action, count, mine } = event.detail;
+
+  try {
+    await fetch(`/api/reactions/${reaction}`, { method: action === 'add' ? 'PUT' : 'DELETE' });
+    bar.setCount(reaction, action === 'add' ? count + 1 : count - 1, { mine: action === 'add' });
+  } catch {
+    bar.setCount(reaction, count, { mine });
+  }
+});</code-block>
+    <p>A <code>&lt;reaction-bar&gt;</code> can sit inside a comment, as in the first demo, or under an article. <code>data-disabled</code> makes it read-only.</p>
+  </section>
+
+  <section id="not-here">
+    <h2>What is not here</h2>
+    <ul>
+      <li>Storage, accounts, moderation and spam control. Those are your server's job.</li>
+      <li>Comments pinned to a place in the text. <a href="/docs/elements/web-components/comment-wc/"><code>&lt;comment-wc&gt;</code></a> is an experimental stub for that. It needs a <code>&lt;review-surface&gt;</code> element that Vanilla Breeze does not ship, and without one its button is disabled.</li>
+      <li>Private notes for one reader. Those are <a href="/docs/content-management/highlights/">Highlights and Annotations</a>, and need no server.</li>
+    </ul>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/markdown-editor/"><code>&lt;markdown-editor&gt;</code></a>, the editor inside the comment form</li>
+      <li><a href="/docs/elements/web-components/markdown-viewer/"><code>&lt;markdown-viewer&gt;</code></a>, for showing stored Markdown</li>
+      <li><a href="/docs/accessibility/names-and-announcements/">Names, Roles and Announcements</a></li>
+    </ul>
+  </section>

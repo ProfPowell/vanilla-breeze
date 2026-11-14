@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Metadata in, panel out</title>
+
+  <meta name="author" content="Tomas Okafor" />
+  <meta name="last-modified" content="2026-11-03" />
+  <meta property="article:published_time" content="2026-06-18T00:00:00Z" />
+  <meta name="keywords" content="flu vaccine, appointments, pharmacy" />
+  <meta name="vb:provenance" content="human" />
+  <meta name="vb:review" content="unreviewed" />
+
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <form id="controls" data-layout="cluster" data-layout-gap="l">
+      <fieldset data-segmented>
+        <legend class="visually-hidden">How the page was made</legend>
+        <label><input type="radio" name="provenance" value="human" checked /> Human</label>
+        <label><input type="radio" name="provenance" value="ai-assisted" /> AI-assisted</label>
+        <label><input type="radio" name="provenance" value="ai-generated" /> AI-generated</label>
+      </fieldset>
+      <fieldset data-segmented>
+        <legend class="visually-hidden">Review</legend>
+        <label><input type="radio" name="review" value="unreviewed" checked /> Unreviewed</label>
+        <label><input type="radio" name="review" value="fact-checked" /> Fact-checked</label>
+        <label><input type="radio" name="review" value="editor-reviewed" /> Editor-reviewed</label>
+      </fieldset>
+      <button type="submit" class="visually-hidden">Apply</button>
+    </form>
+
+    <pre><code id="markup">&lt;meta name="vb:provenance" content="human"&gt;
+&lt;meta name="vb:review" content="unreviewed"&gt;</code></pre>
+
+    <article id="stage" data-provenance="human" data-layout="stack" data-layout-gap="m">
+      <h1>Booking a flu vaccination</h1>
+      <p>Riverside Clinic gives flu vaccinations from October to February. Book online, by phone on 555 0142, or at the front desk. Appointments take about ten minutes.</p>
+      <p>Bring your patient card. If you are over 65, pregnant or have a long-term condition, the vaccination is free.</p>
+      <page-info auto></page-info>
+    </article>
+
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const form = document.getElementById('controls');
+    const stage = document.getElementById('stage');
+    const markup = document.getElementById('markup');
+    const meta = (name) => document.querySelector(`meta[name="${name}"]`);
+
+    function apply() {
+      const data = new FormData(form);
+      const provenance = data.get('provenance');
+      const review = data.get('review');
+
+      meta('vb:provenance').content = provenance;
+      meta('vb:review').content = review;
+      stage.dataset.provenance = provenance;
+      markup.textContent =
+        `<meta name="vb:provenance" content="${provenance}">\n<meta name="vb:review" content="${review}">`;
+
+      // <page-info auto> reads the head once, when it connects.
+      // A fresh element reads the new values.
+      const next = document.createElement('page-info');
+      next.setAttribute('auto', '');
+      stage.querySelector('page-info')?.replaceWith(next);
+    }
+
+    form.addEventListener('change', apply);
+    form.addEventListener('submit', (e) => { e.preventDefault(); apply(); });
+  </script>
+</body>
+</html>

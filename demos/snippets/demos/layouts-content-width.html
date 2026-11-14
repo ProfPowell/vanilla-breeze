@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Measure and bleed</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    main {
+      border-inline: var(--border-width-medium) dashed var(--color-border);
+    }
+    figure[data-bleed] {
+      padding: var(--size-m);
+      background: var(--color-surface-raised);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <header data-layout="cluster" data-layout-justify="between" data-layout-gap="m">
+      <fieldset data-segmented>
+        <legend class="visually-hidden">Measure</legend>
+        <label><input type="radio" name="measure" value="narrow" /> Narrow</label>
+        <label><input type="radio" name="measure" value="normal" checked /> Normal</label>
+        <label><input type="radio" name="measure" value="wide" /> Wide</label>
+      </fieldset>
+      <code id="markup">&lt;article data-layout="prose" data-layout-max="normal"&gt;</code>
+    </header>
+
+    <main>
+      <article id="post" data-layout="prose" data-layout-max="normal">
+        <h1>Winter timetable</h1>
+        <p>From the first Monday in November, buses on Lines 4 and 11 run every twelve minutes at peak times and every twenty minutes through the middle of the day. The last departures from Central Station move thirty minutes earlier on weekdays.</p>
+        <figure data-bleed>
+          <figcaption>This figure has <code>data-bleed</code>. It ignores the measure and runs the full width of <code>&lt;main&gt;</code>, marked by the dashed lines.</figcaption>
+        </figure>
+        <p>Line 27 to the airport is unchanged. Night services return on Fridays and Saturdays, and day tickets stay valid until the last bus of the night.</p>
+        <h2>Fares</h2>
+        <p>Single fares stay at their current price until the spring review. Children under eleven travel free with an adult.</p>
+      </article>
+    </main>
+
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const post = document.getElementById('post');
+    const markup = document.getElementById('markup');
+    document.querySelectorAll('input[name="measure"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        post.setAttribute('data-layout-max', radio.value);
+        markup.textContent = `<article data-layout="prose" data-layout-max="${radio.value}">`;
+      });
+    });
+  </script>
+</body>
+</html>

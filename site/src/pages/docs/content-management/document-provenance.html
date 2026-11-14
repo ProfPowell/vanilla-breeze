@@ -1,185 +1,196 @@
 ---
 layout: guide
 title: "Document Provenance"
-description: "How Vanilla Breeze declares, displays, and (in time) verifies who made content, how it was made, and whether it has been tampered with since publication."
+description: "How a page declares who made it, how it was made and what review it had, and how a signature lets a reader's browser check that the page has not changed since it was published."
 guideGroup: Content Management
 currentPath: /docs/content-management/document-provenance/
+toc: true
 author: "Thomas A. Powell"
 authorUrl: "/team/tpowell/"
 published: "2026-04-24"
-lastModified: "2026-04-24"
+lastModified: "2026-11-14"
 version: "0.1.0"
 versionUrl: "/changelog/#v0-1-0"
-keywords: ["provenance", "trust", "metadata", "page-info"]
+keywords: ["provenance", "trust", "metadata", "page-info", "signing"]
 license: "CC BY 4.0"
 licenseUrl: "https://creativecommons.org/licenses/by/4.0/"
 provenance: "ai-assisted"
-review: "editor-reviewed"
+review: "unreviewed"
 status: "published"
-aiTools: "Claude Opus 4.7"
+aiTools: "Claude"
 concepts: ["provenance", "data-provenance", "page-info", "meta-tag-contract"]
 ---
 
-<template slot="breadcrumb">
-<nav class="breadcrumb" aria-label="Breadcrumb">
-  <ol>
-    <li><a href="/docs/">Docs</a></li>
-    <li>Content Management</li>
-    <li><span aria-current="page">Document Provenance</span></li>
-  </ol>
-</nav>
-</template>
+  <section id="what">
+    <h2>What provenance covers</h2>
+    <p>Provenance is the record of where a page came from. In Vanilla Breeze it has two parts, and they are different in kind.</p>
+    <ul>
+      <li><strong>Declarations.</strong> The publisher states who wrote the page, whether AI was used, what review it had and whether it is a draft. These are claims. Nothing checks them.</li>
+      <li><strong>Integrity.</strong> The publisher signs the page at build time. The reader's browser checks the signature. This is a test with a result, and it proves one narrow thing: the page is what was signed.</li>
+    </ul>
+    <p>Both are built. Declarations need only markup. Signing needs a key and a step in your build, and the signing script lives in the repository, not in the published package (see <a href="#signing">Signing a page</a>).</p>
 
-<h1>Document Provenance</h1>
-<p class="lead">An honest signal for honest publishers in an era of zero-cost AI content.</p>
+    <browser-window
+      src="/docs/examples/demos/document-provenance.html"
+      url="document-provenance"
+      title="Declared provenance and tracked changes"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+  </section>
 
-<section>
-  <h2>The problem</h2>
-  <p>AI content generation has reduced the cost of publishing to near-zero. Visitors can no longer assume human authorship. Content farms produce convincing but inaccurate material at scale. Attribution and revision history are routinely stripped. There is no standard way for honest publishers to <em>prove</em> their content is what they say it is.</p>
-  <p>Vanilla Breeze's <dfn><a href="/glossary/#term-provenance" data-concept="provenance">provenance</a></dfn> layer doesn't solve the problem for bad actors — it gives <em>honest publishers</em> a way to signal trustworthiness to readers who care enough to check.</p>
-</section>
+  <section id="declaring">
+    <h2>Declaring how content was made</h2>
+    <p>Three attributes describe a page or any part of it. Each answers one question.</p>
+    <table>
+      <thead>
+        <tr><th>Attribute</th><th>Question</th><th>Values</th><th>Default look</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="/docs/attributes/data-provenance/"><code>data-provenance</code></a></td>
+          <td>How was this made?</td>
+          <td><code>human</code>, <code>ai-assisted</code>, <code>ai-generated</code>; add <code>translated</code>, <code>synthesized</code> or <code>migrated</code> after a space</td>
+          <td><code>human</code> shows nothing. <code>ai-assisted</code> adds a coloured edge at the start of the line. <code>ai-generated</code> adds the edge and a faint tint.</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/data-review/"><code>data-review</code></a></td>
+          <td>What review did it get?</td>
+          <td><code>unreviewed</code>, <code>fact-checked</code>, <code>editor-reviewed</code></td>
+          <td><code>editor-reviewed</code> recolours the edge that <code>data-provenance</code> draws. The other values change nothing until you add <code>labeled</code>.</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/data-status/"><code>data-status</code></a></td>
+          <td>Is it published?</td>
+          <td><code>draft</code>, <code>published</code>, <code>archived</code></td>
+          <td><code>draft</code> has a dashed border. <code>archived</code> is dimmed.</td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="html" label="A page with one generated section" data-escape><html lang="en" data-provenance="human">
+...
+<article>
+  <h1>Booking a flu vaccination</h1>
+  <p>Riverside Clinic gives flu vaccinations from October to February.</p>
 
-<section>
-  <h2>Three layers, additive</h2>
+  <section data-provenance="ai-generated translated" data-review="fact-checked" class="labeled">
+    <h2>Resumen en español</h2>
+    <p>La clínica ofrece vacunas contra la gripe de octubre a febrero.</p>
+  </section>
+</article></code-block>
+    <p>Add the <code>labeled</code> class to print the value as a small badge above the content. Without it the signal is the edge and tint only.</p>
+    <p>For a whole page, say the same thing in the <code>&lt;head&gt;</code> with <code>vb:provenance</code>, <code>vb:review</code>, <code>vb:status</code> and <code>vb:ai-tools</code>. <a href="/docs/content-management/page-metadata/">Page Metadata</a> lists every tag. <a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a> shows them to the reader, and <a href="/docs/elements/web-components/trust-filter/"><code>&lt;trust-filter&gt;</code></a> lets a reader filter a list of pages by them.</p>
 
-  <ol>
-    <li><strong>Layer 0 — Hand-authored static HTML.</strong> A page can declare full <a href="/glossary/#term-provenance" data-concept="provenance">provenance</a> using <code>&lt;meta&gt;</code> tags and <code>&lt;dl&gt;</code> structures inside <dfn><a href="/glossary/#term-page-info" data-concept="page-info"><code>&lt;page-info&gt;</code></a></dfn>. No build step required. <a href="/docs/examples/demos/page-info-minimal.html">See a minimal proof</a>.</li>
-    <li><strong>Layer 1 — SSG-driven.</strong> A static-site generator (such as Cook SSG, which builds <a href="https://vanilla-breeze.com">vanilla-breeze.com</a>) reads frontmatter and emits the <dfn><a href="/glossary/#term-meta-tag-contract" data-concept="meta-tag-contract">meta-tag contract</a></dfn> automatically. Authors edit YAML, not HTML.</li>
-    <li><strong>Layer 2 — CMS with editor UI and signing.</strong> A CMS adds an editor interface, change-tracking inputs, and a signing step that runs at publish time. Pages are cryptographically verifiable in the reader's browser.</li>
-  </ol>
+    <h3 id="edits">Who made an edit</h3>
+    <p>On <a href="/docs/elements/native/ins/"><code>&lt;ins&gt;</code></a> and <a href="/docs/elements/native/del/"><code>&lt;del&gt;</code></a>, <code>data-author</code> names who made the change and <code>data-reason</code> says why. The reason shows as a small label before the change. The author appears after it when the reader points at the change or moves focus into it, and always on touch screens. <a href="/docs/content-management/diff-display/">Showing Changes</a> covers tracked edits.</p>
+    <code-block language="html" label="An attributed correction" data-escape><p>Appointments take about
+  <del data-author="draft-tool" data-reason="correction">twenty</del>
+  <ins data-author="tokafor" data-reason="review">ten</ins>
+  minutes.</p></code-block>
+  </section>
 
-  <p>Each layer validates the ones beneath it. Vanilla Breeze owns Layer 0 — the components, attributes, and meta-tag contract — and is stack-agnostic above it.</p>
-</section>
+  <section id="trust">
+    <h2>The trust badge</h2>
+    <p>The provenance badge in a <code>&lt;page-info&gt;</code> summary carries a second fact: how far the claim has been checked. The component sets it as <a href="/docs/attributes/data-trust/"><code>data-trust</code></a> on the badge and adds the tier as visible text, so the tier is not shown by colour alone.</p>
+    <table>
+      <thead>
+        <tr><th>Tier</th><th>Text shown</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>undeclared</code></td><td>None</td><td>The page has neither an <code>author</code> nor a <code>vb:provenance</code> tag</td></tr>
+        <tr><td><code>declared</code></td><td>Self-declared</td><td>The page makes a claim and carries no signature</td></tr>
+        <tr><td><code>verified</code></td><td>Verified</td><td>The signature matches the page as it is now</td></tr>
+        <tr><td><code>failed</code></td><td>Signature failed</td><td>A signature is present and does not match, names an algorithm other than <code>ECDSA-P256-SHA256</code>, or has no key link</td></tr>
+        <tr><td><code>key-unavailable</code></td><td>Key unavailable</td><td>The key could not be fetched or read</td></tr>
+      </tbody>
+    </table>
+    <p>You never write <code>data-trust</code> yourself. It is a result. The component also fires <code>page-info:verified</code> each time the tier is set, with <code>{ status, tier, reason }</code> in the event detail, so a page can react to a failed check.</p>
+    <code-block language="js" label="Reacting to the check" data-escape>document.addEventListener('page-info:verified', (event) => {
+  if (event.detail.status === 'failed') {
+    console.warn('Signature check failed:', event.detail.reason);
+  }
+});</code-block>
+  </section>
 
-<section>
-  <h2>The metadata substrate</h2>
-  <p><a href="/glossary/#term-provenance" data-concept="provenance">Provenance</a> is one field family in a single <dfn><a href="/glossary/#term-metadata-substrate" data-concept="metadata-substrate">metadata substrate</a></dfn> that every Vanilla Breeze lens component can consume. The full set of fields is documented in <a href="https://github.com/ProfPowell/vanilla-breeze/blob/main/admin/specs/meta-tag-contract-v1.md">meta-tag contract v1</a>; the short version is:</p>
+  <section id="signing">
+    <h2>Signing a page</h2>
+    <p>A signed page carries four extra tags. <code>&lt;page-info&gt;</code> looks for them every time it connects and runs the check with the browser's Web Crypto API.</p>
+    <code-block language="html" label="What the signing step adds" data-escape><meta name="vb:hash" content="sha256-..." />
+<meta name="vb:signature" content="..." />
+<meta name="vb:signature-algorithm" content="ECDSA-P256-SHA256" />
+<link rel="author-key" href="/.well-known/content-keys/newsroom.jwk" data-key-id="newsroom" /></code-block>
 
-  <table class="props-table">
-    <thead>
-      <tr><th>Family</th><th>Fields</th><th>Source</th></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><strong>Identity</strong></td>
-        <td><code>author</code>, <code>article:author</code>, <code>rel="author"</code></td>
-        <td>HTML5, Open Graph</td>
-      </tr>
-      <tr>
-        <td><strong>Temporal</strong></td>
-        <td><code>article:published_time</code>, <code>article:modified_time</code>, <code>last-modified</code>, <code>itemprop="version"</code></td>
-        <td>Open Graph, Microdata</td>
-      </tr>
-      <tr>
-        <td><strong>Topic</strong></td>
-        <td><code>keywords</code>, repeated <code>meta name="concept"</code>, <code>link rel="tag"</code></td>
-        <td>HTML5 / VB (SKOS)</td>
-      </tr>
-      <tr>
-        <td><strong>Provenance</strong></td>
-        <td><code>vb:provenance</code>, <code>vb:review</code>, <code>vb:status</code>, <code>vb:ai-tools</code></td>
-        <td>VB</td>
-      </tr>
-      <tr>
-        <td><strong>Integrity</strong></td>
-        <td><code>vb:hash</code>, <code>vb:signature</code>, <code>vb:signature-algorithm</code>, <code>link rel="author-key"</code></td>
-        <td>VB</td>
-      </tr>
-      <tr>
-        <td><strong>License</strong></td>
-        <td><code>license</code>, <code>link rel="license"</code></td>
-        <td>HTML5</td>
-      </tr>
-    </tbody>
-  </table>
+    <h3 id="what-is-signed">What is signed</h3>
+    <p>The signature covers a fixed summary of the page, not its raw HTML, so reformatting the markup does not break it. The summary holds:</p>
+    <ul>
+      <li>the canonical URL, title, author, author URL, published and modified dates, version, keywords, concepts, provenance, review, status and license, all read from the <code>&lt;head&gt;</code></li>
+      <li>the text of every element marked <code>data-signable</code></li>
+    </ul>
+    <p>Put <code>data-signable</code> on the <code>&lt;article&gt;</code> or <code>&lt;main&gt;</code> that holds the content. Inside it, navigation, headers, footers, asides, forms, buttons, dialogs, figure captions, hidden elements, scripts and the library's own page furniture (<code>&lt;page-info&gt;</code>, <code>&lt;page-toc&gt;</code>, <code>&lt;page-stats&gt;</code>, <code>&lt;page-tools&gt;</code>, <code>&lt;change-set&gt;</code>, <code>&lt;content-lens&gt;</code>) are left out. Deleted text in <code>&lt;del&gt;</code> is left out. Inserted text in <code>&lt;ins&gt;</code> is included. Mark a part with <code>data-signable="false"</code> to leave it out.</p>
+    <p>The browser builds the summary from the page as it stands when the check runs. A script that rewrites text inside the signed region will make the check fail, which is the point, so keep client-side text changes out of that region.</p>
 
-  <p>The principle: <strong>public-first when public exists; <code>vb:*</code> only for private extensions.</strong> JSON-LD is the canonical machine-readable mirror.</p>
-</section>
+    <h3 id="signing-step">The signing step</h3>
+    <p>The repository has two reference scripts. They are not in the published npm package: copy them, or write your own to the same format.</p>
+    <table>
+      <thead>
+        <tr><th>Script</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>scripts/generate-key.js</code></td>
+          <td>Makes an ECDSA P-256 key pair. Writes the public half as a JWK file to publish and the private half to a folder kept out of version control.</td>
+        </tr>
+        <tr>
+          <td><code>scripts/sign-pages.js</code></td>
+          <td>Walks a folder of built HTML, signs each page that has <code>data-signable</code> content, and adds the four tags. Pages that already have a signature are skipped. The private key path comes from the <code>VB_PRIVATE_KEY_JWK</code> environment variable.</td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="html" label="Signing a built site" data-escape>node scripts/generate-key.js --kid newsroom --owner "Riverside Clinic" --domain example.org
+VB_PRIVATE_KEY_JWK=.vb-keys/newsroom.private.jwk node scripts/sign-pages.js dist --strict</code-block>
+    <p>Run the signer last, after every step that changes page text. Without <code>--strict</code> it logs a page it cannot sign and carries on.</p>
+    <p>This site signs its pages on every build with a demonstration key whose private half is in the public repository. A <q>Verified</q> badge here shows the mechanism working. It says nothing about who published the page.</p>
 
-<section>
-  <h2>Three orthogonal DOM attributes</h2>
-  <table class="props-table">
-    <thead>
-      <tr><th>Attribute</th><th>Answers</th><th>Where used</th></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><code>data-author</code></td>
-        <td>WHO made this specific edit?</td>
-        <td><code>&lt;ins&gt;</code>, <code>&lt;del&gt;</code></td>
-      </tr>
-      <tr>
-        <td><a href="/docs/attributes/data-provenance/"><code>data-provenance</code></a></td>
-        <td>HOW was the content made?</td>
-        <td><code>&lt;article&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;html&gt;</code></td>
-      </tr>
-      <tr>
-        <td><a href="/docs/attributes/data-review/"><code>data-review</code></a></td>
-        <td>What review did it receive?</td>
-        <td>same</td>
-      </tr>
-      <tr>
-        <td><a href="/docs/attributes/data-status/"><code>data-status</code></a></td>
-        <td>What's its publication state?</td>
-        <td>same</td>
-      </tr>
-      <tr>
-        <td><a href="/docs/attributes/data-trust/"><code>data-trust</code></a></td>
-        <td>Verification tier (computed at runtime)</td>
-        <td><code>.page-info-badge</code> only</td>
-      </tr>
-    </tbody>
-  </table>
-  <p><a href="/glossary/#term-provenance" data-concept="provenance">Provenance</a>, review, and status are author-declared claims. <dfn><a href="/glossary/#term-data-trust" data-concept="data-trust">Trust</a></dfn> is a runtime-computed result. Each answers exactly one question.</p>
-</section>
+    <h3 id="proves">What a passed check proves</h3>
+    <table>
+      <thead>
+        <tr><th>It proves</th><th>It does not prove</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>The signed text and metadata have not changed since signing</td>
+          <td>That the content is accurate</td>
+        </tr>
+        <tr>
+          <td>The signature was made with the private half of the key the page links to</td>
+          <td>That the key belongs to the named author. The check does not compare the key's address with the page's, and does not read the key's expiry date.</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>That AI was not used. Only the declaration speaks to that, and it is self-reported.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The check guards against a page being altered after publication by a cache, a proxy or an edit to the stored file. It does not guard against whoever controls the page replacing the content, the signature and the key link together. A reader who wants more than that has to trust the key through some other route, such as fetching it from the publisher's own domain.</p>
+    <p>The check reads the signature, not the <code>vb:hash</code> tag. The hash is there for other tools to compare.</p>
+  </section>
 
-<section>
-  <h2>Lens architecture</h2>
-  <p>Provenance metadata is consumed not just by <code>&lt;page-info&gt;</code> but by the entire family of view components — each presents the same data through a different lens:</p>
+  <section id="not-built">
+    <h2>What is not built</h2>
+    <ul>
+      <li>An editor interface for setting provenance or signing. The library displays and checks; authoring belongs to your CMS or build.</li>
+      <li>Interoperation with C2PA or Verifiable Credentials.</li>
+      <li>Any check on the declarations themselves. <q>Human written</q> is the publisher's word.</li>
+    </ul>
+  </section>
 
-  <ul>
-    <li><a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a> — per-page disclosure panel</li>
-    <li><a href="/docs/elements/web-components/time-index/"><code>&lt;time-index&gt;</code></a> — chronological lens (changelog, recently-updated)</li>
-    <li><a href="/docs/elements/web-components/site-index/"><code>&lt;site-index&gt;</code></a> — keyword lens</li>
-    <li><a href="/docs/elements/web-components/glossary-index/"><code>&lt;glossary-index&gt;</code></a> — definitional lens</li>
-    <li><a href="/docs/elements/web-components/site-map/"><code>&lt;site-map&gt;</code></a> — structural-hierarchy lens</li>
-    <li><a href="/docs/elements/web-components/change-set/"><code>&lt;change-set&gt;</code></a> — diff lens</li>
-  </ul>
-
-  <p>The reader chooses the lens at read-time. Even when the author doesn't expose the controls, "the nature of the web always allows them to change it" — every lens exposes its underlying data via JSON-LD or queryable DOM, so readers, crawlers, and AI tools can all reframe the same content.</p>
-</section>
-
-<section>
-  <h2>What signing does and does not prove</h2>
-  <p>The integrity layer (still being built — see Stage 4 of the <a href="https://github.com/ProfPowell/vanilla-breeze/blob/main/admin/research/data-provenance-april-24.md">document-provenance plan</a>) cryptographically signs the canonical content of a page. When complete, <code>&lt;page-info&gt;</code> verifies the signature in the reader's browser using the Web Crypto API.</p>
-
-  <p><strong>Verification proves:</strong></p>
-  <ul>
-    <li>The content has not been altered since the author signed it.</li>
-    <li>The signature was made by whoever controls the key at the author-key URL.</li>
-    <li>The key is hosted on the same domain as the page (domain anchoring).</li>
-  </ul>
-
-  <p><strong>Verification does not prove:</strong></p>
-  <ul>
-    <li>That the content is accurate or factual.</li>
-    <li>That the author is who they claim to be.</li>
-    <li>That AI wasn't used (only <code>data-provenance</code> addresses that, and it's self-reported).</li>
-    <li>That the signing key hasn't been compromised.</li>
-  </ul>
-
-  <p>The signing layer is a <em>floor</em>, not a ceiling. It defends against mid-stream tampering (CDN swap, proxy injection, post-publish modification). It does not defend against deliberate dishonesty.</p>
-</section>
-
-<section>
-  <h2>See also</h2>
-  <ul>
-    <li><a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code> component</a></li>
-    <li><a href="/docs/attributes/data-provenance/"><code>data-provenance</code> attribute</a></li>
-    <li><a href="/docs/attributes/data-review/"><code>data-review</code> attribute</a></li>
-    <li><a href="/docs/attributes/data-status/"><code>data-status</code> attribute</a></li>
-    <li><a href="/docs/attributes/data-trust/"><code>data-trust</code> attribute</a></li>
-    <li><a href="/docs/examples/demos/document-provenance.html">Full feature showcase demo</a></li>
-    <li><a href="/docs/examples/demos/page-info-minimal.html">Minimal Layer-0 static proof</a></li>
-  </ul>
-</section>
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/content-management/page-metadata/">Page Metadata</a>, for the full tag list</li>
+      <li><a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a> and <a href="/docs/elements/web-components/trust-filter/"><code>&lt;trust-filter&gt;</code></a></li>
+      <li><a href="/docs/attributes/data-provenance/"><code>data-provenance</code></a>, <a href="/docs/attributes/data-review/"><code>data-review</code></a>, <a href="/docs/attributes/data-status/"><code>data-status</code></a>, <a href="/docs/attributes/data-trust/"><code>data-trust</code></a></li>
+      <li><a href="/docs/examples/demos/page-info-minimal.html">A hand-written page with no build step</a></li>
+      <li>The <a href="https://github.com/ProfPowell/vanilla-breeze/blob/main/admin/specs/canonical-document-v1.md">canonical document format</a>, for anyone writing their own signer</li>
+    </ul>
+  </section>

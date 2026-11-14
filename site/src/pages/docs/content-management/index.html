@@ -1,0 +1,207 @@
+---
+layout: guide
+title: "Content Management Overview"
+description: "What Vanilla Breeze gives a content-heavy site: metadata that components read, aids for long articles, ways to find pages, and a record of who made the content and how it changed."
+guideGroup: Content Management
+currentPath: /docs/content-management/
+toc: true
+---
+
+  <section id="approach">
+    <h2>The approach</h2>
+    <p>A page on a content site carries facts about itself: who wrote it, when it changed, what it is about, what it replaced. Vanilla Breeze asks you to state those facts once, in standard HTML, and gives you components that read them.</p>
+    <p>The facts live in three places. <code>&lt;meta&gt;</code> and <code>&lt;link&gt;</code> tags in the <code>&lt;head&gt;</code> describe the page. Elements and attributes in the body (<code>&lt;ins&gt;</code>, <code>&lt;del&gt;</code>, <code>&lt;dfn&gt;</code>, <code>rel</code>, headings with ids) describe its parts. A JSON file that your build writes describes the whole site. Nothing here needs a particular content management system or site generator. Any tool that can write those tags and that file will do.</p>
+  </section>
+
+  <section id="tasks">
+    <h2>From task to component</h2>
+    <p>Start from what you want a reader to be able to do.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>Pieces</th>
+          <th>Guide</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Describe a page</th>
+          <td><code>&lt;meta&gt;</code> and <code>&lt;link&gt;</code> tags, <a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a>, <a href="/docs/elements/web-components/page-stats/"><code>&lt;page-stats&gt;</code></a></td>
+          <td><a href="/docs/content-management/page-metadata/">Page Metadata</a></td>
+        </tr>
+        <tr>
+          <th scope="row">Show who made it and how</th>
+          <td><code>data-provenance</code>, <code>data-review</code>, <code>data-status</code>, the <code>&lt;page-info&gt;</code> trust badge, signature checking</td>
+          <td><a href="/docs/content-management/document-provenance/">Document Provenance</a></td>
+        </tr>
+        <tr>
+          <th scope="row">Help readers through a long article</th>
+          <td><a href="/docs/elements/web-components/page-toc/"><code>&lt;page-toc&gt;</code></a>, <a href="/docs/elements/web-components/heading-links/"><code>&lt;heading-links&gt;</code></a>, <a href="/docs/elements/web-components/reading-progress/"><code>&lt;reading-progress&gt;</code></a>, <a href="/docs/elements/web-components/footnotes/"><code>&lt;foot-notes&gt;</code></a>, <a href="/docs/elements/web-components/reader-view/"><code>&lt;reader-view&gt;</code></a>, <a href="/docs/elements/web-components/text-reader/"><code>&lt;text-reader&gt;</code></a></td>
+          <td><a href="/docs/content-management/long-articles/">Long Articles</a></td>
+        </tr>
+        <tr>
+          <th scope="row">Help readers find pages</th>
+          <td><a href="/docs/elements/web-components/site-search/"><code>&lt;site-search&gt;</code></a>, <a href="/docs/elements/web-components/site-index/"><code>&lt;site-index&gt;</code></a>, <a href="/docs/elements/web-components/site-map/"><code>&lt;site-map&gt;</code></a>, <a href="/docs/elements/web-components/topic-map/"><code>&lt;topic-map&gt;</code></a>, <a href="/docs/elements/web-components/author-index/"><code>&lt;author-index&gt;</code></a>, <a href="/docs/elements/web-components/time-index/"><code>&lt;time-index&gt;</code></a>, <a href="/docs/elements/web-components/content-lens/"><code>&lt;content-lens&gt;</code></a></td>
+          <td><a href="/docs/content-management/finding-content/">Finding Content</a></td>
+        </tr>
+        <tr>
+          <th scope="row">Say what a link is for</th>
+          <td>The <code>rel</code> attribute</td>
+          <td><a href="/docs/content-management/link-relations/">Link Relations</a></td>
+        </tr>
+        <tr>
+          <th scope="row">Define the terms you use</th>
+          <td><code>&lt;dfn&gt;</code>, <a href="/docs/elements/web-components/glossary-index/"><code>&lt;glossary-index&gt;</code></a>, <a href="/docs/elements/web-components/glossary-wc/"><code>&lt;glossary-wc&gt;</code></a></td>
+          <td><a href="/docs/content-management/glossary-terms/">Glossary Terms</a></td>
+        </tr>
+        <tr>
+          <th scope="row">Show how content changed</th>
+          <td><code>&lt;ins&gt;</code> and <code>&lt;del&gt;</code>, <a href="/docs/elements/web-components/change-set/"><code>&lt;change-set&gt;</code></a>, <a href="/docs/elements/web-components/version-switcher/"><code>&lt;version-switcher&gt;</code></a>, <a href="/docs/elements/web-components/comparison/"><code>&lt;compare-surface&gt;</code></a></td>
+          <td><a href="/docs/content-management/diff-display/">Showing Changes</a></td>
+        </tr>
+        <tr>
+          <th scope="row">Let readers mark up their own copy</th>
+          <td><a href="/docs/elements/web-components/selection-menu/"><code>&lt;selection-menu&gt;</code></a>, <a href="/docs/elements/web-components/highlight-wc/"><code>&lt;highlight-wc&gt;</code></a>, <a href="/docs/elements/web-components/note-wc/"><code>&lt;note-wc&gt;</code></a></td>
+          <td><a href="/docs/content-management/highlights/">Highlights and Annotations</a></td>
+        </tr>
+        <tr>
+          <th scope="row">Let readers respond</th>
+          <td><a href="/docs/elements/web-components/comment-thread/"><code>&lt;comment-thread&gt;</code></a>, <a href="/docs/elements/web-components/comment-box/"><code>&lt;comment-box&gt;</code></a>, <a href="/docs/elements/web-components/reaction-bar/"><code>&lt;reaction-bar&gt;</code></a></td>
+          <td><a href="/docs/content-management/discussion/">Comments and Reactions</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="demo">
+    <h2>One article, described once</h2>
+    <p>This notice states its author, dates, version, license and review status in the <code>&lt;head&gt;</code>, and nowhere else. The line under the title, the contents list, the link beside each heading, the tracked edit and the panel at the foot are all components reading the page. Open the panel at the bottom to see the metadata. Use the Tracking, Final and Original buttons to see the edit both ways.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/content-overview.html"
+      url="route-14-changes"
+      title="One article, described once"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="The parts of that page" data-escape><head>
+  <meta name="author" content="Priya Raman" />
+  <meta name="last-modified" content="2026-10-28" />
+  <meta name="vb:review" content="fact-checked" />
+  ...
+</head>
+
+<page-toc scope="#notice"></page-toc>
+
+<article id="notice">
+  <h1>Route 14 timetable changes</h1>
+  <page-stats data-for="notice" data-show="reading-time,word-count,last-modified"></page-stats>
+
+  <heading-links>
+    <h2>What is changing</h2>
+    <change-set datetime="2026-10-28" author="Priya Raman">
+      <p>Weekend buses run every <del>20</del> <ins>15</ins> minutes.</p>
+    </change-set>
+    ...
+  </heading-links>
+
+  <page-info auto></page-info>
+</article></code-block>
+    <p>The layout of the page you are reading is built the same way: the contents list beside this text is a <code>&lt;page-toc&gt;</code>, the headings are wrapped in <code>&lt;heading-links&gt;</code>, and the speaker button is a <code>&lt;text-reader&gt;</code>.</p>
+  </section>
+
+  <section id="responsibilities">
+    <h2>What is handled and what you provide</h2>
+    <p>The components display and navigate content. They do not store it, build it or publish it.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Area</th>
+          <th>The library handles</th>
+          <th>You provide</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Page metadata</th>
+          <td>Reading the tags and rendering them: the provenance panel, reading time, word count, relative dates</td>
+          <td>The <code>&lt;meta&gt;</code> and <code>&lt;link&gt;</code> tags, written by hand or by your build</td>
+        </tr>
+        <tr>
+          <th scope="row">In-page navigation</th>
+          <td>A contents list with scroll tracking, heading permalinks and generated heading ids, a progress bar, numbered footnotes</td>
+          <td>Headings in order, and the footnote text</td>
+        </tr>
+        <tr>
+          <th scope="row">Site-wide views</th>
+          <td>Filtering, grouping and switching between views of a list of pages</td>
+          <td>The list: a JSON file with one record per page, and a <a href="https://pagefind.app/">Pagefind</a> index for search</td>
+        </tr>
+        <tr>
+          <th scope="row">Provenance and integrity</th>
+          <td>Styles for declared provenance, the trust badge, checking a signature in the browser</td>
+          <td>Honest declarations, a signing key and a signing step in your build, if you want signatures</td>
+        </tr>
+        <tr>
+          <th scope="row">Changes and versions</th>
+          <td>Styles for <code>&lt;ins&gt;</code> and <code>&lt;del&gt;</code>, view toggles, a version picker, a line diff between two versions of a page</td>
+          <td>The marked-up edits, the list of versions and the archived pages</td>
+        </tr>
+        <tr>
+          <th scope="row">Reader annotations</th>
+          <td>Highlights and private notes kept in the reader's browser</td>
+          <td>Nothing, unless you want to copy them to a server</td>
+        </tr>
+        <tr>
+          <th scope="row">Discussion</th>
+          <td>The thread display, the comment form, reaction chips, and events for each action</td>
+          <td>Storage, accounts and moderation. No comment is saved unless your code saves it.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The library does not produce feeds, an XML sitemap or a search index. This site builds its own with scripts that are not part of the package.</p>
+  </section>
+
+  <section id="pages">
+    <h2>In this section</h2>
+    <layout-grid data-layout-min="m" data-layout-gap="m">
+      <a href="/docs/content-management/page-metadata/" class="section-card">
+        <h3>Page Metadata</h3>
+        <p>The tags a page declares, which component reads each one, and the site index built from them.</p>
+      </a>
+      <a href="/docs/content-management/document-provenance/" class="section-card">
+        <h3>Document Provenance</h3>
+        <p>Declaring how content was made and reviewed, and signing a page so readers can check it.</p>
+      </a>
+      <a href="/docs/content-management/long-articles/" class="section-card">
+        <h3>Long Articles</h3>
+        <p>Contents lists, heading links, progress, footnotes, a reading mode and read-aloud.</p>
+      </a>
+      <a href="/docs/content-management/finding-content/" class="section-card">
+        <h3>Finding Content</h3>
+        <p>Search, indexes, maps and switchable views across a whole site.</p>
+      </a>
+      <a href="/docs/content-management/link-relations/" class="section-card">
+        <h3>Link Relations</h3>
+        <p>Using <code>rel</code> to say what a link is for, and what the library does with it.</p>
+      </a>
+      <a href="/docs/content-management/glossary-terms/" class="section-card">
+        <h3>Glossary Terms</h3>
+        <p>Marking defining uses of a term and building a glossary readers can filter.</p>
+      </a>
+      <a href="/docs/content-management/diff-display/" class="section-card">
+        <h3>Showing Changes</h3>
+        <p>Tracked edits, image comparison and differences between versions of a page.</p>
+      </a>
+      <a href="/docs/content-management/highlights/" class="section-card">
+        <h3>Highlights and Annotations</h3>
+        <p>Reader highlights and private notes, stored in the browser.</p>
+      </a>
+      <a href="/docs/content-management/discussion/" class="section-card">
+        <h3>Comments and Reactions</h3>
+        <p>A threaded comment display, a comment form and reaction chips, wired to your own storage.</p>
+      </a>
+    </layout-grid>
+  </section>

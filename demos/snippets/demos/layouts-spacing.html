@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gap and density</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    h1 { font-size: var(--font-size-xl); }
+    h2 { font-size: var(--font-size-l); }
+    #markup { white-space: pre-line; }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <header data-layout="cluster" data-layout-gap="m">
+      <fieldset data-segmented>
+        <legend class="visually-hidden">Gap</legend>
+        <label><input type="radio" name="gap" value="xs" /> Gap xs</label>
+        <label><input type="radio" name="gap" value="m" checked /> Gap m</label>
+        <label><input type="radio" name="gap" value="xl" /> Gap xl</label>
+      </fieldset>
+      <fieldset data-segmented>
+        <legend class="visually-hidden">Density</legend>
+        <label><input type="radio" name="density" value="compact" /> Compact</label>
+        <label><input type="radio" name="density" value="" checked /> Default</label>
+        <label><input type="radio" name="density" value="spacious" /> Spacious</label>
+      </fieldset>
+    </header>
+
+    <code id="markup">&lt;section&gt;
+&lt;ul data-layout="grid" data-layout-gap="m"&gt;</code>
+
+    <section id="stage" data-layout="stack" aria-label="Departures">
+      <h1>Departures from Central Station</h1>
+      <ul id="routes" class="unstyled" data-layout="grid" data-layout-min="s" data-layout-gap="m">
+        <li>
+          <layout-card data-variant="outlined">
+            <layout-stack data-layout-gap="xs" data-layout-align="start">
+              <h2>Line 4</h2>
+              <p>Harbour via Market Square</p>
+              <layout-badge data-color="success">On time</layout-badge>
+            </layout-stack>
+          </layout-card>
+        </li>
+        <li>
+          <layout-card data-variant="outlined">
+            <layout-stack data-layout-gap="xs" data-layout-align="start">
+              <h2>Line 11</h2>
+              <p>University via Riverside</p>
+              <layout-badge data-color="warning">6 min late</layout-badge>
+            </layout-stack>
+          </layout-card>
+        </li>
+        <li>
+          <layout-card data-variant="outlined">
+            <layout-stack data-layout-gap="xs" data-layout-align="start">
+              <h2>Line 27</h2>
+              <p>Airport express</p>
+              <layout-badge data-color="success">On time</layout-badge>
+            </layout-stack>
+          </layout-card>
+        </li>
+      </ul>
+      <menu data-layout="cluster">
+        <li><button type="button">Plan a journey</button></li>
+        <li><button type="button" class="secondary">Service alerts</button></li>
+      </menu>
+    </section>
+
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const stage = document.getElementById('stage');
+    const routes = document.getElementById('routes');
+    const markup = document.getElementById('markup');
+    const state = { gap: 'm', density: '' };
+    const render = () => {
+      routes.setAttribute('data-layout-gap', state.gap);
+      if (state.density) {
+        stage.setAttribute('data-layout-density', state.density);
+      } else {
+        stage.removeAttribute('data-layout-density');
+      }
+      const host = state.density ? `<section data-layout-density="${state.density}">` : '<section>';
+      markup.textContent = `${host}\n<ul data-layout="grid" data-layout-gap="${state.gap}">`;
+    };
+    document.querySelectorAll('input[name="gap"], input[name="density"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        state[radio.name] = radio.value;
+        render();
+      });
+    });
+  </script>
+</body>
+</html>

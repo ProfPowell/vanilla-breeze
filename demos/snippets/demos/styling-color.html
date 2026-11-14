@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>One hue, two modes</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-background); }
+    #stage { padding: var(--size-l); border-radius: var(--radius-l); }
+
+    .swatches {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+      gap: var(--size-s);
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+    .swatches li {
+      display: grid;
+      gap: var(--size-2xs);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+    }
+    .swatches span {
+      block-size: var(--size-2xl);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-s);
+    }
+    .sw-primary        { background: var(--color-primary); }
+    .sw-primary-hover  { background: var(--color-primary-hover); }
+    .sw-primary-subtle { background: var(--color-primary-subtle); }
+    .sw-background     { background: var(--color-background); }
+    .sw-surface        { background: var(--color-surface); }
+    .sw-surface-raised { background: var(--color-surface-raised); }
+    .sw-text           { background: var(--color-text); }
+    .sw-border         { background: var(--color-border); }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <h1 class="visually-hidden">One hue, two modes</h1>
+
+    <header data-layout="cluster" data-layout-gap="l" data-layout-align="end">
+      <fieldset data-segmented>
+        <legend class="visually-hidden">Mode</legend>
+        <label><input type="radio" name="mode" value="light" checked /> Light</label>
+        <label><input type="radio" name="mode" value="dark" /> Dark</label>
+      </fieldset>
+      <form-field>
+        <label for="hue">Primary hue</label>
+        <input type="range" id="hue" min="0" max="360" step="5" value="260" />
+      </form-field>
+    </header>
+
+    <pre><code id="code"></code></pre>
+
+    <section id="stage" data-mode="light" data-layout="stack" data-layout-gap="l">
+
+      <ul class="swatches">
+        <li><span class="sw-primary"></span> --color-primary</li>
+        <li><span class="sw-primary-hover"></span> --color-primary-hover</li>
+        <li><span class="sw-primary-subtle"></span> --color-primary-subtle</li>
+        <li><span class="sw-background"></span> --color-background</li>
+        <li><span class="sw-surface"></span> --color-surface</li>
+        <li><span class="sw-surface-raised"></span> --color-surface-raised</li>
+        <li><span class="sw-text"></span> --color-text</li>
+        <li><span class="sw-border"></span> --color-border</li>
+      </ul>
+
+      <layout-card>
+        <layout-stack data-layout-gap="m">
+          <h2>Riverside Clinic</h2>
+          <p>Your appointment with Dr Okafor is on Thursday at 10:40. <a href="#change">Change or cancel</a> up to two hours before.</p>
+          <footer data-layout="cluster" data-layout-gap="s">
+            <button type="button">Check in</button>
+            <button type="button" class="secondary">Get directions</button>
+            <layout-badge data-color="primary">Confirmed</layout-badge>
+          </footer>
+        </layout-stack>
+      </layout-card>
+
+      <layout-stack data-layout-gap="s">
+        <status-message data-variant="success">Your repeat prescription is ready to collect.</status-message>
+        <status-message data-variant="warning">Flu clinic places are nearly full.</status-message>
+        <status-message data-variant="error">We could not reach you on the number we hold.</status-message>
+      </layout-stack>
+
+    </section>
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const stage = document.getElementById('stage');
+    const code = document.getElementById('code');
+    const hue = document.getElementById('hue');
+
+    function show() {
+      stage.style.setProperty('--hue-primary', hue.value);
+      code.textContent =
+        `<section data-mode="${stage.dataset.mode}">\n\nsection { --hue-primary: ${hue.value}; }`;
+    }
+
+    document.querySelectorAll('input[name="mode"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        stage.dataset.mode = radio.value;
+        show();
+      });
+    });
+    hue.addEventListener('input', show);
+    show();
+  </script>
+</body>
+</html>

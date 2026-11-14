@@ -1,0 +1,239 @@
+---
+layout: guide
+title: "Page Metadata"
+description: "The meta and link tags a page declares about itself, which component reads each one, and the site index you build from them."
+guideGroup: Content Management
+currentPath: /docs/content-management/page-metadata/
+toc: true
+---
+
+  <section id="idea">
+    <h2>Declare it in the head</h2>
+    <p>A page states its author, dates, topics and license in <code>&lt;meta&gt;</code> and <code>&lt;link&gt;</code> tags. Components read those tags when they connect. You do not pass the same facts to each component as attributes.</p>
+    <p>The demo changes two tags and nothing else. The panel under the article is a <a href="/docs/elements/web-components/page-info/"><code>&lt;page-info auto&gt;</code></a>, which builds itself from the <code>&lt;head&gt;</code>. Open it to see the full record.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/content-metadata.html"
+      url="flu-vaccination"
+      title="Metadata in, panel out"
+      data-demo-height="l"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="A described page" data-escape><head>
+  <title>Booking a flu vaccination</title>
+
+  <meta name="author" content="Tomas Okafor" />
+  <link rel="author" href="/team/tomas/" />
+  <meta name="last-modified" content="2026-11-03" />
+  <meta property="article:published_time" content="2026-06-18T00:00:00Z" />
+  <meta name="keywords" content="flu vaccine, appointments, pharmacy" />
+  <meta name="license" content="CC BY 4.0" />
+  <link rel="license" href="https://creativecommons.org/licenses/by/4.0/" />
+
+  <meta name="vb:provenance" content="human" />
+  <meta name="vb:review" content="fact-checked" />
+  <meta name="concept" content="vaccination" />
+</head>
+<body>
+  <article>
+    ...
+    <page-info auto></page-info>
+  </article>
+</body></code-block>
+    <p>Where a standard name exists, the library reads the standard name: <code>author</code>, <code>keywords</code>, the Open Graph article properties, <code>rel="license"</code>. Names that start with <code>vb:</code> are used only where no standard one fits.</p>
+  </section>
+
+  <section id="tags">
+    <h2>The tags and who reads them</h2>
+    <p>Every tag is optional. A component shows what it finds and leaves out the rest.</p>
+
+    <h3 id="standard-tags">Standard names</h3>
+    <table>
+      <thead>
+        <tr><th>Tag</th><th>Value</th><th>Read by</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;meta name="author"&gt;</code></td>
+          <td>The author's name</td>
+          <td><code>&lt;page-info&gt;</code></td>
+        </tr>
+        <tr>
+          <td><code>&lt;link rel="author"&gt;</code> or <code>&lt;meta property="article:author"&gt;</code></td>
+          <td>A URL for the author. The <code>article:author</code> value wins when both are present.</td>
+          <td><code>&lt;page-info&gt;</code>, as the author link</td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta name="last-modified"&gt;</code></td>
+          <td>A date, <code>YYYY-MM-DD</code>. <code>article:modified_time</code> is used when this is absent.</td>
+          <td><code>&lt;page-info&gt;</code>, <a href="/docs/elements/web-components/page-stats/"><code>&lt;page-stats&gt;</code></a></td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta property="article:published_time"&gt;</code></td>
+          <td>An ISO 8601 date</td>
+          <td><code>&lt;page-info&gt;</code></td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta name="keywords"&gt;</code></td>
+          <td>Comma-separated terms</td>
+          <td><code>&lt;page-info&gt;</code></td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta name="license"&gt;</code> and <code>&lt;link rel="license"&gt;</code></td>
+          <td>The license name and its URL</td>
+          <td><code>&lt;page-info&gt;</code></td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta itemprop="version"&gt;</code></td>
+          <td>The version of this page</td>
+          <td><code>&lt;page-info&gt;</code>. <a href="/docs/elements/web-components/version-switcher/"><code>&lt;version-switcher&gt;</code></a> updates it after a swap.</td>
+        </tr>
+        <tr>
+          <td><code>&lt;link rel="canonical"&gt;</code></td>
+          <td>The page's canonical URL</td>
+          <td>The signature check, which includes the URL in what is signed</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 id="vb-tags">Library names</h3>
+    <table>
+      <thead>
+        <tr><th>Tag</th><th>Value</th><th>Read by</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;meta name="vb:provenance"&gt;</code></td>
+          <td><code>human</code>, <code>ai-assisted</code> or <code>ai-generated</code>, optionally followed by <code>translated</code>, <code>synthesized</code> or <code>migrated</code>, separated by spaces</td>
+          <td><code>&lt;page-info&gt;</code></td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta name="vb:review"&gt;</code></td>
+          <td><code>unreviewed</code>, <code>fact-checked</code> or <code>editor-reviewed</code></td>
+          <td><code>&lt;page-info&gt;</code></td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta name="vb:status"&gt;</code></td>
+          <td><code>draft</code>, <code>published</code> or <code>archived</code></td>
+          <td><code>&lt;page-info&gt;</code>. A badge appears in the summary line for any value other than <code>published</code>.</td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta name="vb:ai-tools"&gt;</code></td>
+          <td>Names of the tools used, as free text</td>
+          <td><code>&lt;page-info&gt;</code></td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta name="concept"&gt;</code>, repeated</td>
+          <td>One topic id per tag</td>
+          <td><code>&lt;page-info&gt;</code>, which links each id to <code>/topics/{id}/</code> (change the base with <code>data-concept-base</code>)</td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta name="vb:version-url"&gt;</code></td>
+          <td>A URL for this version's release note</td>
+          <td><code>&lt;page-info&gt;</code>, as the version link</td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta name="vb:versions-manifest"&gt;</code></td>
+          <td>The URL of a JSON list of this page's versions</td>
+          <td><code>&lt;version-switcher&gt;</code>, when it has no <code>data-versions</code> or <code>data-src</code></td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta name="vb:signature"&gt;</code>, <code>&lt;meta name="vb:signature-algorithm"&gt;</code>, <code>&lt;link rel="author-key"&gt;</code></td>
+          <td>Written by a signing step</td>
+          <td><code>&lt;page-info&gt;</code>. See <a href="/docs/content-management/document-provenance/#signing">Document Provenance</a>.</td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta name="vb:track-history" content="on"&gt;</code></td>
+          <td>Records visits to this page in the reader's own browser</td>
+          <td>The history that <a href="/docs/elements/web-components/recently-visited/"><code>&lt;recently-visited&gt;</code></a> shows. <code>&lt;meta name="vb:no-track-history"&gt;</code> excludes a page.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The <a href="/docs/extensibility/analytics/">analytics</a> module also collects every <code>vb:</code> tag and every <code>concept</code> tag on the page and attaches them to its events, so a tag you add for display is available for reporting too.</p>
+    <p>No component reads JSON-LD. If you publish a Schema.org <code>Article</code> block for search engines, keep it in step with the tags yourself.</p>
+  </section>
+
+  <section id="display">
+    <h2>Showing the metadata</h2>
+    <p>Two components put these facts in front of the reader.</p>
+    <table>
+      <thead>
+        <tr><th>Component</th><th>Shows</th><th>Source</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row"><a href="/docs/elements/web-components/page-stats/"><code>&lt;page-stats&gt;</code></a></th>
+          <td>Reading time, word count and the last-modified date, in one line</td>
+          <td>Counts the text of the element named by <code>data-for</code>. The date comes from <code>last-modified</code>.</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a></th>
+          <td>A summary line (author, date, provenance badge) that opens to a panel with author, history, how the page was made, and topics</td>
+          <td>With <code>auto</code>, the tags in the <code>&lt;head&gt;</code>. Without it, the markup you wrote inside.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 id="page-info-modes">Two ways to use page-info</h3>
+    <p>With the <code>auto</code> attribute the component builds its panel in the browser. That is the least markup, and the panel does not exist until the script runs.</p>
+    <p>Without <code>auto</code>, you write the panel as a <code>&lt;details&gt;</code> element inside <code>&lt;page-info&gt;</code>, usually from a template. It works before any script loads. The component then adds relative dates to each <code>&lt;time data-relative&gt;</code>, fills an element marked <code>data-reading-time</code> (counting the text inside any element marked <code>data-signable</code>), and sets the trust tier on the badge. Use this form when your build already knows the values. The <a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a> page has the full markup.</p>
+    <p><code>&lt;page-info auto&gt;</code> reads the <code>&lt;head&gt;</code> once, when it connects. If a script changes a tag later, replace the element to render it again.</p>
+  </section>
+
+  <section id="site-index">
+    <h2>The site index</h2>
+    <p>The components that list pages across a site (<a href="/docs/content-management/finding-content/">Finding Content</a>) cannot read every page's <code>&lt;head&gt;</code>. They fetch one JSON file with a record per page. The library does not write that file. Your build does, from the same facts that go into the tags.</p>
+    <code-block language="js" label="One record in the index" data-escape>{
+  "url": "/guides/flu-vaccination/",
+  "title": "Booking a flu vaccination",
+  "author": "Tomas Okafor",
+  "authorUrl": "/team/tomas/",
+  "modified": "2026-11-03",
+  "concepts": ["vaccination"],
+  "provenance": "human",
+  "review": "fact-checked",
+  "status": "published",
+  "signed": false
+}</code-block>
+    <p>The file is either an array of records or an object with a <code>pages</code> array. Each component uses a few fields and ignores the rest.</p>
+    <table>
+      <thead>
+        <tr><th>Component</th><th>Fields it reads</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>&lt;author-index&gt;</code></td><td><code>author</code>, <code>authorUrl</code>, <code>title</code>, <code>url</code></td></tr>
+        <tr><td><code>&lt;topic-map&gt;</code></td><td><code>concepts</code>, <code>title</code>, <code>url</code>, plus a separate vocabulary file</td></tr>
+        <tr><td><code>&lt;trust-filter&gt;</code></td><td><code>provenance</code>, <code>review</code>, <code>status</code>, <code>signed</code>, <code>title</code>, <code>url</code></td></tr>
+        <tr><td><code>&lt;popularity-index&gt;</code></td><td><code>title</code> and <code>provenance</code>, to label the pages its analytics endpoint returns</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="generating">
+    <h2>Generating the tags</h2>
+    <p>Writing the tags by hand works for a few pages. Past that, generate them. This documentation site does it with a build plugin that turns front matter into tags, and a second that scans the built pages into <code>/pages.json</code>. Both plugins are part of this site's build, not of the <code>vanilla-breeze</code> package. They are short, and a good model for your own generator.</p>
+    <code-block language="html" label="Front matter on this site" data-escape>---
+title: "Booking a flu vaccination"
+author: "Tomas Okafor"
+authorUrl: "/team/tomas/"
+published: "2026-06-18"
+lastModified: "2026-11-03"
+keywords: ["flu vaccine", "appointments"]
+concepts: ["vaccination"]
+provenance: "human"
+review: "fact-checked"
+license: "CC BY 4.0"
+licenseUrl: "https://creativecommons.org/licenses/by/4.0/"
+---</code-block>
+    <p>The full list of tags, with the reasoning behind each name, is the <a href="https://github.com/ProfPowell/vanilla-breeze/blob/main/admin/specs/meta-tag-contract-v1.md">meta-tag contract</a> in the repository.</p>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/content-management/document-provenance/">Document Provenance</a>, for the provenance vocabulary and signatures</li>
+      <li><a href="/docs/elements/native/meta/"><code>&lt;meta&gt;</code></a> and <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a></li>
+      <li><a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a> and <a href="/docs/elements/web-components/page-stats/"><code>&lt;page-stats&gt;</code></a></li>
+    </ul>
+  </section>

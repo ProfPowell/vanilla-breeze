@@ -1,0 +1,199 @@
+---
+layout: guide
+title: "Content Width"
+description: "How to stop content stretching across a wide screen: width caps for sections, a reading measure for text, newspaper columns and children that break out to full width."
+guideGroup: Layouts
+currentPath: /docs/layouts/content-width/
+toc: true
+---
+
+  <section id="two-caps">
+    <h2>Two kinds of cap</h2>
+    <p>A page that fills a wide monitor is hard to read. Vanilla Breeze caps width in two ways, for two kinds of content.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col"></th>
+          <th scope="col">Content width</th>
+          <th scope="col">Measure</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">For</th><td>A section of mixed content: cards, forms, a hero</td><td>Running text: an article, documentation, a letter</td></tr>
+        <tr><th scope="row">Unit</th><td><code>rem</code></td><td><code>ch</code>, so the cap is a number of characters per line</td></tr>
+        <tr><th scope="row">Tokens</th><td><code>--content-narrow</code> (40rem), <code>--content-normal</code> (60rem), <code>--content-wide</code> (80rem)</td><td><code>--measure-narrow</code> (45ch), <code>--measure-normal</code> (65ch), <code>--measure-wide</code> (80ch)</td></tr>
+        <tr><th scope="row">Layout</th><td><a href="/docs/elements/custom-elements/center/"><code>&lt;layout-center&gt;</code></a></td><td><a href="/docs/elements/custom-elements/layout-text/"><code>&lt;layout-text&gt;</code></a> or <code>data-layout="prose"</code></td></tr>
+        <tr><th scope="row">Position</th><td>Centered</td><td>At the start edge, unless you add <code>data-layout-centered</code></td></tr>
+        <tr><th scope="row">Also does</th><td>Adds a gutter on each side so content does not touch the screen edge</td><td>Spaces headings, paragraphs, lists and figures</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="center">
+    <h2>Capping a section</h2>
+    <p><code>&lt;layout-center&gt;</code> limits its width and centers itself in its parent. <code>data-layout-max</code> picks the cap.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/center-max-width.html"
+      url="center-max-width"
+      title="Center widths"
+      data-demo-height="m"
+      shadow>
+    </browser-window>
+
+    <table>
+      <thead>
+        <tr><th scope="col"><code>data-layout-max</code></th><th scope="col">Cap</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>narrow</code></td><td>40rem</td></tr>
+        <tr><td><code>normal</code> (default)</td><td>60rem</td></tr>
+        <tr><td><code>wide</code></td><td>80rem</td></tr>
+        <tr><td><code>prose</code></td><td>65ch</td></tr>
+      </tbody>
+    </table>
+    <p>The gutter is added outside the cap, so a <code>normal</code> center holds 60rem of content plus the gutters. <code>data-layout-gutter</code> sets it to <code>none</code>, <code>s</code> or <code>l</code>; the default is <code>m</code>.</p>
+    <p>Add <code>data-layout-gap</code> and the center also spaces its children in a column, which saves nesting a stack inside it.</p>
+    <code-block language="html" label="A capped, centered section with spaced children" data-escape><section data-layout="center" data-layout-max="wide" data-layout-gap="xl">
+  <h2>Routes</h2>
+  <ul data-layout="grid">...</ul>
+</section></code-block>
+    <p>Two more modifiers: <code>data-layout-intrinsic</code> centers children that are narrower than the cap, and <code>data-layout-text</code> centers the text.</p>
+  </section>
+
+  <section id="measure">
+    <h2>Capping text</h2>
+    <p>Lines of 45 to 80 characters are comfortable to read. <code>&lt;layout-text&gt;</code>, or <code>data-layout="prose"</code> on an element such as <code>&lt;article&gt;</code>, holds text to that length and sets the vertical rhythm: more space before a heading than after it, extra room around figures, tables and code.</p>
+    <p>The demo changes the measure. The figure is covered in <a href="#bleed">Breaking out</a>.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/layouts-content-width.html"
+      url="layouts-content-width"
+      title="Measure and bleed"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="An article at a reading measure" data-escape><article data-layout="prose" data-layout-max="narrow">
+  <h1>Winter timetable</h1>
+  <p>From the first Monday in November...</p>
+</article></code-block>
+    <table>
+      <thead>
+        <tr><th scope="col"><code>data-layout-max</code></th><th scope="col">Measure</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>narrow</code></td><td>45ch</td></tr>
+        <tr><td><code>normal</code> (default)</td><td>65ch</td></tr>
+        <tr><td><code>wide</code></td><td>80ch</td></tr>
+      </tbody>
+    </table>
+    <p>The same words mean different widths on a center and on text: <code>narrow</code> is 40rem on <code>&lt;layout-center&gt;</code> and 45ch on <code>&lt;layout-text&gt;</code>.</p>
+    <p>When the nearest container is under 30rem wide, the cap is released and text fills the width.</p>
+
+    <h3 id="width-only">Width without the rhythm</h3>
+    <p><code>data-measure</code> on an <code>&lt;article&gt;</code> caps and centers it and changes nothing else. Use it when the article's children already manage their own spacing. Values: bare (65ch), <code>narrow</code>, <code>wide</code>.</p>
+    <code-block language="html" label="Reading width only" data-escape><article data-measure="narrow">
+  ...
+</article></code-block>
+  </section>
+
+  <section id="columns">
+    <h2>Text in columns</h2>
+    <p><a href="/docs/elements/custom-elements/layout-columns/"><code>&lt;layout-columns&gt;</code></a> flows text across columns, like a newspaper. It shares the measure and rhythm of <code>&lt;layout-text&gt;</code>.</p>
+    <code-block language="html" label="Two columns" data-escape><layout-columns data-layout-column-count="2" data-layout-measure="narrow">
+  <h2>Service changes</h2>
+  <p>...</p>
+</layout-columns></code-block>
+    <table>
+      <thead>
+        <tr><th scope="col"><code>data-layout-column-count</code></th><th scope="col">Result</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1</code></td><td>One column</td></tr>
+        <tr><td><code>2</code>, <code>3</code></td><td>Up to that many columns. Fewer when a column would be narrower than 14rem.</td></tr>
+        <tr><td><code>auto</code></td><td>As many columns as fit, each one measure wide (or <code>--column-min-width</code>, 38ch, when no measure is set)</td></tr>
+      </tbody>
+    </table>
+    <p>With a measure set, the block is capped at the column count times the measure. Lists, figures, tables and quotations are kept whole and not split across a column break, and a heading stays with the text after it.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-columns-two.html"
+      url="layout-columns-two"
+      title="Two columns"
+      data-demo-height="l"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section id="bleed">
+    <h2>Breaking out</h2>
+    <p>A wide table or a photograph often wants more room than the text around it. Put <code>data-bleed</code> on a direct child of a text container and that child ignores the measure. It runs the full width of the nearest query container, which is usually the <code>&lt;main&gt;</code>, <code>&lt;section&gt;</code> or <code>&lt;article&gt;</code> the text sits in.</p>
+    <code-block language="html" label="One figure at full width" data-escape><main>
+  <article data-layout="prose">
+    <p>Text at 65 characters.</p>
+    <figure data-bleed>
+      <img src="route-map.png" alt="Map of Line 4 from Central Station to the harbour" />
+    </figure>
+    <p>Text at 65 characters again.</p>
+  </article>
+</main></code-block>
+    <ul>
+      <li>It works in <code>&lt;layout-text&gt;</code>, <code>data-layout="prose"</code>, <code>&lt;layout-columns&gt;</code>, <code>data-layout="columns"</code> and <code>article[data-measure]</code>.</li>
+      <li>The child must be a direct child. A figure inside a nested section stays at the measure.</li>
+      <li>In columns, the child spans every column.</li>
+      <li>The width is the container's, not the viewport's, so a bleed inside a page with a sidebar stops at the edge of the content area.</li>
+    </ul>
+  </section>
+
+  <section id="elsewhere">
+    <h2>Other places a cap is set</h2>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">On</th>
+          <th scope="col">How</th>
+          <th scope="col">Cap</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><a href="/docs/elements/native/main/"><code>&lt;main&gt;</code></a></td><td><code>class="narrow"</code></td><td>The normal measure, centered</td></tr>
+        <tr><td><code>&lt;main&gt;</code></td><td><code>class="contained"</code></td><td>1200px, centered</td></tr>
+        <tr><td><code>&lt;main&gt;</code></td><td><code>class="wide"</code></td><td>1600px, centered</td></tr>
+        <tr><td><a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a>, <a href="/docs/elements/custom-elements/layout-canvas/"><code>&lt;layout-canvas&gt;</code></a></td><td><code>data-max</code></td><td><code>narrow</code>, <code>normal</code>, <code>wide</code> (the content widths) or <code>prose</code> (65ch)</td></tr>
+        <tr><td><a href="/docs/attributes/data-page-layout/"><code>data-page-layout="article"</code></a></td><td>The template</td><td>One centered column of <code>--content-normal</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="tokens">
+    <h2>Changing the caps</h2>
+    <p>Set the tokens to change every place that reads them.</p>
+    <code-block language="css" label="A wider site" data-escape>:root {
+  --content-normal: 68rem;
+  --measure-normal: 70ch;
+}</code-block>
+    <p>Under <a href="/docs/fluid-scaling/"><code>data-fluid</code></a>, the fluid preset sets <code>--content-normal</code> and <code>--measure-normal</code> so that they grow with the viewport. The library's styles sit in cascade layers and your own unlayered CSS outranks them, so a rule like the one above fixes the two tokens at your values and the preset no longer moves them.</p>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <layout-grid data-layout-min="m" data-layout-gap="m">
+      <a href="/docs/elements/custom-elements/center/" class="section-card">
+        <h3>layout-center</h3>
+        <p>Every attribute of the centered column.</p>
+      </a>
+      <a href="/docs/elements/custom-elements/layout-text/" class="section-card">
+        <h3>layout-text</h3>
+        <p>The spacing rules between headings, paragraphs and figures.</p>
+      </a>
+      <a href="/docs/elements/custom-elements/layout-columns/" class="section-card">
+        <h3>layout-columns</h3>
+        <p>Column counts, rules and justified text.</p>
+      </a>
+      <a href="/docs/typography/" class="section-card">
+        <h3>Typography</h3>
+        <p>Type sizes and line height, the other half of readable text.</p>
+      </a>
+    </layout-grid>
+  </section>

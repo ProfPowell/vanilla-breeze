@@ -1,0 +1,182 @@
+---
+layout: guide
+title: "Borders and Shape"
+description: "Border widths, the radius scale that rounds every corner in Vanilla Breeze, and the opt-in attributes that clip images, sections and badges into other shapes."
+guideGroup: Styling
+currentPath: /docs/styling/shape/
+toc: true
+---
+
+  <section id="borders">
+    <h2>Borders</h2>
+    <p>Three width tokens and three color tokens draw every line in the library. Use them together so a border of your own matches the ones around it and follows the theme and the mode.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Default</th>
+          <th>Used for</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--border-width-thin</code></td><td>1px</td><td>Dividers, table rows, outlined cards</td></tr>
+        <tr><td><code>--border-width-medium</code></td><td>2px</td><td>Table header rules, the link focus outline</td></tr>
+        <tr><td><code>--border-width-thick</code></td><td>4px</td><td>The accent edge of a status message</td></tr>
+        <tr><td><code>--color-border</code></td><td>Light gray, or dark gray in dark mode</td><td>The default line</td></tr>
+        <tr><td><code>--color-border-strong</code></td><td>One step darker</td><td>A line that needs to stand out</td></tr>
+        <tr><td><code>--color-border-subtle</code></td><td>One step lighter</td><td>A faint separator</td></tr>
+      </tbody>
+    </table>
+    <code-block language="css" label="A border from tokens" data-escape>.fare-table {
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+}</code-block>
+    <p>These border colors are decorative and are not meant to meet a contrast ratio. Form controls draw their edge with <code>--control-border</code>, which is darker so that the control can be found. For an edge that reads as a faint line plus a little lift, see <code>--shadow-flush</code> in <a href="/docs/shadows/#ramp">Shadows</a>.</p>
+  </section>
+
+  <section id="radius">
+    <h2>The radius scale</h2>
+    <p>Every rounded corner reads one of these tokens. Change the tokens and buttons, cards, inputs, badges and dialogs change together.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/styling-radius.html"
+      url="radius"
+      title="The radius scale"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Default</th>
+          <th>Used by</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--radius-xs</code></td><td>0.125rem (2px)</td><td>Fine details such as markers</td></tr>
+        <tr><td><code>--radius-s</code></td><td>0.25rem (4px)</td><td>Checkboxes</td></tr>
+        <tr><td><code>--radius-m</code></td><td>0.5rem (8px)</td><td>Buttons, text inputs, <code>img.rounded</code></td></tr>
+        <tr><td><code>--radius-l</code></td><td>0.75rem (12px)</td><td><a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a>, <code>&lt;dialog&gt;</code></td></tr>
+        <tr><td><code>--radius-xl</code></td><td>1rem (16px)</td><td>Yours to use for larger panels</td></tr>
+        <tr><td><code>--radius-2xl</code></td><td>1.5rem (24px)</td><td>Yours to use for the largest surfaces</td></tr>
+        <tr><td><code>--radius-full</code></td><td>9999px</td><td>Pills and circles: radio buttons, <code>img.circle</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="radius-change">Changing the corners</h3>
+    <p>Set the tokens on <code>:root</code> for the whole page, or on any element for one region.</p>
+    <code-block language="css" label="Square corners everywhere" data-escape>:root {
+  --radius-xs: 0px;
+  --radius-s: 0px;
+  --radius-m: 0px;
+  --radius-l: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+}</code-block>
+    <p>A theme does the same thing. Swiss sets every radius to zero, Classic makes them small, and Kawaii and Claymorphism make them large. If you want a theme's corners along with its colors and type, <a href="/docs/themes/">pick the theme</a>.</p>
+    <p>One case needs care in a region. Text inputs take their radius from <code>--input-radius</code>, which is computed from <code>--radius-m</code> on <code>:root</code>. Inside a region, set <code>--input-radius</code> as well as <code>--radius-m</code>.</p>
+
+    <h3 id="concentric">Corners inside corners</h3>
+    <p>A rounded box inside a rounded box looks right when the inner radius is the outer radius minus the padding between them. Give the parent two custom properties and compute the child's radius from them.</p>
+    <code-block language="css" label="An inner corner that follows the outer one" data-escape>.ticket {
+  --ticket-radius: var(--radius-xl);
+  --ticket-inset: var(--size-s);
+  padding: var(--ticket-inset);
+  border-radius: var(--ticket-radius);
+}
+
+.ticket > p {
+  border-radius: max(0px, calc(var(--ticket-radius) - var(--ticket-inset)));
+}</code-block>
+    <p>The last panel in the demo above is built this way. <code>max()</code> keeps the result at zero when the padding is larger than the radius.</p>
+  </section>
+
+  <section id="shapes">
+    <h2>Other shapes</h2>
+    <p>A set of attributes clips an element to a shape that a radius cannot make. Each is opt-in and needs no script.</p>
+
+    <browser-window
+      src="/docs/examples/demos/css-shapes-clips.html"
+      url="shapes"
+      title="Images clipped to shapes"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Goes on</th>
+          <th>What it does</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="/docs/attributes/data-clip/"><code>data-clip</code></a></td>
+          <td><code>&lt;img&gt;</code> or <code>&lt;figure&gt;</code></td>
+          <td>Clips the image to <code>hexagon</code>, <code>arch</code>, <code>leaf</code>, <code>swoosh</code>, <code>diagonal-frame</code> or <code>torn</code></td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/data-border-shape/"><code>data-border-shape</code></a></td>
+          <td>A wrapper around an image</td>
+          <td>Draws a colored <code>hexagon</code>, <code>diamond</code> or <code>arch</code> frame around it</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/data-shape-start/"><code>data-shape-start</code>, <code>data-shape-end</code></a></td>
+          <td>A <code>&lt;section&gt;</code>, <code>&lt;article&gt;</code>, <code>&lt;header&gt;</code>, <code>&lt;footer&gt;</code> or <code>&lt;aside&gt;</code></td>
+          <td>Cuts the top or bottom edge into a <code>wave</code>, <code>chevron</code>, <code>scallop</code> or <code>diagonal</code></td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/data-cutout/"><code>data-cutout</code></a></td>
+          <td>Any element</td>
+          <td>Punches a hole through it, or bites a corner</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/custom-elements/layout-badge/#shapes"><code>data-shape</code></a></td>
+          <td><code>&lt;layout-badge&gt;</code></td>
+          <td>Ribbon, notch, flag, double arrow and stamp badges</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/data-bubble/"><code>data-bubble</code></a>, <a href="/docs/attributes/data-callout/"><code>data-callout</code></a></td>
+          <td>A message or a note</td>
+          <td>Chat bubbles with tails, and callout boxes</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/data-morph/"><code>data-morph</code></a></td>
+          <td>A clipped element</td>
+          <td>Animates between matching shapes. It stops under reduced motion.</td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="html" label="A clipped image and a shaped section edge" data-escape><figure data-clip="arch">
+  <img src="/images/reading-room.jpg" alt="The reading room at dusk" width="400" height="400" />
+  <figcaption>The reading room</figcaption>
+</figure>
+
+<section data-shape-end="wave">
+  <h2>Autumn programme</h2>
+</section></code-block>
+
+    <h3 id="shape-support">What to expect</h3>
+    <ul>
+      <li>The shapes are drawn with the CSS <code>shape()</code> function. Each rule sits inside an <code>@supports</code> test, so a browser without <code>shape()</code> shows the element unclipped and fully usable.</li>
+      <li>Image clips are sized in percentages of the image, so they scale with it.</li>
+      <li>Shapes with a direction, such as <code>swoosh</code> and <code>diagonal</code>, mirror in right-to-left text.</li>
+      <li>Section edges are dropped in forced colors and in print, where they would only cut content.</li>
+      <li>A clipped element clips its own <code>box-shadow</code>. To put a shadow on a shape, see <a href="/docs/shadows/#box-vs-drop">Shadows</a>.</li>
+    </ul>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/tokens/#borders">Tokens: Borders</a></li>
+      <li><a href="/docs/shadows/">Shadows</a>, for depth</li>
+      <li><a href="/docs/elements/native/hr/#shapes"><code>&lt;hr&gt;</code> shape variants</a>, for shaped dividers</li>
+      <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a>, for <code>rounded</code> and <code>circle</code></li>
+      <li><a href="/docs/interaction/feel/">Feel</a>, for image outlines and other small details</li>
+    </ul>
+  </section>

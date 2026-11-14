@@ -1,193 +1,145 @@
 ---
 layout: guide
 title: "Link Relations"
-description: "Treat the native HTML rel attribute as VB's first-class vocabulary for link intent. Authors get safer outbound links by default, semantic CSS hooks with no classes, and a JS-discoverable index of links by intent."
+description: "How the rel attribute says what a link is for, which values Vanilla Breeze styles, and what it does to links that open a new tab."
 guideGroup: Content Management
 currentPath: /docs/content-management/link-relations/
+toc: true
 ---
 
-<template slot="breadcrumb">
-<nav class="breadcrumb" aria-label="Breadcrumb">
-  <ol>
-    <li><a href="/docs/">Docs</a></li>
-    <li>Content Management</li>
-    <li><span aria-current="page">Link Relations</span></li>
-  </ol>
-</nav>
-</template>
+  <section id="idea">
+    <h2>Say what the link is for</h2>
+    <p>The <a href="/docs/attributes/rel/"><code>rel</code></a> attribute on a link names its relationship to the current page: it leads off the site, it is the next chapter, it is the license, it is a topic. HTML already defines these words. Vanilla Breeze styles several of them, so a link that states its purpose needs no class to look the part.</p>
 
-<section>
-  <h2>Why rel</h2>
-  <p>The native <code>rel</code> attribute on <code>&lt;a&gt;</code> is standardised, ASCII-tokenised, machine-readable, and works directly with attribute selectors like <code>a[rel~="external"]</code>. Most sites under-use it &mdash; they reach for ad-hoc classes (<code>.external-link</code>, <code>.tag-chip</code>) or data attributes for things HTML already names. VB treats <code>rel</code> as the native vocabulary of link intent so authors don't have to invent one.</p>
-  <p>Doing so unlocks three concrete wins: safer outbound links by default, semantic CSS styling with zero classes, and a JS-discoverable index of links by intent that other VB features can build on.</p>
-</section>
+    <browser-window
+      src="/docs/snippets/demos/content-link-relations.html"
+      url="link-relations"
+      title="Links styled by their rel"
+      data-demo-height="l"
+      shadow>
+    </browser-window>
 
-<section>
-  <h2>The vocabulary</h2>
-  <p>These are the high-value tokens VB styles or upgrades. All are defined by <a href="https://html.spec.whatwg.org/multipage/links.html" rel="external noopener">the HTML Standard</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel" rel="external noopener">MDN</a>.</p>
+    <code-block language="html" label="The links in that page" data-escape><a href="/topics/bread" rel="tag">Bread</a>
+<a href="/handbook/proving-times" rel="external">shared proving chart</a>
+<a href="/glossary" rel="help">baking terms</a>
+<a href="/chapter-4" rel="prev">Chapter 4: Shaping</a>
+<a href="/chapter-6" rel="next">Chapter 6: Scoring and baking</a>
+<a href="/license" rel="license">Licensed CC BY 4.0</a></code-block>
+  </section>
 
-  <h3>Security and behavior</h3>
-  <table class="props-table">
-    <thead><tr><th>Token</th><th>Meaning</th><th>VB treatment</th></tr></thead>
-    <tbody>
-      <tr><td><code>noopener</code></td><td>New window can't access <code>window.opener</code></td><td>Auto-added by JS to any <code>&lt;a target="_blank"&gt;</code> without an explicit opener policy</td></tr>
-      <tr><td><code>noreferrer</code></td><td>Sends no Referer header; implies <code>noopener</code></td><td>Auto-added when <code>&lt;html data-link-privacy="strict"&gt;</code></td></tr>
-      <tr><td><code>opener</code></td><td>Explicitly preserve <code>window.opener</code></td><td>Honored; suppresses the <code>noopener</code> upgrade</td></tr>
-      <tr><td><code>external</code></td><td>Destination is on another site</td><td>Trailing &#8599; arrow via CSS (no class needed)</td></tr>
-      <tr><td><code>nofollow</code></td><td>Don't endorse the destination for ranking</td><td>No styling &mdash; pure metadata</td></tr>
-    </tbody>
-  </table>
+  <section id="styled">
+    <h2>Values with a style</h2>
+    <table>
+      <thead>
+        <tr><th>Value</th><th>Meaning</th><th>Style</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>external</code></td><td>The destination is on another site</td><td>A trailing ↗</td></tr>
+        <tr><td><code>tag</code></td><td>A topic that applies to this page</td><td>A pill outline</td></tr>
+        <tr><td><code>prev</code></td><td>The previous page in a series</td><td>A leading ←</td></tr>
+        <tr><td><code>next</code></td><td>The next page in a series</td><td>A trailing →</td></tr>
+        <tr><td><code>help</code></td><td>Help for this page or control</td><td>A dotted underline</td></tr>
+        <tr><td><code>license</code>, <code>privacy-policy</code>, <code>terms-of-service</code></td><td>Legal pages</td><td>Slightly smaller and fainter</td></tr>
+      </tbody>
+    </table>
+    <p>The arrows are decoration. They are given empty alternative text, so a screen reader reads the link text alone.</p>
 
-  <h3>Document and support semantics</h3>
-  <table class="props-table">
-    <thead><tr><th>Token</th><th>Meaning</th><th>VB treatment</th></tr></thead>
-    <tbody>
-      <tr><td><code>help</code></td><td>Context-sensitive help</td><td>Dotted-underline styling</td></tr>
-      <tr><td><code>license</code></td><td>License under which the page is offered</td><td>Muted (smaller, slightly transparent) &mdash; footer-friendly</td></tr>
-      <tr><td><code>privacy-policy</code></td><td>Link to the site's privacy policy</td><td>Muted</td></tr>
-      <tr><td><code>terms-of-service</code></td><td>Link to the site's terms</td><td>Muted</td></tr>
-      <tr><td><code>search</code></td><td>Link to a search resource for this document</td><td>No default styling &mdash; available as a CSS hook</td></tr>
-      <tr><td><code>author</code></td><td>Link to info about the author</td><td>Available for author-card components to discover</td></tr>
-      <tr><td><code>me</code></td><td>Linked resource represents the current author</td><td>Available for identity / profile blocks to discover</td></tr>
-    </tbody>
-  </table>
+    <h3 id="suppressed">Where the arrows do not appear</h3>
+    <p>Inside <code>&lt;nav&gt;</code>, <code>&lt;header&gt;</code> and <code>&lt;footer&gt;</code> the <code>external</code>, <code>prev</code> and <code>next</code> arrows are turned off, because a navigation bar full of arrows is noise. A previous and next pair inside a <code>&lt;nav&gt;</code> therefore shows no arrows. If you want them, put the pair in a <code>&lt;p&gt;</code> or a layout element, as the demo does, or add the arrows yourself with <a href="/docs/elements/web-components/icons/"><code>&lt;icon-wc&gt;</code></a>.</p>
+    <p>The pill, the dotted underline and the fainter legal links apply everywhere.</p>
 
-  <h3>Navigation and structure</h3>
-  <table class="props-table">
-    <thead><tr><th>Token</th><th>Meaning</th><th>VB treatment</th></tr></thead>
-    <tbody>
-      <tr><td><code>prev</code></td><td>Previous document in a series</td><td>Leading &larr; arrow</td></tr>
-      <tr><td><code>next</code></td><td>Next document in a series</td><td>Trailing &rarr; arrow</td></tr>
-      <tr><td><code>bookmark</code></td><td>Permalink to nearest <code>&lt;article&gt;</code> ancestor</td><td>No default styling &mdash; CSS hook only</td></tr>
-    </tbody>
-  </table>
+    <h3 id="auto">External links without rel</h3>
+    <p>A link whose <code>href</code> starts with <code>http</code> or <code>//</code> gets the same ↗ without any <code>rel</code>. Downloads, <code>mailto:</code>, <code>tel:</code> and PDF links get their own marks the same way. Add <code>rel="external"</code> when the address alone does not show that the link leaves the site, such as a redirect path on your own domain, or when you want other tools to know. A link with both gets one arrow. Add <code>data-no-icon</code> to a link to remove its mark.</p>
+  </section>
 
-  <h3>Classification and alternates</h3>
-  <table class="props-table">
-    <thead><tr><th>Token</th><th>Meaning</th><th>VB treatment</th></tr></thead>
-    <tbody>
-      <tr><td><code>tag</code></td><td>A tag (topic / facet) that applies to the page</td><td>Pill-chip styling</td></tr>
-      <tr><td><code>alternate</code></td><td>Alternate representation (PDF, translation, etc.)</td><td>Pair with <code>hreflang</code> / <code>type</code> for language or media-type alternates; no default styling</td></tr>
-    </tbody>
-  </table>
-</section>
+  <section id="unstyled">
+    <h2>Values without a style</h2>
+    <p>These carry meaning for browsers, search engines and your own selectors. The library gives them no look.</p>
+    <table>
+      <thead>
+        <tr><th>Value</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>nofollow</code></td><td>Do not treat the link as an endorsement</td></tr>
+        <tr><td><code>author</code></td><td>A page about the author. In the <code>&lt;head&gt;</code>, <code>&lt;link rel="author"&gt;</code> is read by <a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a>.</td></tr>
+        <tr><td><code>me</code></td><td>Another page that represents the same person</td></tr>
+        <tr><td><code>bookmark</code></td><td>A permanent link to the nearest <code>&lt;article&gt;</code></td></tr>
+        <tr><td><code>search</code></td><td>A search page for this site</td></tr>
+        <tr><td><code>alternate</code></td><td>Another form of this page. Pair it with <code>hreflang</code> for a translation or <code>type</code> for another format.</td></tr>
+      </tbody>
+    </table>
+    <code-block language="css" label="Styling one yourself" data-escape>a[rel~="bookmark"] {
+  color: var(--color-text-muted);
+  text-decoration: none;
+}</code-block>
+    <p>Use <code>~=</code> in the selector. <code>rel</code> is a list of words, and <code>[rel="tag"]</code> would miss <code>rel="tag nofollow"</code>.</p>
+  </section>
 
-<section>
-  <h2>Three rules</h2>
-  <p>VB's link authoring discipline is just three rules. They let <code>class</code>, <code>data-*</code>, and <code>rel</code> each carry the kind of information they're best at without overlap.</p>
+  <section id="new-tab">
+    <h2>Links that open a new tab</h2>
+    <p>A page opened with <code>target="_blank"</code> can reach back to the page that opened it unless the link says <code>noopener</code>. When a page contains such a link, the library loads a small module that adds <code>rel="noopener"</code> to every <code>&lt;a target="_blank"&gt;</code> that does not already state a policy with <code>opener</code>, <code>noopener</code> or <code>noreferrer</code>. Press the button in the demo above to read the attribute it added.</p>
+    <code-block language="html" label="As written, and after the module runs" data-escape><a href="https://example.com/ovens" target="_blank">Oven supplier</a>
 
-  <h3>1. <code>rel</code> is for link meaning</h3>
-  <p>If a link <em>has a meaningful relationship</em> to the current document (it's external, it's the next chapter, it's the license, it's a tag), express that with <code>rel</code>. CSS and JS can then upgrade it without an extra class.</p>
+<a href="https://example.com/ovens" target="_blank" rel="noopener">Oven supplier</a></code-block>
+    <ul>
+      <li>Write <code>rel="opener"</code> on a link that needs the connection, and it is left alone.</li>
+      <li>The pass runs once, when the module loads. A link added to the page after that is not changed, so write <code>rel="noopener"</code> yourself on links your scripts create.</li>
+      <li>Current browsers already treat <code>target="_blank"</code> as <code>noopener</code>. The attribute makes the policy explicit in the markup.</li>
+    </ul>
 
-  <h3>2. <code>class</code> is for visual variants</h3>
-  <p>If the only thing you want to change is appearance &mdash; muted, plain, button-styled &mdash; that's a <code>class</code> concern. VB ships <code>a[data-variant]</code> hooks for the common ones; pick those first.</p>
+    <h3 id="privacy">Hiding the referrer</h3>
+    <p>Set <code>data-link-privacy="strict"</code> on <code>&lt;html&gt;</code> and the same pass also adds <code>noreferrer</code> to every new-tab link, so the destination is not told which page the reader came from. It is off by default because referral reports and affiliate links depend on that header.</p>
+    <code-block language="html" label="Strict mode" data-escape><html lang="en" data-link-privacy="strict">
+...
+<a href="https://example.com/ovens" target="_blank">Oven supplier</a>
+<!-- becomes rel="noopener noreferrer" --></code-block>
+  </section>
 
-  <h3>3. <code>data-*</code> is for app config</h3>
-  <p>Anything app-specific (tracking IDs, analytics labels, behavior toggles) goes in <code>data-*</code>. Never overload <code>rel</code> as a styling hook &mdash; see the anti-patterns at the bottom.</p>
-</section>
+  <section id="rules">
+    <h2>Choosing between rel, class and data attributes</h2>
+    <table>
+      <thead>
+        <tr><th>You want to say</th><th>Use</th><th>Example</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>What the link is, in relation to this page</td>
+          <td><code>rel</code>, with a value HTML defines</td>
+          <td><code>rel="next"</code></td>
+        </tr>
+        <tr>
+          <td>How the link should look</td>
+          <td><code>data-variant</code> or a class</td>
+          <td><code>data-variant="muted"</code>, <code>data-variant="plain"</code></td>
+        </tr>
+        <tr>
+          <td>Something your own scripts need</td>
+          <td>A <code>data-*</code> attribute</td>
+          <td><code>data-track="pricing-click"</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Do not invent <code>rel</code> values for styling or tracking. Other tools read <code>rel</code> and expect its words to mean what the standard says.</p>
+    <code-block language="html" label="Keep each attribute to its job" data-escape><!-- Not this -->
+<a href="/checkout" rel="primary-cta track-checkout">Buy now</a>
 
-<section>
-  <h2>CSS upgrades</h2>
-  <p>All of these work with zero JavaScript. Just add the rel token in your HTML and the styling applies via <code>src/utils/links.css</code>.</p>
+<!-- This -->
+<a href="/checkout" class="button" data-track="checkout">Buy now</a></code-block>
+  </section>
 
-  <code-block language="html" show-lines label="External link"><a href="https://example.com" rel="external">External site</a>
-<!-- Renders with a trailing ↗ arrow. -->
-<!-- target="_blank" is independent — add it if you want a new window. --></code-block>
+  <section id="script">
+    <h2>Finding links by purpose</h2>
+    <p>Because the purpose is in the markup, a script can collect links by it with a selector. The library exports no helper for this.</p>
+    <code-block language="js" label="Every topic link on the page" data-escape>const topics = [...document.querySelectorAll('a[rel~="tag"]')]
+  .map((link) => link.textContent.trim());</code-block>
+  </section>
 
-  <code-block language="html" show-lines label="Tag links"><p>
-  Topics:
-  <a href="/tags/html" rel="tag">HTML</a>
-  <a href="/tags/css" rel="tag">CSS</a>
-  <a href="/tags/semantics" rel="tag">Semantics</a>
-</p>
-<!-- Each renders as a pill chip. --></code-block>
-
-  <code-block language="html" show-lines label="Sequence navigation"><nav aria-label="Lesson sequence">
-  <a href="/lesson-4" rel="prev">Previous lesson</a>
-  <a href="/lesson-6" rel="next">Next lesson</a>
-</nav>
-<!-- Prev gets a leading ←, next gets a trailing →. --></code-block>
-
-  <code-block language="html" show-lines label="Legal footer"><footer>
-  <a href="/license" rel="license">License</a>
-  <a href="/privacy" rel="privacy-policy">Privacy</a>
-  <a href="/terms" rel="terms-of-service">Terms</a>
-  <a href="https://github.com/profpowell/vanilla-breeze" rel="external">Source</a>
-</footer>
-<!-- Legal links render muted; external picks up the ↗. --></code-block>
-</section>
-
-<section>
-  <h2>JS upgrades</h2>
-  <p>The init module at <code>src/utils/links-init.js</code> auto-runs on any page with a <code>&lt;a target="_blank"&gt;</code>, and exports two helpers for direct use.</p>
-
-  <h3>Safer outbound links by default</h3>
-  <p>Every <code>&lt;a href target="_blank"&gt;</code> without an explicit opener policy (<code>opener</code>, <code>noopener</code>, or <code>noreferrer</code>) picks up <code>rel="noopener"</code> after the module runs. Idempotent — running twice is the same as running once.</p>
-
-  <code-block language="html" show-lines label="Before"><a href="https://example.com" target="_blank">External</a></code-block>
-
-  <code-block language="html" show-lines label="After"><a href="https://example.com" target="_blank" rel="noopener">External</a></code-block>
-
-  <h3>Find links by intent</h3>
-  <p>Other utilities can ask for "all the help links" or "all the tag links" on a page via <code>collectLinksByRel</code>:</p>
-
-  <code-block language="javascript" show-lines label="Discover links by rel token">import { collectLinksByRel } from '/src/utils/links-init.js';
-
-const byRel = collectLinksByRel(document);
-const helpLinks  = byRel.get('help')  ?? [];
-const tagLinks   = byRel.get('tag')   ?? [];
-const legalLinks = [
-  ...(byRel.get('license')           ?? []),
-  ...(byRel.get('privacy-policy')    ?? []),
-  ...(byRel.get('terms-of-service')  ?? []),
-];</code-block>
-</section>
-
-<section>
-  <h2>Privacy mode</h2>
-  <p>Sites that want stronger privacy on outbound links can opt in by setting <code>data-link-privacy="strict"</code> on the root <code>&lt;html&gt;</code> element. Upgraded links then also receive <code>rel="noreferrer"</code>, which suppresses the <code>Referer</code> header on the outbound request.</p>
-
-  <code-block language="html" show-lines label="Opt-in privacy mode"><html lang="en" data-link-privacy="strict">
-  <!-- ... -->
-  <a href="https://example.com" target="_blank">External</a>
-  <!-- After init: rel="noopener noreferrer" --></code-block>
-
-  <p>This is opt-in because some site flows (referral analytics, affiliate tracking, server-side request filtering) legitimately depend on the Referer header. Don't enable it globally without understanding the consequences.</p>
-</section>
-
-<section>
-  <h2>Anti-patterns</h2>
-  <p>Don't use <code>rel</code> as a styling hook for things that aren't link relationships. The whole point of the three rules is that each attribute carries the kind of information it's best at.</p>
-
-  <h3>Don't invent rel tokens</h3>
-  <code-block language="html" show-lines label="Bad"><!-- rel is not for visual variants -->
-<a href="/checkout" rel="primary-cta big-button">Buy now</a></code-block>
-
-  <code-block language="html" show-lines label="Good"><!-- class is for visual variants -->
-<a href="/checkout" class="button">Buy now</a></code-block>
-
-  <h3>Don't use rel for app config</h3>
-  <code-block language="html" show-lines label="Bad"><!-- rel is not for analytics or behavior config -->
-<a href="/pricing" rel="track-pricing-click">Pricing</a></code-block>
-
-  <code-block language="html" show-lines label="Good"><!-- data-* is for app config -->
-<a href="/pricing" data-track="pricing-click">Pricing</a></code-block>
-
-  <h3>Don't fight the platform</h3>
-  <code-block language="html" show-lines label="Bad"><!-- target="_blank" without an opener policy is a security smell -->
-<a href="https://example.com" target="_blank">External</a></code-block>
-
-  <code-block language="html" show-lines label="Good"><!-- VB's JS adds noopener automatically; you can also do it by hand -->
-<a href="https://example.com" target="_blank" rel="external noopener">External</a></code-block>
-</section>
-
-<section>
-  <h2>Reference</h2>
-  <ul>
-    <li><a href="/docs/attributes/rel/"><code>rel</code> attribute</a> — every value VB styles or upgrades, on links, forms and <code>&lt;link&gt;</code></li>
-    <li><a href="/docs/attributes/target/"><code>target</code> attribute</a> — where a link opens, and the opener policy that goes with <code>_blank</code></li>
-    <li><a href="https://html.spec.whatwg.org/multipage/links.html" rel="external noopener">HTML Living Standard — Links</a></li>
-    <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel" rel="external noopener">MDN — rel attribute reference</a></li>
-    <li><a href="https://html.spec.whatwg.org/multipage/links.html#linkTypes" rel="external noopener">HTML Standard — Link types table</a></li>
-  </ul>
-</section>
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/attributes/rel/"><code>rel</code></a>, for every value on links, forms and <code>&lt;link&gt;</code></li>
+      <li><a href="/docs/attributes/target/"><code>target</code></a></li>
+      <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a>, for link variants and the marks added from the address</li>
+      <li><a href="https://html.spec.whatwg.org/multipage/links.html#linkTypes">Link types in the HTML Standard</a></li>
+    </ul>
+  </section>

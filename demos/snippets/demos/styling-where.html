@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Six ways to change the same card</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-background); }
+    #stage { padding: var(--size-l); background: var(--color-background); color: var(--color-text); }
+    #code { white-space: pre-wrap; }
+
+    /* Token: set on the region, read by everything inside it */
+    .shop-square {
+      --radius-m: 0px;
+      --radius-l: 0px;
+      --shadow-s: 0 0 0 1px var(--color-border-strong);
+    }
+
+    /* Component token: one kind of component */
+    .shop-green button { --btn-color: oklch(45% 0.14 150); }
+
+    /* Plain CSS: unlayered, so it beats the library's own rule */
+    .shop-plain h2 {
+      font-style: italic;
+      font-weight: var(--font-weight-normal);
+      border-block-end: var(--border-width-medium) solid var(--color-primary);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <h1 class="visually-hidden">Six ways to change the same card</h1>
+
+    <fieldset data-segmented>
+      <legend class="visually-hidden">Mechanism</legend>
+      <label><input type="radio" name="how" value="default" checked /> Default</label>
+      <label><input type="radio" name="how" value="theme" /> Theme</label>
+      <label><input type="radio" name="how" value="accent" /> Accent</label>
+      <label><input type="radio" name="how" value="token" /> Token</label>
+      <label><input type="radio" name="how" value="component" /> Component token</label>
+      <label><input type="radio" name="how" value="variant" /> Class variant</label>
+      <label><input type="radio" name="how" value="css" /> Plain CSS</label>
+    </fieldset>
+
+    <pre><code id="code">&lt;section&gt;</code></pre>
+
+    <section id="stage">
+      <layout-card data-padding="l">
+        <layout-stack data-layout-gap="m">
+          <header data-layout="cluster" data-layout-justify="between" data-layout-gap="s">
+            <h2>The Salt Path</h2>
+            <layout-badge data-color="primary">Staff pick</layout-badge>
+          </header>
+          <p>Raynor Winn. Paperback, 288 pages. A couple walk the 630 miles of the South West Coast Path. <a href="#reviews">Read 41 reviews</a>.</p>
+          <footer data-layout="cluster" data-layout-gap="s">
+            <button type="button" id="buy">Add to basket</button>
+            <button type="button" class="secondary">Reserve in store</button>
+          </footer>
+        </layout-stack>
+      </layout-card>
+    </section>
+
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const stage = document.getElementById('stage');
+    const code = document.getElementById('code');
+    const buy = document.getElementById('buy');
+
+    const options = {
+      default: {
+        code: '<section>',
+      },
+      theme: {
+        attrs: { 'data-theme': 'classic' },
+        code: '<section data-theme="classic">',
+      },
+      accent: {
+        attrs: { 'data-accent': 'forest' },
+        code: '<section data-accent="forest">',
+      },
+      token: {
+        className: 'shop-square',
+        code: '.shop-square {\n  --radius-m: 0px;\n  --radius-l: 0px;\n  --shadow-s: 0 0 0 1px var(--color-border-strong);\n}',
+      },
+      component: {
+        className: 'shop-green',
+        code: '.shop-green button { --btn-color: oklch(45% 0.14 150); }',
+      },
+      variant: {
+        buyClass: 'ghost',
+        code: '<button type="button" class="ghost">Add to basket</button>',
+      },
+      css: {
+        className: 'shop-plain',
+        code: '.shop-plain h2 {\n  font-style: italic;\n  font-weight: var(--font-weight-normal);\n  border-block-end: var(--border-width-medium) solid var(--color-primary);\n}',
+      },
+    };
+
+    function apply(name) {
+      const option = options[name] ?? options.default;
+      stage.removeAttribute('data-theme');
+      stage.removeAttribute('data-accent');
+      stage.className = option.className ?? '';
+      buy.className = option.buyClass ?? '';
+      for (const [attr, value] of Object.entries(option.attrs ?? {})) {
+        stage.setAttribute(attr, value);
+      }
+      code.textContent = option.code;
+    }
+
+    document.querySelectorAll('input[name="how"]').forEach((radio) => {
+      radio.addEventListener('change', () => apply(radio.value));
+    });
+  </script>
+</body>
+</html>

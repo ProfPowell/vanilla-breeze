@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fluid presets</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    #stage h1 { font-size: var(--font-size-5xl); margin: 0; }
+    #stage h2 { font-size: var(--font-size-2xl); margin: 0; }
+    #stage small { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+    #stage p { margin: 0; }
+    #stage li {
+      padding: var(--size-l);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+      background: var(--color-surface-raised);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <header data-layout="cluster" data-layout-justify="between" data-layout-gap="m">
+      <fieldset data-segmented>
+        <legend class="visually-hidden">Fluid preset</legend>
+        <label><input type="radio" name="fluid" value="off" checked /> Off</label>
+        <label><input type="radio" name="fluid" value="compact" /> Compact</label>
+        <label><input type="radio" name="fluid" value="default" /> Default</label>
+        <label><input type="radio" name="fluid" value="spacious" /> Spacious</label>
+      </fieldset>
+      <code id="markup">&lt;section&gt;</code>
+    </header>
+
+    <section id="stage" data-layout="stack" data-layout-gap="l" aria-label="Type and spacing specimen">
+      <h1>Night buses return</h1>
+      <h2>Lines 4 and 11 run until 02:00 from Friday</h2>
+      <p>Services leave Central Station every twenty minutes. Day tickets stay valid until the last bus.</p>
+      <ul class="unstyled" data-layout="grid" data-layout-min="s" data-layout-gap="l">
+        <li>Line 4: Harbour</li>
+        <li>Line 11: University</li>
+        <li>Line 27: Airport</li>
+      </ul>
+      <small id="readout">Resize the window to see the sizes move.</small>
+    </section>
+
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const stage = document.getElementById('stage');
+    const markup = document.getElementById('markup');
+    const readout = document.getElementById('readout');
+    const heading = stage.querySelector('h1');
+    const card = stage.querySelector('li');
+    const report = () => {
+      const size = parseFloat(getComputedStyle(heading).fontSize);
+      const pad = parseFloat(getComputedStyle(card).paddingLeft);
+      readout.textContent = `Heading (--font-size-5xl): ${size.toFixed(1)}px. Card padding (--size-l): ${pad.toFixed(1)}px. Window: ${window.innerWidth}px.`;
+    };
+    document.querySelectorAll('input[name="fluid"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        if (radio.value === 'off') {
+          stage.removeAttribute('data-fluid');
+          markup.textContent = '<section>';
+        } else if (radio.value === 'default') {
+          stage.setAttribute('data-fluid', '');
+          markup.textContent = '<section data-fluid>';
+        } else {
+          stage.setAttribute('data-fluid', radio.value);
+          markup.textContent = `<section data-fluid="${radio.value}">`;
+        }
+        report();
+      });
+    });
+    window.addEventListener('resize', report);
+    report();
+  </script>
+</body>
+</html>

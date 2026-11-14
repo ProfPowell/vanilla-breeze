@@ -1,0 +1,270 @@
+---
+layout: guide
+title: "Styling Overview"
+description: "How Vanilla Breeze styles a page, what you get without writing CSS, and where to make a change: a theme, a token, a class or a rule of your own."
+guideGroup: Styling
+currentPath: /docs/styling/
+toc: true
+---
+
+  <section id="approach">
+    <h2>The approach</h2>
+    <p>Vanilla Breeze styles HTML elements by their tag. A <code>&lt;button&gt;</code>, a <code>&lt;table&gt;</code> and a <code>&lt;blockquote&gt;</code> are styled as soon as the stylesheet loads, with no class on any of them. Four parts do the work:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Part</th>
+          <th>What it is</th>
+          <th>Where it lives</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Tokens</th>
+          <td>Custom properties for every color, size, radius, shadow, font and duration. Element rules read tokens and hold no values of their own.</td>
+          <td><a href="/docs/tokens/">Tokens reference</a></td>
+        </tr>
+        <tr>
+          <th scope="row">Element rules</th>
+          <td>Selectors on tags and custom elements. A class names a variant of one element (<code>button.secondary</code>), and a <code>data-*</code> attribute carries a setting with a value (<code>data-layout-gap="l"</code>).</td>
+          <td><a href="/docs/elements/">Elements</a>, <a href="/docs/attributes/class/"><code>class</code></a></td>
+        </tr>
+        <tr>
+          <th scope="row">Themes</th>
+          <td>A named set of token values, applied with <code>data-theme</code> on the page or on one element.</td>
+          <td><a href="/docs/themes/">Themes</a></td>
+        </tr>
+        <tr>
+          <th scope="row">Cascade layers</th>
+          <td>Every library rule sits in a named <code>@layer</code>. A rule you write outside a layer wins over them, whatever its specificity.</td>
+          <td><a href="/docs/overrides/">Overrides</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="responsibilities">
+    <h2>What is handled and what you provide</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Area</th>
+          <th>The library handles</th>
+          <th>You provide</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row"><a href="/docs/styling/color/">Color</a></th>
+          <td>Surface, text, border, brand and status colors, each with a light and a dark value; hover and active shades derived from the brand color</td>
+          <td>Your brand hue or a theme, and the contrast of any color you add</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/typography/">Type</a></th>
+          <td>A size scale, line heights, wrapping, heading and prose refinements, system font stacks</td>
+          <td>A <a href="/docs/typefaces/">typeface</a>, if you want one other than the system fonts</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/layouts/spacing/">Space</a></th>
+          <td>One spacing scale used by every element and layout, with compact and spacious settings</td>
+          <td>The gap you want in each layout, chosen from the scale</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/styling/shape/">Shape</a> and <a href="/docs/shadows/">depth</a></th>
+          <td>Border widths, a radius scale, an elevation scale, opt-in shapes and shadow effects</td>
+          <td>Nothing, unless you want a different corner or shadow</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/styling/surfaces/">Surfaces</a></th>
+          <td>Background tokens for page, panel, raised and sunken areas; translucent and paper surface types</td>
+          <td>The choice of surface for a region</td>
+        </tr>
+        <tr>
+          <th scope="row">Motion</th>
+          <td>Duration and easing tokens that go to zero when the reader asks for <a href="/docs/accessibility/preferences/#motion">reduced motion</a></td>
+          <td>The same tokens in your own transitions</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="where">
+    <h2>Where to change something</h2>
+    <p>Pick the mechanism by how far the change should reach. The demo applies each one to the same card and shows the code that does it.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/styling-where.html"
+      url="where-to-change"
+      title="Six ways to change the same card"
+      data-demo-height="l"
+      shadow>
+    </browser-window>
+
+    <table>
+      <thead>
+        <tr>
+          <th>You want to change</th>
+          <th>Use</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>The whole look: color, type, shape and shadow together</td>
+          <td>A <a href="/docs/themes/">theme</a></td>
+          <td><code>&lt;html data-theme="classic"&gt;</code></td>
+        </tr>
+        <tr>
+          <td>The brand color everywhere</td>
+          <td>An <a href="/docs/themes/#accents">accent</a>, or the <a href="/docs/styling/color/#brand">hue seed</a></td>
+          <td><code>&lt;html data-accent="forest"&gt;</code> or <code>:root { --hue-primary: 150; }</code></td>
+        </tr>
+        <tr>
+          <td>Light or dark</td>
+          <td><a href="/docs/styling/color/#modes"><code>data-mode</code></a></td>
+          <td><code>&lt;html data-mode="dark"&gt;</code></td>
+        </tr>
+        <tr>
+          <td>The typeface</td>
+          <td>A <a href="/docs/typefaces/">font token</a></td>
+          <td><code>:root { --font-heading: var(--font-serif); }</code></td>
+        </tr>
+        <tr>
+          <td>Spacing everywhere</td>
+          <td>The <a href="/docs/layouts/spacing/#own-css">spacing unit</a> or a <a href="/docs/layouts/spacing/#density">density</a></td>
+          <td><code>&lt;body data-layout-density="compact"&gt;</code></td>
+        </tr>
+        <tr>
+          <td>Corners or shadows everywhere</td>
+          <td>The <a href="/docs/styling/shape/#radius">radius</a> or <a href="/docs/shadows/">shadow</a> tokens</td>
+          <td><code>:root { --radius-m: 0px; }</code></td>
+        </tr>
+        <tr>
+          <td>Any of the above in one region</td>
+          <td>The same attribute or token on that element</td>
+          <td><code>&lt;aside data-mode="dark"&gt;</code></td>
+        </tr>
+        <tr>
+          <td>Every instance of one component</td>
+          <td>The component's own token, where it has one</td>
+          <td><code>button { --btn-color: oklch(45% 0.14 150); }</code></td>
+        </tr>
+        <tr>
+          <td>One element, to a look the library already has</td>
+          <td>A <a href="/docs/attributes/class/">class variant</a> or a <code>data-*</code> attribute</td>
+          <td><code>&lt;button class="ghost"&gt;</code></td>
+        </tr>
+        <tr>
+          <td>One element, to a look it does not have</td>
+          <td><a href="/docs/overrides/#plain-css">Plain CSS</a>, written outside any layer</td>
+          <td><code>.price { font-size: var(--font-size-xl); }</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Start at the top of the table. A change made with a theme or a token keeps working when the theme, the mode or the density changes. A change made with a fixed value in your own rule does not.</p>
+  </section>
+
+  <section id="tokens">
+    <h2>How a token change reaches an element</h2>
+    <p>Tokens are inherited custom properties, so a value set on an element applies to everything inside it. One rule decides how far a change spreads: a token that is computed from another token is computed on the element that declares it.</p>
+    <p>Most tokens are declared on <code>:root</code>. <code>--color-interactive</code>, for example, is declared there as <code>var(--color-primary)</code>. Set <code>--color-primary</code> on <code>:root</code> and links and buttons follow, because both tokens are on the same element. Set it on a <code>&lt;section&gt;</code> and rules that read <code>--color-primary</code> follow, but <code>--color-interactive</code> still holds the page's value.</p>
+    <p>The library re-declares its derived tokens on any element that has <code>data-theme</code>, <code>data-mode</code> or <code>data-accent</code>. So to recolor a region, use one of those attributes and not a bare custom property:</p>
+    <code-block language="css" label="A region with its own brand color" data-escape>/* For an element with data-theme="members" */
+[data-theme="members"] {
+  --hue-primary: 150;
+}</code-block>
+    <p>Tokens that hold a plain value, such as <code>--radius-m</code>, <code>--shadow-s</code> and <code>--font-sans</code>, need none of this. Set them on any element.</p>
+  </section>
+
+  <section id="layers">
+    <h2>Cascade layers</h2>
+    <p>The library declares its layers once, in this order. Later layers win over earlier ones.</p>
+    <code-block language="css" label="Layer order" data-escape>@layer tokens, reset, native-elements, custom-elements, web-components, utils,
+  bundle-theme, bundle-effects, bundle-components;</code-block>
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Holds</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>tokens</code></td><td>Custom properties with their default values</td></tr>
+        <tr><td><code>reset</code></td><td>Browser normalization and the <code>hidden</code> rules</td></tr>
+        <tr><td><code>native-elements</code></td><td>HTML elements and their class variants</td></tr>
+        <tr><td><code>custom-elements</code></td><td>Layout elements and other lightweight custom elements</td></tr>
+        <tr><td><code>web-components</code></td><td>Components with script</td></tr>
+        <tr><td><code>utils</code></td><td>Attribute helpers such as density, surfaces, shapes and print rules</td></tr>
+        <tr><td><code>bundle-theme</code></td><td>Themes and accents</td></tr>
+        <tr><td><code>bundle-effects</code></td><td>Opt-in effects such as <a href="/docs/shadows/#effects"><code>data-shadow</code></a></td></tr>
+        <tr><td><code>bundle-components</code></td><td>Component styles from <a href="/docs/packs/">packs</a></td></tr>
+      </tbody>
+    </table>
+    <p>Your stylesheet sits above all of them when its rules are outside a layer. <a href="/docs/overrides/">Overrides</a> explains the details and the two exceptions.</p>
+  </section>
+
+  <section id="enforcement">
+    <h2>What holds it in place</h2>
+    <p>These checks run on every change to the library.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Check</th>
+          <th>What it catches</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Token references</td>
+          <td>A <code>var()</code> in the library, a demo or a documentation page that names a token nothing defines</td>
+        </tr>
+        <tr>
+          <td>Element classes</td>
+          <td>A class in the element layer that no demo, documentation page or module uses</td>
+        </tr>
+        <tr>
+          <td>Layer placement</td>
+          <td>A theme file with rules outside the theme layer, or a token file with a rule that sets more than custom properties</td>
+        </tr>
+        <tr>
+          <td>Contrast tests</td>
+          <td>Text and control colors below AA, measured in a browser under each bundled theme in light and dark</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="pages">
+    <h2>In this section</h2>
+    <layout-grid data-layout-min="m" data-layout-gap="m">
+      <a href="/docs/styling/color/" class="section-card">
+        <h3>Color</h3>
+        <p>Semantic color tokens, the brand seeds, light and dark, and status colors.</p>
+      </a>
+      <a href="/docs/typography/" class="section-card">
+        <h3>Typography</h3>
+        <p>The type scale, wrapping, emphasis, headings and long-form prose.</p>
+      </a>
+      <a href="/docs/typefaces/" class="section-card">
+        <h3>Typefaces</h3>
+        <p>System font stacks, the font slots, your own fonts and the font packs.</p>
+      </a>
+      <a href="/docs/styling/shape/" class="section-card">
+        <h3>Borders and Shape</h3>
+        <p>Border widths, the radius scale and the opt-in shape attributes.</p>
+      </a>
+      <a href="/docs/shadows/" class="section-card">
+        <h3>Shadows</h3>
+        <p>The elevation scale and the <code>data-shadow</code> effects.</p>
+      </a>
+      <a href="/docs/styling/surfaces/" class="section-card">
+        <h3>Surfaces</h3>
+        <p>Background tokens for each level, and translucent and paper surface types.</p>
+      </a>
+      <a href="/docs/overrides/" class="section-card">
+        <h3>Overrides</h3>
+        <p>Four ways to change a default, and why your CSS wins without <code>!important</code>.</p>
+      </a>
+    </layout-grid>
+    <p>Spacing is covered with the layouts that use it: see <a href="/docs/layouts/spacing/">Spacing and Density</a> and <a href="/docs/layouts/content-width/">Content Width</a>. Two reference sections sit beside these guides: <a href="/docs/themes/">Themes</a> lists every theme and shows how to write one, and <a href="/docs/tokens/">Tokens</a> lists every token and its value.</p>
+  </section>

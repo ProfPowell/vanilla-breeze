@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Surface types</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-background); }
+
+    /* Something busy to see through: stripes in the brand colors */
+    #stage {
+      padding: var(--size-xl);
+      border-radius: var(--radius-l);
+      background:
+        repeating-linear-gradient(
+          -45deg,
+          var(--color-primary) 0 2rem,
+          var(--color-accent) 2rem 4rem,
+          var(--color-secondary) 4rem 6rem
+        );
+      /* The default --glass-blur is 0px. A theme, or you, turn it up. */
+      --glass-blur: 12px;
+    }
+    #panel {
+      padding: var(--size-l);
+      border-radius: var(--radius-m);
+      max-inline-size: 32rem;
+      margin-inline: auto;
+    }
+    #panel:not([data-surface]) { background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <h1 class="visually-hidden">Surface types</h1>
+
+    <form-field>
+      <label for="surface">Surface</label>
+      <select id="surface">
+        <option value="">None (solid surface color)</option>
+        <option value="frosted" selected>frosted</option>
+        <option value="tinted">tinted</option>
+        <option value="ghost">ghost</option>
+        <option value="transparent">transparent</option>
+        <option value="paper">paper</option>
+        <option value="dots">dots</option>
+        <option value="grid">grid</option>
+        <option value="lines">lines</option>
+        <option value="kraft">kraft</option>
+      </select>
+    </form-field>
+
+    <p><code id="code">&lt;aside data-surface="frosted"&gt;</code></p>
+
+    <section id="stage">
+      <aside id="panel" data-surface="frosted" data-layout="stack" data-layout-gap="s">
+        <h2>Evening readings</h2>
+        <p>Poets from the harbour workshop read new work on the first Friday of each month. Doors at 7, free entry.</p>
+        <p><a href="#programme">See the programme</a></p>
+      </aside>
+    </section>
+
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const panel = document.getElementById('panel');
+    const code = document.getElementById('code');
+    const select = document.getElementById('surface');
+
+    // The paper substrates are fixed light colors, so they take light-mode text.
+    const paper = ['paper', 'dots', 'grid', 'lines', 'kraft'];
+
+    function apply() {
+      const value = select.value;
+      if (!value) {
+        delete panel.dataset.surface;
+        delete panel.dataset.mode;
+        code.textContent = '<aside>';
+        return;
+      }
+      panel.dataset.surface = value;
+      if (paper.includes(value)) {
+        panel.dataset.mode = 'light';
+        code.textContent = `<aside data-surface="${value}" data-mode="light">`;
+      } else {
+        delete panel.dataset.mode;
+        code.textContent = `<aside data-surface="${value}">`;
+      }
+    }
+
+    select.addEventListener('change', apply);
+    apply();
+  </script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+---
+layout: guide
+title: "Color"
+description: "How color works in Vanilla Breeze: tokens named for their role, a brand color derived from one hue, light and dark values for every token, and status colors."
+guideGroup: Styling
+currentPath: /docs/styling/color/
+toc: true
+---
+
+  <section id="roles">
+    <h2>Colors are named for their role</h2>
+    <p>Every element takes its colors from tokens that say what the color is for, not what it looks like. A card uses <code>--color-surface</code> and <code>--color-text</code>, never white and near-black. That is what lets one page work in light and dark, and under any theme, with no change to its markup.</p>
+    <p>Use the same tokens in your own CSS. The groups below cover almost every need. <a href="/docs/tokens/#colors">Tokens: Colors</a> has the full list with values.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Role</th>
+          <th>Tokens</th>
+          <th>Use for</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Surfaces</th>
+          <td><code>--color-background</code>, <code>--color-surface</code>, <code>--color-surface-raised</code>, <code>--color-surface-sunken</code></td>
+          <td>The page, a panel on it, something lifted above the panel, and a well set into it. See <a href="/docs/styling/surfaces/">Surfaces</a>.</td>
+        </tr>
+        <tr>
+          <th scope="row">Text</th>
+          <td><code>--color-text</code>, <code>--color-text-muted</code>, <code>--color-text-subtle</code></td>
+          <td>Body text, secondary text, and hints or placeholders</td>
+        </tr>
+        <tr>
+          <th scope="row">Borders</th>
+          <td><code>--color-border</code>, <code>--color-border-strong</code>, <code>--color-border-subtle</code></td>
+          <td>Dividers and outlines. These are decorative. The edge of a form control uses <code>--control-border</code>, which is darker.</td>
+        </tr>
+        <tr>
+          <th scope="row">Interactive</th>
+          <td><code>--color-interactive</code>, <code>--color-interactive-hover</code>, <code>--color-interactive-active</code></td>
+          <td>Links, buttons and anything else that can be operated. They follow the primary color unless a theme sets them apart.</td>
+        </tr>
+        <tr>
+          <th scope="row">Brand</th>
+          <td><code>--color-primary</code>, <code>--color-secondary</code>, <code>--color-accent</code>, each with <code>-hover</code> and <code>-subtle</code></td>
+          <td>Places where the brand color is the point: a highlighted badge, a hero band, a chart series</td>
+        </tr>
+        <tr>
+          <th scope="row">Status</th>
+          <td><code>--color-success</code>, <code>--color-warning</code>, <code>--color-error</code>, <code>--color-info</code>, each with <code>-subtle</code> and <code>-text</code></td>
+          <td>Messages and states. See <a href="#status">Status colors</a>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <browser-window
+      src="/docs/snippets/demos/styling-color.html"
+      url="color"
+      title="One hue, two modes"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+    <p>Move the slider and every brand-colored part follows: the buttons, the link, the badge and the hover shade. Switch the mode and the surfaces, text and borders change with it. The status messages keep their own hues.</p>
+  </section>
+
+  <section id="brand">
+    <h2>The brand color</h2>
+    <p>The primary color is built from three seeds: a hue, a lightness and a chroma, in the <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklch">OKLCH</a> color space. The hover, active and subtle shades are computed from the result, so you set the seeds and get the rest.</p>
+    <code-block language="css" label="How the primary color is derived (shipped by the library)" data-escape>--color-primary: oklch(var(--lightness-primary) var(--chroma-primary) var(--hue-primary));
+--color-primary-hover: oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
+--color-primary-active: oklch(from var(--color-primary) calc(l - 0.12) c h);
+--color-primary-subtle: oklch(from var(--color-primary) 0.95 0.03 h);</code-block>
+    <table>
+      <thead>
+        <tr>
+          <th>Seed</th>
+          <th>Default</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--hue-primary</code></td><td><code>260</code></td><td>An angle from 0 to 360. Also tints the dark surfaces.</td></tr>
+        <tr><td><code>--lightness-primary</code></td><td><code>50%</code> in light, <code>65%</code> in dark</td><td>The library raises it in dark mode so links and buttons keep their contrast</td></tr>
+        <tr><td><code>--chroma-primary</code></td><td><code>0.2</code> in light, <code>0.18</code> in dark</td><td>How vivid the color is</td></tr>
+        <tr><td><code>--hue-secondary</code>, <code>--hue-accent</code></td><td><code>200</code>, <code>30</code></td><td>Each has its own <code>--lightness-*</code> and <code>--chroma-*</code> seed</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="brand-hue">Set a hue</h3>
+    <p>For most sites one line is enough. The default lightness and chroma were chosen for AA contrast with the default hue, and perceived brightness varies a little by hue, so check links and buttons in both modes after a change. If one falls short, adjust <code>--lightness-primary</code>.</p>
+    <code-block language="css" label="A green brand" data-escape>:root {
+  --hue-primary: 150;
+}</code-block>
+    <p>The ten <a href="/docs/themes/#accents">accents</a> are presets of the same seeds, applied with <code>data-accent</code> and no CSS.</p>
+
+    <h3 id="brand-exact">Set an exact color</h3>
+    <p>If you must match a specific color, set <code>--color-primary</code> itself. The hover, active and subtle shades are still derived from it. The seeds no longer apply, so give a lighter value for dark mode with <code>light-dark()</code> and check the contrast of both.</p>
+    <code-block language="css" label="An exact brand color with a dark-mode value" data-escape>:root,
+[data-mode] {
+  --color-primary: light-dark(oklch(48% 0.16 35), oklch(72% 0.14 35));
+}</code-block>
+    <p>The second selector keeps your color inside a region that has its own <code>data-mode</code>. Without it, the library computes the primary color from the seeds again on that element.</p>
+
+    <h3 id="brand-region">In one region</h3>
+    <p>Set seeds on <code>:root</code>, or on an element that has <code>data-theme</code>, <code>data-mode</code> or <code>data-accent</code>. Those are the elements on which the library computes the derived colors. A seed set on any other element changes nothing, because the colors were already computed further up. <a href="/docs/styling/#tokens">How a token change reaches an element</a> explains why.</p>
+    <code-block language="html" label="A scoped accent" data-escape><section data-accent="sunset">
+  <button type="button">Join the waiting list</button>
+</section></code-block>
+  </section>
+
+  <section id="modes">
+    <h2>Light and dark</h2>
+    <p>The page declares <code>color-scheme: light dark</code>, and each semantic token holds two values in a <code>light-dark()</code> function. With no attribute and no script, the page follows the reader's system setting.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Markup</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>&lt;html&gt;</code></td><td>Follows the system setting</td></tr>
+        <tr><td><code>&lt;html data-mode="light"&gt;</code></td><td>Light, whatever the system says</td></tr>
+        <tr><td><code>&lt;html data-mode="dark"&gt;</code></td><td>Dark, whatever the system says</td></tr>
+        <tr><td><code>&lt;aside data-mode="dark"&gt;</code></td><td>A dark region on a page of either mode</td></tr>
+      </tbody>
+    </table>
+    <p>A region with its own <code>data-mode</code> paints its own background and text color, so a dark panel on a light page is readable without further CSS. The same is true of a region with its own <code>data-theme</code>.</p>
+
+    <h3 id="dark-changes">What dark mode changes</h3>
+    <ul>
+      <li>Surfaces, text and borders take their dark values. The dark surfaces carry a faint tint of the primary hue (<code>--chroma-surface-tint</code>, <code>0.02</code>).</li>
+      <li>The primary color becomes lighter and slightly less vivid. Its <code>-subtle</code> shade does not change: it is a pale tint in both modes, so on a dark page use <code>--tint-primary-10</code> or <code>--tint-primary-20</code> for a wash of the brand color.</li>
+      <li>Status colors keep their hue. Their <code>-subtle</code> and <code>-text</code> values swap, so a message is dark with light text.</li>
+      <li>The shadow tokens from <code>--shadow-xs</code> to <code>--shadow-xl</code> get stronger, since a faint shadow does not show on a dark page.</li>
+    </ul>
+
+    <h3 id="own-colors">Your own colors in both modes</h3>
+    <p>Prefer a token. When you need a color the tokens do not have, write both values with <code>light-dark()</code>. It follows <code>data-mode</code> and the system setting the same way the tokens do, including inside a scoped region.</p>
+    <code-block language="css" label="A color with a light and a dark value" data-escape>.route-express {
+  background: light-dark(oklch(92% 0.06 300), oklch(32% 0.08 300));
+  color: var(--color-text);
+}</code-block>
+
+    <h3 id="mode-switch">A switch for readers</h3>
+    <p><a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a> and <a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a> include a mode control and remember the choice. To build your own, call <code>ThemeManager</code>. It writes <code>data-mode</code> on <code>&lt;html&gt;</code> and stores the preference.</p>
+    <code-block language="js" label="Setting the mode from script" data-escape>import { ThemeManager } from 'vanilla-breeze';
+
+ThemeManager.setMode('dark');   // 'light', 'dark' or 'auto'
+ThemeManager.toggleMode();</code-block>
+  </section>
+
+  <section id="status">
+    <h2>Status colors</h2>
+    <p>Each of the four statuses has three tokens. Use them as a set.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Use for</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--color-success</code>, <code>--color-warning</code>, <code>--color-error</code>, <code>--color-info</code></td><td>Borders, icons, dots and filled badges</td></tr>
+        <tr><td><code>--color-success-subtle</code> and the other three</td><td>The background of a message</td></tr>
+        <tr><td><code>--color-success-text</code> and the other three</td><td>Text on the matching <code>-subtle</code> background, or on a surface</td></tr>
+      </tbody>
+    </table>
+    <code-block language="css" label="A status callout of your own" data-escape>.delay-notice {
+  background: var(--color-warning-subtle);
+  color: var(--color-warning-text);
+  border-inline-start: var(--border-width-thick) solid var(--color-warning);
+}</code-block>
+    <p>Do not set body-size text in the base color. <code>--color-warning</code> in particular is too light to read on a light surface. The library's own parts follow the same split: <a href="/docs/elements/custom-elements/status-message/"><code>&lt;status-message&gt;</code></a>, <a href="/docs/attributes/data-callout/"><code>data-callout</code></a> and the <a href="/docs/elements/custom-elements/layout-badge/"><code>&lt;layout-badge&gt;</code></a> colors all read these tokens. Color alone should not carry the status, so pair it with a word or an icon.</p>
+  </section>
+
+  <section id="on-color">
+    <h2>Text on a colored fill</h2>
+    <p>A <code>&lt;button&gt;</code> works out its own label color. It picks black or white, whichever contrasts more with the fill, and picks again for the hover and active fills. That holds for the theme's color and for a color you pass in <code>--btn-color</code>.</p>
+    <p>For a fill of your own, the library defines a set of tokens with the same behavior in browsers that support <code>contrast-color()</code>: <code>--color-text-on-primary-auto</code>, and the same for <code>secondary</code>, <code>accent</code>, <code>interactive</code>, <code>success</code>, <code>warning</code>, <code>error</code> and <code>info</code>. They are undefined elsewhere, so always give a fallback.</p>
+    <code-block language="css" label="Readable text on the primary color" data-escape>.promo-band {
+  background: var(--color-primary);
+  color: var(--color-text-on-primary-auto, var(--color-text-on-primary));
+}</code-block>
+  </section>
+
+  <section id="tints">
+    <h2>Tints and state colors</h2>
+    <p>A few more tokens are mixed from the ones above, so they follow the theme and the mode without values of their own.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Tokens</th>
+          <th>What they are</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--tint-primary-5</code>, <code>-10</code>, <code>-20</code>, <code>-30</code></td><td>The primary color at 5% to 30% opacity, for washes and highlights</td></tr>
+        <tr><td><code>--surface-hover</code>, <code>--surface-focus</code>, <code>--surface-active</code>, <code>--surface-selected</code></td><td>The surface color with a little of the interactive color mixed in</td></tr>
+        <tr><td><code>--color-hover-bg</code>, <code>--color-hover-text</code>, <code>--color-active-bg</code>, <code>--color-active-text</code></td><td>Hover and current-item colors for menus, navigation links, list items and table rows. A theme changes all of those by setting these four.</td></tr>
+        <tr><td><code>--color-overlay-subtle</code>, <code>-medium</code>, <code>-strong</code></td><td>Translucent black or white for scrims over content</td></tr>
+        <tr><td><code>--color-row-stripe</code></td><td>The alternate row wash for <a href="/docs/elements/native/table/"><code>table[data-striped]</code></a></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="contrast">
+    <h2>Contrast</h2>
+    <p>The text tokens are tested for AA contrast against the surface tokens under each bundled theme, in light and dark. That holds while you pair tokens as this page describes. Any color you introduce is yours to check. <a href="/docs/accessibility/preferences/#color">Accessibility: Color</a> lists the pairs and the ratios, and the <a href="/docs/accessibility/preferences/#themes">high contrast theme</a> raises them to AAA.</p>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/tokens/#colors">Tokens: Colors</a>, the full list with values</li>
+      <li><a href="/docs/themes/">Themes</a>, including <a href="/docs/themes/#accents">accents</a> and <a href="/docs/themes/#custom-themes">writing a theme</a></li>
+      <li><a href="/docs/styling/surfaces/">Surfaces</a>, for the background levels and translucent surfaces</li>
+      <li><a href="/docs/overrides/#token-tweaks">Overrides: Token tweaks</a></li>
+      <li><a href="/docs/accessibility/preferences/">Preferences and themes</a>, for increased contrast and forced colors</li>
+    </ul>
+  </section>

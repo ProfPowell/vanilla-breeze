@@ -1,156 +1,151 @@
 ---
 layout: guide
 title: "Fluid Scaling"
-description: "Continuous viewport-responsive type and spacing with clamp() — no breakpoints, no jumps. Activate with a single attribute."
+description: "Type and spacing that grow smoothly with the viewport, with no breakpoints. One attribute turns it on, and three presets set how far the sizes move."
 guideGroup: Layouts
 currentPath: /docs/fluid-scaling/
 toc: true
 ---
 
-<section id="why-fluid">
-  <h2>Why Fluid</h2>
-  <p>Traditional responsive design uses breakpoints &mdash; fixed thresholds where layouts snap between states. This creates three problems:</p>
-  <ol>
-    <li><strong>Jarring jumps.</strong> A heading that's 2rem at 767px and 3rem at 768px creates a visible pop.</li>
-    <li><strong>False taxonomy.</strong> "Mobile", "tablet", "desktop" are marketing categories, not engineering primitives. A 1024px laptop in portrait mode isn't a tablet.</li>
-    <li><strong>Combinatorial explosion.</strong> Every breakpoint doubles the test matrix. Three breakpoints means eight states to verify.</li>
-  </ol>
-  <p>Fluid scaling replaces this with continuous interpolation. Values ease smoothly from a minimum (at 320px) to a maximum (at 1440px). One rule, infinite states, zero jumps.</p>
+<section id="what-it-does">
+  <h2>What it does</h2>
+  <p>By default the type and spacing tokens are fixed: <code>--font-size-5xl</code> is 3rem on a phone and on a wide monitor. With <code>data-fluid</code>, each token becomes a <code>clamp()</code> value that grows with the viewport between 320px and 1440px wide. Below 320px it holds at its smallest value and above 1440px at its largest.</p>
+  <p>Because the change is in the tokens, everything that reads them follows: headings, body text, layout gaps, padding. There is no step where sizes jump.</p>
+  <p>Choose a preset in the demo, then resize the window. The line under the specimen shows two of the computed sizes.</p>
+
+  <browser-window
+    src="/docs/snippets/demos/layouts-fluid.html"
+    url="layouts-fluid"
+    title="Fluid presets"
+    data-demo-height="xl"
+    shadow>
+  </browser-window>
 </section>
 
 <section id="activation">
-  <h2>Activation</h2>
-  <p>Add the <code>data-fluid</code> attribute to <code>&lt;html&gt;</code>. Remove it to revert to fixed values instantly.</p>
+  <h2>Turning it on</h2>
+  <p>Add <code>data-fluid</code> to <code>&lt;html&gt;</code>. It is off unless you add it.</p>
+  <code-block language="html" label="The default preset and the two named presets" data-escape><html lang="en" data-fluid>
 
-  <code-block language="html" label="Enable fluid scaling" data-escape><!-- Default preset -->
-<html data-fluid>
+<html lang="en" data-fluid="compact">
 
-<!-- Named presets -->
-<html data-fluid="compact">
-<html data-fluid="spacious">
+<html lang="en" data-fluid="spacious"></code-block>
+  <p>The attribute also works on any other element and then applies to that subtree only. The sizes still follow the width of the viewport, not the width of the element.</p>
+  <p>To let readers choose, the <a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a> has a fluid scaling control that sets the attribute and remembers the choice. From script, use the theme manager.</p>
+  <code-block language="js" label="Set the preset from script" data-escape>import { ThemeManager } from 'vanilla-breeze';
 
-<!-- Combine with themes and dark mode -->
-<html data-theme="modern" data-fluid data-mode="dark"></code-block>
-
-  <p>Fluid scaling is opt-in so existing sites aren't affected. Once activated, it overrides the static <code>--font-size-*</code> and <code>--size-unit</code> tokens with <code>clamp()</code> values.</p>
-</section>
-
-<section id="what-changes">
-  <h2>What Changes</h2>
-
-  <h3>Typography</h3>
-  <p>The fixed scale and the rest of the type system are described in the <a href="/docs/typography/#foundations">Typography guide</a>.</p>
-  <p>Each of the nine <code>--font-size-*</code> tokens gets a <code>clamp()</code> value. Small sizes barely change (xs stays near 0.75rem); large sizes scale dramatically (5xl grows from ~2rem to ~4rem). This creates a <strong>tighter ratio at narrow viewports</strong> (more uniform hierarchy, easier to scan) and a <strong>wider ratio at wide viewports</strong> (more dramatic headings, clearer visual weight).</p>
-
-  <h3>Spacing</h3>
-  <p>All nine <code>--size-*</code> tokens (3xs through 3xl) are derived from <code>--size-unit</code> via <code>calc()</code>. Making <code>--size-unit</code> a <code>clamp()</code> value makes every spacing token fluid automatically &mdash; a single override cascades to the entire system.</p>
-  <p>Layout spacing follows: <a href="/docs/attributes/data-layout/"><code>data-layout-gap</code></a>, layout padding and the <a href="/docs/attributes/data-layout-density/"><code>data-layout-density</code></a> scales are all built from <code>--size-*</code> / <code>--size-unit</code>, so they become fluid too. Layout <em>breakpoints</em> do not: the points where sidebars, splits and <a href="/docs/attributes/data-page-layout/">page layouts</a> collapse (48rem) are media queries and stay fixed.</p>
-
-  <h3>Content Widths</h3>
-  <p><code>--content-normal</code> and <code>--measure-normal</code> also scale, expanding reading areas on wider screens while keeping comfortable line lengths on narrow ones.</p>
+ThemeManager.setFluid('spacious'); // 'default', 'compact', 'spacious'
+ThemeManager.setFluid('');         // off</code-block>
 </section>
 
 <section id="presets">
   <h2>Presets</h2>
+  <p>Each range runs from the value at a 320px viewport to the value at 1440px.</p>
   <table>
-    <thead><tr><th>Attribute</th><th>Type Ratio</th><th>Space Swing</th><th>Character</th></tr></thead>
+    <thead>
+      <tr>
+        <th scope="col">Token</th>
+        <th scope="col">Fixed</th>
+        <th scope="col"><code>compact</code></th>
+        <th scope="col"><code>data-fluid</code></th>
+        <th scope="col"><code>spacious</code></th>
+      </tr>
+    </thead>
     <tbody>
-      <tr>
-        <td><code>data-fluid="compact"</code></td>
-        <td>1.067 &rarr; 1.2</td>
-        <td>&plusmn;11%</td>
-        <td>Tight, uniform hierarchy. Good for dense UIs and dashboards.</td>
-      </tr>
-      <tr>
-        <td><code>data-fluid</code></td>
-        <td>1.125 &rarr; 1.25</td>
-        <td>&plusmn;10%</td>
-        <td>Balanced, general-purpose. Works for most content sites.</td>
-      </tr>
-      <tr>
-        <td><code>data-fluid="spacious"</code></td>
-        <td>1.2 &rarr; 1.333</td>
-        <td>&plusmn;11%</td>
-        <td>Generous, dramatic headings. Marketing pages and editorial layouts.</td>
-      </tr>
+      <tr><th scope="row">Ratio between type steps</th><td>Varies</td><td>1.067 to 1.2</td><td>1.125 to 1.25</td><td>1.2 to 1.333</td></tr>
+      <tr><th scope="row"><code>--font-size-m</code> (body text)</th><td>1rem</td><td>1rem</td><td>1rem to 1.06rem</td><td>1rem to 1.13rem</td></tr>
+      <tr><th scope="row"><code>--font-size-5xl</code></th><td>3rem</td><td>1.48rem to 2.99rem</td><td>2.03rem to 4.05rem</td><td>2.99rem to 6.31rem</td></tr>
+      <tr><th scope="row"><code>--size-unit</code> (spacing)</th><td>0.25rem</td><td>0.2rem to 0.25rem</td><td>0.225rem to 0.275rem</td><td>0.25rem to 0.3125rem</td></tr>
+      <tr><th scope="row"><code>--content-normal</code></th><td>60rem</td><td>40rem to 60rem</td><td>40rem to 65rem</td><td>42rem to 70rem</td></tr>
+      <tr><th scope="row"><code>--measure-normal</code></th><td>65ch</td><td>55ch to 65ch</td><td>55ch to 70ch</td><td>55ch to 75ch</td></tr>
+    </tbody>
+  </table>
+  <ul>
+    <li><strong><code>compact</code></strong> keeps headings close in size to the text and spacing at or below the fixed scale. It suits dense screens such as dashboards.</li>
+    <li><strong>The default</strong> is a moderate range that suits most content sites.</li>
+    <li><strong><code>spacious</code></strong> gives large headings and looser spacing on wide screens. It suits landing pages and editorial layouts.</li>
+  </ul>
+</section>
+
+<section id="what-changes">
+  <h2>What changes</h2>
+
+  <h3 id="type">Type</h3>
+  <p>Nine tokens, <code>--font-size-xs</code> to <code>--font-size-5xl</code>, get a <code>clamp()</code> value. The steps are closer together on a narrow viewport, where a very large heading would wrap badly, and further apart on a wide one. The large sizes move the most and body text hardly moves. The steps spread out in both directions from the body size, so <code>--font-size-xs</code> gets slightly smaller as the viewport widens.</p>
+  <p><code>--font-size-2xs</code> stays fixed. The fixed scale and the rest of the type system are described in the <a href="/docs/typography/#foundations">Typography guide</a>.</p>
+
+  <h3 id="spacing">Spacing</h3>
+  <p>Only <code>--size-unit</code> is replaced. The nine <code>--size-*</code> tokens are multiples of it, so the whole <a href="/docs/layouts/spacing/">spacing scale</a> becomes fluid: <code>data-layout-gap</code>, layout padding and the <a href="/docs/attributes/data-layout-density/"><code>data-layout-density</code></a> scales.</p>
+
+  <h3 id="widths">Content widths</h3>
+  <p><code>--content-normal</code> and <code>--measure-normal</code> grow with the viewport, so a centered column and a reading column are narrower on small screens and wider on large ones. The <code>narrow</code> and <code>wide</code> variants stay fixed. See <a href="/docs/layouts/content-width/">Content Width</a>.</p>
+
+  <h3 id="unchanged">What does not change</h3>
+  <ul>
+    <li><strong>Breakpoints.</strong> The widths where page layouts, main-level sidebars and splits collapse (48rem) are media queries and stay where they are.</li>
+    <li><strong>Layout thresholds.</strong> Grid column minimums, the switcher threshold and sidebar widths are fixed <code>rem</code> values.</li>
+    <li><strong>Line height, colors, radii and shadows.</strong></li>
+  </ul>
+</section>
+
+<section id="with-themes">
+  <h2>With themes</h2>
+  <p><code>data-fluid</code> combines with <code>data-theme</code>. Most themes set colors and fonts and leave sizes alone, so nothing more is needed.</p>
+  <p>The <code>a11y-large-text</code> theme raises the base sizes (body text at 1.25rem, a spacing unit of 0.3125rem). It has its own fluid values, so with <code>data-fluid</code> the body text runs from 1.25rem to 1.375rem and the larger sizes scale from that base. The named presets have no large-text version: with this theme, <code>compact</code> and <code>spacious</code> give the same type and spacing as the default.</p>
+  <code-block language="html" label="Fluid sizes with a theme" data-escape><html lang="en" data-theme="a11y-large-text" data-fluid></code-block>
+</section>
+
+<section id="custom">
+  <h2>A preset of your own</h2>
+  <p>A preset is a rule that sets the tokens. Write one with your own values and name it in the attribute. Each value is <code>clamp(minimum, slope + intercept, maximum)</code>; use <code>vi</code> for the slope so it follows the inline size of the viewport.</p>
+  <code-block language="css" label="A custom preset" data-escape>[data-fluid="editorial"] {
+  --font-size-m:   clamp(1rem, 0.18vi + 0.96rem, 1.125rem);
+  --font-size-xl:  clamp(1.3rem, 0.6vi + 1.18rem, 1.75rem);
+  --font-size-3xl: clamp(1.7rem, 1.6vi + 1.38rem, 2.8rem);
+  --font-size-5xl: clamp(2.2rem, 3.4vi + 1.5rem, 4.6rem);
+
+  --size-unit: clamp(0.225rem, 0.07vi + 0.21rem, 0.275rem);
+}</code-block>
+  <p>Tokens you leave out keep the default preset's values, because <code>[data-fluid]</code> matches any value. The library has no tool that generates these values.</p>
+</section>
+
+<section id="pointer">
+  <h2>Input type</h2>
+  <p>Two adjustments depend on the pointer and not on the viewport. They are always on and do not need <code>data-fluid</code>.</p>
+  <table>
+    <thead>
+      <tr><th scope="col">Query</th><th scope="col">Effect</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>(pointer: coarse)</code></td><td>Buttons, selects and inputs get a minimum height of <code>--size-touch-min</code> (2.75rem, 44px). Their width and links are not changed.</td></tr>
+      <tr><td><code>(hover: none)</code></td><td>The hover motion tokens <code>--motion-hover-lift</code> and <code>--motion-hover-scale</code> are set to <code>none</code>, so effects built on them do nothing on devices that cannot hover.</td></tr>
     </tbody>
   </table>
 </section>
 
-<section id="pointer-detection">
-  <h2>Pointer Detection</h2>
-  <p>Pointer detection is <strong>always on</strong> &mdash; no opt-in attribute needed. It uses CSS media queries to adapt interaction style to the device's input capabilities.</p>
-
-  <code-block language="css" label="Pointer-aware rules (always active)" data-escape>/* These rules are always active — no opt-in needed */
-
-/* Touch devices: enforce 44px minimum targets (WCAG 2.5.8) */
-@media (pointer: coarse) {
-  button, select, input:not([type="hidden"]) {
-    min-block-size: var(--size-touch-min); /* 2.75rem = 44px */
-  }
-}
-
-/* No hover capability: disable hover-only motion affordances */
-@media (hover: none) {
-  :root {
-    --motion-hover-lift: none;
-    --motion-hover-scale: none;
-  }
-}</code-block>
-
-  <h3>What It Does</h3>
-  <dl>
-    <dt><code>@media (pointer: coarse)</code></dt>
-    <dd>Touch and stylus devices get 44px minimum target sizes on buttons, inputs, and selects &mdash; enforcing WCAG 2.5.8 target size requirements.</dd>
-
-    <dt><code>@media (hover: none)</code></dt>
-    <dd>On devices without hover (phones, tablets), hover-only motion effects like lift and scale are disabled. Content remains accessible without hover interactions.</dd>
-  </dl>
-</section>
-
-<section id="with-themes">
-  <h2>With Themes</h2>
-  <p><code>data-fluid</code> composes with <code>data-theme</code>. Most themes only customize colors and fonts, so fluid scaling works without any theme-side changes.</p>
-  <p>The <code>a11y-large-text</code> accessibility theme includes dedicated fluid compound rules &mdash; its larger base sizes (1.25rem body, 0.3125rem unit) also scale fluidly when <code>data-fluid</code> is present.</p>
-
-  <code-block language="html" label="Fluid + theme composition" data-escape><html data-theme="modern" data-fluid>
-<!-- Modern personality + fluid type/spacing -->
-
-<html data-theme="a11y-large-text" data-fluid>
-<!-- Large text base + fluid scaling = maximum readability --></code-block>
-</section>
-
-<section id="custom-parameters">
-  <h2>Custom Parameters</h2>
-  <p>For full control over ratios and viewport ranges, use the interactive tools:</p>
-  <ul>
-  </ul>
-  <p>The tool produces production-ready <code>clamp()</code> CSS. Paste it into your project stylesheet:</p>
-
-  <code-block language="css" label="Custom fluid preset" data-escape>/* Custom fluid preset — paste from the Fluid Sizing tool */
-[data-fluid="custom"] {
-  /* Fluid Type Scale */
-  --font-size-xs:  clamp(0.68rem, -0.16vi + 0.82rem, 0.79rem);
-  --font-size-s:  clamp(0.85rem, -0.06vi + 0.90rem, 0.89rem);
-  --font-size-m:  clamp(1rem, 0.09vi + 0.98rem, 1.06rem);
-  --font-size-l:  clamp(1.13rem, 0.29vi + 1.07rem, 1.33rem);
-  --font-size-xl:  clamp(1.27rem, 0.56vi + 1.15rem, 1.66rem);
-  --font-size-2xl: clamp(1.42rem, 0.93vi + 1.24rem, 2.08rem);
-  --font-size-3xl: clamp(1.60rem, 1.42vi + 1.32rem, 2.59rem);
-  --font-size-4xl: clamp(1.80rem, 2.06vi + 1.39rem, 3.24rem);
-  --font-size-5xl: clamp(2.03rem, 2.89vi + 1.45rem, 4.05rem);
-
-  /* Fluid Space (via --size-unit — cascades to all --size-* tokens) */
-  --size-unit: clamp(0.225rem, 0.07vi + 0.21rem, 0.275rem);
-}</code-block>
-</section>
-
 <section id="when-not-to">
-  <h2>When Not To Use Fluid Scaling</h2>
+  <h2>When to leave it off</h2>
   <ul>
-    <li><strong>Pixel-precise dashboards</strong> &mdash; data-dense UIs where every pixel matters may prefer fixed tokens.</li>
-    <li><strong>Print stylesheets</strong> &mdash; print media has a fixed page size; fluid scaling adds no value.</li>
-    <li><strong>Embedded widgets</strong> &mdash; components that render at a known fixed size don't benefit from viewport-relative scaling. Use container queries instead.</li>
-    <li><strong>Existing breakpoint systems</strong> &mdash; if your project already has a mature breakpoint-based approach, mixing in fluid tokens can create unpredictable interactions.</li>
+    <li><strong>Dense application screens.</strong> A dashboard or data table usually wants the same sizes at every width. Use fixed tokens, with <a href="/docs/attributes/data-layout-density/"><code>data-layout-density="compact"</code></a> if you want them tighter.</li>
+    <li><strong>Embedded widgets.</strong> The sizes follow the viewport. A component that lives in a narrow column of a wide page gets wide-page sizes. Container queries suit that case better.</li>
+    <li><strong>A site that already sizes type at breakpoints.</strong> Two systems moving the same sizes are hard to reason about. Pick one.</li>
   </ul>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <layout-grid data-layout-min="m" data-layout-gap="m">
+    <a href="/docs/layouts/spacing/" class="section-card">
+      <h3>Spacing and Density</h3>
+      <p>The size scale that the fluid unit drives.</p>
+    </a>
+    <a href="/docs/layouts/responsive/" class="section-card">
+      <h3>Responsive Behavior</h3>
+      <p>How layouts wrap and stack, with fluid scaling or without.</p>
+    </a>
+    <a href="/docs/typography/" class="section-card">
+      <h3>Typography</h3>
+      <p>The fixed type scale and the rest of the type system.</p>
+    </a>
+  </layout-grid>
 </section>

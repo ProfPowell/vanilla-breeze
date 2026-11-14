@@ -1,158 +1,167 @@
 ---
 layout: guide
-title: "Highlights & Annotations"
-description: "Medium-style text highlighting with private notes — engine, selection toolbar, action components, and persistence layer."
+title: "Highlights and Annotations"
+description: "How readers highlight passages and attach private notes to an article, where those are stored, and how to read, export or style them."
 guideGroup: Content Management
 currentPath: /docs/content-management/highlights/
+toc: true
 ---
 
-<template slot="breadcrumb">
-<nav class="breadcrumb" aria-label="Breadcrumb">
-  <ol>
-    <li><a href="/docs/">Docs</a></li>
-    <li>Content Management</li>
-    <li><span aria-current="page">Highlights &amp; Annotations</span></li>
-  </ol>
-</nav>
-</template>
+  <section id="what">
+    <h2>What readers get</h2>
+    <p>A reader selects text in an article. A small toolbar appears by the selection. One button highlights the passage in a chosen colour, another highlights it and opens a note. The highlight is still there on the next visit, and a mark in the margin shows which highlights have notes.</p>
+    <p>Everything is stored in that reader's browser. Nothing is sent to a server, no account is needed, and no other reader sees it. Try it: select a sentence in the demo.</p>
 
-<section>
-  <h2>Overview</h2>
-  <p>Vanilla Breeze ships a Medium-style highlighting system: select text, pick a color, optionally add a private note. Highlights persist in <code>localStorage</code> per page. Notes live in a panel that opens when you click the margin annotation, and the storage layer is a single private object behind a controller — easy to export, import, or wire to a sync backend later.</p>
-  <p>The system is layered. Each layer has one job and you opt into the layers you want.</p>
-</section>
+    <browser-window
+      src="/docs/examples/demos/highlights-basic.html"
+      url="highlights"
+      title="Highlights and private notes"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
 
-<section>
-  <h2>The four layers</h2>
-  <table class="props-table">
-    <thead>
-      <tr><th>Layer</th><th>What it does</th><th>How you use it</th></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><strong>Engine</strong><br><code>data-highlights</code> attribute<br><code>src/utils/highlights-init.js</code></td>
-        <td>Range serialization, persistence, CSS Custom Highlight API rendering (with <code>&lt;mark&gt;</code> fallback), margin annotations, public mutation API. Emits <code>highlights:added</code>, <code>highlights:removed</code>, <code>highlights:clicked</code>, <code>highlights:request-note</code>, <code>highlights:selected</code>.</td>
-        <td><code>&lt;article data-highlights&gt;</code> on any container. Without other layers it renders read-only stored highlights and exposes the controller API.</td>
-      </tr>
-      <tr>
-        <td><strong>Selection toolbar</strong><br><code>&lt;<a href="/docs/elements/web-components/selection-menu/">selection-menu</a>&gt;</code></td>
-        <td>Floating toolbar that appears when a user selects text in a target element. Composes action children. Detects selection, positions itself, dismisses on outside click / Escape.</td>
-        <td><code>&lt;selection-menu for="article-id"&gt;…&lt;/selection-menu&gt;</code> with action children inside.</td>
-      </tr>
-      <tr>
-        <td><strong>Highlight action</strong><br><code>&lt;<a href="/docs/elements/web-components/highlight-wc/">highlight-wc</a>&gt;</code></td>
-        <td>Inside <code>&lt;selection-menu&gt;</code>: icon button + color palette dropdown that commits a highlight via the engine. Standalone: HTML-first sugar that turns a target into a <code>data-highlights</code> container.</td>
-        <td>Inside selection-menu: <code>&lt;highlight-wc colors="red,green"&gt;&lt;/highlight-wc&gt;</code>. Standalone: <code>&lt;highlight-wc for="article-id"&gt;&lt;/highlight-wc&gt;</code>.</td>
-      </tr>
-      <tr>
-        <td><strong>Note action + panel host</strong><br><code>&lt;<a href="/docs/elements/web-components/note-wc/">note-wc</a>&gt;</code></td>
-        <td>Inside <code>&lt;selection-menu&gt;</code>: highlight + open note panel in one click. Anywhere on the page: hosts the note panel UI for any highlight that requests one (margin-annotation clicks, programmatic <code>openFor()</code>).</td>
-        <td><code>&lt;note-wc&gt;&lt;/note-wc&gt;</code> as a selection-menu child, OR placed once on the page so margin annotations have a panel to open.</td>
-      </tr>
-    </tbody>
-  </table>
-</section>
-
-<section>
-  <h2>Recipes</h2>
-
-  <h3>Read-only display of stored highlights</h3>
-  <p>Just the engine, no UI. Renders highlights persisted under the page's pathname; new selections do nothing.</p>
-<code-block language="html" label="Read-only" data-escape><article data-highlights data-highlights-readonly>
-  <p>Existing highlights from localStorage paint here.</p>
-</article></code-block>
-
-  <h3>Full interactive (highlight + notes)</h3>
-  <p>Engine + selection-menu + highlight-wc + note-wc. The 4-line vanilla recipe.</p>
-<code-block language="html" label="Full system" data-escape><article id="post" data-highlights>
-  <p>Select text to highlight. Click a margin annotation to add a note.</p>
+    <code-block language="html" label="Highlights and notes on an article" data-escape><article id="post">
+  <h1>The evolution of digital reading</h1>
+  <p>...</p>
 </article>
 
 <selection-menu for="post">
   <highlight-wc></highlight-wc>
   <note-wc></note-wc>
 </selection-menu></code-block>
+  </section>
 
-  <h3>Custom colors</h3>
-  <p>Define <code>--highlight-{name}</code> CSS tokens, then list the names on both <code>data-highlights-colors</code> (engine) and <code>colors</code> (highlight-wc swatches).</p>
-<code-block language="html" label="Brand palette" data-escape><style>
-  .brand-article {
-    --highlight-brand: #fce7f3;
-    --highlight-accent: #ddd6fe;
-  }
-</style>
-<article id="post" class="brand-article"
-         data-highlights data-highlights-colors="brand,accent,yellow">
-  <p>Custom palette per article.</p>
-</article>
-<selection-menu for="post">
-  <highlight-wc colors="brand,accent,yellow"></highlight-wc>
-  <note-wc></note-wc>
+  <section id="parts">
+    <h2>The parts</h2>
+    <table>
+      <thead>
+        <tr><th>Part</th><th>Job</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row"><a href="/docs/elements/web-components/selection-menu/"><code>&lt;selection-menu&gt;</code></a></th>
+          <td>Shows a toolbar when text is selected inside the element named by <code>for</code>. It holds whatever action elements you put in it and knows nothing about highlights. <kbd>Alt</kbd> + <kbd>F10</kbd> moves focus into the toolbar and <kbd>Escape</kbd> returns it.</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/elements/web-components/highlight-wc/"><code>&lt;highlight-wc&gt;</code></a></th>
+          <td>The highlighter button and its colour choices. It turns the menu's target into a highlightable article.</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/elements/web-components/note-wc/"><code>&lt;note-wc&gt;</code></a></th>
+          <td>The note button and the panel where a note is written. It also opens that panel when the reader clicks a mark in the margin.</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/attributes/data-highlights/"><code>data-highlights</code></a></th>
+          <td>The attribute that marks an element as holding highlights. <code>&lt;highlight-wc&gt;</code> sets it on the target for you. Write it yourself to show stored highlights with no toolbar.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Highlights are drawn with the CSS Custom Highlight API, which paints ranges of text without changing the document. In a browser without it, each highlight is wrapped in a <code>&lt;mark&gt;</code> element.</p>
+  </section>
+
+  <section id="recipes">
+    <h2>Common arrangements</h2>
+
+    <h3 id="highlight-only">Highlights without notes</h3>
+    <p>Leave out <code>&lt;note-wc&gt;</code>.</p>
+    <code-block language="html" label="Highlighter only" data-escape><selection-menu for="post">
+  <highlight-wc></highlight-wc>
 </selection-menu></code-block>
 
-  <h3>Page-tools toggle for notes</h3>
-  <p>Drop a note-wc with <code>for=</code> into the page-tools rail; clicking it opens the note panel for the first highlight on that article.</p>
-<code-block language="html" label="Notes from page-tools" data-escape><page-tools>
+    <h3 id="readonly">Showing stored highlights only</h3>
+    <p>Use the attribute alone, with <code>data-highlights-readonly</code>. Highlights saved earlier are drawn and new selections do nothing.</p>
+    <code-block language="html" label="Read-only" data-escape><article data-highlights data-highlights-readonly>
+  ...
+</article></code-block>
+
+    <h3 id="colours">Your own colours</h3>
+    <p>The default colours are <code>yellow</code>, <code>green</code>, <code>blue</code> and <code>pink</code>, each a token named <code>--highlight-{name}</code>. To add one, define its token and list the names in <code>colors</code>. A colour with no token is not painted.</p>
+    <code-block language="html" label="A brand colour" data-escape><style>
+  :root {
+    --highlight-brand: light-dark(oklch(92% 0.07 20), oklch(42% 0.09 20));
+  }
+</style>
+
+<selection-menu for="post">
+  <highlight-wc colors="brand,yellow,blue"></highlight-wc>
+  <note-wc></note-wc>
+</selection-menu></code-block>
+    <p>Give the token a light and a dark value, as the built-in ones have, so highlighted text stays readable in both schemes. The text colour over a highlight is <code>--highlight-ink</code>. Set <code>--highlight-{name}-ink</code> to change it for one colour.</p>
+
+    <h3 id="page-tools">A notes button in the page toolbar</h3>
+    <p>A <code>&lt;note-wc&gt;</code> outside the selection menu, with <code>for</code>, is a button that opens the note panel on the first highlight that has a note, or the first highlight if none has.</p>
+    <code-block language="html" label="Notes from the toolbar" data-escape><page-tools>
   <print-page></print-page>
-  <share-wc></share-wc>
   <note-wc for="post"></note-wc>
 </page-tools></code-block>
-</section>
+  </section>
 
-<section>
-  <h2>Events</h2>
-  <table>
-    <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
-    <tbody>
-      <tr><td><code>highlights:added</code></td><td><code>{ id, color, text }</code></td><td>A highlight is created via the controller</td></tr>
-      <tr><td><code>highlights:removed</code></td><td><code>{ id }</code></td><td>A highlight is deleted</td></tr>
-      <tr><td><code>highlights:clicked</code></td><td><code>{ id, highlight }</code></td><td>The user clicks an existing highlight (Custom Highlight API hit-test, <code>&lt;mark&gt;</code> fallback, or margin annotation)</td></tr>
-      <tr><td><code>highlights:request-note</code></td><td><code>{ id, highlight, controller }</code></td><td>Margin-annotation click — the convention for opening a note. <code>&lt;note-wc&gt;</code> listens at document level and opens its panel.</td></tr>
-      <tr><td><code>highlights:selected</code></td><td><code>{ text, rect }</code></td><td>User finishes a selection inside a target. Ignored by <code>&lt;selection-menu&gt;</code> (it has its own listener); useful for power users without selection-menu.</td></tr>
-    </tbody>
-  </table>
-</section>
+  <section id="storage">
+    <h2>Where highlights are kept</h2>
+    <p>Highlights are saved through <a href="/docs/extensibility/vb-store/">VBStore</a>, which writes to the browser's local storage by default. Each article's set is saved under a key. The key is the page's path unless you name one.</p>
+    <code-block language="html" label="Choosing the key" data-escape><!-- Key is the page path -->
+<highlight-wc></highlight-wc>
 
-<section>
-  <h2>Engine API</h2>
-  <p>The <code>HighlightController</code> instance is returned from <code>initHighlights(element)</code>. Each <code>[data-highlights]</code> element has exactly one controller (cached).</p>
-  <table class="props-table">
-    <thead><tr><th>Method / property</th><th>Purpose</th></tr></thead>
-    <tbody>
-      <tr><td><code>getHighlights()</code></td><td>Snapshot of all highlights (array of <code>{ id, color, text, startOffset, endOffset, note }</code>)</td></tr>
-      <tr><td><code>removeHighlight(id)</code></td><td>Delete one</td></tr>
-      <tr><td><code>clearAll()</code></td><td>Wipe all highlights for this element</td></tr>
-      <tr><td><code>exportHighlights()</code></td><td>JSON string for backup / sync</td></tr>
-      <tr><td><code>importHighlights(json)</code></td><td>Replace highlights from JSON</td></tr>
-      <tr><td><code>findHighlightRect(id)</code></td><td>First viewport rect of a highlight (used by note-wc to align its panel)</td></tr>
-      <tr><td><code>colors</code></td><td>Active color names</td></tr>
-      <tr><td><code>element</code></td><td>The owning DOM element</td></tr>
-    </tbody>
-  </table>
-  <p>Internal mutation methods <code>_createFromSelection(color)</code>, <code>_changeColor(id, color)</code>, and <code>_updateNote(id, text)</code> are for action components (<code>highlight-wc</code>, <code>note-wc</code>) and are not part of the documented public API.</p>
-</section>
+<!-- Key is "handbook-ch5", the same wherever the article appears -->
+<highlight-wc storage-key="handbook-ch5"></highlight-wc>
 
-<section>
-  <h2>Storage</h2>
-  <p>Highlights are written to <code>localStorage</code> under the namespace <code>vb-highlights</code> with a key derived from <code>data-highlights</code> (or the page's pathname when the attribute has no value). Multiple articles on the same page can share a key by setting the same value.</p>
-<code-block language="html" label="Storage key control" data-escape><!-- Default: storage key = location.pathname -->
-<article data-highlights>…</article>
+<!-- With the attribute alone, its value is the key -->
+<article data-highlights="handbook-ch5">...</article></code-block>
+    <p>Name a key when the same article is served at more than one address, or when two articles share a page.</p>
+    <p>A highlight is stored as a start and end position in the article's text, with a copy of the highlighted words. When the article's text changes, each stored highlight is checked against that copy. One whose words are no longer at that position is dropped. Small edits elsewhere in a long article can therefore remove a reader's highlights below the edit. This is a limit of storing positions, and worth knowing before you promise readers that highlights are permanent.</p>
+  </section>
 
-<!-- Explicit key: storage key = "blog-post-42" -->
-<article data-highlights="blog-post-42">…</article>
+  <section id="script">
+    <h2>Working with highlights in script</h2>
+    <p>The <code>&lt;highlight-wc&gt;</code> element is the way in. Its methods act on the article it highlights.</p>
+    <table>
+      <thead>
+        <tr><th>Method</th><th>Does</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>getHighlights()</code></td><td>Returns an array of <code>{ id, startOffset, endOffset, text, color, note, created }</code></td></tr>
+        <tr><td><code>highlightSelection(color)</code></td><td>Highlights the current selection</td></tr>
+        <tr><td><code>removeHighlight(id)</code></td><td>Removes one</td></tr>
+        <tr><td><code>clearAll()</code></td><td>Removes all of them</td></tr>
+        <tr><td><code>exportHighlights()</code></td><td>Returns a JSON string of the set</td></tr>
+        <tr><td><code>importHighlights(json)</code></td><td>Replaces the set. Records that do not fit the text or the palette are dropped. Returns <code>{ imported, rejected }</code>.</td></tr>
+      </tbody>
+    </table>
+    <code-block language="js" label="Copying a reader's highlights to your server" data-escape>const highlighter = document.querySelector('highlight-wc');
+const article = document.getElementById('post');
 
-<!-- Two articles share one set of highlights -->
-<article data-highlights="shared">…</article>
-<article data-highlights="shared">…</article></code-block>
-</section>
+function save() {
+  navigator.sendBeacon('/api/highlights', highlighter.exportHighlights());
+}
 
-<section>
-  <h2>Related</h2>
-  <ul>
-    <li><a href="/docs/attributes/data-highlights/">data-highlights attribute reference</a></li>
-    <li><a href="/docs/elements/web-components/selection-menu/">&lt;selection-menu&gt; element</a></li>
-    <li><a href="/docs/elements/web-components/highlight-wc/">&lt;highlight-wc&gt; element</a></li>
-    <li><a href="/docs/elements/web-components/note-wc/">&lt;note-wc&gt; element</a></li>
-    <li><a href="/docs/elements/web-components/page-tools/">&lt;page-tools&gt; element</a> — host for page-level note-wc trigger</li>
-  </ul>
-</section>
+article.addEventListener('highlights:added', save);
+article.addEventListener('highlights:removed', save);
+article.addEventListener('highlights:note-changed', save);</code-block>
+    <p>To build your own controls with no selection toolbar, place <code>&lt;highlight-wc for="post"&gt;</code> anywhere on the page. In that form it shows nothing and gives you the methods and events.</p>
+
+    <h3 id="events">Events</h3>
+    <p>All of these fire on the article and bubble.</p>
+    <table>
+      <thead>
+        <tr><th>Event</th><th>Detail</th><th>When</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>highlights:added</code></td><td><code>{ id, text, color, note }</code></td><td>A highlight is made</td></tr>
+        <tr><td><code>highlights:removed</code></td><td><code>{ id }</code></td><td>A highlight is removed with <code>removeHighlight()</code></td></tr>
+        <tr><td><code>highlights:note-changed</code></td><td><code>{ id, note }</code></td><td>A note is saved</td></tr>
+        <tr><td><code>highlights:clicked</code></td><td><code>{ id, highlight }</code></td><td>The reader clicks a highlight or its margin mark</td></tr>
+        <tr><td><code>highlights:selected</code></td><td><code>{ text, rect }</code></td><td>The reader finishes selecting text in the article. Use it to place your own toolbar.</td></tr>
+        <tr><td><code>highlights:request-note</code></td><td><code>{ id, highlight, controller }</code></td><td>The reader clicks a margin mark. <code>&lt;note-wc&gt;</code> listens for this and opens its panel.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/attributes/data-highlights/"><code>data-highlights</code></a></li>
+      <li><a href="/docs/elements/web-components/selection-menu/"><code>&lt;selection-menu&gt;</code></a>, <a href="/docs/elements/web-components/highlight-wc/"><code>&lt;highlight-wc&gt;</code></a> and <a href="/docs/elements/web-components/note-wc/"><code>&lt;note-wc&gt;</code></a></li>
+      <li><a href="/docs/elements/native/mark/"><code>&lt;mark&gt;</code></a>, for highlights the author makes</li>
+      <li><a href="/docs/content-management/discussion/">Comments and Reactions</a>, for responses other readers can see</li>
+    </ul>
+  </section>

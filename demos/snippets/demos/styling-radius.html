@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The radius scale</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-background); }
+    #code { white-space: pre-wrap; }
+
+    /* Three settings for the same scale */
+    .corners-square {
+      --radius-xs: 0px;
+      --radius-s: 0px;
+      --radius-m: 0px;
+      --radius-l: 0px;
+      --radius-xl: 0px;
+    }
+    .corners-round {
+      --radius-xs: 0.375rem;
+      --radius-s: 0.75rem;
+      --radius-m: 1.25rem;
+      --radius-l: 1.75rem;
+      --radius-xl: 2.25rem;
+    }
+
+    .scale {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr));
+      gap: var(--size-m);
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+    .scale li {
+      display: grid;
+      place-items: center;
+      block-size: var(--size-3xl);
+      background: var(--tint-primary-20);
+      border: var(--border-width-medium) solid var(--color-primary);
+      font-family: var(--font-mono);
+      font-size: var(--font-size-s);
+      color: var(--color-text);
+    }
+    .r-xs   { border-radius: var(--radius-xs); }
+    .r-s    { border-radius: var(--radius-s); }
+    .r-m    { border-radius: var(--radius-m); }
+    .r-l    { border-radius: var(--radius-l); }
+    .r-xl   { border-radius: var(--radius-xl); }
+    .r-full { border-radius: var(--radius-full); }
+
+    /* Concentric corners: inner radius = outer radius - the padding between */
+    .ticket {
+      --ticket-radius: var(--radius-xl);
+      --ticket-inset: var(--size-s);
+      padding: var(--ticket-inset);
+      border-radius: var(--ticket-radius);
+      background: var(--color-surface-raised);
+      border: var(--border-width-thin) solid var(--color-border);
+    }
+    .ticket > p {
+      margin: 0;
+      padding: var(--size-m);
+      border-radius: max(0px, calc(var(--ticket-radius) - var(--ticket-inset)));
+      background: var(--color-primary);
+      color: var(--color-text-on-primary);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <h1 class="visually-hidden">The radius scale</h1>
+
+    <fieldset data-segmented>
+      <legend class="visually-hidden">Corners</legend>
+      <label><input type="radio" name="corners" value="square" /> Square</label>
+      <label><input type="radio" name="corners" value="default" checked /> Default</label>
+      <label><input type="radio" name="corners" value="round" /> Round</label>
+    </fieldset>
+
+    <pre><code id="code">/* The library's defaults */</code></pre>
+
+    <section id="stage" data-layout="stack" data-layout-gap="l">
+
+      <ul class="scale">
+        <li class="r-xs">xs</li>
+        <li class="r-s">s</li>
+        <li class="r-m">m</li>
+        <li class="r-l">l</li>
+        <li class="r-xl">xl</li>
+        <li class="r-full">full</li>
+      </ul>
+
+      <layout-card>
+        <layout-stack data-layout-gap="m">
+          <h2>Line 14 to Harbour Road</h2>
+          <p>Every 12 minutes until 23:30. <layout-badge data-color="success">On time</layout-badge></p>
+          <footer data-layout="cluster" data-layout-gap="s">
+            <button type="button">Buy a day ticket</button>
+            <button type="button" class="secondary">Timetable</button>
+          </footer>
+        </layout-stack>
+      </layout-card>
+
+      <article class="ticket">
+        <p>Day ticket, zones 1 to 3. The inner corner follows the outer one.</p>
+      </article>
+
+    </section>
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const stage = document.getElementById('stage');
+    const code = document.getElementById('code');
+
+    const text = {
+      default: '/* The library\'s defaults */',
+      square: '.corners-square {\n  --radius-xs: 0px;  --radius-s: 0px;  --radius-m: 0px;\n  --radius-l: 0px;   --radius-xl: 0px;\n}',
+      round: '.corners-round {\n  --radius-xs: 0.375rem;  --radius-s: 0.75rem;  --radius-m: 1.25rem;\n  --radius-l: 1.75rem;    --radius-xl: 2.25rem;\n}',
+    };
+
+    document.querySelectorAll('input[name="corners"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        stage.className = radio.value === 'default' ? '' : `corners-${radio.value}`;
+        code.textContent = text[radio.value];
+      });
+    });
+  </script>
+</body>
+</html>

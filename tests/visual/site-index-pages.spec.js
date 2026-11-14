@@ -14,7 +14,7 @@ import { test, expect } from './pinned-fonts.js';
 const REGIONS = [
   ['elements-index', '/docs/elements/', 'nav[aria-label="All elements"] > :nth-child(-n+12)'],
   ['attributes-index', '/docs/attributes/', 'nav[aria-label="All attributes"] > :nth-child(-n+10)'],
-  ['semantic-layouts-cards', '/docs/semantic-layouts/', 'ul[data-layout="grid"]'],
+  ['layouts-overview-cards', '/docs/layouts/', '#pages layout-grid'],
   ['kitchen-sink-jump', '/docs/examples/kitchen-sink/', 'nav[aria-labelledby="jump-to-section"]'],
   ['tokens-spacing', '/docs/tokens/', 'layout-stack:has(> token-scale)'],
   ['tutorial-hub-cards', '/docs/tutorial/', 'ol[data-layout="grid"]'],

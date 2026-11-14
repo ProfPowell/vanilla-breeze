@@ -1,155 +1,189 @@
 ---
 layout: guide
-title: "Glossary terms in prose"
-description: "How to link a vocabulary concept inline so the popover enhancement and the glossary page both pick it up. First mention in &lt;dfn&gt;, subsequent mentions plain."
+title: "Glossary Terms"
+description: "How to mark the defining use of a term, build a glossary page readers can filter, and link terms in prose to it. Covers what the library provides and what this site's own build adds."
 guideGroup: Content Management
 currentPath: /docs/content-management/glossary-terms/
+toc: true
 author: "Thomas A. Powell"
 authorUrl: "/team/tpowell/"
 published: "2026-04-27"
-lastModified: "2026-04-27"
+lastModified: "2026-11-14"
 keywords: ["glossary", "vocabulary", "authoring", "dfn", "data-concept"]
 license: "CC BY 4.0"
 licenseUrl: "https://creativecommons.org/licenses/by/4.0/"
-provenance: "human"
-review: "editor-reviewed"
+provenance: "ai-assisted"
+review: "unreviewed"
 status: "published"
+aiTools: "Claude"
 concepts: ["glossary", "content-lens", "metadata-substrate"]
 ---
 
-<template slot="breadcrumb">
-<nav class="breadcrumb" aria-label="Breadcrumb">
-  <ol>
-    <li><a href="/docs/">Docs</a></li>
-    <li>Content Management</li>
-    <li><span aria-current="page">Glossary terms in prose</span></li>
-  </ol>
-</nav>
-</template>
+  <section id="parts">
+    <h2>Three parts</h2>
+    <p>A working glossary has three parts: the page that holds the definitions, the mark-up that says where a term is defined, and the links from prose to the definition. HTML covers all three with <code>&lt;dl&gt;</code>, <code>&lt;dfn&gt;</code> and <code>&lt;a&gt;</code>. Vanilla Breeze styles them and adds two components that make a glossary page easier to use.</p>
+    <table>
+      <thead>
+        <tr><th>Part</th><th>Markup</th><th>The library adds</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">The glossary page</th>
+          <td>A <code>&lt;dl&gt;</code> of terms and definitions</td>
+          <td><a href="/docs/elements/web-components/glossary-index/"><code>&lt;glossary-index&gt;</code></a> or <a href="/docs/elements/web-components/glossary-wc/"><code>&lt;glossary-wc&gt;</code></a>: a filter box and letter navigation</td>
+        </tr>
+        <tr>
+          <th scope="row">The defining use</th>
+          <td><a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a></td>
+          <td>An italic, medium-weight style. A <code>&lt;dfn&gt;</code> with an <code>id</code> is outlined when a link targets it.</td>
+        </tr>
+        <tr>
+          <th scope="row">Links from prose</th>
+          <td><code>&lt;a href="/glossary/#term-..."&gt;</code></td>
+          <td>Nothing beyond link styling. The pop-up definitions on this site come from its own build (see <a href="#this-site">below</a>).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
 
-<section>
-  <h2>Why this exists</h2>
-  <p>The site has a single <a href="/glossary/" rel="glossary">glossary</a> generated from <code>site/src/_data/vocabulary.json</code>. When you mention one of those concepts in article prose, link to it. Two things light up:</p>
-  <ul>
-    <li>The <a href="/glossary/">glossary page</a> is the canonical anchor (every concept has <code>id="term-{@id}"</code>), so the link is always valid even without JS.</li>
-    <li>A small popover script (<code>/js/definition-popover.js</code>, generated at build) fetches <code>/definitions.json</code> on first interaction and shows the definition in a native popover anchored to the term. Modifier-clicks fall through to the glossary page.</li>
-  </ul>
-</section>
+  <section id="page">
+    <h2>The glossary page</h2>
+    <p>Write the glossary as sections by letter, each holding a <code>&lt;dl&gt;</code>. Give every <code>&lt;dt&gt;</code> an <code>id</code> so prose can link to it. This is a complete page without script. Wrapping it in <code>&lt;glossary-index&gt;</code> adds a filter box above the list and marks the current letter in the jump row as the reader scrolls.</p>
 
-<section>
-  <h2>The pattern</h2>
-  <p>Three forms, depending on whether the mention is the first defining use, a subsequent reference, or an abbreviation.</p>
+    <browser-window
+      src="/docs/examples/demos/glossary.html"
+      url="glossary"
+      title="A glossary with a filter"
+      data-demo-height="l"
+      shadow>
+    </browser-window>
 
-  <h3>First (defining) use &mdash; <code>&lt;dfn&gt;</code></h3>
-  <p>Wrap the link in <code>&lt;dfn&gt;</code>. The <code>data-concept</code> attribute carries the SKOS <code>@id</code> from <code>vocabulary.json</code>. The <code>href</code> deep-links to the term's anchor on the glossary page so the link is meaningful with no JS.</p>
-  <code-block language="html" show-lines data-escape><p>We use <dfn><a href="/glossary/#term-progressive-enhancement"
-   data-concept="progressive-enhancement">progressive enhancement</a></dfn>
-   to ensure content is available before scripts load.</p></code-block>
+    <code-block language="html" label="A glossary page" data-escape><glossary-index placeholder="Filter terms...">
+  <h1>Glossary</h1>
 
-  <h3>Subsequent uses &mdash; plain anchor</h3>
-  <p>Plain anchor &mdash; no <code>&lt;dfn&gt;</code>. <code>&lt;dfn&gt;</code> marks the <em>defining instance</em>; using it on every mention would be wrong semantically and visually noisy.</p>
-  <code-block language="html" show-lines data-escape><p>This <a href="/glossary/#term-progressive-enhancement"
-   data-concept="progressive-enhancement">progressive enhancement</a>
-   approach also benefits search engine indexing.</p></code-block>
+  <nav class="glossary-jump" aria-label="Jump to letter">
+    <ol class="inline">
+      <li><a href="#glossary-p">P</a></li>
+      <li><a href="#glossary-s">S</a></li>
+    </ol>
+  </nav>
 
-  <h3>Abbreviated mentions &mdash; <code>&lt;abbr&gt;</code></h3>
-  <p>When you reference a concept by an abbreviation that lives in its <code>skos:altLabel</code> array, wrap the link in <code>&lt;abbr&gt;</code> with <code>title</code> set to the prefLabel. The <code>title</code> tooltip gives sighted hover-readers the expansion; the popover still triggers because the script queries <code>a[data-concept]</code> regardless of wrapper.</p>
-  <code-block language="html" show-lines data-escape><p>The
-  <abbr title="Progressive Enhancement"><a href="/glossary/#term-progressive-enhancement"
-     data-concept="progressive-enhancement">PE</a></abbr>
-  approach pairs well with semantic HTML.</p></code-block>
-  <p>Use <code>&lt;dfn&gt;</code> exactly once per concept per page (the defining mention, regardless of label form). Subsequent mentions are either plain anchors (full label) or <code>&lt;abbr&gt;</code>-wrapped (altLabel/abbreviation).</p>
-</section>
+  <section class="glossary-section" id="glossary-p">
+    <h2>P</h2>
+    <dl>
+      <dt id="term-proving"><dfn>proving</dfn></dt>
+      <dd>The final rise of shaped dough before it is baked.</dd>
+    </dl>
+  </section>
 
-<section>
-  <h2>Rules of thumb</h2>
-  <ul>
-    <li><strong>Link the concept, not the word.</strong> Only link when you genuinely mean the vocabulary entry — not every casual use of the word "review" or "trust".</li>
-    <li><strong>One <code>&lt;dfn&gt;</code> per concept per page.</strong> Subsequent mentions on the same page should be plain anchors.</li>
-    <li><strong>Don't link inside a heading.</strong> Headings are navigation; the popover would fight with the heading-link affordance. Link from the body prose right after.</li>
-    <li><strong>Don't link inside <code>&lt;code&gt;</code>, <code>&lt;pre&gt;</code>, or another <code>&lt;a&gt;</code>.</strong> Code samples carry their own typography contract; nested anchors are invalid HTML.</li>
-    <li><strong>Don't link more than one or two terms per paragraph.</strong> The dotted-underline cue is helpful in moderation; turn into noise quickly.</li>
-    <li><strong>Add the concept to the page's frontmatter.</strong> If the page <em>is about</em> the concept, list it in <code>concepts: [...]</code>. The meta-tag contract already emits <code>&lt;meta name="concept"&gt;</code> + <code>&lt;link rel="tag"&gt;</code> + <code>&lt;link rel="glossary"&gt;</code> automatically.</li>
-  </ul>
-</section>
+  <section class="glossary-section" id="glossary-s">
+    <h2>S</h2>
+    <dl>
+      <dt id="term-starter"><dfn>starter</dfn></dt>
+      <dd>A culture of flour and water kept alive to raise bread.</dd>
+    </dl>
+  </section>
+</glossary-index></code-block>
+    <p>Add the <code>permalinks</code> attribute to give each term a link that copies its address. It is off by default, since most readers arrive at a term and do not need to share it.</p>
 
-<section>
-  <h2>How to find the right <code>@id</code></h2>
-  <p>Open <code>site/src/_data/vocabulary.json</code> and search for the concept's pref-label. The <code>@id</code> is the slug-form (e.g. <code>"meta-tag-contract"</code>, <code>"data-provenance"</code>, <code>"page-info"</code>). The <code>href</code> is always <code>/glossary/#term-{@id}</code> — that's what the build emits and what the popover script expects.</p>
-  <p>If the concept isn't in the vocabulary yet but should be, add it to <code>vocabulary.json</code> first (see the SKOS shape used by sibling entries) and re-run <code>npm run build</code>. The glossary page, <code>/definitions.json</code>, and head metadata regenerate from that single source.</p>
-</section>
+    <h3 id="which">Which component</h3>
+    <table>
+      <thead>
+        <tr><th></th><th><code>&lt;glossary-index&gt;</code></th><th><code>&lt;glossary-wc&gt;</code></th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">You write</th>
+          <td>The whole page: jump row, letter sections, lists</td>
+          <td>One flat <code>&lt;dl&gt;</code>, or a JSON file named in <code>src</code></td>
+        </tr>
+        <tr>
+          <th scope="row">It builds</th>
+          <td>The filter box only. Your structure stays as written.</td>
+          <td>The heading, category groups, alphabet navigation and, with <code>searchable</code>, a search box</td>
+        </tr>
+        <tr>
+          <th scope="row">Use it for</th>
+          <td>A site's main glossary page, where the markup comes from a template and should be complete without script</td>
+          <td>A glossary inside another page, such as a project's terms, grouped by category</td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="html" label="A categorised glossary inside a page" data-escape><glossary-wc data-title="Bakery terms" searchable>
+  <dl>
+    <div data-category="Dough" data-term-id="autolyse">
+      <dt>Autolyse</dt>
+      <dd>Resting flour and water before adding salt and starter.</dd>
+    </div>
+    <div data-category="Baking" data-term-id="oven-spring">
+      <dt>Oven spring</dt>
+      <dd>The fast rise in the first minutes of baking.</dd>
+    </div>
+  </dl>
+</glossary-wc></code-block>
+  </section>
 
-<section>
-  <h2>What the popover does (and doesn't)</h2>
-  <ul>
-    <li>Feature-detects the Popover API; on browsers without it, every link is a normal navigation to the glossary anchor. Same accessibility either way.</li>
-    <li>Caches <code>/definitions.json</code> in <code>sessionStorage</code> under <code>vb:definitions</code>. One fetch per browsing session.</li>
-    <li>Respects <kbd>Cmd</kbd> / <kbd>Ctrl</kbd> / <kbd>Shift</kbd> / <kbd>Alt</kbd> / middle-click — those open the glossary page like any other link.</li>
-    <li>Native popover handles <kbd>Escape</kbd> and light-dismiss. We don't reimplement focus management.</li>
-  </ul>
-</section>
+  <section id="prose">
+    <h2>Terms in prose</h2>
+    <p><code>&lt;dfn&gt;</code> marks the place where a term is defined, not every place it is used. In an article, that is the first use that explains the term. Link it to the glossary entry so a reader can get the full definition.</p>
+    <code-block language="html" label="First use, later use, and an abbreviation" data-escape><p>Leave the shaped loaf for its final
+  <dfn><a href="/glossary/#term-proving">proving</a></dfn>, the last rise
+  before baking.</p>
 
-<section>
-  <h2>Auto-linking at build time</h2>
-  <p>Cook ships an <code>auto-link-glossary</code> plugin that scans every docs prose page (the Architecture, Content Management, Extensibility, Interaction and Process guides, <code>/docs/elements/</code>, <code>/docs/attributes/</code>, <code>/docs/patterns/</code>, <code>/docs/integrations/</code>, <code>/docs/recipes/</code>, <code>/docs/snippets/</code>) and wraps vocabulary terms automatically. The manual pattern above still works &mdash; author-written mentions always win and suppress auto-linking of that concept anywhere in the page.</p>
+<p>A cold kitchen slows <a href="/glossary/#term-proving">proving</a> by hours.</p>
 
-  <h3>What it does</h3>
-  <ul>
-    <li>First occurrence of a concept's <code>prefLabel</code> wraps with <code>&lt;dfn&gt;&lt;a data-concept="..."&gt;</code></li>
-    <li>First occurrence of an opted-in <code>altLabel</code> wraps with <code>&lt;abbr title="prefLabel"&gt;&lt;a data-concept="..."&gt;</code></li>
-    <li>Subsequent occurrences get a bare <code>&lt;a data-concept="..."&gt;</code></li>
-    <li>Max one auto-link per <code>&lt;p&gt;</code> / <code>&lt;li&gt;</code> / <code>&lt;td&gt;</code> / <code>&lt;dd&gt;</code> to keep prose readable</li>
-  </ul>
+<p>Bakers write
+  <abbr title="desired dough temperature"><a href="/glossary/#term-ddt">DDT</a></abbr>
+  on the mixing sheet.</p></code-block>
+    <ul>
+      <li>Use <code>&lt;dfn&gt;</code> once per term per page. Later mentions are plain links.</li>
+      <li>Link a term when you mean the glossary's sense of it, not every time the word appears. One or two linked terms in a paragraph is enough.</li>
+      <li>Do not link a term inside a heading, inside <code>&lt;code&gt;</code> or <code>&lt;pre&gt;</code>, or inside another link.</li>
+      <li>For a short form, wrap the link in <a href="/docs/elements/native/abbr/"><code>&lt;abbr&gt;</code></a> with the full term in <code>title</code>.</li>
+    </ul>
+    <p>When the reader follows the link, the glossary scrolls to the entry, and the term and its definition are tinted with a bar on the leading edge so the reader can see which entry they landed on.</p>
+  </section>
 
-  <h3>What it never touches</h3>
-  <ul>
-    <li>Text inside <code>&lt;a&gt;</code>, <code>&lt;code&gt;</code>, <code>&lt;pre&gt;</code>, <code>&lt;dfn&gt;</code>, <code>&lt;abbr&gt;</code>, <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code>, <code>&lt;template&gt;</code>, <code>&lt;noscript&gt;</code></li>
-    <li>Any heading (<code>&lt;h1&gt;</code>&ndash;<code>&lt;h6&gt;</code>)</li>
-    <li>Concepts the author already manually mentioned anywhere in the page</li>
-  </ul>
+  <section id="this-site">
+    <h2>How this site does it</h2>
+    <p>The rest of this page describes this documentation site's build. None of it is in the <code>vanilla-breeze</code> package. It is here for people who write for this site, and as one worked design for a larger glossary.</p>
 
-  <h3>Opt-outs (three layers, decreasing scope)</h3>
-  <table class="props-table">
-    <thead>
-      <tr><th>Mechanism</th><th>Scope</th><th>When to use</th></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><code>autolink: false</code> in page frontmatter</td>
-        <td>Whole page</td>
-        <td>Reference pages, the glossary itself, anywhere prose isn't the focus</td>
-      </tr>
-      <tr>
-        <td><code>data-no-glossary</code> attribute on any element</td>
-        <td>That element and all descendants</td>
-        <td>A specific section where auto-linking would distract</td>
-      </tr>
-      <tr>
-        <td>Manual <code>&lt;a data-concept="..."&gt;</code> anywhere on the page</td>
-        <td>That one concept on this page</td>
-        <td>You want explicit control over where the concept links from</td>
-      </tr>
-    </tbody>
-  </table>
+    <h3 id="vocabulary">One vocabulary file</h3>
+    <p>Every term lives in <code>site/src/_data/vocabulary.json</code> as a <abbr title="Simple Knowledge Organization System">SKOS</abbr> concept with an <code>@id</code>, a <code>skos:prefLabel</code>, a <code>skos:definition</code> and optional <code>skos:altLabel</code> entries. The build makes three things from it: the <a href="/glossary/">glossary page</a>, where each entry has the id <code>term-{@id}</code>; a <code>/definitions.json</code> file; and the topic pages. To add a term, add it to that file and rebuild.</p>
 
-  <h3>Per-concept opt-in via <code>vocabulary.json</code></h3>
-  <p>By default, <code>prefLabel</code> auto-links and <code>altLabel</code> does not. That keeps short common-word altLabels like &ldquo;review&rdquo;, &ldquo;lens&rdquo;, or &ldquo;index&rdquo; from generating noise. To opt a concept's altLabels in, add a <code>vb:autoLink</code> object:</p>
+    <h3 id="data-concept">The data-concept attribute</h3>
+    <p>A term link on this site carries <code>data-concept</code> with the concept's <code>@id</code>.</p>
+    <code-block language="html" label="A term link on this site" data-escape><dfn><a href="/glossary/#term-progressive-enhancement"
+        data-concept="progressive-enhancement">progressive enhancement</a></dfn></code-block>
+    <p>A small script that the build writes looks for <code>a[data-concept]</code>. On a plain click it shows the definition in a native popover beside the term, fetching <code>/definitions.json</code> once and keeping it for the browser session. A click with a modifier key, or a middle click, follows the link as usual. So does every click in a browser without the Popover API, and a click on a term whose entry is on the current page.</p>
 
-  <code-block language="json" show-lines label="vocabulary.json — opting altLabel in">{
-  "@id": "changelog",
-  "skos:prefLabel": "changelog",
-  "skos:altLabel": ["release notes"],
-  "vb:autoLink": { "prefLabel": true, "altLabel": true }
-}</code-block>
+    <h3 id="auto-link">Automatic linking</h3>
+    <p>A build plugin links terms for you on the Architecture, Content Management, Extensibility, Interaction and Process guides and on the element, attribute, pattern, integration and snippet pages. You do not need to write term links by hand on those pages.</p>
+    <ul>
+      <li>The first occurrence of a concept's preferred label is wrapped in <code>&lt;dfn&gt;&lt;a data-concept&gt;</code>. Later occurrences get a plain link.</li>
+      <li>At most one link is added per paragraph, list item, table cell or definition.</li>
+      <li>Text inside links, code, headings, <code>&lt;dfn&gt;</code>, <code>&lt;abbr&gt;</code>, code blocks and demo windows is never touched.</li>
+      <li>Alternative labels are not linked unless the concept opts in with <code>"vb:autoLink": { "altLabel": true }</code> in the vocabulary file. This keeps common words such as <q>review</q> from being linked everywhere.</li>
+    </ul>
+    <table>
+      <thead>
+        <tr><th>To stop automatic linking</th><th>Write</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>On a whole page</td><td><code>autolink: false</code> in the front matter</td></tr>
+        <tr><td>In one part of a page</td><td><code>data-no-glossary</code> on an element around it</td></tr>
+        <tr><td>For one concept on a page</td><td>A link with that <code>data-concept</code> by hand, anywhere on the page. Yours is kept and no others are added.</td></tr>
+      </tbody>
+    </table>
+    <p>If a page is about a concept, list the concept in the page's <code>concepts</code> front matter as well. That writes the <code>&lt;meta name="concept"&gt;</code> tag described in <a href="/docs/content-management/page-metadata/">Page Metadata</a>.</p>
+  </section>
 
-  <p>Defaults: <code>prefLabel: true</code> (auto-link the canonical name), <code>altLabel: false</code> (opt-in only). Both fields are optional.</p>
-</section>
-
-<section>
-  <h2>See also</h2>
-  <ul>
-    <li><a href="/glossary/">The glossary page</a></li>
-    <li><a href="https://github.com/ProfPowell/vanilla-breeze/blob/main/admin/specs/meta-tag-contract-v1.md">Meta-tag contract v1</a> &mdash; defines <code>&lt;meta name="concept"&gt;</code></li>
-    <li><a href="/docs/elements/web-components/glossary-index/"><code>&lt;glossary-index&gt;</code></a> &mdash; the wrapper that adds search filter + scroll-spy</li>
-  </ul>
-</section>
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/glossary-index/"><code>&lt;glossary-index&gt;</code></a> and <a href="/docs/elements/web-components/glossary-wc/"><code>&lt;glossary-wc&gt;</code></a></li>
+      <li><a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a> and <a href="/docs/elements/native/abbr/"><code>&lt;abbr&gt;</code></a></li>
+      <li><a href="/docs/content-management/finding-content/">Finding Content</a>, for <code>&lt;topic-map&gt;</code>, which reads the same kind of vocabulary file</li>
+      <li><a href="/glossary/">This site's glossary</a></li>
+    </ul>
+  </section>

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Layouts that answer to their container</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    h1 { font-size: var(--font-size-xl); }
+    h2 { font-size: var(--font-size-s); color: var(--color-text-muted); }
+    #stage {
+      max-inline-size: 100%;
+      padding: var(--size-m);
+      border: var(--border-width-medium) dashed var(--color-border);
+      border-radius: var(--radius-m);
+    }
+    #stage[data-width="narrow"] { inline-size: 22rem; }
+    #stage[data-width="medium"] { inline-size: 38rem; }
+    #stage :is(li, layout-switcher > p, layout-sidebar > *, article) {
+      padding: var(--size-s);
+      border-radius: var(--radius-s);
+      background: var(--color-surface-raised);
+    }
+    #stage p { margin: 0; }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <header data-layout="cluster" data-layout-justify="between" data-layout-gap="m">
+      <fieldset data-segmented>
+        <legend class="visually-hidden">Container width</legend>
+        <label><input type="radio" name="width" value="narrow" /> Narrow</label>
+        <label><input type="radio" name="width" value="medium" /> Medium</label>
+        <label><input type="radio" name="width" value="wide" checked /> Full</label>
+      </fieldset>
+      <code id="readout">The dashed box is the container</code>
+    </header>
+
+    <h1>Riverside Clinic</h1>
+
+    <section id="stage" data-width="wide" aria-label="Resizable container">
+      <layout-stack data-layout-gap="m">
+
+        <h2>Grid: as many 15rem columns as fit</h2>
+        <ul class="unstyled" data-layout="grid" data-layout-min="m" data-layout-gap="s">
+          <li>General practice</li>
+          <li>Physiotherapy</li>
+          <li>Travel vaccinations</li>
+        </ul>
+
+        <h2>Switcher: one row, or one column below 30rem</h2>
+        <layout-switcher data-layout-gap="s">
+          <p><strong>12 min</strong> average wait</p>
+          <p><strong>4</strong> doctors on duty</p>
+          <p><strong>Open</strong> until 18:30</p>
+        </layout-switcher>
+
+        <h2>Sidebar: wraps when the content would get less than half</h2>
+        <layout-sidebar data-layout-gap="s" data-layout-sidebar-width="narrow">
+          <nav aria-label="Clinic sections">
+            <ul>
+              <li><a href="#">Appointments</a></li>
+              <li><a href="#">Prescriptions</a></li>
+            </ul>
+          </nav>
+          <p>Book online up to four weeks ahead. Same-day appointments are released at 08:00.</p>
+        </layout-sidebar>
+
+        <h2>Media: stacks when the container is under 25rem</h2>
+        <article data-layout="media" data-layout-gap="s">
+          <img src="/src/assets/placeholders/photo-article-compact-1-80x80.svg" alt="" width="64" height="64" />
+          <p><strong>Dr Amara Nwosu</strong> joins the practice in March and is taking new patients.</p>
+        </article>
+
+      </layout-stack>
+    </section>
+
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const stage = document.getElementById('stage');
+    const readout = document.getElementById('readout');
+    const report = () => {
+      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      const style = getComputedStyle(stage);
+      const inner = stage.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      readout.textContent = `Container is ${(inner / rem).toFixed(1)}rem wide`;
+    };
+    document.querySelectorAll('input[name="width"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        stage.setAttribute('data-width', radio.value);
+        report();
+      });
+    });
+    if ('ResizeObserver' in window) {
+      new ResizeObserver(report).observe(stage);
+    } else {
+      report();
+    }
+  </script>
+</body>
+</html>

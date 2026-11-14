@@ -1,0 +1,176 @@
+---
+layout: guide
+title: "Spacing and Density"
+description: "One scale of nine sizes sets every gap and padding. How to pick a step, what each layout uses by default and how to tighten or loosen a whole region."
+guideGroup: Layouts
+currentPath: /docs/layouts/spacing/
+toc: true
+---
+
+  <section id="scale">
+    <h2>One scale</h2>
+    <p>Spacing in Vanilla Breeze comes from nine tokens, <code>--size-3xs</code> to <code>--size-3xl</code>. Layout gaps, padding and the spacing inside components all read them. You name a step, not a number, so spacing stays consistent across a page and changes in one place.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Step</th>
+          <th scope="col">Token</th>
+          <th scope="col">Default</th>
+          <th scope="col">Multiple of <code>--size-unit</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>3xs</code></td><td><code>--size-3xs</code></td><td>0.125rem</td><td>0.5</td></tr>
+        <tr><td><code>2xs</code></td><td><code>--size-2xs</code></td><td>0.25rem</td><td>1</td></tr>
+        <tr><td><code>xs</code></td><td><code>--size-xs</code></td><td>0.5rem</td><td>2</td></tr>
+        <tr><td><code>s</code></td><td><code>--size-s</code></td><td>0.75rem</td><td>3</td></tr>
+        <tr><td><code>m</code></td><td><code>--size-m</code></td><td>1rem</td><td>4</td></tr>
+        <tr><td><code>l</code></td><td><code>--size-l</code></td><td>1.5rem</td><td>6</td></tr>
+        <tr><td><code>xl</code></td><td><code>--size-xl</code></td><td>2rem</td><td>8</td></tr>
+        <tr><td><code>2xl</code></td><td><code>--size-2xl</code></td><td>3rem</td><td>12</td></tr>
+        <tr><td><code>3xl</code></td><td><code>--size-3xl</code></td><td>4rem</td><td>16</td></tr>
+      </tbody>
+    </table>
+    <p>Every step is a multiple of <code>--size-unit</code>, which is 0.25rem. Change the unit and the whole scale moves with it. That is how <a href="/docs/fluid-scaling/">fluid scaling</a> and the large-text accessibility theme resize spacing.</p>
+    <p>The demo changes the gap of one grid, and the density of the region around it.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/layouts-spacing.html"
+      url="layouts-spacing"
+      title="Gap and density"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section id="gap">
+    <h2>Gap</h2>
+    <p><code>data-layout-gap</code> sets the space between a layout's children. It takes a step name or <code>none</code>.</p>
+    <code-block language="html" label="Gap on three nested layouts" data-escape><main data-layout="stack" data-layout-gap="2xl">
+  <section data-layout="stack" data-layout-gap="s">
+    <h2>Departures</h2>
+    <p>Updated every minute.</p>
+  </section>
+  <ul data-layout="grid" data-layout-gap="l">
+    <li>...</li>
+  </ul>
+</main></code-block>
+    <p>A useful habit: small steps inside a component (a heading and its text), medium steps between components, large steps between sections of a page.</p>
+
+    <h3 id="default-gaps">Defaults</h3>
+    <p>Leave the attribute off and each layout uses its own default.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Layout</th>
+          <th scope="col">Default gap</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Stack, grid, switcher, sidebar, reel, media</td><td><code>m</code></td></tr>
+        <tr><td>Cluster</td><td><code>s</code></td></tr>
+        <tr><td>Split</td><td><code>xl</code></td></tr>
+        <tr><td>Regions</td><td>None</td></tr>
+        <tr><td>Cover</td><td>None. Its children are pushed apart by the free space.</td></tr>
+        <tr><td>Center</td><td>None. Adding <code>data-layout-gap</code> turns the center into a column with that gap; the bare attribute gives <code>m</code>.</td></tr>
+        <tr><td>Page layouts</td><td><code>m</code>, except <code>app-shell</code> and <code>dashboard</code>, which have none</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="nesting">Nested layouts start again</h3>
+    <p>A gap applies to the element it is on and not to layouts inside it. A grid inside a stack with <code>data-layout-gap="3xl"</code> has the grid's default gap of <code>m</code>.</p>
+  </section>
+
+  <section id="padding">
+    <h2>Padding and edges</h2>
+    <p>Most layouts have no padding: they arrange children and leave the edges to their parent. These are the ones that do.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">On</th>
+          <th scope="col">Attribute</th>
+          <th scope="col">Values</th>
+          <th scope="col">Default</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><a href="/docs/elements/custom-elements/cover/">Cover</a></td><td><code>data-layout-padding</code></td><td><code>none</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td><td><code>m</code></td></tr>
+        <tr><td><a href="/docs/elements/custom-elements/reel/">Reel</a></td><td><code>data-layout-padding</code></td><td><code>none</code>, <code>s</code>, <code>m</code>, <code>l</code></td><td><code>s</code>, so focus rings and shadows on the items are not clipped</td></tr>
+        <tr><td><a href="/docs/elements/custom-elements/center/">Center</a></td><td><code>data-layout-gutter</code></td><td><code>none</code>, <code>s</code>, <code>l</code></td><td><code>m</code> on the inline sides</td></tr>
+        <tr><td><a href="/docs/elements/custom-elements/imposter/">Imposter</a></td><td><code>data-layout-margin</code></td><td><code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td><td>None. The distance from the edge it is pinned to.</td></tr>
+        <tr><td><a href="/docs/elements/custom-elements/layout-card/">Card</a></td><td><code>data-padding</code></td><td><code>none</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td><td><code>m</code></td></tr>
+        <tr><td><a href="/docs/elements/custom-elements/layout-canvas/">Canvas</a></td><td><code>data-padding</code></td><td><code>none</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td><td>See the canvas page</td></tr>
+        <tr><td><a href="/docs/elements/native/section/"><code>&lt;section&gt;</code></a></td><td><code>data-padding</code></td><td>Bare, <code>small</code>, <code>xsmall</code>, <code>none</code></td><td>No padding without the attribute</td></tr>
+      </tbody>
+    </table>
+    <p>The surfaces (card, canvas) and <code>&lt;section&gt;</code> use <code>data-padding</code> without the <code>layout-</code> part. On a section it sets the space above and below, for the bands of a marketing page, and it uses three separate tokens that grow with the viewport: <code>--section-padding-normal</code> (3rem to 6rem), <code>--section-padding-small</code> (2rem to 4rem) and <code>--section-padding-xsmall</code> (1.5rem to 3rem).</p>
+  </section>
+
+  <section id="own-css">
+    <h2>In your own CSS</h2>
+    <p>Use the same tokens, so your components line up with the library's and follow density and fluid scaling.</p>
+    <code-block language="css" label="Tokens in a component" data-escape>.fare-table {
+  padding: var(--size-m) var(--size-l);
+  margin-block-end: var(--size-xl);
+}</code-block>
+    <p>To move the whole scale, set <code>--size-unit</code>. Every step is recalculated from it. A fixed unit of your own replaces the one a <a href="/docs/fluid-scaling/">fluid preset</a> sets, so use one or the other.</p>
+    <code-block language="css" label="A slightly larger scale everywhere" data-escape>:root {
+  --size-unit: 0.275rem;
+}</code-block>
+  </section>
+
+  <section id="density">
+    <h2>Density</h2>
+    <p><a href="/docs/attributes/data-layout-density/"><code>data-layout-density</code></a> replaces the size tokens for one region. Everything inside that reads a <code>--size-*</code> token becomes tighter or looser at once: gaps, card padding, button padding. Put it on <code>&lt;html&gt;</code> for a whole page or on any element for a part.</p>
+    <code-block language="html" label="A compact table region in a default page" data-escape><main>
+  <h1>Fleet status</h1>
+  <section data-layout-density="compact" aria-label="Vehicles">
+    ...
+  </section>
+</main></code-block>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Value</th>
+          <th scope="col"><code>--size-m</code> becomes</th>
+          <th scope="col">Line height</th>
+          <th scope="col">Suits</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>compact</code></td><td>0.75rem</td><td>1.4</td><td>Dashboards, data tables, admin screens</td></tr>
+        <tr><td>(no attribute)</td><td>1rem</td><td>Unchanged</td><td>Most pages</td></tr>
+        <tr><td><code>spacious</code></td><td>1.5rem</td><td>1.8</td><td>Landing pages, marketing sections</td></tr>
+      </tbody>
+    </table>
+    <p>The other steps move by similar amounts. The <a href="/docs/attributes/data-layout-density/">attribute page</a> has the full table. <code>compact</code> also makes <code>--font-size-s</code> a little smaller. No other type size changes.</p>
+
+    <h3 id="density-limits">What to watch for</h3>
+    <ul>
+      <li><strong>It shifts the scale; it does not rename the steps.</strong> <code>data-layout-gap="m"</code> inside a compact region is 0.75rem. You do not rewrite your gaps.</li>
+      <li><strong>Touch targets.</strong> On touch screens buttons and inputs keep a minimum height of 2.75rem whatever the density, but the space between them shrinks. Check a compact region on a phone.</li>
+      <li><strong>It is not <code>data-density</code>.</strong> That attribute is a setting on one <a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a>, <a href="/docs/elements/native/dl/"><code>&lt;dl&gt;</code></a> or tree nav and changes only that component's rows.</li>
+    </ul>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <layout-grid data-layout-min="m" data-layout-gap="m">
+      <a href="/docs/attributes/data-layout-density/" class="section-card">
+        <h3>data-layout-density</h3>
+        <p>Every token value under each density.</p>
+      </a>
+      <a href="/docs/attributes/data-layout/" class="section-card">
+        <h3>data-layout</h3>
+        <p>Every modifier and the layouts that read it.</p>
+      </a>
+      <a href="/docs/fluid-scaling/" class="section-card">
+        <h3>Fluid Scaling</h3>
+        <p>Spacing that grows with the viewport.</p>
+      </a>
+      <a href="/docs/layouts/content-width/" class="section-card">
+        <h3>Content Width</h3>
+        <p>How wide content and text are allowed to get.</p>
+      </a>
+    </layout-grid>
+  </section>

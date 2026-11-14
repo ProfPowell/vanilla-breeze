@@ -1,0 +1,167 @@
+---
+layout: guide
+title: "Long Articles"
+description: "The components that help a reader through a long page: a contents list, heading links, a progress bar, reading time, footnotes, a reading mode and read-aloud."
+guideGroup: Content Management
+currentPath: /docs/content-management/long-articles/
+toc: true
+---
+
+  <section id="together">
+    <h2>How the pieces fit</h2>
+    <p>A long article needs the same few aids every time: a way to see its shape, a way to link to one part, a sense of how far there is to go, and somewhere for the asides. Each aid is a separate component. All of them work from the article's own markup, so the only thing they share is an element id and a sound heading order.</p>
+    <p>Scroll the demo. The bar at the top fills as you read the article, the contents list marks the section in view, each heading shows a link when you point at it, and the two footnotes are collected at the end.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/content-long-article.html"
+      url="sourdough-culture"
+      title="A long article with its reading aids"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="The whole arrangement" data-escape><reading-progress data-for="guide"></reading-progress>
+
+<layout-sidebar data-layout-side="end">
+  <aside>
+    <page-toc scope="#guide"></page-toc>
+  </aside>
+
+  <article id="guide">
+    <h1>Starting a sourdough culture</h1>
+    <page-stats data-for="guide" data-show="reading-time,word-count"></page-stats>
+
+    <heading-links>
+      <h2>What you need</h2>
+      <p>Wholemeal rye is the most forgiving flour to start
+        with<foot-note>Rye carries more wild yeast on the grain.</foot-note>.</p>
+      ...
+    </heading-links>
+
+    <foot-notes></foot-notes>
+  </article>
+</layout-sidebar></code-block>
+  </section>
+
+  <section id="choosing">
+    <h2>Which component does what</h2>
+    <table>
+      <thead>
+        <tr><th>Component</th><th>Gives the reader</th><th>Needs from you</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row"><a href="/docs/elements/web-components/page-toc/"><code>&lt;page-toc&gt;</code></a></th>
+          <td>A contents list that marks the section in view</td>
+          <td>Headings that have an <code>id</code></td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/elements/web-components/heading-links/"><code>&lt;heading-links&gt;</code></a></th>
+          <td>A link beside each heading that copies the section's address</td>
+          <td>To be wrapped around the headings</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/elements/web-components/reading-progress/"><code>&lt;reading-progress&gt;</code></a></th>
+          <td>A bar across the top or bottom of the window that fills while reading</td>
+          <td>Nothing, or the id of the article to measure</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/elements/web-components/page-stats/"><code>&lt;page-stats&gt;</code></a></th>
+          <td>Reading time, word count, last-modified date</td>
+          <td>The id of the article to count</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/elements/web-components/footnotes/"><code>&lt;foot-note&gt;</code> and <code>&lt;foot-notes&gt;</code></a></th>
+          <td>Numbered references, a notes list with links back, a preview on hover or focus</td>
+          <td>The note text, written where it applies</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/elements/web-components/reader-view/"><code>&lt;reader-view&gt;</code></a></th>
+          <td>A reading mode with text-size controls and an optional paged, multi-column view</td>
+          <td>To be wrapped around the article</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/elements/web-components/text-reader/"><code>&lt;text-reader&gt;</code></a></th>
+          <td>The article read aloud, with the current word marked</td>
+          <td>The id of the article to read</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="contents">
+    <h2>Contents and heading links</h2>
+    <p><code>&lt;page-toc&gt;</code> builds its list from the headings inside the element that <code>scope</code> selects (<code>main</code> by default) at the levels in <code>levels</code> (<code>h2,h3</code> by default). It lists only headings that have an <code>id</code>, because a contents entry has to link somewhere.</p>
+    <p><code>&lt;heading-links&gt;</code> supplies those ids. For each heading inside it that has none, it makes one from the heading text, then adds the permalink. Use the two together and you never write a heading id by hand. If you want an address to stay the same when a heading is reworded, give that heading an <code>id</code> yourself and both components keep it.</p>
+    <ul>
+      <li>To leave a heading out of both, put <a href="/docs/attributes/data-toc-ignore/"><code>data-toc-ignore</code></a> on it or on an element around it.</li>
+      <li>The contents list updates when headings are added, removed or hidden. Call <code>refresh()</code> on it if you change heading text in place.</li>
+      <li>For a short page, <code>orientation="horizontal"</code> turns the list into a single scrolling row to place above the article.</li>
+      <li>To have a contents list that works before any script loads, write the list of links inside <code>&lt;page-toc&gt;</code> yourself. The component then adds only the tracking.</li>
+    </ul>
+    <code-block language="html" label="An address that survives rewording" data-escape><heading-links>
+  <h2 id="first-week">The first seven days</h2>
+  <h3>Days one to three</h3>  <!-- gets a generated id -->
+  <h3 data-toc-ignore>A note on jars</h3>  <!-- no link, not listed -->
+</heading-links></code-block>
+  </section>
+
+  <section id="progress">
+    <h2>Progress and reading time</h2>
+    <p><code>&lt;reading-progress&gt;</code> with no attributes tracks the scroll of the whole document. Give it <code>data-for</code> with an article's id to measure that article alone, which is what you want when a page has a long header, comments or a footer. <code>data-position="bottom"</code> moves the bar to the bottom edge. The bar is decoration and is hidden from assistive technology, which already knows the scroll position.</p>
+    <p><code>&lt;page-stats&gt;</code> counts the words in the element named by <code>data-for</code> and divides by 238 words a minute, or the rate in <code>data-wpm</code>. Chinese and Japanese text is timed by characters. Choose what to show with <code>data-show</code>: any of <code>reading-time</code>, <code>word-count</code> and <code>last-modified</code>. The date is the page's <code>last-modified</code> tag (see <a href="/docs/content-management/page-metadata/">Page Metadata</a>), never the file date the server reports.</p>
+    <p>Mark anything that should not count, such as a related-links block inside the article, with <code>data-stats-ignore</code>.</p>
+    <p>If your build already knows the numbers, write the list inside <code>&lt;page-stats&gt;</code> and leave off <code>data-for</code>. The component keeps your markup as it is. The <a href="/docs/elements/web-components/page-stats/"><code>&lt;page-stats&gt;</code></a> page shows the markup.</p>
+  </section>
+
+  <section id="footnotes">
+    <h2>Footnotes</h2>
+    <p>Write each note inline, at the point it refers to, in a <code>&lt;foot-note&gt;</code>. Put one <code>&lt;foot-notes&gt;</code> after the text. The component replaces each note with a numbered reference and moves the note text into a list, with a link back from each note. Before the script runs, and if it never does, the note reads in place in parentheses.</p>
+    <code-block language="html" label="Notes, a repeat citation and the list" data-escape><p>Rye is the most forgiving flour<foot-note id="n-rye">It carries more wild
+  yeast than white wheat flour.</foot-note>.</p>
+
+<p>Rye also keeps a culture active in a cool kitchen<foot-note data-ref="n-rye"></foot-note>.</p>
+
+<foot-notes></foot-notes></code-block>
+    <p>A second <code>&lt;foot-note&gt;</code> with <code>data-ref</code> cites an earlier note again without repeating its text. <code>data-mode="sidenotes"</code> on <code>&lt;foot-notes&gt;</code> places each note in the margin beside its reference, which suits a wide page with few notes.</p>
+
+    <browser-window
+      src="/docs/examples/demos/footnotes-multi-ref.html"
+      url="footnotes"
+      title="One note cited more than once"
+      data-demo-height="m"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section id="modes">
+    <h2>Other ways to read</h2>
+    <p>Two components change how the article is taken in. Both are optional and both leave the article markup alone.</p>
+    <p><a href="/docs/elements/web-components/reader-view/"><code>&lt;reader-view&gt;</code></a> wraps the article and adds a bar with text-size buttons and a switch between two modes. <code>scroll</code> is the article as usual. <code>pages</code> covers the window and lays the text out in columns that turn like pages, with <kbd>Escape</kbd> to leave. Text size and column count are remembered per page in the reader's browser.</p>
+    <p><a href="/docs/elements/web-components/text-reader/"><code>&lt;text-reader&gt;</code></a> reads the element named by <code>for</code> aloud, using the speech voices built into the browser, and marks each word as it is spoken. It reads paragraphs and list items by default. Set <code>selectors</code> to include headings or other elements. <code>variant="icon"</code> gives a single button that fits a toolbar. Where the browser has no speech support the component hides itself.</p>
+    <code-block language="html" label="A reading toolbar" data-escape><page-tools>
+  <print-page></print-page>
+  <share-wc variant="icon"></share-wc>
+  <text-reader variant="icon" for="guide" selectors="h2,h3,p,li"></text-reader>
+</page-tools></code-block>
+
+    <browser-window
+      src="/docs/examples/demos/article-reader-tools.html"
+      url="reader-tools"
+      title="An article with its toolbar"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+
+    <p>For a link that returns to the top, add <code>data-back-to-top</code> to an anchor. It stays hidden until the reader has scrolled about one screen down.</p>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/page-tools/"><code>&lt;page-tools&gt;</code></a>, the toolbar that holds print, share and read-aloud buttons</li>
+      <li><a href="/docs/content-management/highlights/">Highlights and Annotations</a>, for reader highlights on the same article</li>
+      <li><a href="/docs/printing/">Printing</a>, for how a long article prints</li>
+      <li><a href="/docs/accessibility/keyboard/">Keyboard and Focus</a>, for the keys each component handles</li>
+    </ul>
+  </section>

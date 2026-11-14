@@ -1,0 +1,180 @@
+---
+layout: guide
+title: "Surfaces"
+description: "The background levels a Vanilla Breeze page is built from, the data-surface attribute for translucent and paper surfaces, and the tokens behind the page background and overlays."
+guideGroup: Styling
+currentPath: /docs/styling/surfaces/
+toc: true
+---
+
+  <section id="levels">
+    <h2>Surface levels</h2>
+    <p>A page is a stack of surfaces: the page itself, panels on it, and things that sit above or below a panel. Each level has a color token, and each token has a light and a dark value. Pick the token by the level, and text set in <code>--color-text</code> stays readable on it.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Level</th>
+          <th>Used by</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--color-background</code></td><td>The page</td><td><code>&lt;body&gt;</code>, and any region with its own <code>data-theme</code> or <code>data-mode</code></td></tr>
+        <tr><td><code>--color-surface</code></td><td>A panel on the page</td><td><a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a>, text inputs</td></tr>
+        <tr><td><code>--color-surface-raised</code></td><td>Above a panel</td><td>Hover backgrounds in menus and lists, <code>aside.note</code></td></tr>
+        <tr><td><code>--color-surface-sunken</code></td><td>Set into a panel</td><td>The file input drop area, editor and comment wells</td></tr>
+        <tr><td><code>--color-surface-alt</code></td><td>An alternate fill beside a surface</td><td>The track of a <a href="/docs/attributes/data-segmented/">segmented control</a></td></tr>
+        <tr><td><code>--color-surface-overlay</code></td><td>Floating over scrolling content</td><td>Dialogs, menus, sticky headers</td></tr>
+      </tbody>
+    </table>
+    <p>In the default light theme the page and the panel are both white, and depth comes from <a href="/docs/shadows/">shadows</a> and borders. In dark mode each level is a step lighter than the one below it, because a shadow shows little on a dark page.</p>
+    <code-block language="css" label="A panel with a well inside it" data-escape>.fare-summary {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.fare-summary pre {
+  background: var(--color-surface-sunken);
+}</code-block>
+  </section>
+
+  <section id="types">
+    <h2>Surface types</h2>
+    <p>The <code>data-surface</code> attribute changes how one region paints its background. It works on any element. Four values make the region translucent, and five give it a paper texture.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/styling-surfaces.html"
+      url="surfaces"
+      title="Surface types"
+      data-demo-height="l"
+      shadow>
+    </browser-window>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>frosted</code></td><td>The surface color at 75% opacity, a blur of what is behind it, and a faint border</td></tr>
+        <tr><td><code>tinted</code></td><td>The accent color at 10% opacity over a light blur</td></tr>
+        <tr><td><code>ghost</code></td><td>A surface that is almost clear, with a faint outline and no shadow</td></tr>
+        <tr><td><code>transparent</code></td><td>No background and no shadow</td></tr>
+        <tr><td><code>paper</code></td><td>Off-white paper with a fine grain</td></tr>
+        <tr><td><code>dots</code></td><td>Paper with a dot grid</td></tr>
+        <tr><td><code>grid</code></td><td>Paper with ruled squares</td></tr>
+        <tr><td><code>lines</code></td><td>Ruled paper with a margin line</td></tr>
+        <tr><td><code>kraft</code></td><td>Brown kraft paper with a fine grain</td></tr>
+      </tbody>
+    </table>
+    <code-block language="html" label="A frosted header over a photograph" data-escape><header data-surface="frosted">
+  <h1>Harbour Line</h1>
+</header></code-block>
+
+    <h3 id="glass">Tuning the translucent types</h3>
+    <p>The translucent types read a small set of tokens. The one to know is <code>--glass-blur</code>: its default is <code>0px</code>, so <code>frosted</code> is translucent but not blurred until a theme or your CSS sets a value. The Glassmorphism theme sets <code>16px</code>.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Default</th>
+          <th>Affects</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--glass-blur</code></td><td><code>0px</code></td><td>The blur behind <code>frosted</code></td></tr>
+        <tr><td><code>--glass-saturate</code></td><td><code>160%</code></td><td>How much <code>frosted</code> boosts the color behind it</td></tr>
+        <tr><td><code>--glass-surface-opacity</code></td><td><code>0.75</code></td><td>The opacity of the <code>frosted</code> fill</td></tr>
+        <tr><td><code>--glass-border-opacity</code></td><td><code>0.2</code></td><td>The opacity of the <code>frosted</code> border</td></tr>
+        <tr><td><code>--glass-tint-opacity</code></td><td><code>0.1</code></td><td>The opacity of the <code>tinted</code> fill</td></tr>
+      </tbody>
+    </table>
+    <code-block language="css" label="Turning the blur on" data-escape>:root {
+  --glass-blur: 12px;
+}</code-block>
+    <p>Text over a translucent surface is only as readable as what shows through. Check the contrast against the busiest thing that can end up behind it, or keep such surfaces for headers and panels over a plain background.</p>
+
+    <h3 id="paper">Paper types and dark mode</h3>
+    <p>The paper colors are fixed and light. They do not change in dark mode, but the text color does, so light text can end up on light paper. Put <code>data-mode="light"</code> on the same element. It gives the region light-mode text and controls whatever the page mode is.</p>
+    <code-block language="html" label="A paper note that stays readable on a dark page" data-escape><aside data-surface="lines" data-mode="light">
+  <p>Bring the blue folder on Thursday.</p>
+</aside></code-block>
+
+    <h3 id="transparency">Reduced transparency</h3>
+    <p>When the reader has asked the system to reduce transparency, <code>frosted</code>, <code>tinted</code>, <code>ghost</code> and <code>transparent</code> all become a solid <code>--color-surface</code> with no blur. You do not write anything for this. See <a href="/docs/accessibility/preferences/">Preferences and themes</a>.</p>
+  </section>
+
+  <section id="page">
+    <h2>The page background</h2>
+    <p><code>&lt;body&gt;</code> paints from its own set of tokens, so a theme or a page can change the page color or add a gradient without a rule on <code>body</code>.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--page-bg-color</code></td><td><code>var(--color-background)</code></td></tr>
+        <tr><td><code>--page-bg-gradient</code></td><td><code>none</code></td></tr>
+        <tr><td><code>--page-bg-attachment</code>, <code>--page-bg-size</code>, <code>--page-bg-position</code>, <code>--page-bg-blend</code></td><td><code>scroll</code>, <code>cover</code>, <code>center</code>, <code>normal</code></td></tr>
+      </tbody>
+    </table>
+    <code-block language="css" label="A soft gradient behind the whole page" data-escape>:root {
+  --page-bg-gradient: linear-gradient(
+    to bottom,
+    var(--tint-primary-10),
+    transparent 40rem
+  );
+}</code-block>
+    <p>To float the header, main content and footer as separate panels over that background, add <code>data-backdrop</code> to <code>&lt;html&gt;</code>. The <a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a> page lists its values, and <a href="/docs/attributes/data-canvas/"><code>data-canvas</code></a> does the same for a single element.</p>
+  </section>
+
+  <section id="overlays">
+    <h2>Overlays</h2>
+    <p>Two more tokens cover what sits over the page.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Default</th>
+          <th>Used for</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--color-backdrop</code></td><td>Black at 50% opacity</td><td>The scrim behind a modal <a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a></td></tr>
+        <tr><td><code>--backdrop-blur</code></td><td><code>2px</code></td><td>The blur of the page behind that scrim</td></tr>
+      </tbody>
+    </table>
+    <p>Anything that floats over scrolling content should use <code>--color-surface-overlay</code> for its background. It equals <code>--color-surface</code> by default. A theme with translucent surfaces sets it to an opaque color, so menus and dialogs stay readable.</p>
+  </section>
+
+  <section id="textures">
+    <h2>Texture tokens</h2>
+    <p>Five tokens hold repeating patterns you can lay over a surface: <code>--texture-noise</code>, <code>--texture-grain</code>, <code>--texture-dots</code>, <code>--texture-grid</code> and <code>--texture-lines</code>. Nothing in the default theme uses them. The dots, grid and lines patterns are drawn in <code>currentColor</code>. Paint one on a pseudo-element so its opacity does not affect the content.</p>
+    <code-block language="css" label="A grain overlay" data-escape>.poster {
+  position: relative;
+}
+
+.poster::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--texture-grain);
+  opacity: var(--surface-texture-opacity);
+  pointer-events: none;
+}</code-block>
+    <p><code>--surface-texture-opacity</code> is <code>0.05</code> by default.</p>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/styling/color/">Color</a>, for the text and border tokens that pair with these surfaces</li>
+      <li><a href="/docs/shadows/">Shadows</a>, for elevation</li>
+      <li><a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a> and <a href="/docs/elements/custom-elements/layout-canvas/"><code>&lt;layout-canvas&gt;</code></a></li>
+      <li><a href="/docs/themes/#extensions">Themes: Extensions</a></li>
+    </ul>
+  </section>

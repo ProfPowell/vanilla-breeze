@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>One list, four layouts</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    h1 { font-size: var(--font-size-xl); }
+    #shelf > li {
+      padding: var(--size-s) var(--size-m);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+      background: var(--color-surface-raised);
+    }
+    #shelf small { color: var(--color-text-muted); }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <header data-layout="cluster" data-layout-justify="between" data-layout-gap="m">
+      <fieldset data-segmented>
+        <legend class="visually-hidden">Layout</legend>
+        <label><input type="radio" name="layout" value="stack" checked /> Stack</label>
+        <label><input type="radio" name="layout" value="cluster" /> Cluster</label>
+        <label><input type="radio" name="layout" value="grid" /> Grid</label>
+        <label><input type="radio" name="layout" value="reel" /> Reel</label>
+      </fieldset>
+      <code id="markup">&lt;ul data-layout="stack"&gt;</code>
+    </header>
+
+    <h1>New this week at Harbour Books</h1>
+
+    <ul id="shelf" class="unstyled" data-layout="stack" data-layout-gap="s" data-layout-scrollbar>
+      <li data-layout="stack" data-layout-gap="3xs">
+        <strong>The Lighthouse Keeper's Almanac</strong>
+        <small>Ines Calloway, hardback</small>
+      </li>
+      <li data-layout="stack" data-layout-gap="3xs">
+        <strong>Tide Tables</strong>
+        <small>Marcus Oyelaran, poetry</small>
+      </li>
+      <li data-layout="stack" data-layout-gap="3xs">
+        <strong>A Field Guide to Estuary Birds</strong>
+        <small>Priya Venkataraman, paperback</small>
+      </li>
+      <li data-layout="stack" data-layout-gap="3xs">
+        <strong>Salt</strong>
+        <small>Tomas Lindqvist, novel</small>
+      </li>
+      <li data-layout="stack" data-layout-gap="3xs">
+        <strong>Cooking with Seaweed</strong>
+        <small>Aoife Brennan, cookery</small>
+      </li>
+      <li data-layout="stack" data-layout-gap="3xs">
+        <strong>The Ferry Timetable Murders</strong>
+        <small>Dele Akintola, crime</small>
+      </li>
+      <li data-layout="stack" data-layout-gap="3xs">
+        <strong>Knots</strong>
+        <small>Hannah Weiss, reference</small>
+      </li>
+      <li data-layout="stack" data-layout-gap="3xs">
+        <strong>Small Boats, Long Journeys</strong>
+        <small>Rafael Montoya, travel</small>
+      </li>
+    </ul>
+
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const shelf = document.getElementById('shelf');
+    const markup = document.getElementById('markup');
+    document.querySelectorAll('input[name="layout"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        shelf.setAttribute('data-layout', radio.value);
+        markup.textContent = `<ul data-layout="${radio.value}">`;
+      });
+    });
+  </script>
+</body>
+</html>

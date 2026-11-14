@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Layout attributes on semantic elements</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    h1 { font-size: var(--font-size-2xl); }
+    h2 { font-size: var(--font-size-l); }
+    body:has(#show-hosts:checked) main [data-layout] {
+      position: relative;
+      outline: var(--border-width-thin) dashed var(--color-interactive);
+      outline-offset: var(--size-2xs);
+    }
+    body:has(#show-hosts:checked) main [data-layout]::after {
+      content: attr(data-layout);
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-end: 0;
+      padding-inline: var(--size-2xs);
+      font-family: var(--font-mono);
+      font-size: var(--font-size-xs);
+      color: var(--color-surface);
+      background: var(--color-interactive);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <label><input type="checkbox" role="switch" id="show-hosts" checked /> Outline every element that carries <code>data-layout</code></label>
+
+    <main>
+      <section data-layout="center" data-layout-max="wide" data-layout-gap="xl" aria-labelledby="events-title">
+        <header data-layout="stack" data-layout-gap="xs">
+          <h1 id="events-title">Events at Harbour Books</h1>
+          <p class="lead">Readings, signings and a book club that meets on the first Thursday.</p>
+        </header>
+
+        <ul class="unstyled" data-layout="grid" data-layout-min="m" data-layout-gap="l">
+          <li data-layout="stack" data-layout-gap="xs">
+            <h2>Poetry evening</h2>
+            <p>Marcus Oyelaran reads from Tide Tables. Doors at 19:00.</p>
+          </li>
+          <li data-layout="stack" data-layout-gap="xs">
+            <h2>Crime writers' panel</h2>
+            <p>Three authors on plotting a murder around a ferry timetable.</p>
+          </li>
+          <li data-layout="stack" data-layout-gap="xs">
+            <h2>Children's story hour</h2>
+            <p>Saturday mornings at 10:30, for ages three to seven.</p>
+          </li>
+        </ul>
+
+        <menu data-layout="cluster" data-layout-gap="s">
+          <li><button type="button">Book a seat</button></li>
+          <li><button type="button" class="secondary">See the calendar</button></li>
+        </menu>
+      </section>
+    </main>
+
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

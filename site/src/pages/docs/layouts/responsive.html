@@ -1,0 +1,203 @@
+---
+layout: guide
+title: "Responsive Behavior"
+description: "How each layout adapts to narrow space: which ones wrap by themselves, which follow their container, which follow the viewport and how to change the point where they switch."
+guideGroup: Layouts
+currentPath: /docs/layouts/responsive/
+toc: true
+---
+
+  <section id="idea">
+    <h2>Layouts respond to their own space</h2>
+    <p>A component does not know where it will be used. A card grid might fill the page today and sit in a 20rem sidebar tomorrow. A viewport breakpoint cannot tell those apart, so most layouts in Vanilla Breeze do not use one. They look at the width they have been given and wrap or stack when it runs out.</p>
+    <p>The demo holds four layouts in one box. The buttons change the width of the box and nothing else. The browser window stays the same size, so no media query fires.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/layouts-responsive.html"
+      url="layouts-responsive"
+      title="Four layouts in a resizable container"
+      data-demo-height="2xl"
+      shadow>
+    </browser-window>
+
+    <p>There are three mechanisms. The table says which layout uses which.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Layout</th>
+          <th scope="col">Responds to</th>
+          <th scope="col">What happens</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Cluster</td><td>Its own width</td><td>Items wrap to a new line</td></tr>
+        <tr><td>Grid</td><td>Its own width</td><td>Drops columns one at a time, down to one</td></tr>
+        <tr><td>Switcher</td><td>Its own width</td><td>All children in one row, or all stacked, below 30rem</td></tr>
+        <tr><td>Sidebar</td><td>Its own width</td><td>The two columns wrap when the content column would get less than half the width</td></tr>
+        <tr><td>Columns</td><td>Its own width</td><td>Fewer text columns, down to one</td></tr>
+        <tr><td>Reel</td><td>Nothing</td><td>Never wraps. It scrolls sideways at every width</td></tr>
+        <tr><td>Media</td><td>Nearest container</td><td>The figure moves above the text when the container is under 25rem</td></tr>
+        <tr><td>Prose, text, columns</td><td>Nearest container</td><td>The line-length cap is released when the container is under 30rem</td></tr>
+        <tr><td>Sidebar inside a page layout's <code>&lt;main&gt;</code></td><td>The <code>region-main</code> container</td><td>Each child takes a full row when main is under 40rem</td></tr>
+        <tr><td>Split</td><td>Viewport</td><td>One column below 48rem</td></tr>
+        <tr><td><code>&lt;main data-layout="sidebar-left"&gt;</code> and <code>sidebar-right</code></td><td>Viewport</td><td>One column below 48rem, in the order article, aside, nav</td></tr>
+        <tr><td><a href="/docs/attributes/data-page-layout/">Page layouts</a></td><td>Viewport</td><td>Sidebar templates become one column below 48rem; the dashboard nav becomes a drawer; the app shell nav moves to the bottom</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="intrinsic">
+    <h2>Layouts that size themselves</h2>
+    <p>These use flexbox and grid rules that depend on the layout's own width. No query is involved, so they work at any nesting depth.</p>
+
+    <h3 id="grid">Grid</h3>
+    <p>A grid makes as many columns as fit, each at least <code>data-layout-min</code> wide, then shares the leftover space between them. When the grid is narrower than one minimum, the single column shrinks to fit and does not overflow.</p>
+    <table>
+      <thead>
+        <tr><th scope="col"><code>data-layout-min</code></th><th scope="col">Smallest column</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>xs</code></td><td>8rem</td></tr>
+        <tr><td><code>s</code></td><td>10rem</td></tr>
+        <tr><td><code>m</code> (default)</td><td>15rem</td></tr>
+        <tr><td><code>l</code></td><td>20rem</td></tr>
+        <tr><td><code>xl</code></td><td>25rem</td></tr>
+      </tbody>
+    </table>
+    <p>For a width between the steps, set the <code>--layout-min</code> custom property on the grid.</p>
+    <code-block language="css" label="A custom minimum" data-escape>.product-list {
+  --layout-min: 18rem;
+}</code-block>
+
+    <h3 id="switcher">Switcher</h3>
+    <p>A switcher keeps its children in one row while it is wider than its threshold, and stacks them all when it is narrower. There is no in-between state with two on one line and one below.</p>
+    <table>
+      <thead>
+        <tr><th scope="col">Attribute</th><th scope="col">Effect</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-layout-threshold</code></td><td>The width where it switches: <code>s</code> (25rem), <code>m</code> (30rem, the default), <code>l</code> (40rem). For another width, set <code>--layout-threshold</code>.</td></tr>
+        <tr><td><code>data-layout-limit</code></td><td><code>2</code>, <code>3</code> or <code>4</code>. With more children than the limit, the switcher stacks at every width.</td></tr>
+        <tr><td><code>data-layout-reverse</code></td><td>Reverses the visual order when stacked, so the last child is on top. The row keeps source order.</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="sidebar">Sidebar</h3>
+    <p>The sidebar column asks for a fixed width and the content column takes the rest. When the content would get less than its minimum share of the row, the two wrap and each takes the full width.</p>
+    <table>
+      <thead>
+        <tr><th scope="col">Attribute</th><th scope="col">Effect</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-layout-sidebar-width</code></td><td>The sidebar column: <code>narrow</code> (12rem), <code>normal</code> (16rem, the default), <code>wide</code> (20rem)</td></tr>
+        <tr><td><code>data-layout-content-min</code></td><td>The content column's smallest share before wrapping: <code>s</code> (40%), <code>m</code> (50%, the default), <code>l</code> (60%). For another value, set <code>--layout-content-min</code>.</td></tr>
+        <tr><td><code>data-layout-nowrap</code></td><td>Never wrap</td></tr>
+      </tbody>
+    </table>
+    <p>With the defaults and a gap of <code>m</code>, the sidebar wraps when the layout is narrower than about 34rem.</p>
+
+    <h3 id="columns">Columns</h3>
+    <p>With <code>data-layout-column-count="2"</code> or <code>"3"</code> the count is a maximum. A column is never narrower than 14rem, so three columns become two and then one as the element narrows. With <code>"auto"</code> the browser fits as many columns of the measure as it can.</p>
+  </section>
+
+  <section id="containers">
+    <h2>Layouts that follow a container</h2>
+    <p>A container query asks how wide an ancestor is. Vanilla Breeze makes every <code>&lt;main&gt;</code>, <code>&lt;article&gt;</code>, <code>&lt;section&gt;</code> and <code>&lt;aside&gt;</code> a query container (<code>container-type: inline-size</code>), so a query usually has something close by to measure.</p>
+    <p>The library's own container queries are few: the media object stacks under 25rem, the reading measure is released under 30rem, and a sidebar in a page layout's main stacks when main is under 40rem. The containers matter more for the CSS you write.</p>
+
+    <code-block language="css" label="Your own component, sized by its container" data-escape>.order-summary {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@container (width >= 30rem) {
+  .order-summary {
+    grid-template-columns: 2fr 1fr;
+  }
+}</code-block>
+
+    <h3 id="named-regions">Named regions</h3>
+    <p>Inside a <a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a>, the regions have container names, so a query can ask about the main region in particular and not whichever container is nearest.</p>
+    <code-block language="css" label="Query the main region by name" data-escape>@container region-main (width < 40rem) {
+  .order-summary {
+    grid-template-columns: 1fr;
+  }
+}</code-block>
+    <p>The names are <code>region-main</code>, <code>region-nav</code> and <code>region-aside</code>. <a href="/docs/grid-identity/#containers">Grid Identity</a> lists them with the names used inside a main-level sidebar.</p>
+
+    <h3 id="container-exceptions">Where a sectioning element is not a container</h3>
+    <p>A size container has no width of its own: it takes the width its parent gives it. Where a layout sizes children by their content, a container child would collapse to nothing, so the library turns containment off for <code>&lt;main&gt;</code>, <code>&lt;article&gt;</code>, <code>&lt;section&gt;</code> and <code>&lt;aside&gt;</code> children in these places:</p>
+    <ul>
+      <li>Direct children of a cluster or a reel.</li>
+      <li>Direct children of a cover with <code>data-layout-centered</code>.</li>
+      <li>Direct children of a stack with <code>data-layout-align</code> set to <code>start</code>, <code>center</code> or <code>end</code>.</li>
+      <li>Direct children of a grid with <code>data-layout-subgrid</code>, because containment breaks subgrid.</li>
+      <li>An article with <code>data-numbered</code> or <code>data-section-numbers</code>, and the sections inside it, because containment restarts CSS counters.</li>
+      <li>A floated aside (<code>aside.float</code>, <code>aside.sidenote</code>) and any element with the <code>popover</code> attribute.</li>
+    </ul>
+    <p>A query inside one of these measures the next container out. To make the element a container anyway, add <a href="/docs/attributes/data-container/"><code>data-container</code></a>, and give it a width if its parent sizes it by content.</p>
+    <code-block language="html" label="Opt in to a container" data-escape><layout-reel>
+  <article data-container="card">...</article>
+  <article data-container="card">...</article>
+</layout-reel></code-block>
+    <p>You can put <code>data-container</code> on any other element too. With no value the container has no name. The values <code>card</code>, <code>panel</code> and <code>media</code> name it.</p>
+  </section>
+
+  <section id="viewport">
+    <h2>Layouts that follow the viewport</h2>
+    <p>Page structure is the one place where the viewport is the right thing to ask. The page templates, the main-level sidebars and <code>data-layout="split"</code> switch to one column below 48rem. Add <code>data-layout-nowrap</code> to keep the wide shape.</p>
+    <code-block language="html" label="Keep two columns on a phone" data-escape><section data-layout="split" data-layout-ratio="2:1" data-layout-nowrap>
+  <p>Line 4 to Harbour</p>
+  <p>Every 12 min</p>
+</section></code-block>
+    <p>The library uses four viewport widths. They are published as tokens for reference. A custom property cannot be used inside a media query, so write the value in your own queries.</p>
+    <table>
+      <thead>
+        <tr><th scope="col">Token</th><th scope="col">Value</th><th scope="col">Used for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--bp-s</code></td><td>37.5rem</td><td>Compact phones. Below this a <a href="/docs/attributes/data-canvas/">canvas</a> surface goes flush to the edges.</td></tr>
+        <tr><td><code>--bp-m</code></td><td>48rem</td><td>The split between one column and several. Page layouts, main-level sidebars and split collapse below it.</td></tr>
+        <tr><td><code>--bp-l</code></td><td>64rem</td><td>Desktop layouts. The page table of contents becomes sticky from this width when <a href="/docs/attributes/data-sticky/"><code>data-sticky</code></a> is on.</td></tr>
+        <tr><td><code>--bp-xl</code></td><td>87.5rem</td><td>The widest pages. The <code>holy-grail</code> and <code>dashboard</code> page layouts stop growing here.</td></tr>
+      </tbody>
+    </table>
+    <code-block language="css" label="A media query at the library's breakpoint" data-escape>@media (width < 48rem) {
+  .site-search {
+    display: none;
+  }
+}</code-block>
+  </section>
+
+  <section id="order">
+    <h2>Check the stacked order</h2>
+    <p>When a layout stacks, the children appear in source order, with three exceptions:</p>
+    <ul>
+      <li>A switcher with <code>data-layout-reverse</code> stacks last child first.</li>
+      <li>A <code>&lt;main data-layout="sidebar-left"&gt;</code> stacks as article, aside, nav, so a nav that comes first in the source is shown last.</li>
+      <li>A sidebar with <code>data-layout-side="end"</code> shows its <code>&lt;nav&gt;</code> or <code>&lt;aside&gt;</code> after the content at every width.</li>
+    </ul>
+    <p>Keyboard focus and screen readers follow the source in every case. Write the source in the order the page should be read, and use these only where the visual change does not alter the meaning.</p>
+  </section>
+
+  <section id="related">
+    <h2>Related</h2>
+    <layout-grid data-layout-min="m" data-layout-gap="m">
+      <a href="/docs/attributes/data-container/" class="section-card">
+        <h3>data-container</h3>
+        <p>Make any element a query container, with or without a name.</p>
+      </a>
+      <a href="/docs/attributes/data-page-layout/" class="section-card">
+        <h3>data-page-layout</h3>
+        <p>How each page template collapses, and the dashboard drawer.</p>
+      </a>
+      <a href="/docs/fluid-scaling/" class="section-card">
+        <h3>Fluid Scaling</h3>
+        <p>Type and spacing that grow with the viewport.</p>
+      </a>
+      <a href="/docs/mobile/" class="section-card">
+        <h3>Mobile</h3>
+        <p>Safe areas, the app shell and other phone concerns.</p>
+      </a>
+    </layout-grid>
+  </section>
