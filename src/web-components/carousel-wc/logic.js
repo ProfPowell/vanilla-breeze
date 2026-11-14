@@ -132,12 +132,14 @@ class CarouselWc extends VBElement {
 
     // Prev button
     this.#prevBtn = document.createElement('button');
+    this.#prevBtn.type = 'button';
     this.#prevBtn.className = 'carousel-prev';
     this.#prevBtn.setAttribute('aria-label', 'Previous slide');
     this.#prevBtn.innerHTML = '<icon-wc name="chevron-left" size="sm"></icon-wc>';
 
     // Next button
     this.#nextBtn = document.createElement('button');
+    this.#nextBtn.type = 'button';
     this.#nextBtn.className = 'carousel-next';
     this.#nextBtn.setAttribute('aria-label', 'Next slide');
     this.#nextBtn.innerHTML = '<icon-wc name="chevron-right" size="sm"></icon-wc>';
@@ -152,6 +154,7 @@ class CarouselWc extends VBElement {
 
       this.#slides.forEach((_, i) => {
         const dot = document.createElement('button');
+        dot.type = 'button';
         dot.className = 'carousel-dot';
         dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
         dot.setAttribute('aria-current', i === 0 ? 'true' : 'false');

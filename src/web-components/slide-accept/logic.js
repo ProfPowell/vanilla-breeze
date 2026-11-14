@@ -21,6 +21,7 @@
  * @attr {string}  label           - Track label text (default: authored text, else "Slide to confirm")
  * @attr {string}  activated-label - Label after activation (default: "Confirmed!")
  * @attr {string}  data-label-hint - Screen-reader hint (default: "Press Enter to confirm")
+ * @attr {string}  data-label-required - Validation message when required and not confirmed; "{label}" is replaced by the label (default: "{label} to continue.")
  * @attr {string}  attention       - Attention animation: "shimmer" | "pulse"
  * @attr {number}  threshold       - Activation threshold 0-100 (default: 90)
  * @attr {string}  name            - Form field name
@@ -45,7 +46,7 @@ const TAP_SLOP = 6;
 
 class SlideAccept extends VBElement {
   static formAssociated = true;
-  static observedAttributes = ['label', 'activated-label', 'data-label-hint', 'required', 'value'];
+  static observedAttributes = ['label', 'activated-label', 'data-label-hint', 'data-label-required', 'required', 'value'];
 
   /** @type {ElementInternals} */
   #internals;
@@ -119,7 +120,7 @@ class SlideAccept extends VBElement {
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue || !this.#setupDone) return;
     this.#syncText();
-    if (name === 'required' || name === 'value') this.#syncForm();
+    if (name === 'required' || name === 'value' || name === 'data-label-required' || name === 'label') this.#syncForm();
   }
 
   #build() {
@@ -177,7 +178,8 @@ class SlideAccept extends VBElement {
     const value = this.getAttribute('value') || 'on';
     this.#internals.setFormValue(this.#activated ? value : null);
     if (this.hasAttribute('required') && !this.#activated) {
-      this.#internals.setValidity({ valueMissing: true }, `${this.#labelText} to continue.`, this.#handle);
+      const message = (this.getAttribute('data-label-required') || '{label} to continue.').replace('{label}', this.#labelText);
+      this.#internals.setValidity({ valueMissing: true }, message, this.#handle);
     } else {
       this.#internals.setValidity({});
     }

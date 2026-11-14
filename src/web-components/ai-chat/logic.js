@@ -162,7 +162,7 @@ class AIChat extends VBElement {
     const tpl = document.createElement('template');
     tpl.innerHTML = `
       <p class="ai-chat-ribbon" hidden></p>
-      <p class="ai-chat-notice" hidden></p>
+      <p class="ai-chat-notice" role="status" hidden></p>
       <div class="ai-chat-starters" role="group" aria-label="Starter prompts" hidden></div>
       <chat-window empty-message="Send a message to start a session.">
         <script type="application/json" data-participants>${JSON.stringify(PARTICIPANTS)}</script>

@@ -27,6 +27,13 @@
       "description": "Screen-reader hint wired with aria-describedby (default: \"Press Enter to confirm\"). Observed"
     },
     {
+      "name": "data-label-required",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Validation message when required and not confirmed; {label} is replaced by the label (default: \"{label} to continue.\"). Observed"
+    },
+    {
       "name": "attention",
       "kind": "host-api",
       "purpose": "visual-variant",
@@ -119,6 +126,21 @@
     "flow": true,
     "permittedContent": [
       "@flow"
+    ]
+  },
+  "a11y": {
+    "pattern": "Slider",
+    "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/slider/",
+    "manages": ["role=\"slider\"", "role=\"status\"", "aria-valuemin", "aria-valuemax", "aria-valuenow", "aria-valuetext", "aria-label", "aria-describedby", "aria-disabled", "tabindex"],
+    "provide": "Text content that names the action; it becomes the slider's accessible name",
+    "announces": "The activated label, politely, when the slide completes",
+    "keyboard": [
+      { "keys": ["ArrowRight", "ArrowUp"], "action": "Move the handle forward by 5%, accepting once it passes the threshold (ArrowRight and ArrowLeft reversed in right-to-left)", "when": "Focus on the handle" },
+      { "keys": ["ArrowLeft", "ArrowDown"], "action": "Move the handle back by 5%", "when": "Focus on the handle" },
+      { "keys": ["Shift+ArrowRight", "Shift+ArrowUp"], "action": "Move the handle forward by 20%", "when": "Focus on the handle" },
+      { "keys": ["Shift+ArrowLeft", "Shift+ArrowDown"], "action": "Move the handle back by 20%", "when": "Focus on the handle" },
+      { "keys": ["End", "Enter", "Space"], "action": "Accept immediately", "when": "Focus on the handle" },
+      { "keys": ["Home"], "action": "Return the handle to the start", "when": "Focus on the handle" }
     ]
   }
 }

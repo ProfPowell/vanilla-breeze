@@ -258,8 +258,11 @@ class ReactionBar extends VBElement {
     this.#trigger.className = 'reaction-trigger';
     this.#trigger.textContent = this.getAttribute('data-trigger-icon') || '😀';
     this.#trigger.setAttribute('aria-label', this.getAttribute('data-trigger-label') || 'Add reaction');
-    this.#trigger.setAttribute('aria-haspopup', 'dialog');
-    this.#trigger.setAttribute('aria-expanded', 'false');
+    // Only promise a popup when there is a palette to open.
+    if (this.#template) {
+      this.#trigger.setAttribute('aria-haspopup', 'dialog');
+      this.#trigger.setAttribute('aria-expanded', 'false');
+    }
     this.appendChild(this.#trigger);
   }
 
