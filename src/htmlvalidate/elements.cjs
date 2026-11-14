@@ -1594,6 +1594,7 @@ module.exports = {
       "label": {},
       "activated-label": {},
       "data-label-hint": {},
+      "data-label-required": {},
       "attention": { enum: ["shimmer", "pulse"] },
       "threshold": {},
       "name": {},

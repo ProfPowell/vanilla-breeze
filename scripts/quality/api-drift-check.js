@@ -228,6 +228,73 @@ function checkReflectedState(manifests) {
   }
 }
 
+// ── Guardrail: a11y blocks describe what the code does ───────────────
+// The keyboard and ARIA tables on the Accessibility pages are generated from
+// each manifest's a11y block. A key or attribute listed there must appear in
+// the component's source (its own files plus what they import), so a removed
+// handler cannot leave a row behind.
+
+const IMPORT_RE = /(?:import|export)\s[^'"]*?from\s*['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)|import\s*['"]([^'"]+)['"]/g;
+
+function sourceFor(element) {
+  const base = ['web-components', 'custom-elements'].map((d) => join(SRC, d, element)).find(existsSync);
+  if (!base) return '';
+  const seen = new Set();
+  const queue = readdirSync(base).filter((f) => /\.(js|html)$/.test(f)).map((f) => join(base, f));
+  let text = '';
+  while (queue.length) {
+    const file = queue.pop();
+    if (!file || seen.has(file) || !existsSync(file)) continue;
+    seen.add(file);
+    const src = readFileSync(file, 'utf8');
+    text += src;
+    if (!file.endsWith('.js')) continue;
+    for (const m of src.matchAll(IMPORT_RE)) {
+      const spec = m[1] || m[2] || m[3];
+      if (spec?.startsWith('.')) queue.push(join(dirname(file), spec));
+    }
+    // A component can opt its markup into an effect by name instead of
+    // importing it (star-rating → src/effects/rating.js).
+    for (const m of src.matchAll(/data-effect="([a-z-]+)"/g)) queue.push(join(SRC, 'effects', `${m[1]}.js`));
+  }
+  return text;
+}
+
+function checkA11yBlocks(manifests) {
+  let checked = 0;
+  for (const m of manifests) {
+    const a = m.a11y;
+    if (!a) continue;
+    const src = sourceFor(m.element);
+    if (!src) { warn(`<${m.element}>: a11y block but no source found`); continue; }
+    checked++;
+
+    for (const row of a.keyboard ?? []) {
+      if (/^Native behaviour/i.test(row.when ?? '')) continue;
+      for (const key of row.keys) {
+        if (key === 'Printable character') continue;
+        const name = key === '+' || key.endsWith('++') ? '+' : key.split('+').pop();
+        const needles = name === 'Space' ? ["' '", '" "', 'Space'] : [name, name.toLowerCase()];
+        if (!needles.some((n) => src.includes(n))) {
+          err(`<${m.element}> a11y.keyboard lists "${key}" but no source file mentions it`);
+        }
+      }
+    }
+
+    for (const item of a.manages ?? []) {
+      const role = item.match(/^role="([^"]+)"$/);
+      // "tabindex roving" and similar notes: check the attribute word only.
+      const word = role ? role[1] : item.split(/[\s=]/)[0];
+      const camel = word.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+      const needles = word === 'tabindex' ? ['tabindex', 'tabIndex'] : [word, camel];
+      if (!needles.some((n) => src.includes(n))) {
+        err(`<${m.element}> a11y.manages lists ${item} but no source file mentions it`);
+      }
+    }
+  }
+  return checked;
+}
+
 // ── Run all checks ───────────────────────────────────────────────────
 
 const manifests = loadManifests();
@@ -243,6 +310,7 @@ checkCompendiumFixtures(shadowMap);
 checkDemoFiles(shadowMap);
 checkAriaContracts(manifests);
 checkReflectedState(manifests);
+const a11yChecked = checkA11yBlocks(manifests);
 
 // Report
 if (warnings.length > 0) {
@@ -255,5 +323,5 @@ if (errors.length > 0) {
   for (const e of errors) console.error(e);
   process.exit(1);
 } else {
-  console.log(`✓ API drift check passed (${manifests.length} manifests, ${shadowMap.size} shadow-checked elements)`);
+  console.log(`✓ API drift check passed (${manifests.length} manifests, ${shadowMap.size} shadow-checked elements, ${a11yChecked} a11y blocks)`);
 }

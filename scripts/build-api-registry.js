@@ -166,6 +166,40 @@ function validateManifest(manifest, filePath) {
     }
   }
 
+  // a11y block: the pattern a component implements, the roles and states it
+  // manages, what the author provides and the keys it handles. Feeds the
+  // generated tables on the Accessibility pages.
+  if (manifest.a11y !== undefined) {
+    const a = manifest.a11y;
+    const KNOWN = ['pattern', 'patternUrl', 'manages', 'provide', 'announces', 'keyboard'];
+    if (!a || typeof a !== 'object' || Array.isArray(a)) {
+      err('$.a11y', 'must be object');
+    } else {
+      for (const k of Object.keys(a)) if (!KNOWN.includes(k)) err(`$.a11y.${k}`, `unknown key (expected: ${KNOWN.join(', ')})`);
+      if (typeof a.pattern !== 'string' || !a.pattern) err('$.a11y.pattern', 'required string');
+      if (a.patternUrl !== undefined && !/^https:\/\//.test(a.patternUrl)) err('$.a11y.patternUrl', 'must be an https URL');
+      for (const k of ['provide', 'announces']) {
+        if (a[k] !== undefined && (typeof a[k] !== 'string' || !a[k])) err(`$.a11y.${k}`, 'must be a non-empty string');
+      }
+      if (a.manages !== undefined && (!Array.isArray(a.manages) || a.manages.some((v) => typeof v !== 'string' || !v))) {
+        err('$.a11y.manages', 'must be an array of strings');
+      }
+      if (a.keyboard !== undefined) {
+        if (!Array.isArray(a.keyboard)) {
+          err('$.a11y.keyboard', 'must be array');
+        } else {
+          a.keyboard.forEach((row, i) => {
+            const p = `$.a11y.keyboard[${i}]`;
+            if (!Array.isArray(row.keys) || !row.keys.length || row.keys.some((v) => typeof v !== 'string' || !v)) err(`${p}.keys`, 'must be a non-empty array of strings');
+            if (typeof row.action !== 'string' || !row.action) err(`${p}.action`, 'required string');
+            if (row.when !== undefined && (typeof row.when !== 'string' || !row.when)) err(`${p}.when`, 'must be a non-empty string');
+            for (const k of Object.keys(row)) if (!['keys', 'action', 'when'].includes(k)) err(`${p}.${k}`, 'unknown key');
+          });
+        }
+      }
+    }
+  }
+
   // events array
   if (manifest.events) {
     if (!Array.isArray(manifest.events)) {

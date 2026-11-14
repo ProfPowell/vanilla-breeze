@@ -1879,7 +1879,56 @@ export default {
         "type": "Array<{ id?, summary, content, open? }>",
         "description": "Get the panel set as data, or assign one to rebuild the accordion"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Accordion",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/accordion/",
+      "manages": [
+        "role=\"region\"",
+        "aria-expanded",
+        "aria-controls",
+        "aria-labelledby"
+      ],
+      "provide": "A <details> element with a <summary> for each panel",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Open or close the panel",
+          "when": "Native behaviour of <summary>"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Move focus to the next panel header, wrapping to the first",
+          "when": "Focus on a panel header"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Move focus to the previous panel header, wrapping to the last",
+          "when": "Focus on a panel header"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move focus to the first panel header",
+          "when": "Focus on a panel header"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move focus to the last panel header",
+          "when": "Focus on a panel header"
+        }
+      ]
+    }
   },
   "activity-feed": {
     "$schema": "../../../schemas/api.schema.json",
@@ -1997,7 +2046,82 @@ export default {
         "description": "icon-wc name — renders <icon-wc> in the left rail (alternative to avatar)"
       }
     ],
-    "structure": []
+    "structure": [],
+    "a11y": {
+      "pattern": "Feed",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/feed/",
+      "manages": [
+        "role=\"feed\"",
+        "role=\"group\"",
+        "aria-label",
+        "aria-busy",
+        "aria-labelledby",
+        "aria-describedby",
+        "aria-posinset",
+        "aria-setsize",
+        "aria-hidden",
+        "tabindex"
+      ],
+      "provide": "An <article data-activity> for each entry, and an aria-label on the feed when the default \"Recent activity\" does not describe it",
+      "keyboard": [
+        {
+          "keys": [
+            "PageDown"
+          ],
+          "action": "Move focus to the next entry",
+          "when": "Focus on or inside an entry"
+        },
+        {
+          "keys": [
+            "PageUp"
+          ],
+          "action": "Move focus to the previous entry",
+          "when": "Focus on or inside an entry"
+        },
+        {
+          "keys": [
+            "Ctrl+End"
+          ],
+          "action": "Move focus to the first focusable element after the feed",
+          "when": "Focus on or inside an entry"
+        },
+        {
+          "keys": [
+            "Ctrl+Home"
+          ],
+          "action": "Move focus to the last focusable element before the feed",
+          "when": "Focus on or inside an entry"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Move focus to the next entry",
+          "when": "Focus on the entry itself"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Move focus to the previous entry",
+          "when": "Focus on the entry itself"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move focus to the first entry",
+          "when": "Focus on the entry itself"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move focus to the last entry",
+          "when": "Focus on the entry itself"
+        }
+      ]
+    }
   },
   "ai-chat": {
     "$schema": "../../../schemas/api.schema.json",
@@ -2136,7 +2260,35 @@ export default {
         "returns": "void",
         "description": "Abort the in-flight reply, if any. Same as the Stop button or Escape."
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Live region",
+      "manages": [
+        "role=\"log\"",
+        "role=\"group\"",
+        "aria-live",
+        "aria-label",
+        "aria-busy",
+        "hidden"
+      ],
+      "announces": "Each new message and the reply as it streams in, politely, through the role=\"log\" thread",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter"
+          ],
+          "action": "Send the message",
+          "when": "Focus in the message field (handled by chat-input)"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Stop the reply that is being generated",
+          "when": "While a reply is streaming"
+        }
+      ]
+    }
   },
   "ai-summary": {
     "$schema": "../../../schemas/api.schema.json",
@@ -2269,7 +2421,26 @@ export default {
         "returns": "void",
         "description": "Abort the in-flight summary, if any. Same as the Stop button or Escape."
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Live region",
+      "manages": [
+        "role=\"status\"",
+        "aria-live",
+        "aria-busy",
+        "hidden"
+      ],
+      "announces": "Availability and notice messages through role=\"status\", and the summary text politely as it is generated",
+      "keyboard": [
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Stop the summary that is being generated",
+          "when": "While a summary is being generated"
+        }
+      ]
+    }
   },
   "analytics-panel": {
     "$schema": "../../schemas/api.schema.json",
@@ -2359,7 +2530,31 @@ export default {
         "name": "analytics-panel:optin",
         "description": "Fired when the user resumes analytics for this tab"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Button",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/button/",
+      "manages": [
+        "role=\"status\"",
+        "aria-pressed",
+        "aria-disabled",
+        "aria-describedby",
+        "aria-labelledby",
+        "aria-hidden",
+        "hidden"
+      ],
+      "announces": "The analytics state through role=\"status\", each time its message changes",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Pause or resume analytics, or refresh the panel",
+          "when": "Native behaviour of <button>"
+        }
+      ]
+    }
   },
   "audio-player": {
     "$schema": "../../../schemas/api.schema.json",
@@ -2563,7 +2758,54 @@ export default {
         "name": "error",
         "description": "Load-error message (hidden unless data-state=\"error\")"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Native media controls",
+      "manages": [
+        "role=\"group\"",
+        "role=\"status\"",
+        "tabindex",
+        "aria-label",
+        "aria-keyshortcuts",
+        "aria-pressed",
+        "aria-valuetext",
+        "aria-hidden",
+        "hidden"
+      ],
+      "provide": "An <audio> element, and an aria-label on the player when the default \"Audio player\" does not describe it",
+      "announces": "A message through role=\"status\" when the audio cannot be loaded",
+      "keyboard": [
+        {
+          "keys": [
+            "Space"
+          ],
+          "action": "Play or pause",
+          "when": "Focus on the player itself, not on one of its controls"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Seek back 10 seconds",
+          "when": "Focus on the player itself, not on one of its controls"
+        },
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Seek forward 10 seconds",
+          "when": "Focus on the player itself, not on one of its controls"
+        },
+        {
+          "keys": [
+            "m",
+            "M"
+          ],
+          "action": "Mute or unmute",
+          "when": "Focus on the player itself, not on one of its controls"
+        }
+      ]
+    }
   },
   "audio-visualizer": {
     "$schema": "../../../schemas/api.schema.json",
@@ -2613,7 +2855,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "a11y": {
+      "pattern": "Decorative canvas",
+      "manages": [
+        "aria-hidden"
+      ]
+    }
   },
   "author-index": {
     "$schema": "../../../schemas/api.schema.json",
@@ -2685,7 +2933,27 @@ export default {
         "type": "boolean",
         "description": "Marks an authored fallback group as filterable; hidden when its visible text does not contain the query"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Native details/summary",
+      "manages": [
+        "role=\"status\"",
+        "aria-label",
+        "aria-hidden",
+        "hidden"
+      ],
+      "announces": "The number of matching authors, politely, after each change to the filter field",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Open or close an author group",
+          "when": "Native behaviour of <summary>"
+        }
+      ]
+    }
   },
   "brand-mark": {
     "$schema": "../../../schemas/api.schema.json",
@@ -2777,6 +3045,13 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Image with text alternative",
+      "manages": [
+        "alt"
+      ],
+      "provide": "Text content naming the brand, or an alt attribute when the logo image stands alone"
     }
   },
   "bread-crumb": {
@@ -2866,7 +3141,28 @@ export default {
         "type": "Record<string, string>",
         "description": "Segment → label map for data-from-pathname mode. Keys may be a full pathname ('/docs/elements/'), a pathname without the trailing slash, or a single (decoded or raw) segment; '/' or 'home' relabels the Home crumb. Assigning re-renders the trail."
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Breadcrumb",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/breadcrumb/",
+      "manages": [
+        "role=\"navigation\"",
+        "aria-label",
+        "aria-current",
+        "aria-expanded"
+      ],
+      "provide": "An <ol> of links, or a <nav aria-label> around the list",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Show or hide the collapsed crumbs",
+          "when": "Native behaviour of <button> (the ellipsis toggle)"
+        }
+      ]
+    }
   },
   "calendar-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -3209,7 +3505,70 @@ export default {
         "description": "Span bar continues into the next row (runtime)"
       }
     ],
-    "structure": []
+    "structure": [],
+    "a11y": {
+      "pattern": "Grid",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/grid/",
+      "manages": [
+        "role=\"grid\"",
+        "role=\"dialog\"",
+        "aria-label",
+        "aria-labelledby",
+        "aria-selected",
+        "aria-multiselectable",
+        "aria-current",
+        "aria-disabled",
+        "aria-live",
+        "aria-hidden",
+        "tabindex"
+      ],
+      "announces": "The month and year in the header, politely, when the visible month changes",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Move focus to the next day (reversed in right-to-left)",
+          "when": "Focus on a day"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Move focus to the previous day (reversed in right-to-left)",
+          "when": "Focus on a day"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Move focus to the same weekday in the next week",
+          "when": "Focus on a day"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Move focus to the same weekday in the previous week",
+          "when": "Focus on a day"
+        },
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Select the day, or open its event detail when selection is off",
+          "when": "Native behaviour of <button>"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the day detail and return focus to the day",
+          "when": "Day detail open"
+        }
+      ]
+    }
   },
   "card-list": {
     "$schema": "../../../schemas/api.schema.json",
@@ -3329,7 +3688,17 @@ export default {
         "type": "Array<object>",
         "description": "Get the current items, or assign an array to re-render via the keyed diff (cancels an in-flight src fetch). setItems()/getItems() were removed."
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Live region",
+      "manages": [
+        "role=\"status\"",
+        "aria-busy",
+        "hidden"
+      ],
+      "provide": "A <template> whose markup is accessible on its own (headings, link text, alt text)",
+      "announces": "A loading message and any fetch error through role=\"status\", when data is loaded from src"
+    }
   },
   "carousel-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -3492,7 +3861,54 @@ export default {
         "type": "Array<{ id?, html, label? }>",
         "description": "Get the slides as data, or assign records to rebuild the carousel"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Carousel",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/carousel/",
+      "manages": [
+        "role=\"region\"",
+        "role=\"group\"",
+        "aria-roledescription",
+        "aria-label",
+        "aria-current",
+        "aria-live",
+        "aria-atomic",
+        "tabindex",
+        "hidden"
+      ],
+      "provide": "An aria-label on the carousel when the default \"Carousel\" does not describe it; an aria-label on a slide replaces the generated \"n of total\"",
+      "announces": "The slide position (\"Slide 2 of 5\"), politely, after a slide change; silent while autoplay is running",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Go to the next slide (reversed in right-to-left)",
+          "when": "Focus on the slide track"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Go to the previous slide (reversed in right-to-left)",
+          "when": "Focus on the slide track"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Go to the first slide",
+          "when": "Focus on the slide track"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Go to the last slide",
+          "when": "Focus on the slide track"
+        }
+      ]
+    }
   },
   "change-set": {
     "$schema": "../../../schemas/api.schema.json",
@@ -3599,6 +4015,26 @@ export default {
         "--change-set-ins-end",
         "--change-set-del-start",
         "--change-set-del-end"
+      ]
+    },
+    "a11y": {
+      "pattern": "Button",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/button/",
+      "manages": [
+        "role=\"group\"",
+        "aria-label",
+        "aria-pressed"
+      ],
+      "provide": "<ins> and <del> elements marking the changes",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Switch to that view of the changes",
+          "when": "Native behaviour of <button>"
+        }
       ]
     }
   },
@@ -3813,7 +4249,18 @@ export default {
         "returns": "string|null",
         "description": "Get current SVG markup"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Image with data table alternative",
+      "manages": [
+        "role=\"img\"",
+        "aria-hidden",
+        "aria-label",
+        "tabindex",
+        "hidden"
+      ],
+      "provide": "A data table or data source, and a data-title (used as the table caption or the image name)"
+    }
   },
   "chat-input": {
     "$schema": "../../../schemas/api.schema.json",
@@ -3957,7 +4404,30 @@ export default {
         "required": false,
         "description": "Send button"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Native form controls",
+      "manages": [
+        "aria-label"
+      ],
+      "provide": "A <textarea> with a label (otherwise it is named \"Message\") and a named send button",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter"
+          ],
+          "action": "Send the message",
+          "when": "Focus in the message field"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Clear the message field",
+          "when": "Focus in the message field"
+        }
+      ]
+    }
   },
   "chat-window": {
     "$schema": "../../../schemas/api.schema.json",
@@ -4131,7 +4601,12 @@ export default {
         "name": "scrollToBottom()",
         "description": "Scroll the thread to the newest message"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Live region",
+      "provide": "A <chat-thread role=\"log\" aria-live=\"polite\"> with an aria-label, and a chat-input",
+      "announces": "New messages and a \"<name> is typing\" notice, through the role=\"log\" thread the author provides"
+    }
   },
   "color-picker": {
     "$schema": "../../../schemas/api.schema.json",
@@ -4216,7 +4691,101 @@ export default {
         "name": "color-picker:close",
         "description": "Fired when the panel closes"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Slider",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/slider/",
+      "manages": [
+        "role=\"dialog\"",
+        "role=\"slider\"",
+        "role=\"group\"",
+        "aria-haspopup",
+        "aria-expanded",
+        "aria-label",
+        "aria-labelledby",
+        "aria-valuemin",
+        "aria-valuemax",
+        "aria-valuenow",
+        "aria-valuetext",
+        "aria-pressed",
+        "aria-hidden",
+        "tabindex",
+        "hidden"
+      ],
+      "provide": "An <input type=\"color\"> with a <label>",
+      "announces": "\"Color copied\", politely, after the copy button is used",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Open or close the picker panel",
+          "when": "Native behaviour of <button> (the trigger)"
+        },
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Increase saturation by 1",
+          "when": "Focus on the saturation and lightness area"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Decrease saturation by 1",
+          "when": "Focus on the saturation and lightness area"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Increase lightness by 1",
+          "when": "Focus on the saturation and lightness area"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Decrease lightness by 1",
+          "when": "Focus on the saturation and lightness area"
+        },
+        {
+          "keys": [
+            "ArrowRight",
+            "ArrowUp"
+          ],
+          "action": "Increase hue by 1 degree",
+          "when": "Focus on the hue slider"
+        },
+        {
+          "keys": [
+            "ArrowLeft",
+            "ArrowDown"
+          ],
+          "action": "Decrease hue by 1 degree",
+          "when": "Focus on the hue slider"
+        },
+        {
+          "keys": [
+            "Shift+ArrowRight",
+            "Shift+ArrowLeft",
+            "Shift+ArrowUp",
+            "Shift+ArrowDown"
+          ],
+          "action": "Change the value by 10 instead of 1",
+          "when": "Focus on either slider"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the panel and return focus to the trigger",
+          "when": "Panel open"
+        }
+      ]
+    }
   },
   "combo-box": {
     "$schema": "../../../schemas/api.schema.json",
@@ -4352,7 +4921,91 @@ export default {
         "name": "combo-box:close",
         "description": "Fired when the listbox closes"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Combobox",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/",
+      "manages": [
+        "role=\"combobox\"",
+        "role=\"listbox\"",
+        "role=\"option\"",
+        "aria-expanded",
+        "aria-autocomplete",
+        "aria-controls",
+        "aria-activedescendant",
+        "aria-selected",
+        "aria-multiselectable",
+        "aria-invalid",
+        "aria-live",
+        "aria-atomic",
+        "aria-label",
+        "hidden"
+      ],
+      "provide": "A text input with a <label>, and a list of options",
+      "announces": "The tag that was added or removed, politely, in multiple mode",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Open the list if closed and move to the next option, wrapping to the first"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Open the list if closed and move to the previous option, wrapping to the last"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move to the first option",
+          "when": "List open"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move to the last option",
+          "when": "List open"
+        },
+        {
+          "keys": [
+            "Enter"
+          ],
+          "action": "Select the active option; in multiple mode with custom values, add the typed text as a tag"
+        },
+        {
+          "keys": [
+            ", "
+          ],
+          "action": "Add the typed text as a tag",
+          "when": "Multiple mode with custom values"
+        },
+        {
+          "keys": [
+            "Backspace"
+          ],
+          "action": "Remove the last tag",
+          "when": "Multiple mode, input empty"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the list and keep focus in the input",
+          "when": "List open"
+        },
+        {
+          "keys": [
+            "Tab"
+          ],
+          "action": "Close the list and move focus on",
+          "when": "List open"
+        }
+      ]
+    }
   },
   "command-group": {
     "element": "command-group",
@@ -4524,7 +5177,67 @@ export default {
         "type": "boolean",
         "description": "Read-only. Whether the dialog is open"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Combobox",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/",
+      "manages": [
+        "role=\"combobox\"",
+        "role=\"listbox\"",
+        "role=\"group\"",
+        "role=\"option\"",
+        "aria-label",
+        "aria-labelledby",
+        "aria-autocomplete",
+        "aria-controls",
+        "aria-expanded",
+        "aria-activedescendant",
+        "aria-selected",
+        "aria-keyshortcuts",
+        "aria-hidden",
+        "tabindex",
+        "hidden"
+      ],
+      "provide": "A label for each command; a label attribute when the default \"Command palette\" does not describe the dialog",
+      "keyboard": [
+        {
+          "keys": [
+            "Meta+k",
+            "Ctrl+k"
+          ],
+          "action": "Open or close the palette (Meta on macOS, Ctrl elsewhere; set by the hotkey attribute)",
+          "when": "Anywhere on the page"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Move to the next command, wrapping to the first",
+          "when": "Palette open"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Move to the previous command, wrapping to the last",
+          "when": "Palette open"
+        },
+        {
+          "keys": [
+            "Enter"
+          ],
+          "action": "Run the active command and close the palette",
+          "when": "Palette open"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the palette",
+          "when": "Palette open"
+        }
+      ]
+    }
   },
   "comment-box": {
     "$schema": "../../../schemas/api.schema.json",
@@ -4703,7 +5416,30 @@ export default {
         "description": "slot=\"toolbar\" children move into the tool group left of the buttons (kept across reconnects)"
       }
     ],
-    "structure": []
+    "structure": [],
+    "a11y": {
+      "pattern": "Native form controls",
+      "manages": [
+        "role=\"group\"",
+        "role=\"status\"",
+        "aria-label",
+        "aria-busy",
+        "aria-disabled",
+        "aria-hidden"
+      ],
+      "provide": "A label attribute or an associated <label> (otherwise the field is named \"Comment\")",
+      "announces": "The characters remaining or over the limit through role=\"status\", once the text is within 10% of data-max-length",
+      "keyboard": [
+        {
+          "keys": [
+            "Ctrl+Enter",
+            "Meta+Enter"
+          ],
+          "action": "Submit the comment",
+          "when": "Focus in the comment field"
+        }
+      ]
+    }
   },
   "comment-thread": {
     "$schema": "../../../schemas/api.schema.json",
@@ -4839,7 +5575,27 @@ export default {
         "description": "Set by the component: names each comment from its author and time"
       }
     ],
-    "structure": []
+    "structure": [],
+    "a11y": {
+      "pattern": "Landmark region",
+      "manages": [
+        "role=\"region\"",
+        "role=\"group\"",
+        "aria-label",
+        "aria-labelledby"
+      ],
+      "provide": "An <article data-comment> for each comment, and an aria-label on the thread when the default \"Comments\" does not describe it",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Reply to, edit or delete the comment",
+          "when": "Native behaviour of <button>"
+        }
+      ]
+    }
   },
   "comment-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -4877,6 +5633,27 @@ export default {
     "structure": [],
     "css": {
       "tokens": []
+    },
+    "a11y": {
+      "pattern": "Button",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/button/",
+      "manages": [
+        "aria-label",
+        "aria-disabled",
+        "aria-describedby",
+        "aria-hidden"
+      ],
+      "provide": "A review-surface for the comment to attach to; without one the button is marked unavailable",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Start a comment on the current selection",
+          "when": "Native behaviour of <button>"
+        }
+      ]
     }
   },
   "compare-surface": {
@@ -4936,7 +5713,90 @@ export default {
         "description": "Get or set the integer position (0-100). Setting clamps, rounds and reflects to the attribute without firing compare-surface:change."
       }
     ],
-    "childAttributes": []
+    "childAttributes": [],
+    "a11y": {
+      "pattern": "Slider",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/slider/",
+      "manages": [
+        "role=\"slider\"",
+        "tabindex",
+        "aria-label",
+        "aria-orientation",
+        "aria-valuemin",
+        "aria-valuemax",
+        "aria-valuenow",
+        "aria-valuetext"
+      ],
+      "provide": "Two child elements to compare, each with its own text alternative, and a label attribute when the default slider name does not fit",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Increase the position by 1% (reversed in right-to-left)",
+          "when": "Focus on the divider"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Decrease the position by 1% (reversed in right-to-left)",
+          "when": "Focus on the divider"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Increase the position by 1%",
+          "when": "Focus on the divider"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Decrease the position by 1%",
+          "when": "Focus on the divider"
+        },
+        {
+          "keys": [
+            "Shift+ArrowRight",
+            "Shift+ArrowLeft",
+            "Shift+ArrowUp",
+            "Shift+ArrowDown"
+          ],
+          "action": "Change the position by 10% instead of 1%",
+          "when": "Focus on the divider"
+        },
+        {
+          "keys": [
+            "PageUp"
+          ],
+          "action": "Increase the position by 10%",
+          "when": "Focus on the divider"
+        },
+        {
+          "keys": [
+            "PageDown"
+          ],
+          "action": "Decrease the position by 10%",
+          "when": "Focus on the divider"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Set the position to 0%",
+          "when": "Focus on the divider"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Set the position to 100%",
+          "when": "Focus on the divider"
+        }
+      ]
+    }
   },
   "consent-banner": {
     "$schema": "../../../schemas/api.schema.json",
@@ -5051,7 +5911,16 @@ export default {
         "returns": "Promise<void>",
         "description": "Static. Clear stored consent for key (default 'banner') so the banner reappears on the next load."
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Native dialog",
+      "manages": [
+        "aria-labelledby",
+        "aria-label",
+        "hidden"
+      ],
+      "provide": "A <dialog> containing a heading (used as its name) and buttons with value=\"accept\", \"reject\" or \"save\""
+    }
   },
   "content-lens": {
     "$schema": "../../../schemas/api.schema.json",
@@ -5143,7 +6012,15 @@ export default {
         "returns": "void",
         "description": "Switch to the named lens (ignored if unknown). Persists the choice; fires content-lens:change only when the lens actually changes."
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Native form controls",
+      "manages": [
+        "hidden",
+        "aria-hidden"
+      ],
+      "provide": "A data-lens-label on each lens when its data-lens-name does not read well as a radio label"
+    }
   },
   "content-swap": {
     "$schema": "../../../schemas/api.schema.json",
@@ -5247,7 +6124,34 @@ export default {
         "description": "Toggle used when there are no data-swap triggers; generated with the text \"Show back\" if absent. Author one to set the label. Receives aria-pressed."
       }
     ],
-    "structure": []
+    "structure": [],
+    "a11y": {
+      "pattern": "Button",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/button/",
+      "manages": [
+        "inert",
+        "aria-pressed"
+      ],
+      "provide": "Explicit [data-swap] triggers should be <button> elements with a text label; without triggers a \"Show back\" toggle button is generated",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Swap faces and move focus to the first control on the face now showing",
+          "when": "Focus on a [data-swap] trigger"
+        },
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Swap faces and keep focus on the toggle",
+          "when": "Native behaviour of button (the generated or authored data-swap-toggle)"
+        }
+      ]
+    }
   },
   "context-menu": {
     "$schema": "../../../schemas/api.schema.json",
@@ -5351,7 +6255,81 @@ export default {
         "type": "boolean",
         "description": "Read-only. Whether the menu is open"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Menu",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/menubar/",
+      "manages": [
+        "role=\"menu\"",
+        "role=\"menuitem\"",
+        "role=\"none\"",
+        "role=\"separator\"",
+        "role=\"group\"",
+        "aria-haspopup",
+        "aria-expanded",
+        "aria-controls",
+        "aria-disabled",
+        "aria-keyshortcuts",
+        "aria-labelledby",
+        "aria-hidden",
+        "tabindex"
+      ],
+      "provide": "A trigger element and a <menu> of buttons or links with text labels",
+      "keyboard": [
+        {
+          "keys": [
+            "ContextMenu",
+            "Shift+F10"
+          ],
+          "action": "Open the menu at the trigger and focus the first item",
+          "when": "Focus on the trigger"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Move to the next item, wrapping to the first"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Move to the previous item, wrapping to the last"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move to the first item"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move to the last item"
+        },
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Activate the focused item and close the menu"
+        },
+        {
+          "keys": [
+            "Tab"
+          ],
+          "action": "Close the menu"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the menu and return focus to the trigger",
+          "when": "Native behaviour of popover"
+        }
+      ]
+    }
   },
   "data-table": {
     "$schema": "../../../schemas/api.schema.json",
@@ -5560,7 +6538,34 @@ export default {
         "returns": "HTMLTableRowElement[]",
         "description": "Currently selected rows."
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Table",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/table/",
+      "manages": [
+        "aria-sort",
+        "aria-expanded",
+        "aria-hidden",
+        "aria-current",
+        "aria-label",
+        "aria-live",
+        "aria-atomic",
+        "role=\"status\"",
+        "hidden"
+      ],
+      "provide": "A <table> with <th> headers, a caption or other accessible name, labelled row checkboxes and a labelled <button data-action=\"toggle-expand\"> for expandable rows",
+      "announces": "The sorted column and direction after a sort, the number of matching rows after filtering, and the number of selected rows after a selection change, politely",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Sort by the column, toggling between ascending and descending",
+          "when": "Native behaviour of button (the generated sort button in a header)"
+        }
+      ]
+    }
   },
   "date-picker": {
     "$schema": "../../../schemas/api.schema.json",
@@ -5792,7 +6797,148 @@ export default {
         "element": "<input type=\"date\">",
         "description": "Required. Supplies value/min/max and is the no-JS fallback. Its <label for> (or a <label for> on the host, or an aria-label) names the generated combobox."
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Combobox",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/",
+      "manages": [
+        "role=\"combobox\"",
+        "role=\"dialog\"",
+        "role=\"grid\"",
+        "aria-haspopup",
+        "aria-expanded",
+        "aria-controls",
+        "aria-modal",
+        "aria-label",
+        "aria-labelledby",
+        "aria-describedby",
+        "aria-selected",
+        "aria-current",
+        "aria-disabled",
+        "aria-required",
+        "aria-invalid",
+        "aria-hidden",
+        "aria-live",
+        "tabindex",
+        "hidden"
+      ],
+      "provide": "An <input type=\"date\"> with a <label for> (or an aria-label); the label is passed to the generated combobox",
+      "announces": "The month name in the calendar header, politely, when the displayed month changes",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Open the calendar and focus the selected or current day",
+          "when": "Focus on the text input"
+        },
+        {
+          "keys": [
+            "Enter"
+          ],
+          "action": "Commit the typed date, or clear the value when the input is empty",
+          "when": "Focus on the text input"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the calendar and restore the displayed value",
+          "when": "Focus on the text input"
+        },
+        {
+          "keys": [
+            "Tab"
+          ],
+          "action": "Close the calendar and move on"
+        },
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Move to the next day",
+          "when": "Focus in the day grid"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Move to the previous day",
+          "when": "Focus in the day grid"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Move to the same weekday in the next week",
+          "when": "Focus in the day grid"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Move to the same weekday in the previous week",
+          "when": "Focus in the day grid"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move to the first day of the week",
+          "when": "Focus in the day grid"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move to the last day of the week",
+          "when": "Focus in the day grid"
+        },
+        {
+          "keys": [
+            "PageDown"
+          ],
+          "action": "Move to the same day in the next month",
+          "when": "Focus in the day grid"
+        },
+        {
+          "keys": [
+            "PageUp"
+          ],
+          "action": "Move to the same day in the previous month",
+          "when": "Focus in the day grid"
+        },
+        {
+          "keys": [
+            "Shift+PageDown"
+          ],
+          "action": "Move to the same day in the next year",
+          "when": "Focus in the day grid"
+        },
+        {
+          "keys": [
+            "Shift+PageUp"
+          ],
+          "action": "Move to the same day in the previous year",
+          "when": "Focus in the day grid"
+        },
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Select the focused day, close the calendar and return focus to the text input",
+          "when": "Focus in the day grid"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the calendar and return focus to the text input",
+          "when": "Focus in the calendar"
+        }
+      ]
+    }
   },
   "day-view": {
     "$schema": "../../../schemas/api.schema.json",
@@ -5914,7 +7060,50 @@ export default {
         "element": "calendar-event",
         "description": "Individual event with time, category, and optional duration"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Native list with roving tabindex",
+      "manages": [
+        "role=\"group\"",
+        "aria-label",
+        "tabindex"
+      ],
+      "provide": "Each <calendar-event> needs a <time datetime> and a text title, from which its label is built",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Move to the next event"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Move to the previous event"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move to the first event"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move to the last event"
+        },
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Fire day-view:event-click for the focused event",
+          "when": "Focus on the event itself, not a link or button inside it"
+        }
+      ]
+    }
   },
   "diagram-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -6004,7 +7193,17 @@ export default {
         "readonly": true,
         "description": "Serialized markup of the currently rendered SVG, or an empty string before the first render"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Figure with labelled SVG",
+      "manages": [
+        "aria-labelledby",
+        "aria-describedby",
+        "role=\"status\""
+      ],
+      "provide": "A caption attribute, or accTitle and accDescr lines in the Mermaid source, to name and describe the diagram",
+      "announces": "A syntax error message, in a role=\"status\" paragraph, when the diagram source fails to parse"
+    }
   },
   "dl": {
     "element": "dl",
@@ -6239,6 +7438,72 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Sortable list",
+      "manages": [
+        "role=\"list\"",
+        "role=\"listitem\"",
+        "role=\"status\"",
+        "tabindex",
+        "aria-disabled",
+        "aria-pressed",
+        "aria-description",
+        "aria-label",
+        "aria-live",
+        "aria-atomic",
+        "hidden"
+      ],
+      "provide": "An aria-label on the surface (used in announcements) and readable text or an aria-label in each draggable item",
+      "announces": "Grab, each new position, drop, cancel and moves between surfaces, politely",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Grab the item, or drop it when already grabbed",
+          "when": "Focus on an item or its drag handle"
+        },
+        {
+          "keys": [
+            "ArrowDown",
+            "ArrowUp"
+          ],
+          "action": "Move focus to the next or previous item, or move the grabbed item one position",
+          "when": "Vertical orientation"
+        },
+        {
+          "keys": [
+            "ArrowRight",
+            "ArrowLeft"
+          ],
+          "action": "Move focus to the next or previous item, or move the grabbed item one position (reversed in right-to-left)",
+          "when": "Horizontal orientation"
+        },
+        {
+          "keys": [
+            "ArrowRight",
+            "ArrowLeft"
+          ],
+          "action": "Move the grabbed item to the next or previous surface in the group",
+          "when": "Vertical orientation, item grabbed"
+        },
+        {
+          "keys": [
+            "ArrowDown",
+            "ArrowUp"
+          ],
+          "action": "Move the grabbed item to the next or previous surface in the group",
+          "when": "Horizontal orientation, item grabbed"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Cancel the grab and return the item to where it started, or blur the item when nothing is grabbed"
+        }
+      ]
     }
   },
   "drop-down": {
@@ -6370,7 +7635,104 @@ export default {
         "type": "boolean",
         "description": "Read-only. Whether the menu is open"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Menu button",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/",
+      "manages": [
+        "role=\"menu\"",
+        "role=\"menuitem\"",
+        "role=\"none\"",
+        "role=\"separator\"",
+        "aria-haspopup",
+        "aria-expanded",
+        "aria-controls",
+        "aria-disabled",
+        "aria-label",
+        "tabindex"
+      ],
+      "provide": "A trigger with a text label and a <menu> of buttons or links; in hover (navigation) mode the list keeps link semantics and a toggle button is generated beside a link trigger",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Open the menu and focus the first item",
+          "when": "Native behaviour of button (the trigger)"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Open the menu and focus the first item",
+          "when": "Focus on the trigger, action mode"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Open the menu and focus the last item",
+          "when": "Focus on the trigger, action mode"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Move to the next item, wrapping to the first",
+          "when": "Focus in the menu, action mode"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Move to the previous item, wrapping to the last",
+          "when": "Focus in the menu, action mode"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move to the first item",
+          "when": "Focus in the menu, action mode"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move to the last item",
+          "when": "Focus in the menu, action mode"
+        },
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Activate the focused item and close the menu",
+          "when": "Focus in the menu, action mode"
+        },
+        {
+          "keys": [
+            "Printable character"
+          ],
+          "action": "Move to the next item whose label starts with the typed characters",
+          "when": "Focus in the menu, action mode"
+        },
+        {
+          "keys": [
+            "Tab"
+          ],
+          "action": "Close the menu",
+          "when": "Focus in the menu, action mode"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the menu and return focus to the trigger or toggle button"
+        }
+      ]
+    }
   },
   "emoji-picker": {
     "$schema": "../../../schemas/api.schema.json",
@@ -6606,6 +7968,110 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Non-modal dialog with a listbox",
+      "manages": [
+        "role=\"dialog\"",
+        "role=\"toolbar\"",
+        "role=\"listbox\"",
+        "role=\"group\"",
+        "role=\"option\"",
+        "role=\"status\"",
+        "aria-haspopup",
+        "aria-expanded",
+        "aria-controls",
+        "aria-label",
+        "aria-current",
+        "aria-hidden",
+        "tabindex",
+        "hidden"
+      ],
+      "provide": "A <button data-trigger> with a text label or aria-label (a default name is added when it has no letters)",
+      "announces": "The number of matching emoji, politely, after each search",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Open the picker and focus the search field, or close it",
+          "when": "Native behaviour of button (the trigger)"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the picker and return focus to the trigger"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Move focus to the active or first emoji",
+          "when": "Focus on the search field"
+        },
+        {
+          "keys": [
+            "ArrowRight",
+            "ArrowLeft"
+          ],
+          "action": "Move to the next or previous category, wrapping (reversed in right-to-left)",
+          "when": "Focus in the category toolbar"
+        },
+        {
+          "keys": [
+            "Home",
+            "End"
+          ],
+          "action": "Move to the first or last category",
+          "when": "Focus in the category toolbar"
+        },
+        {
+          "keys": [
+            "ArrowRight",
+            "ArrowLeft"
+          ],
+          "action": "Move to the next or previous emoji (reversed in right-to-left)",
+          "when": "Focus in the emoji grid"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Move to the nearest emoji in the row below",
+          "when": "Focus in the emoji grid"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Move to the nearest emoji in the row above, or to the search field from the first row",
+          "when": "Focus in the emoji grid"
+        },
+        {
+          "keys": [
+            "Home",
+            "End"
+          ],
+          "action": "Move to the first or last visible emoji",
+          "when": "Focus in the emoji grid"
+        },
+        {
+          "keys": [
+            "PageDown"
+          ],
+          "action": "Move to the first emoji of the next group",
+          "when": "Focus in the emoji grid"
+        },
+        {
+          "keys": [
+            "PageUp"
+          ],
+          "action": "Move to the first emoji of the current group, then of the previous group",
+          "when": "Focus in the emoji grid"
+        }
+      ]
     }
   },
   "flow-diagram": {
@@ -6793,7 +8259,58 @@ export default {
         "detail": "{ steps, source: 'property' }",
         "description": "After .steps assignment (fires after the render's ready)"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Figure with a list of buttons (roving tabindex)",
+      "manages": [
+        "aria-labelledby",
+        "aria-label",
+        "aria-describedby",
+        "aria-hidden",
+        "role=\"status\"",
+        "aria-live",
+        "aria-atomic",
+        "tabindex"
+      ],
+      "provide": "A data-title to name the diagram; otherwise data-label or the default \"Flow diagram\" is used",
+      "announces": "The text of the selected step, politely, when a step is activated",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowDown",
+            "ArrowRight"
+          ],
+          "action": "Move to the next step (ArrowRight reversed in right-to-left)"
+        },
+        {
+          "keys": [
+            "ArrowUp",
+            "ArrowLeft"
+          ],
+          "action": "Move to the previous step (ArrowLeft reversed in right-to-left)"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move to the first step"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move to the last step"
+        },
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Select the focused step",
+          "when": "Native behaviour of button"
+        }
+      ]
+    }
   },
   "foot-note": {
     "element": "foot-note",
@@ -6886,6 +8403,30 @@ export default {
       "flow": true,
       "permittedContent": [
         "@flow"
+      ]
+    },
+    "a11y": {
+      "pattern": "Footnote links (DPUB-ARIA)",
+      "manages": [
+        "role=\"doc-noteref\"",
+        "role=\"doc-endnotes\"",
+        "role=\"doc-backlink\"",
+        "role=\"note\"",
+        "aria-label",
+        "aria-labelledby",
+        "aria-hidden",
+        "inert",
+        "hidden",
+        "tabindex"
+      ],
+      "keyboard": [
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Hide the note preview popover",
+          "when": "A preview is showing"
+        }
       ]
     }
   },
@@ -7260,7 +8801,16 @@ export default {
         "name": "clearError()",
         "description": "Clear the field's own programmatic error and return to the neutral state."
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Native form controls",
+      "manages": [
+        "aria-describedby",
+        "aria-invalid"
+      ],
+      "provide": "A <label for> for the control, plus <output class=\"hint\"> and <output class=\"error\" aria-live=\"polite\"> elements for the messages",
+      "announces": "The validation message, when it is written into the error <output> after the field becomes invalid"
+    }
   },
   "geo-map": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7594,7 +9144,76 @@ export default {
         "description": "slot=\"attribution\" replaces the credit line."
       }
     ],
-    "structure": []
+    "structure": [],
+    "a11y": {
+      "pattern": "Image, then an application-like region once activated",
+      "manages": [
+        "role=\"img\"",
+        "role=\"region\"",
+        "role=\"group\"",
+        "role=\"status\"",
+        "aria-label",
+        "aria-roledescription",
+        "aria-describedby",
+        "aria-hidden",
+        "aria-live",
+        "tabindex",
+        "hidden"
+      ],
+      "provide": "A place name (label attribute or caption content) so the map image has a meaningful name",
+      "announces": "The new centre coordinates and zoom level, politely, after the map is panned or zoomed",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Switch the static map to interactive mode and focus the map",
+          "when": "Native behaviour of button (the activate button)"
+        },
+        {
+          "keys": [
+            "ArrowLeft",
+            "ArrowRight",
+            "ArrowUp",
+            "ArrowDown"
+          ],
+          "action": "Pan the map",
+          "when": "Focus on the interactive map"
+        },
+        {
+          "keys": [
+            "+",
+            "="
+          ],
+          "action": "Zoom in",
+          "when": "Focus on the interactive map"
+        },
+        {
+          "keys": [
+            "-",
+            "_"
+          ],
+          "action": "Zoom out",
+          "when": "Focus on the interactive map"
+        },
+        {
+          "keys": [
+            "Home",
+            "0"
+          ],
+          "action": "Return to the original centre",
+          "when": "Focus on the interactive map"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Leave interactive mode and return focus to the activate button",
+          "when": "Focus on the interactive map"
+        }
+      ]
+    }
   },
   "glossary-index": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7716,7 +9335,23 @@ export default {
         "detail": "{ query, matchCount }",
         "description": "After the filter is applied"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Landmark navigation",
+      "manages": [
+        "aria-current",
+        "aria-disabled",
+        "aria-label",
+        "aria-hidden",
+        "role=\"status\"",
+        "aria-live",
+        "aria-atomic",
+        "hidden",
+        "tabindex"
+      ],
+      "provide": "A <nav class=\"glossary-jump\"> with an aria-label, and letter sections with ids and headings",
+      "announces": "The number of matching terms, politely, after each filter change, and that a permalink was copied"
+    }
   },
   "glossary-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7921,7 +9556,38 @@ export default {
         "detail": "{ url, error }",
         "description": "When src fails to load (HTTP error, invalid JSON, or no terms array)"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Disclosure",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/",
+      "manages": [
+        "role=\"region\"",
+        "role=\"status\"",
+        "role=\"alert\"",
+        "role=\"link\"",
+        "aria-label",
+        "aria-controls",
+        "aria-expanded",
+        "aria-disabled",
+        "aria-hidden",
+        "aria-live",
+        "aria-atomic",
+        "hidden",
+        "tabindex"
+      ],
+      "provide": "A <dl> of terms (or a src) with text in every <dt>",
+      "announces": "The number of terms found, politely, after each search, and a load error as an alert",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Expand or collapse a category",
+          "when": "Native behaviour of button (the category toggle)"
+        }
+      ]
+    }
   },
   "heading-links": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7976,6 +9642,17 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Link",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/link/",
+      "manages": [
+        "aria-label",
+        "aria-labelledby",
+        "tabindex"
+      ],
+      "provide": "Headings with text content inside the element",
+      "announces": "That the link was copied (or that copying failed), politely, after an anchor is activated"
     }
   },
   "highlight-wc": {
@@ -8142,6 +9819,37 @@ export default {
           "description": "Text colour of highlighted text (light-dark() pair); per-colour override --highlight-{name}-ink"
         }
       ]
+    },
+    "a11y": {
+      "pattern": "Disclosure",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/",
+      "manages": [
+        "aria-expanded",
+        "aria-controls",
+        "aria-pressed",
+        "aria-label",
+        "aria-hidden",
+        "role=\"group\"",
+        "hidden"
+      ],
+      "announces": "That a highlight was added or removed, or a note saved, politely",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Open the colour palette and focus the current colour",
+          "when": "Native behaviour of button (the highlighter button)"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the colour palette and return focus to the highlighter button",
+          "when": "The palette is open"
+        }
+      ]
     }
   },
   "icon-wc": {
@@ -8278,7 +9986,16 @@ export default {
         "required": false,
         "description": "Optional fallback shown until the SVG loads and when it fails (data-error)"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Image",
+      "manages": [
+        "role=\"img\"",
+        "aria-label",
+        "aria-hidden"
+      ],
+      "provide": "A label attribute when the icon conveys meaning on its own; without it the icon is hidden from assistive technology"
+    }
   },
   "image-gallery": {
     "$schema": "../../../.claude/schemas/api.schema.json",
@@ -8500,7 +10217,64 @@ export default {
         "element": "<figcaption>",
         "description": "Optional caption inside figure. Supports HTML including links; its nodes are cloned into the lightbox."
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Native dialog",
+      "manages": [
+        "aria-label",
+        "aria-live",
+        "aria-atomic",
+        "aria-expanded",
+        "aria-controls",
+        "hidden"
+      ],
+      "provide": "Thumbnail links that each contain an <img> with alt text",
+      "announces": "The position counter (for example \"Image 2 of 8\"), politely, when the lightbox image changes",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter"
+          ],
+          "action": "Open the lightbox at that image",
+          "when": "Native behaviour of a (a thumbnail link)"
+        },
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Show the next image (reversed in right-to-left)",
+          "when": "Lightbox open"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Show the previous image (reversed in right-to-left)",
+          "when": "Lightbox open"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Show the first image",
+          "when": "Lightbox open"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Show the last image",
+          "when": "Lightbox open"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the lightbox",
+          "when": "Native behaviour of dialog"
+        }
+      ]
+    }
   },
   "image-map": {
     "$schema": "../../../.claude/schemas/api.schema.json",
@@ -8638,7 +10412,62 @@ export default {
         "element": "<map-area>",
         "description": "Hotspot definition; its child content becomes the tooltip (and the no-JS list item body)."
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Group of links and buttons with tooltips",
+      "manages": [
+        "role=\"group\"",
+        "role=\"tooltip\"",
+        "aria-label",
+        "aria-describedby",
+        "aria-expanded",
+        "aria-controls",
+        "aria-disabled",
+        "aria-hidden",
+        "tabindex",
+        "hidden"
+      ],
+      "provide": "An <img> with alt text (used as the group name) and a label or text content on each <map-area>",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowDown",
+            "ArrowRight"
+          ],
+          "action": "Move to the next hotspot, wrapping to the first",
+          "when": "Focus on a hotspot"
+        },
+        {
+          "keys": [
+            "ArrowUp",
+            "ArrowLeft"
+          ],
+          "action": "Move to the previous hotspot, wrapping to the last",
+          "when": "Focus on a hotspot"
+        },
+        {
+          "keys": [
+            "Space"
+          ],
+          "action": "Activate the hotspot as Enter does",
+          "when": "Focus on a hotspot that is a link"
+        },
+        {
+          "keys": [
+            "Enter"
+          ],
+          "action": "Follow the link or, for click-mode hotspots, toggle the tooltip and focus its first control",
+          "when": "Native behaviour of a and button"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Hide the visible tooltip and, when focus was inside it, return focus to its hotspot",
+          "when": "A tooltip is showing"
+        }
+      ]
+    }
   },
   "include-file": {
     "$schema": "../../../schemas/api.schema.json",
@@ -8766,7 +10595,15 @@ export default {
         "detail": "{ src, source: 'property' }",
         "description": "After .src is assigned a new value from script (not for direct attribute changes)"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Live region",
+      "manages": [
+        "aria-busy",
+        "role=\"alert\""
+      ],
+      "announces": "An error message, as an alert, when loading fails and no fallback content is shown"
+    }
   },
   "markdown-editor": {
     "$schema": "../../../schemas/api.schema.json",
@@ -8915,7 +10752,31 @@ export default {
         "readonly": true,
         "description": "The backing textarea: the authored one when provided. Stable across reconnects"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Native form controls",
+      "manages": [
+        "aria-label",
+        "aria-describedby"
+      ],
+      "provide": "A <label for> pointing at the authored <textarea>; without one the textarea is named \"Markdown source\"",
+      "keyboard": [
+        {
+          "keys": [
+            "Tab"
+          ],
+          "action": "Insert two spaces instead of moving focus",
+          "when": "Focus in the textarea with data-tab-indent set"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Release the next Tab press so it moves focus out of the textarea",
+          "when": "Focus in the textarea with data-tab-indent set"
+        }
+      ]
+    }
   },
   "markdown-viewer": {
     "$schema": "../../../schemas/api.schema.json",
@@ -9068,7 +10929,16 @@ export default {
         "returns": "Promise<void>",
         "description": "Re-fetch the src URL and re-render"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Live region",
+      "manages": [
+        "role=\"note\"",
+        "role=\"alert\""
+      ],
+      "provide": "A fallback <pre> child if the raw source should stay readable when rendering fails",
+      "announces": "The error message, assertively, when loading or rendering fails and there is no fallback <pre>"
+    }
   },
   "nav-bar": {
     "$schema": "../../schemas/api.schema.json",
@@ -9165,6 +11035,15 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Landmark navigation",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/landmarks/",
+      "manages": [
+        "role=\"navigation\"",
+        "aria-current"
+      ],
+      "provide": "An aria-label on the host, or on the wrapped <nav>, that names the navigation"
     }
   },
   "note-wc": {
@@ -9261,6 +11140,32 @@ export default {
     "structure": [],
     "css": {
       "tokens": []
+    },
+    "a11y": {
+      "pattern": "Dialog (non-modal)",
+      "manages": [
+        "role=\"dialog\"",
+        "aria-label",
+        "aria-hidden",
+        "tabindex"
+      ],
+      "keyboard": [
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the note panel without saving and return focus to the opener",
+          "when": "Focus in the note panel"
+        },
+        {
+          "keys": [
+            "Ctrl+Enter",
+            "Meta+Enter"
+          ],
+          "action": "Save the note and close the panel",
+          "when": "Focus in the note textarea"
+        }
+      ]
     }
   },
   "notification-wc": {
@@ -9594,7 +11499,65 @@ export default {
         "type": "Array<{ id, title, body?, date?, type?, url?, dismissed? }>",
         "description": "Panel mode: dynamic notifications merged over static <article> children by id (same shape as the src feed). The getter returns a copy; the setter re-renders and fires notification-wc:notifications-changed. url renders as a link only when it resolves to http(s). Banner mode ignores the setter."
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Non-modal dialog with tabs",
+      "manages": [
+        "aria-haspopup",
+        "aria-expanded",
+        "aria-controls",
+        "aria-label",
+        "role=\"dialog\"",
+        "aria-labelledby",
+        "role=\"tablist\"",
+        "role=\"tab\"",
+        "role=\"tabpanel\"",
+        "aria-selected",
+        "tabindex",
+        "role=\"list\"",
+        "aria-hidden",
+        "hidden",
+        "popover"
+      ],
+      "provide": "In banner mode, a dismiss button with an accessible name; in panel mode, an accessible name on an authored trigger",
+      "keyboard": [
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the panel and return focus to the trigger",
+          "when": "Panel open"
+        },
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Move to and select the next tab, wrapping (reversed in right-to-left)",
+          "when": "Focus on a tab"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Move to and select the previous tab, wrapping (reversed in right-to-left)",
+          "when": "Focus on a tab"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move to and select the first tab",
+          "when": "Focus on a tab"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move to and select the last tab",
+          "when": "Focus on a tab"
+        }
+      ]
+    }
   },
   "page-info": {
     "$schema": "../../../schemas/api.schema.json",
@@ -9853,6 +11816,23 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Native details/summary",
+      "manages": [
+        "aria-label",
+        "aria-hidden"
+      ],
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Open or close the page information panel",
+          "when": "Native behaviour of summary"
+        }
+      ]
     }
   },
   "page-stats": {
@@ -10024,6 +12004,33 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Landmark navigation",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/landmarks/",
+      "manages": [
+        "aria-label",
+        "aria-current",
+        "tabindex"
+      ],
+      "provide": "Headings that have an id and text content inside the scoped container",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter"
+          ],
+          "action": "Scroll to the heading and move focus to it",
+          "when": "Native behaviour of a link; the component handles the click"
+        },
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Collapse or expand the whole table of contents",
+          "when": "Native behaviour of summary"
+        }
+      ]
     }
   },
   "page-tools": {
@@ -10176,7 +12183,70 @@ export default {
         "name": "--page-tools-fab-end",
         "description": "FAB distance from the viewport inline-end edge"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Toolbar",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/",
+      "manages": [
+        "role=\"toolbar\"",
+        "aria-label",
+        "aria-orientation",
+        "tabindex",
+        "aria-hidden",
+        "popover",
+        "hidden"
+      ],
+      "provide": "Child controls that each have an accessible name",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Move to the next tool, wrapping (reversed in right-to-left)",
+          "when": "Horizontal toolbar"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Move to the previous tool, wrapping (reversed in right-to-left)",
+          "when": "Horizontal toolbar"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Move to the next tool, wrapping",
+          "when": "Vertical toolbar or collapsed panel"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Move to the previous tool, wrapping",
+          "when": "Vertical toolbar or collapsed panel"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move to the first tool"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move to the last tool"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the collapsed panel and return focus to the floating button",
+          "when": "Native behaviour of popover"
+        }
+      ]
+    }
   },
   "page-tour": {
     "$schema": "../../../schemas/api.schema.json",
@@ -10517,7 +12587,76 @@ export default {
         "name": "--tour-z-index",
         "description": "Stacking level of the backdrop and spotlight"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Dialog (modal)",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/",
+      "manages": [
+        "role=\"dialog\"",
+        "aria-modal",
+        "aria-label",
+        "tabindex",
+        "aria-hidden",
+        "aria-live",
+        "aria-atomic",
+        "aria-disabled",
+        "aria-describedby",
+        "popover"
+      ],
+      "provide": "A heading (h2 to h4) in each tour-step; it receives focus and is announced",
+      "announces": "The step count and heading, politely, on each step, and a ready message when the action required by a gated step is done",
+      "keyboard": [
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "End the tour and return focus to where it started",
+          "when": "Current step is skippable"
+        },
+        {
+          "keys": [
+            "ArrowRight",
+            "ArrowDown"
+          ],
+          "action": "Go to the next step",
+          "when": "Focus not in a form field"
+        },
+        {
+          "keys": [
+            "ArrowLeft",
+            "ArrowUp"
+          ],
+          "action": "Go to the previous step",
+          "when": "Focus not in a form field"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Go to the first step",
+          "when": "Focus not in a form field"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Go to the last step",
+          "when": "Focus not in a form field"
+        },
+        {
+          "keys": [
+            "Tab"
+          ],
+          "action": "Move to the next control in the card, wrapping; on a gated step the target joins the cycle"
+        },
+        {
+          "keys": [
+            "Shift+Tab"
+          ],
+          "action": "Move to the previous control in the card, wrapping; on a gated step the target joins the cycle"
+        }
+      ]
+    }
   },
   "pager-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -10628,6 +12767,31 @@ export default {
       "flow": true,
       "permittedContent": [
         "@flow"
+      ]
+    },
+    "a11y": {
+      "pattern": "Landmark navigation",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/landmarks/",
+      "manages": [
+        "aria-label",
+        "aria-current",
+        "aria-live",
+        "aria-hidden",
+        "role=\"list\"",
+        "disabled",
+        "tabindex"
+      ],
+      "provide": "An aria-label on the host when the default name \"Pagination\" is not specific enough",
+      "announces": "The page status (\"Page 2 of 5\"), politely, after each page change in the previous/next style",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Go to the page the focused button names; focus stays on the equivalent button after the controls re-render",
+          "when": "Native behaviour of button"
+        }
       ]
     }
   },
@@ -10786,6 +12950,66 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Radio group",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/radio/",
+      "manages": [
+        "role=\"radiogroup\"",
+        "role=\"radio\"",
+        "role=\"group\"",
+        "role=\"checkbox\"",
+        "aria-checked",
+        "aria-disabled",
+        "aria-busy",
+        "aria-label",
+        "aria-labelledby",
+        "aria-live",
+        "aria-hidden",
+        "tabindex"
+      ],
+      "provide": "A question element or an aria-label on the host to name the option group",
+      "announces": "The total vote count, and the closed state, politely, when it changes",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowDown",
+            "ArrowRight"
+          ],
+          "action": "Move to the next option and vote for it, wrapping (left and right reversed in right-to-left)",
+          "when": "Single choice"
+        },
+        {
+          "keys": [
+            "ArrowUp",
+            "ArrowLeft"
+          ],
+          "action": "Move to the previous option and vote for it, wrapping (left and right reversed in right-to-left)",
+          "when": "Single choice"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move to the first option and vote for it",
+          "when": "Single choice"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move to the last option and vote for it",
+          "when": "Single choice"
+        },
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Vote for the focused option, or withdraw the vote",
+          "when": "Native behaviour of button"
+        }
+      ]
     }
   },
   "pop-over": {
@@ -10899,6 +13123,22 @@ export default {
       "flow": true,
       "permittedContent": [
         "@flow"
+      ]
+    },
+    "a11y": {
+      "pattern": "Native popover",
+      "manages": [
+        "popover"
+      ],
+      "provide": "A trigger button with popovertarget set to the element's id",
+      "keyboard": [
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the popover",
+          "when": "Native behaviour of popover in auto and hint modes"
+        }
       ]
     }
   },
@@ -11029,6 +13269,12 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Native links in an ordered list",
+      "manages": [
+        "aria-busy"
+      ]
     }
   },
   "print-page": {
@@ -11081,7 +13327,25 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "a11y": {
+      "pattern": "Native button",
+      "manages": [
+        "aria-label",
+        "aria-hidden",
+        "role=\"group\""
+      ],
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Open the print dialog",
+          "when": "Native behaviour of button"
+        }
+      ]
+    }
   },
   "progress-tracker": {
     "$schema": "../../../schemas/api.schema.json",
@@ -11244,7 +13508,26 @@ export default {
         "name": "--pt-color-text-on-fill",
         "description": "Glyph colour on filled (complete / error) circles (default --color-text-on-interactive-auto)."
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Native ordered list of steps",
+      "manages": [
+        "aria-current",
+        "aria-label",
+        "aria-hidden"
+      ],
+      "provide": "An <ol> whose items carry a text label for each step",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Go back to the focused completed step",
+          "when": "Native behaviour of button; completed steps with data-clickable"
+        }
+      ]
+    }
   },
   "qr-code": {
     "$schema": "../../../schemas/api.schema.json",
@@ -11377,6 +13660,16 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Image",
+      "manages": [
+        "role=\"img\"",
+        "aria-label",
+        "hidden"
+      ],
+      "provide": "A data-label-prefix when \"QR code\" is not a sufficient name; the caption carries the encoded value",
+      "announces": "A copied message, politely, after copy() succeeds"
     }
   },
   "reaction-bar": {
@@ -11515,7 +13808,77 @@ export default {
         "name": "closePalette()",
         "description": "Close the palette popover"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Toolbar",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/",
+      "manages": [
+        "role=\"toolbar\"",
+        "aria-label",
+        "tabindex",
+        "aria-pressed",
+        "aria-busy",
+        "aria-disabled",
+        "aria-haspopup",
+        "aria-expanded",
+        "role=\"dialog\"",
+        "role=\"group\"",
+        "aria-hidden",
+        "popovertarget"
+      ],
+      "provide": "A data-label or aria-label on each reaction button that names the emoji",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Move to the next chip or the add-reaction trigger, wrapping (reversed in right-to-left)",
+          "when": "Focus in the toolbar"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Move to the previous chip or the add-reaction trigger, wrapping (reversed in right-to-left)",
+          "when": "Focus in the toolbar"
+        },
+        {
+          "keys": [
+            "ArrowRight",
+            "ArrowDown"
+          ],
+          "action": "Move to the next palette option, wrapping (left and right reversed in right-to-left)",
+          "when": "Focus in the palette"
+        },
+        {
+          "keys": [
+            "ArrowLeft",
+            "ArrowUp"
+          ],
+          "action": "Move to the previous palette option, wrapping (left and right reversed in right-to-left)",
+          "when": "Focus in the palette"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move to the first item of the toolbar or palette"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move to the last item of the toolbar or palette"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the palette",
+          "when": "Native behaviour of popover"
+        }
+      ]
+    }
   },
   "reader-view": {
     "$schema": "../../../schemas/api.schema.json",
@@ -11880,6 +14243,73 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Toggle buttons with a paged region",
+      "manages": [
+        "role=\"region\"",
+        "role=\"group\"",
+        "aria-label",
+        "aria-pressed",
+        "aria-live",
+        "aria-hidden",
+        "inert",
+        "tabindex"
+      ],
+      "announces": "The page indicator, politely, when the page changes in pages mode",
+      "keyboard": [
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Return to scroll mode and move focus to the mode toggle",
+          "when": "Pages mode"
+        },
+        {
+          "keys": [
+            "ArrowRight",
+            "PageDown"
+          ],
+          "action": "Go to the next page (arrow reversed in right-to-left)",
+          "when": "Pages mode, focus not in a form field"
+        },
+        {
+          "keys": [
+            "ArrowLeft",
+            "PageUp"
+          ],
+          "action": "Go to the previous page (arrow reversed in right-to-left)",
+          "when": "Pages mode, focus not in a form field"
+        },
+        {
+          "keys": [
+            "Space"
+          ],
+          "action": "Go to the next page",
+          "when": "Pages mode, focus not on a button, link or form field"
+        },
+        {
+          "keys": [
+            "Shift+Space"
+          ],
+          "action": "Go to the previous page",
+          "when": "Pages mode, focus not on a button, link or form field"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Go to the first page",
+          "when": "Pages mode, focus not in a form field"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Go to the last page",
+          "when": "Pages mode, focus not in a form field"
+        }
+      ]
     }
   },
   "reading-progress": {
@@ -11938,6 +14368,12 @@ export default {
       "flow": true,
       "permittedContent": [
         "@flow"
+      ]
+    },
+    "a11y": {
+      "pattern": "Decorative progress bar",
+      "manages": [
+        "aria-hidden"
       ]
     }
   },
@@ -12061,6 +14497,25 @@ export default {
     "htmlvalidate": {
       "flow": true,
       "permittedContent": []
+    },
+    "a11y": {
+      "pattern": "Button",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/button/",
+      "manages": [
+        "aria-pressed",
+        "aria-disabled",
+        "aria-label"
+      ],
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Toggle pause, toggle anchors or clear the history",
+          "when": "Native behaviour of button"
+        }
+      ]
     }
   },
   "score-card": {
@@ -12176,7 +14631,13 @@ export default {
         "name": "icon",
         "description": "Icon slot wrapper"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Static content",
+      "manages": [
+        "aria-busy"
+      ]
+    }
   },
   "selection-menu": {
     "$schema": "../../../schemas/api.schema.json",
@@ -12285,6 +14746,64 @@ export default {
     ],
     "css": {
       "tokens": []
+    },
+    "a11y": {
+      "pattern": "Toolbar",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/",
+      "manages": [
+        "role=\"toolbar\"",
+        "aria-orientation",
+        "aria-label",
+        "aria-keyshortcuts",
+        "tabindex",
+        "popover",
+        "hidden"
+      ],
+      "provide": "Child buttons or links that each have an accessible name",
+      "keyboard": [
+        {
+          "keys": [
+            "Alt+F10"
+          ],
+          "action": "Open the toolbar for the current selection if needed and focus its first item",
+          "when": "Text is selected"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the toolbar; if focus was in it, return focus and the selection to the text",
+          "when": "Toolbar open"
+        },
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Move to the next item, wrapping (reversed in right-to-left)",
+          "when": "Focus in the toolbar"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Move to the previous item, wrapping (reversed in right-to-left)",
+          "when": "Focus in the toolbar"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move to the first item",
+          "when": "Focus in the toolbar"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move to the last item",
+          "when": "Focus in the toolbar"
+        }
+      ]
     }
   },
   "settings-panel": {
@@ -12913,6 +15432,40 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Dialog (non-modal)",
+      "manages": [
+        "aria-haspopup",
+        "aria-expanded",
+        "aria-controls",
+        "aria-label",
+        "role=\"dialog\"",
+        "tabindex",
+        "role=\"status\"",
+        "role=\"group\"",
+        "aria-labelledby",
+        "aria-hidden",
+        "hidden"
+      ],
+      "announces": "The result of a reset, cache clear or update check, politely, when it finishes",
+      "keyboard": [
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the panel and return focus to the trigger",
+          "when": "Panel open"
+        },
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Open or close a settings section",
+          "when": "Native behaviour of summary"
+        }
+      ]
     }
   },
   "share-wc": {
@@ -13136,7 +15689,25 @@ export default {
         "description": "Marks a slotted link/button as a platform; \"copy\" copies the URL. {url}, {title}, {text} tokens in href are substituted (encoded)."
       }
     ],
-    "structure": []
+    "structure": [],
+    "a11y": {
+      "pattern": "Native buttons in a navigation landmark",
+      "manages": [
+        "aria-label",
+        "aria-hidden"
+      ],
+      "announces": "A copied message, politely, after the link or the selected quote is copied",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Share to the platform, copy the link or open the system share sheet",
+          "when": "Native behaviour of button"
+        }
+      ]
+    }
   },
   "short-cuts": {
     "$schema": "../../../schemas/api.schema.json",
@@ -13247,6 +15818,30 @@ export default {
       "flow": true,
       "permittedContent": [
         "@flow"
+      ]
+    },
+    "a11y": {
+      "pattern": "Native dialog",
+      "manages": [
+        "aria-labelledby",
+        "aria-label",
+        "aria-hidden"
+      ],
+      "keyboard": [
+        {
+          "keys": [
+            "?"
+          ],
+          "action": "Open or close the shortcuts dialog (the key is set by the hotkey attribute)",
+          "when": "Focus anywhere on the page except in a form field, while character shortcuts are enabled"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the dialog",
+          "when": "Native behaviour of dialog"
+        }
       ]
     }
   },
@@ -13401,7 +15996,21 @@ export default {
         "type": "boolean",
         "description": "Explicitly marks the index nav (otherwise the direct-child nav holding sections is used)"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Landmark navigation",
+      "manages": [
+        "role=\"status\"",
+        "aria-label",
+        "aria-current",
+        "aria-disabled",
+        "aria-expanded",
+        "tabindex",
+        "hidden"
+      ],
+      "provide": "A <nav> with an aria-label holding one <section> per letter, each with an <h2> and a list of terms",
+      "announces": "The number of matching terms, politely, as the filter text changes"
+    }
   },
   "site-map": {
     "$schema": "../../../schemas/api.schema.json",
@@ -13603,7 +16212,145 @@ export default {
         "type": "Array<{ label, href?, pageType?, template?, status?, children? }>",
         "description": "[ia-tree] Get the page tree as data, or assign one to rebuild (collapse state resets)"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Native details/summary (default mode); Tree view (ia-tree mode)",
+      "manages": [
+        "role=\"tree\"",
+        "role=\"treeitem\"",
+        "role=\"group\"",
+        "role=\"toolbar\"",
+        "aria-expanded",
+        "aria-current",
+        "aria-label",
+        "aria-hidden",
+        "aria-activedescendant",
+        "aria-selected",
+        "aria-level",
+        "aria-setsize",
+        "aria-posinset",
+        "aria-valuetext",
+        "tabindex roving",
+        "hidden"
+      ],
+      "provide": "A <nav> with an aria-label wrapping nested lists of links, grouped with <details> in the default mode",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Open or close a group",
+          "when": "Native behaviour of summary (default mode)"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Move to the next visible node",
+          "when": "ia-tree mode, focus on a tree item"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Move to the previous visible node",
+          "when": "ia-tree mode, focus on a tree item"
+        },
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Expand a collapsed node, or move to the first child of an expanded node (reversed in right-to-left)",
+          "when": "ia-tree mode, focus on a tree item"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Collapse an expanded node, or move to the parent node (reversed in right-to-left)",
+          "when": "ia-tree mode, focus on a tree item"
+        },
+        {
+          "keys": [
+            "Enter"
+          ],
+          "action": "Follow the node's link, or toggle a node that has no link",
+          "when": "ia-tree mode, focus on a tree item"
+        },
+        {
+          "keys": [
+            "Space"
+          ],
+          "action": "Toggle a node that has children, or follow the link of a leaf node",
+          "when": "ia-tree mode, focus on a tree item"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move to the first node",
+          "when": "ia-tree mode, focus on a tree item"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move to the last visible node",
+          "when": "ia-tree mode, focus on a tree item"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Move to the first child of the active node",
+          "when": "ia-tree mode with data-view=\"visual\", focus on the diagram"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Move to the parent of the active node",
+          "when": "ia-tree mode with data-view=\"visual\", focus on the diagram"
+        },
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Move to the next sibling",
+          "when": "ia-tree mode with data-view=\"visual\", focus on the diagram"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Move to the previous sibling",
+          "when": "ia-tree mode with data-view=\"visual\", focus on the diagram"
+        },
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Expand or collapse the active node",
+          "when": "ia-tree mode with data-view=\"visual\", focus on the diagram"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move to the root node",
+          "when": "ia-tree mode with data-view=\"visual\", focus on the diagram"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move to the last visible node",
+          "when": "ia-tree mode with data-view=\"visual\", focus on the diagram"
+        }
+      ]
+    }
   },
   "site-search": {
     "$schema": "../../../schemas/api.schema.json",
@@ -13859,7 +16606,66 @@ export default {
         "name": "input-debounce-pending",
         "description": "A keystroke is waiting out the 150ms debounce before searching"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Combobox in a native dialog",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/",
+      "manages": [
+        "role=\"combobox\"",
+        "role=\"listbox\"",
+        "role=\"option\"",
+        "role=\"status\"",
+        "aria-haspopup",
+        "aria-expanded",
+        "aria-controls",
+        "aria-autocomplete",
+        "aria-activedescendant",
+        "aria-selected",
+        "aria-label",
+        "aria-hidden",
+        "tabindex"
+      ],
+      "provide": "Optionally a trigger button with an accessible name; a labelled search button is generated when none is authored",
+      "announces": "The search status, the result count or a no-results message, politely, after each search",
+      "keyboard": [
+        {
+          "keys": [
+            "Ctrl+k",
+            "Meta+k"
+          ],
+          "action": "Open or close the search dialog",
+          "when": "Focus anywhere on the page, including form fields"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Make the next result active, wrapping to the first",
+          "when": "Focus in the search input"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Make the previous result active, wrapping to the last",
+          "when": "Focus in the search input"
+        },
+        {
+          "keys": [
+            "Enter"
+          ],
+          "action": "Go to the active result, or to the first result when none is active",
+          "when": "Focus in the search input"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the dialog and return focus to the trigger",
+          "when": "Focus in the search input"
+        }
+      ]
+    }
   },
   "slide-accept": {
     "$schema": "../../../schemas/api.schema.json",
@@ -13888,6 +16694,13 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "Screen-reader hint wired with aria-describedby (default: \"Press Enter to confirm\"). Observed"
+      },
+      {
+        "name": "data-label-required",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Validation message when required and not confirmed; {label} is replaced by the label (default: \"{label} to continue.\"). Observed"
       },
       {
         "name": "attention",
@@ -13993,6 +16806,74 @@ export default {
       "flow": true,
       "permittedContent": [
         "@flow"
+      ]
+    },
+    "a11y": {
+      "pattern": "Slider",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/slider/",
+      "manages": [
+        "role=\"slider\"",
+        "role=\"status\"",
+        "aria-valuemin",
+        "aria-valuemax",
+        "aria-valuenow",
+        "aria-valuetext",
+        "aria-label",
+        "aria-describedby",
+        "aria-disabled",
+        "tabindex"
+      ],
+      "provide": "Text content that names the action; it becomes the slider's accessible name",
+      "announces": "The activated label, politely, when the slide completes",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowRight",
+            "ArrowUp"
+          ],
+          "action": "Move the handle forward by 5%, accepting once it passes the threshold (ArrowRight and ArrowLeft reversed in right-to-left)",
+          "when": "Focus on the handle"
+        },
+        {
+          "keys": [
+            "ArrowLeft",
+            "ArrowDown"
+          ],
+          "action": "Move the handle back by 5%",
+          "when": "Focus on the handle"
+        },
+        {
+          "keys": [
+            "Shift+ArrowRight",
+            "Shift+ArrowUp"
+          ],
+          "action": "Move the handle forward by 20%",
+          "when": "Focus on the handle"
+        },
+        {
+          "keys": [
+            "Shift+ArrowLeft",
+            "Shift+ArrowDown"
+          ],
+          "action": "Move the handle back by 20%",
+          "when": "Focus on the handle"
+        },
+        {
+          "keys": [
+            "End",
+            "Enter",
+            "Space"
+          ],
+          "action": "Accept immediately",
+          "when": "Focus on the handle"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Return the handle to the start",
+          "when": "Focus on the handle"
+        }
       ]
     }
   },
@@ -14141,7 +17022,28 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "a11y": {
+      "pattern": "Button",
+      "manages": [
+        "role=\"status\"",
+        "aria-disabled",
+        "tabindex",
+        "title"
+      ],
+      "provide": "A fallback link to the post as content, and data-title when the default frame title does not fit",
+      "announces": "A loading message when loading starts and an error message when it fails, politely",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Load the embed and move focus into it",
+          "when": "Native behaviour of button"
+        }
+      ]
+    }
   },
   "split-surface": {
     "$schema": "../../../schemas/api.schema.json",
@@ -14271,7 +17173,85 @@ export default {
         "name": "collapsed",
         "description": "The first panel is collapsed"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Window splitter",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/",
+      "manages": [
+        "role=\"separator\"",
+        "aria-controls",
+        "aria-orientation",
+        "aria-valuemin",
+        "aria-valuemax",
+        "aria-valuenow",
+        "aria-valuetext",
+        "aria-label",
+        "tabindex",
+        "inert"
+      ],
+      "provide": "Two child panels; set data-label-resize when the default \"Resize panels\" name does not fit",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Shrink the first panel by 1% (reversed in right-to-left)",
+          "when": "Focus on the divider, side-by-side panels"
+        },
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Grow the first panel by 1% (reversed in right-to-left)",
+          "when": "Focus on the divider, side-by-side panels"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Shrink the first panel by 1%",
+          "when": "Focus on the divider, direction=\"vertical\""
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Grow the first panel by 1%",
+          "when": "Focus on the divider, direction=\"vertical\""
+        },
+        {
+          "keys": [
+            "Shift+ArrowLeft",
+            "Shift+ArrowRight",
+            "Shift+ArrowUp",
+            "Shift+ArrowDown"
+          ],
+          "action": "Resize in 10% steps in the direction of the arrow",
+          "when": "Focus on the divider"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Shrink the first panel to its minimum size",
+          "when": "Focus on the divider"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Grow the first panel to its maximum size",
+          "when": "Focus on the divider"
+        },
+        {
+          "keys": [
+            "Enter"
+          ],
+          "action": "Collapse the first panel, or restore it when collapsed",
+          "when": "Focus on the divider, collapsible attribute set"
+        }
+      ]
+    }
   },
   "star-rating": {
     "$schema": "../../../schemas/api.schema.json",
@@ -14436,6 +17416,27 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Native form controls",
+      "manages": [
+        "role=\"img\"",
+        "role=\"status\"",
+        "aria-label",
+        "aria-hidden"
+      ],
+      "provide": "A label attribute naming what is rated; the legend defaults to \"Rating\"",
+      "announces": "That the rating was cleared, politely, when the selected star is cleared (rating effect loaded)",
+      "keyboard": [
+        {
+          "keys": [
+            "Delete",
+            "Backspace"
+          ],
+          "action": "Clear the rating",
+          "when": "Focus on the selected star, with the rating effect loaded"
+        }
+      ]
     }
   },
   "status-wc": {
@@ -14552,6 +17553,16 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Live region",
+      "manages": [
+        "role=\"status\"",
+        "aria-live",
+        "aria-hidden"
+      ],
+      "provide": "Text content or a data-variant, so the status has a text label",
+      "announces": "Changes to its label text, politely, unless data-live=\"off\""
     }
   },
   "stepper-wc": {
@@ -14737,6 +17748,70 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Spin button",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/spinbutton/",
+      "manages": [
+        "role=\"spinbutton\"",
+        "aria-valuemin",
+        "aria-valuemax",
+        "aria-valuenow",
+        "aria-valuetext",
+        "aria-label",
+        "aria-labelledby",
+        "aria-disabled",
+        "aria-readonly",
+        "aria-hidden",
+        "tabindex"
+      ],
+      "provide": "A <label>, aria-labelledby or aria-label for the host; it is forwarded to the spin button",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowUp",
+            "ArrowRight"
+          ],
+          "action": "Increase by one step (ArrowRight and ArrowLeft reversed in right-to-left)",
+          "when": "Focus on the value"
+        },
+        {
+          "keys": [
+            "ArrowDown",
+            "ArrowLeft"
+          ],
+          "action": "Decrease by one step",
+          "when": "Focus on the value"
+        },
+        {
+          "keys": [
+            "PageUp"
+          ],
+          "action": "Increase by ten steps",
+          "when": "Focus on the value"
+        },
+        {
+          "keys": [
+            "PageDown"
+          ],
+          "action": "Decrease by ten steps",
+          "when": "Focus on the value"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Jump to the minimum",
+          "when": "Focus on the value"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Jump to the maximum",
+          "when": "Focus on the value"
+        }
+      ]
     }
   },
   "tab-set": {
@@ -14818,7 +17893,62 @@ export default {
         "type": "Array<{ id?, label, content, active? }>",
         "description": "Get the tabs as data, or assign an array to rebuild the set (<details> + <summary> + <section> panel per entry; first tab opens unless one has active: true). content is trusted HTML written with innerHTML — never pass unsanitised user input"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Native details/summary (exclusive group)",
+      "manages": [
+        "role=\"group\"",
+        "aria-controls",
+        "aria-labelledby",
+        "aria-expanded",
+        "tabindex roving"
+      ],
+      "provide": "Child <details> elements, each with a <summary> and a <section> panel",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Open and focus the next tab, wrapping to the first (reversed in right-to-left)",
+          "when": "Focus on a tab"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Open and focus the previous tab, wrapping to the last (reversed in right-to-left)",
+          "when": "Focus on a tab"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Open and focus the next tab, wrapping to the first",
+          "when": "Focus on a tab, data-orientation=\"vertical\""
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Open and focus the previous tab, wrapping to the last",
+          "when": "Focus on a tab, data-orientation=\"vertical\""
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Open and focus the first tab",
+          "when": "Focus on a tab"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Open and focus the last tab",
+          "when": "Focus on a tab"
+        }
+      ]
+    }
   },
   "table": {
     "element": "table",
@@ -15088,7 +18218,27 @@ export default {
         "readonly": true,
         "description": "Position as a 0–1 fraction of the extracted text"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Native form controls",
+      "manages": [
+        "role=\"group\"",
+        "aria-label",
+        "aria-pressed",
+        "aria-hidden",
+        "hidden",
+        "popover"
+      ],
+      "keyboard": [
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Hide the floating toolbar, returning focus to the trigger when focus was inside it",
+          "when": "variant=\"icon\" with the toolbar showing, focus anywhere on the page"
+        }
+      ]
+    }
   },
   "theme-picker": {
     "$schema": "../../../schemas/api.schema.json",
@@ -15211,7 +18361,30 @@ export default {
         "readonly": true,
         "description": "Whether the popover is open"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Non-modal dialog with native form controls",
+      "manages": [
+        "role=\"dialog\"",
+        "role=\"radiogroup\"",
+        "aria-haspopup",
+        "aria-expanded",
+        "aria-controls",
+        "aria-label",
+        "aria-busy",
+        "aria-hidden"
+      ],
+      "provide": "Optionally a trigger button with an accessible name; a labelled palette button is generated when none is authored",
+      "keyboard": [
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the panel and move focus to the trigger",
+          "when": "Popover variant with the panel open, focus anywhere on the page"
+        }
+      ]
+    }
   },
   "time-index": {
     "$schema": "../../../schemas/api.schema.json",
@@ -15343,7 +18516,18 @@ export default {
         "element": ".changelog-entries",
         "description": "One container: its li/article/section children are the entries. One per release: the host's top-level children holding them are the releases."
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Native form controls",
+      "manages": [
+        "role=\"status\"",
+        "aria-live",
+        "aria-label",
+        "aria-labelledby",
+        "hidden"
+      ],
+      "announces": "How many entries are shown, politely, after the version filter changes"
+    }
   },
   "time-picker": {
     "$schema": "../../../schemas/api.schema.json",
@@ -15575,7 +18759,135 @@ export default {
         "element": "<input type=\"time\">",
         "description": "Required. Supplies value/min/max/step and is the no-JS fallback. Its <label for> (or a <label for> on the host, or an aria-label) names the generated combobox."
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Combobox with a dialog popup of spin buttons",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/",
+      "manages": [
+        "role=\"combobox\"",
+        "role=\"dialog\"",
+        "role=\"spinbutton\"",
+        "aria-haspopup",
+        "aria-expanded",
+        "aria-controls",
+        "aria-modal",
+        "aria-label",
+        "aria-labelledby",
+        "aria-describedby",
+        "aria-valuemin",
+        "aria-valuemax",
+        "aria-valuenow",
+        "aria-valuetext",
+        "aria-readonly",
+        "aria-required",
+        "aria-invalid",
+        "aria-hidden",
+        "tabindex"
+      ],
+      "provide": "A child <input type=\"time\"> with a <label>; the label is forwarded to the generated text input",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Open the panel and focus its first segment",
+          "when": "Focus in the text input"
+        },
+        {
+          "keys": [
+            "Enter"
+          ],
+          "action": "Commit the typed time and close the panel",
+          "when": "Focus in the text input"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the panel and restore the displayed value",
+          "when": "Focus in the text input"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Increase the unit by one step",
+          "when": "Focus on an hours, minutes or seconds spin button"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Decrease the unit by one step",
+          "when": "Focus on an hours, minutes or seconds spin button"
+        },
+        {
+          "keys": [
+            "PageUp"
+          ],
+          "action": "Increase minutes or seconds by ten steps, hours by one step",
+          "when": "Focus on an hours, minutes or seconds spin button"
+        },
+        {
+          "keys": [
+            "PageDown"
+          ],
+          "action": "Decrease minutes or seconds by ten steps, hours by one step",
+          "when": "Focus on an hours, minutes or seconds spin button"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Set the unit to its minimum",
+          "when": "Focus on an hours, minutes or seconds spin button"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Set the unit to its maximum",
+          "when": "Focus on an hours, minutes or seconds spin button"
+        },
+        {
+          "keys": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+          ],
+          "action": "Type the unit's value directly",
+          "when": "Focus on an hours, minutes or seconds spin button"
+        },
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Move to the next segment (reversed in right-to-left)",
+          "when": "Focus on a spin button or the AM/PM button"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Move to the previous segment (reversed in right-to-left)",
+          "when": "Focus on a spin button or the AM/PM button"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the panel and return focus to the text input",
+          "when": "Focus on a spin button or the AM/PM button"
+        }
+      ]
+    }
   },
   "toast-msg": {
     "$schema": "../../../schemas/api.schema.json",
@@ -15698,7 +19010,27 @@ export default {
         "name": "dismissAll()",
         "description": "Dismiss every visible toast and clear the queue"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Live region",
+      "manages": [
+        "role=\"log\"",
+        "aria-live",
+        "aria-relevant",
+        "aria-label",
+        "aria-hidden"
+      ],
+      "announces": "Each new toast, prefixed with its variant name, politely unless the author sets aria-live=\"assertive\" on the host",
+      "keyboard": [
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Dismiss the toast that holds focus and move focus to the next toast or back to where it was",
+          "when": "Focus on a button inside a toast"
+        }
+      ]
+    }
   },
   "tool-tip": {
     "$schema": "../../../schemas/api.schema.json",
@@ -15805,7 +19137,31 @@ export default {
         "name": "hide()",
         "description": "Close now"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Tooltip",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/",
+      "manages": [
+        "role=\"tooltip\"",
+        "aria-describedby",
+        "aria-label",
+        "aria-controls",
+        "aria-expanded",
+        "aria-hidden",
+        "popover",
+        "interestfor"
+      ],
+      "provide": "A focusable trigger as the first child, and the tip text in a template, the content attribute or the trigger's title",
+      "keyboard": [
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Hide the tooltip or card; from inside a card, return focus to the trigger",
+          "when": "Tooltip or card showing, focus anywhere on the page"
+        }
+      ]
+    }
   },
   "topic-map": {
     "$schema": "../../../schemas/api.schema.json",
@@ -15955,6 +19311,19 @@ export default {
       "flow": true,
       "permittedContent": [
         "@flow"
+      ]
+    },
+    "a11y": {
+      "pattern": "Native details/summary",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Open or close a topic",
+          "when": "Native behaviour of summary"
+        }
       ]
     }
   },
@@ -16122,6 +19491,15 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Native form controls",
+      "manages": [
+        "aria-label",
+        "aria-live",
+        "hidden"
+      ],
+      "announces": "How many pages match, politely, after each filter change"
     }
   },
   "version-switcher": {
@@ -16432,7 +19810,64 @@ export default {
         "returns": "void",
         "description": "Re-resolve the data source and re-render."
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Native popover",
+      "manages": [
+        "role=\"dialog\"",
+        "role=\"list\"",
+        "role=\"listitem\"",
+        "role=\"status\"",
+        "aria-haspopup",
+        "aria-expanded",
+        "aria-label",
+        "aria-labelledby",
+        "aria-describedby",
+        "aria-current",
+        "aria-hidden",
+        "tabindex",
+        "hidden"
+      ],
+      "provide": "An aria-label on the host when the default trigger name does not fit",
+      "announces": "A notice that the page shows an archived version, politely, shortly after it renders",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Move to the next version",
+          "when": "Focus on a version in the picker"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Move to the previous version",
+          "when": "Focus on a version in the picker"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move to the first version",
+          "when": "Focus on a version in the picker"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move to the last version",
+          "when": "Focus on a version in the picker"
+        },
+        {
+          "keys": [
+            "Escape"
+          ],
+          "action": "Close the picker",
+          "when": "Native behaviour of popover"
+        }
+      ]
+    }
   },
   "video-player": {
     "$schema": "../../../schemas/api.schema.json",
@@ -16846,7 +20281,100 @@ export default {
         "name": "fullscreen-button",
         "description": "Fullscreen toggle"
       }
-    ]
+    ],
+    "a11y": {
+      "pattern": "Media player with custom controls built from native buttons and range inputs",
+      "manages": [
+        "role=\"group\"",
+        "role=\"status\"",
+        "tabindex",
+        "aria-label",
+        "aria-keyshortcuts",
+        "aria-pressed",
+        "aria-valuetext",
+        "aria-live",
+        "aria-hidden",
+        "inert",
+        "hidden"
+      ],
+      "provide": "A child <video>, with a captions <track> where speech is present; set aria-label when the default player name does not fit",
+      "announces": "Playing, paused, ended and buffering states, politely; the playback speed when it changes",
+      "keyboard": [
+        {
+          "keys": [
+            "Space",
+            "k"
+          ],
+          "action": "Play or pause",
+          "when": "Focus on the player, not on one of its controls"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Skip back 10 seconds",
+          "when": "Focus on the player, not on one of its controls"
+        },
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Skip forward 10 seconds",
+          "when": "Focus on the player, not on one of its controls"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Raise the volume by 5%",
+          "when": "Focus on the player, not on one of its controls"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Lower the volume by 5%",
+          "when": "Focus on the player, not on one of its controls"
+        },
+        {
+          "keys": [
+            "m"
+          ],
+          "action": "Mute or unmute",
+          "when": "Focus on the player, not on one of its controls"
+        },
+        {
+          "keys": [
+            "f"
+          ],
+          "action": "Enter or leave fullscreen",
+          "when": "Focus on the player, not on one of its controls"
+        },
+        {
+          "keys": [
+            "c"
+          ],
+          "action": "Turn captions on or off",
+          "when": "Focus on the player, not on one of its controls"
+        },
+        {
+          "keys": [
+            "ArrowLeft",
+            "ArrowDown"
+          ],
+          "action": "Seek back 5 seconds",
+          "when": "Focus on the seek slider"
+        },
+        {
+          "keys": [
+            "ArrowRight",
+            "ArrowUp"
+          ],
+          "action": "Seek forward 5 seconds",
+          "when": "Focus on the seek slider"
+        }
+      ]
+    }
   },
   "watch-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -16945,6 +20473,26 @@ export default {
       "flow": true,
       "permittedContent": [
         "@flow"
+      ]
+    },
+    "a11y": {
+      "pattern": "Button",
+      "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/button/",
+      "manages": [
+        "aria-pressed",
+        "aria-label",
+        "aria-hidden",
+        "title"
+      ],
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Start or stop watching the page",
+          "when": "Native behaviour of button"
+        }
       ]
     }
   },
@@ -17078,6 +20626,69 @@ export default {
       "permittedContent": [
         "@flow"
       ]
+    },
+    "a11y": {
+      "pattern": "Native table with roving focus across events",
+      "manages": [
+        "role=\"group\"",
+        "aria-label",
+        "aria-current",
+        "aria-hidden",
+        "tabindex roving"
+      ],
+      "provide": "Child <calendar-event> elements with a data-date and a <time>, each with text that names the event",
+      "keyboard": [
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Move to the next event in the same day",
+          "when": "Focus on an event"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Move to the previous event in the same day",
+          "when": "Focus on an event"
+        },
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Move to the closest event in time in the next day that has events (reversed in right-to-left)",
+          "when": "Focus on an event"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Move to the closest event in time in the previous day that has events (reversed in right-to-left)",
+          "when": "Focus on an event"
+        },
+        {
+          "keys": [
+            "Home"
+          ],
+          "action": "Move to the first event in the view",
+          "when": "Focus on an event"
+        },
+        {
+          "keys": [
+            "End"
+          ],
+          "action": "Move to the last event in the view",
+          "when": "Focus on an event"
+        },
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Fire week-view:event-click for the event",
+          "when": "Focus on the event itself, not a link or button inside it"
+        }
+      ]
     }
   },
   "youtube-player": {
@@ -17199,6 +20810,24 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "a11y": {
+      "pattern": "Button",
+      "manages": [
+        "aria-label",
+        "title"
+      ],
+      "provide": "A title attribute naming the video; it names the play button and the player frame",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter",
+            "Space"
+          ],
+          "action": "Load the video and move focus to the player frame",
+          "when": "Native behaviour of button"
+        }
+      ]
+    }
   }
 };

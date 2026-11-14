@@ -85,6 +85,32 @@
       "type": "array",
       "items": { "$ref": "#/$defs/childElement" },
       "description": "Required or expected child elements that the component needs to function"
+    },
+    "a11y": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pattern"],
+      "description": "Accessibility contract: the pattern implemented, the roles and states the component manages, what the author provides and the keys it handles. Feeds the generated tables on the Accessibility pages.",
+      "properties": {
+        "pattern": { "type": "string", "description": "Name of the ARIA Authoring Practices pattern or native mechanism, for example \"Menu button\" or \"Native details/summary\"" },
+        "patternUrl": { "type": "string", "pattern": "^https://" },
+        "manages": { "type": "array", "items": { "type": "string" }, "description": "Roles, states and properties the component sets itself, as written in markup: role=\"menu\", aria-expanded, inert" },
+        "provide": { "type": "string", "description": "What the author must supply for an accessible result" },
+        "announces": { "type": "string", "description": "What is announced through a live region, and when" },
+        "keyboard": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["keys", "action"],
+            "properties": {
+              "keys": { "type": "array", "minItems": 1, "items": { "type": "string" }, "description": "KeyboardEvent.key names; alternatives as separate items, chords joined with + (Shift+Tab)" },
+              "action": { "type": "string" },
+              "when": { "type": "string", "description": "Where focus must be, or the mode, for the key to apply" }
+            }
+          }
+        }
+      }
     }
   },
   "$defs": {
