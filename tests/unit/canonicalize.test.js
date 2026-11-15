@@ -223,13 +223,32 @@ describe('buildCanonicalText (via internal)', () => {
     const d = doc({
       body: [el('ARTICLE', { 'data-signable': '' }, [
         el('PAGE-INFO', {}, [text('derived')]),
-        el('CHANGE-SET', {}, [text('derived')]),
         el('PAGE-TOC', {}, [text('derived')]),
         el('TIME-INDEX', {}, [el('P', {}, [text('host content')])]),
         el('P', {}, [text('regular')])
       ])]
     });
     assert.equal(buildCanonicalText(d), 'host content\n\nregular');
+  });
+
+  it('signs the text inside <change-set>: kept text and <ins>, not <del> or its injected UI', () => {
+    const d = doc({
+      body: [el('ARTICLE', { 'data-signable': '' }, [
+        el('P', {}, [text('Before.')]),
+        el('CHANGE-SET', { author: 'pr' }, [
+          el('P', { 'data-change-caption': '' }, [text('Changes by pr')]),
+          el('DIV', { 'data-controls': '' }, [el('BUTTON', {}, [text('Final')])]),
+          el('P', {}, [
+            text('Buses run every '),
+            el('DEL', {}, [text('20')]),
+            text(' '),
+            el('INS', {}, [text('15')]),
+            text(' minutes.')
+          ])
+        ])
+      ])]
+    });
+    assert.equal(buildCanonicalText(d), 'Before.\n\nBuses run every 15 minutes.');
   });
 
   it('honours data-signable="false" opt-out', () => {

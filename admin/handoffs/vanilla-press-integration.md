@@ -205,10 +205,10 @@ Run `bd ready` from the repo root to see the live list.
 
 | Component | Reads |
 |---|---|
-| `<page-info>` | All public-standard fields, all `vb:*` provenance/integrity fields, JSON-LD mirror. Can run in static mode (enhancing CMS-rendered light DOM) or `auto` mode (rendering panel from `<meta>` tags). |
+| `<page-info>` | All public-standard fields and all `vb:*` provenance/integrity fields (it does not read JSON-LD). Can run in static mode (enhancing CMS-rendered light DOM) or `auto` mode (rendering panel from `<meta>` tags). |
 | `<change-set>` | `data-author`, `data-provenance` on `<ins>`/`<del>` blocks |
-| `<site-index>` | `<meta name="keywords">`, `article:tag`, `vb:topic` aggregated across pages |
-| `<time-index>` | `last-modified`, `itemprop="version"`, `vb:version-url` |
+| `<site-index>` | An authored `<nav>` or its `src` JSON. It does not aggregate meta tags; build the index server-side from `keywords`, `article:tag` and `vb:topic`. |
+| `<time-index>` | Its own entries and `updates-src` JSON. It does not read `last-modified` or `itemprop="version"`. |
 | Trust/topic lens pages (changelog, glossary, sitemap, keyword index) | Aggregations over `vb:provenance`, `vb:review`, `vb:status`, `vb:topic` |
 | Analytics subsystem | All `vb:*` tags via `meta[name^="vb:"]` |
 

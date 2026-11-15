@@ -1,4 +1,4 @@
-# Vanilla Breeze Meta-Tag Contract — v1.1
+# Vanilla Breeze Meta-Tag Contract — v1.2
 
 > **Status:** stable, 2026-04-27
 > **Owner:** VB document-provenance initiative
@@ -7,7 +7,9 @@
 
 **v1.1 — 2026-04-27.** Replaces `vb:topic` (single dotted-path string) with `concepts: []` frontmatter and repeated `<meta name="concept">` tags pointing into a SKOS `vocabulary.json`. Authored as a breaking change while VB is pre-release; no compat shim. See `admin/r-n-d/evaluate/decisions.md` for the adoption rationale and the SKOS Foundation bead (`vanilla-breeze-ii2k`).
 
-This is the public contract between VB components and the HTML documents they consume. It defines which `<meta>` tags, `<link>` relationships, `data-*` attributes, and JSON-LD fields VB reads at runtime, and how their values are interpreted.
+**v1.2 — 2026-11-14.** Corrects the consumer columns to what is built (no component reads JSON-LD, `article:tag` has no reader, `<site-index>` and `<time-index>` do not read page meta tags) and states the verifier's trust rules: the signing key must be same-origin, `metadata.expires` in the JWK is enforced, and `vb:hash` is checked when present. See the changelog in §G.
+
+This is the public contract between VB components and the HTML documents they consume. It defines which `<meta>` tags, `<link>` relationships, and `data-*` attributes VB reads at runtime, how their values are interpreted, and the JSON-LD mirror publishers emit alongside them.
 
 **The contract is stack-agnostic.** VB does not ship an 11ty plugin, a Cook SSG integration, or a VanillaPress integration from its core. Any site — hand-authored static HTML, Cook SSG, VanillaPress, Astro, Hugo, WordPress — that emits the tags described here will light up the VB components that consume them.
 
@@ -37,7 +39,7 @@ VB reads these names as authoritative. Authors SHOULD emit them via whatever bui
 
 | Field | Source | Consumers |
 |---|---|---|
-| `<meta name="last-modified" content="YYYY-MM-DD">` | HTML convention | `<page-info>` "Updated" line, `<time-index>` recently-updated |
+| `<meta name="last-modified" content="YYYY-MM-DD">` | HTML convention | `<page-info>` "Updated" line, `<page-stats>` last-modified line, signed canonical document |
 | `<meta property="article:published_time" content="ISO-8601">` | Open Graph Article | JSON-LD `datePublished` |
 | `<meta property="article:modified_time" content="ISO-8601">` | Open Graph Article | JSON-LD `dateModified` |
 
@@ -45,8 +47,10 @@ VB reads these names as authoritative. Authors SHOULD emit them via whatever bui
 
 | Field | Source | Consumers |
 |---|---|---|
-| `<meta name="keywords" content="term, term, …">` | HTML5 | `<site-index>` aggregation |
-| `<meta property="article:tag" content="…">` (repeated) | Open Graph Article | `<site-index>` aggregation |
+| `<meta name="keywords" content="term, term, …">` | HTML5 | `<page-info>` keywords line, signed canonical document |
+| `<meta property="article:tag" content="…">` (repeated) | Open Graph Article | crawlers and social tools (no VB reader) |
+
+**Not implemented:** cross-page aggregation of `keywords` or `article:tag`. `<site-index>` enhances an authored index (or one loaded from its `src` JSON) and does not read page meta tags. A build step that wants a keyword index writes that markup or JSON itself.
 
 ### License
 
@@ -59,7 +63,9 @@ VB reads these names as authoritative. Authors SHOULD emit them via whatever bui
 
 | Field | Source | Consumers |
 |---|---|---|
-| `<meta itemprop="version" content="1.4.0">` | Microdata | `<page-info>` version line, `<time-index>` version grouping |
+| `<meta itemprop="version" content="1.4.0">` | Microdata | `<page-info>` version line, signed canonical document |
+
+**Not implemented:** `<time-index>` does not read `last-modified` or `itemprop="version"`. It groups by the version marked on each of its own entries, and its recently-updated feed comes from the JSON named by `updates-src`.
 
 ### Social preview
 
@@ -72,7 +78,9 @@ VB reads these names as authoritative. Authors SHOULD emit them via whatever bui
 
 ### JSON-LD mirror
 
-VB reads `<script type="application/ld+json">` containing a Schema.org `Article` or `TechArticle` object. The object is the canonical machine-readable representation and should mirror all of the above plus provenance extensions. Example in §D.
+Publishers SHOULD emit a `<script type="application/ld+json">` containing a Schema.org `Article` or `TechArticle` object. The object is the canonical machine-readable representation for crawlers and other tools, and should mirror all of the above plus provenance extensions. Example in §D.
+
+**Not implemented:** no VB component reads JSON-LD. Components read the meta tags, links and attributes in this contract; the publisher keeps the JSON-LD block in step with them.
 
 ---
 
@@ -120,10 +128,20 @@ No public equivalent exists for "link from a page to its release record." `vb:ve
 
 | Field | Values | Consumers |
 |---|---|---|
-| `<meta name="vb:hash" content="sha256-…">` | Base64 SHA-256 of the canonical document | `<page-info>` verifier |
+| `<meta name="vb:hash" content="sha256-…">` | Base64 SHA-256 of the canonical document. Optional. | `<page-info>` verifier, external tools |
 | `<meta name="vb:signature" content="…">` | Base64 ECDSA signature over the canonical document | `<page-info>` verifier |
 | `<meta name="vb:signature-algorithm" content="ECDSA-P256-SHA256">` | Algorithm identifier | `<page-info>` verifier |
-| `<link rel="author-key" href="/.well-known/content-keys/…jwk" data-key-id="…">` | Pointer to signing key (JWK) | `<page-info>` verifier |
+| `<link rel="author-key" href="/.well-known/content-keys/…jwk" data-key-id="…">` | Pointer to signing key (JWK). Must resolve to the page's own origin. | `<page-info>` verifier |
+
+**Verifier rules.** The `<page-info>` verifier applies these in order and stops at the first that fails:
+
+1. `vb:signature-algorithm`, when present, must be `ECDSA-P256-SHA256` (else `failed`, reason `unsupported-algorithm:…`).
+2. `link rel="author-key"` must be present (else `failed`, reason `missing-author-key`).
+3. The key URL, resolved against the document base, must have the same origin as the page (else `failed`, reason `key-origin`). A cross-origin key is not fetched. This contract defines no mechanism for allowing another origin.
+4. The key must be fetchable and importable (else `key-unavailable`).
+5. The key must not be expired per §E (else `failed`, reason `key-expired`).
+6. `vb:hash`, when present, must equal `sha256-` plus the base64 SHA-256 of the canonical document (else `failed`, reason `hash-mismatch`). The signature covers the same bytes, so the hash adds no security of its own; it lets tools without the key compare a page against a known value.
+7. The signature must verify over the canonical document (else `failed`, reason `mismatch`).
 
 The `link rel="author-key"` claims the rel name for this purpose. See `canonical-document-v1.md` (Stage 3) for canonicalization rules. The `.well-known/content-keys/*.jwk` and `.well-known/content-authenticity.json` files are described in §E.
 
@@ -260,7 +278,7 @@ A single page demonstrating every field VB consumes:
 
     <page-info>
       <!-- <page-info> renders its internal <dl> from the meta tags above
-           when data-auto is set, or from its own light-DOM <dl> otherwise -->
+           when the auto attribute is set, or from its own light-DOM <dl> otherwise -->
     </page-info>
 
     <p>
@@ -302,9 +320,13 @@ A JSON Web Key (JWK) for the public half of the signing key. Example:
 }
 ```
 
+The verifier reads `kty`, `crv`, `x`, `y` and `use` to import the key, and `metadata.expires` to decide whether it is still valid. `metadata.expires` is an ISO-8601 date or timestamp; a date-only value means 00:00 UTC at the start of that day. The key is expired when the verifier's clock is at or past that instant (signing time is not recorded, so it is not considered). A key with no `metadata.expires` does not expire; a value that does not parse as a date is treated as expired. The other `metadata` fields are informational and are not checked.
+
+The key file must be served from the same origin as the pages it signs.
+
 ### `/.well-known/content-authenticity.json`
 
-A discovery document for crawlers and tools:
+A discovery document for crawlers and tools. No VB component reads it, and listing a key here does not make a cross-origin key acceptable to the verifier:
 
 ```json
 {
@@ -340,11 +362,12 @@ A discovery document for crawlers and tools:
 
 ## Section G — Versioning
 
-This contract is **v1.1**. Field additions that are backward-compatible (new optional `vb:*` keys, new tokens in existing vocabularies) increment the minor version. Renames, removals, and re-meanings of tokens normally require a new major version (`v2`); v1.1's removal of `vb:topic` is the one pre-release exception, taken under the adoption decision recorded in `admin/r-n-d/evaluate/decisions.md` while the consumer surface is small enough that no compat shim is warranted.
+This contract is **v1.2**. Field additions that are backward-compatible (new optional `vb:*` keys, new tokens in existing vocabularies) increment the minor version. Renames, removals, and re-meanings of tokens normally require a new major version (`v2`); v1.1's removal of `vb:topic` is the one pre-release exception, taken under the adoption decision recorded in `admin/r-n-d/evaluate/decisions.md` while the consumer surface is small enough that no compat shim is warranted.
 
-VB components read v1.1 indefinitely unless explicitly updated. A future v2 reader must detect and support v1.1 documents for at least one major release cycle.
+VB components read v1.x indefinitely unless explicitly updated. A future v2 reader must detect and support v1.x documents for at least one major release cycle.
 
 ### Changelog
 
+- **v1.2 (2026-11-14)** — Brought the contract in line with the code. Consumers corrected: no component reads JSON-LD (it is a mirror for external tools); `article:tag` has no VB reader; `<site-index>` does not aggregate `keywords`/`article:tag`; `<time-index>` does not read `last-modified` or `itemprop="version"`; `<page-stats>` added as a `last-modified` reader. These are marked "Not implemented" in §A. Verifier rules added to §B: the author key must be same-origin with the page, `metadata.expires` in the JWK is enforced (§E defines its meaning), and `vb:hash` is checked when present. A page whose key link points at another origin, or whose key has expired, now reports `data-trust="failed"` where v1.1 readers reported `verified`. No field was added, renamed or removed.
 - **v1.1 (2026-04-27)** — Replaced `vb:topic` (dotted-path string) with repeated `<meta name="concept">` resolving SKOS concept IDs against `vocabulary.json`. Added `<link rel="tag">` and `<link rel="glossary">`. Updated JSON-LD `about` to use `DefinedTerm` array. Source: SKOS Foundation bead (`vanilla-breeze-ii2k`).
 - **v1.0 (2026-04-24)** — Initial contract.

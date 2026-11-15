@@ -185,13 +185,29 @@
       "type": "string",
       "default": "Key unavailable",
       "description": "Visible trust-tier text appended to the badge for data-trust=\"key-unavailable\" (default \"Key unavailable\")."
+    },
+    {
+      "name": "data-label-tier-key-untrusted",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Key not from this site",
+      "description": "Visible trust-tier text for data-trust=\"failed\" when link[rel=author-key] points at another origin (default \"Key not from this site\"). The key is not fetched."
+    },
+    {
+      "name": "data-label-tier-key-expired",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Key expired",
+      "description": "Visible trust-tier text for data-trust=\"failed\" when the key's metadata.expires date has passed (default \"Key expired\")."
     }
   ],
   "events": [
     {
       "name": "page-info:verified",
       "detail": "{ status: 'undeclared' | 'declared' | 'verified' | 'failed' | 'key-unavailable', tier: 0 | 1 | 3 | -1 | -2, reason?: string }",
-      "description": "Bubbles. Fired on every setup with the declared tier (undeclared/declared, no reason), then again with the verification result when the page carries meta[name=vb:signature]. reason: 'ok', 'mismatch', 'missing-author-key', 'unsupported-algorithm:…', 'canonicalize:…', 'verify:…', or the key fetch error."
+      "description": "Bubbles. Fired on every setup with the declared tier (undeclared/declared, no reason), then again with the verification result when the page carries meta[name=vb:signature]. reason: 'ok', 'mismatch', 'hash-mismatch' (vb:hash differs from the canonical document), 'key-origin' (key is not same-origin), 'key-expired', 'missing-author-key', 'unsupported-algorithm:…', 'canonicalize:…', 'verify:…', or the key fetch error."
     }
   ],
   "childAttributes": [

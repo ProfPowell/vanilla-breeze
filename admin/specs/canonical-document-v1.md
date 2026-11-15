@@ -1,4 +1,4 @@
-# Vanilla Breeze Canonical Document Format — v1.1
+# Vanilla Breeze Canonical Document Format — v1.2
 
 > **Status:** stable, 2026-04-27
 > **Owner:** VB document-provenance initiative
@@ -6,6 +6,8 @@
 > **Source of truth:** this file.
 
 **v1.1 — 2026-04-27.** Replaces the `topic: string` field with `concepts: string[]` (sorted, alphabetical) to track meta-tag-contract v1.1. Renaming a field would normally require a new major version per §K below; v1.1 is taken as a one-time pre-release exception, matching the same exception meta-tag-contract took. See `admin/r-n-d/evaluate/decisions.md` and the canonical-document spec bump bead (`vanilla-breeze-5a1y`).
+
+**v1.2 — 2026-11-14.** `<change-set>` is no longer an excluded element: it wraps published prose, so its text is signed under the ordinary `<ins>`/`<del>` rule. Only the caption and controls the component adds to itself are skipped. See §C and §K-1.
 
 This spec defines the deterministic, byte-stable representation of a published HTML document used as input to ECDSA signing and SHA-256 hashing. The canonical document is a JSON object. Identical input HTML MUST produce byte-identical output across signer (Node, build-time) and verifier (browser, runtime).
 
@@ -56,21 +58,25 @@ The following elements and their entire subtrees are **excluded** regardless of 
 script, style, template, noscript,
 nav, aside, header, footer,
 figcaption,
-page-info, change-set, page-toc, page-tools, page-stats, content-lens,
+page-info, page-toc, page-tools, page-stats, content-lens,
 button, dialog, menu, form,
 [hidden], [aria-hidden="true"],
-[data-signable="false"]
+[data-signable="false"],
+change-set > [data-change-caption], change-set > [data-controls]
 ```
 
 **Lens-component split.** VB's lens family divides into two groups:
 - **Derived-view lenses** (excluded above) — render metadata about the page
   itself or interactive views on stored state: `page-info` (provenance panel),
-  `change-set` (diff viewer), `page-toc` (table of contents), `page-tools`,
-  `page-stats`, `content-lens` (universal host).
+  `page-toc` (table of contents), `page-tools`, `page-stats`, `content-lens`
+  (universal host).
 - **Content-host lenses** (NOT excluded) — wrap the page's published prose
-  and enhance it with filtering/sort: `time-index`, `glossary-index`,
-  `site-index`, `site-map`. Their light-DOM children ARE the content the
-  reader sees, so they participate in the canonical document.
+  and enhance it with filtering/sort or view toggles: `change-set`,
+  `time-index`, `glossary-index`, `site-index`, `site-map`. Their light-DOM
+  children ARE the content the reader sees, so they participate in the
+  canonical document.
+
+**`<change-set>`.** A change set wraps a passage that contains `<ins>` and `<del>`. Its authored content is walked like any other: unchanged text and `<ins>` text are signed, `<del>` text is dropped, whichever view the reader has selected. In the browser the component prepends a caption (`[data-change-caption]`) and a button group (`[data-controls]`) as direct children. The build-time signer never sees these, so both are excluded when they are direct children of `change-set`.
 
 **Excluded inline elements (text dropped, surrounding text continues):**
 
@@ -82,8 +88,8 @@ del
 - `<header>` and `<footer>` are excluded at the page level (site chrome). A `<header>` *inside* an `<article>` carries the article's own headline content; this v1 excludes those too. v2 may distinguish via host-element matching.
 - `<figcaption>` is excluded because captions are presentational; the figure's content is captured if it contains text.
 - `<button>`, `<form>`, and `<dialog>` are excluded because they are interactive surfaces, not published prose.
-- The lens components (`<page-info>`, `<change-set>`, `<page-toc>`, etc.) are excluded because they render derived views of metadata that is itself part of the canonical fields.
-- `<ins>` is **included** by exception — its text is the current content. Only `<del>` is excluded among the editorial-marker pair.
+- The derived-view lens components (`<page-info>`, `<page-toc>`, etc.) are excluded because they render derived views of metadata that is itself part of the canonical fields.
+- `<ins>` is **included** by exception — its text is the current content. Only `<del>` is excluded among the editorial-marker pair. This holds inside `<change-set>` too.
 
 ---
 
@@ -286,7 +292,7 @@ The library MUST be import-compatible with both Node 20+ (test runner, signer) a
 
 ## Section K — Versioning and forward compatibility
 
-This spec is **v1.1**. The following changes require a new major version:
+This spec is **v1.2**. The following changes require a new major version:
 
 - Renaming, removing, or reordering any field in §G.
 - Adding new excluded element selectors that change the walker output.
@@ -303,6 +309,7 @@ Verifiers detect the version by the `@version` field in the canonical JSON. A v2
 
 ### K-1. Changelog
 
+- **v1.2 (2026-11-14)** — Removed `change-set` from the excluded elements in §C. v1.1 excluded the whole element, which contradicted §A (`<ins>` is included) and left every passage wrapped in a change set unsigned, unchanged text included. The authored content of a change set is now walked normally; only its runtime-added `[data-change-caption]` and `[data-controls]` children are excluded. Changing the excluded selectors strictly requires a major bump per the rules above; v1.2 is taken as a pre-release exception like v1.1. Signer and verifier share `src/lib/canonicalize.js`, so they change together: pages are re-signed on the next build via `scripts/sign-pages.js`. A page signed under v1.1 that has a `<change-set>` inside a `data-signable` region fails verification against a v1.2 verifier until it is re-signed; pages without one are unaffected.
 - **v1.1 (2026-04-27)** — Replaced `topic: string` (sourced from `meta[name="vb:topic"]`) with `concepts: string[]` (sorted, sourced from repeated `meta[name="concept"]`). Renaming a field strictly requires a major bump per the rules above; v1.1 is a one-time pre-release exception, taken under the SKOS adoption decision in `admin/r-n-d/evaluate/decisions.md` and matching the analogous exception in `meta-tag-contract-v1.md` v1.1. Pages already signed under v1.0 will rehash on next build via `scripts/sign-pages.js`; there are no external v1.0 verifiers to support.
 - **v1.0 (2026-04-24)** — Initial spec.
 

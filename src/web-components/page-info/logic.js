@@ -1,6 +1,6 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
-import { buildCanonicalDocument, serializeCanonical, canonicalLinkHref } from '../../lib/canonicalize.js';
+import { verifyDocument } from './verify-core.js';
 import {
   collectReadableText, countWords, readingMinutes,
   resolveLang, parseDateValue, absoluteDate, relativeTime
@@ -52,6 +52,8 @@ const LABELS = {
   'tier-verified': 'Verified',
   'tier-failed': 'Signature failed',
   'tier-key-unavailable': 'Key unavailable',
+  'tier-key-untrusted': 'Key not from this site',
+  'tier-key-expired': 'Key expired',
   /* Vocabularies (meta-tag contract v1, §B) */
   'provenance-human': 'Human written',
   'provenance-ai-assisted': 'Human-written, AI-assisted',
@@ -190,75 +192,22 @@ class PageInfo extends VBElement {
 
   /** @param {AbortSignal} signal */
   async #verifySignature(signal) {
-    const signature = /** @type {HTMLMetaElement | null} */ (document.querySelector('meta[name="vb:signature"]'))?.content;
-    if (!signature) return; /* nothing to verify; stay at `declared` */
-
-    const algorithm = /** @type {HTMLMetaElement | null} */ (document.querySelector('meta[name="vb:signature-algorithm"]'))?.content;
-    if (algorithm && algorithm !== 'ECDSA-P256-SHA256') {
-      this.#setTrust('failed', { reason: `unsupported-algorithm:${algorithm}` });
-      return;
-    }
-
-    const keyHref = document.querySelector('link[rel~="author-key" i]')?.getAttribute('href');
-    if (!keyHref) {
-      this.#setTrust('failed', { reason: 'missing-author-key' });
-      return;
-    }
-
-    let publicKey;
-    try {
-      const url = new URL(keyHref, document.baseURI);
-      const res = await fetch(url, { credentials: 'omit', signal });
-      if (!res.ok) throw new Error(`status ${res.status}`);
-      const jwk = await res.json();
-      publicKey = await crypto.subtle.importKey(
-        'jwk',
-        { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y, use: jwk.use || 'sig', key_ops: ['verify'] },
-        { name: 'ECDSA', namedCurve: 'P-256' },
-        false,
-        ['verify']
-      );
-    } catch (err) {
-      if (signal.aborted) return;
-      this.#setTrust('key-unavailable', { reason: err.message });
-      return;
-    }
-    if (signal.aborted) return;
-
-    let canonical;
-    try {
-      /* Same `url` input as scripts/sign-pages.js — the raw canonical href. */
-      canonical = serializeCanonical(buildCanonicalDocument(document, { url: canonicalLinkHref(document) }));
-    } catch (err) {
-      this.#setTrust('failed', { reason: `canonicalize:${err.message}` });
-      return;
-    }
-
-    let isValid;
-    try {
-      const data = new TextEncoder().encode(canonical);
-      const sig = Uint8Array.from(atob(signature), (c) => c.charCodeAt(0));
-      isValid = await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, publicKey, sig, data);
-    } catch (err) {
-      if (signal.aborted) return;
-      this.#setTrust('failed', { reason: `verify:${err.message}` });
-      return;
-    }
-    if (signal.aborted) return;
-
-    this.#setTrust(isValid ? 'verified' : 'failed', { reason: isValid ? 'ok' : 'mismatch' });
+    const result = await verifyDocument(document, { origin: location.origin, signal });
+    if (!result || signal.aborted) return; /* unsigned: stay at `declared` */
+    this.#setTrust(result.status, { reason: result.reason }, result.label);
   }
 
   /**
    * @param {keyof typeof TIERS} status
    * @param {{ reason?: string }} [detail]
+   * @param {string} [labelKey] - Tier label when it is more specific than the status
    */
-  #setTrust(status, detail = {}) {
+  #setTrust(status, detail = {}, labelKey = status) {
     const tier = TIERS[status] ?? 0;
     const badge = this.#badge();
     if (badge) {
       badge.setAttribute('data-trust', status);
-      const text = status === 'undeclared' ? '' : this.#label(`tier-${status}`);
+      const text = status === 'undeclared' ? '' : this.#label(`tier-${labelKey}`);
 
       /* Visible tier text — the tier is never conveyed by colour alone. */
       let tierEl = badge.querySelector(':scope > .page-info-tier');

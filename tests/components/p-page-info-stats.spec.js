@@ -185,7 +185,7 @@ test('relative times are localized, keep an absolute title and handle future dat
 });
 
 /* Signed fixtures: signed by the real build signer, verified in the browser. */
-async function signedFixture(canonicalLink) {
+async function signedFixture(canonicalLink, { keyUrl = '/__p4-key.jwk', body = '' } = {}) {
   const priv = JSON.parse(await readFile(join(REPO, 'scripts/demo-keys/vb-release-demo.private.jwk'), 'utf-8'));
   const { kty, crv, x, y, d } = priv;
   const key = await crypto.subtle.importKey('jwk', { kty, crv, x, y, d, key_ops: ['sign'] },
@@ -194,15 +194,16 @@ async function signedFixture(canonicalLink) {
     ${canonicalLink}
     <meta name="author" content="Jane Doe">
     <meta name="vb:provenance" content="human">
-    <script type="module">import '/src/web-components/page-info/logic.js';</script>
-    </head><body><main><article data-signable><h1>Signed</h1><p>Body text that was signed.</p>
+    <script type="module">import '/src/web-components/page-info/logic.js'; import '/src/web-components/change-set/logic.js';</script>
+    </head><body><main><article data-signable><h1>Signed</h1><p>Body text that was signed.</p>${body}
     <page-info auto></page-info></article></main></body></html>`;
-  const res = await signPage(html, { key, kid: priv.kid, keyUrl: '/__p4-key.jwk' });
+  const res = await signPage(html, { key, kid: priv.kid, keyUrl });
   return res.html;
 }
 
-async function routeKey(page, delay = 0) {
-  const pub = await readFile(join(REPO, 'site/src/pages/.well-known/content-keys/vb-release-demo.jwk'), 'utf-8');
+async function routeKey(page, delay = 0, expires = '') {
+  let pub = await readFile(join(REPO, 'site/src/pages/.well-known/content-keys/vb-release-demo.jwk'), 'utf-8');
+  if (expires) pub = JSON.stringify({ ...JSON.parse(pub), metadata: { expires } });
   await page.route('**/__p4-key.jwk', async (route) => {
     if (delay) await new Promise((r) => setTimeout(r, delay));
     await route.fulfill({ status: 200, contentType: 'application/json', body: pub }).catch(() => {});
@@ -230,6 +231,36 @@ test('tampered signed page fails with visible text', async ({ page }) => {
   const badge = page.locator('page-info .page-info-badge');
   await expect(badge).toHaveAttribute('data-trust', 'failed');
   await expect(badge.locator('.page-info-tier')).toHaveText('Signature failed');
+});
+
+test('a key on another origin is refused and never fetched', async ({ page }) => {
+  let fetched = false;
+  await page.route('https://keys.example.net/**', (route) => { fetched = true; return route.abort(); });
+  await load(page, { html: await signedFixture('', { keyUrl: 'https://keys.example.net/k.jwk' }) });
+  const badge = page.locator('page-info .page-info-badge');
+  await expect(badge).toHaveAttribute('data-trust', 'failed');
+  await expect(badge.locator('.page-info-tier')).toHaveText('Key not from this site');
+  expect(fetched).toBe(false);
+});
+
+test('an expired key is not verified', async ({ page }) => {
+  await routeKey(page, 0, '2026-07-01'); /* clock is fixed at 2026-07-06 */
+  await load(page, { html: await signedFixture('') });
+  const badge = page.locator('page-info .page-info-badge');
+  await expect(badge).toHaveAttribute('data-trust', 'failed');
+  await expect(badge.locator('.page-info-tier')).toHaveText('Key expired');
+});
+
+test('text in an upgraded change-set is signed and still verifies', async ({ page }) => {
+  await routeKey(page);
+  const body = '<change-set author="Priya" datetime="2026-07-01"><p>Buses run every <del>20</del> <ins>15</ins> minutes.</p></change-set>';
+  await load(page, { html: await signedFixture('', { body }) });
+  await expect(page.locator('change-set [data-controls]')).toBeVisible();
+  await expect(page.locator('page-info .page-info-badge')).toHaveAttribute('data-trust', 'verified');
+
+  const tampered = (await signedFixture('', { body })).replace('<ins>15</ins>', '<ins>5</ins>');
+  await load(page, { html: tampered });
+  await expect(page.locator('page-info .page-info-badge')).toHaveAttribute('data-trust', 'failed');
 });
 
 test('disconnect aborts in-flight verification', async ({ page }) => {

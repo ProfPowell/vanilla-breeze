@@ -16,20 +16,25 @@ const SPEC_VERSION = 1;
 const SPEC_CONTEXT = 'https://vanilla-breeze.com/specs/canonical-document-v1';
 
 /* §C — Excluded element tag names. Subtree dropped entirely.
-   Note: content-host lens components (time-index, glossary-index,
+   Note: content-host components (change-set, time-index, glossary-index,
    site-index, site-map) are NOT excluded — they wrap the published
    prose and enhance it; their light-DOM children ARE the content
    to be signed. Only derived-view components (page-info, page-toc,
-   change-set, page-tools, page-stats, content-lens) are excluded
-   because they render metadata about the page itself. */
+   page-tools, page-stats, content-lens) are excluded because they
+   render metadata about the page itself. */
 const EXCLUDED_TAGS = new Set([
   'SCRIPT', 'STYLE', 'TEMPLATE', 'NOSCRIPT',
   'NAV', 'ASIDE', 'HEADER', 'FOOTER',
   'FIGCAPTION',
-  'PAGE-INFO', 'CHANGE-SET', 'PAGE-TOC', 'PAGE-TOOLS', 'PAGE-STATS', 'CONTENT-LENS',
+  'PAGE-INFO', 'PAGE-TOC', 'PAGE-TOOLS', 'PAGE-STATS', 'CONTENT-LENS',
   'BUTTON', 'DIALOG', 'MENU', 'FORM',
   'DEL'
 ]);
+
+/* §C — What <change-set> adds to itself in the browser (caption, view
+   controls). The build-time signer never sees these, so the verifier
+   must skip them. */
+const CHANGE_SET_UI = ['data-change-caption', 'data-controls'];
 
 /* §F — Block-level tag names. Emit \n\n on element exit. */
 const BLOCK_TAGS = new Set([
@@ -55,6 +60,7 @@ function isExcluded(el) {
   if (el.hasAttribute('hidden')) return true;
   if (el.getAttribute('aria-hidden') === 'true') return true;
   if (el.getAttribute('data-signable') === 'false') return true;
+  if (el.parentNode?.tagName === 'CHANGE-SET' && CHANGE_SET_UI.some((a) => el.hasAttribute(a))) return true;
   return false;
 }
 
