@@ -111,6 +111,7 @@ const srcDirs = [
   'packs',     // design-system / icons / kawaii / memphis / fonts demos
   'assets',    // local placeholder images the demos and docs reference (uz4f)
   'vendor',    // vendored marked, imported relatively by markdown-viewer (kdkb)
+  'fonts',     // dev.css -> utils/wireframe-fonts.css -> ../fonts/*.css (wireframe demos)
 ];
 for (const d of srcDirs) {
   copyDir(join('src', d), join(pagesDir, 'src', d));
