@@ -194,13 +194,13 @@ describe('deserializeDTCG — typography', () => {
     assert.equal(value, '1rem');
   });
 
-  it('honors $extensions unit hint when DTCG only allows px/rem', () => {
+  it('rebuilds an em length from a number with its unit', () => {
     const out = deserializeDTCG(wrap({
       typography: {
         letterSpacing: {
           tight: {
-            $type: 'dimension',
-            $value: { value: -0.025, unit: 'rem' },
+            $type: 'number',
+            $value: -0.025,
             $extensions: { [VB_NS]: { unit: 'em' } },
           },
         },
@@ -378,5 +378,34 @@ describe('deserializeDTCG — foreign tolerance', () => {
       color: { primary: { $value: { colorSpace: 'srgb', components: [1, 0, 0] } } },
     });
     assert.equal(out.tokens.length, 1);
+  });
+});
+
+describe('deserializeDTCG — CSS text kept by a Vanilla Breeze export', () => {
+  it('prefers $extensions literal over the computed $value', () => {
+    const out = deserializeDTCG(wrap({
+      color: { surface: { $type: 'color', $value: { colorSpace: 'srgb', components: [1, 1, 1], hex: '#ffffff' }, $extensions: { [VB_NS]: { literal: 'white' } } } },
+      spacing: { l: { $type: 'dimension', $value: { value: 1.5, unit: 'rem' }, $extensions: { [VB_NS]: { literal: 'calc(1rem * 1.5)' } } } },
+      motion: { easing: { default: { $type: 'cubicBezier', $value: [0.25, 0.1, 0.25, 1], $extensions: { [VB_NS]: { literal: 'ease' } } } } },
+    }));
+    assert.deepEqual(out.tokens, [
+      ['--color-surface', 'white'],
+      ['--size-l', 'calc(1rem * 1.5)'],
+      ['--ease-default', 'ease'],
+    ]);
+  });
+
+  it('restores the values listed under the root cssOnly', () => {
+    const out = deserializeDTCG({
+      $extensions: { [VB_NS]: { spec: '2025.10', cssOnly: { '--ease-default': 'steps(4)', 'not-a-property': 'x' } } },
+    });
+    assert.deepEqual(out.tokens, [['--ease-default', 'steps(4)']]);
+  });
+
+  it('keeps alpha when a color has a hex fallback', () => {
+    const out = deserializeDTCG(wrap({
+      color: { veil: { $type: 'color', $value: { colorSpace: 'srgb', components: [0, 0, 0], hex: '#000000', alpha: 0.5 } } },
+    }));
+    assert.equal(out.tokens[0][1], 'rgba(0, 0, 0, 0.5)');
   });
 });

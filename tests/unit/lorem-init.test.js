@@ -17,13 +17,16 @@ const LATIN = 'Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiu
 const CORPUSES = {
   latin: LATIN,
   cjk: 'CJK placeholder text',
+  chinese: 'Chinese placeholder text',
+  korean: 'Korean placeholder text',
   arabic: 'Arabic placeholder text',
+  hebrew: 'Hebrew placeholder text',
   cyrillic: 'Cyrillic placeholder text',
 };
 
 const LANG_MAP = {
-  ja: 'cjk', zh: 'cjk', ko: 'cjk',
-  ar: 'arabic', fa: 'arabic', ur: 'arabic', he: 'arabic',
+  ja: 'cjk', zh: 'chinese', ko: 'korean',
+  ar: 'arabic', fa: 'arabic', ur: 'arabic', he: 'hebrew',
   ru: 'cyrillic', uk: 'cyrillic', bg: 'cyrillic', sr: 'cyrillic',
 };
 
@@ -34,7 +37,7 @@ function getSentences(text) {
 }
 
 function isCjk(key) {
-  return key === 'cjk';
+  return key === 'cjk' || key === 'chinese';
 }
 
 function getWords(corpus, count, corpusKey) {
@@ -255,5 +258,64 @@ describe('generateText', () => {
   it('cycles items when count exceeds sentences', () => {
     const result = generateText({ mode: 'items', count: 20, corpus: 'latin' });
     assert.equal(result.length, 20);
+  });
+});
+
+// ---------- The real module, run against stand-in elements ----------
+
+describe('lorem-init source — filler matches the language', async () => {
+  // The module fills elements as it loads, so it needs a document.
+  const g = /** @type {any} */ (globalThis);
+  g.document = { readyState: 'complete', documentElement: {}, querySelectorAll: () => [] };
+  g.MutationObserver = class { observe() {} };
+  const { initLorem } = await import('../../src/utils/lorem-init.js');
+
+  /** Fill one stand-in element and return its text. */
+  function fill(lang, value = '') {
+    const el = {
+      textContent: '',
+      tagName: 'P',
+      dataset: { lorem: value },
+      hasAttribute: () => false,
+      setAttribute() {},
+      closest: () => (lang ? { getAttribute: () => lang } : null),
+    };
+    initLorem(/** @type {any} */ ({ querySelectorAll: () => [el] }));
+    return el.textContent;
+  }
+  const letters = (text) => text.replace(/[\s\p{P}]/gu, '');
+
+  it('gives Hebrew its own filler, counted in words', () => {
+    const text = fill('he', '10');
+    assert.match(letters(text), /^[\u0590-\u05FF]+$/);
+    assert.equal(text.split(' ').length, 10);
+  });
+
+  it('gives Chinese its own filler, counted in characters', () => {
+    const text = fill('zh-CN');
+    assert.match(letters(text), /^\p{Script=Han}+$/u);
+    assert.equal([...text].length, 80);
+  });
+
+  it('gives Korean its own filler, counted in words', () => {
+    const text = fill('ko', '10');
+    assert.match(letters(text), /^\p{Script=Hangul}+$/u);
+    assert.equal(text.split(' ').length, 10);
+  });
+
+  it('keeps Japanese and Arabic on their own filler', () => {
+    assert.match(fill('ja'), /[\u3040-\u30FF]/);
+    assert.match(letters(fill('ar', '10')), /^[\u0600-\u06FF]+$/);
+  });
+
+  it('accepts the new corpus names as values', () => {
+    assert.match(fill('', 'hebrew'), /[\u0590-\u05FF]/);
+    assert.equal([...fill('', 'chinese')].length, 80);
+    assert.equal(fill('', 'korean').split(' ').length, 50);
+  });
+
+  it('splits Chinese and Korean into sentences', () => {
+    assert.match(fill('zh', '1 sentences'), /^[^\u3002]+\u3002$/);
+    assert.match(fill('ko', '1 sentences'), /^[^.]+\.$/);
   });
 });

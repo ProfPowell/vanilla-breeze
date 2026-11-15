@@ -59,6 +59,42 @@ export function parseDeclarations(blockBody) {
   return out;
 }
 
+/**
+ * Pull the library's default token declarations out of a core token file
+ * (`src/tokens/*.css`): the top-level `:root` and `:where([data-theme])`
+ * rules, or with `dark: true` the top-level `[data-mode="dark"]` rules.
+ * Rules inside at-rule blocks are skipped. The result is what `var()` in
+ * a theme falls back to, for `serializeDTCG`'s `context` option.
+ *
+ * @param {string} css
+ * @param {{ dark?: boolean }} [options]
+ * @returns {Array<[string, string]>}
+ */
+export function parseDefaultDeclarations(css, { dark = false } = {}) {
+  const text = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  /** @type {[string, string][]} */
+  const out = [];
+  let pos = 0;
+  while (pos < text.length) {
+    const open = text.indexOf('{', pos);
+    if (open === -1) break;
+    let depth = 1;
+    let end = open + 1;
+    while (end < text.length && depth > 0) {
+      if (text[end] === '{') depth++;
+      else if (text[end] === '}') depth--;
+      end++;
+    }
+    const selector = (text.slice(pos, open).split(';').pop() || '').trim();
+    const wanted = !selector.startsWith('@') && (dark
+      ? selector.includes('[data-mode="dark"]')
+      : selector.split(',').some((part) => /^(:root|:where\(\[data-theme\]\))$/.test(part.trim())));
+    if (wanted) out.push(...parseDeclarations(text.slice(open + 1, end - 1)));
+    pos = end;
+  }
+  return out;
+}
+
 /* ---------- internals ---------- */
 
 function findBlock(css, selectorPattern, { excludeMode = false } = {}) {

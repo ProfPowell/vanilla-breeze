@@ -174,8 +174,21 @@ async function buildThemes() {
   // DTCG sibling artifacts share the same loop. Imported lazily so a
   // serializer change doesn't reach build until the theme step runs.
   const { serializeDTCG } = await import('../src/lib/dtcg/dtcg-serialize.js');
-  const { extractBaseBlock, extractDarkBlock, parseDeclarations } =
+  const { extractBaseBlock, extractDarkBlock, parseDeclarations, parseDefaultDeclarations } =
     await import('../src/lib/dtcg/theme-css-parse.js');
+
+  // Library defaults a theme's var() may point at. They are only used to
+  // work out values; the token files still list just what the theme sets.
+  const tokensDir = join(SRC, 'tokens');
+  const libraryLight = [];
+  const libraryDark = [];
+  for (const dir of [tokensDir, join(tokensDir, 'extensions')]) {
+    for (const f of readdirSync(dir).filter(f => f.endsWith('.css') && f !== 'index.css')) {
+      const css = readFileSync(join(dir, f), 'utf-8');
+      libraryLight.push(...parseDefaultDeclarations(css));
+      libraryDark.push(...parseDefaultDeclarations(css, { dark: true }));
+    }
+  }
 
   const files = readdirSync(themesDir).filter(f => {
     // Include brand and extreme themes, skip access, index, and template files
@@ -230,6 +243,7 @@ async function buildThemes() {
       if (baseEntries.length > 0) {
         const dtcg = serializeDTCG(baseEntries, {
           vbVersion: pkg.version,
+          context: libraryLight,
         });
         const dtcgName = `${themeId}.tokens.json`;
         writeFileSync(join(outDir, dtcgName), JSON.stringify(dtcg, null, 2));
@@ -243,6 +257,8 @@ async function buildThemes() {
         if (darkEntries.length > 0) {
           const dtcgDark = serializeDTCG(darkEntries, {
             vbVersion: pkg.version,
+            // Later entries win: the theme's light values over the library's.
+            context: [...libraryLight, ...libraryDark, ...baseEntries],
           });
           const dtcgDarkName = `${themeId}-dark.tokens.json`;
           writeFileSync(join(outDir, dtcgDarkName), JSON.stringify(dtcgDark, null, 2));

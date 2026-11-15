@@ -10,7 +10,9 @@
  * - dimension/duration/cubicBezier/shadow rebuild as CSS strings
  * - light-dark variant folding back to light-dark()
  * - $extensions["com.vanilla-breeze"] preference for round-trip-lossless
- *   reconstruction (expression, lightDark literal, em/% units)
+ *   reconstruction: the CSS text under expression, lightDark or literal,
+ *   the unit of a number, and the root cssOnly list of values the file
+ *   has no token for
  * - composite typography unpacking into VB scalars
  * - {curly.brace} alias resolution (intra-document) → var(--…) output
  * - group-level $type inheritance per spec
@@ -25,12 +27,21 @@ const VB_NS = 'com.vanilla-breeze';
  * @returns {{ tokens: Array<[string, string]>, ignored: string[], stats: { applied: number, ignored: number } }}
  */
 export function deserializeDTCG(doc) {
+  /** @type {Array<[string, string]>} */
   const tokens = [];
   const ignored = [];
   const tree = doc && typeof doc === 'object' ? doc : {};
 
   // Walk the tree depth-first, propagating $type inheritance from groups.
   walk(tree, [], undefined, tree, tokens, ignored);
+
+  // Values a Vanilla Breeze export could not express as tokens.
+  const cssOnly = tree.$extensions?.[VB_NS]?.cssOnly;
+  if (cssOnly && typeof cssOnly === 'object') {
+    for (const [name, css] of Object.entries(cssOnly)) {
+      if (name.startsWith('--') && typeof css === 'string') tokens.push([name, css]);
+    }
+  }
 
   return {
     tokens,
@@ -153,9 +164,9 @@ function handleToken(token, path, type, root, tokens, ignored) {
 
   const ext = (token.$extensions && token.$extensions[VB_NS]) || {};
 
-  // Round-trip-lossless: prefer preserved CSS expression / literal.
-  if (ext.expression) { tokens.push([cssVar, ext.expression]); return; }
-  if (ext.lightDark)  { tokens.push([cssVar, ext.lightDark]);  return; }
+  // Round-trip-lossless: prefer the CSS text the token was exported from.
+  const css = sourceCss(ext);
+  if (css) { tokens.push([cssVar, css]); return; }
 
   const value = renderValue(token.$value, effectiveType, ext, root);
   if (value == null) {
@@ -163,6 +174,12 @@ function handleToken(token, path, type, root, tokens, ignored) {
     return;
   }
   tokens.push([cssVar, value]);
+}
+
+/** The CSS text a Vanilla Breeze export keeps beside a computed $value. */
+function sourceCss(ext) {
+  const css = ext.expression ?? ext.lightDark ?? ext.literal;
+  return typeof css === 'string' && css ? css : null;
 }
 
 /**
@@ -191,7 +208,8 @@ function handleVariantToken(node, path, type, root, tokens, ignored) {
   const cssVar = pathToVar(path);
   if (!cssVar) { ignored.push(path.join('.')); return; }
   const ext = (node.$extensions && node.$extensions[VB_NS]) || {};
-  if (ext.lightDark) { tokens.push([cssVar, ext.lightDark]); return; }
+  const css = sourceCss(ext);
+  if (css) { tokens.push([cssVar, css]); return; }
 
   const light = node.light?.$value ? renderValue(node.light.$value, type, {}, root) : null;
   const dark  = node.dark?.$value  ? renderValue(node.dark.$value,  type, {}, root) : null;
@@ -223,7 +241,7 @@ function renderValue(value, type, ext, root) {
     case 'fontFamily':  return renderFontFamily(value);
     case 'fontWeight':  return String(value);
     case 'number':      return renderNumber(value, ext);
-    case 'dimension':   return renderDimension(value, ext);
+    case 'dimension':   return renderDimension(value);
     case 'duration':    return renderDuration(value);
     case 'cubicBezier': return Array.isArray(value) ? `cubic-bezier(${value.join(', ')})` : null;
     case 'shadow':      return renderShadow(value);
@@ -236,7 +254,8 @@ function renderValue(value, type, ext, root) {
 
 function renderColor(value, ext) {
   if (!value || typeof value !== 'object') return null;
-  if (value.hex) return value.hex;
+  // The hex fallback has no alpha channel.
+  if (value.hex && (value.alpha == null || value.alpha === 1)) return value.hex;
   if (value.colorSpace === 'oklch') {
     const [L, C, H] = value.components || [0, 0, 0];
     const alpha = value.alpha != null ? ` / ${value.alpha}` : '';
@@ -277,15 +296,13 @@ function renderFontFamily(value) {
 }
 
 function renderNumber(value, ext) {
-  if (ext.unit === '%') return `${value}%`;
-  return String(value);
+  // A number with a unit is a length DTCG dimensions cannot hold (em, %).
+  return typeof ext.unit === 'string' ? `${value}${ext.unit}` : String(value);
 }
 
-function renderDimension(value, ext) {
+function renderDimension(value) {
   if (!value || typeof value !== 'object') return null;
-  // Honor VB extension unit hint (em, %) over the DTCG-stated unit.
-  const unit = ext.unit || value.unit || 'px';
-  return `${value.value}${unit}`;
+  return `${value.value}${value.unit || 'px'}`;
 }
 
 function renderDuration(value) {
@@ -300,12 +317,12 @@ function renderShadow(value) {
 
 function renderShadowStop(stop) {
   if (!stop) return null;
-  const ox = renderDimension(stop.offsetX, {}) ?? '0px';
-  const oy = renderDimension(stop.offsetY, {}) ?? '0px';
-  const blur = renderDimension(stop.blur, {}) ?? '0px';
-  const spread = stop.spread ? ' ' + renderDimension(stop.spread, {}) : '';
+  const ox = renderDimension(stop.offsetX) ?? '0px';
+  const oy = renderDimension(stop.offsetY) ?? '0px';
+  const blur = renderDimension(stop.blur) ?? '0px';
+  const spread = stop.spread ? ' ' + renderDimension(stop.spread) : '';
   const color = renderColor(stop.color, {}) ?? '#000';
-  return `${ox} ${oy} ${blur}${spread} ${color}`;
+  return `${stop.inset ? 'inset ' : ''}${ox} ${oy} ${blur}${spread} ${color}`;
 }
 
 /* ---------- composite typography ---------- */
@@ -315,8 +332,8 @@ function unpackTypography(token, path, tokens) {
   // Take the leaf segment as the token name (typography/heading → 'heading').
   const leaf = path[path.length - 1];
   if (v.fontFamily != null) tokens.push([`--font-${leaf}`,        renderFontFamily(v.fontFamily)]);
-  if (v.fontSize   != null) tokens.push([`--font-size-${leaf}`,   renderDimension(v.fontSize, {})]);
+  if (v.fontSize   != null) tokens.push([`--font-size-${leaf}`,   renderDimension(v.fontSize)]);
   if (v.fontWeight != null) tokens.push([`--font-weight-${leaf}`, String(v.fontWeight)]);
   if (v.lineHeight != null) tokens.push([`--line-height-${leaf}`, String(v.lineHeight)]);
-  if (v.letterSpacing != null) tokens.push([`--letter-spacing-${leaf}`, renderDimension(v.letterSpacing, {})]);
+  if (v.letterSpacing != null) tokens.push([`--letter-spacing-${leaf}`, renderDimension(v.letterSpacing)]);
 }

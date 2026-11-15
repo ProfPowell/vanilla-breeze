@@ -86,10 +86,38 @@ describe('serializeDTCG — color tokens', () => {
     assert.equal(out.color.rgba.$value.alpha, 0.25);
   });
 
-  it('preserves an unparseable color literal in $extensions', () => {
-    const out = serializeDTCG([['--color-weird', 'color(display-p3 1 0 0)']]);
-    const tok = out.color.weird;
+  it('writes a color() value in its own color space and keeps the CSS text', () => {
+    const out = serializeDTCG([['--color-wide', 'color(display-p3 1 0 0)']]);
+    const tok = out.color.wide;
+    assert.deepEqual(tok.$value, { colorSpace: 'display-p3', components: [1, 0, 0] });
     assert.equal(tok.$extensions[VB_NS].literal, 'color(display-p3 1 0 0)');
+  });
+
+  it('converts named colors', () => {
+    const out = serializeDTCG([['--color-surface', 'white'], ['--color-clear', 'transparent']]);
+    assert.equal(out.color.surface.$value.hex, '#ffffff');
+    assert.equal(out.color.surface.$extensions[VB_NS].literal, 'white');
+    assert.equal(out.color.clear.$value.alpha, 0);
+  });
+
+  it('computes color-mix() of resolvable colors', () => {
+    const out = serializeDTCG([
+      ['--color-primary', '#ff0000'],
+      ['--color-mixed', 'color-mix(in srgb, var(--color-primary), blue)'],
+      ['--color-faded', 'color-mix(in oklab, white 20%, transparent)'],
+    ]);
+    assert.deepEqual(out.color.mixed.$value, { colorSpace: 'srgb', components: [0.5, 0, 0.5] });
+    assert.equal(out.color.mixed.$extensions[VB_NS].literal, 'color-mix(in srgb, var(--color-primary), blue)');
+    assert.deepEqual(out.color.faded.$value, { colorSpace: 'oklab', components: [1, 0, 0], alpha: 0.2 });
+  });
+
+  it('resolves var() inside a color function against the set', () => {
+    const out = serializeDTCG([
+      ['--hue-primary', '220'],
+      ['--color-text', 'oklch(92% 0.01 var(--hue-primary))'],
+    ]);
+    assert.deepEqual(out.color.text.$value, { colorSpace: 'oklch', components: [0.92, 0.01, 220] });
+    assert.equal(out.color.text.$extensions[VB_NS].literal, 'oklch(92% 0.01 var(--hue-primary))');
   });
 });
 
@@ -145,13 +173,24 @@ describe('serializeDTCG — typography', () => {
     assert.equal(tok.$value, 1.5);
   });
 
-  it('emits em-based letter-spacing with the em unit preserved in $extensions', () => {
-    const out = serializeDTCG([['--letter-spacing-tight', '-0.025em']]);
-    const tok = out.typography.letterSpacing.tight;
-    assert.equal(tok.$type, 'dimension');
-    // DTCG only specs px and rem; em is a VB extension.
-    assert.equal(tok.$extensions[VB_NS].unit, 'em');
-    assert.equal(tok.$value.value, -0.025);
+  it('never labels an em or % length as rem: it is a number with the unit beside it', () => {
+    const out = serializeDTCG([
+      ['--letter-spacing-tight', '-0.025em'],
+      ['--radius-round', '50%'],
+    ]);
+    // DTCG dimensions allow px and rem only.
+    assert.deepEqual(out.typography.letterSpacing.tight, {
+      $type: 'number', $value: -0.025, $extensions: { [VB_NS]: { unit: 'em' } },
+    });
+    assert.deepEqual(out.border.radius.round, {
+      $type: 'number', $value: 50, $extensions: { [VB_NS]: { unit: '%' } },
+    });
+  });
+
+  it('computes calc() of lengths in one unit', () => {
+    const out = serializeDTCG([['--size-l', 'calc(1rem * 1.5)']]);
+    assert.deepEqual(out.spacing.l.$value, { value: 1.5, unit: 'rem' });
+    assert.equal(out.spacing.l.$extensions[VB_NS].literal, 'calc(1rem * 1.5)');
   });
 });
 
@@ -219,12 +258,22 @@ describe('serializeDTCG — shadows', () => {
     assert.equal(tok.$value.length, 2);
   });
 
-  it('falls back to literal under $extensions when a shadow cannot be parsed', () => {
+  it('resolves a var() color and inset in a shadow', () => {
     const out = serializeDTCG([
-      ['--shadow-weird', 'inset 0 0 0 9999px var(--color-overlay)'],
+      ['--color-overlay', '#000000'],
+      ['--shadow-veil', 'inset 0 0 0 9999px var(--color-overlay)'],
     ]);
-    const tok = out.effect.shadow.weird;
+    const tok = out.effect.shadow.veil;
+    assert.equal(tok.$value.inset, true);
+    assert.equal(tok.$value.color.hex, '#000000');
+    assert.deepEqual(tok.$value.spread, { value: 9999, unit: 'px' });
     assert.equal(tok.$extensions[VB_NS].literal, 'inset 0 0 0 9999px var(--color-overlay)');
+  });
+
+  it('writes a shadow of none as a transparent shadow with no size', () => {
+    const out = serializeDTCG([['--shadow-xs', 'none']]);
+    assert.equal(out.effect.shadow.xs.$value.color.alpha, 0);
+    assert.equal(out.effect.shadow.xs.$extensions[VB_NS].literal, 'none');
   });
 });
 
@@ -253,15 +302,88 @@ describe('serializeDTCG — light-dark variants', () => {
 });
 
 describe('serializeDTCG — relative-color expressions', () => {
-  it('preserves an oklch(from …) expression under $extensions when value is opaque', () => {
+  const hover = 'oklch(from var(--color-primary) calc(l - 0.08) c h)';
+
+  it('computes an oklch(from …) color from the token it refers to', () => {
     const out = serializeDTCG([
-      ['--color-primary-hover', 'oklch(from var(--color-primary) calc(l - 0.08) c h)'],
+      ['--color-primary', 'oklch(55% 0.22 270)'],
+      ['--color-primary-hover', hover],
     ]);
     const tok = out.color['primary-hover'];
-    assert.equal(
-      tok.$extensions[VB_NS].expression,
-      'oklch(from var(--color-primary) calc(l - 0.08) c h)',
-    );
+    assert.deepEqual(tok.$value, { colorSpace: 'oklch', components: [0.47, 0.22, 270] });
+    assert.equal(tok.$extensions[VB_NS].expression, hover);
+  });
+
+  it('converts an sRGB origin to OKLCH', () => {
+    const out = serializeDTCG([['--color-red', 'oklch(from #ff0000 l c h)']]);
+    const [l, c, h] = out.color.red.$value.components;
+    assert.ok(Math.abs(l - 0.628) < 0.001 && Math.abs(c - 0.2577) < 0.001 && Math.abs(h - 29.23) < 0.01);
+  });
+
+  it('resolves against context entries without writing them', () => {
+    const out = serializeDTCG([['--color-primary-hover', hover]], {
+      context: [['--color-primary', 'oklch(55% 0.22 270)']],
+    });
+    assert.deepEqual(out.color['primary-hover'].$value.components, [0.47, 0.22, 270]);
+    assert.equal(out.color.primary, undefined);
+  });
+
+  it('gives a light and a dark value when the origin is light-dark()', () => {
+    const out = serializeDTCG([
+      ['--color-primary', 'light-dark(oklch(50% 0.2 260), oklch(70% 0.15 260))'],
+      ['--color-primary-hover', hover],
+    ]);
+    const tok = out.color['primary-hover'];
+    assert.deepEqual(tok.light.$value.components, [0.42, 0.2, 260]);
+    assert.deepEqual(tok.dark.$value.components, [0.62, 0.15, 260]);
+    assert.equal(tok.$extensions[VB_NS].lightDark, hover);
+  });
+});
+
+describe('serializeDTCG — values that are not finished values', () => {
+  it('writes var() of a token in the set as a DTCG alias', () => {
+    const out = serializeDTCG([
+      ['--color-primary', '#dd0007'],
+      ['--color-interactive', 'var(--color-primary)'],
+    ]);
+    assert.deepEqual(out.color.interactive, { $type: 'color', $value: '{color.primary}' });
+  });
+
+  it('maps easing keywords to their cubic-bezier values', () => {
+    const out = serializeDTCG([['--ease-default', 'ease'], ['--ease-flat', 'linear']]);
+    assert.deepEqual(out.motion.easing.default.$value, [0.25, 0.1, 0.25, 1]);
+    assert.equal(out.motion.easing.default.$extensions[VB_NS].literal, 'ease');
+    assert.deepEqual(out.motion.easing.flat.$value, [0, 0, 1, 1]);
+  });
+
+  it('leaves a value it cannot compute out of the tree and lists it under cssOnly', () => {
+    const out = serializeDTCG([
+      ['--color-primary-hover', 'oklch(from var(--color-primary) calc(l - 0.08) c h)'],
+      ['--ease-default', 'steps(4)'],
+      ['--size-mixed', 'calc(1rem + 2px)'],
+    ]);
+    assert.equal(out.color, undefined);
+    assert.equal(out.motion, undefined);
+    assert.equal(out.spacing, undefined);
+    assert.deepEqual(out.$extensions[VB_NS].cssOnly, {
+      '--color-primary-hover': 'oklch(from var(--color-primary) calc(l - 0.08) c h)',
+      '--ease-default': 'steps(4)',
+      '--size-mixed': 'calc(1rem + 2px)',
+    });
+  });
+
+  it('never writes a stand-in value', () => {
+    const out = serializeDTCG([
+      ['--color-a', 'var(--missing)'],
+      ['--color-b', 'currentColor'],
+      ['--size-a', 'clamp(1rem, 2vw, 2rem)'],
+      ['--ease-a', 'linear(0, 0.5, 1)'],
+      ['--shadow-a', '0 0 4px currentColor'],
+      ['--font-weight-a', 'bolder'],
+      ['--line-height-a', 'normal'],
+    ]);
+    assert.deepEqual(Object.keys(out), ['$extensions']);
+    assert.equal(Object.keys(out.$extensions[VB_NS].cssOnly).length, 7);
   });
 });
 
