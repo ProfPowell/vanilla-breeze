@@ -1,0 +1,163 @@
+---
+layout: guide
+title: "Documenting a Design System"
+description: "Turn a theme into a design system: pages of live specimens that show its colors, type, spacing and components, built with the vb-design-system package."
+guideGroup: Process
+currentPath: /docs/process/design-system/
+toc: true
+---
+
+  <section id="idea">
+    <h2>A theme with documentation</h2>
+    <p>In Vanilla Breeze the look of a site is a <a href="/docs/themes/#custom-themes">theme</a>: a set of token values. A design system is that theme plus the pages that explain it, so that the people who use it know which colors, sizes and components exist and when to choose each.</p>
+    <p>Those pages are usually drawn by hand and go out of date when a value changes. <code>@profpowell/vb-design-system</code> is a separate npm package of specimen elements that read the token values from the page they are on. Change <code>--radius-m</code> in the theme and the radius specimen shows the new corner. Switch the theme and every specimen follows.</p>
+  </section>
+
+  <section id="elements">
+    <h2>What the package provides</h2>
+    <p>Each name links to its page on the <a href="https://profpowell.github.io/vb-design-system/">package's documentation site</a>.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Purpose</th>
+          <th scope="col">Elements</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Show the tokens</th>
+          <td>
+            <a href="https://profpowell.github.io/vb-design-system/elements/token-specimen/"><code>&lt;token-specimen&gt;</code></a> (colors, sizes, radii, borders, shadows, icons),
+            <a href="https://profpowell.github.io/vb-design-system/elements/type-specimen/"><code>&lt;type-specimen&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-design-system/elements/spacing-specimen/"><code>&lt;spacing-specimen&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-design-system/elements/motion-specimen/"><code>&lt;motion-specimen&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-design-system/elements/breakpoint-specimen/"><code>&lt;breakpoint-specimen&gt;</code></a>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">Show what is built from them</th>
+          <td>
+            <a href="https://profpowell.github.io/vb-design-system/elements/component-sampler/"><code>&lt;component-sampler&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-design-system/elements/layout-specimen/"><code>&lt;layout-specimen&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-design-system/elements/accessibility-specimen/"><code>&lt;accessibility-specimen&gt;</code></a>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">Choose colors and fonts</th>
+          <td>
+            <a href="https://profpowell.github.io/vb-design-system/elements/color-palette/"><code>&lt;color-palette&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-design-system/elements/semantic-palette/"><code>&lt;semantic-palette&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-design-system/elements/palette-generator/"><code>&lt;palette-generator&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-design-system/elements/gradient-builder/"><code>&lt;gradient-builder&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-design-system/elements/font-pairer/"><code>&lt;font-pairer&gt;</code></a>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">Show icons and the brand mark</th>
+          <td>
+            <a href="https://profpowell.github.io/vb-design-system/elements/icon-set/"><code>&lt;icon-set&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-design-system/elements/icon-specimen/"><code>&lt;icon-specimen&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-design-system/elements/brand-specimen/"><code>&lt;brand-specimen&gt;</code></a>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">Move a theme in and out</th>
+          <td>
+            <a href="https://profpowell.github.io/vb-design-system/elements/theme-catalog/"><code>&lt;theme-catalog&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-design-system/elements/theme-import/"><code>&lt;theme-import&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-design-system/elements/theme-export/"><code>&lt;theme-export&gt;</code></a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The package's stylesheet also has two patterns that need no script: a list of things to do and not to do (<code>&lt;ul data-list="do-dont"&gt;</code> with <code>data-do</code> and <code>data-dont</code> on the items) and a token reference table (the <code>ds-token-table</code> class on a <code>&lt;table&gt;</code>).</p>
+  </section>
+
+  <section id="install">
+    <h2>Install and load</h2>
+    <p>Load Vanilla Breeze first, then the package's stylesheet and script.</p>
+    <code-block language="html" label="From a CDN" data-escape><link rel="stylesheet" href="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.css">
+<link rel="stylesheet" href="https://unpkg.com/@profpowell/vb-design-system/dist/vb-design-system.min.css">
+
+<script type="module" src="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.js"></script>
+<script type="module" src="https://unpkg.com/@profpowell/vb-design-system/dist/vb-design-system.min.js"></script></code-block>
+    <code-block language="js" label="From npm: npm install vanilla-breeze @profpowell/vb-design-system" data-escape>import 'vanilla-breeze/css';
+import 'vanilla-breeze';
+
+import '@profpowell/vb-design-system/css';
+import '@profpowell/vb-design-system';                 // every element
+
+// or one element at a time
+import '@profpowell/vb-design-system/token-specimen';</code-block>
+    <p>Vanilla Breeze is an optional peer dependency. Without it the specimens render with fallback values of their own, which defeats their purpose. Three elements also use a Vanilla Breeze component when it is on the page: <code>&lt;palette-generator&gt;</code> uses <a href="/docs/elements/web-components/color-picker/"><code>&lt;color-picker&gt;</code></a>, <code>&lt;token-specimen type="icon"&gt;</code> uses <a href="/docs/elements/web-components/icons/"><code>&lt;icon-wc&gt;</code></a>, and <code>&lt;brand-specimen&gt;</code> uses <a href="/docs/elements/web-components/brand-mark/"><code>&lt;brand-mark&gt;</code></a>. The full Vanilla Breeze bundle has all three.</p>
+  </section>
+
+  <section id="sample">
+    <h2>A design system page</h2>
+    <p>Write the page as ordinary sections. The specimens need no values: each reads the tokens of the theme in force where it sits.</p>
+    <code-block language="html" label="Color, type, space and components" data-escape><html lang="en" data-theme="harbour">
+...
+<main data-layout="stack" data-layout-gap="xl">
+  <h1>Harbour Books design system</h1>
+
+  <section>
+    <h2>Color</h2>
+    <token-specimen type="color" tokens="primary,secondary,accent" label="Brand"></token-specimen>
+    <token-specimen type="color" tokens="success,warning,error,info" label="Status"></token-specimen>
+    <ul data-list="do-dont">
+      <li data-do>Use the accent color for one action on a page.</li>
+      <li data-dont>Do not use status colors for decoration.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Type</h2>
+    <type-specimen font-family="Georgia" label="Headings" show-scale show-weights></type-specimen>
+  </section>
+
+  <section>
+    <h2>Space and shape</h2>
+    <spacing-specimen label="Spacing scale"></spacing-specimen>
+    <token-specimen type="radius" label="Corners"></token-specimen>
+    <token-specimen type="shadow" label="Elevation"></token-specimen>
+  </section>
+
+  <section>
+    <h2>Components</h2>
+    <component-sampler components="button,input,select,badge"></component-sampler>
+  </section>
+</main></code-block>
+    <p>The prose between the specimens is the part only you can write: what each color is for, which size to use where, how the brand speaks.</p>
+  </section>
+
+  <section id="composer">
+    <h2>Building the theme on the page</h2>
+    <p>The token, type and spacing specimens take an <code>editable</code> attribute. Their values become inputs, and a change is written as a custom property on <code>:root</code>, or on the element named by <code>target</code>. <code>&lt;theme-export live&gt;</code> collects those changes and shows them as a block of CSS to copy into a theme file.</p>
+    <code-block language="html" label="Edit a scale, copy the CSS" data-escape><token-specimen type="radius" editable></token-specimen>
+<spacing-specimen editable></spacing-specimen>
+
+<theme-export live label="Your theme"></theme-export></code-block>
+    <p>The <a href="https://profpowell.github.io/vb-design-system/tools/theme-composer/">Theme Composer</a> on the package's site is this arrangement with every specimen, the catalog and the import element on one page. The export can also be a token file for other design tools: see <a href="/docs/process/dtcg/">Design Token Exchange</a>.</p>
+  </section>
+
+  <section id="more">
+    <h2>Where to go next</h2>
+    <layout-grid data-layout-min="m" data-layout-gap="m">
+      <a href="https://profpowell.github.io/vb-design-system/elements/" class="section-card">
+        <h3>Element reference</h3>
+        <p>Attributes and events for every specimen and tool.</p>
+      </a>
+      <a href="https://profpowell.github.io/vb-design-system/showcase/meridian/" class="section-card">
+        <h3>Meridian showcase</h3>
+        <p>A complete design system for an invented company, built with the package.</p>
+      </a>
+      <a href="https://profpowell.github.io/vb-design-system/guides/design-systems/" class="section-card">
+        <h3>Building design systems</h3>
+        <p>The package's own guide, from a first theme to a documented system.</p>
+      </a>
+      <a href="/docs/themes/#custom-themes" class="section-card">
+        <h3>Writing a theme</h3>
+        <p>The token values a theme sets, and where the file goes.</p>
+      </a>
+    </layout-grid>
+  </section>

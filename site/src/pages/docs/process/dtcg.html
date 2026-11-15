@@ -1,197 +1,201 @@
 ---
 layout: guide
-title: "DTCG (Design Tokens Community Group)"
-description: "What DTCG is, what Vanilla Breeze supports, and how to round-trip themes through Figma plugins, Style Dictionary, and other DTCG-aware tools."
+title: "Design Token Exchange (DTCG)"
+description: "How to move a Vanilla Breeze theme to and from other design tools as a Design Tokens Community Group file: what is shipped, how tokens map, and which values survive the trip."
 guideGroup: Process
 currentPath: /docs/process/dtcg/
+toc: true
 ---
 
-<template slot="breadcrumb">
-<nav class="breadcrumb" aria-label="Breadcrumb">
-  <ol>
-    <li><a href="/docs/themes/">Docs</a></li>
-    <li>Process</li>
-    <li><span aria-current="page">DTCG</span></li>
-  </ol>
-</nav>
-</template>
+  <section id="what">
+    <h2>What DTCG is</h2>
+    <p>The <a href="https://www.designtokens.org/">Design Tokens Community Group</a> format is a JSON file for passing design tokens between tools. Each token has a <code>$type</code> and a <code>$value</code>, tokens sit in named groups, and one token can refer to another. Design tools and code generators that read the format can take a theme without a converter written for each pair.</p>
+    <p>A Vanilla Breeze theme is CSS: custom properties under a <code>data-theme</code> selector. The DTCG file is a second form of the same theme, for tools that do not read CSS. The library writes and reads the 2025.10 version of the format.</p>
+    <code-block language="js" label="One token in each form" data-escape>/* CSS:  --radius-m: 0.5rem; */
 
-<h1>DTCG &mdash; Design Tokens Community Group</h1>
+{
+  "border": {
+    "radius": {
+      "m": { "$type": "dimension", "$value": { "value": 0.5, "unit": "rem" } }
+    }
+  }
+}</code-block>
+  </section>
 
-<p class="lead">
-  DTCG is a JSON file format for exchanging design tokens between tools.
-  Vanilla Breeze supports it as a sibling artifact to its CSS-native theme
-  system, so designers and developers can move VB themes through Figma,
-  Tokens Studio, Style Dictionary, and other DTCG-aware tools without a
-  per-tool integration.
-</p>
+  <section id="support">
+    <h2>What is provided</h2>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">You want to</th>
+          <th scope="col">Use</th>
+          <th scope="col">Comes from</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Take a bundled theme into another tool</td>
+          <td>The theme's <code>.tokens.json</code> file</td>
+          <td>Vanilla Breeze, in <code>dist/cdn/themes/</code></td>
+        </tr>
+        <tr>
+          <td>Export the token changes you made on a page</td>
+          <td><a href="https://profpowell.github.io/vb-design-system/elements/theme-export/"><code>&lt;theme-export format="dtcg"&gt;</code></a></td>
+          <td rowspan="3">The <a href="/docs/process/design-system/"><code>@profpowell/vb-design-system</code></a> package</td>
+        </tr>
+        <tr>
+          <td>Try a DTCG file from another tool on a page</td>
+          <td><a href="https://profpowell.github.io/vb-design-system/elements/theme-import/"><code>&lt;theme-import&gt;</code></a></td>
+        </tr>
+        <tr>
+          <td>Start from a published design system</td>
+          <td><a href="https://profpowell.github.io/vb-design-system/elements/theme-catalog/"><code>&lt;theme-catalog&gt;</code></a></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The <a href="https://profpowell.github.io/vb-design-system/tools/theme-composer/">Theme Composer</a> on the design-system site puts the three elements on one page with editable specimens.</p>
+  </section>
 
-<aside class="note">
-  <p>
-    <strong>VB targets the stable spec, version 2025.10</strong> (published
-    by the W3C Design Tokens Community Group on 2025-10-28). Reference
-    implementations exist in Style Dictionary, Tokens Studio, Terrazzo,
-    Penpot, and others.
-  </p>
-</aside>
+  <section id="files">
+    <h2>Token files for the bundled themes</h2>
+    <p>Every theme stylesheet in the package has a token file beside it with the same name. A theme that has its own dark values has a second file for them. <a href="/cdn/themes/manifest.json"><code>themes/manifest.json</code></a> lists both under <code>dtcg</code> and <code>dtcgDark</code> for each theme.</p>
+    <code-block language="html" label="The files for one theme" data-escape>https://unpkg.com/vanilla-breeze/dist/cdn/themes/classic.css
+https://unpkg.com/vanilla-breeze/dist/cdn/themes/classic.tokens.json
+https://unpkg.com/vanilla-breeze/dist/cdn/themes/classic-dark.tokens.json</code-block>
+    <p>The files are written from the theme's CSS when the library is built, so they hold what the theme sets and not the library's defaults. The <a href="https://profpowell.github.io/vb-design-system/tools/theme-library/">theme library</a> page lists every theme with links to its files.</p>
+  </section>
 
-<h2>Why DTCG matters for VB</h2>
+  <section id="mapping">
+    <h2>How tokens map</h2>
+    <p>The prefix of a custom property decides its group and type in the file. The rest of the name is the token name.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Custom property</th>
+          <th scope="col">Group</th>
+          <th scope="col"><code>$type</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--color-*</code></td><td><code>color</code></td><td><code>color</code></td></tr>
+        <tr><td><code>--hue-*</code>, <code>--lightness-*</code>, <code>--chroma-*</code></td><td><code>color.seeds</code></td><td><code>number</code></td></tr>
+        <tr><td><code>--font-*</code></td><td><code>typography.family</code></td><td><code>fontFamily</code></td></tr>
+        <tr><td><code>--font-size-*</code></td><td><code>typography.size</code></td><td><code>dimension</code></td></tr>
+        <tr><td><code>--font-weight-*</code></td><td><code>typography.weight</code></td><td><code>fontWeight</code></td></tr>
+        <tr><td><code>--line-height-*</code></td><td><code>typography.lineHeight</code></td><td><code>number</code></td></tr>
+        <tr><td><code>--letter-spacing-*</code></td><td><code>typography.letterSpacing</code></td><td><code>dimension</code></td></tr>
+        <tr><td><code>--size-*</code></td><td><code>spacing</code></td><td><code>dimension</code></td></tr>
+        <tr><td><code>--radius-*</code></td><td><code>border.radius</code></td><td><code>dimension</code></td></tr>
+        <tr><td><code>--border-width-*</code></td><td><code>border.width</code></td><td><code>dimension</code></td></tr>
+        <tr><td><code>--duration-*</code></td><td><code>motion.duration</code></td><td><code>duration</code></td></tr>
+        <tr><td><code>--ease-*</code></td><td><code>motion.easing</code></td><td><code>cubicBezier</code></td></tr>
+        <tr><td><code>--shadow-*</code></td><td><code>effect.shadow</code></td><td><code>shadow</code></td></tr>
+      </tbody>
+    </table>
+    <p>A custom property with any other prefix is left out of the file. Its name is recorded in a list, <code>unmapped</code>, in the file's <code>$extensions</code>. On import the table is read the other way, and a token in a group that is not in the table is reported as ignored.</p>
+  </section>
 
-<p>
-  VB's runtime token system &mdash; CSS custom properties, OKLCH,
-  <code>light-dark()</code>, relative-color computation &mdash; is
-  expressive and platform-native. But until DTCG, every design tool spoke
-  its own dialect: Figma Variables, Tokens Studio JSON, Style Dictionary's
-  legacy format, Sketch shared styles. Sharing a theme across tools meant
-  manual translation each time.
-</p>
+  <section id="values">
+    <h2>Which values convert</h2>
+    <p>The format holds finished values. CSS can hold a calculation. Where a theme uses one, the file keeps the CSS text in <code>$extensions["com.vanilla-breeze"]</code>, where other tools do not look. This table says what another tool sees and what comes back on import.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">CSS value</th>
+          <th scope="col">In the file</th>
+          <th scope="col">Other tools see</th>
+          <th scope="col">Imported again</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>A color written as <code>oklch()</code>, hex or <code>rgb()</code></td>
+          <td>A color in the <code>oklch</code> or <code>srgb</code> space</td>
+          <td>The color</td>
+          <td>The same color. Lightness is written as a number, so <code>55%</code> comes back as <code>0.55</code></td>
+        </tr>
+        <tr>
+          <td><code>light-dark(a, b)</code></td>
+          <td>Three tokens, <code>$root</code>, <code>light</code> and <code>dark</code>, and the CSS text under <code>lightDark</code></td>
+          <td>Both colors, when each is a plain color</td>
+          <td>The original text</td>
+        </tr>
+        <tr>
+          <td>A relative color, <code>oklch(from var(--color-primary) ...)</code></td>
+          <td>Black as a stand-in, and the CSS text under <code>expression</code></td>
+          <td>Black</td>
+          <td>The original text</td>
+        </tr>
+        <tr>
+          <td>A length in <code>px</code> or <code>rem</code></td>
+          <td>A dimension</td>
+          <td>The length</td>
+          <td>The same length</td>
+        </tr>
+        <tr>
+          <td>A length in <code>em</code> or <code>%</code></td>
+          <td>A dimension in <code>rem</code>, and the real unit under <code>unit</code></td>
+          <td>The number with the wrong unit</td>
+          <td>The original length</td>
+        </tr>
+        <tr>
+          <td>A font stack, a weight, a time, a <code>cubic-bezier()</code>, a shadow whose color is a plain color</td>
+          <td>The matching DTCG value</td>
+          <td>The value</td>
+          <td>The same value</td>
+        </tr>
+        <tr>
+          <td>Anything else: <code>var()</code>, <code>calc()</code>, <code>color-mix()</code>, a named color, an easing keyword such as <code>linear</code>, a shadow of <code>none</code></td>
+          <td>A stand-in (black, zero, or a straight-line curve), and the CSS text under <code>literal</code></td>
+          <td>The stand-in</td>
+          <td>The stand-in. The <code>literal</code> text is not read back</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Two things follow. Before you rely on a token file in another tool, look for tokens that carry <code>expression</code> or <code>literal</code>: their <code>$value</code> is not the real one, and the tool needs the real one entered by hand. And a theme that sets tokens with <code>var()</code> or <code>calc()</code> does not come back whole from a file, so keep the CSS as the source and treat the file as a copy.</p>
+    <p>The themes most likely to be taken elsewhere, Modern, Minimal and Classic, set their brand colors from the hue, lightness and chroma seeds. Those export as numbers under <code>color.seeds</code>, and the file's <code>$extensions</code> carries <code>seedDerivation: true</code> to say the colors are built from them.</p>
+  </section>
 
-<p>
-  DTCG gives the ecosystem a common JSON shape with explicit
-  <code>$type</code> + <code>$value</code> per token, hierarchical groups,
-  alias references, and composite types for typography / shadow / border.
-  When VB themes are emitted as DTCG, they become consumable in any
-  DTCG-aware tool. When DTCG files arrive (from Figma exports, public
-  design systems, or hand-authored sets), VB can apply them as themes.
-</p>
+  <section id="import">
+    <h2>Importing a file from another tool</h2>
+    <p><code>&lt;theme-import&gt;</code> takes a file by paste, by upload or from a URL, and sets the resulting custom properties on one element of the page, <code>#preview</code> unless you name another with <code>target</code>. It does not write to <code>:root</code>, so a trial does not change the rest of the site. Tokens it cannot place are listed under <q>Ignored tokens</q>.</p>
+    <code-block language="html" label="Import into a preview region" data-escape><theme-import target="#preview"></theme-import>
 
-<h2>What VB supports</h2>
+<section id="preview">
+  <h2>Sample</h2>
+  <button type="button">Reserve a seat</button>
+</section></code-block>
+    <p>The import reads more of the format than the export writes:</p>
+    <ul>
+      <li>A group's <code>$type</code> applies to the tokens inside it.</li>
+      <li>A reference such as <code>{color.primary}</code> becomes <code>var(--color-primary)</code>.</li>
+      <li>A composite <code>typography</code> token is split into the separate properties the library uses: <code>--font-<var>name</var></code>, <code>--font-size-<var>name</var></code>, <code>--font-weight-<var>name</var></code>, <code>--line-height-<var>name</var></code> and <code>--letter-spacing-<var>name</var></code>.</li>
+      <li>A token with <code>light</code> and <code>dark</code> values becomes one <code>light-dark()</code> value.</li>
+    </ul>
+    <p>The file has to use the group names in <a href="#mapping">the mapping table</a>. A file from another design system usually does not, so rename its groups first or expect most tokens to be ignored.</p>
 
-<dl>
-  <dt>Export</dt>
-  <dd>
-    <a href="https://profpowell.github.io/vb-design-system/elements/theme-export/"><code>&lt;theme-export&gt;</code></a>
-    has a <code>format="dtcg"</code> mode that emits stable-spec 2025.10
-    JSON. The format selector is in the toolbar; the download saves as
-    <code>theme.tokens.json</code> with MIME
-    <code>application/design-tokens+json</code>.
-  </dd>
+    <h3 id="catalog">The catalog</h3>
+    <p><code>&lt;theme-catalog&gt;</code> lists eight token sets already renamed to fit: Material Design 3, IBM Carbon, Salesforce Lightning, GOV.UK, Atlassian, Tailwind, Bootstrap and Catppuccin Mocha. Each shows its license, and its attribution once applied. The files are in the Vanilla Breeze package under <code>dist/cdn/themes/catalog/</code>. The element looks for them at <code>/cdn/themes/catalog</code> on your own site, so point it at the package when you load Vanilla Breeze from a CDN.</p>
+    <code-block language="html" label="Catalog files from a CDN" data-escape><theme-catalog
+  target="#preview"
+  catalog-base="https://unpkg.com/vanilla-breeze/dist/cdn/themes/catalog">
+</theme-catalog></code-block>
+  </section>
 
-  <dt>Import</dt>
-  <dd>
-    <a href="https://profpowell.github.io/vb-design-system/elements/theme-import/"><code>&lt;theme-import&gt;</code></a>
-    takes DTCG JSON via paste, file upload, or URL fetch and applies the
-    resulting tokens to a target preview scope. Tokens that don't map to a
-    known VB prefix are surfaced in an <em>ignored</em> panel rather than
-    dropped silently.
-  </dd>
+  <section id="export">
+    <h2>Exporting from a page</h2>
+    <p><code>&lt;theme-export&gt;</code> reads the custom properties set in the <code>style</code> attribute of one element, <code>:root</code> unless you name another with <code>scope</code>. Those are the changes made on the page by the editable specimens, an import or your own script. It does not read the theme's stylesheet: for a bundled theme, use <a href="#files">its token file</a>.</p>
+    <code-block language="html" label="Export the changes as DTCG" data-escape><theme-export format="dtcg" live></theme-export></code-block>
+    <p>The element's menu switches between CSS, plain JSON and DTCG. In DTCG the download is named <code>theme.tokens.json</code> and has the media type <code>application/design-tokens+json</code>. With <code>live</code> the output is rebuilt each time an editable specimen changes a token.</p>
+  </section>
 
-  <dt>Catalog</dt>
-  <dd>
-    <a href="https://profpowell.github.io/vb-design-system/elements/theme-catalog/"><code>&lt;theme-catalog&gt;</code></a>
-    lets you start from a known design system in one click &mdash; Material 3,
-    IBM Carbon, Salesforce Lightning, GOV.UK, Atlassian, Tailwind defaults,
-    Bootstrap defaults, Catppuccin Mocha. Each entry carries license and
-    attribution metadata.
-  </dd>
-
-  <dt>Theme library</dt>
-  <dd>
-    Every theme in VB ships as a <code>.tokens.json</code> sibling next to
-    its CSS at <a href="/cdn/themes/manifest.json"><code>/cdn/themes/</code></a>.
-    See the <a href="https://profpowell.github.io/vb-design-system/tools/theme-library/">theme library</a> for the
-    full list with download links.
-  </dd>
-</dl>
-
-<h2>Color, dimension, and the parametric round-trip</h2>
-
-<p>
-  DTCG 2025.10 supports OKLCH and all CSS Color Module 4 spaces natively,
-  so VB's OKLCH primitives translate cleanly. Dimensions in
-  <code>px</code> and <code>rem</code> are spec-supported; for
-  <code>em</code> and percent units (which VB uses in places like
-  <code>--letter-spacing-tight</code>), VB stores the unit hint under
-  <code>$extensions["com.vanilla-breeze"].unit</code> so it round-trips
-  exactly.
-</p>
-
-<p>
-  The interesting case is <strong>parametric themes</strong>. VB themes
-  often define state colors as derivations:
-</p>
-
-<pre><code>--color-primary: oklch(var(--lightness-primary) var(--chroma-primary) var(--hue-primary));
---color-primary-hover:  oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
---color-primary-active: oklch(from var(--color-primary) calc(l - 0.12) c h);</code></pre>
-
-<p>
-  The CSS <code>oklch(from &hellip;)</code> relative-color syntax has no
-  direct DTCG equivalent &mdash; DTCG aliases are pass-through references,
-  not derivations. So when VB exports a parametric theme:
-</p>
-
-<ul>
-  <li>
-    The <strong>resolved value</strong> goes into <code>$value</code> &mdash;
-    other tools see a real, usable color.
-  </li>
-  <li>
-    The <strong>original CSS expression</strong> is preserved under
-    <code>$extensions["com.vanilla-breeze"].expression</code>.
-  </li>
-  <li>
-    On re-import into VB, the importer prefers the preserved expression
-    over the resolved value, so a round-trip through VB tooling is
-    <em>lossless</em>.
-  </li>
-  <li>
-    A round-trip through a third-party tool that strips unknown extensions
-    will downgrade to the resolved value &mdash; functional but no longer
-    parametric. This is a known and documented trade-off.
-  </li>
-</ul>
-
-<p>
-  The same pattern applies to <code>light-dark(a, b)</code> values: VB
-  emits a <code>$root</code>/<code>light</code>/<code>dark</code> variant
-  triplet for cross-tool fidelity AND preserves the literal under
-  <code>$extensions["com.vanilla-breeze"].lightDark</code>.
-</p>
-
-<h2>Composite typography</h2>
-
-<p>
-  DTCG's composite <code>typography</code> token bundles related primitives
-  (<code>fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>,
-  <code>lineHeight</code>) into one object. VB's runtime stores those as
-  separate scalars. On import, VB unpacks composite typography tokens into
-  the matching scalars (<code>--font-{name}</code>,
-  <code>--font-size-{name}</code>, etc.). On export, VB emits scalars by
-  default; future revisions may synthesize composite tokens for tools that
-  prefer them.
-</p>
-
-<h2>Tooling pointers</h2>
-
-<dl>
-  <dt><a href="https://www.designtokens.org/">Design Tokens Community Group</a></dt>
-  <dd>The W3C community group and canonical spec.</dd>
-
-  <dt><a href="https://styledictionary.com/info/dtcg/">Style Dictionary</a></dt>
-  <dd>
-    Multi-platform code generator. Run <code>sd build</code> against any
-    <code>.tokens.json</code> VB emits to produce iOS, Android, Flutter,
-    or alternative CSS output.
-  </dd>
-
-  <dt><a href="https://tokens.studio/">Tokens Studio for Figma</a></dt>
-  <dd>
-    The dominant Figma plugin for managing tokens. Imports / exports DTCG;
-    pipes through Style Dictionary.
-  </dd>
-
-  <dt><a href="https://penpot.app/">Penpot</a></dt>
-  <dd>
-    Open-source design tool with native DTCG export.
-  </dd>
-</dl>
-
-<h2>What's next</h2>
-
-<p>
-  See the <a href="https://profpowell.github.io/vb-design-system/tools/theme-composer/">Theme Composer</a> for the
-  hands-on workflow: edit specimens, browse the catalog, paste DTCG, and
-  export your result. The <a href="https://profpowell.github.io/vb-design-system/tools/theme-library/">theme
-  library</a> lists every shipped theme with one-click DTCG downloads.
-</p>
+  <section id="tools">
+    <h2>Other tools that read the format</h2>
+    <ul>
+      <li><a href="https://www.designtokens.org/">designtokens.org</a> has the specification.</li>
+      <li><a href="https://styledictionary.com/info/dtcg/">Style Dictionary</a> turns a token file into code for other platforms.</li>
+      <li><a href="https://tokens.studio/">Tokens Studio</a> manages tokens inside Figma.</li>
+      <li><a href="https://penpot.app/">Penpot</a> is an open-source design tool with design tokens built in.</li>
+    </ul>
+    <p>Each tool has its own rules for group names and for <code>$extensions</code>. A tool that drops extensions on save also drops the CSS text kept there, and a file that has been through it comes back with the stand-in values only.</p>
+  </section>

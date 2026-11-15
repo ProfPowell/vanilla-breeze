@@ -1,275 +1,319 @@
 ---
 layout: guide
-title: "Prototyping Toolkit"
-description: "Build clickable prototypes with placeholder images, lorem text, wireframe mode, and skeleton loading — no external tools needed."
+title: "Prototyping"
+description: "Build a page from the markup you will keep, with placeholder images and text, a wireframe rendering for early review and skeleton states for content that loads late."
 guideGroup: Process
-toc: true
 currentPath: /docs/process/prototyping/
+toc: true
 ---
 
-<section>
-  <h2>Overview</h2>
-  <p>Vanilla Breeze includes everything you need for rapid HTML prototyping without leaving your editor or relying on external tools. The toolkit provides:</p>
-  <ul>
-    <li><strong><code>data-mock</code></strong> — placeholder images, video, iframes, and canvas</li>
-    <li><strong><code>data-lorem</code></strong> — placeholder text on any element with multi-language support</li>
-    <li><strong><code>data-wireframe</code></strong> — sketch-like wireframe mode with fidelity levels</li>
-    <li><strong><code>data-loading="skeleton"</code></strong> — skeleton loading states</li>
-    <li><strong>Fake content CLI</strong> — realistic test data from the command line</li>
-  </ul>
-  <p>All prototyping tools use <code>data-*</code> attributes on native HTML elements. Moving to production is a content swap — replace <code>src</code>, fill in real text, remove the data attribute. No HTML restructuring needed.</p>
-</section>
-
-<section>
-  <h2>Placeholder Media</h2>
-  <p>Add <code>data-mock</code> to <code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>, <code>&lt;iframe&gt;</code>, or <code>&lt;canvas&gt;</code> to render a placeholder box with an X-pattern and optional label.</p>
-
-  <h3>Basic usage</h3>
-  <code-block language="html" show-lines label="Simple placeholder" data-escape><img data-mock width="400" height="300" alt="Hero banner"></code-block>
-  <section class="example">
-    <img data-mock width="400" height="300" alt="Hero banner">
+  <section id="toolkit">
+    <h2>How it works</h2>
+    <p>A prototype is the real page with stand-in content. You write the elements the finished page will have and mark the ones whose content is not ready. Each tool is an attribute on a native element, so replacing a placeholder means changing content, not structure.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Attribute</th>
+          <th scope="col">Goes on</th>
+          <th scope="col">Does</th>
+          <th scope="col">Needs</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="/docs/attributes/data-mock/"><code>data-mock</code></a></td>
+          <td><code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>, <code>&lt;iframe&gt;</code>, <code>&lt;canvas&gt;</code></td>
+          <td>Shows a labelled placeholder box at the right size</td>
+          <td>The full bundle, or the <a href="/docs/packs/prototype/">prototype pack</a> with the core bundle</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/data-lorem/"><code>data-lorem</code></a></td>
+          <td>Any element that holds text</td>
+          <td>Fills the element with filler text</td>
+          <td>The same as <code>data-mock</code></td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/data-wireframe/"><code>data-wireframe</code></a></td>
+          <td><code>&lt;html&gt;</code> or any container</td>
+          <td>Draws everything inside as a sketch</td>
+          <td>The development add-on</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/data-loading/"><code>data-loading="skeleton"</code></a></td>
+          <td>A container</td>
+          <td>Shows its children as grey blocks</td>
+          <td>Any Vanilla Breeze stylesheet</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><a href="/docs/process/#loading">What to load</a> gives the file names.</p>
   </section>
 
-  <h3>Presets</h3>
-  <p>Named presets set aspect ratio and default dimensions via CSS. No <code>width</code>/<code>height</code> attributes needed.</p>
-  <code-block language="html" show-lines label="Preset gallery" data-escape><img data-mock="hero" alt="Hero banner">
-<img data-mock="card" alt="Featured article">
-<img data-mock="avatar" alt="User photo">
-<img data-mock="product" alt="Product image">
-<img data-mock="thumbnail" alt="Gallery thumb">
-<img data-mock="logo" alt="Company logo">
-<img data-mock="og" alt="Social share image">
-<img data-mock="banner" alt="Ad banner"></code-block>
-  <section class="example" data-layout="stack" data-layout-gap="m">
-    <img data-mock="hero" alt="Hero banner">
-    <layout-grid data-layout-min="s" data-layout-gap="m">
-      <img data-mock="card" alt="Featured article">
-      <img data-mock="product" alt="Product image">
-      <img data-mock="avatar" alt="User photo">
-      <img data-mock="thumbnail" alt="Gallery thumb">
-      <img data-mock="logo" alt="Company logo">
-    </layout-grid>
-    <img data-mock="og" alt="Social share image">
-    <img data-mock="banner" alt="Ad banner">
+  <section id="media">
+    <h2>Placeholder media</h2>
+    <p>Add <code>data-mock</code> to an image with no <code>src</code>. The stylesheet draws a grey box with a cross through it, and the script gives the image a generated <code>src</code> so the element is valid. The label in the box is the image's <code>alt</code> text, or its dimensions when there is none.</p>
+
+    <browser-window
+      src="/docs/examples/demos/mock-basic.html"
+      url="placeholder-media"
+      title="Placeholder media"
+      data-demo-height="l"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="A placeholder with its own size, and one with a preset" data-escape><img data-mock width="400" height="300" alt="Shop front">
+<img data-mock="card" alt="Featured book"></code-block>
+
+    <h3 id="presets">Presets</h3>
+    <p>A preset name as the value sets the shape and a default width, so <code>width</code> and <code>height</code> are not needed.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Value</th>
+          <th scope="col">Aspect ratio</th>
+          <th scope="col">Width</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>hero</code></td><td>3:1</td><td>100%</td></tr>
+        <tr><td><code>card</code></td><td>16:9</td><td>400px</td></tr>
+        <tr><td><code>product</code></td><td>1:1</td><td>400px</td></tr>
+        <tr><td><code>thumbnail</code></td><td>1:1</td><td>150px</td></tr>
+        <tr><td><code>logo</code></td><td>4:1</td><td>200px</td></tr>
+        <tr><td><code>og</code></td><td>1200:630</td><td>100%</td></tr>
+        <tr><td><code>banner</code></td><td>728:90</td><td>100%</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="photos">Photographs and portraits</h3>
+    <p>Some values load a real picture from another host. Use them when a grey box would hide a design problem, such as text over a photograph. They need a network connection, and each sends a request to a third party.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Value</th>
+          <th scope="col">Shows</th>
+          <th scope="col">Loaded from</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>photo</code></td>
+          <td>A photograph at the image's <code>width</code> and <code>height</code></td>
+          <td>picsum.photos</td>
+        </tr>
+        <tr>
+          <td><code>placehold</code></td>
+          <td>A flat box with the <code>alt</code> text in it</td>
+          <td>placehold.co</td>
+        </tr>
+        <tr>
+          <td><code>avatar</code></td>
+          <td>A face, 48 pixels wide and round</td>
+          <td rowspan="3">cdn.jsdelivr.net (the Faker portrait set)</td>
+        </tr>
+        <tr>
+          <td><code>portrait</code>, <code>profile</code></td>
+          <td>A face, 128 pixels square</td>
+        </tr>
+        <tr>
+          <td><code>headshot</code></td>
+          <td>A face, 256 pixels square</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Add <code>data-seed</code> to get the same picture on every load. Without it, a portrait is chosen from the <code>alt</code> text, so the same name always gets the same face.</p>
+    <code-block language="html" label="A photograph and a portrait that stay the same" data-escape><img data-mock="photo" data-seed="harbour" width="600" height="400" alt="The harbour at dusk">
+<img data-mock="portrait" alt="Ines Calloway"></code-block>
+
+    <h3 id="other-media">Video, frames and canvas</h3>
+    <p>A <code>&lt;video&gt;</code> gets a placeholder poster, an <code>&lt;iframe&gt;</code> gets a blank document with its <code>title</code> in the middle, and a <code>&lt;canvas&gt;</code> has the box drawn on it. The label comes from <code>title</code>, or <code>aria-label</code> on a canvas. Without a size, video and frames are 16:9 and a canvas is 4:3, at the full width of the container.</p>
+    <code-block language="html" label="Other media" data-escape><video data-mock title="Shop tour"></video>
+<iframe data-mock title="Map to the shop"></iframe>
+<canvas data-mock aria-label="Sales by month"></canvas></code-block>
   </section>
 
-  <table>
-    <caption>Available presets</caption>
-    <thead>
-      <tr><th>Preset</th><th>Aspect ratio</th><th>Default width</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><code>hero</code></td><td>3:1</td><td>100%</td></tr>
-      <tr><td><code>card</code></td><td>16:9</td><td>400px</td></tr>
-      <tr><td><code>avatar</code></td><td>1:1</td><td>48px</td></tr>
-      <tr><td><code>product</code></td><td>1:1</td><td>400px</td></tr>
-      <tr><td><code>thumbnail</code></td><td>1:1</td><td>150px</td></tr>
-      <tr><td><code>logo</code></td><td>4:1</td><td>200px</td></tr>
-      <tr><td><code>og</code></td><td>1200:630</td><td>100%</td></tr>
-      <tr><td><code>banner</code></td><td>728:90</td><td>100%</td></tr>
-    </tbody>
-  </table>
+  <section id="text">
+    <h2>Placeholder text</h2>
+    <p>Add <code>data-lorem</code> to an element and the script fills it. The value says how much text. Anything already inside the element is replaced, and the element is marked <code>translate="no"</code> so translation tools leave it alone.</p>
 
-  <h3>Photo service</h3>
-  <p>Use <code>data-mock="photo"</code> for realistic images from <a href="https://picsum.photos">picsum.photos</a>. Add <code>data-seed</code> for reproducible results.</p>
-  <code-block language="html" show-lines label="Photo placeholder" data-escape><img data-mock="photo" width="400" height="300" alt="Product shot">
+    <browser-window
+      src="/docs/examples/demos/lorem-basic.html"
+      url="placeholder-text"
+      title="Placeholder text"
+      data-demo-height="l"
+      shadow>
+    </browser-window>
 
-<!-- Reproducible with data-seed -->
-<img data-mock="photo" width="400" height="300" data-seed="42" alt="Consistent photo"></code-block>
-  <section class="example" data-layout="stack" data-layout-gap="m">
-    <layout-grid data-layout-min="l" data-layout-gap="m">
-      <img data-mock="photo" width="400" height="300" alt="Random photo">
-      <img data-mock="photo" width="400" height="300" data-seed="42" alt="Seeded photo">
-    </layout-grid>
-  </section>
-
-  <h3>Video, iframe, and canvas</h3>
-  <p><code>data-mock</code> works on all media elements. Video gets a poster overlay, iframes get <code>srcdoc</code> with a centered label, and canvas elements draw the placeholder pattern directly.</p>
-  <code-block language="html" show-lines label="Other media types" data-escape><video data-mock width="800" height="450" alt="Product demo"></video>
-<iframe data-mock width="600" height="400" title="Embedded map"></iframe>
-<canvas data-mock width="400" height="300" aria-label="Chart area"></canvas></code-block>
-  <section class="example" data-layout="stack" data-layout-gap="m">
-    <video data-mock width="800" height="450" alt="Product demo"></video>
-    <iframe data-mock width="600" height="400" title="Embedded map"></iframe>
-    <canvas data-mock width="400" height="300" aria-label="Chart area"></canvas>
-  </section>
-
-  <h3>Inside figure</h3>
-  <p>Works inside <code>&lt;figure&gt;</code> and <code>&lt;picture&gt;</code> with no structural changes.</p>
-  <code-block language="html" show-lines label="Figure with mock" data-escape><figure>
-  <img data-mock="card" alt="Team photo">
-  <figcaption>Our engineering team</figcaption>
-</figure></code-block>
-  <section class="example">
-    <figure>
-      <img data-mock="card" alt="Team photo">
-      <figcaption>Our engineering team</figcaption>
-    </figure>
-  </section>
-
-  <h3>Production transition</h3>
-  <p>Replace <code>src</code> and remove <code>data-mock</code>. The HTML structure stays identical.</p>
-  <code-block language="html" show-lines label="Prototype to production" data-escape><!-- Prototype -->
-<img data-mock width="400" height="300" alt="Hero banner">
-
-<!-- Production: swap src, remove data-mock -->
-<img src="/images/hero.webp" width="400" height="300" alt="Hero banner"></code-block>
-</section>
-
-<section>
-  <h2>Placeholder Text</h2>
-  <p>Add <code>data-lorem</code> to any text-containing element to fill it with placeholder text.</p>
-
-  <h3>Basic usage</h3>
-  <code-block language="html" show-lines label="Default paragraph" data-escape><p data-lorem></p></code-block>
-  <section class="example">
-    <p data-lorem></p>
-  </section>
-
-  <h3>Options</h3>
-  <code-block language="html" show-lines label="Word count, sentences, headings, lists" data-escape><p data-lorem="50"></p>
+    <code-block language="html" label="Amounts of text" data-escape><h2 data-lorem="heading"></h2>
+<p data-lorem></p>
 <p data-lorem="3 sentences"></p>
-<h2 data-lorem="heading"></h2>
 <ul data-lorem="5 items"></ul></code-block>
-  <section class="example" data-layout="stack" data-layout-gap="m">
-    <h2 data-lorem="heading"></h2>
-    <p data-lorem="3 sentences"></p>
-    <ul data-lorem="5 items"></ul>
+
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Value</th>
+          <th scope="col">Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>None</td><td>50 words</td></tr>
+        <tr><td>A number, such as <code>20</code></td><td>That many words</td></tr>
+        <tr><td><code>3 sentences</code></td><td>That many sentences</td></tr>
+        <tr><td><code>heading</code></td><td>Five words</td></tr>
+        <tr><td><code>5 items</code></td><td>That many <code>&lt;li&gt;</code> elements, one sentence each, in a <code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code></td></tr>
+        <tr><td><code>cjk</code>, <code>arabic</code>, <code>cyrillic</code>, <code>latin</code></td><td>A paragraph in that script</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="scripts">Other scripts</h3>
+    <p>The text follows the nearest <code>lang</code> attribute. Japanese, Chinese and Korean get Japanese filler, counted in characters. Arabic, Persian, Urdu and Hebrew get Arabic filler. Russian, Ukrainian, Bulgarian and Serbian get Russian filler. Every other language gets Latin. Use it to check line length, line height and <a href="/docs/i18n/direction/">direction</a> before translated content exists.</p>
+    <code-block language="html" label="Filler that follows the language" data-escape><p lang="ja" data-lorem></p>
+<p lang="ar" dir="rtl" data-lorem="2 sentences"></p></code-block>
   </section>
 
-  <table>
-    <caption>data-lorem values</caption>
-    <thead>
-      <tr><th>Value</th><th>Result</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><em>(empty)</em></td><td>~50 words of lorem ipsum</td></tr>
-      <tr><td><code>50</code></td><td>50 words</td></tr>
-      <tr><td><code>3 sentences</code></td><td>3 sentences</td></tr>
-      <tr><td><code>heading</code></td><td>5 words (heading-length)</td></tr>
-      <tr><td><code>5 items</code></td><td>5 list items (on <code>&lt;ul&gt;</code>/<code>&lt;ol&gt;</code>)</td></tr>
-      <tr><td><code>cjk</code></td><td>CJK corpus (Chinese/Japanese/Korean)</td></tr>
-      <tr><td><code>arabic</code></td><td>Arabic corpus</td></tr>
-      <tr><td><code>cyrillic</code></td><td>Cyrillic corpus</td></tr>
-    </tbody>
-  </table>
+  <section id="wireframe">
+    <h2>Wireframe mode</h2>
+    <p><code>data-wireframe</code> redraws the page as a sketch: grey fills, outlined boxes, no shadows, and images replaced by crossed boxes. The markup does not change, so a review of the wireframe is a review of the real structure. It needs the development add-on.</p>
+    <code-block language="html" label="The whole page, or one region" data-escape><html lang="en" data-wireframe="lo">
 
-  <h3>Multi-language support</h3>
-  <p>The corpus auto-detects from the <code>lang</code> attribute on the element or its ancestors.</p>
-  <code-block language="html" show-lines label="Non-Latin corpuses" data-escape><p lang="ja" data-lorem></p>
-<p lang="ar" data-lorem></p>
-<p lang="ru" data-lorem></p>
-<p data-lorem="cjk"></p></code-block>
-  <section class="example" data-layout="stack" data-layout-gap="m">
-    <p lang="ja" data-lorem></p>
-    <p lang="ar" data-lorem dir="rtl"></p>
-    <p lang="ru" data-lorem></p>
+<section data-wireframe="mid">
+  ...
+</section></code-block>
+
+    <h3 id="fidelity">Levels</h3>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Value</th>
+          <th scope="col">Text</th>
+          <th scope="col">Boxes</th>
+          <th scope="col">Use it to review</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>lo</code></td>
+          <td>Scribbles (the Redacted Script font)</td>
+          <td>Solid lines, black and white only</td>
+          <td>Placement and proportion, with nothing to read</td>
+        </tr>
+        <tr>
+          <td><code>mid</code></td>
+          <td>Solid blocks (the Flow Block font)</td>
+          <td>Dashed, grey</td>
+          <td>Hierarchy and the amount of content</td>
+        </tr>
+        <tr>
+          <td><code>hi</code></td>
+          <td>Your fonts, readable</td>
+          <td>Thin dashed lines, with images faded</td>
+          <td>Wording and flow, before color and imagery</td>
+        </tr>
+        <tr>
+          <td><code>annotate</code></td>
+          <td>Your fonts</td>
+          <td>Dashed, each with its tag name</td>
+          <td>The elements used</td>
+        </tr>
+        <tr>
+          <td>No value</td>
+          <td>Your fonts</td>
+          <td>Dashed, grey</td>
+          <td>The same as <code>mid</code> without the block font</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>On <code>&lt;html&gt;</code> the page also turns grey and a badge in the corner names the mode. On a container only that region changes. The <a href="/docs/process/#fidelity">overview demo</a> switches one region between the levels.</p>
+
+    <h3 id="wireframe-script">Switching from script</h3>
+    <p>The add-on's script puts a <code>wireframe</code> object on <code>window.VanillaBreeze</code> and binds <kbd>Ctrl</kbd> or <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>W</kbd> to turn the mode on and off for the page.</p>
+    <code-block language="js" label="Wireframe from script" data-escape>const { wireframe } = window.VanillaBreeze;
+
+wireframe.toggle();          // on at "mid", or off
+wireframe.toggle('lo');      // on at "lo", or off
+wireframe.setFidelity('hi'); // set a level; '' turns it off
+wireframe.isActive();        // true or false
+wireframe.getFidelity();     // 'lo', 'mid', 'hi', 'annotate' or null</code-block>
+
+    <h3 id="notes">Labels and review notes</h3>
+    <p>Three more attributes carry what a reviewer needs to know. They come with the development add-on.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Attribute</th>
+          <th scope="col">Shows</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-wf-label="Hero"</code></td>
+          <td>A name badge in the corner of that element, inside a wireframe</td>
+        </tr>
+        <tr>
+          <td><code>data-wf-annotate</code> on <code>&lt;html&gt;</code> or a container</td>
+          <td>Tag-name labels on sections and layouts, at any level</td>
+        </tr>
+        <tr>
+          <td><code>data-wf-callout="Needs a second image"</code></td>
+          <td>A numbered marker on the element and the note in a list at the end of the page, once you call <code>wireframe.toggleCallouts()</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The <a href="/docs/attributes/data-wireframe/"><code>data-wireframe</code> reference</a> covers the label and callout methods, the <code>data-wf-palette</code> colors and the tokens the mode reads.</p>
   </section>
-</section>
 
-<section>
-  <h2>Wireframe Mode</h2>
-  <p>Add <code>data-wireframe</code> to <code>&lt;html&gt;</code> or any container to enable wireframe rendering. Requires the dev CSS bundle.</p>
-
-  <h3>Fidelity levels</h3>
-  <code-block language="html" show-lines label="Wireframe fidelity" data-escape><html data-wireframe>
-<!-- "lo"  — scribble font, pure B&W -->
-<html data-wireframe="lo">
-<!-- "mid" — block font, dashed borders -->
-<html data-wireframe="mid">
-<!-- "hi"  — system fonts, subtle styling -->
-<html data-wireframe="hi"></code-block>
-
-  <table>
-    <caption>Wireframe fidelity levels</caption>
-    <thead>
-      <tr><th>Level</th><th>Fonts</th><th>Borders</th><th>Colors</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><code>lo</code></td><td>Scribble (Redacted Script)</td><td>Rough dashed</td><td>Pure B&W</td></tr>
-      <tr><td><code>mid</code> (default)</td><td>Block (Flow Block)</td><td>Dashed</td><td>Grayscale</td></tr>
-      <tr><td><code>hi</code></td><td>System fonts</td><td>Subtle</td><td>Near-production</td></tr>
-      <tr><td><code>annotate</code></td><td>System fonts</td><td>Labeled</td><td>Grayscale + labels</td></tr>
-    </tbody>
-  </table>
-
-  <h3>JavaScript API</h3>
-  <p>The <code>VanillaBreeze.wireframe</code> object is available when the dev JS bundle is loaded.</p>
-  <code-block language="js" show-lines label="Wireframe JS API" data-escape>// Toggle wireframe mode
-VanillaBreeze.wireframe.toggle();
-VanillaBreeze.wireframe.toggle('lo');
-
-// Set specific fidelity
-VanillaBreeze.wireframe.setFidelity('hi');
-
-// Query state
-VanillaBreeze.wireframe.isActive();
-VanillaBreeze.wireframe.getFidelity();
-
-// Label elements for annotation mode
-VanillaBreeze.wireframe.labelElements();</code-block>
-
-  <h3>Callouts</h3>
-  <p>Add <code>data-wf-callout="comment text"</code> to any element for design review notes. The JS API renders numbered markers and a footnote panel. See <a href="/docs/attributes/data-wireframe/#callouts-comments">Callouts &amp; Comments</a> for details.</p>
-
-  <h3>Integration with prototyping tools</h3>
-  <p><code>data-mock</code> media adapts automatically to wireframe tokens. <code>data-lorem</code> text in <code>lo</code> fidelity gets abstract letter-spacing for a text-block appearance. No extra configuration needed.</p>
-</section>
-
-<section>
-  <h2>Skeleton Loading</h2>
-  <p>The <code>data-loading="skeleton"</code> attribute renders pulsing placeholder blocks for content that is loading. Cross-reference: <a href="/docs/attributes/hide-until-ready/">Loading states</a>.</p>
-  <code-block language="html" show-lines label="Skeleton loading" data-escape><article data-loading="skeleton">
-  <h2>Loading title...</h2>
-  <p>Loading content paragraph...</p>
-  <img src="placeholder.svg" alt="" width="400" height="225">
+  <section id="skeleton">
+    <h2>Skeleton states</h2>
+    <p>A skeleton is for the running page, not the design review: it holds the shape of content that has not arrived. Put <code>data-loading="skeleton"</code> on a container and each child becomes a grey block of its own size with a moving highlight. The highlight stops when the reader asks for reduced motion. Remove the attribute when the content is ready.</p>
+    <code-block language="html" label="A card that is still loading" data-escape><article data-loading="skeleton" aria-busy="true">
+  <h3>The Lighthouse Keeper's Almanac</h3>
+  <p>Ines Calloway, hardback, 320 pages.</p>
+  <img data-mock="card" alt="Book cover">
 </article></code-block>
-  <section class="example">
-    <article data-loading="skeleton">
-      <h2>Loading title...</h2>
-      <p>Loading content paragraph...</p>
-      <img data-mock width="400" height="225" alt="Loading image">
-    </article>
+    <p>The blocks take their size from the children, so give the container content of about the right length. <code>aria-busy</code> is yours to set and remove. <a href="/docs/attributes/data-loading/"><code>data-loading</code></a> lists the other loading styles.</p>
   </section>
-</section>
 
-<section>
-  <h2>Fake Content CLI</h2>
-  <p>For realistic test data (products, users, testimonials), use the CLI helper powered by <a href="https://fakerjs.dev">Faker.js</a>.</p>
-  <code-block language="bash" show-lines label="Fake content CLI" data-escape># Generate fake product data
-node scripts/fake-content-helper.js --type product --count 5
+  <section id="urls">
+    <h2>Placeholder URLs in script</h2>
+    <p>When script builds the page, there is no element to put <code>data-mock</code> on yet. The development add-on's script adds <code>VanillaBreeze.mock</code>, which returns the same picture URLs as strings.</p>
+    <code-block language="js" label="Picture URLs" data-escape>const { mock } = window.VanillaBreeze;
 
-# Generate user testimonials
-node scripts/fake-content-helper.js --type testimonial --count 3</code-block>
-  <p>Faker is a Node.js devDependency only — it is not included in the browser bundle.</p>
-</section>
+mock.imageUrl({ width: 400, height: 300, seed: 42 });
+// 'https://picsum.photos/seed/42/400/300'
 
-<section>
-  <h2>Image URL Utility</h2>
-  <p>For JS-driven scenarios (dynamic galleries, programmatic mockups), use the image URL utility available on the dev bundle.</p>
-  <code-block language="js" show-lines label="Image URL utility" data-escape>// Programmatic placeholder URLs
-VanillaBreeze.mock.imageUrl({
-  service: 'picsum',
-  width: 400,
-  height: 300,
-  seed: 42
-});
-// → 'https://picsum.photos/seed/42/400/300'
+mock.imageUrl({ service: 'placehold', width: 400, height: 300, text: 'Hero' });
+// 'https://placehold.co/400x300?text=Hero'
 
-VanillaBreeze.mock.imageUrl({
-  service: 'placehold',
-  width: 400,
-  height: 300,
-  text: 'Hero'
-});
-// → 'https://placehold.co/400x300?text=Hero'</code-block>
-</section>
+mock.portraitUrl('Ines Calloway', 256);
+// a 256 pixel portrait, the same one each time for that name</code-block>
+  </section>
 
-<section>
-  <h2>Full Demo</h2>
-  <p>All prototyping tools working together — mock images, lorem text, and multi-language content in a complete page prototype. Toggle wireframe mode from the toolbar to see how the same HTML renders as a sketch.</p>
-  <browser-window url="prototyping-toolkit.html">
-    <iframe src="/docs/examples/demos/prototyping-toolkit.html" style="width:100%;height:600px;border:0" title="Prototyping Toolkit Demo" loading="lazy"></iframe>
-  </browser-window>
-  <p><a href="/docs/examples/demos/prototyping-toolkit.html">Open full-page demo</a></p>
-</section>
+  <section id="production">
+    <h2>From prototype to release</h2>
+    <ol>
+      <li>Give each image its <code>src</code> and remove <code>data-mock</code>. Keep <code>width</code>, <code>height</code> and <code>alt</code>, and check that the <code>alt</code> text describes the real picture.</li>
+      <li>Write the real text into each element and remove <code>data-lorem</code>. If the attribute stays, the script replaces your text.</li>
+      <li>Remove <code>data-wireframe</code> and the <code>data-wf-*</code> attributes, and take the development add-on's stylesheet and script out of the page.</li>
+    </ol>
+    <code-block language="html" label="Before and after" data-escape><!-- Prototype -->
+<img data-mock="card" alt="Featured book">
+<p data-lorem="2 sentences"></p>
+
+<!-- Release -->
+<img src="/images/almanac-cover.webp" width="400" height="225" alt="Cover of The Lighthouse Keeper's Almanac">
+<p>A year on a rock in the North Sea, told month by month.</p></code-block>
+    <p>A search of the project for <code>data-mock</code> and <code>data-lorem</code> finds anything left behind.</p>
+  </section>
+
+  <section id="demo">
+    <h2>A whole page</h2>
+    <p>This page uses placeholder media and text throughout. The control at the top turns wireframe mode on and sets the level.</p>
+    <browser-window
+      src="/docs/examples/demos/prototyping-toolkit.html"
+      url="prototype"
+      title="A prototype page"
+      data-demo-height="2xl"
+      shadow>
+    </browser-window>
+  </section>

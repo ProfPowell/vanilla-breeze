@@ -1,0 +1,188 @@
+---
+layout: guide
+title: "Planning Work"
+description: "Keep personas, user stories, boards, schedules and decision records as HTML pages beside the site they describe, using the vb-project-planning package."
+guideGroup: Process
+currentPath: /docs/process/planning/
+toc: true
+---
+
+  <section id="idea">
+    <h2>Plans as pages</h2>
+    <p>A plan kept in a separate tool drifts from the work. A plan kept as HTML in the project's repository changes in the same commits as the code, is reviewed in the same place, and needs no account to read. A user story is an element with an <code>id</code>, so a commit message, a test or another page can link straight to it.</p>
+    <p><code>@profpowell/vb-project-planning</code> is a separate npm package of elements for this. They were moved out of Vanilla Breeze so that the library stays about building sites. They read Vanilla Breeze tokens, so a planning page follows the theme of the site it belongs to.</p>
+  </section>
+
+  <section id="elements">
+    <h2>What the package provides</h2>
+    <p>Each name links to its page on the <a href="https://profpowell.github.io/vb-project-planning/">package's documentation site</a>.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Purpose</th>
+          <th scope="col">Elements</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Who it is for</th>
+          <td>
+            <a href="https://profpowell.github.io/vb-project-planning/elements/user-persona/"><code>&lt;user-persona&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-project-planning/elements/empathy-map/"><code>&lt;empathy-map&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-project-planning/elements/user-journey/"><code>&lt;user-journey&gt;</code></a>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">What to build</th>
+          <td>
+            <a href="https://profpowell.github.io/vb-project-planning/elements/user-story/"><code>&lt;user-story&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-project-planning/elements/story-map/"><code>&lt;story-map&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-project-planning/elements/requirement-card/"><code>&lt;requirement-card&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-project-planning/elements/quality-target/"><code>&lt;quality-target&gt;</code></a>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">What comes first</th>
+          <td>
+            <a href="https://profpowell.github.io/vb-project-planning/elements/impact-effort/"><code>&lt;impact-effort&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-project-planning/elements/quadrant-grid/"><code>&lt;quadrant-grid&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-project-planning/elements/iron-triangle/"><code>&lt;iron-triangle&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-project-planning/elements/capacity-plan/"><code>&lt;capacity-plan&gt;</code></a>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">When it happens</th>
+          <td>
+            <a href="https://profpowell.github.io/vb-project-planning/elements/product-roadmap/"><code>&lt;product-roadmap&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-project-planning/elements/gantt-chart/"><code>&lt;gantt-chart&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-project-planning/elements/burndown-chart/"><code>&lt;burndown-chart&gt;</code></a>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">Where the work stands</th>
+          <td>
+            <a href="https://profpowell.github.io/vb-project-planning/elements/kanban-board/"><code>&lt;kanban-board&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-project-planning/elements/work-item/"><code>&lt;work-item&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-project-planning/elements/traceability-matrix/"><code>&lt;traceability-matrix&gt;</code></a>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">What could go wrong, and what was decided</th>
+          <td>
+            <a href="https://profpowell.github.io/vb-project-planning/elements/risk-register/"><code>&lt;risk-register&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-project-planning/elements/adr-wc/"><code>&lt;adr-wc&gt;</code></a>,
+            <a href="https://profpowell.github.io/vb-project-planning/elements/review-surface/"><code>&lt;review-surface&gt;</code></a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Four elements that planning pages often need stayed in Vanilla Breeze, because any site can use them: <a href="/docs/elements/web-components/site-map/"><code>&lt;site-map&gt;</code></a> for the page tree, <a href="/docs/elements/web-components/flow-diagram/"><code>&lt;flow-diagram&gt;</code></a> and <a href="/docs/elements/web-components/diagram-wc/"><code>&lt;diagram-wc&gt;</code></a> for flows and structure, and <a href="/docs/elements/web-components/glossary-wc/"><code>&lt;glossary-wc&gt;</code></a> for the project's terms.</p>
+  </section>
+
+  <section id="install">
+    <h2>Install and load</h2>
+    <p>Load Vanilla Breeze first, then the package's stylesheet and script.</p>
+    <code-block language="html" label="From a CDN" data-escape><link rel="stylesheet" href="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.css">
+<link rel="stylesheet" href="https://unpkg.com/@profpowell/vb-project-planning/dist/vb-project-planning.min.css">
+
+<script type="module" src="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.js"></script>
+<script type="module" src="https://unpkg.com/@profpowell/vb-project-planning/dist/vb-project-planning.min.js"></script></code-block>
+    <code-block language="js" label="From npm: npm install vanilla-breeze @profpowell/vb-project-planning" data-escape>import 'vanilla-breeze/css';
+import 'vanilla-breeze';
+
+import '@profpowell/vb-project-planning/css';
+import '@profpowell/vb-project-planning';              // every element
+
+// or one element at a time
+import '@profpowell/vb-project-planning/kanban-board';</code-block>
+
+    <h3 id="peers">What it uses from Vanilla Breeze</h3>
+    <p>Vanilla Breeze is an optional peer dependency. Without it the elements still render, with fallback colors and without the behaviour in this table.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Vanilla Breeze part</th>
+          <th scope="col">Used by</th>
+          <th scope="col">For</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Tokens and the active theme</td>
+          <td>Every element</td>
+          <td>Color, type and spacing</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/drag-surface/"><code>&lt;drag-surface&gt;</code></a></td>
+          <td><code>&lt;kanban-board&gt;</code>, <code>&lt;story-map&gt;</code>, <code>&lt;quadrant-grid&gt;</code>, <code>&lt;impact-effort&gt;</code></td>
+          <td>Moving cards by pointer or keyboard</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a></td>
+          <td><code>&lt;risk-register&gt;</code>, <code>&lt;traceability-matrix&gt;</code></td>
+          <td>Sortable headers, the severity summary and the heat map</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a></td>
+          <td><code>&lt;iron-triangle&gt;</code>, <code>&lt;quality-target&gt;</code>, <code>&lt;capacity-plan&gt;</code></td>
+          <td>Labels and validation messages in their dialogs</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/chart-wc/"><code>&lt;chart-wc&gt;</code></a></td>
+          <td><code>&lt;burndown-chart&gt;</code></td>
+          <td>Drawing the chart. It is in the charts bundle, <code>vanilla-breeze-charts.js</code> and <code>vanilla-breeze-charts.css</code>, not the main one</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="sample">
+    <h2>A board of stories</h2>
+    <p>A board is a <code>&lt;kanban-board&gt;</code> with one <code>&lt;section&gt;</code> for each column. A story is a <code>&lt;user-story&gt;</code> with its parts in named slots. Move a story to another column by moving its element, in the editor or by dragging it on the page.</p>
+    <code-block language="html" label="Two columns, three stories" data-escape><kanban-board>
+  <section data-column="todo" data-column-label="To do">
+    <user-story story-id="SHOP-21" epic="Events" priority="high"
+                status="to-do" points="5" detail="compact">
+      <span slot="persona">Bookshop customer</span>
+      <span slot="action">reserve a seat at an author evening</span>
+      <span slot="benefit">I know there is room before I travel</span>
+    </user-story>
+    <user-story story-id="SHOP-24" epic="Events" priority="medium"
+                status="to-do" points="3" detail="compact">
+      <span slot="persona">Events manager</span>
+      <span slot="action">see who has reserved</span>
+    </user-story>
+  </section>
+
+  <section data-column="doing" data-column-label="In progress" data-wip="2">
+    <user-story story-id="SHOP-18" epic="Events" priority="high"
+                status="in-progress" points="8" detail="compact">
+      <span slot="persona">Bookshop customer</span>
+      <span slot="action">see this month's events on one page</span>
+    </user-story>
+  </section>
+</kanban-board></code-block>
+    <p>The story reads <q>As a bookshop customer, I want to reserve a seat at an author evening, so that I know there is room before I travel.</q> <code>data-wip</code> sets a limit on the number of cards in a column. Dragging changes the page in the browser only. To keep a move, make it in the source, or listen for the board's <code>kanban-board:transfer</code> event and save it yourself.</p>
+  </section>
+
+  <section id="more">
+    <h2>Where to go next</h2>
+    <layout-grid data-layout-min="m" data-layout-gap="m">
+      <a href="https://profpowell.github.io/vb-project-planning/elements/" class="section-card">
+        <h3>Element reference</h3>
+        <p>Attributes, slots and events for every planning element.</p>
+      </a>
+      <a href="https://profpowell.github.io/vb-project-planning/demos/" class="section-card">
+        <h3>Demos</h3>
+        <p>Each element on its own, and several working together.</p>
+      </a>
+      <a href="https://profpowell.github.io/vb-project-planning/showcase/sprint-board/" class="section-card">
+        <h3>Sprint board</h3>
+        <p>A full page built from a board and its stories.</p>
+      </a>
+      <a href="/docs/process/prototyping/" class="section-card">
+        <h3>Prototyping</h3>
+        <p>The next stage: the real markup with placeholder content.</p>
+      </a>
+    </layout-grid>
+  </section>

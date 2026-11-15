@@ -1,0 +1,194 @@
+---
+layout: guide
+title: "Process Overview"
+description: "How a project moves from a plan to a prototype to a documented design system, which Vanilla Breeze tool serves each stage, and what to do when something does not work."
+guideGroup: Process
+currentPath: /docs/process/
+toc: true
+---
+
+  <section id="approach">
+    <h2>The approach</h2>
+    <p>Every stage of a project produces HTML. The plan is a set of pages. The prototype is the real page with placeholder content. The design system is a theme and the pages that describe it. Nothing is drawn in one tool and rebuilt in another, so work done at one stage is still there at the next.</p>
+    <p>The library covers the middle of that sequence itself. Two companion packages, published separately and built on the same tokens, cover planning and design-system documentation.</p>
+  </section>
+
+  <section id="stages">
+    <h2>The stages and their tools</h2>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Stage</th>
+          <th scope="col">What you make</th>
+          <th scope="col">Tool</th>
+          <th scope="col">Comes from</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row"><a href="/docs/process/planning/">Plan</a></th>
+          <td>Personas, user stories, a board, a roadmap, a risk register and decision records, as pages in the project</td>
+          <td>Planning elements such as <code>&lt;user-story&gt;</code> and <code>&lt;kanban-board&gt;</code>. For structure, <a href="/docs/elements/web-components/site-map/"><code>&lt;site-map&gt;</code></a> and <a href="/docs/elements/web-components/flow-diagram/"><code>&lt;flow-diagram&gt;</code></a></td>
+          <td>The <code>@profpowell/vb-project-planning</code> package. The two structure elements are in Vanilla Breeze</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/process/prototyping/">Prototype</a></th>
+          <td>The real markup, filled with placeholder images and text, shown as a sketch until the layout is agreed</td>
+          <td><a href="/docs/attributes/data-mock/"><code>data-mock</code></a>, <a href="/docs/attributes/data-lorem/"><code>data-lorem</code></a>, <a href="/docs/attributes/data-wireframe/"><code>data-wireframe</code></a>, <a href="/docs/attributes/data-loading/"><code>data-loading="skeleton"</code></a></td>
+          <td>Vanilla Breeze. Wireframe mode is in the development add-on</td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/process/design-system/">Design system</a></th>
+          <td>A theme, and pages that show its colors, type, spacing and components</td>
+          <td><a href="/docs/themes/#custom-themes">Themes</a> and <a href="/docs/tokens/">tokens</a>, then specimen elements such as <code>&lt;token-specimen&gt;</code> and the theme tools</td>
+          <td>Themes and tokens are in Vanilla Breeze. Specimens and tools are in <code>@profpowell/vb-design-system</code></td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/process/dtcg/">Hand off</a></th>
+          <td>The theme as a file other design tools can read</td>
+          <td>A DTCG token file for every bundled theme, and export and import elements</td>
+          <td>Token files are in Vanilla Breeze. The elements are in <code>@profpowell/vb-design-system</code></td>
+        </tr>
+        <tr>
+          <th scope="row"><a href="/docs/process/debugging/">Debug</a></th>
+          <td>A page that works</td>
+          <td>The <code>data-debug</code> check, the browser's own tools and the troubleshooting guide</td>
+          <td>Vanilla Breeze development add-on</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The stages overlap. A prototype usually starts before the plan is finished, and a theme usually starts as a few token overrides in the prototype.</p>
+  </section>
+
+  <section id="fidelity">
+    <h2>One page, from sketch to finished</h2>
+    <p>The demo is one section of markup. The control changes the value of <code>data-wireframe</code> on it and nothing else. The sketch and the finished page are the same elements, so a layout agreed on the sketch does not need to be built again.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/process-fidelity.html"
+      url="fidelity"
+      title="One page at four levels of fidelity"
+      data-demo-height="xl"
+      shadow>
+    </browser-window>
+
+    <p><a href="/docs/process/prototyping/#wireframe">Prototyping</a> explains each level and how to switch between them.</p>
+  </section>
+
+  <section id="responsibilities">
+    <h2>What is handled and what you provide</h2>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Area</th>
+          <th scope="col">The library or package handles</th>
+          <th scope="col">You provide</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Planning</th>
+          <td>Elements that lay out a persona, a story, a board, a schedule or a matrix from plain markup, in the page's theme</td>
+          <td>The content, and the habit of editing it as the project changes</td>
+        </tr>
+        <tr>
+          <th scope="row">Placeholder content</th>
+          <td>A labelled box for any image, video, frame or canvas, and filler text by word, sentence or list item</td>
+          <td>Real content before release, and the removal of the placeholder attributes</td>
+        </tr>
+        <tr>
+          <th scope="row">Wireframe mode</th>
+          <td>A sketch rendering of your markup at three levels of detail, with labels and review notes</td>
+          <td>The decision about when to stop sketching. Leave the development add-on out of the released site</td>
+        </tr>
+        <tr>
+          <th scope="row">Design system</th>
+          <td>Tokens, themes, and specimens that read the live token values, so the documentation cannot drift from the theme</td>
+          <td>The brand decisions, and the written guidance on how to use them</td>
+        </tr>
+        <tr>
+          <th scope="row">Token exchange</th>
+          <td>A DTCG file beside every bundled theme, and elements that export and import the format</td>
+          <td>A check of the result in the other tool</td>
+        </tr>
+        <tr>
+          <th scope="row">Debugging</th>
+          <td>A check on the structure of cards that outlines the element at fault and logs a warning, and a list of known symptoms with their causes</td>
+          <td>The browser's developer tools, and a small page that reproduces the problem</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="loading">
+    <h2>What to load</h2>
+    <p>The tools on these pages are not all in the main bundle. The file names are relative to <code>dist/cdn/</code> in the <code>vanilla-breeze</code> package.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Feature</th>
+          <th scope="col">Files</th>
+          <th scope="col">npm import</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-mock</code>, <code>data-lorem</code></td>
+          <td><code>vanilla-breeze.css</code> and <code>vanilla-breeze.js</code>. With the core bundle, add <code>packs/prototype.full.css</code> and <code>packs/prototype.full.js</code></td>
+          <td><code>vanilla-breeze/prototype-css</code>, <code>vanilla-breeze/prototype-js</code></td>
+        </tr>
+        <tr>
+          <td><code>data-loading="skeleton"</code></td>
+          <td>Any Vanilla Breeze stylesheet</td>
+          <td><code>vanilla-breeze/css</code></td>
+        </tr>
+        <tr>
+          <td><code>data-wireframe</code>, <code>data-debug</code>, <code>VanillaBreeze.wireframe</code>, <code>VanillaBreeze.mock</code></td>
+          <td><code>vanilla-breeze-dev.css</code> and <code>vanilla-breeze-dev.js</code></td>
+          <td><code>vanilla-breeze/dev-css</code>, <code>vanilla-breeze/dev-js</code></td>
+        </tr>
+        <tr>
+          <td>Planning elements</td>
+          <td>A separate package</td>
+          <td><code>@profpowell/vb-project-planning</code></td>
+        </tr>
+        <tr>
+          <td>Specimens and theme tools</td>
+          <td>A separate package</td>
+          <td><code>@profpowell/vb-design-system</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="html" label="The development add-on" data-escape><link rel="stylesheet" href="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.css">
+<link rel="stylesheet" href="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze-dev.css">
+
+<script type="module" src="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.js"></script>
+<script type="module" src="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze-dev.js"></script></code-block>
+    <p>Load the add-on while you work and remove both lines before release.</p>
+  </section>
+
+  <section id="pages">
+    <h2>In this section</h2>
+    <layout-grid data-layout-min="m" data-layout-gap="m">
+      <a href="/docs/process/planning/" class="section-card">
+        <h3>Planning Work</h3>
+        <p>Personas, stories, boards, schedules and decision records kept as pages, with the planning package.</p>
+      </a>
+      <a href="/docs/process/prototyping/" class="section-card">
+        <h3>Prototyping</h3>
+        <p>Placeholder media and text, wireframe mode and skeleton states on the markup you will keep.</p>
+      </a>
+      <a href="/docs/process/design-system/" class="section-card">
+        <h3>Documenting a Design System</h3>
+        <p>A theme plus pages of live specimens, with the design-system package.</p>
+      </a>
+      <a href="/docs/process/dtcg/" class="section-card">
+        <h3>Design Token Exchange</h3>
+        <p>Moving a theme to and from other design tools in the DTCG format.</p>
+      </a>
+      <a href="/docs/process/debugging/" class="section-card">
+        <h3>Debugging</h3>
+        <p>Symptoms, causes and fixes for styles, layouts, components and themes.</p>
+      </a>
+    </layout-grid>
+  </section>

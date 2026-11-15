@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>One page at four levels of fidelity</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <link rel="stylesheet" href="/cdn/vanilla-breeze-dev.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    h1 { font-size: var(--font-size-xl); }
+    #stage { padding: var(--size-m); }
+    #stage figure { max-inline-size: 24rem; }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <header data-layout="cluster" data-layout-justify="between" data-layout-gap="m">
+      <fieldset data-segmented>
+        <legend class="visually-hidden">Fidelity</legend>
+        <label><input type="radio" name="fidelity" value="lo" checked /> Sketch</label>
+        <label><input type="radio" name="fidelity" value="mid" /> Blocks</label>
+        <label><input type="radio" name="fidelity" value="hi" /> Preview</label>
+        <label><input type="radio" name="fidelity" value="" /> Finished</label>
+      </fieldset>
+      <code id="markup">&lt;section data-wireframe="lo"&gt;</code>
+    </header>
+
+    <section id="stage" data-wireframe="lo" data-layout="stack" data-layout-gap="m">
+      <h1>An evening with Ines Calloway</h1>
+
+      <figure>
+        <img src="/src/assets/placeholders/photo-figure-1-600x400.svg" width="600" height="400" alt="Ines Calloway reading at Harbour Books" />
+        <figcaption>Thursday 12 March, 19:00, upstairs at Harbour Books</figcaption>
+      </figure>
+
+      <p>The author of <cite>The Lighthouse Keeper's Almanac</cite> reads from her new book and takes questions. Doors open at 18:30.</p>
+
+      <ul>
+        <li>Forty seats, free to reserve</li>
+        <li>Signed copies on sale after the reading</li>
+        <li>Step-free access by the side door</li>
+      </ul>
+
+      <form data-layout="stack" data-layout-gap="s">
+        <form-field>
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" autocomplete="email" required />
+        </form-field>
+        <footer data-layout="cluster" data-layout-gap="s">
+          <button type="submit">Reserve a seat</button>
+          <a href="#stage">See all events</a>
+        </footer>
+      </form>
+    </section>
+
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const stage = document.getElementById('stage');
+    const markup = document.getElementById('markup');
+    stage.querySelector('form').addEventListener('submit', (e) => e.preventDefault());
+    document.querySelectorAll('input[name="fidelity"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        if (radio.value) {
+          stage.setAttribute('data-wireframe', radio.value);
+          markup.textContent = `<section data-wireframe="${radio.value}">`;
+        } else {
+          stage.removeAttribute('data-wireframe');
+          markup.textContent = '<section>';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,507 +1,220 @@
 ---
 layout: guide
-title: "Debugging Guide"
-description: "Troubleshooting common issues with Vanilla Breeze: CSS not loading, custom elements not working, theme problems, and more."
+title: "Debugging"
+description: "What to check when a page does not look or behave as expected: styles, layouts, components, themes and build tools, each as a symptom with its causes and fixes."
 guideGroup: Process
 currentPath: /docs/process/debugging/
 toc: true
 ---
 
-  <!-- CSS Issues Section -->
-  <section id="css-issues">
-    <h2>CSS Issues</h2>
-
-    <accordion-wc>
-      <details>
-        <summary>Styles aren't loading at all</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> Page looks unstyled, elements have browser defaults.</p>
-          <p><strong>Check these things:</strong></p>
-          <ol>
-            <li>
-              <strong>Is the CSS file loading?</strong> Open DevTools Network tab, filter by CSS, and look for <code>vanilla-breeze.css</code>. Check for 404 errors.
-            </li>
-            <li>
-              <strong>Is the path correct?</strong> For CDN usage:
-              <code-block language="html" label="Correct CDN path" data-escape><link rel="stylesheet" href="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.css"></code-block>
-            </li>
-            <li>
-              <strong>Is the link tag in the head?</strong> CSS must be in <code>&lt;head&gt;</code>, not <code>&lt;body&gt;</code>.
-            </li>
-            <li>
-              <strong>Check the console for errors.</strong> CSS parse errors will appear there.
-            </li>
-          </ol>
-        </layout-stack>
-      </details>
-
-      <details>
-        <summary>Some styles work but others don't</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> Basic elements styled, but layout elements or tokens don't work.</p>
-          <p><strong>Possible causes:</strong></p>
-          <ol>
-            <li>
-              <strong>You might be using an old cached version.</strong> Hard refresh with <kbd>Cmd/Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>.
-            </li>
-            <li>
-              <strong>CSS custom properties aren't inherited.</strong> Make sure you're not setting <code>all: initial</code> on parent elements.
-            </li>
-            <li>
-              <strong>Check if layers are supported.</strong> Vanilla Breeze uses <code>@layer</code>. Very old browsers may not support this.
-            </li>
-          </ol>
-        </layout-stack>
-      </details>
-
-      <details>
-        <summary>CSS variables show as invalid</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> DevTools shows custom properties as invalid or crossed out.</p>
-          <p><strong>Check these things:</strong></p>
-          <ol>
-            <li>
-              <strong>Spelling:</strong> Token names are case-sensitive. Use <code>var(--color-text)</code> not <code>var(--Color-Text)</code>.
-            </li>
-            <li>
-              <strong>Correct prefix:</strong> Size tokens use <code>--size-</code>, not <code>--space-</code>.
-            </li>
-            <li>
-              <strong>Browser DevTools issue:</strong> Some browsers incorrectly mark valid OKLCH colors as invalid. The colors still work.
-            </li>
-          </ol>
-          <p>Reference the <a href="/docs/tokens/">Design Tokens documentation</a> for exact token names.</p>
-        </layout-stack>
-      </details>
-    </accordion-wc>
-  </section>
-
-  <!-- Custom Elements Section -->
-  <section id="custom-elements">
-    <h2>Custom Elements (CSS-Only)</h2>
-
-    <accordion-wc>
-      <details>
-        <summary>Layout elements have no effect</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> <code>&lt;layout-stack&gt;</code>, <code>&lt;layout-grid&gt;</code> etc. don't apply layout.</p>
-          <p><strong>Check these things:</strong></p>
-          <ol>
-            <li>
-              <strong>CSS is loaded:</strong> Custom elements are styled purely with CSS. No JavaScript needed, but the CSS must be loaded.
-            </li>
-            <li>
-              <strong>Check the element in DevTools:</strong> Select the element and look at computed styles. You should see <code>display: flex</code> or <code>display: grid</code>.
-            </li>
-            <li>
-              <strong>Data attributes are correct:</strong> Use <code>data-layout-gap="m"</code> not <code>gap="m"</code> or <code>class="gap-m"</code>.
-            </li>
-            <li>
-              <strong>Valid values:</strong> Gap accepts t-shirt sizes (<code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code>), not arbitrary values.
-            </li>
-          </ol>
-          <code-block language="html" label="Correct usage" data-escape><!-- Correct -->
-<layout-stack data-layout-gap="m">
-  <p>Child 1</p>
-  <p>Child 2</p>
-</layout-stack>
-
-<!-- Wrong: missing data- prefix -->
-<layout-stack gap="m">...</layout-stack>
-
-<!-- Wrong: invalid value -->
-<layout-stack data-layout-gap="20px">...</layout-stack></code-block>
-        </layout-stack>
-      </details>
-
-      <details>
-        <summary>layout-grid doesn't create columns</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> Items stack vertically instead of forming a grid.</p>
-          <p><strong>Check these things:</strong></p>
-          <ol>
-            <li>
-              <strong>Container is too narrow:</strong> <code>layout-grid</code> uses <code>auto-fit</code> with a minimum item width. If the container is narrower than <code>data-min</code>, items will stack.
-            </li>
-            <li>
-              <strong>Set data-min correctly:</strong> The value should be a CSS length.
-              <code-block language="html" label="layout-grid example" data-escape><!-- Items need at least 200px each -->
-<layout-grid data-layout-min="m" data-layout-gap="m">
-  <div>Item</div>
-  <div>Item</div>
-  <div>Item</div>
-</layout-grid></code-block>
-            </li>
-            <li>
-              <strong>Resize your window:</strong> Narrow viewports may legitimately show single column.
-            </li>
-          </ol>
-        </layout-stack>
-      </details>
-
-      <details>
-        <summary>Elements show but have wrong styling</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> Custom element renders but doesn't match expected appearance.</p>
-          <p><strong>Check these things:</strong></p>
-          <ol>
-            <li>
-              <strong>Attribute values are quoted:</strong> HTML attribute values with special characters need quotes.
-              <code-block language="html" label="Quoted attributes">&lt;layout-grid data-layout-min="m"&gt;</code-block>
-            </li>
-            <li>
-              <strong>Parent styles interfering:</strong> Check if parent has <code>display: contents</code> or <code>all: unset</code> that might override.
-            </li>
-            <li>
-              <strong>CSS specificity conflict:</strong> See the <a href="#css-specificity">Specificity section</a> below.
-            </li>
-          </ol>
-        </layout-stack>
-      </details>
-    </accordion-wc>
-  </section>
-
-  <!-- Web Components Section -->
-  <section id="web-components">
-    <h2>Web Components (JavaScript)</h2>
-
-    <accordion-wc>
-      <details>
-        <summary>Web component doesn't work / not interactive</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> <code>&lt;accordion-wc&gt;</code>, <code>&lt;tab-set&gt;</code> etc. render but don't respond to clicks.</p>
-          <p><strong>Check these things:</strong></p>
-          <ol>
-            <li>
-              <strong>JavaScript is loaded:</strong> Check Network tab for <code>vanilla-breeze.js</code>.
-              <code-block language="html" label="Include JavaScript" data-escape><script type="module" src="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.js"></script></code-block>
-            </li>
-            <li>
-              <strong>Check console for errors:</strong> JavaScript errors prevent components from initializing.
-            </li>
-            <li>
-              <strong>Script must be type="module":</strong> Web components use ES modules.
-            </li>
-            <li>
-              <strong>Check if component is defined:</strong> In console, type:
-              <code-block language="javascript" label="Check component registration" data-escape>customElements.get('accordion-wc')
-// Should return the class, not undefined</code-block>
-            </li>
-          </ol>
-        </layout-stack>
-      </details>
-
-      <details>
-        <summary>Component works but animations are jerky</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> Accordion/tabs animate but not smoothly.</p>
-          <p><strong>Possible causes:</strong></p>
-          <ol>
-            <li>
-              <strong>prefers-reduced-motion is set:</strong> Animations are disabled when the user has requested reduced motion. This is intentional.
-            </li>
-            <li>
-              <strong>Heavy content:</strong> Complex content inside animated regions may cause jank. Consider simplifying.
-            </li>
-            <li>
-              <strong>Browser DevTools open:</strong> DevTools can slow down animations. Try with DevTools closed.
-            </li>
-          </ol>
-        </layout-stack>
-      </details>
-
-      <details>
-        <summary>Icons don't appear</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> <code>&lt;icon-wc&gt;</code> elements are empty or show wrong icon.</p>
-          <p><strong>Check these things:</strong></p>
-          <ol>
-            <li>
-              <strong>JavaScript is loaded:</strong> Icons require the JS bundle.
-            </li>
-            <li>
-              <strong>Icon name is valid:</strong> Icons use Lucide names. Check the <a href="/docs/elements/web-components/icons/">icon documentation</a> for available names.
-              <code-block language="html" label="Icon usage" data-escape><!-- Valid icon names -->
-<icon-wc name="home"></icon-wc>
-<icon-wc name="search"></icon-wc>
-<icon-wc name="settings"></icon-wc>
-
-<!-- Invalid: wrong name -->
-<icon-wc name="house"></icon-wc>  <!-- Use "home" --></code-block>
-            </li>
-            <li>
-              <strong>Inspect the element:</strong> The shadow DOM should contain an SVG.
-            </li>
-          </ol>
-        </layout-stack>
-      </details>
-
-      <details>
-        <summary>Dropdown opens in wrong position</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> Dropdown menu appears offset or in unexpected location.</p>
-          <p><strong>Possible causes:</strong></p>
-          <ol>
-            <li>
-              <strong>Parent has transform:</strong> CSS transforms create new containing blocks. Dropdowns may position relative to transformed ancestor.
-            </li>
-            <li>
-              <strong>Overflow hidden on parent:</strong> If a parent has <code>overflow: hidden</code>, the dropdown may be clipped.
-            </li>
-            <li>
-              <strong>Try different position:</strong>
-              <code-block language="html" label="Dropdown positioning" data-escape><drop-down position="bottom-start">
-<drop-down position="bottom-end">
-<drop-down position="top-start"></code-block>
-            </li>
-          </ol>
-        </layout-stack>
-      </details>
-    </accordion-wc>
-  </section>
-
-  <!-- Themes Section -->
-  <section id="themes">
-    <h2>Theme Issues</h2>
-
-    <accordion-wc>
-      <details>
-        <summary>Dark mode doesn't work</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> Page stays in light mode regardless of system preference.</p>
-          <p><strong>Check these things:</strong></p>
-          <ol>
-            <li>
-              <strong>System preference:</strong> Open System Preferences and check your appearance setting.
-            </li>
-            <li>
-              <strong>Manual override:</strong> If using <code>theme-picker</code>, it may have stored a preference. Try clearing localStorage:
-              <code-block language="javascript" label="Clear theme preference" data-escape>localStorage.removeItem('vb-theme');
-location.reload();</code-block>
-            </li>
-            <li>
-              <strong>Check html attribute:</strong> The <code>&lt;html&gt;</code> element should have <code>data-theme="dark"</code> when in dark mode.
-            </li>
-          </ol>
-        </layout-stack>
-      </details>
-
-      <details>
-        <summary>Colors look wrong in dark mode</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> Text is hard to read or colors don't look right in dark mode.</p>
-          <p><strong>Check these things:</strong></p>
-          <ol>
-            <li>
-              <strong>Using hardcoded colors:</strong> If you've written custom CSS with hardcoded colors, they won't adapt. Use semantic tokens:
-              <code-block language="css" label="Use semantic tokens" data-escape>/* Good: adapts to dark mode */
-color: var(--color-text);
-background: var(--color-surface);
-
-/* Bad: doesn't adapt */
-color: #333;
-background: white;</code-block>
-            </li>
-            <li>
-              <strong>Custom theme issue:</strong> If you've created a custom theme, verify dark mode variants are defined.
-            </li>
-          </ol>
-        </layout-stack>
-      </details>
-
-      <details>
-        <summary>Theme picker doesn't persist</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> Selected theme resets on page reload.</p>
-          <p><strong>Check these things:</strong></p>
-          <ol>
-            <li>
-              <strong>JavaScript loaded:</strong> Theme persistence requires the JS bundle.
-            </li>
-            <li>
-              <strong>localStorage access:</strong> If in private/incognito mode, localStorage may be restricted.
-            </li>
-            <li>
-              <strong>Check localStorage:</strong>
-              <code-block language="javascript" label="Check stored theme" data-escape>console.log(localStorage.getItem('vb-theme'));
-// Should show your selected theme</code-block>
-            </li>
-          </ol>
-        </layout-stack>
-      </details>
-    </accordion-wc>
-  </section>
-
-  <!-- Specificity Section -->
-  <section id="specificity">
-    <h2>CSS Specificity</h2>
-
-    <accordion-wc>
-      <details>
-        <summary>My custom styles aren't applying</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> You've written custom CSS but Vanilla Breeze styles take precedence.</p>
-          <p><strong>Solutions:</strong></p>
-          <ol>
-            <li>
-              <strong>Load your CSS after Vanilla Breeze:</strong>
-              <code-block language="html" label="Load order">&lt;!-- Vanilla Breeze first --&gt;
-&lt;link rel="stylesheet" href="vanilla-breeze.css"&gt;
-&lt;!-- Your styles second --&gt;
-&lt;link rel="stylesheet" href="my-styles.css"&gt;</code-block>
-            </li>
-            <li>
-              <strong>Use CSS layers:</strong> Vanilla Breeze uses layers. Put your styles in a higher-priority layer or no layer:
-              <code-block language="css" label="Layer ordering" data-escape>/* Your styles outside layers win */
-button.my-button {
-  background: purple;
-}
-
-/* Or define your layer after VB's layers */
-@layer vb, my-overrides;
-
-@layer my-overrides {
-  button.my-button {
-    background: purple;
-  }
-}</code-block>
-            </li>
-            <li>
-              <strong>Avoid !important:</strong> It works but creates maintenance headaches. Prefer proper cascade management.
-            </li>
-          </ol>
-        </layout-stack>
-      </details>
-
-      <details>
-        <summary>Styles work in dev but not production</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> Local development looks right, but production build has style issues.</p>
-          <p><strong>Check these things:</strong></p>
-          <ol>
-            <li>
-              <strong>CSS order changed:</strong> Build tools may reorder CSS. Ensure Vanilla Breeze loads first.
-            </li>
-            <li>
-              <strong>CSS purging:</strong> Tools like PurgeCSS may remove "unused" CSS. Configure to keep Vanilla Breeze classes and custom elements.
-            </li>
-            <li>
-              <strong>Minification issues:</strong> Some minifiers don't handle modern CSS well. Test with minification disabled.
-            </li>
-          </ol>
-        </layout-stack>
-      </details>
-    </accordion-wc>
-  </section>
-
-  <!-- Build Tools Section -->
-  <section id="build-tools">
-    <h2>Build Tool Issues</h2>
-
-    <accordion-wc>
-      <details>
-        <summary>Vite/Webpack can't find the package</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> Build error about missing module or unresolved import.</p>
-          <p><strong>Note:</strong> npm package is available. For CDN usage:</p>
-          <code-block language="html" label="CDN usage" data-escape><!-- In your HTML -->
-<link rel="stylesheet" href="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.css">
+  <section id="first-checks">
+    <h2>Start here</h2>
+    <p>Most problems are one of three things. Check them in the browser's developer tools before reading further.</p>
+    <ol>
+      <li><strong>The stylesheet did not load.</strong> In the Network panel, look for <code>vanilla-breeze.css</code> with status 200.</li>
+      <li><strong>The script did not load, or stopped.</strong> Look for <code>vanilla-breeze.js</code> in the Network panel and for errors in the Console. The script tag needs <code>type="module"</code>.</li>
+      <li><strong>An attribute is misspelled or has a value the library does not know.</strong> Attribute selectors fail without a message. Compare the markup with the element's or attribute's reference page.</li>
+    </ol>
+    <code-block language="html" label="The two files, from a CDN" data-escape><link rel="stylesheet" href="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.css">
 <script type="module" src="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.js"></script></code-block>
-        </layout-stack>
-      </details>
-
-      <details>
-        <summary>Custom elements not working with SSR</summary>
-        <layout-stack data-layout-gap="m">
-          <p><strong>Symptoms:</strong> Server-rendered pages don't style custom elements.</p>
-          <p><strong>Solutions:</strong></p>
-          <ol>
-            <li>
-              <strong>CSS-only elements work:</strong> <code>&lt;layout-stack&gt;</code> etc. work server-side because they're pure CSS.
-            </li>
-            <li>
-              <strong>Web components need client JS:</strong> Components like <code>&lt;accordion-wc&gt;</code> enhance on the client. The native HTML (<code>&lt;details&gt;</code>) works before JS loads.
-            </li>
-            <li>
-              <strong>Check Astro/Eleventy integration:</strong> See the <a href="/docs/integrations/">integration guides</a> for framework-specific instructions.
-            </li>
-          </ol>
-        </layout-stack>
-      </details>
-    </accordion-wc>
   </section>
 
-  <!-- Browser Support Section -->
-  <section id="browser-support">
-    <h2>Browser Support</h2>
-
-    <p>Vanilla Breeze targets modern evergreen browsers:</p>
-
+  <section id="debug-mode">
+    <h2>Debug mode</h2>
+    <p>The <a href="/docs/process/#loading">development add-on</a> has three aids. Each is an attribute you add while you look for a problem and remove afterwards.</p>
     <table>
       <thead>
         <tr>
-          <th>Browser</th>
-          <th>Supported Versions</th>
+          <th scope="col">Attribute</th>
+          <th scope="col">Goes on</th>
+          <th scope="col">Shows</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>Chrome</td>
-          <td>Last 2 versions</td>
+          <td><code>data-debug</code></td>
+          <td><code>&lt;html&gt;</code></td>
+          <td>A dashed red outline on any <a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a> with more than one <code>&lt;header&gt;</code> or <code>&lt;footer&gt;</code>, or with its header, section and footer out of order. The reason appears when you point at the card, and as a warning in the Console</td>
         </tr>
         <tr>
-          <td>Firefox</td>
-          <td>Last 2 versions</td>
+          <td><code>data-show-grid</code></td>
+          <td>Any element</td>
+          <td>Twelve column guides over that element</td>
         </tr>
         <tr>
-          <td>Safari</td>
-          <td>Last 2 versions</td>
-        </tr>
-        <tr>
-          <td>Edge</td>
-          <td>Last 2 versions</td>
+          <td><code>data-show-spacing</code></td>
+          <td>Any element</td>
+          <td>An outline around every element inside it</td>
         </tr>
       </tbody>
     </table>
+    <p>Debug mode can also be turned on for every page of a site from the Console. It stays on until you remove the entry.</p>
+    <code-block language="js" label="Debug mode without editing the page" data-escape>localStorage.setItem('vanillaBreeze.debug', 'true');
+location.reload();
 
-    <h3>Known Limitations</h3>
+// Off again
+localStorage.removeItem('vanillaBreeze.debug');</code-block>
+    <p>The check covers the card's structure only. For markup in general, use an HTML validator.</p>
+  </section>
+
+  <section id="styles">
+    <h2>Styles</h2>
+
+    <h3 id="unstyled">The page is unstyled</h3>
     <ul>
-      <li><strong>Internet Explorer:</strong> Not supported. No polyfills provided.</li>
-      <li><strong>Safari &lt; 15.4:</strong> Some CSS features like <code>:has()</code> won't work.</li>
-      <li><strong>Older mobile browsers:</strong> May have issues with CSS custom properties.</li>
+      <li>The stylesheet request failed. Check the path in the Network panel. From npm the import is <code>vanilla-breeze/css</code>.</li>
+      <li>A bundler or a content security policy blocked the file. The Console says which.</li>
     </ul>
 
-    <h3>Required Browser Features</h3>
-    <p>Vanilla Breeze uses these modern features:</p>
+    <h3 id="token-no-effect">A token has no effect</h3>
     <ul>
-      <li>CSS Custom Properties (variables)</li>
-      <li>CSS <code>@layer</code></li>
-      <li>CSS Nesting</li>
-      <li>OKLCH colors</li>
-      <li>Web Components / Custom Elements v1</li>
-      <li>ES Modules</li>
-      <li>Popover API (with fallback)</li>
+      <li>The name is wrong. Spacing tokens are <code>--size-*</code>, and sizes are <code>s</code>, <code>m</code> and <code>l</code>, not <code>sm</code>, <code>md</code> and <code>lg</code>: <code>--font-size-s</code>, <code>--radius-m</code>, <code>--size-l</code>. A <code>var()</code> with an unknown name fails silently. The <a href="/docs/tokens/">Tokens reference</a> has every name.</li>
+      <li>You set a brand color on one region and links or buttons there kept the page's color. Tokens computed from other tokens are computed where they are declared. <a href="/docs/styling/#tokens">How a token change reaches an element</a> explains the fix.</li>
+    </ul>
+
+    <h3 id="rule-loses">Your rule does not win</h3>
+    <ul>
+      <li>Your rule is inside an <code>@layer</code>. Every library rule is in a layer, and a rule outside any layer beats them all, whatever its specificity or the order of the stylesheets. Take your rule out of the layer.</li>
+      <li>The library marked that declaration <code>!important</code> on purpose. The <code>hidden</code> attribute is one: <code>[hidden]</code> is always <code>display: none</code>, so show the element by removing the attribute, not by setting <code>display</code>.</li>
+    </ul>
+    <p><a href="/docs/overrides/">Overrides</a> lists the layers and the exceptions.</p>
+
+    <h3 id="production-differs">Styles differ after a build</h3>
+    <ul>
+      <li>A tool that removes unused CSS dropped rules for custom elements or <code>data-*</code> attributes it did not find in your templates. Exclude the Vanilla Breeze stylesheet from it.</li>
+      <li>A CSS transform with an old browser target rewrote <code>@layer</code>, nesting or <code>light-dark()</code>. Leave the library's stylesheet as it is shipped. It is already minified.</li>
     </ul>
   </section>
 
-  <!-- Still Stuck Section -->
-  <section>
-    <h2>Still Stuck?</h2>
+  <section id="layouts">
+    <h2>Layouts</h2>
 
-    <layout-card>
-      <layout-stack data-layout-gap="m">
-        <p>If this guide didn't solve your problem:</p>
-        <ol>
-          <li><strong>Search existing issues:</strong> Someone may have had the same problem. Check <a href="https://github.com/profpowell/vanilla-breeze/issues">GitHub Issues</a>.</li>
-          <li><strong>Create a minimal reproduction:</strong> Isolate the problem in the simplest possible example.</li>
-          <li><strong>Open a new issue:</strong> Include browser, OS, steps to reproduce, and expected vs. actual behavior.</li>
-        </ol>
-        <p>
-          <a href="https://github.com/profpowell/vanilla-breeze/issues/new" class="button">
-            <icon-wc name="github" size="sm"></icon-wc>
-            Open an Issue
-          </a>
-        </p>
-      </layout-stack>
-    </layout-card>
+    <h3 id="layout-no-effect">A layout does nothing</h3>
+    <p>Layouts are CSS only, so the script is not the cause. Select the element in the Elements panel: its computed <code>display</code> should be <code>flex</code> or <code>grid</code>. If it is, the layout is working and a modifier is wrong.</p>
+    <code-block language="html" label="Modifier names and values" data-escape><!-- Works -->
+<layout-stack data-layout-gap="l">...</layout-stack>
+
+<!-- No effect: the attribute is data-layout-gap -->
+<layout-stack gap="l">...</layout-stack>
+
+<!-- No effect: the value is a size name, not a length -->
+<layout-stack data-layout-gap="20px">...</layout-stack></code-block>
+    <p>Gap values are <code>none</code> and <code>3xs</code> to <code>3xl</code>. The <a href="/docs/attributes/data-layout/"><code>data-layout</code> reference</a> lists every modifier.</p>
+
+    <h3 id="grid-one-column">A grid shows one column</h3>
+    <p>A grid makes as many columns as fit, each at least the minimum width: 15rem by default, or 8, 10, 15, 20 or 25rem for <code>data-layout-min</code> values <code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code> and <code>xl</code>. If the grid's own width is less than two of those plus the gap, one column is correct. Lower the minimum, or check why the grid is narrow.</p>
+
+    <h3 id="collapsed-section">A section or article has no width</h3>
+    <p>The library makes <code>&lt;main&gt;</code>, <code>&lt;article&gt;</code>, <code>&lt;section&gt;</code> and <code>&lt;aside&gt;</code> query containers, and a container takes its width from its parent. In a flex or grid row of your own that sizes children by their content, such a child shrinks to nothing. Give it a width, or set <code>container-type: normal</code> on it. The library's own layouts handle this: see <a href="/docs/layouts/responsive/#container-exceptions">where a sectioning element is not a container</a>.</p>
+  </section>
+
+  <section id="components">
+    <h2>Components</h2>
+
+    <h3 id="not-interactive">A component does not respond</h3>
+    <ul>
+      <li>The script is missing or failed. See <a href="#first-checks">Start here</a>.</li>
+      <li>The element is not registered. In the Console, <code>customElements.get('tab-set')</code> returns a class when it is and <code>undefined</code> when it is not. With the core bundle, the component may be one that bundle leaves out. The <a href="/docs/configure/">bundle configurator</a> lists the bundles.</li>
+      <li>The markup inside is not what the component expects. Compare it with the first example on the component's page.</li>
+    </ul>
+    <p>Until a component's script runs, its content is plain HTML. An <a href="/docs/elements/web-components/accordion/"><code>&lt;accordion-wc&gt;</code></a> is a list of working <code>&lt;details&gt;</code> elements either way.</p>
+
+    <h3 id="no-animation">Nothing animates</h3>
+    <p>The system is set to reduce motion. The library's durations go to zero under that setting. <a href="/docs/accessibility/preferences/#motion">Preferences</a> explains the rule, and <a href="/docs/accessibility/testing/#emulate">Testing</a> shows how to switch the setting in developer tools.</p>
+
+    <h3 id="no-icon">An icon is missing</h3>
+    <p><a href="/docs/elements/web-components/icons/"><code>&lt;icon-wc&gt;</code></a> fetches one SVG file per icon. When the fetch fails, the element gets <code>data-error="true"</code> and the Console shows a warning that starts <code>icon-wc:</code>.</p>
+    <ul>
+      <li>The name is not in the set. Names are the Lucide names unless the page sets another <a href="/docs/elements/web-components/icons/#icon-sets">icon set</a>.</li>
+      <li>The files are not where the component looks. It asks the folder <code>icons/</code> beside the script it was loaded from. If you copied the script without that folder, copy the folder too, or set <code>data-icon-path</code> on <code>&lt;html&gt;</code> to where the icons are.</li>
+    </ul>
+
+    <h3 id="menu-side">A menu opens on the other side</h3>
+    <p>A <a href="/docs/elements/web-components/dropdown/"><code>&lt;drop-down&gt;</code></a> flips to the opposite side when it would run off the viewport. Set <code>position</code> to <code>bottom-start</code>, <code>bottom-end</code>, <code>top-start</code> or <code>top-end</code> for the side you prefer, and add <code>no-flip</code> to keep it there.</p>
+  </section>
+
+  <section id="themes">
+    <h2>Themes and modes</h2>
+
+    <h3 id="theme-no-effect">A theme name has no effect</h3>
+    <p>The theme's stylesheet is not on the page. Modern, Minimal, Classic and the accessibility themes are in the main stylesheet. Every other theme is its own file. See <a href="/docs/themes/#using-themes">Using themes</a>.</p>
+    <code-block language="html" label="A theme from its own file" data-escape><link rel="stylesheet" href="https://unpkg.com/vanilla-breeze/dist/cdn/themes/nord.css">
+
+<html lang="en" data-theme="nord"></code-block>
+
+    <h3 id="other-theme">The page shows a different theme or mode from the markup</h3>
+    <p>A choice the visitor made earlier, with a <a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a> or a <a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a>, is stored in the browser and replaces the page's <code>data-theme</code> and <code>data-mode</code>. To see the page as authored, clear the choice from the Console.</p>
+    <code-block language="js" label="Clear a stored theme choice" data-escape>window.VB.themeManager.reset();</code-block>
+    <p>If the site should always use its own theme, add <code>data-theme-source="site"</code> to <code>&lt;html&gt;</code>. <a href="/docs/themes/#using-themes">Using themes</a> covers it.</p>
+
+    <h3 id="dark-mode">Dark mode does not follow the system</h3>
+    <p>With no <code>data-mode</code> on <code>&lt;html&gt;</code>, the page follows the system setting with no script. If it does not, look at <code>&lt;html&gt;</code> in the Elements panel: <code>data-mode="light"</code> or <code>data-mode="dark"</code> is there, written in the markup or by a stored choice. Dark mode is <code>data-mode</code>, not a theme name.</p>
+
+    <h3 id="dark-colors">Your colors are wrong in dark mode</h3>
+    <p>A fixed color in your own CSS does not change with the mode. Use a semantic token, or give the color two values. <a href="/docs/styling/color/#own-colors">Your own colors in both modes</a> shows how.</p>
+    <code-block language="css" label="Colors that follow the mode" data-escape>.notice {
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  border-color: light-dark(oklch(80% 0.1 80), oklch(45% 0.1 80));
+}</code-block>
+
+    <h3 id="not-saved">A theme choice is not remembered</h3>
+    <p>The choice is saved in <code>localStorage</code> under the key <code>vb:theme:current</code>. A private window, or a browser set to block site data, does not keep it.</p>
+  </section>
+
+  <section id="build-tools">
+    <h2>Build tools and servers</h2>
+
+    <h3 id="import-fails">An import cannot be resolved</h3>
+    <p>Install the package and import it by its public names. A path into the package's folders is not exported and fails in a bundler.</p>
+    <code-block language="js" label="Imports that resolve" data-escape>import 'vanilla-breeze/css';   // the stylesheet
+import 'vanilla-breeze';       // the script
+
+import 'vanilla-breeze/themes/nord';  // one more theme
+import 'vanilla-breeze/dev-css';      // the development add-on
+import 'vanilla-breeze/dev-js';</code-block>
+
+    <h3 id="server-rendering">Server-rendered pages</h3>
+    <ul>
+      <li>Layout elements and native elements need the stylesheet only, so they are styled in the first response.</li>
+      <li>Components upgrade in the browser. Import the script from code that runs in the browser, not on the server.</li>
+      <li>The <a href="/docs/integrations/">integration guides</a> have the setup for Astro and Eleventy.</li>
+    </ul>
+  </section>
+
+  <section id="browser-support">
+    <h2>Browser support</h2>
+    <p>The library is written for current browsers and ships no polyfills for CSS. If a page looks broken in one browser only, compare its version with this table. The versions are the first release of each browser with the feature.</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Feature</th>
+          <th scope="col">Used for</th>
+          <th scope="col">Chrome and Edge</th>
+          <th scope="col">Firefox</th>
+          <th scope="col">Safari</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>@layer</code></td><td>Every rule</td><td>99</td><td>97</td><td>15.4</td></tr>
+        <tr><td>OKLCH colors</td><td>Every color token</td><td>111</td><td>113</td><td>15.4</td></tr>
+        <tr><td><code>:has()</code></td><td>Many element rules</td><td>105</td><td>121</td><td>15.4</td></tr>
+        <tr><td>Container queries</td><td>Layouts that follow their container</td><td>105</td><td>110</td><td>16</td></tr>
+        <tr><td>CSS nesting</td><td>Every stylesheet</td><td>120</td><td>117</td><td>17.2</td></tr>
+        <tr><td>Relative colors</td><td>Hover, active and subtle shades</td><td>119</td><td>128</td><td>16.4</td></tr>
+        <tr><td><code>light-dark()</code></td><td>Light and dark values of each color</td><td>123</td><td>120</td><td>17.5</td></tr>
+        <tr><td>Popover</td><td>Menus, tooltips and popovers</td><td>114</td><td>125</td><td>17</td></tr>
+        <tr><td><code>@scope</code></td><td>Rules limited to one component or region</td><td>118</td><td>146</td><td>17.4</td></tr>
+      </tbody>
+    </table>
+    <p>Anchor positioning, which places menus and tooltips beside their trigger, has a script fallback where the browser lacks it.</p>
+  </section>
+
+  <section id="help">
+    <h2>If you are still stuck</h2>
+    <ol>
+      <li>Reduce the problem to the smallest page that shows it: the two files from <a href="#first-checks">Start here</a> and the markup at fault.</li>
+      <li>Search the <a href="https://github.com/profpowell/vanilla-breeze/issues">issues on GitHub</a>.</li>
+      <li><a href="https://github.com/profpowell/vanilla-breeze/issues/new">Open an issue</a> with that page, the browser and its version, what you expected and what happened.</li>
+    </ol>
   </section>
