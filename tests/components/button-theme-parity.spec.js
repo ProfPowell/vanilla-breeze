@@ -187,7 +187,10 @@ function measureLabels([theme, mode]) {
     const out = [];
     const c = rgba(cs.backgroundColor);
     if (c[3] > 0) out.push([c]);
-    const g = stops(cs.backgroundImage);
+    // A small repeating tile (Journal's 22px dot grid) is texture, not a fill behind the label.
+    const tile = cs.backgroundSize.split(',').every((s) => /^\d+(\.\d+)?px \d+(\.\d+)?px$/.test(s.trim())
+      && s.trim().split(' ').every((v) => parseFloat(v) <= 32));
+    const g = tile ? [] : stops(cs.backgroundImage);
     if (g.length) out.push(g);
     return out;
   };

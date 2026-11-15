@@ -205,7 +205,7 @@ const styles = `
 
 [part="container"][data-consent] [part="activate"] {
   background: var(--color-interactive, var(--color-primary, #1a5fb4));
-  color: var(--color-text-on-primary, var(--color-text-inverted, #fff));
+  color: var(--color-text-on-interactive, var(--color-text-inverted, #fff));
 }
 
 [part="container"][data-consent] [part="marker"] {

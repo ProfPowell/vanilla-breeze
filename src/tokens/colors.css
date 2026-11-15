@@ -47,6 +47,11 @@
   --chroma-secondary: 0.08;
   --lightness-accent: 65%;
   --chroma-accent: 0.18;
+
+  /* 1 (white) below the luminance where black and white text tie, else 0
+     (black). Only meaningful inside color(from … xyz-d65 …), where y is
+     the fill's luminance; see --color-text-on-primary. */
+  --_on-color-k: clamp(0, (0.1791 - y) * 100000, 1);
 }
 
 /* ==================== LIGHT SEEDS ==================== */
@@ -81,21 +86,32 @@
 [data-mode="dark"],
 :where([data-theme]) {
   /* ==================== BRAND COLORS ==================== */
-  /* Derived from seeds + hues — themes set seeds, core derives states */
+  /* Derived from seeds + hues — themes set seeds, core derives states.
+     -subtle is a pale tint in light mode and a deep one in dark mode, like
+     the status -subtle tokens, so body text stays readable on it. */
   --color-primary: oklch(var(--lightness-primary) var(--chroma-primary) var(--hue-primary));
   --color-primary-hover: oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
   --color-primary-active: oklch(from var(--color-primary) calc(l - 0.12) c h);
-  --color-primary-subtle: oklch(from var(--color-primary) 0.95 0.03 h);
+  --color-primary-subtle: light-dark(
+    oklch(from var(--color-primary) 0.95 0.03 h),
+    oklch(from var(--color-primary) 0.25 0.05 h)
+  );
 
   /* Secondary */
   --color-secondary: oklch(var(--lightness-secondary) var(--chroma-secondary) var(--hue-secondary));
   --color-secondary-hover: oklch(from var(--color-secondary) calc(l - 0.08) c h);
-  --color-secondary-subtle: oklch(from var(--color-secondary) 0.95 0.03 h);
+  --color-secondary-subtle: light-dark(
+    oklch(from var(--color-secondary) 0.95 0.03 h),
+    oklch(from var(--color-secondary) 0.25 0.05 h)
+  );
 
   /* Accent */
   --color-accent: oklch(var(--lightness-accent) var(--chroma-accent) var(--hue-accent));
   --color-accent-hover: oklch(from var(--color-accent) calc(l - 0.08) c h);
-  --color-accent-subtle: oklch(from var(--color-accent) 0.95 0.03 h);
+  --color-accent-subtle: light-dark(
+    oklch(from var(--color-accent) 0.95 0.03 h),
+    oklch(from var(--color-accent) 0.25 0.05 h)
+  );
 
   /* ==================== STATUS COLORS ==================== */
   --color-success: oklch(55% 0.2 145);
@@ -151,7 +167,14 @@
   --color-text-muted: light-dark(var(--color-gray-600), var(--color-gray-400));
   --color-text-subtle: light-dark(var(--color-gray-500), var(--color-gray-500));
   --color-text-inverted: light-dark(var(--color-white), var(--color-gray-900));
-  --color-text-on-primary: var(--color-white);
+  /* Black or white, whichever contrasts more with the fill, so the pair is
+     at least 4.58:1 for any primary a theme or mode sets (a fixed white was
+     ~3.3:1 on the L65% dark-mode primary). WCAG relative luminance is the
+     y channel of xyz-d65; black and white tie at y = 0.1791. */
+  --color-text-on-primary: color(from var(--color-primary) xyz-d65
+    calc(0.9505 * var(--_on-color-k)) var(--_on-color-k) calc(1.089 * var(--_on-color-k)));
+  --color-text-on-interactive: color(from var(--color-interactive) xyz-d65
+    calc(0.9505 * var(--_on-color-k)) var(--_on-color-k) calc(1.089 * var(--_on-color-k)));
 
   /* Border colors */
   --color-border: light-dark(var(--color-gray-200), var(--color-gray-700));
@@ -260,12 +283,16 @@
   --color-border: oklch(30% var(--chroma-surface-tint) var(--hue-primary));
   --color-border-strong: oklch(50% var(--chroma-surface-tint) var(--hue-primary));
 
-  /* Darker shadows for dark mode */
+  /* Darker shadows for dark mode: every shadow shadows.css declares */
   --shadow-xs: 0 1px 2px oklch(0% 0 0 / 0.3);
   --shadow-s: 0 1px 3px oklch(0% 0 0 / 0.4), 0 1px 2px oklch(0% 0 0 / 0.3);
   --shadow-m: 0 4px 6px oklch(0% 0 0 / 0.4), 0 2px 4px oklch(0% 0 0 / 0.3);
   --shadow-l: 0 10px 15px oklch(0% 0 0 / 0.4), 0 4px 6px oklch(0% 0 0 / 0.3);
   --shadow-xl: 0 20px 25px oklch(0% 0 0 / 0.4), 0 10px 10px oklch(0% 0 0 / 0.3);
+  --shadow-2xl: 0 25px 50px oklch(0% 0 0 / 0.5), 0 12px 20px oklch(0% 0 0 / 0.3);
+  --shadow-inner: inset 0 2px 4px oklch(0% 0 0 / 0.3);
+  /* A black hairline does not show on a dark surface: the edge is light */
+  --shadow-flush: 0 0 0 1px oklch(100% 0 0 / 0.08), 0 1px 2px oklch(0% 0 0 / 0.3);
 
   /* No --page-bg-color here: the page follows --color-background in both
      modes (surfaces.css), so a theme's own dark background is what paints. */
@@ -304,6 +331,10 @@
     --shadow-m: 0 4px 6px oklch(0% 0 0 / 0.4), 0 2px 4px oklch(0% 0 0 / 0.3);
     --shadow-l: 0 10px 15px oklch(0% 0 0 / 0.4), 0 4px 6px oklch(0% 0 0 / 0.3);
     --shadow-xl: 0 20px 25px oklch(0% 0 0 / 0.4), 0 10px 10px oklch(0% 0 0 / 0.3);
+    --shadow-2xl: 0 25px 50px oklch(0% 0 0 / 0.5), 0 12px 20px oklch(0% 0 0 / 0.3);
+    --shadow-inner: inset 0 2px 4px oklch(0% 0 0 / 0.3);
+    /* A black hairline does not show on a dark surface: the edge is light */
+    --shadow-flush: 0 0 0 1px oklch(100% 0 0 / 0.08), 0 1px 2px oklch(0% 0 0 / 0.3);
   }
 }
 

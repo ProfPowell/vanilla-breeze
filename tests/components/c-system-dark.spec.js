@@ -71,6 +71,7 @@ function snapshot({ mode, fallback }) {
     '--color-surface-raised', '--color-surface-sunken', '--color-text', '--color-text-muted',
     '--color-border', '--color-border-strong']) tokens[t] = tok(t);
   for (const t of ['--shadow-xs', '--shadow-s', '--shadow-m', '--shadow-l', '--shadow-xl',
+    '--shadow-2xl', '--shadow-inner', '--shadow-flush',
     '--lightness-primary', '--chroma-primary', '--chroma-surface-tint']) {
     tokens[t] = getComputedStyle(root).getPropertyValue(t).trim();
   }

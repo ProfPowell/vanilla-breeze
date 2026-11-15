@@ -19,22 +19,29 @@
   --radius-round: var(--radius-full);
   --radius-pill: var(--radius-full);
 
-  /* Concentric radius helper.
-     Parents declare --_radius (their own border-radius) and --_inset
-     (typically their padding). Children that should hug the inner edge
-     of the parent use:
-       border-radius: var(--radius-inner);
-     The clamp at 0 keeps the formula safe when --_inset >= --_radius —
-     children just go square, which is what you'd want anyway.
-     See /docs/interaction/feel/ for the pattern. */
-  --radius-inner: max(0px, calc(var(--_radius, var(--radius-m)) - var(--_inset, 0px)));
 }
 
 /* Re-derived on a scoped theme (<article data-theme>) from its own
-   --radius-full / --radius-m (themes set both). Only the derived aliases:
-   literal radii inherit from the page as before. */
+   --radius-full (themes set it). Only the derived aliases: literal radii
+   inherit from the page as before. */
 :where([data-theme]) {
   --radius-round: var(--radius-full);
   --radius-pill: var(--radius-full);
+}
+
+/* Concentric radius helper.
+   Parents declare --_radius (their own border-radius) and --_inset
+   (typically their padding). Children that should hug the inner edge
+   of the parent use:
+     border-radius: var(--radius-inner);
+   The clamp at 0 keeps the formula safe when --_inset >= --_radius —
+   children just go square, which is what you'd want anyway.
+   Declared on every element, not :root: a custom property's var()
+   references resolve on the element that declares it, so a :root-only
+   declaration was frozen at the page's --radius-m and ignored the
+   parent. Here it resolves against the --_radius / --_inset each element
+   inherits. One declaration, elements only (pseudo-elements inherit it).
+   See /docs/interaction/feel/ for the pattern. */
+* {
   --radius-inner: max(0px, calc(var(--_radius, var(--radius-m)) - var(--_inset, 0px)));
 }
