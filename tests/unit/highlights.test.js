@@ -9,6 +9,7 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { locateHighlight, contextAround } from '../../src/utils/highlight-anchor.js';
 
 // ---------- FNV-1a hash (copied from source for unit testing) ----------
 
@@ -165,5 +166,53 @@ describe('color parsing', () => {
 
   it('filters empty strings', () => {
     assert.deepEqual(parseColors('red,,blue,'), ['red', 'blue']);
+  });
+});
+
+// ---------- Re-anchoring (src/utils/highlight-anchor.js) ----------
+
+describe('locateHighlight', () => {
+  const original = 'Intro line. The quick brown fox jumps. The end.';
+  const record = (quote, text = original) => {
+    const startOffset = text.indexOf(quote);
+    const endOffset = startOffset + quote.length;
+    return { startOffset, endOffset, text: quote, ...contextAround(text, startOffset, endOffset) };
+  };
+
+  it('keeps the stored offsets when the quote is still there', () => {
+    const rec = record('quick brown');
+    assert.deepEqual(locateHighlight(original, rec), { start: rec.startOffset, end: rec.endOffset });
+  });
+
+  it('finds the quote again after text above it is edited', () => {
+    const rec = record('quick brown');
+    const edited = original.replace('Intro line.', 'A much longer introduction than before.');
+    const at = locateHighlight(edited, rec);
+    assert.ok(at);
+    assert.equal(edited.slice(at.start, at.end), 'quick brown');
+    assert.notEqual(at.start, rec.startOffset);
+  });
+
+  it('uses the stored context to choose between repeated quotes', () => {
+    const text = 'one fox here. two fox there. three fox everywhere.';
+    const start = text.indexOf('fox', text.indexOf('two'));
+    const rec = { startOffset: start, endOffset: start + 3, text: 'fox', ...contextAround(text, start, start + 3) };
+    const edited = `Added a fox up top. ${text}`;
+    const at = locateHighlight(edited, rec);
+    assert.ok(at);
+    assert.equal(edited.slice(at.start - 4, at.end), 'two fox');
+  });
+
+  it('matches a quote whose whitespace differs from the text', () => {
+    // Selection text has a blank line between blocks; textContent has none.
+    const text = 'Lead in. First paragraph.Second paragraph. Tail.';
+    const rec = { startOffset: 0, endOffset: 5, text: 'First paragraph.\n\nSecond paragraph.' };
+    const at = locateHighlight(text, rec);
+    assert.ok(at);
+    assert.equal(text.slice(at.start, at.end), 'First paragraph.Second paragraph.');
+  });
+
+  it('returns null when the quote is gone, so the caller can keep the record', () => {
+    assert.equal(locateHighlight('Entirely new text.', record('quick brown')), null);
   });
 });

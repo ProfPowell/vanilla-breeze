@@ -668,14 +668,18 @@ class VersionSwitcher extends VBElement {
     location.href = target.href;
   }
 
-  /** Selector that locates the swappable / diffable region in the page
-   *  AND inside the fetched response document. */
+  /** Describes the swappable / diffable region, for error messages. */
   #versionedSelector() {
-    return this.getAttribute('data-versioned-region') || '[data-versioned], main';
+    return this.getAttribute('data-versioned-region') || '[data-versioned], else main';
   }
 
+  /** Locates the region in the page AND inside the fetched response
+   *  document. Two lookups by default: a selector list would return `main`
+   *  ahead of a `[data-versioned]` inside it (document order). */
   #findVersionedRegion(root) {
-    return root.querySelector(this.#versionedSelector());
+    const custom = this.getAttribute('data-versioned-region');
+    if (custom) return root.querySelector(custom);
+    return root.querySelector('[data-versioned]') ?? root.querySelector('main');
   }
 
   /**

@@ -2,8 +2,9 @@
  * comment-wc — Collaborative comment action for selection-menu
  *
  * EXPERIMENTAL / STUB. Bridges to <review-surface> for threaded, shareable
- * comments, but Vanilla Breeze does not ship <review-surface>: unless your
- * page defines one (with an addPin() method), the button stays disabled.
+ * comments. <review-surface> moved out of Vanilla Breeze to the separate
+ * @profpowell/vb-project-planning package: unless the page loads that (or
+ * defines its own element with an addPin() method), the button stays disabled.
  *
  * When inside a selection-menu, creates a review-surface pin at the
  * selection's position. The surface is resolved on every click (an ancestor

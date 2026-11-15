@@ -166,6 +166,29 @@ test('swap inserts the fetched region sanitized (no live on* handlers)', async (
   expect(r).toEqual({ hit: undefined, h1: 'v1 body', id: 't', onerror: false, href: null, scripts: 0, current: 'v1', meta: 'v1' });
 });
 
+test('swap prefers a [data-versioned] region inside main over main itself', async ({ page }) => {
+  const data = JSON.stringify([
+    { id: 'v2', url: '/__uy-in-v2.html', current: true },
+    { id: 'v1', url: '/__uy-in-v1.html' },
+  ]);
+  await load(page,
+    `<main><version-switcher id="vs" data-action="swap" data-versions='${data}'></version-switcher><p id="keep">chrome</p><article data-versioned><p>v2 body</p></article></main>`,
+    { files: { '/__uy-in-v1.html': { body: '<!doctype html><main><p>other chrome</p><article data-versioned><p id="new">v1 body</p></article></main>' } } });
+  await page.waitForSelector('version-switcher[data-upgraded]');
+  const swapped = page.evaluate(() => new Promise((res) => {
+    document.getElementById('vs').addEventListener('version-switcher:swap', () => res(true), { once: true });
+  }));
+  await page.evaluate(() => /** @type {any} */ (document.getElementById('vs')).switchTo('v1'));
+  await swapped;
+  await page.waitForTimeout(150);
+  const r = await page.evaluate(() => ({
+    switcher: !!document.getElementById('vs'),
+    keep: document.getElementById('keep')?.textContent,
+    region: document.querySelector('main [data-versioned]')?.textContent?.trim(),
+  }));
+  expect(r).toEqual({ switcher: true, keep: 'chrome', region: 'v1 body' });
+});
+
 test('untrusted sanitizer output carries no inline versions', async ({ page }) => {
   await load(page, '<article id="out"></article>');
   const r = await page.evaluate(async () => {

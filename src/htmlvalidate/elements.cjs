@@ -1133,7 +1133,9 @@ module.exports = {
       "data-label-tier-declared": {},
       "data-label-tier-verified": {},
       "data-label-tier-failed": {},
-      "data-label-tier-key-unavailable": {}
+      "data-label-tier-key-unavailable": {},
+      "data-label-tier-key-untrusted": {},
+      "data-label-tier-key-expired": {}
     }
   },
 

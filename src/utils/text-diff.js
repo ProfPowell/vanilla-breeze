@@ -8,8 +8,8 @@
  * See `/docs/content-management/diff-display/` for the recipe that explains when
  * to reach for this helper vs the existing diff-shaped primitives
  * (`<change-set>` for authored markup, `<compare-surface>` for image
- * before/after, `<review-surface>` for editorial review,
- * `<version-switcher data-action="diff">` for page-version diffs).
+ * before/after, `<version-switcher data-action="diff">` for page-version
+ * diffs).
  *
  * Markup-aware diffing is intentionally out of scope — for prose-level
  * use cases the line-level LCS is good enough up to the low thousands
@@ -17,7 +17,7 @@
  * compose with a dedicated diff library.
  *
  * @example Build a diff inside <change-set> from two strings
- *   import { diffLines, renderDiffFragment } from '/src/utils/text-diff.js';
+ *   import { diffLines, renderDiffFragment } from 'vanilla-breeze';
  *
  *   const ops = diffLines(oldText, newText);
  *   const cs = document.createElement('change-set');

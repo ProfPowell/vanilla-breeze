@@ -46,6 +46,8 @@ export { ThemeManager };
 export { VbI18n, getLocale, usableLocale, isRTL } from './lib/i18n.js';
 // The shared screen-reader live region the components announce through.
 export { announce } from './lib/announce.js';
+// Line diff of two strings, and its <ins>/<del> rendering for a <change-set>.
+export { diffLines, renderDiffFragment } from './utils/text-diff.js';
 
 // Initialize theme system early to prevent FOUC
 await ThemeManager.init();

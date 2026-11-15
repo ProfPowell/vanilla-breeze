@@ -2158,7 +2158,7 @@ Storage keys: `vb:recently-visited` (`[{ url, hash, title, hashTitle, ts }]`), `
 | `data-src` | Manifest URL; fallback `<meta name="vb:versions-manifest">` |
 | `data-mode` | `releases` \| `history` (derived: distinct urls → releases); observed, sets heading |
 | `data-action` | `navigate` (default) \| `swap` \| `diff` |
-| `data-versioned-region` | Selector for the swap/diff region (default `[data-versioned], main`) |
+| `data-versioned-region` | Selector for the swap/diff region (default: the first `[data-versioned]` element, else `main`) |
 | `data-diff-position` | `before` (default) \| `after` |
 | `data-banner` | Archived notice when current is archived and a non-archived latest exists |
 | `data-page-info-target` | `<page-info>` id: mount the list as a panel section (trigger hidden; section removed on disconnect) |

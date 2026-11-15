@@ -26,6 +26,7 @@
 
 import { VBStore } from '../lib/vb-store.js';
 import { announce } from '../lib/announce.js';
+import { CONTEXT_LENGTH, contextAround, locateHighlight } from './highlight-anchor.js';
 
 const SELECTOR = '[data-highlights]';
 const STORAGE_NS = 'highlights';
@@ -91,13 +92,18 @@ function label(el, key) {
 // ---------- Record validation ----------
 //
 // Imported and stored records are untrusted: keep only well-formed ones
-// whose offsets fall inside the article's text and whose colour is in
-// the article's palette.
+// whose colour is in the article's palette. Imported records must also fit
+// inside the article's text; stored ones are re-anchored instead (textLength
+// is Infinity for them), because the text may have changed since.
+
+/**
+ * @typedef {{ id: string, startOffset: number, endOffset: number, text: string, prefix: string, suffix: string, color: string, note: string, created: number }} HighlightRecord
+ */
 
 /**
  * @param {unknown} raw
  * @param {{ textLength: number, colors: string[] }} ctx
- * @returns {{ id: string, startOffset: number, endOffset: number, text: string, color: string, note: string, created: number } | null}
+ * @returns {HighlightRecord | null}
  */
 function sanitizeRecord(raw, { textLength, colors }) {
   if (!raw || typeof raw !== 'object') return null;
@@ -111,11 +117,15 @@ function sanitizeRecord(raw, { textLength, colors }) {
   if (r.id != null && (typeof r.id !== 'string' || !/^[\w-]{1,64}$/.test(r.id))) return null;
   if (r.text != null && typeof r.text !== 'string') return null;
   if (r.note != null && typeof r.note !== 'string') return null;
+  if (r.prefix != null && typeof r.prefix !== 'string') return null;
+  if (r.suffix != null && typeof r.suffix !== 'string') return null;
   return {
     id: /** @type {string} */ (r.id) || newId(),
     startOffset: start,
     endOffset: end,
     text: /** @type {string} */ (r.text) ?? '',
+    prefix: (/** @type {string} */ (r.prefix) ?? '').slice(-CONTEXT_LENGTH),
+    suffix: (/** @type {string} */ (r.suffix) ?? '').slice(0, CONTEXT_LENGTH),
     color: /** @type {string} */ (color),
     note: /** @type {string} */ (r.note) ?? '',
     created: Number.isFinite(r.created) ? /** @type {number} */ (r.created) : Date.now(),
@@ -237,8 +247,33 @@ function setOwnerRanges(owner, groups) {
 
 // ---------- TreeWalker utilities ----------
 
+/**
+ * Walks the container's text nodes, skipping the engine's own margin
+ * labels: they are not part of the article, and counting them would make
+ * offsets and the content hash depend on which highlights are painted.
+ * @param {Node} container
+ */
+function textWalker(container) {
+  return document.createTreeWalker(container, NodeFilter.SHOW_TEXT, (node) => (
+    node.parentElement?.closest('.hn-margin-annotation')
+      ? NodeFilter.FILTER_REJECT
+      : NodeFilter.FILTER_ACCEPT
+  ));
+}
+
+/**
+ * The text that highlight offsets index into.
+ * @param {Node} container
+ */
+function contentText(container) {
+  const walker = textWalker(container);
+  let text = '';
+  while (walker.nextNode()) text += walker.currentNode.textContent ?? '';
+  return text;
+}
+
 function getTextOffset(container, node, nodeOffset) {
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+  const walker = textWalker(container);
   let offset = 0;
 
   while (walker.nextNode()) {
@@ -251,7 +286,7 @@ function getTextOffset(container, node, nodeOffset) {
 }
 
 function findRangeFromOffsets(container, startOffset, endOffset) {
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+  const walker = textWalker(container);
   let accumulated = 0;
   let startNode = null;
   let startNodeOffset = 0;
@@ -295,7 +330,10 @@ class HighlightController {
   #storageKey;
   #colors;
   #readonly;
+  /** @type {HighlightRecord[]} */
   #highlights = [];
+  /** @type {HighlightRecord[]} stored highlights whose text is not in the article now */
+  #unplaced = [];
   #useFallback = !supportsHighlightAPI;
   #handlePointerUp;
   #handleClick;
@@ -340,7 +378,9 @@ class HighlightController {
 
     // Kick off async load — render again once persisted highlights arrive.
     this.#load().then(() => {
-      if (!this.#destroyed) this.#render();
+      if (this.#destroyed) return;
+      this.#render();
+      this.#reportUnplaced();
     });
   }
 
@@ -354,11 +394,23 @@ class HighlightController {
     return this.#highlights.map(h => ({ ...h }));
   }
 
+  /**
+   * Stored highlights that could not be placed in the current text. They
+   * stay in storage and are tried again on every load; removeHighlight()
+   * and clearAll() discard them.
+   * @returns {HighlightRecord[]}
+   */
+  getUnplaced() {
+    return this.#unplaced.map(h => ({ ...h }));
+  }
+
   removeHighlight(id) {
     const idx = this.#highlights.findIndex(h => h.id === id);
-    if (idx < 0) return;
+    const lost = this.#unplaced.findIndex(h => h.id === id);
+    if (idx < 0 && lost < 0) return;
 
-    this.#highlights.splice(idx, 1);
+    if (idx >= 0) this.#highlights.splice(idx, 1);
+    else this.#unplaced.splice(lost, 1);
     this.#save();
     this.#render();
 
@@ -368,6 +420,7 @@ class HighlightController {
 
   clearAll() {
     this.#highlights = [];
+    this.#unplaced = [];
     this.#save();
     this.#render();
   }
@@ -396,14 +449,18 @@ class HighlightController {
     if (!data || !Array.isArray(data.highlights)) return { imported: 0, rejected: 0 };
     const clean = this.#sanitize(data.highlights);
     this.#highlights = clean;
+    this.#unplaced = [];
     this.#save();
     this.#render();
     return { imported: clean.length, rejected: data.highlights.length - clean.length };
   }
 
-  /** @param {unknown[]} list */
-  #sanitize(list) {
-    const ctx = { textLength: (this.#element.textContent ?? '').length, colors: this.#colors };
+  /**
+   * @param {unknown[]} list
+   * @param {number} [textLength] - upper bound for offsets
+   */
+  #sanitize(list, textLength = contentText(this.#element).length) {
+    const ctx = { textLength, colors: this.#colors };
     const seen = new Set();
     const out = [];
     for (const raw of list) {
@@ -576,6 +633,7 @@ class HighlightController {
       startOffset,
       endOffset,
       text,
+      ...contextAround(contentText(this.#element), startOffset, endOffset),
       color,
       note: '',
       created: Date.now(),
@@ -614,32 +672,54 @@ class HighlightController {
   // ---------- Persistence ----------
 
   async #load() {
-    const data = /** @type {{ version?: number, contentHash?: string, highlights?: Array }|null} */ (
+    const data = /** @type {{ version?: number, contentHash?: string, highlights?: Array, unplaced?: Array }|null} */ (
       await VBStore.get(STORAGE_NS, this.#storageKey)
     );
     if (!data || !Array.isArray(data.highlights)) return;
     if (this.#destroyed) return;
 
-    const stored = this.#sanitize(data.highlights);
-    const currentHash = fnv1a(this.#element.textContent);
-    if (data.contentHash && data.contentHash !== currentHash) {
-      this.#highlights = stored.filter(h => {
-        const range = findRangeFromOffsets(this.#element, h.startOffset, h.endOffset);
-        if (!range) return false;
-        const currentText = range.toString().trim();
-        return currentText === h.text;
-      });
-      this.#save();
-    } else {
+    const waiting = Array.isArray(data.unplaced) ? data.unplaced : [];
+    const stored = this.#sanitize([...data.highlights, ...waiting], Infinity);
+    const text = contentText(this.#element);
+    if (waiting.length === 0 && data.contentHash === fnv1a(text)) {
       this.#highlights = stored;
+      return;
     }
+
+    // The text changed since these were saved (or some were waiting for
+    // their text to come back): find each one again. One that cannot be
+    // found is kept in storage and reported, never deleted.
+    this.#highlights = [];
+    this.#unplaced = [];
+    for (const h of stored) {
+      const at = locateHighlight(text, h);
+      if (at) {
+        this.#highlights.push({
+          ...h, startOffset: at.start, endOffset: at.end, ...contextAround(text, at.start, at.end),
+        });
+      } else {
+        this.#unplaced.push(h);
+      }
+    }
+    this.#save();
+  }
+
+  /** Say so when stored highlights are waiting for text that is not there. */
+  #reportUnplaced() {
+    if (this.#unplaced.length === 0) return;
+    console.warn(
+      `[highlights] ${this.#unplaced.length} stored highlight(s) could not be found in the current text. They are kept in storage.`,
+      this.#element,
+    );
+    this.#emit('highlights:unplaced', { highlights: this.getUnplaced() });
   }
 
   #save() {
     const envelope = {
       version: 1,
-      contentHash: fnv1a(this.#element.textContent),
+      contentHash: fnv1a(contentText(this.#element)),
       highlights: this.#highlights,
+      ...(this.#unplaced.length ? { unplaced: this.#unplaced } : {}),
     };
     VBStore.set(STORAGE_NS, this.#storageKey, envelope).catch(() => { /* ignore */ });
   }

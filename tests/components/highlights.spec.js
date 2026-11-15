@@ -110,6 +110,46 @@ test('Highlight API: two articles with different palettes both get rules and ran
   expect(after.css).toMatch(/::highlight\(hn-teal\)/);
 });
 
+test('edited text: a highlight below the edit is found again, one whose words are gone is kept and reported', async ({ page }) => {
+  await load(page);
+  await page.waitForFunction(() => CSS.highlights.size > 0);
+
+  const r = await page.evaluate(async () => {
+    const { initHighlights } = await import('/src/utils/highlights-init.js');
+    const el = document.getElementById('a');
+    initHighlights(el).destroy();
+    // Text added above shifts every offset, and "Alpha" is edited away.
+    el.querySelector('p').textContent =
+      'A new opening sentence. Changed article text that carries a red highlight and a yellow one.';
+
+    const reported = new Promise((resolve) => {
+      el.addEventListener('highlights:unplaced',
+        (e) => resolve(e.detail.highlights.map((h) => h.id)), { once: true });
+    });
+    const ctrl = initHighlights(el);
+    const event = await reported;
+
+    const read = () => JSON.parse(localStorage.getItem('vb:highlights:a')).data;
+    for (let i = 0; i < 40 && !read().unplaced; i++) await new Promise((res) => setTimeout(res, 25));
+    const text = el.querySelector('p').textContent;
+    return {
+      event,
+      placed: ctrl.getHighlights().map((h) => [h.id, text.slice(h.startOffset, h.endOffset)]),
+      unplaced: ctrl.getUnplaced().map((h) => h.id),
+      stored: read().unplaced.map((h) => h.id),
+      painted: [...CSS.highlights.get('hn-yellow')].map((range) => range.toString()).sort(),
+    };
+  });
+
+  expect(r).toEqual({
+    event: ['hn-a1'],
+    placed: [['hn-a2', 'article']],
+    unplaced: ['hn-a1'],
+    stored: ['hn-a1'],
+    painted: ['article', 'article'],
+  });
+});
+
 test('Highlight API: unsafe colour names are not written into the stylesheet', async ({ page }) => {
   await load(page);
   await page.evaluate(() => {
