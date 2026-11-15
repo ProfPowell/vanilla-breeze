@@ -19,8 +19,6 @@
           var(--color-accent) 2rem 4rem,
           var(--color-secondary) 4rem 6rem
         );
-      /* The default --glass-blur is 0px. A theme, or you, turn it up. */
-      --glass-blur: 12px;
     }
     #panel {
       padding: var(--size-l);
@@ -70,25 +68,15 @@
     const code = document.getElementById('code');
     const select = document.getElementById('surface');
 
-    // The paper substrates are fixed light colors, so they take light-mode text.
-    const paper = ['paper', 'dots', 'grid', 'lines', 'kraft'];
-
     function apply() {
       const value = select.value;
       if (!value) {
         delete panel.dataset.surface;
-        delete panel.dataset.mode;
         code.textContent = '<aside>';
         return;
       }
       panel.dataset.surface = value;
-      if (paper.includes(value)) {
-        panel.dataset.mode = 'light';
-        code.textContent = `<aside data-surface="${value}" data-mode="light">`;
-      } else {
-        delete panel.dataset.mode;
-        code.textContent = `<aside data-surface="${value}">`;
-      }
+      code.textContent = `<aside data-surface="${value}">`;
     }
 
     select.addEventListener('change', apply);

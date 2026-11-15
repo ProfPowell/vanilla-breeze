@@ -79,18 +79,18 @@ toc: true
     <p>One case needs care in a region. Text inputs take their radius from <code>--input-radius</code>, which is computed from <code>--radius-m</code> on <code>:root</code>. Inside a region, set <code>--input-radius</code> as well as <code>--radius-m</code>.</p>
 
     <h3 id="concentric">Corners inside corners</h3>
-    <p>A rounded box inside a rounded box looks right when the inner radius is the outer radius minus the padding between them. Give the parent two custom properties and compute the child's radius from them.</p>
+    <p>A rounded box inside a rounded box looks right when the inner radius is the outer radius minus the padding between them. <code>--radius-inner</code> holds that value. Set the parent's radius in <code>--_radius</code> and its padding in <code>--_inset</code>, and use <code>--radius-inner</code> on anything inside it.</p>
     <code-block language="css" label="An inner corner that follows the outer one" data-escape>.ticket {
-  --ticket-radius: var(--radius-xl);
-  --ticket-inset: var(--size-s);
-  padding: var(--ticket-inset);
-  border-radius: var(--ticket-radius);
+  --_radius: var(--radius-xl);
+  --_inset: var(--size-s);
+  padding: var(--_inset);
+  border-radius: var(--_radius);
 }
 
 .ticket > p {
-  border-radius: max(0px, calc(var(--ticket-radius) - var(--ticket-inset)));
+  border-radius: var(--radius-inner);
 }</code-block>
-    <p>The last panel in the demo above is built this way. <code>max()</code> keeps the result at zero when the padding is larger than the radius.</p>
+    <p>The last panel in the demo above is built this way. The result stops at zero when the padding is larger than the radius. Without <code>--_radius</code> the token starts from <code>--radius-m</code>, and without <code>--_inset</code> it subtracts nothing. The two properties inherit, so a box nested a level further down should set its own pair.</p>
   </section>
 
   <section id="shapes">

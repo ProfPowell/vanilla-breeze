@@ -133,7 +133,8 @@ crumbLabel: Clipboard & Selection
 const controller = initHighlights(document.querySelector('article'));
 
 controller.colors;                 // ['yellow', 'green', 'blue', 'pink']
-controller.getHighlights();        // [{ id, startOffset, endOffset, text, color, note, created }]
+controller.getHighlights();        // [{ id, startOffset, endOffset, text, prefix, suffix, color, note, created }]
+controller.getUnplaced();          // stored records whose text is not in the element now
 controller.removeHighlight('hn-abc123');
 controller.clearAll();
 
@@ -142,7 +143,7 @@ const { imported, rejected } = controller.importHighlights(json);
 
 controller.destroy();              // unpaint and stop listening</code-block>
 
-  <p><code>importHighlights()</code> drops records with the wrong shape, offsets outside the element's text, or a colour that is not in the palette. If the text changes after highlights are saved, the engine keeps only the highlights whose text still matches.</p>
+  <p><code>importHighlights()</code> drops records with the wrong shape, offsets outside the element's text, or a colour that is not in the palette. If the text changes after highlights are saved, the engine finds each highlight again by its text, using the stored <code>prefix</code> and <code>suffix</code> (up to 32 characters on each side) to choose between several matches. A highlight whose text is gone is not painted, but it stays in storage and is tried again on the next load. <code>getUnplaced()</code> returns those records, and <code>removeHighlight(id)</code> or <code>clearAll()</code> discards them.</p>
   <p>The controller has no public method for making a highlight. To do that from your own controls, wrap the element in a standalone <code>&lt;highlight-wc&gt;</code> and call its <code>highlightSelection(color)</code>; see <a href="/docs/elements/web-components/highlight-wc/">highlight-wc: Standalone (programmatic)</a>.</p>
 </section>
 
@@ -156,6 +157,7 @@ controller.destroy();              // unpaint and stop listening</code-block>
     <tbody>
       <tr><td><code>highlights:added</code></td><td><code>{ id, text, color, note }</code></td><td>A highlight was created</td></tr>
       <tr><td><code>highlights:removed</code></td><td><code>{ id }</code></td><td>A highlight was removed</td></tr>
+      <tr><td><code>highlights:unplaced</code></td><td><code>{ highlights }</code></td><td>Stored highlights were loaded and the text of one or more is no longer in the element. They stay in storage; a console warning is written too.</td></tr>
       <tr><td><code>highlights:selected</code></td><td><code>{ text, rect }</code></td><td>Text was selected inside the element; a hook for your own UI</td></tr>
       <tr><td><code>highlights:clicked</code></td><td><code>{ id, highlight }</code></td><td>A highlight or its margin annotation was clicked</td></tr>
       <tr><td><code>highlights:note-changed</code></td><td><code>{ id, note }</code></td><td>A note was saved via <a href="/docs/elements/web-components/note-wc/"><code>&lt;note-wc&gt;</code></a></td></tr>

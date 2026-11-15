@@ -108,7 +108,8 @@ toc: true
 <!-- With the attribute alone, its value is the key -->
 <article data-highlights="handbook-ch5">...</article></code-block>
     <p>Name a key when the same article is served at more than one address, or when two articles share a page.</p>
-    <p>A highlight is stored as a start and end position in the article's text, with a copy of the highlighted words. When the article's text changes, each stored highlight is checked against that copy. One whose words are no longer at that position is dropped. Small edits elsewhere in a long article can therefore remove a reader's highlights below the edit. This is a limit of storing positions, and worth knowing before you promise readers that highlights are permanent.</p>
+    <p>A highlight is stored as a start and end position in the article's text, with a copy of the highlighted words and of the 32 characters on either side. When the article's text changes, each stored highlight is checked against that copy. If the words are no longer at the stored position, the article is searched for them, and the text on either side picks between several matches. An edit elsewhere in the article therefore moves a highlight and does not remove it.</p>
+    <p>A highlight whose words are no longer in the article cannot be shown. It is not deleted: it stays in storage, is tried again on each visit, and comes back if the words do. When that happens the article fires <code>highlights:unplaced</code> and a warning is written to the console. <code>removeHighlight(id)</code> or <code>clearAll()</code> discards such a highlight for good.</p>
   </section>
 
   <section id="script">
@@ -119,7 +120,7 @@ toc: true
         <tr><th>Method</th><th>Does</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>getHighlights()</code></td><td>Returns an array of <code>{ id, startOffset, endOffset, text, color, note, created }</code></td></tr>
+        <tr><td><code>getHighlights()</code></td><td>Returns an array of <code>{ id, startOffset, endOffset, text, prefix, suffix, color, note, created }</code></td></tr>
         <tr><td><code>highlightSelection(color)</code></td><td>Highlights the current selection</td></tr>
         <tr><td><code>removeHighlight(id)</code></td><td>Removes one</td></tr>
         <tr><td><code>clearAll()</code></td><td>Removes all of them</td></tr>
@@ -148,6 +149,7 @@ article.addEventListener('highlights:note-changed', save);</code-block>
       <tbody>
         <tr><td><code>highlights:added</code></td><td><code>{ id, text, color, note }</code></td><td>A highlight is made</td></tr>
         <tr><td><code>highlights:removed</code></td><td><code>{ id }</code></td><td>A highlight is removed with <code>removeHighlight()</code></td></tr>
+        <tr><td><code>highlights:unplaced</code></td><td><code>{ highlights }</code></td><td>After stored highlights load, when the words of one or more are no longer in the article. <code>highlights</code> is an array of those records.</td></tr>
         <tr><td><code>highlights:note-changed</code></td><td><code>{ id, note }</code></td><td>A note is saved</td></tr>
         <tr><td><code>highlights:clicked</code></td><td><code>{ id, highlight }</code></td><td>The reader clicks a highlight or its margin mark</td></tr>
         <tr><td><code>highlights:selected</code></td><td><code>{ text, rect }</code></td><td>The reader finishes selecting text in the article. Use it to place your own toolbar.</td></tr>

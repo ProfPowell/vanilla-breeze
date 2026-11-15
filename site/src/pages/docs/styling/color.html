@@ -69,7 +69,10 @@ toc: true
     <code-block language="css" label="How the primary color is derived (shipped by the library)" data-escape>--color-primary: oklch(var(--lightness-primary) var(--chroma-primary) var(--hue-primary));
 --color-primary-hover: oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
 --color-primary-active: oklch(from var(--color-primary) calc(l - 0.12) c h);
---color-primary-subtle: oklch(from var(--color-primary) 0.95 0.03 h);</code-block>
+--color-primary-subtle: light-dark(
+  oklch(from var(--color-primary) 0.95 0.03 h),
+  oklch(from var(--color-primary) 0.25 0.05 h)
+);</code-block>
     <table>
       <thead>
         <tr>
@@ -130,9 +133,9 @@ toc: true
     <h3 id="dark-changes">What dark mode changes</h3>
     <ul>
       <li>Surfaces, text and borders take their dark values. The dark surfaces carry a faint tint of the primary hue (<code>--chroma-surface-tint</code>, <code>0.02</code>).</li>
-      <li>The primary color becomes lighter and slightly less vivid. Its <code>-subtle</code> shade does not change: it is a pale tint in both modes, so on a dark page use <code>--tint-primary-10</code> or <code>--tint-primary-20</code> for a wash of the brand color.</li>
+      <li>The primary color becomes lighter and slightly less vivid. The <code>-subtle</code> shades of the primary, secondary and accent colors change from a pale tint to a deep one, so text in <code>--color-text</code> stays readable on them.</li>
       <li>Status colors keep their hue. Their <code>-subtle</code> and <code>-text</code> values swap, so a message is dark with light text.</li>
-      <li>The shadow tokens from <code>--shadow-xs</code> to <code>--shadow-xl</code> get stronger, since a faint shadow does not show on a dark page.</li>
+      <li>The shadow tokens get stronger, since a faint shadow does not show on a dark page.</li>
     </ul>
 
     <h3 id="own-colors">Your own colors in both modes</h3>
@@ -177,10 +180,15 @@ ThemeManager.toggleMode();</code-block>
   <section id="on-color">
     <h2>Text on a colored fill</h2>
     <p>A <code>&lt;button&gt;</code> works out its own label color. It picks black or white, whichever contrasts more with the fill, and picks again for the hover and active fills. That holds for the theme's color and for a color you pass in <code>--btn-color</code>.</p>
-    <p>For a fill of your own, the library defines a set of tokens with the same behavior in browsers that support <code>contrast-color()</code>: <code>--color-text-on-primary-auto</code>, and the same for <code>secondary</code>, <code>accent</code>, <code>interactive</code>, <code>success</code>, <code>warning</code>, <code>error</code> and <code>info</code>. They are undefined elsewhere, so always give a fallback.</p>
+    <p>For a fill of your own in the primary or interactive color, <code>--color-text-on-primary</code> and <code>--color-text-on-interactive</code> do the same: each is black or white, whichever contrasts more with its fill, in every browser, theme and mode. That gives at least 4.5:1 unless a theme sets the token to a color of its own.</p>
     <code-block language="css" label="Readable text on the primary color" data-escape>.promo-band {
   background: var(--color-primary);
-  color: var(--color-text-on-primary-auto, var(--color-text-on-primary));
+  color: var(--color-text-on-primary);
+}</code-block>
+    <p>For the other colors, the library defines a set of tokens with the same behavior in browsers that support <code>contrast-color()</code>: <code>--color-text-on-secondary-auto</code>, and the same for <code>accent</code>, <code>success</code>, <code>warning</code>, <code>error</code> and <code>info</code> (and for <code>primary</code> and <code>interactive</code>). They are undefined elsewhere, so always give a fallback.</p>
+    <code-block language="css" label="Readable text on the accent color" data-escape>.offer-flag {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent-auto, var(--color-text));
 }</code-block>
   </section>
 

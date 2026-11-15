@@ -62,11 +62,11 @@ toc: true
         <tr><td><code>tinted</code></td><td>The accent color at 10% opacity over a light blur</td></tr>
         <tr><td><code>ghost</code></td><td>A surface that is almost clear, with a faint outline and no shadow</td></tr>
         <tr><td><code>transparent</code></td><td>No background and no shadow</td></tr>
-        <tr><td><code>paper</code></td><td>Off-white paper with a fine grain</td></tr>
+        <tr><td><code>paper</code></td><td>Off-white paper with a fine grain (charcoal in dark mode)</td></tr>
         <tr><td><code>dots</code></td><td>Paper with a dot grid</td></tr>
         <tr><td><code>grid</code></td><td>Paper with ruled squares</td></tr>
         <tr><td><code>lines</code></td><td>Ruled paper with a margin line</td></tr>
-        <tr><td><code>kraft</code></td><td>Brown kraft paper with a fine grain</td></tr>
+        <tr><td><code>kraft</code></td><td>Brown kraft paper with a fine grain (dark brown in dark mode)</td></tr>
       </tbody>
     </table>
     <code-block language="html" label="A frosted header over a photograph" data-escape><header data-surface="frosted">
@@ -74,7 +74,7 @@ toc: true
 </header></code-block>
 
     <h3 id="glass">Tuning the translucent types</h3>
-    <p>The translucent types read a small set of tokens. The one to know is <code>--glass-blur</code>: its default is <code>0px</code>, so <code>frosted</code> is translucent but not blurred until a theme or your CSS sets a value. The Glassmorphism theme sets <code>16px</code>.</p>
+    <p>The translucent types read a small set of tokens. The one to know is <code>--glass-blur</code>: its default is <code>12px</code>, and a theme or your CSS can change it. The Glassmorphism theme sets <code>16px</code>.</p>
     <table>
       <thead>
         <tr>
@@ -84,21 +84,21 @@ toc: true
         </tr>
       </thead>
       <tbody>
-        <tr><td><code>--glass-blur</code></td><td><code>0px</code></td><td>The blur behind <code>frosted</code></td></tr>
+        <tr><td><code>--glass-blur</code></td><td><code>12px</code></td><td>The blur behind <code>frosted</code></td></tr>
         <tr><td><code>--glass-saturate</code></td><td><code>160%</code></td><td>How much <code>frosted</code> boosts the color behind it</td></tr>
         <tr><td><code>--glass-surface-opacity</code></td><td><code>0.75</code></td><td>The opacity of the <code>frosted</code> fill</td></tr>
         <tr><td><code>--glass-border-opacity</code></td><td><code>0.2</code></td><td>The opacity of the <code>frosted</code> border</td></tr>
         <tr><td><code>--glass-tint-opacity</code></td><td><code>0.1</code></td><td>The opacity of the <code>tinted</code> fill</td></tr>
       </tbody>
     </table>
-    <code-block language="css" label="Turning the blur on" data-escape>:root {
-  --glass-blur: 12px;
+    <code-block language="css" label="A stronger blur" data-escape>:root {
+  --glass-blur: 20px;
 }</code-block>
     <p>Text over a translucent surface is only as readable as what shows through. Check the contrast against the busiest thing that can end up behind it, or keep such surfaces for headers and panels over a plain background.</p>
 
     <h3 id="paper">Paper types and dark mode</h3>
-    <p>The paper colors are fixed and light. They do not change in dark mode, but the text color does, so light text can end up on light paper. Put <code>data-mode="light"</code> on the same element. It gives the region light-mode text and controls whatever the page mode is.</p>
-    <code-block language="html" label="A paper note that stays readable on a dark page" data-escape><aside data-surface="lines" data-mode="light">
+    <p>Each paper type has a light and a dark version, and follows the mode like any other surface: pale paper with dark text in light mode, dark paper with light text in dark mode. The colors come from five tokens, <code>--surface-paper</code>, <code>--surface-kraft</code>, <code>--surface-dot</code>, <code>--surface-rule</code> and <code>--surface-margin</code>. To keep a sheet pale on a dark page, put <code>data-mode="light"</code> on the same element. It gives the region the light paper and light-mode text and controls.</p>
+    <code-block language="html" label="A paper note that stays pale on a dark page" data-escape><aside data-surface="lines" data-mode="light">
   <p>Bring the blue folder on Thursday.</p>
 </aside></code-block>
 
@@ -108,7 +108,7 @@ toc: true
 
   <section id="page">
     <h2>The page background</h2>
-    <p><code>&lt;body&gt;</code> paints from its own set of tokens, so a theme or a page can change the page color or add a gradient without a rule on <code>body</code>.</p>
+    <p><code>&lt;body&gt;</code> paints from its own set of tokens, so a theme or a page can change the page color or add a gradient or an image without a rule on <code>body</code>. The gradient is painted over the image, and both over the color.</p>
     <table>
       <thead>
         <tr>
@@ -119,6 +119,7 @@ toc: true
       <tbody>
         <tr><td><code>--page-bg-color</code></td><td><code>var(--color-background)</code></td></tr>
         <tr><td><code>--page-bg-gradient</code></td><td><code>none</code></td></tr>
+        <tr><td><code>--page-bg-image</code></td><td><code>none</code></td></tr>
         <tr><td><code>--page-bg-attachment</code>, <code>--page-bg-size</code>, <code>--page-bg-position</code>, <code>--page-bg-blend</code></td><td><code>scroll</code>, <code>cover</code>, <code>center</code>, <code>normal</code></td></tr>
       </tbody>
     </table>

@@ -62,7 +62,7 @@ toc: true
     <code-block language="html" label="The files for one theme" data-escape>https://unpkg.com/vanilla-breeze/dist/cdn/themes/classic.css
 https://unpkg.com/vanilla-breeze/dist/cdn/themes/classic.tokens.json
 https://unpkg.com/vanilla-breeze/dist/cdn/themes/classic-dark.tokens.json</code-block>
-    <p>The files are written from the theme's CSS when the library is built, so they hold what the theme sets and not the library's defaults. The <a href="https://profpowell.github.io/vb-design-system/tools/theme-library/">theme library</a> page lists every theme with links to its files.</p>
+    <p>The files are written from the theme's CSS when the library is built, so they hold what the theme sets and not the library's defaults. Where a theme's value refers to a token the theme does not set, such as a hover color worked out from the default <code>--color-primary</code>, the value in the file is computed with the library's default for that token. The <a href="https://profpowell.github.io/vb-design-system/tools/theme-library/">theme library</a> page lists every theme with links to its files.</p>
   </section>
 
   <section id="mapping">
@@ -97,7 +97,7 @@ https://unpkg.com/vanilla-breeze/dist/cdn/themes/classic-dark.tokens.json</code-
 
   <section id="values">
     <h2>Which values convert</h2>
-    <p>The format holds finished values. CSS can hold a calculation. Where a theme uses one, the file keeps the CSS text in <code>$extensions["com.vanilla-breeze"]</code>, where other tools do not look. This table says what another tool sees and what comes back on import.</p>
+    <p>The format holds finished values. CSS can hold a calculation or a reference. Where a theme uses one, the file holds the value it works out to, and keeps the CSS text in <code>$extensions["com.vanilla-breeze"]</code> so that an import gives back the CSS the file was written from. References are looked up among the other tokens in the same set. This table says what another tool sees and what comes back on import.</p>
     <table>
       <thead>
         <tr>
@@ -115,44 +115,87 @@ https://unpkg.com/vanilla-breeze/dist/cdn/themes/classic-dark.tokens.json</code-
           <td>The same color. Lightness is written as a number, so <code>55%</code> comes back as <code>0.55</code></td>
         </tr>
         <tr>
-          <td><code>light-dark(a, b)</code></td>
-          <td>Three tokens, <code>$root</code>, <code>light</code> and <code>dark</code>, and the CSS text under <code>lightDark</code></td>
-          <td>Both colors, when each is a plain color</td>
+          <td>A named color, <code>hsl()</code>, <code>oklab()</code> or <code>color()</code></td>
+          <td>The color, and the CSS text under <code>literal</code></td>
+          <td>The color</td>
           <td>The original text</td>
         </tr>
         <tr>
           <td>A relative color, <code>oklch(from var(--color-primary) ...)</code></td>
-          <td>Black as a stand-in, and the CSS text under <code>expression</code></td>
-          <td>Black</td>
+          <td>The computed color in <code>oklch</code>, and the CSS text under <code>expression</code></td>
+          <td>The computed color</td>
+          <td>The original text</td>
+        </tr>
+        <tr>
+          <td><code>color-mix()</code> in <code>srgb</code>, <code>oklab</code> or <code>oklch</code></td>
+          <td>The mixed color, and the CSS text under <code>literal</code></td>
+          <td>The mixed color</td>
+          <td>The original text</td>
+        </tr>
+        <tr>
+          <td><code>light-dark(a, b)</code>, or a color worked out from one</td>
+          <td>Three tokens, <code>$root</code>, <code>light</code> and <code>dark</code>, and the CSS text under <code>lightDark</code></td>
+          <td>Both colors</td>
+          <td>The original text</td>
+        </tr>
+        <tr>
+          <td><code>var(--color-primary)</code> on its own, where the target is a token in the same set</td>
+          <td>A DTCG alias, <code>{color.primary}</code></td>
+          <td>A reference to the other token</td>
+          <td>The original text</td>
+        </tr>
+        <tr>
+          <td><code>var()</code> inside a larger value, or pointing at a custom property that is not a token</td>
+          <td>The value with the reference filled in, and the CSS text under <code>literal</code></td>
+          <td>The value</td>
           <td>The original text</td>
         </tr>
         <tr>
           <td>A length in <code>px</code> or <code>rem</code></td>
           <td>A dimension</td>
-          <td>The length</td>
+          <td>The length. A bare <code>0</code> is written, and comes back, as <code>0px</code></td>
           <td>The same length</td>
         </tr>
         <tr>
-          <td>A length in <code>em</code> or <code>%</code></td>
-          <td>A dimension in <code>rem</code>, and the real unit under <code>unit</code></td>
-          <td>The number with the wrong unit</td>
+          <td>A length in <code>em</code>, <code>%</code> or another unit</td>
+          <td>A <code>number</code> token, and the unit under <code>unit</code>. A DTCG dimension can only be <code>px</code> or <code>rem</code></td>
+          <td>A number with no unit</td>
           <td>The original length</td>
         </tr>
         <tr>
-          <td>A font stack, a weight, a time, a <code>cubic-bezier()</code>, a shadow whose color is a plain color</td>
-          <td>The matching DTCG value</td>
-          <td>The value</td>
-          <td>The same value</td>
+          <td><code>calc()</code> of numbers or of lengths in one unit</td>
+          <td>The result, and the CSS text under <code>literal</code></td>
+          <td>The result</td>
+          <td>The original text</td>
         </tr>
         <tr>
-          <td>Anything else: <code>var()</code>, <code>calc()</code>, <code>color-mix()</code>, a named color, an easing keyword such as <code>linear</code>, a shadow of <code>none</code></td>
-          <td>A stand-in (black, zero, or a straight-line curve), and the CSS text under <code>literal</code></td>
-          <td>The stand-in</td>
-          <td>The stand-in. The <code>literal</code> text is not read back</td>
+          <td>A font stack, a weight, a time, a <code>cubic-bezier()</code>, a shadow</td>
+          <td>The matching DTCG value</td>
+          <td>The value</td>
+          <td>The same value. Font names other than generic families come back quoted</td>
+        </tr>
+        <tr>
+          <td>An easing keyword: <code>linear</code>, <code>ease</code>, <code>ease-in</code>, <code>ease-out</code>, <code>ease-in-out</code></td>
+          <td>The keyword's <code>cubicBezier</code> curve, and the keyword under <code>literal</code></td>
+          <td>The curve</td>
+          <td>The keyword</td>
+        </tr>
+        <tr>
+          <td>A shadow of <code>none</code></td>
+          <td>A shadow with no size and a fully transparent color, and <code>none</code> under <code>literal</code></td>
+          <td>A shadow that draws nothing</td>
+          <td><code>none</code></td>
+        </tr>
+        <tr>
+          <td>A value that cannot be worked out from the set: a reference to a custom property that is not in it, <code>calc()</code> across units, <code>clamp()</code>, <code>currentColor</code>, <code>steps()</code>, a radius with several values</td>
+          <td>No token. The property and its CSS text are listed under <code>cssOnly</code> in the file's own <code>$extensions</code></td>
+          <td>Nothing for that token</td>
+          <td>The original text</td>
         </tr>
       </tbody>
     </table>
-    <p>Two things follow. Before you rely on a token file in another tool, look for tokens that carry <code>expression</code> or <code>literal</code>: their <code>$value</code> is not the real one, and the tool needs the real one entered by hand. And a theme that sets tokens with <code>var()</code> or <code>calc()</code> does not come back whole from a file, so keep the CSS as the source and treat the file as a copy.</p>
+    <p>The format has no type for plain text, so a value with no finished form is left out. A stand-in would be read by another tool as the real value. In the bundled themes this applies to the <code>steps()</code> easings of 8bit, NES and Terminal and to one radius in Organic.</p>
+    <p>Two things follow. A token that carries <code>expression</code>, <code>lightDark</code> or <code>literal</code> is imported from that text, so a change made to its <code>$value</code> in another tool is not picked up unless the tool also removes the extension. And a computed value is a snapshot: it does not follow later changes to the token it was worked out from. Keep the CSS as the source and treat the file as a copy.</p>
     <p>The themes most likely to be taken elsewhere, Modern, Minimal and Classic, set their brand colors from the hue, lightness and chroma seeds. Those export as numbers under <code>color.seeds</code>, and the file's <code>$extensions</code> carries <code>seedDerivation: true</code> to say the colors are built from them.</p>
   </section>
 
@@ -165,7 +208,7 @@ https://unpkg.com/vanilla-breeze/dist/cdn/themes/classic-dark.tokens.json</code-
   <h2>Sample</h2>
   <button type="button">Reserve a seat</button>
 </section></code-block>
-    <p>The import reads more of the format than the export writes:</p>
+    <p>The import reads these parts of the format, whichever tool wrote the file:</p>
     <ul>
       <li>A group's <code>$type</code> applies to the tokens inside it.</li>
       <li>A reference such as <code>{color.primary}</code> becomes <code>var(--color-primary)</code>.</li>
@@ -197,5 +240,5 @@ https://unpkg.com/vanilla-breeze/dist/cdn/themes/classic-dark.tokens.json</code-
       <li><a href="https://tokens.studio/">Tokens Studio</a> manages tokens inside Figma.</li>
       <li><a href="https://penpot.app/">Penpot</a> is an open-source design tool with design tokens built in.</li>
     </ul>
-    <p>Each tool has its own rules for group names and for <code>$extensions</code>. A tool that drops extensions on save also drops the CSS text kept there, and a file that has been through it comes back with the stand-in values only.</p>
+    <p>Each tool has its own rules for group names and for <code>$extensions</code>. A tool that drops extensions on save also drops the CSS text kept there. A file that has been through it comes back with the computed values in place of the calculations, without the values listed under <code>cssOnly</code>, and with <code>em</code> and <code>%</code> lengths as bare numbers.</p>
   </section>

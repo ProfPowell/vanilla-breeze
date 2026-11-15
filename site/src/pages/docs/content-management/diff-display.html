@@ -132,7 +132,7 @@ toc: true
 </main></code-block>
     <p>What to know about <code>swap</code> and <code>diff</code>:</p>
     <ul>
-      <li>The versioned region is the first element in the page that matches <code>[data-versioned], main</code>. Put <code>data-versioned</code> on <code>&lt;main&gt;</code> itself, as above. To version a smaller region inside <code>&lt;main&gt;</code>, also set <code>data-versioned-region="[data-versioned]"</code>, because <code>&lt;main&gt;</code> comes first in the page and would otherwise be chosen. The other version's page must have a matching region.</li>
+      <li>The versioned region is the first element with <code>data-versioned</code>, or <code>&lt;main&gt;</code> when the page has none. Put the attribute on <code>&lt;main&gt;</code>, as above, or on a smaller region inside it. To use a different selector, set <code>data-versioned-region</code>. The other version's page must have a matching region.</li>
       <li>Both fetch the other version, so its address must be on the same origin as the page.</li>
       <li>The diff compares text line by line. It does not understand markup: a reworded sentence shows as one line removed and one added, and formatting changes do not show at all.</li>
       <li>The diff is placed before the region. <code>data-diff-position="after"</code> puts it after.</li>
@@ -143,33 +143,22 @@ toc: true
 
   <section id="your-own">
     <h2>Your own comparison</h2>
-    <p>To show the difference between two strings that are not pages, such as two saved drafts or two API responses, run the comparison in your own code or with a diff library, and write the result as <code>&lt;ins&gt;</code> and <code>&lt;del&gt;</code> elements inside a <code>&lt;change-set&gt;</code>. The component supplies the three views for whatever edits it finds inside it.</p>
-    <code-block language="js" label="Turning diff output into a change-set" data-escape>// parts: [{ type: 'same' | 'added' | 'removed', text: '...' }, ...]
-function showDiff(host, parts) {
-  const pre = document.createElement('pre');
+    <p>To show the difference between two strings that are not pages, such as two saved drafts or two API responses, use the line comparison that <code>&lt;version-switcher&gt;</code> uses. The package exports it as two functions. <code>diffLines(oldText, newText)</code> returns a list of <code>{ type, text }</code> entries, one per line, where <code>type</code> is <code>'eq'</code>, <code>'add'</code> or <code>'del'</code>. <code>renderDiffFragment(ops)</code> turns that list into a <code>&lt;pre class="text-diff"&gt;</code> with an <code>&lt;ins&gt;</code> for each added line and a <code>&lt;del&gt;</code> for each removed one.</p>
+    <code-block language="js" label="A line diff of two strings in a change-set" data-escape>import { diffLines, renderDiffFragment } from 'vanilla-breeze';
 
-  for (const part of parts) {
-    if (part.type === 'same') {
-      pre.append(part.text);
-    } else {
-      const mark = document.createElement(part.type === 'added' ? 'ins' : 'del');
-      mark.textContent = part.text;
-      pre.append(mark);
-    }
-  }
-
+function showDiff(host, oldText, newText) {
   const changes = document.createElement('change-set');
-  changes.append(pre);
+  changes.append(renderDiffFragment(diffLines(oldText, newText)));
   host.replaceChildren(changes);
 }</code-block>
-    <p>The line comparison that <code>&lt;version-switcher&gt;</code> uses is internal to the library and is not exported from the package.</p>
+    <p>Put the result inside a <code>&lt;change-set&gt;</code>, as here, and the component supplies the three views. The comparison works on whole lines and suits texts of up to a few thousand lines. For a word-level or markup-aware diff, use a diff library and write its output as <code>&lt;ins&gt;</code> and <code>&lt;del&gt;</code> elements inside a <code>&lt;change-set&gt;</code> in the same way.</p>
   </section>
 
   <section id="not-here">
     <h2>What is not here</h2>
     <ul>
       <li>A side-by-side text diff. The Final and Original views of a <code>&lt;change-set&gt;</code> cover the same need in less width.</li>
-      <li>A review tool with comments pinned to changes and accept or reject controls. Earlier versions of this page named a <code>&lt;review-surface&gt;</code> element for that. Vanilla Breeze does not ship one.</li>
+      <li>A review tool with comments pinned to changes and accept or reject controls. The <code>&lt;review-surface&gt;</code> element that earlier versions of this page named for that now ships in the separate <a href="/docs/process/planning/">vb-project-planning</a> package, not in Vanilla Breeze.</li>
       <li>A diff that understands HTML structure.</li>
     </ul>
   </section>

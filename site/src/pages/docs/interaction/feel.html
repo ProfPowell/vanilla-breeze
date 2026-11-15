@@ -64,9 +64,11 @@ currentPath: /docs/interaction/feel/
   <p>An outer container's border-radius and the radius of an element nested inside it should look concentric: the inner radius equals the outer radius minus the padding between them. VB ships a CSS helper that derives the inner value automatically.</p>
 
   <code-block language="css" label="--radius-inner formula" data-escape>/* In src/tokens/borders.css */
---radius-inner: max(0px, calc(var(--_radius, var(--radius-m)) - var(--_inset, 0px)));</code-block>
+* {
+  --radius-inner: max(0px, calc(var(--_radius, var(--radius-m)) - var(--_inset, 0px)));
+}</code-block>
 
-  <p>Parents declare their own radius in <code>--_radius</code> and their padding in <code>--_inset</code>. Children that should hug the parent's inner edge use <code>border-radius: var(--radius-inner)</code>.</p>
+  <p>Parents declare their own radius in <code>--_radius</code> and their padding in <code>--_inset</code>, in a style attribute or a rule. Children that should hug the parent's inner edge use <code>border-radius: var(--radius-inner)</code>. The token is declared on every element, so it is computed from the <code>--_radius</code> and <code>--_inset</code> that element inherits.</p>
 
   <code-block language="html" label="Card with concentric inner button" data-escape><article style="
   --_radius: var(--radius-l);
