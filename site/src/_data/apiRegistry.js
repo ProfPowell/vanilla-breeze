@@ -5721,7 +5721,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "comment-wc",
     "type": "web-component",
-    "description": "EXPERIMENTAL / STUB: inline \"Add comment\" action for selection-menu. Pins to a <review-surface>, which Vanilla Breeze does not ship; without one the button is aria-disabled with a described reason.",
+    "description": "EXPERIMENTAL / STUB: inline \"Add comment\" action for selection-menu. Pins to a <review-surface>, which ships in the separate @profpowell/vb-project-planning package and not in Vanilla Breeze; without one the button is aria-disabled with a described reason.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -5763,7 +5763,7 @@ export default {
         "aria-describedby",
         "aria-hidden"
       ],
-      "provide": "A review-surface for the comment to attach to; without one the button is marked unavailable",
+      "provide": "A review-surface (from @profpowell/vb-project-planning) for the comment to attach to; without one the button is marked unavailable",
       "keyboard": [
         {
           "keys": [
@@ -9891,7 +9891,7 @@ export default {
       },
       {
         "name": "getHighlights()",
-        "description": "Array of { id, startOffset, endOffset, text, color, note, created } records. Inside <selection-menu> the methods act on the most recently highlighted target (initially the first)"
+        "description": "Array of { id, startOffset, endOffset, text, prefix, suffix, color, note, created } records. Inside <selection-menu> the methods act on the most recently highlighted target (initially the first)"
       },
       {
         "name": "removeHighlight(id)",
@@ -9920,6 +9920,11 @@ export default {
         "name": "highlights:removed",
         "detail": "{ id }",
         "description": "A highlight was removed via removeHighlight(). Dispatched on the target and bubbles"
+      },
+      {
+        "name": "highlights:unplaced",
+        "detail": "{ highlights }",
+        "description": "Stored highlights were loaded and the text of one or more is no longer in the target. They stay in storage and are tried again on the next load. Dispatched on the target and bubbles"
       },
       {
         "name": "highlights:selected",
@@ -11917,13 +11922,29 @@ export default {
         "type": "string",
         "default": "Key unavailable",
         "description": "Visible trust-tier text appended to the badge for data-trust=\"key-unavailable\" (default \"Key unavailable\")."
+      },
+      {
+        "name": "data-label-tier-key-untrusted",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Key not from this site",
+        "description": "Visible trust-tier text for data-trust=\"failed\" when link[rel=author-key] points at another origin (default \"Key not from this site\"). The key is not fetched."
+      },
+      {
+        "name": "data-label-tier-key-expired",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Key expired",
+        "description": "Visible trust-tier text for data-trust=\"failed\" when the key's metadata.expires date has passed (default \"Key expired\")."
       }
     ],
     "events": [
       {
         "name": "page-info:verified",
         "detail": "{ status: 'undeclared' | 'declared' | 'verified' | 'failed' | 'key-unavailable', tier: 0 | 1 | 3 | -1 | -2, reason?: string }",
-        "description": "Bubbles. Fired on every setup with the declared tier (undeclared/declared, no reason), then again with the verification result when the page carries meta[name=vb:signature]. reason: 'ok', 'mismatch', 'missing-author-key', 'unsupported-algorithm:…', 'canonicalize:…', 'verify:…', or the key fetch error."
+        "description": "Bubbles. Fired on every setup with the declared tier (undeclared/declared, no reason), then again with the verification result when the page carries meta[name=vb:signature]. reason: 'ok', 'mismatch', 'hash-mismatch' (vb:hash differs from the canonical document), 'key-origin' (key is not same-origin), 'key-expired', 'missing-author-key', 'unsupported-algorithm:…', 'canonicalize:…', 'verify:…', or the key fetch error."
       }
     ],
     "childAttributes": [
@@ -14921,7 +14942,7 @@ export default {
       {
         "element": "<comment-wc>",
         "required": false,
-        "description": "Inline comment on a review-surface"
+        "description": "Inline comment on a review-surface (from @profpowell/vb-project-planning)"
       }
     ],
     "css": {
@@ -19738,8 +19759,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "CSS selector for the swappable / diffable region (default: \"[data-versioned], main\")",
-        "default": "[data-versioned], main"
+        "description": "CSS selector for the swappable / diffable region. Without it, the region is the first [data-versioned] element, or main when the page has none."
       },
       {
         "name": "data-diff-position",

@@ -33,6 +33,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - **`<icon-wc>`'s `basePath` property returns an absolute URL** when it is derived from the bundle location.
 
 ### Added
+- **`diffLines` and `renderDiffFragment` are exported from the package.**
 - **Keyboard and ARIA tables generated from component data.** Each component's `api.json` has an `a11y` block naming the pattern it implements, the roles and states it sets, what the author provides, what it announces and the keys it handles. The Accessibility pages render their tables from it, and the API drift check fails when a listed key or attribute no longer appears in the component's source.
 - **`.skip-link` is in the core stylesheet.** `<a href="#main" class="skip-link">` is off screen until it takes keyboard focus; no CSS to copy.
 - **`VbI18n`, `getLocale`, `usableLocale`, `isRTL` and `announce` are exported** from the main, core and autoload bundles, so `import { announce } from 'vanilla-breeze'` works.
@@ -45,6 +46,23 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - **Utilities load when their attribute first appears after page load.** A page that adds `data-focus-trap`, `data-copy` or any other attribute utility from script, with none present at load, now gets it.
 
 ### Fixed
+- **`--color-text-on-primary` is black or white according to the primary color**, at least 4.5:1 in every bundled theme and mode. It was fixed white, about 3.3:1 on the lighter dark-mode primary. New `--color-text-on-interactive` does the same for the interactive color.
+- **Paper surfaces (`paper`, `dots`, `grid`, `lines`, `kraft`) have dark-mode versions**, so their text is readable in both modes.
+- **`--color-primary-subtle`, `--color-secondary-subtle` and `--color-accent-subtle` are deep tints in dark mode**, not near-white panels.
+- **Dark mode overrides `--shadow-2xl`, `--shadow-inner` and `--shadow-flush`** as well as the smaller shadows.
+- **`--radius-inner` follows the nearest parent's `--_radius` and `--_inset`.** It was computed once on the root.
+- **`--page-bg-image` paints on the page**, under `--page-bg-gradient`. The Journal theme's dot grid now shows on the body.
+- **`data-surface="frosted"` blurs with no theme** (`--glass-blur` defaults to `12px`).
+- **`data-shadow="material"` and `flicker` honour `data-motion-reduced`.**
+- **Fluid scaling: `--font-size-xs` and `--font-size-s` no longer shrink as the viewport widens.** The `a11y-large-text` theme honours `data-fluid="compact"` and `data-fluid="spacious"`.
+- **`<page-info>` only accepts a signing key from the page's own origin**, does not follow redirects when fetching it, honours `metadata.expires` in the key file, and checks `vb:hash` when present. A key on another host reads "Key not from this site"; an expired one reads "Key expired".
+- **Text inside `<change-set>` is part of the signed document** (unchanged text and `<ins>`; `<del>` is not). The whole element used to be left out. Pages signed with a `<change-set>` in the signed region need re-signing.
+- **DTCG export writes real values.** Relative colors, `color-mix()`, `calc()`, `var()` references, named colors and easing keywords are computed, and a lone `var(--token)` becomes a DTCG alias. Nothing is written as placeholder black, `0px` or a linear curve. Values the format cannot express are listed under `$extensions["com.vanilla-breeze"].cssOnly`; `em` and `%` lengths export as `number` tokens with the unit in the extension. Re-importing a Vanilla Breeze file restores the original CSS.
+- **`data-lorem` gives Hebrew, Chinese (Simplified) and Korean their own filler** (`hebrew`, `chinese`, `korean`).
+- **`<version-switcher>` uses a `[data-versioned]` element inside `<main>` as its region** without `data-versioned-region`.
+- **`target="_blank"` links added after load get `rel="noopener"`** when activated.
+- **Highlights are found again after the article text is edited.** Ones whose text is gone stay in storage and are reported with a `highlights:unplaced` event.
+- **`data-review="fact-checked"` recolors the provenance edge**, as `editor-reviewed` does.
 - **`<combo-box>`: Enter submits the surrounding form** when no option is active. It was always swallowed.
 - **`<ai-chat>`: Escape while a reply streams stops the reply and keeps the draft**, and the reply is read once when complete, not in fragments.
 - **`<content-swap>`: Enter or Space on a button trigger swaps once**, and a trigger that is not a button or link is focusable and exposed as a button.
