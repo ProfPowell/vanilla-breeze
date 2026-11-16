@@ -50,15 +50,14 @@
       "purpose": "visual-variant",
       "type": "enum",
       "values": ["visible"],
-      "description": "Show the caption (the element's children) under the code. By default it is visually hidden but read by screen readers, and shown while a link inside it has focus."
+      "description": "Show the caption (the element's children) under the code. By default it is visually hidden but read by screen readers, and shown while a link inside it has focus. A plain-text caption that only repeats the value is hidden from screen readers while the canvas name carries the value."
     },
     {
       "name": "data-label-prefix",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "default": "QR code",
-      "description": "Accessible name of the canvas (role=img). The value itself is read from the caption, so it is not announced twice."
+      "description": "Accessible name of the canvas (role=img). Without it the name is \"QR code: \" followed by the encoded value (cut to 200 characters with an ellipsis when longer). With it, this text is the name and the encoded value is the canvas's aria-description."
     },
     {
       "name": "data-label-copied",
@@ -106,8 +105,8 @@
   },
   "a11y": {
     "pattern": "Image",
-    "manages": ["role=\"img\"", "aria-label", "hidden"],
-    "provide": "A data-label-prefix when \"QR code\" is not a sufficient name; the caption carries the encoded value",
+    "manages": ["role=\"img\"", "aria-label", "aria-description", "aria-hidden", "hidden"],
+    "provide": "A data-label-prefix when the code needs a name of its own; the encoded value is then its description",
     "announces": "A copied message, politely, after copy() succeeds"
   }
 }

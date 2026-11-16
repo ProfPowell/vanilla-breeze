@@ -180,6 +180,42 @@ test.describe('settings-panel', () => {
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
+  test('non-modal: Escape acts only from the trigger or panel; close() returns focus only when it held it', async ({ page }) => {
+    await load(page, '<main><button id="before">Before</button><settings-panel id="sp"></settings-panel><button id="after">After</button></main>');
+    const sp = page.locator('#sp');
+    const trigger = page.locator('#sp [data-trigger]');
+    const isOnTrigger = () => page.evaluate(() => document.activeElement?.hasAttribute('data-trigger'));
+
+    // Open with focus left outside the widget: Escape there does nothing.
+    await page.locator('#before').focus();
+    await page.evaluate(() => {
+      const el = /** @type {any} */ (document.getElementById('sp'));
+      el.open();
+      document.getElementById('sp').addEventListener('focusout', (e) => e.stopImmediatePropagation(), { capture: true, once: true });
+      document.getElementById('before').focus();
+    });
+    await expect(sp).toHaveAttribute('open', '');
+    await page.keyboard.press('Escape');
+    await expect(sp).toHaveAttribute('open', '');
+    // Programmatic close with focus elsewhere leaves focus alone.
+    await page.evaluate(() => /** @type {any} */ (document.getElementById('sp')).close());
+    await expect(page.locator('#before')).toBeFocused();
+
+    // An Escape another handler consumed is ignored.
+    await trigger.click();
+    await page.evaluate(() => {
+      document.querySelector('#sp .settings-panel').addEventListener('keydown', (e) => e.preventDefault(), { once: true });
+    });
+    await page.keyboard.press('Escape');
+    await expect(sp).toHaveAttribute('open', '');
+
+    // Programmatic close with focus on a control in the panel returns it.
+    await page.locator('#sp .settings-close').focus();
+    await page.evaluate(() => /** @type {any} */ (document.getElementById('sp')).close());
+    await expect(sp).not.toHaveAttribute('open');
+    expect(await isOnTrigger()).toBe(true);
+  });
+
   test('reset asks in-panel (no window.confirm) and cancel restores focus', async ({ page }) => {
     let dialogs = 0;
     page.on('dialog', (d) => { dialogs++; d.dismiss(); });

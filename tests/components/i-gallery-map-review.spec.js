@@ -254,21 +254,25 @@ test.describe('image-map', () => {
     expect(page.url()).not.toContain('#hall');
   });
 
-  test('ArrowLeft/ArrowRight follow the writing direction; ArrowDown does not', async ({ page }) => {
+  test('arrow keys move to the nearest hotspot in that direction, also in RTL', async ({ page }) => {
     await load(page, MAP(), { tag: 'image-map' });
     const anchors = page.locator('#m .image-map-anchor');
+    // Hall is top left, Server top right, Book bottom left.
     await anchors.nth(0).focus();
     await page.keyboard.press('ArrowRight');
     await expect(anchors.nth(1)).toBeFocused();
-    await page.keyboard.press('ArrowLeft');
-    await expect(anchors.nth(0)).toBeFocused();
-
-    await page.evaluate(() => document.getElementById('m').setAttribute('dir', 'rtl'));
-    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('ArrowRight'); // nothing further right: stays
     await expect(anchors.nth(1)).toBeFocused();
-    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowLeft');
     await expect(anchors.nth(0)).toBeFocused();
     await page.keyboard.press('ArrowDown');
+    await expect(anchors.nth(2)).toBeFocused();
+    await page.keyboard.press('ArrowUp');
+    await expect(anchors.nth(0)).toBeFocused();
+
+    // Image coordinates are physical: right is still right in RTL.
+    await page.evaluate(() => document.getElementById('m').setAttribute('dir', 'rtl'));
+    await page.keyboard.press('ArrowRight');
     await expect(anchors.nth(1)).toBeFocused();
   });
 

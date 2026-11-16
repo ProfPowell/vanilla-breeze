@@ -202,6 +202,16 @@ test.describe('data-orientation="vertical"', () => {
     await page.keyboard.press('ArrowUp');
     await expect(s.nth(2)).toBeFocused();
     await expect(page.locator('details').nth(2)).toHaveAttribute('open', '');
+
+    // Left/Right belong to the horizontal axis; Home/End work on both.
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('ArrowRight');
+    await expect(s.nth(2)).toBeFocused();
+    await expect(page.locator('details').nth(2)).toHaveAttribute('open', '');
+    await page.keyboard.press('Home');
+    await expect(s.first()).toBeFocused();
+    await page.keyboard.press('End');
+    await expect(s.nth(2)).toBeFocused();
   });
 });
 

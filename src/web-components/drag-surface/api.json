@@ -35,6 +35,14 @@
       "description": "Renders per-item Move buttons (up/down or inline start/end, plus Move to <adjacent surface> for grouped surfaces) — the single-pointer alternative to dragging (WCAG 2.5.7)"
     },
     {
+      "name": "data-label-instructions",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Press Space or Enter to grab, then use the arrow keys to move",
+      "description": "Description set on each item (aria-description) that tells screen reader users how to move it"
+    },
+    {
       "name": "role",
       "kind": "aria",
       "purpose": "output-state",
@@ -124,7 +132,7 @@
       "type": "enum",
       "values": ["true"],
       "required": true,
-      "description": "Native attribute; marks a direct child as a reorderable item (gets role=listitem and tabindex=0, including items added later)"
+      "description": "Native attribute; marks a direct child as a reorderable item (gets role=listitem, tabindex=0 and an aria-description with the move instructions, including items added later)"
     },
     {
       "name": "data-id",
@@ -148,7 +156,7 @@
       "name": "data-grabbed",
       "on": "direct child",
       "type": "boolean",
-      "description": "Output: present while the item is grabbed for keyboard reorder (with aria-description=\"Grabbed\" unless the item has its own)"
+      "description": "Output: present while the item is grabbed for keyboard reorder (aria-description changes to \"Grabbed\" unless the item has its own description)"
     },
     {
       "name": "data-dragging",
@@ -180,7 +188,7 @@
   "a11y": {
     "pattern": "Sortable list",
     "manages": ["role=\"list\"", "role=\"listitem\"", "role=\"status\"", "tabindex", "aria-disabled", "aria-pressed", "aria-description", "aria-label", "aria-live", "aria-atomic", "hidden"],
-    "provide": "An aria-label on the surface (used in announcements) and readable text or an aria-label in each draggable item",
+    "provide": "An aria-label on the surface (used in announcements) and readable text or an aria-label in each draggable item. Every item is a tab stop and is described with how to move it",
     "announces": "Grab, each new position, drop, cancel and moves between surfaces, politely",
     "keyboard": [
       { "keys": ["Enter", "Space"], "action": "Grab the item, or drop it when already grabbed", "when": "Focus on an item or its drag handle" },

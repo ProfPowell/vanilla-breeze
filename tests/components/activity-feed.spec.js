@@ -119,7 +119,7 @@ test.describe('activity-feed', () => {
     expect(await page.locator('#feed').evaluate((f) => f.lastElementChild?.className)).toBe('activity-sentinel');
   });
 
-  test('Tab into the feed, then arrows move between entries (roving tabindex)', async ({ page }) => {
+  test('Tab into the feed, then Page keys move between entries (roving tabindex); arrows are left to the page', async ({ page }) => {
     await load(page, '', entry(0, 'a') + entry(1, 'b') + entry(2, 'c'));
     const entries = page.locator('#feed > article[data-activity]');
     await expect(entries.nth(0)).toHaveAttribute('tabindex', '0');
@@ -129,7 +129,17 @@ test.describe('activity-feed', () => {
     await page.keyboard.press('Tab');
     await expect(entries.nth(0)).toBeFocused();
 
+    // Arrow keys are not intercepted, even on the article itself.
+    const prevented = await page.evaluate(() => {
+      const e = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true });
+      document.activeElement?.dispatchEvent(e);
+      return e.defaultPrevented;
+    });
+    expect(prevented).toBe(false);
     await page.keyboard.press('ArrowDown');
+    await expect(entries.nth(0)).toBeFocused();
+
+    await page.keyboard.press('PageDown');
     await expect(entries.nth(1)).toBeFocused();
     await expect(entries.nth(1)).toHaveAttribute('tabindex', '0');
     await expect(entries.nth(0)).toHaveAttribute('tabindex', '-1');
@@ -139,8 +149,8 @@ test.describe('activity-feed', () => {
     await page.keyboard.press('Home');
     await expect(entries.nth(0)).toBeFocused();
 
-    // From a link inside an entry, arrows are left alone (SR browse mode /
-    // scrolling) but the APG Page keys still navigate.
+    // From a link inside an entry, arrows are left alone too and the APG
+    // Page keys still navigate.
     await entries.nth(1).locator('a').focus();
     await expect(entries.nth(1)).toHaveAttribute('tabindex', '0');
     await page.keyboard.press('ArrowDown');

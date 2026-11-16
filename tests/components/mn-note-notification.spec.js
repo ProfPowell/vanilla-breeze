@@ -194,6 +194,65 @@ test('notification-wc: focus moves into the dialog and Escape returns it', async
   await expect(dialog).toBeHidden();
 });
 
+test('notification-wc: Escape acts only from the bell or panel; an arriving notification keeps focus on the row', async ({ page }) => {
+  await load(page, PANEL);
+  await panelReady(page);
+  const trigger = page.locator('#n > [data-trigger]');
+  const dialog = page.getByRole('dialog', { name: 'Notifications' });
+  await trigger.click();
+  await expect(dialog).toBeFocused();
+
+  // An Escape another handler consumed is ignored.
+  await page.evaluate(() => {
+    document.querySelector('#n .notification-panel').addEventListener('keydown', (e) => e.preventDefault(), { once: true });
+  });
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeVisible();
+
+  // A notification arrives while a row holds focus: same row keeps focus.
+  const row = page.locator('#n [data-notification-id="a"] .notification-row');
+  await row.focus();
+  await page.evaluate(() => {
+    /** @type {any} */ (document.getElementById('n')).notifications =
+      [{ id: 'new', title: 'Fresh', date: '2026-05-01', type: 'update' }];
+  });
+  await expect(page.locator('#n .notification-list li')).toHaveCount(3);
+  await expect(row).toBeFocused();
+  await expect(dialog).toBeVisible();
+
+  // The focused row is withdrawn: focus moves to the row now in its place.
+  await page.evaluate(() => {
+    /** @type {any} */ (document.getElementById('n')).notifications = [{ id: 'a', dismissed: true }];
+  });
+  expect(await page.evaluate(() => !!document.activeElement?.closest('#n .notification-list li'))).toBe(true);
+});
+
+test('notification-wc: dismissing a focused banner returns focus to where it came from, or the next banner', async ({ page }) => {
+  await load(page, `<button id="start">Start</button>
+    <notification-wc id="b1" mode="banner" persist="mn-test-b1"><strong>One</strong> <button type="button" value="dismiss">Dismiss one</button></notification-wc>
+    <notification-wc id="b2" mode="banner" persist="mn-test-b2"><strong>Two</strong> <button type="button" value="dismiss">Dismiss two</button></notification-wc>
+    <main><h1>Page</h1></main>`);
+  await page.evaluate(() => localStorage.clear());
+  await page.waitForSelector('#b2[data-upgraded]');
+  await page.waitForTimeout(50);
+  await page.locator('#start').focus();
+  await page.locator('#b1 button').focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#b1')).toBeHidden();
+  await expect(page.locator('#b2 button')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#b2')).toBeHidden();
+  // b2 was entered from b1, which is gone: fall back to <main>, not <body>.
+  await expect(page.locator('main')).toBeFocused();
+
+  await page.evaluate(() => { localStorage.clear(); document.getElementById('b1').hidden = false; });
+  await page.locator('#start').focus();
+  await page.locator('#b1 button').focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#b1')).toBeHidden();
+  await expect(page.locator('#start')).toBeFocused();
+});
+
 test('notification-wc: dropdown on a wide screen; a sheet on a narrow one or inside a popover', async ({ page }) => {
   // Wide, bell in the header: a dropdown under the bell, no close button
   await page.setViewportSize({ width: 1000, height: 700 });
@@ -460,6 +519,43 @@ test('note-wc: outside click closes and focus does not drop to body', async ({ p
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.waitForTimeout(50);
   await expect(btn).toBeFocused();
+});
+
+test('note-wc: non-modal panel ignores a handled Escape and only hands focus back when it held it', async ({ page }) => {
+  await loadNote(page);
+  await highlight(page, 4, 9);
+  const btn = page.locator('#page-note > button');
+  const textarea = page.getByRole('textbox', { name: 'Note for highlighted text' });
+
+  // Opened by the bare host with no opener: the fallback target is the <mark>.
+  const open = () => page.evaluate(async () => {
+    const { initHighlights } = await import('/src/utils/highlights-init.js');
+    const c = initHighlights(document.getElementById('art'));
+    /** @type {HTMLElement | null} */ (document.activeElement)?.blur();
+    /** @type {any} */ (document.getElementById('bare')).openFor(c.getHighlights()[0], c, null);
+  });
+  await open();
+  await expect(textarea).toBeFocused();
+
+  // Escape that another handler consumed leaves the panel open.
+  await page.evaluate(() => {
+    document.querySelector('.hn-note-textarea').addEventListener('keydown', (e) => e.preventDefault(), { once: true });
+  });
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(1);
+
+  // Focus elsewhere when the panel goes away: focus is not moved.
+  await btn.focus();
+  await page.evaluate(() => { const b = document.getElementById('bare'); const m = b.parentElement; b.remove(); m.prepend(b); });
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(btn).toBeFocused();
+
+  // Focus inside when the host is removed: focus goes to the highlight's mark,
+  // or to the target when the mark is gone, never to <body>.
+  await open();
+  await expect(textarea).toBeFocused();
+  await page.evaluate(() => document.getElementById('bare').remove());
+  expect(await page.evaluate(() => document.activeElement?.matches('mark[data-hn-id], #art'))).toBe(true);
 });
 
 test('note-wc: closing before the next frame leaves no outside-click listener', async ({ page }) => {

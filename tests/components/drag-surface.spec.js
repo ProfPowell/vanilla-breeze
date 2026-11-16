@@ -115,7 +115,8 @@ test.describe('drag-surface', () => {
     await page.keyboard.press('Space');
 
     await expect(firstItem).not.toHaveAttribute('data-grabbed');
-    await expect(firstItem).not.toHaveAttribute('aria-description');
+    // Back to the idle instructions
+    await expect(firstItem).toHaveAttribute('aria-description', /Space or Enter to grab/);
   });
 
   test('keyboard: arrow keys reorder grabbed item', async ({ page }) => {

@@ -20,7 +20,7 @@
  * @attr {string} background - Background colour, always painted (default: #fff). Reactive.
  * @attr {string} error-correction - L, M, Q, H or 0-3 (default: M). Reactive.
  * @attr {string} data-caption - "visible" shows the caption under the code (default: visually hidden).
- * @attr {string} data-label-prefix - Accessible name of the canvas (default: "QR code").
+ * @attr {string} data-label-prefix - Accessible name of the canvas. Without it the name is "QR code: <value>"; with it the value is the canvas's description.
  * @attr {string} data-label-copied - Announcement after copy() (default: "QR code copied").
  * @attr {string} data-error - (output) "capacity" or "encoding" when no code could be drawn.
  *
@@ -38,6 +38,8 @@ import { encodeQR, parseErrorCorrection, layout, colorProblems, EC_LEVELS } from
 const DEFAULT_SIZE = 200;
 const DEFAULT_FG = '#000';
 const DEFAULT_BG = '#fff';
+/** Longest value read out in the default name; longer ones end in an ellipsis. */
+const NAME_VALUE_MAX = 200;
 
 class QrCodeWc extends VBElement {
   /** @type {HTMLCanvasElement | null} */
@@ -116,9 +118,36 @@ class QrCodeWc extends VBElement {
   }
 
   #render() {
+    this.#name(this.#draw());
+  }
+
+  /**
+   * A screen reader user cannot scan the code, so the canvas says what it
+   * encodes: in its default name, or as its description under an authored name.
+   * @param {boolean} drawn
+   */
+  #name(drawn) {
+    const canvas = /** @type {HTMLCanvasElement} */ (this.#canvas);
+    const caption = /** @type {HTMLElement} */ (this.#caption);
+    const text = drawn ? this.value : '';
+    const authored = this.getAttribute('data-label-prefix');
+    const short = text.length > NAME_VALUE_MAX ? `${text.slice(0, NAME_VALUE_MAX)}\u2026` : text;
+    canvas.setAttribute('aria-label', authored || (text ? `QR code: ${short}` : 'QR code'));
+    if (authored && text) canvas.setAttribute('aria-description', text);
+    else canvas.removeAttribute('aria-description');
+
+    // A plain-text caption that only repeats the value the name already
+    // carries in full would be read twice.
+    const repeats = !authored && !!text && short === text
+      && !caption.children.length && (caption.textContent ?? '').trim() === text;
+    if (repeats) caption.setAttribute('aria-hidden', 'true');
+    else caption.removeAttribute('aria-hidden');
+  }
+
+  /** @returns {boolean} Whether a code was drawn. */
+  #draw() {
     const canvas = /** @type {HTMLCanvasElement} */ (this.#canvas);
     const text = this.value;
-    canvas.setAttribute('aria-label', this.getAttribute('data-label-prefix') || 'QR code');
 
     if (this.#generatedCaption && this.#caption && this.#caption.textContent !== text) {
       this.#caption.textContent = text;
@@ -127,7 +156,7 @@ class QrCodeWc extends VBElement {
     this.removeAttribute('data-error');
     if (!text) {
       this.#clear();
-      return;
+      return false;
     }
 
     const rawEcl = this.getAttribute('error-correction');
@@ -148,7 +177,7 @@ class QrCodeWc extends VBElement {
         bubbles: true,
         detail: { reason, value: text, errorCorrection: EC_LEVELS[ecl], message: err.message },
       }));
-      return;
+      return false;
     }
 
     const cssSize = Math.max(1, parseInt(this.getAttribute('size') ?? '', 10) || DEFAULT_SIZE);
@@ -165,7 +194,7 @@ class QrCodeWc extends VBElement {
     this.#checkColors(fg, bg);
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) return false;
     ctx.clearRect(0, 0, edge, edge);
     ctx.fillStyle = bg.css;
     ctx.fillRect(0, 0, edge, edge);
@@ -176,6 +205,7 @@ class QrCodeWc extends VBElement {
       }
     }
     this.#rendered = text;
+    return true;
   }
 
   #clear() {

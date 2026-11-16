@@ -180,11 +180,10 @@ class ColorPicker extends VBElement {
   };
 
   #handleKeydown = (e) => {
-    if (e.key !== 'Escape' || !this.#isOpen) return;
+    if (e.key !== 'Escape' || e.defaultPrevented || !this.#isOpen) return;
     e.preventDefault();
     e.stopPropagation();
     this.#close();
-    this.#trigger.focus();
   };
 
   // --- Build UI ---
@@ -721,6 +720,8 @@ class ColorPicker extends VBElement {
 
   #close() {
     if (!this.#isOpen) return;
+    // Non-modal: focus only comes back to the trigger when it was in the panel.
+    const hadFocus = this.#panel.contains(document.activeElement);
     this.#isOpen = false;
     this.removeAttribute('open');
     this.#trigger.setAttribute('aria-expanded', 'false');
@@ -731,6 +732,7 @@ class ColorPicker extends VBElement {
       window.removeEventListener('resize', this.#onReposition);
     }
 
+    if (hadFocus && this.#trigger.isConnected && !this.#trigger.disabled) this.#trigger.focus();
     this.dispatchEvent(new CustomEvent('color-picker:close', { bubbles: true }));
   }
 

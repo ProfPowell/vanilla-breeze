@@ -303,6 +303,29 @@ test.describe('structure', () => {
     await expect(page.getByRole('button', { name: 'Move Charlie down' })).toHaveAttribute('aria-disabled', 'false');
   });
 
+  test('idle items are described with how to move them; overridable; not when disabled', async ({ page }) => {
+    await load(page, `
+      <drag-surface id="s" data-layout="stack">
+        <article draggable="true" data-id="a">Alpha</article>
+        <article draggable="true" data-id="b" aria-description="Own text">Bravo</article>
+      </drag-surface>`);
+    const a = page.locator('[data-id="a"]');
+    await expect(a).toHaveAttribute('aria-description', 'Press Space or Enter to grab, then use the arrow keys to move');
+    await expect(page.locator('[data-id="b"]')).toHaveAttribute('aria-description', 'Own text');
+
+    await a.focus();
+    await page.keyboard.press('Space');
+    await expect(a).toHaveAttribute('aria-description', 'Grabbed');
+    await page.keyboard.press('Escape');
+    await expect(a).toHaveAttribute('aria-description', /Space or Enter to grab/);
+
+    await page.evaluate(() => document.getElementById('s').setAttribute('data-label-instructions', 'Custom help'));
+    await expect(a).toHaveAttribute('aria-description', 'Custom help');
+    await page.evaluate(() => document.getElementById('s').toggleAttribute('disabled', true));
+    await expect(a).not.toHaveAttribute('aria-description');
+    await expect(page.locator('[data-id="b"]')).toHaveAttribute('aria-description', 'Own text');
+  });
+
   test('teardown clears reorder mode and grab state', async ({ page }) => {
     await load(page, LIST);
     await page.locator('[data-id="a"]').focus();

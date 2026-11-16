@@ -357,7 +357,7 @@ class PageTour extends VBElement {
     this.append(this.#backdrop, this.#spotlight, this.#card, this.#announcer);
     this.#card.showPopover();
 
-    // Keyboard works wherever focus is while the tour runs (card or target)
+    // Escape and the Tab cycle work wherever focus is; step keys only in the card
     this.#tourController = new AbortController();
     document.addEventListener('keydown', (e) => this.#handleKeydown(e), { signal: this.#tourController.signal });
 
@@ -704,16 +704,19 @@ class PageTour extends VBElement {
   }
 
   // -----------------------------------------------------------
-  // Keyboard navigation (document-level while active)
+  // Keyboard navigation (document-level while active; step keys card-only)
   // -----------------------------------------------------------
 
   /** @param {KeyboardEvent} e */
   #handleKeydown(e) {
     if (!this.#active || e.defaultPrevented) return;
     const origin = /** @type {Element | null} */ (e.target instanceof Element ? e.target : null);
-    // Leave caret/selection keys alone inside fields (e.g. a gated input target)
+    // Step keys belong to the card: outside it (the page, a step's target)
+    // and inside fields they keep scrolling and moving the caret.
+    // Focus that has fallen to <body> (a click on the backdrop) counts as the card.
+    const inCard = !!origin && (!!this.#card?.contains(origin) || origin === document.body);
     const inField = !!origin?.closest(EDITABLE);
-    const modified = e.altKey || e.ctrlKey || e.metaKey;
+    const stepKeysOff = !inCard || inField || e.altKey || e.ctrlKey || e.metaKey;
 
     // Left/right follow the page's reading direction
     let key = e.key;
@@ -732,26 +735,26 @@ class PageTour extends VBElement {
 
       case 'ArrowRight':
       case 'ArrowDown':
-        if (inField || modified) return;
+        if (stepKeysOff) return;
         e.preventDefault();
         this.next();
         break;
 
       case 'ArrowLeft':
       case 'ArrowUp':
-        if (inField || modified) return;
+        if (stepKeysOff) return;
         e.preventDefault();
         this.prev();
         break;
 
       case 'Home':
-        if (inField || modified) return;
+        if (stepKeysOff) return;
         e.preventDefault();
         this.goto(0);
         break;
 
       case 'End':
-        if (inField || modified) return;
+        if (stepKeysOff) return;
         e.preventDefault();
         this.goto(this.#steps.length - 1);
         break;

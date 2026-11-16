@@ -6,7 +6,7 @@
  * an opaque quiet zone (also in dark mode and forced colours), device-pixel
  * scaling, L/M/Q/H + 0-3 parsing, capacity overflow (event, no garbage
  * code, fallback kept), value set/cleared after upgrade, the author's
- * children kept as the caption, short canvas name + overrides, copy(),
+ * children kept as the caption, the value in the canvas name or description, copy(),
  * colour warnings, and reconnect.
  *
  * Tests the working tree: /src is served from disk, not the build.
@@ -187,7 +187,7 @@ test('value set after upgrade renders; clearing falls back to the text, then to 
   expect(await decode(page, '#text')).toBe('from text');
 });
 
-test('author children stay as the caption; canvas has a short name, value read once', async ({ page }) => {
+test('author children stay as the caption; the canvas name or description carries the value', async ({ page }) => {
   await load(page, `
     <qr-code id="a" value="https://example.com"><a href="https://example.com">example.com</a></qr-code>
     <qr-code id="v" value="hi" data-caption="visible" data-label-prefix="Código QR">hi</qr-code>`);
@@ -205,7 +205,10 @@ test('author children stay as the caption; canvas has a short name, value read o
       vWidth: v.querySelector('[data-qr-caption]').getBoundingClientRect().width,
     };
   });
-  expect(r).toMatchObject({ label: 'QR code', role: 'img', hostRole: null, link: 'https://example.com', vLabel: 'Código QR' });
+  expect(r).toMatchObject({ label: 'QR code: https://example.com', role: 'img', hostRole: null, link: 'https://example.com', vLabel: 'Código QR' });
+  // An authored name stays the name; the value becomes the description.
+  expect(await page.getAttribute('#v canvas', 'aria-description')).toBe('hi');
+  expect(await page.getAttribute('#a canvas', 'aria-description')).toBeNull();
   expect(r.hiddenWidth).toBeLessThanOrEqual(1);
   expect(r.vWidth).toBeGreaterThan(1);
 
@@ -213,9 +216,44 @@ test('author children stay as the caption; canvas has a short name, value read o
   await page.focus('#a a');
   expect(await page.evaluate(() => document.querySelector('#a [data-qr-caption]').getBoundingClientRect().width)).toBeGreaterThan(1);
 
-  const snap = await page.locator('#a').ariaSnapshot();
-  expect(snap.match(/example\.com/g)?.length).toBe(2); // link name + its url, not a third copy in the img name
-  expect(snap).toContain('img "QR code"');
+  await expect(page.locator('#a canvas')).toHaveAccessibleName('QR code: https://example.com');
+});
+
+test('canvas name follows the value, truncates long values, and a repeating text caption is read once', async ({ page }) => {
+  await load(page, `<qr-code id="t">https://example.com/tickets</qr-code><qr-code id="e"></qr-code>`);
+  await page.waitForSelector('#t[data-upgraded]');
+  const state = () => page.evaluate(() => {
+    const t = document.getElementById('t');
+    return {
+      label: t.querySelector('canvas').getAttribute('aria-label'),
+      description: t.querySelector('canvas').getAttribute('aria-description'),
+      captionHidden: t.querySelector('[data-qr-caption]').getAttribute('aria-hidden'),
+    };
+  });
+  // Text caption equal to the value: the name carries it, the caption is not read again.
+  expect(await state()).toEqual({ label: 'QR code: https://example.com/tickets', description: null, captionHidden: 'true' });
+  expect(await page.getAttribute('#e canvas', 'aria-label')).toBe('QR code');
+
+  // Value changes: the name follows, and the caption (now different) is read.
+  await page.evaluate(() => { /** @type {any} */ (document.getElementById('t')).value = 'https://example.org/b'; });
+  expect(await state()).toEqual({ label: 'QR code: https://example.org/b', description: null, captionHidden: null });
+
+  // Long values are cut at 200 characters in the name.
+  const long = 'https://example.com/?' + 'a'.repeat(300);
+  await page.evaluate((v) => { /** @type {any} */ (document.getElementById('t')).value = v; }, long);
+  expect((await state()).label).toBe(`QR code: ${long.slice(0, 200)}\u2026`);
+
+  // A label added later becomes the name and moves the full value to the description.
+  await page.evaluate(() => document.getElementById('t').setAttribute('data-label-prefix', 'Ticket code'));
+  expect(await state()).toMatchObject({ label: 'Ticket code', description: long });
+
+  // No code drawn: no value in the name, and the caption is exposed.
+  await page.evaluate(() => {
+    const t = /** @type {any} */ (document.getElementById('t'));
+    t.removeAttribute('data-label-prefix');
+    t.value = 'x'.repeat(5000);
+  });
+  expect(await state()).toEqual({ label: 'QR code', description: null, captionHidden: null });
 });
 
 test('reconnect keeps one canvas, one caption and the link', async ({ page }) => {

@@ -16,9 +16,11 @@
  * level and opens its panel for the requested highlight, regardless of
  * which note-wc you authored.
  *
- * Closing the panel (Save, Cancel, Escape, Ctrl/Cmd+Enter, outside click)
+ * The panel is non-modal and does not trap focus. Closing it (Save, Cancel,
+ * Escape, Ctrl/Cmd+Enter, outside click, removal) while focus is inside it
  * returns focus to the opener when it is still visible, else to the
- * highlight's <mark>, else to the target element.
+ * highlight's <mark>, else to the target element. Closing it while focus
+ * is elsewhere leaves focus alone.
  *
  * @attr {string} for - ID of target element (page-level mode)
  * @attr {string} data-label-* - English string overrides, see LABELS
@@ -109,7 +111,7 @@ class NoteWC extends VBElement {
 
   teardown() {
     panelHosts.delete(this);
-    this.#hidePanel({ restoreFocus: false });
+    this.#hidePanel();
   }
 
   #label(key) {
@@ -257,6 +259,7 @@ class NoteWC extends VBElement {
 
     // Escape anywhere in the panel cancels; Ctrl/Cmd+Enter in the textarea saves.
     panel.addEventListener('keydown', (e) => {
+      if (e.defaultPrevented) return;
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
@@ -297,9 +300,10 @@ class NoteWC extends VBElement {
   #onOutsideClick = (e) => {
     if (!this.#panel || this.#panel.contains(/** @type {Node} */ (e.target))) return;
     this.#hidePanel({ restoreFocus: false });
-    // Let the click land first; if it didn't put focus anywhere (focus
-    // fell to <body>), return it to the opener.
+    // Let the click land first; if focus was in the panel and the click
+    // didn't put it anywhere (it fell to <body>), return it to the opener.
     const opener = this.#lastFocusTarget;
+    if (!opener) return;
     document.addEventListener('pointerup', () => {
       setTimeout(() => {
         const active = document.activeElement;
@@ -335,7 +339,8 @@ class NoteWC extends VBElement {
 
   #hidePanel({ restoreFocus = true } = {}) {
     if (!this.#panel) return;
-    const restore = this.#focusRestorer();
+    // Only a panel that held focus hands it back.
+    const restore = this.#panel.contains(document.activeElement) ? this.#focusRestorer() : null;
     document.removeEventListener('pointerdown', this.#onOutsideClick);
     this.#panel.remove();
     this.#panel = null;
@@ -345,7 +350,7 @@ class NoteWC extends VBElement {
     this.#opener = null;
     this.#highlight = null;
     this.#controller = null;
-    if (restoreFocus) restore();
+    if (restoreFocus) restore?.();
   }
 }
 

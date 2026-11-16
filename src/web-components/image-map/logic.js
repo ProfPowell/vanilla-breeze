@@ -25,6 +25,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { nearestInDirection } from './_spatial.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -131,6 +132,8 @@ function calcBoundingBox(parsed) {
 
 let uid = 0;
 const HIDE_DELAY = 300;
+/** @type {Record<string, 'left' | 'right' | 'up' | 'down'>} */
+const ARROW_DIRECTIONS = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' };
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
@@ -384,7 +387,7 @@ class ImageMapWc extends VBElement {
         anchor.setAttribute('aria-disabled', 'true');
       }
 
-      const data = { area, parsed, svgShape, anchor, href, target, mode, hasContent, keyboardOpen: false };
+      const data = { area, parsed, bbox, disabled, svgShape, anchor, href, target, mode, hasContent, keyboardOpen: false };
 
       if (!disabled) this.#wireArea(data);
 
@@ -635,23 +638,19 @@ class ImageMapWc extends VBElement {
   }
 
   #onKeyDown = (e) => {
-    // Arrow roving applies between anchors only, not inside tooltip content.
+    // Arrow keys move between anchors only, not inside tooltip content.
     if (this.#tooltip?.contains(/** @type {Node} */ (e.target))) return;
-    const anchors = this.#focusAnchors.filter(a => !a.hasAttribute('aria-disabled'));
-    const current = anchors.indexOf(/** @type {HTMLElement} */ (document.activeElement));
+    const direction = ARROW_DIRECTIONS[e.key];
+    if (!direction) return;
+    const current = this.#areaData.findIndex(d => d.anchor === document.activeElement);
     if (current === -1) return;
 
-    // Left/Right follow the writing direction; Up/Down stay in DOM order.
-    const rtl = getComputedStyle(this).direction === 'rtl';
-    let step = 0;
-    if (e.key === 'ArrowDown') step = 1;
-    else if (e.key === 'ArrowUp') step = -1;
-    else if (e.key === 'ArrowRight') step = rtl ? -1 : 1;
-    else if (e.key === 'ArrowLeft') step = rtl ? 1 : -1;
-    if (!step) return;
-
+    // Arrows are spatial (image coordinates are physical, so not mirrored in
+    // RTL): nearest hotspot in that direction, or stay put when there is none.
     e.preventDefault();
-    anchors[(current + step + anchors.length) % anchors.length]?.focus();
+    const boxes = this.#areaData.map(d => (d.disabled ? null : d.bbox));
+    const next = nearestInDirection(boxes, current, direction);
+    if (next !== -1) this.#areaData[next].anchor.focus();
   };
 
   /** Escape dismisses a visible tooltip wherever focus is (WCAG 1.4.13). */

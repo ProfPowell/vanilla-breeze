@@ -99,6 +99,34 @@ test('Escape closes the panel and returns focus to the trigger', async ({ page }
   await expect(trigger).toHaveAttribute('aria-expanded', 'false');
 });
 
+test('non-modal panel: Tab leaves it, a handled Escape is ignored, Escape from any control returns focus', async ({ page }) => {
+  await load(page, LABELLED);
+  const trigger = page.locator('.color-trigger');
+  const picker = page.locator('color-picker');
+  await trigger.click();
+  await expect(page.locator('.color-area')).toBeFocused();
+
+  // Escape another handler already consumed does not close the panel.
+  await page.evaluate(() => {
+    const stop = (e) => { if (e.key === 'Escape') e.preventDefault(); };
+    document.querySelector('.color-area').addEventListener('keydown', stop, { once: true });
+  });
+  await page.keyboard.press('Escape');
+  await expect(picker).toHaveAttribute('open', '');
+
+  await page.locator('.color-panel select').focus();
+  await page.keyboard.press('Escape');
+  await expect(picker).not.toHaveAttribute('open');
+  await expect(trigger).toBeFocused();
+
+  // No trap: focus can leave the open panel, and Escape from outside does nothing.
+  await trigger.click();
+  await page.locator('button[type="reset"]').focus();
+  await page.keyboard.press('Escape');
+  await expect(picker).toHaveAttribute('open', '');
+  await expect(page.locator('button[type="reset"]')).toBeFocused();
+});
+
 test('outside click closes without stealing focus', async ({ page }) => {
   await load(page, LABELLED);
   await page.locator('.color-trigger').click();

@@ -266,9 +266,9 @@ class PollWc extends VBElement {
     e.preventDefault();
     const target = opts[next];
     this.#setRoving(target);
+    // Arrows only move focus: a vote is sent to the server, so it takes an
+    // explicit Enter / Space (native button activation), never navigation.
     target.focus();
-    // APG radio group: moving focus also checks the option.
-    if (!target.hasAttribute('data-mine')) this.#onOptionClick(target);
   }
 
   #setRoving(target) {
@@ -311,10 +311,11 @@ class PollWc extends VBElement {
     const plural = new Intl.PluralRules(locale);
     const votes = (n) => `${num.format(n)} ${plural.select(n) === 'one' ? this.#label('vote') : this.#label('votes')}`;
 
-    // Roving tabindex (single-choice): the selected option, else the one
-    // that currently holds the tab stop, else the first.
+    // Roving tabindex (single-choice): the focused option, else the selected
+    // one, else the one that currently holds the tab stop, else the first.
     const tabStop = multi ? null
-      : opts.find((o) => o.hasAttribute('data-mine'))
+      : opts.find((o) => o === document.activeElement)
+        || opts.find((o) => o.hasAttribute('data-mine'))
         || opts.find((o) => o.getAttribute('tabindex') === '0')
         || opts[0];
 

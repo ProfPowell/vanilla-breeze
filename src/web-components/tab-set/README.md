@@ -65,7 +65,7 @@ Each `<details>` holds one `<summary>` and **exactly one** panel element; use `<
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `transition` | string | -- | View Transition type: "fade", "slide", "scale" |
-| `data-orientation` | `horizontal` \| `vertical` | `horizontal` | Vertical: tab column at the inline start, panel beside it, ArrowUp/ArrowDown navigation |
+| `data-orientation` | `horizontal` \| `vertical` | `horizontal` | Vertical: tab column at the inline start, panel beside it, ArrowUp/ArrowDown navigation in place of ArrowLeft/ArrowRight |
 | `aria-label` / `aria-labelledby` | string | -- | Names the set; a labelled host (with no role of its own) gets `role="group"` on upgrade |
 
 **Grouping:** exclusivity comes from a shared `<details name>`. On upgrade, a missing, mixed, or page-shared name (another `<details>` outside this set uses it) is replaced with a per-instance `tab-set-N`, so two tab-sets never close each other's tabs.
@@ -99,9 +99,9 @@ Each `<details>` holds one `<summary>` and **exactly one** panel element; use `<
 
 ### Keyboard Only
 
-- **Behavior:** Tab to reach summaries, Enter/Space to toggle (native). After JS upgrade: Arrow Left/Right to navigate between tabs (plus Up/Down with `data-orientation="vertical"`), Home/End to jump to first/last tab. Arrows activate automatically.
+- **Behavior:** Tab to reach summaries, Enter/Space to toggle (native). After JS upgrade: Arrow Left/Right to navigate between tabs (Arrow Up/Down instead with `data-orientation="vertical"`), Home/End to jump to first/last tab. Arrows activate automatically.
 - **Tab order:** Summaries receive focus in document order. Every summary stays a tab stop after upgrade, because each is announced as a button; arrow keys, Home and End move between them as well.
-- **Key bindings:** ArrowRight (next tab; previous in RTL), ArrowLeft (previous tab; next in RTL), ArrowDown/ArrowUp (next/previous, vertical only), Home (first tab), End (last tab), Enter/Space (activate -- native; re-activating the open tab is a no-op)
+- **Key bindings:** ArrowRight (next tab; previous in RTL) and ArrowLeft (previous tab; next in RTL), horizontal only; ArrowDown/ArrowUp (next/previous), vertical only, Home (first tab), End (last tab), Enter/Space (activate -- native; re-activating the open tab is a no-op)
 - **Acceptable:** Yes
 
 ### Screen Reader

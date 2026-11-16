@@ -178,6 +178,26 @@ test('keys work from the target: Tab cycles card + target, Escape skips', async 
   await expect(page.locator('page-tour')).toHaveAttribute('data-complete', '');
 });
 
+test('step keys only act while focus is in the card', async ({ page }) => {
+  await load(page, PASSIVE);
+  await upgraded(page);
+  await page.locator('#go').click();
+  await expect(page.locator('.page-tour-card')).toBeVisible();
+  await page.keyboard.press('ArrowRight');
+  expect(await tourStep(page)).toBe('1');
+
+  // On the step's target the keys are the page's, not the tour's
+  await page.locator('#t1').focus();
+  for (const key of ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End']) {
+    await page.keyboard.press(key);
+    expect(await tourStep(page)).toBe('1');
+  }
+
+  await page.locator('.page-tour-next').focus();
+  await page.keyboard.press('ArrowRight');
+  expect(await tourStep(page)).toBe('2');
+});
+
 test('focus gate does not bounce focus away from the target', async ({ page }) => {
   await load(page, `
     <input id="f" aria-label="Field">

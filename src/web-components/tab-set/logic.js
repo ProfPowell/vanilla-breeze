@@ -248,16 +248,19 @@ class TabSet extends VBElement {
     const count = this.#details.length;
     const next = (currentIndex + 1) % count;
     const prev = (currentIndex - 1 + count) % count;
-    // Arrows follow the visual tab order: in RTL the row runs right to left.
+    // Arrows follow the visual tab order, on the tabs' own axis only: a
+    // column takes Up/Down, a row Left/Right (in RTL it runs right to left).
     const rtl = getComputedStyle(this).direction === 'rtl';
     const vertical = this.getAttribute('data-orientation') === 'vertical';
     let newIndex;
 
     switch (e.key) {
       case 'ArrowRight':
+        if (vertical) return;
         newIndex = rtl ? prev : next;
         break;
       case 'ArrowLeft':
+        if (vertical) return;
         newIndex = rtl ? next : prev;
         break;
       case 'ArrowDown':

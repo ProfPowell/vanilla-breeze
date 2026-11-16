@@ -697,7 +697,10 @@ module.exports = {
 
   "context-menu": {
     flow: true,
-    permittedContent: ["@flow"]
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-label-available": {}
+    }
   },
 
   "data-table": {
@@ -764,6 +767,7 @@ module.exports = {
       "orientation": { enum: ["vertical", "horizontal"] },
       "disabled": { boolean: true },
       "data-move-controls": { boolean: true },
+      "data-label-instructions": {},
       "role": {},
       "aria-disabled": {},
       "data-drag-over": { boolean: true },

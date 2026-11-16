@@ -12,8 +12,10 @@
  * (hotkey-bind calls preventDefault, so never bind clipboard combos).
  *
  * Keyboard: the trigger is made focusable when it is not already, and
- * Shift+F10 / the ContextMenu key open the menu at the trigger. Focus
- * returns to the trigger on close.
+ * Shift+F10 / the ContextMenu key open the menu while focus is on the
+ * trigger or on anything inside it. Focus returns to where it was on close.
+ *
+ * @attr {string} data-label-available - Description set on a trigger that is not a control (default: "Context menu available")
  *
  * @example
  * <context-menu>
@@ -43,6 +45,13 @@ const FOCUSABLE = 'a[href], button, input, select, textarea, summary, iframe, [t
 /** Elements with a native interactive role keep it. */
 const NATIVE_INTERACTIVE = 'a[href], button, input, select, textarea, summary';
 
+/** Authored roles that make a focusable trigger a control (popup states are read on these). */
+const WIDGET_ROLES = new Set([
+  'button', 'link', 'checkbox', 'radio', 'switch', 'tab', 'option', 'treeitem', 'gridcell',
+  'menuitem', 'menuitemcheckbox', 'menuitemradio', 'combobox', 'textbox', 'searchbox',
+  'slider', 'spinbutton',
+]);
+
 /** @param {Element} item */
 function isDisabled(item) {
   return item.hasAttribute('data-disabled') || item.getAttribute('aria-disabled') === 'true'
@@ -66,8 +75,12 @@ class ContextMenuWc extends VBElement {
   #activeIndex = -1;
   #isOpen = false;
   /** @type {Array<() => void>} */ #unbindFns = [];
-  /** True when setup() added role="button" to the trigger (teardown removes only ours). */
+  /** True when the trigger is a control and carries the popup states. */
   #statefulTrigger = false;
+  /** Attributes setup() added to the trigger; teardown() removes only these. */
+  #addedAttrs = /** @type {string[]} */ ([]);
+  /** Where focus was when the menu opened (the trigger, or a control inside it). */
+  #returnFocus = /** @type {HTMLElement | null} */ (null);
 
   setup() {
     const trigger = /** @type {HTMLElement | null} */ (this.querySelector(':scope > [data-trigger]'));
@@ -100,21 +113,24 @@ class ContextMenuWc extends VBElement {
     // ARIA
     this.#menu.setAttribute('role', 'menu');
     if (!this.#menu.id) this.#menu.id = `ctx-menu-list-${++contextMenuSeq}`;
-    // The popup states are only valid on something with a role: a native
-    // control or a trigger the author gave one. A paragraph or section stays
-    // what it is. Making it a button would turn its content into the name of
-    // a control, which is worse than a context menu that is not announced
-    // (a native one is not announced either).
-    this.#statefulTrigger = this.#trigger.hasAttribute('role') || this.#trigger.matches(NATIVE_INTERACTIVE);
-    if (this.#statefulTrigger) {
-      this.#trigger.setAttribute('aria-haspopup', 'menu');
-      this.#trigger.setAttribute('aria-expanded', 'false');
-      this.#trigger.setAttribute('aria-controls', this.#menu.id);
-    }
     // Keyboard reachability: a <p>/<section> trigger is not focusable, and
     // Shift+F10 / the ContextMenu key only reach a focused element.
-    if (!this.#trigger.matches(FOCUSABLE)) {
-      this.#trigger.setAttribute('tabindex', '0');
+    if (!this.#trigger.matches(FOCUSABLE)) this.#addTriggerAttr('tabindex', '0');
+    // The popup states are only read on a control: a native one, or a
+    // focusable trigger the author gave a widget role. A paragraph, section
+    // or image stays what it is (aria-haspopup there is ignored or misread,
+    // and making it a button would turn its content into a control's name);
+    // it gets a description instead, unless the author wrote one.
+    this.#statefulTrigger = this.#trigger.matches(NATIVE_INTERACTIVE)
+      || (this.#trigger.hasAttribute('tabindex')
+        && WIDGET_ROLES.has((this.#trigger.getAttribute('role') || '').trim().toLowerCase()));
+    if (this.#statefulTrigger) {
+      this.#addTriggerAttr('aria-haspopup', 'menu');
+      this.#addTriggerAttr('aria-expanded', 'false');
+      this.#addTriggerAttr('aria-controls', this.#menu.id);
+    } else if (!this.#trigger.hasAttribute('aria-description') && !this.#trigger.hasAttribute('aria-describedby')) {
+      this.#addTriggerAttr('aria-description',
+        this.getAttribute('data-label-available') || 'Context menu available');
     }
 
     this.#menu.querySelectorAll(':scope > li:empty:not([data-group]), :scope > [role="separator"], :scope > hr').forEach(sep => {
@@ -176,6 +192,9 @@ class ContextMenuWc extends VBElement {
   teardown() {
     this.#unbindFns.forEach(fn => fn());
     this.#unbindFns = [];
+    for (const name of this.#addedAttrs) this.#trigger?.removeAttribute(name);
+    this.#addedAttrs = [];
+    this.#returnFocus = null;
     if (this.#isOpen) {
       this.#isOpen = false;
       this.removeAttribute('data-open');
@@ -187,6 +206,16 @@ class ContextMenuWc extends VBElement {
     // reconnects and .items assignments from stacking duplicates.
     this.#menu?.querySelectorAll('.ctx-kbd').forEach(kbd => kbd.remove());
     this.#unwrapGroups();
+  }
+
+  /**
+   * Set an attribute on the trigger and remember it for teardown().
+   * @param {string} name
+   * @param {string} value
+   */
+  #addTriggerAttr(name, value) {
+    this.#trigger.setAttribute(name, value);
+    this.#addedAttrs.push(name);
   }
 
   /**
@@ -313,7 +342,7 @@ class ContextMenuWc extends VBElement {
     // focused trigger) has no pointer position: Chromium reports
     // pointerType "" / pointerId -1, others report 0,0. Open at the trigger.
     if (isKeyboardContextMenu(e)) {
-      if (!this.#isOpen) this.#openAtTrigger();
+      if (!this.#isOpen) this.#openAtFocus();
       return;
     }
     // On macOS the contextmenu event fires on pointerDOWN. Opening the
@@ -332,21 +361,27 @@ class ContextMenuWc extends VBElement {
 
   /* Not every platform turns Shift+F10 / the ContextMenu key into a
      contextmenu event (macOS has no menu key; headless browsers never
-     synthesize one), so handle the keys directly on the focused trigger. */
+     synthesize one), so handle the keys directly, with focus on the trigger
+     or on anything inside it (the same reach a right-click has). */
   #handleTriggerKeyDown = (e) => {
-    if (e.target !== this.#trigger) return;
+    if (e.defaultPrevented) return;
     if (e.key === 'ContextMenu' || (e.key === 'F10' && e.shiftKey)) {
       e.preventDefault();
-      if (!this.#isOpen) this.#openAtTrigger();
+      if (!this.#isOpen) this.#openAtFocus();
     }
   };
 
-  #openAtTrigger() {
-    const rect = this.#trigger.getBoundingClientRect();
+  /** Open under the focused element when it is the trigger or inside it, else under the trigger. */
+  #openAtFocus() {
+    const active = /** @type {HTMLElement | null} */ (document.activeElement);
+    const origin = active && this.#trigger.contains(active) ? active : this.#trigger;
+    const rect = origin.getBoundingClientRect();
     this.#openAt(rect.left, rect.bottom);
   }
 
   #openAt(x, y) {
+    const active = /** @type {HTMLElement | null} */ (document.activeElement);
+    this.#returnFocus = active && this.#trigger.contains(active) ? active : this.#trigger;
     this.#isOpen = true;
     this.setAttribute('data-open', '');
     if (this.#statefulTrigger) this.#trigger?.setAttribute('aria-expanded', 'true');
@@ -398,7 +433,9 @@ class ContextMenuWc extends VBElement {
   }
 
   #restoreFocus() {
-    if (this.#trigger?.isConnected) this.#trigger.focus({ preventScroll: true });
+    const target = this.#returnFocus?.isConnected ? this.#returnFocus : this.#trigger;
+    this.#returnFocus = null;
+    if (target?.isConnected) target.focus({ preventScroll: true });
   }
 
   #handleMenuKeyDown = (e) => {

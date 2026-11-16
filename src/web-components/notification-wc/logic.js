@@ -167,6 +167,8 @@ class NotificationWc extends VBElement {
   #settled = false;
   /** True while the host carries the banner role this component set. */
   #bannerRole = false;
+  /** @type {HTMLElement|null} (banner) Where focus was before it entered the banner */
+  #cameFrom = null;
 
   setup() {
     const gen = ++this.#gen;
@@ -277,6 +279,7 @@ class NotificationWc extends VBElement {
     this.dataset.position = this.getAttribute('position') || 'top';
     this.#syncVariantPrefix();
     this.#syncBannerRole();
+    this.listen(this, 'focusin', this.#rememberOrigin);
 
     // Hide if previously dismissed (and not yet expired)
     if (persist) {
@@ -337,8 +340,37 @@ class NotificationWc extends VBElement {
     }));
   };
 
-  /** After hiding a focused banner, land focus on <main> (or <body>'s first heading) instead of <body>. */
+  #rememberOrigin = (e) => {
+    const from = /** @type {HTMLElement|null} */ (/** @type {FocusEvent} */ (e).relatedTarget);
+    if (from && !this.contains(from)) this.#cameFrom = from;
+  };
+
+  /**
+   * After hiding a focused banner, never leave focus on <body>: go to the
+   * next banner still showing, else back to where focus was before it
+   * entered this one, else <main> (or the first heading).
+   */
   #focusAfterBanner() {
+    const visible = (el) => !!el?.isConnected
+      && (typeof el.checkVisibility !== 'function' || el.checkVisibility());
+    const banners = /** @type {HTMLElement[]} */ ([...document.querySelectorAll('notification-wc[mode="banner"]')]);
+    const i = banners.indexOf(this);
+    const others = [...banners.slice(i + 1), ...banners.slice(0, i).reverse()];
+    for (const banner of others) {
+      if (!visible(banner)) continue;
+      const control = /** @type {HTMLElement|null} */ (banner.querySelector('a[href], button:not([disabled])'));
+      if (!control) continue;
+      control.focus({ preventScroll: true });
+      if (document.activeElement === control) return;
+    }
+
+    const from = this.#cameFrom;
+    this.#cameFrom = null;
+    if (visible(from)) {
+      /** @type {HTMLElement} */ (from).focus({ preventScroll: true });
+      if (document.activeElement === from) return;
+    }
+
     const target = /** @type {HTMLElement|null} */ (
       document.querySelector('main, [role="main"]') || document.querySelector('h1'));
     if (!target) return;
@@ -364,7 +396,8 @@ class NotificationWc extends VBElement {
     this.#renderPanel();
 
     this.listen(document, 'click', this.#handleOutsideClick);
-    this.listen(document, 'keydown', this.#handleEscape);
+    // On the host, not the document: Escape acts only from the bell or panel.
+    this.listen(this, 'keydown', this.#handleEscape);
     this.listen(this, 'focusout', this.#handleFocusOut);
     this.listen(document, 'page-watch:add', this.#onWatchesChanged);
     this.listen(document, 'page-watch:remove', this.#onWatchesChanged);
@@ -510,7 +543,9 @@ class NotificationWc extends VBElement {
 
     const items = this.#collectNotifications();
     const lang = this.#lang();
+    const refocus = this.#keepFocus(list, (li) => li.getAttribute('data-notification-id'));
     list.innerHTML = items.map((n) => this.#renderItem(n, lang)).join('');
+    refocus();
     if (footer) footer.hidden = items.length > 0;
     this.#updateBadge(items);
     this.#announceNew(items);
@@ -530,6 +565,33 @@ class NotificationWc extends VBElement {
     if (!first) return;
     const unread = items.filter((n) => !this.#readIds.has(n.id)).length;
     announce(this.#label('added', { title: first.title || this.#label('new'), n: unread }));
+  }
+
+  /**
+   * A list re-render replaces its rows. When one of them holds focus (a
+   * notification arrived, a row was removed) call the returned function
+   * after rendering: focus goes to the same row, else the row now in its
+   * place, else the panel. It is a no-op when focus is not in the list, so
+   * arriving notifications never take focus.
+   * @param {HTMLElement} list
+   * @param {(li: Element) => string | null | undefined} keyOf
+   * @returns {() => void}
+   */
+  #keepFocus(list, keyOf) {
+    const active = document.activeElement;
+    const li = active && list.contains(active) ? active.closest('li') : null;
+    if (!active || !li) return () => {};
+    const key = keyOf(li);
+    const index = [...list.children].indexOf(li);
+    const control = active.matches('[data-watch-unwatch]') ? '[data-watch-unwatch]' : 'a, button';
+    return () => {
+      const rows = [...list.children];
+      const row = (key != null && rows.find((el) => keyOf(el) === key))
+        || rows[Math.min(index, rows.length - 1)];
+      const target = /** @type {HTMLElement|null} */ (
+        row?.querySelector(control) ?? row?.querySelector('a, button') ?? this.#panel);
+      target?.focus({ preventScroll: true });
+    };
   }
 
   #renderItem(n, lang) {
@@ -614,8 +676,10 @@ class NotificationWc extends VBElement {
     if (!list) return;
 
     const lang = this.#lang();
+    const refocus = this.#keepFocus(list, (li) => li.querySelector('[data-watch-key]')?.getAttribute('data-watch-key'));
     list.innerHTML = this.#watches.map((row) => this.#renderWatchItem(row, lang)).join('') ||
       `<li class="notification-empty"><em>${escapeHtml(this.#label('watch-empty'))}</em></li>`;
+    refocus();
 
     if (tabCount) {
       const count = this.#watches.length;
@@ -755,7 +819,7 @@ class NotificationWc extends VBElement {
   };
 
   #handleEscape = (e) => {
-    if (e.key === 'Escape' && this.#isOpen) {
+    if (e.key === 'Escape' && !e.defaultPrevented && this.#isOpen) {
       e.preventDefault();
       this.#close({ restoreFocus: true });
     }

@@ -10,9 +10,10 @@ import { VBElement } from '../../lib/vb-element.js';
  * parallel with theme-picker and shares state through ThemeManager, VBStore
  * and window events.
  *
- * Focus: open() moves focus into the panel; Escape and the close button
- * close it and return focus to the trigger; tabbing out of the panel closes
- * it. There is no focus trap (the dialog is non-modal).
+ * Focus: open() moves focus into the panel; Escape (with focus on the
+ * trigger or in the panel) and the close button close it; tabbing out of
+ * the panel closes it. Whenever it closes while focus is inside it, focus
+ * returns to the trigger. There is no focus trap (the dialog is non-modal).
  *
  * @example Footer integration (auto-generates gear trigger)
  * <settings-panel></settings-panel>
@@ -203,7 +204,9 @@ class SettingsPanel extends VBElement {
     this.#trigger?.setAttribute('aria-expanded', 'false');
     // Remove the rendered panel so a reconnect's setup() doesn't stack a
     // second one (the trigger is find-or-create and safely reused)
+    const hadFocus = !!this.#panel?.contains(document.activeElement);
     this.#panel?.remove();
+    if (hadFocus && this.#trigger?.isConnected) this.#trigger.focus();
     this.#panel = /** @type {*} */ (null);
   }
 
@@ -581,11 +584,12 @@ class SettingsPanel extends VBElement {
     const panel = this.#panel;
     this.listen(this.#trigger, 'click', this.#handleTriggerClick);
     this.listen(document, 'click', this.#handleOutsideClick);
-    this.listen(document, 'keydown', this.#handleEscape);
+    // On the host, not the document: Escape acts only from the trigger or panel.
+    this.listen(this, 'keydown', this.#handleEscape);
     this.listen(this, 'focusout', this.#handleFocusOut);
 
     // Panel-internal listeners die with the panel element (teardown removes it)
-    panel.querySelector('.settings-close')?.addEventListener('click', () => this.close({ returnFocus: true }));
+    panel.querySelector('.settings-close')?.addEventListener('click', () => this.close());
 
     panel.querySelectorAll('input[data-field="mode"]').forEach(input => input.addEventListener('change', this.#handleModeChange));
     this.#q('[data-field="theme"]')?.addEventListener('change', this.#handleThemeChange);
@@ -630,9 +634,9 @@ class SettingsPanel extends VBElement {
   };
 
   #handleEscape = (e) => {
-    if (e.key === 'Escape' && this.#isOpen) {
+    if (e.key === 'Escape' && !e.defaultPrevented && this.#isOpen) {
       e.preventDefault();
-      this.close({ returnFocus: true });
+      this.close();
     }
   };
 
@@ -1083,17 +1087,18 @@ class SettingsPanel extends VBElement {
   }
 
   /**
-   * Close the panel.
-   * @param {{ returnFocus?: boolean }} [options] move focus back to the trigger
+   * Close the panel. When focus is inside the panel it returns to the
+   * trigger; focus that is anywhere else is left alone.
    */
-  close({ returnFocus = false } = {}) {
+  close() {
     this.#openQueued = false;
     if (!this.#isOpen) return;
+    const hadFocus = !!this.#panel?.contains(document.activeElement);
     this.#isOpen = false;
     this.removeAttribute('open');
     this.#trigger?.setAttribute('aria-expanded', 'false');
     this.#hideResetConfirm();
-    if (returnFocus) this.#trigger?.focus();
+    if (hadFocus && this.#trigger?.isConnected) this.#trigger.focus();
   }
 
   /** Toggle the panel open/closed. */

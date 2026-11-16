@@ -2,7 +2,7 @@
  * poll-wc + popularity-index — P-review fixes.
  *
  * poll-wc: reconnect keeps voting live, group naming, pending guard, APG
- * keyboard (single = arrows move+check, RTL flip; multi = Tab only),
+ * keyboard (single = arrows move focus only, RTL flip; multi = Tab only),
  * hide-counts hides from AT and bars, Intl labels, closed text in DOM,
  * disabled observed, native-form enhancement, forced-colors bar.
  *
@@ -150,7 +150,7 @@ test('poll multi: pending is per option', async ({ page }) => {
   expect((await votes(page)).map((v) => v.option)).toEqual(['a', 'b']);
 });
 
-test('poll single: arrows move focus and vote (APG), RTL flips Left/Right', async ({ page }) => {
+test('poll single: arrows move focus without voting, Enter votes, RTL flips Left/Right', async ({ page }) => {
   await loadPoll(page, SINGLE, { dir: 'rtl' });
   await recordVotes(page);
   await page.locator('[data-option="next-mon"]').focus();
@@ -158,14 +158,18 @@ test('poll single: arrows move focus and vote (APG), RTL flips Left/Right', asyn
   await expect(page.locator('[data-option="next-fri"]')).toBeFocused();
   await expect(page.locator('[data-option="next-fri"]')).toHaveAttribute('tabindex', '0');
   await expect(page.locator('[data-option="next-mon"]')).toHaveAttribute('tabindex', '-1');
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('End');
+  await page.keyboard.press('Home');
+  await expect(page.locator('[data-option="friday"]')).toBeFocused();
+  expect(await votes(page)).toEqual([]);
+  await expect(page.locator('[data-option="next-mon"]')).toHaveAttribute('aria-checked', 'true');
+  // The vote is an explicit activation of the focused option.
+  await page.keyboard.press('Enter');
   expect(await votes(page)).toEqual([
     { option: 'next-mon', action: 'remove', count: 33, mine: true },
-    { option: 'next-fri', action: 'add', count: 8, mine: false },
+    { option: 'friday', action: 'add', count: 12, mine: false },
   ]);
-  // While pending, further arrows only move focus.
-  await page.keyboard.press('ArrowRight');
-  await expect(page.locator('[data-option="next-mon"]')).toBeFocused();
-  expect((await votes(page)).length).toBe(2);
 });
 
 test('poll multi: no arrow handling, every option tabbable', async ({ page }) => {

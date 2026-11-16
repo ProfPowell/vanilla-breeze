@@ -143,24 +143,66 @@ test('keyboard: trigger is focusable, Shift+F10 opens at the trigger, Escape ret
   expect(await page.evaluate(() => document.activeElement.hasAttribute('data-trigger'))).toBe(true);
 });
 
-test('popup states go only on a trigger that has a role; a plain element is just made focusable', async ({ page }) => {
+test('popup states go only on a control; other triggers get a description', async ({ page }) => {
   const menu = '<menu><li><button type="button">Rename</button></li></menu>';
   await load(page, `
     <context-menu id="plain"><section data-trigger>Right-click here</section>${menu}</context-menu>
     <context-menu id="native"><button type="button" data-trigger>Options</button>${menu}</context-menu>
-    <context-menu id="authored"><p data-trigger role="img" aria-label="Chart">Chart</p>${menu}</context-menu>`);
+    <context-menu id="widget"><span data-trigger role="button" tabindex="0">More</span>${menu}</context-menu>
+    <context-menu id="image" data-label-available="Menú contextual disponible"><p data-trigger role="img" aria-label="Chart">Chart</p>${menu}</context-menu>
+    <context-menu id="described"><p data-trigger aria-description="Row actions on right-click">Row</p>${menu}</context-menu>`);
   const plain = page.locator('#plain > [data-trigger]');
   await expect(plain).toHaveAttribute('tabindex', '0');
+  await expect(plain).toHaveAttribute('aria-description', 'Context menu available');
   for (const attr of ['role', 'aria-haspopup', 'aria-expanded', 'aria-controls']) {
     await expect(plain).not.toHaveAttribute(attr, /.*/);
   }
-  const native = page.locator('#native > [data-trigger]');
-  await expect(native).not.toHaveAttribute('role', /.*/);
-  await expect(native).toHaveAttribute('aria-haspopup', 'menu');
-  await expect(native).toHaveAttribute('aria-expanded', 'false');
-  const authored = page.locator('#authored > [data-trigger]');
-  await expect(authored).toHaveAttribute('role', 'img');
-  await expect(authored).toHaveAttribute('aria-haspopup', 'menu');
+  for (const id of ['native', 'widget']) {
+    const control = page.locator(`#${id} > [data-trigger]`);
+    await expect(control).toHaveAttribute('aria-haspopup', 'menu');
+    await expect(control).toHaveAttribute('aria-expanded', 'false');
+    await expect(control).not.toHaveAttribute('aria-description', /.*/);
+  }
+  await expect(page.locator('#native > [data-trigger]')).not.toHaveAttribute('role', /.*/);
+  const image = page.locator('#image > [data-trigger]');
+  await expect(image).toHaveAttribute('role', 'img');
+  await expect(image).not.toHaveAttribute('aria-haspopup', /.*/);
+  await expect(image).toHaveAttribute('aria-description', 'Menú contextual disponible');
+  await expect(page.locator('#described > [data-trigger]')).toHaveAttribute('aria-description', 'Row actions on right-click');
+
+  // Disconnect removes what the component added, and nothing the author wrote.
+  const left = await page.evaluate(() => {
+    const out = {};
+    for (const cm of document.querySelectorAll('context-menu')) {
+      const trigger = cm.querySelector('[data-trigger]');
+      cm.remove();
+      out[cm.id] = trigger.getAttributeNames().filter((n) => n !== 'data-trigger' && n !== 'type').sort();
+    }
+    return out;
+  });
+  expect(left).toEqual({
+    plain: [],
+    native: [],
+    widget: ['role', 'tabindex'],
+    image: ['aria-label', 'role'],
+    described: ['aria-description'],
+  });
+});
+
+test('Shift+F10 and the ContextMenu key open from a control inside the trigger; focus returns to it', async ({ page }) => {
+  await load(page, `<context-menu>
+    <section data-trigger><p>Card</p><a id="inner" href="#x">Details</a></section>
+    <menu><li><button type="button" data-value="rename">Rename</button></li></menu>
+  </context-menu>`);
+  for (const key of ['Shift+F10', 'ContextMenu']) {
+    await page.focus('#inner');
+    await page.keyboard.press(key);
+    await page.waitForSelector('context-menu[data-open]', { state: 'attached' });
+    expect(await page.evaluate(() => document.activeElement.dataset.value), key).toBe('rename');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('context-menu')).not.toHaveAttribute('data-open', '');
+    expect(await page.evaluate(() => document.activeElement.id), key).toBe('inner');
+  }
 });
 
 test('keyboard-originated contextmenu (no pointer coords) opens at the trigger', async ({ page }) => {

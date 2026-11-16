@@ -670,7 +670,9 @@ class TimePicker extends VBElement {
    */
   #handleSpinnerKey(e, spinner) {
     if (this.#handleSegmentNav(e, spinner.el)) return;
-    const page = spinner.unit === 'hour' ? spinner.delta : spinner.delta * 10;
+    // Page keys: a larger step on this unit only. Minutes / seconds move by
+    // 10, or the next multiple of the step at or above 10; hours by one step.
+    const page = spinner.unit === 'hour' ? spinner.delta : Math.ceil(10 / spinner.delta) * spinner.delta;
     switch (e.key) {
       case 'ArrowUp': e.preventDefault(); this.#adjust(spinner, spinner.delta, 'keyboard'); break;
       case 'ArrowDown': e.preventDefault(); this.#adjust(spinner, -spinner.delta, 'keyboard'); break;

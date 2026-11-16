@@ -297,6 +297,32 @@ test.describe('time-picker', () => {
     await expect(page.locator('#h .time-spinner[data-unit="minute"]')).toHaveAttribute('aria-readonly', 'true');
   });
 
+  test('Page keys take a larger step on the focused segment only', async ({ page }) => {
+    await load(page, 'time-picker', FORM);
+    const value = (id) => page.evaluate((i) => /** @type {any} */ (document.getElementById(i)).value, id);
+
+    await page.evaluate(() => { /** @type {any} */ (document.getElementById('tp')).value = '14:55'; });
+    await page.locator('#tp .time-input').press('ArrowDown');
+    const minutes = page.locator('#tp .time-spinner[data-unit="minute"]');
+    await minutes.focus();
+    await minutes.press('PageUp');
+    expect(await value('tp')).toBe('14:05'); // wraps; the hour is untouched
+    await minutes.press('PageDown');
+    expect(await value('tp')).toBe('14:55');
+    const hours = page.locator('#tp .time-spinner[data-unit="hour"]');
+    await hours.focus();
+    await hours.press('PageUp');
+    expect(await value('tp')).toBe('15:55');
+
+    // 15-minute step: Page moves one step (the next multiple at or above 10).
+    await page.evaluate(() => { /** @type {any} */ (document.getElementById('slot-tp')).value = '10:15'; });
+    await page.locator('#slot-tp .time-input').press('ArrowDown');
+    const slotMinutes = page.locator('#slot-tp .time-spinner[data-unit="minute"]');
+    await slotMinutes.focus();
+    await slotMinutes.press('PageUp');
+    expect(await value('slot-tp')).toBe('10:30');
+  });
+
   test('every spinner has aria-valuetext; spinners are keyed by unit', async ({ page }) => {
     await load(page, 'time-picker', `
       <time-picker id="s" aria-label="Lap" data-format="12h" data-label-hours="Stunden"><input type="time" value="14:05:09" step="1"></time-picker>`);

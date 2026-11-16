@@ -8,10 +8,11 @@
     "permittedContent": ["@flow"]
   },
   "attributes": [
-    { "name": "data-open", "kind": "data", "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Reflected when context menu is visible. Uses data-open because the host is not a native dialog/details — open would be semantically misleading." }
+    { "name": "data-open", "kind": "data", "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Reflected when context menu is visible. Uses data-open because the host is not a native dialog/details — open would be semantically misleading." },
+    { "name": "data-label-available", "kind": "data", "purpose": "config", "type": "string", "default": "Context menu available", "description": "Description (aria-description) set on a trigger that is not a control, so screen readers announce that a menu exists. Not used when the trigger has its own aria-description or aria-describedby." }
   ],
   "structure": [
-    { "element": "any element with data-trigger", "description": "Right-click target area. Made focusable (tabindex=\"0\") when it is not already, and given aria-haspopup=\"menu\", aria-expanded and aria-controls" },
+    { "element": "any element with data-trigger", "description": "Right-click target area. Made focusable (tabindex=\"0\") when it is not already. A control (button, link, or a focusable element with a widget role) gets aria-haspopup=\"menu\", aria-expanded and aria-controls; any other trigger gets an aria-description instead. These are removed on disconnect" },
     { "element": "<menu>",                        "description": "Context menu with <li> items holding <button> or <a> actions; <li data-group> labels and <li role=\"separator\"> rows" }
   ],
   "childAttributes": [
@@ -37,10 +38,10 @@
   "a11y": {
     "pattern": "Menu",
     "patternUrl": "https://www.w3.org/WAI/ARIA/apg/patterns/menubar/",
-    "manages": ["role=\"menu\"", "role=\"menuitem\"", "role=\"none\"", "role=\"separator\"", "role=\"group\"", "aria-haspopup", "aria-expanded", "aria-controls", "aria-disabled", "aria-keyshortcuts", "aria-labelledby", "aria-hidden", "tabindex"],
+    "manages": ["role=\"menu\"", "role=\"menuitem\"", "role=\"none\"", "role=\"separator\"", "role=\"group\"", "aria-haspopup", "aria-expanded", "aria-controls", "aria-description", "aria-disabled", "aria-keyshortcuts", "aria-labelledby", "aria-hidden", "tabindex"],
     "provide": "A trigger element and a <menu> of buttons or links with text labels",
     "keyboard": [
-      { "keys": ["ContextMenu", "Shift+F10"], "action": "Open the menu at the trigger and focus the first item", "when": "Focus on the trigger" },
+      { "keys": ["ContextMenu", "Shift+F10"], "action": "Open the menu at the trigger and focus the first item", "when": "Focus on the trigger or on anything inside it" },
       { "keys": ["ArrowDown"], "action": "Move to the next item, wrapping to the first" },
       { "keys": ["ArrowUp"], "action": "Move to the previous item, wrapping to the last" },
       { "keys": ["Home"], "action": "Move to the first item" },

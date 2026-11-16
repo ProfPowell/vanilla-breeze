@@ -10,6 +10,7 @@
  * @attr {string} orientation - "horizontal" switches to inline-axis arrows and drop maths (direction-aware)
  * @attr {boolean} disabled - Disables dragging, dropping, keyboard reorder and move controls
  * @attr {boolean} data-move-controls - Renders per-item Move buttons (single-pointer alternative to dragging)
+ * @attr {string} data-label-instructions - Description read on each item saying how to move it
  *
  * Children use:
  * @attr {boolean} draggable="true" - Marks an element as draggable
@@ -35,9 +36,11 @@ import { VBElement } from '../../lib/vb-element.js';
 
 const CONTROLS_ATTR = 'data-drag-surface-controls';
 const LIVE_ATTR = 'data-drag-surface-live';
+const DESCRIPTION_ATTR = 'data-drag-surface-description';
+const INSTRUCTIONS = 'Press Space or Enter to grab, then use the arrow keys to move';
 
 class DragSurface extends VBElement {
-  static observedAttributes = ['disabled', 'data-move-controls', 'orientation', 'group', 'aria-label'];
+  static observedAttributes = ['disabled', 'data-move-controls', 'orientation', 'group', 'aria-label', 'data-label-instructions'];
 
   /** @type {HTMLElement | null} */
   #liveRegion = null;
@@ -80,6 +83,10 @@ class DragSurface extends VBElement {
     this.removeAttribute('data-drag-over');
     this.#clearDropIndicators();
     this.#removeControls();
+    for (const item of this.querySelectorAll(`:scope > [${DESCRIPTION_ATTR}]`)) {
+      item.removeAttribute('aria-description');
+      item.removeAttribute(DESCRIPTION_ATTR);
+    }
 
     DragSurface.#instances.delete(this);
     if (DragSurface.#activeDrag?.source === this) {
@@ -91,6 +98,7 @@ class DragSurface extends VBElement {
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue || !this.hasAttribute('data-upgraded')) return;
     if (name === 'disabled') this.#syncDisabled();
+    this.#ensureChildRoles();
     DragSurface.#refreshAllControls();
   }
 
@@ -126,7 +134,25 @@ class DragSurface extends VBElement {
     for (const child of this.draggableChildren) {
       if (!child.getAttribute('role')) child.setAttribute('role', 'listitem');
       if (!child.hasAttribute('tabindex')) child.setAttribute('tabindex', '0');
+      if (child !== this.#grabbed) this.#describe(child);
     }
+  }
+
+  /* Idle items say how to move them, since role=listitem alone does not.
+     An author's own aria-description or aria-describedby is left alone. */
+  #describe(item) {
+    const ours = item.hasAttribute(DESCRIPTION_ATTR);
+    if (!ours && (item.hasAttribute('aria-description') || item.hasAttribute('aria-describedby'))) return;
+    if (this.disabled) {
+      if (ours) {
+        item.removeAttribute('aria-description');
+        item.removeAttribute(DESCRIPTION_ATTR);
+      }
+      return;
+    }
+    const text = this.dataset.labelInstructions || INSTRUCTIONS;
+    if (item.getAttribute('aria-description') !== text) item.setAttribute('aria-description', text);
+    if (!ours) item.setAttribute(DESCRIPTION_ATTR, '');
   }
 
   #onChildrenChanged() {
@@ -433,22 +459,26 @@ class DragSurface extends VBElement {
     this.dispatchEvent(new CustomEvent('drag-surface:reorder-end', { bubbles: true }));
   }
 
-  /* Grab state: data-grabbed for CSS, aria-pressed on a button handle, and a
-     transient aria-description on the item (aria-grabbed is deprecated). */
+  /* Grab state: data-grabbed for CSS, aria-pressed on a button handle, and
+     "Grabbed" in place of the item's instructions (aria-grabbed is deprecated). */
   #setGrabbed(item, on) {
     item.toggleAttribute('data-grabbed', on);
     const handle = item.querySelector('[data-drag-handle]');
     if (handle && (handle.localName === 'button' || handle.getAttribute('role') === 'button')) {
       handle.setAttribute('aria-pressed', String(on));
     }
-    if (on) {
-      if (!item.hasAttribute('aria-description')) {
-        item.setAttribute('aria-description', 'Grabbed');
-        item.setAttribute('data-drag-surface-description', '');
+    if (!on) {
+      // Back to the instructions (of the surface the item now lives in).
+      const home = item.parentElement;
+      if (home instanceof DragSurface) {
+        home.#describe(item);
+      } else if (item.hasAttribute(DESCRIPTION_ATTR)) {
+        item.removeAttribute('aria-description');
+        item.removeAttribute(DESCRIPTION_ATTR);
       }
-    } else if (item.hasAttribute('data-drag-surface-description')) {
-      item.removeAttribute('aria-description');
-      item.removeAttribute('data-drag-surface-description');
+    } else if (item.hasAttribute(DESCRIPTION_ATTR) || !(item.hasAttribute('aria-description') || item.hasAttribute('aria-describedby'))) {
+      item.setAttribute('aria-description', 'Grabbed');
+      item.setAttribute(DESCRIPTION_ATTR, '');
     }
   }
 
