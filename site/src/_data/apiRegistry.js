@@ -2094,20 +2094,6 @@ export default {
         },
         {
           "keys": [
-            "ArrowDown"
-          ],
-          "action": "Move focus to the next entry",
-          "when": "Focus on the entry itself"
-        },
-        {
-          "keys": [
-            "ArrowUp"
-          ],
-          "action": "Move focus to the previous entry",
-          "when": "Focus on the entry itself"
-        },
-        {
-          "keys": [
             "Home"
           ],
           "action": "Move focus to the first entry",
@@ -4894,8 +4880,8 @@ export default {
           "keys": [
             "Escape"
           ],
-          "action": "Close the panel and return focus to the trigger",
-          "when": "Panel open"
+          "action": "Close the panel; focus returns to the trigger when it was inside the panel",
+          "when": "Panel open and focus on the trigger or inside the panel"
         }
       ]
     }
@@ -6295,12 +6281,20 @@ export default {
         "direction": "output",
         "public": false,
         "description": "Reflected when context menu is visible. Uses data-open because the host is not a native dialog/details — open would be semantically misleading."
+      },
+      {
+        "name": "data-label-available",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Context menu available",
+        "description": "Description (aria-description) set on a trigger that is not a control, so screen readers announce that a menu exists. Not used when the trigger has its own aria-description or aria-describedby."
       }
     ],
     "structure": [
       {
         "element": "any element with data-trigger",
-        "description": "Right-click target area. Made focusable (tabindex=\"0\") when it is not already, and given aria-haspopup=\"menu\", aria-expanded and aria-controls"
+        "description": "Right-click target area. Made focusable (tabindex=\"0\") when it is not already. A control (button, link, or a focusable element with a widget role) gets aria-haspopup=\"menu\", aria-expanded and aria-controls; any other trigger gets an aria-description instead. These are removed on disconnect"
       },
       {
         "element": "<menu>",
@@ -6390,6 +6384,7 @@ export default {
         "aria-haspopup",
         "aria-expanded",
         "aria-controls",
+        "aria-description",
         "aria-disabled",
         "aria-keyshortcuts",
         "aria-labelledby",
@@ -6404,7 +6399,7 @@ export default {
             "Shift+F10"
           ],
           "action": "Open the menu at the trigger and focus the first item",
-          "when": "Focus on the trigger"
+          "when": "Focus on the trigger or on anything inside it"
         },
         {
           "keys": [
@@ -7432,6 +7427,14 @@ export default {
         "description": "Renders per-item Move buttons (up/down or inline start/end, plus Move to <adjacent surface> for grouped surfaces) — the single-pointer alternative to dragging (WCAG 2.5.7)"
       },
       {
+        "name": "data-label-instructions",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Press Space or Enter to grab, then use the arrow keys to move",
+        "description": "Description set on each item (aria-description) that tells screen reader users how to move it"
+      },
+      {
         "name": "role",
         "kind": "aria",
         "purpose": "output-state",
@@ -7523,7 +7526,7 @@ export default {
           "true"
         ],
         "required": true,
-        "description": "Native attribute; marks a direct child as a reorderable item (gets role=listitem and tabindex=0, including items added later)"
+        "description": "Native attribute; marks a direct child as a reorderable item (gets role=listitem, tabindex=0 and an aria-description with the move instructions, including items added later)"
       },
       {
         "name": "data-id",
@@ -7547,7 +7550,7 @@ export default {
         "name": "data-grabbed",
         "on": "direct child",
         "type": "boolean",
-        "description": "Output: present while the item is grabbed for keyboard reorder (with aria-description=\"Grabbed\" unless the item has its own)"
+        "description": "Output: present while the item is grabbed for keyboard reorder (aria-description changes to \"Grabbed\" unless the item has its own description)"
       },
       {
         "name": "data-dragging",
@@ -7594,7 +7597,7 @@ export default {
         "aria-atomic",
         "hidden"
       ],
-      "provide": "An aria-label on the surface (used in announcements) and readable text or an aria-label in each draggable item",
+      "provide": "An aria-label on the surface (used in announcements) and readable text or an aria-label in each draggable item. Every item is a tab stop and is described with how to move it",
       "announces": "Grab, each new position, drop, cancel and moves between surfaces, politely",
       "keyboard": [
         {
@@ -10583,30 +10586,37 @@ export default {
       "keyboard": [
         {
           "keys": [
+            "Tab"
+          ],
+          "action": "Move to the next hotspot in source order; every hotspot is a tab stop",
+          "when": "Native behaviour of a and button"
+        },
+        {
+          "keys": [
             "ArrowDown"
           ],
-          "action": "Move to the next hotspot, wrapping to the first",
+          "action": "Move to the nearest hotspot below; focus stays when there is none",
           "when": "Focus on a hotspot"
         },
         {
           "keys": [
             "ArrowUp"
           ],
-          "action": "Move to the previous hotspot, wrapping to the last",
+          "action": "Move to the nearest hotspot above; focus stays when there is none",
           "when": "Focus on a hotspot"
         },
         {
           "keys": [
             "ArrowRight"
           ],
-          "action": "Move to the next hotspot, wrapping to the first (reversed in right-to-left)",
+          "action": "Move to the nearest hotspot to the right; focus stays when there is none",
           "when": "Focus on a hotspot"
         },
         {
           "keys": [
             "ArrowLeft"
           ],
-          "action": "Move to the previous hotspot, wrapping to the last (reversed in right-to-left)",
+          "action": "Move to the nearest hotspot to the left; focus stays when there is none",
           "when": "Focus on a hotspot"
         },
         {
@@ -11319,7 +11329,7 @@ export default {
           "keys": [
             "Escape"
           ],
-          "action": "Close the note panel without saving and return focus to the opener",
+          "action": "Close the note panel without saving and return focus to the opener (or the highlight when the opener is gone)",
           "when": "Focus in the note panel"
         },
         {
@@ -11702,7 +11712,7 @@ export default {
             "Escape"
           ],
           "action": "Close the panel and return focus to the trigger",
-          "when": "Panel open"
+          "when": "Panel open and focus on the trigger or inside the panel"
         },
         {
           "keys": [
@@ -12811,7 +12821,7 @@ export default {
             "ArrowDown"
           ],
           "action": "Go to the next step (ArrowRight and ArrowLeft are reversed in right-to-left)",
-          "when": "Focus not in a form field"
+          "when": "Focus in the tour card or on nothing, not in a form field"
         },
         {
           "keys": [
@@ -12819,21 +12829,21 @@ export default {
             "ArrowUp"
           ],
           "action": "Go to the previous step (ArrowRight and ArrowLeft are reversed in right-to-left)",
-          "when": "Focus not in a form field"
+          "when": "Focus in the tour card or on nothing, not in a form field"
         },
         {
           "keys": [
             "Home"
           ],
           "action": "Go to the first step",
-          "when": "Focus not in a form field"
+          "when": "Focus in the tour card or on nothing, not in a form field"
         },
         {
           "keys": [
             "End"
           ],
           "action": "Go to the last step",
-          "when": "Focus not in a form field"
+          "when": "Focus in the tour card or on nothing, not in a form field"
         },
         {
           "keys": [
@@ -13168,7 +13178,7 @@ export default {
             "ArrowDown",
             "ArrowRight"
           ],
-          "action": "Move to the next option and vote for it, wrapping (left and right reversed in right-to-left)",
+          "action": "Move focus to the next option without voting, wrapping (left and right reversed in right-to-left)",
           "when": "Single choice"
         },
         {
@@ -13176,21 +13186,21 @@ export default {
             "ArrowUp",
             "ArrowLeft"
           ],
-          "action": "Move to the previous option and vote for it, wrapping (left and right reversed in right-to-left)",
+          "action": "Move focus to the previous option without voting, wrapping (left and right reversed in right-to-left)",
           "when": "Single choice"
         },
         {
           "keys": [
             "Home"
           ],
-          "action": "Move to the first option and vote for it",
+          "action": "Move focus to the first option without voting",
           "when": "Single choice"
         },
         {
           "keys": [
             "End"
           ],
-          "action": "Move to the last option and vote for it",
+          "action": "Move focus to the last option without voting",
           "when": "Single choice"
         },
         {
@@ -13793,15 +13803,14 @@ export default {
         "values": [
           "visible"
         ],
-        "description": "Show the caption (the element's children) under the code. By default it is visually hidden but read by screen readers, and shown while a link inside it has focus."
+        "description": "Show the caption (the element's children) under the code. By default it is visually hidden but read by screen readers, and shown while a link inside it has focus. A plain-text caption that only repeats the value is hidden from screen readers while the canvas name carries the value."
       },
       {
         "name": "data-label-prefix",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "default": "QR code",
-        "description": "Accessible name of the canvas (role=img). The value itself is read from the caption, so it is not announced twice."
+        "description": "Accessible name of the canvas (role=img). Without it the name is \"QR code: \" followed by the encoded value (cut to 200 characters with an ellipsis when longer). With it, this text is the name and the encoded value is the canvas's aria-description."
       },
       {
         "name": "data-label-copied",
@@ -13867,9 +13876,11 @@ export default {
       "manages": [
         "role=\"img\"",
         "aria-label",
+        "aria-description",
+        "aria-hidden",
         "hidden"
       ],
-      "provide": "A data-label-prefix when \"QR code\" is not a sufficient name; the caption carries the encoded value",
+      "provide": "A data-label-prefix when the code needs a name of its own; the encoded value is then its description",
       "announces": "A copied message, politely, after copy() succeeds"
     }
   },
@@ -15598,7 +15609,7 @@ export default {
       {
         "name": "close",
         "returns": "void",
-        "description": "Close the panel. close({ returnFocus: true }) also focuses the trigger (what Escape and the close button do)."
+        "description": "Close the panel. When focus is inside the panel it returns to the trigger; focus elsewhere is not moved."
       },
       {
         "name": "toggle",
@@ -15655,8 +15666,8 @@ export default {
           "keys": [
             "Escape"
           ],
-          "action": "Close the panel and return focus to the trigger",
-          "when": "Panel open"
+          "action": "Close the panel; focus returns to the trigger when it was inside the panel",
+          "when": "Panel open and focus on the trigger or inside the panel"
         },
         {
           "keys": [
@@ -18053,7 +18064,7 @@ export default {
           "vertical"
         ],
         "default": "horizontal",
-        "description": "Vertical puts the tabs in a column at the inline start with the panel beside them, and adds ArrowUp/ArrowDown navigation. Horizontal tabs wrap onto further rows when they don't fit."
+        "description": "Vertical puts the tabs in a column at the inline start with the panel beside them, and moves between tabs with ArrowUp/ArrowDown in place of ArrowLeft/ArrowRight. Horizontal tabs wrap onto further rows when they don't fit."
       },
       {
         "name": "transition",
@@ -18116,28 +18127,28 @@ export default {
             "ArrowRight"
           ],
           "action": "Open and focus the next tab, wrapping to the first (reversed in right-to-left)",
-          "when": "Focus on a tab"
+          "when": "Focus on a tab, horizontal orientation"
         },
         {
           "keys": [
             "ArrowLeft"
           ],
           "action": "Open and focus the previous tab, wrapping to the last (reversed in right-to-left)",
-          "when": "Focus on a tab"
+          "when": "Focus on a tab, horizontal orientation"
         },
         {
           "keys": [
             "ArrowDown"
           ],
           "action": "Open and focus the next tab, wrapping to the first",
-          "when": "Focus on a tab, data-orientation=\"vertical\" (the left and right arrows work too)"
+          "when": "Focus on a tab, data-orientation=\"vertical\""
         },
         {
           "keys": [
             "ArrowUp"
           ],
           "action": "Open and focus the previous tab, wrapping to the last",
-          "when": "Focus on a tab, data-orientation=\"vertical\" (the left and right arrows work too)"
+          "when": "Focus on a tab, data-orientation=\"vertical\""
         },
         {
           "keys": [
@@ -19033,14 +19044,14 @@ export default {
           "keys": [
             "PageUp"
           ],
-          "action": "Increase minutes or seconds by ten steps, hours by one step",
+          "action": "Increase minutes or seconds by 10 (or the next multiple of the step at or above 10), hours by one step; other units do not change",
           "when": "Focus on an hours, minutes or seconds spin button"
         },
         {
           "keys": [
             "PageDown"
           ],
-          "action": "Decrease minutes or seconds by ten steps, hours by one step",
+          "action": "Decrease minutes or seconds by 10 (or the next multiple of the step at or above 10), hours by one step; other units do not change",
           "when": "Focus on an hours, minutes or seconds spin button"
         },
         {

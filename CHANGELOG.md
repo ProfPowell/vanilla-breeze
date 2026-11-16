@@ -31,6 +31,16 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - **`<glossary-wc>` disabled letters stay in the tab order**, so a keyboard user can reach one and hear that it is disabled.
 - **`<image-map>`: Left and Right Arrow reverse in right-to-left.** **`<page-tools>`: the collapsed popover is announced as a toolbar.** **`<theme-picker>`: the theme select and swatch groups take their name from their visible label.**
 - **`<icon-wc>`'s `basePath` property returns an absolute URL** when it is derived from the bundle location.
+- **`<poll-wc>`: arrow keys no longer vote.** Arrow keys, Home and End move between options; Enter or Space casts or withdraws the vote.
+- **`<tab-set>`: arrow keys follow the orientation.** Vertical tab sets respond to Up and Down only, horizontal ones to Left and Right only. Home and End work in both.
+- **`<image-map>`: arrow keys are spatial.** They move to the nearest hotspot in the pressed direction instead of following source order. Focus stays put when there is none, and Left and Right are no longer mirrored in right-to-left pages.
+- **`<activity-feed>` no longer intercepts arrow keys** on a focused entry, so the page scrolls. Page Down and Page Up move between entries.
+- **`<page-tour>`: arrow, Home and End keys change step only while focus is inside the tour card or on nothing.** Elsewhere on the page they keep their normal behaviour.
+- **`<time-picker>`: Page Up and Page Down on minutes or seconds move by 10**, or by the next multiple of `step` at or above 10. They used to move by ten steps.
+- **`<settings-panel>` and `<notification-wc>`: Escape closes the panel only when focus is on the trigger or inside the panel.** `<settings-panel>`'s `close()` returns focus to the trigger when focus was inside the panel and leaves it alone otherwise; its `returnFocus` option is removed.
+- **`<qr-code>`: the accessible name includes the encoded value** ("QR code: https://example.com/tickets", cut at 200 characters). With `data-label-prefix` set, that label is the name and the value is the description.
+- **`<context-menu>`: `aria-haspopup` is set only on triggers that are controls.** Other triggers get the description "Context menu available" (override with `data-label-available`).
+- **The Debugging page's browser support table links each feature to MDN** in place of listing version numbers.
 
 ### Added
 - **`diffLines` and `renderDiffFragment` are exported from the package.**
@@ -71,6 +81,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - **`<reaction-bar>` without a palette no longer tells assistive technology its button opens a popup.**
 - **API tables on component pages use the current manifest.** The table generator read a copy of the registry that was last written in March.
 - **Icons and packs load from where the bundle was loaded.** A page that loads Vanilla Breeze from a CDN or a sub-path requested `/cdn/icons/...` and `/cdn/packs/...` on its own origin and got 404s, so `<icon-wc>`, `[data-icon]` and the icons inside `<theme-picker>` were blank unless `data-icon-path` was set. They now resolve beside the loaded script. `data-icon-path` and `base-path` still override.
+- **The `kraft` surface keeps muted text and links readable in light mode.** Muted text is derived from the body text color and link lightness is capped, so both pass 4.5:1 on the brown paper in the default theme.
+- **`<context-menu>` opens from the keyboard anywhere inside its trigger.** Shift+F10 and the ContextMenu key work with focus on a control inside the trigger, and focus returns there on close. Attributes the component adds to the trigger are removed when it disconnects.
+- **`<drag-surface>` items are described to screen readers with how to move them.** Set the text with `data-label-instructions`.
+- **`<notification-wc>` keeps focus through list updates.** A refresh no longer drops focus from a focused row, and dismissing a focused banner moves focus to the next banner or back to where it came from.
+- **`<color-picker>` and `<note-wc>` return focus only when they held it.** Focus goes back to the opener when the panel closes while holding focus and is left alone otherwise; Escape is ignored when another handler has already handled it.
 
 ## [0.6.2] - 2026-11-11
 
