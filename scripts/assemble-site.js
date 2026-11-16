@@ -145,7 +145,9 @@ copyFile('demos/homepage.css', join(pagesDir, 'docs', 'homepage.css'));
 // Favicons. setup-preview.js also copies these, but it only runs in the
 // local `npm run build`, not in cf-pages-build.sh, so production served
 // 404s for every icon <link> while local builds looked fine.
-for (const icon of ['favicon.svg', 'favicon-32x32.png', 'apple-touch-icon.png']) {
+// The web app manifest and its icons sit beside them at the site root.
+for (const icon of ['favicon.svg', 'favicon-32x32.png', 'apple-touch-icon.png',
+  'site.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png']) {
   copyFile(`demos/${icon}`, join(pagesDir, icon));
 }
 copyDir('dist/demos/tools', join(pagesDir, 'docs', 'tools'), { optional: true });

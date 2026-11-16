@@ -82,5 +82,8 @@ copy(demoCss('homepage.css'), resolve(dist, 'docs/homepage.css'));
 copy(resolve(repoRoot, 'demos/favicon.svg'), resolve(dist, 'favicon.svg'));
 copy(resolve(repoRoot, 'demos/favicon-32x32.png'), resolve(dist, 'favicon-32x32.png'));
 copy(resolve(repoRoot, 'demos/apple-touch-icon.png'), resolve(dist, 'apple-touch-icon.png'));
+for (const file of ['site.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png']) {
+  copy(resolve(repoRoot, `demos/${file}`), resolve(dist, file));
+}
 
 console.log('\nDone.');
