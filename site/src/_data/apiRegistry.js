@@ -2091,20 +2091,6 @@ export default {
           ],
           "action": "Move focus to the last focusable element before the feed",
           "when": "Focus on or inside an entry"
-        },
-        {
-          "keys": [
-            "Home"
-          ],
-          "action": "Move focus to the first entry",
-          "when": "Focus on the entry itself"
-        },
-        {
-          "keys": [
-            "End"
-          ],
-          "action": "Move focus to the last entry",
-          "when": "Focus on the entry itself"
         }
       ]
     }
@@ -6467,6 +6453,118 @@ export default {
         "type": "string",
         "default": "No matching rows found",
         "description": "Text for the visible empty state and the live-region announcement when the filter matches no rows."
+      },
+      {
+        "name": "data-label-filter",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Filter table rows",
+        "description": "Accessible name of the filter input."
+      },
+      {
+        "name": "data-label-placeholder",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Filter table...",
+        "description": "Placeholder of the filter input."
+      },
+      {
+        "name": "data-label-pagination",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Table pagination",
+        "description": "Accessible name of the pagination nav."
+      },
+      {
+        "name": "data-label-prev",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Previous",
+        "description": "Text of the previous-page button."
+      },
+      {
+        "name": "data-label-next",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Next",
+        "description": "Text of the next-page button."
+      },
+      {
+        "name": "data-label-sorted",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Sorted by {column}, {direction}",
+        "description": "Announcement after a sort. {column} is replaced by the header text and {direction} by the data-label-ascending or data-label-descending text."
+      },
+      {
+        "name": "data-label-ascending",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "ascending",
+        "description": "Direction word used for {direction} in the sort announcement."
+      },
+      {
+        "name": "data-label-descending",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "descending",
+        "description": "Direction word used for {direction} in the sort announcement."
+      },
+      {
+        "name": "data-label-filtered-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} of {total} row shown",
+        "description": "Announcement after filtering when Intl.PluralRules selects \"one\" for the total. {count} is replaced by the number of matching rows and {total} by the number of rows. Any category works: -two, -few, -many, -zero."
+      },
+      {
+        "name": "data-label-filtered-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} of {total} rows shown",
+        "description": "Announcement after filtering for the \"other\" category and the fallback for unset categories. {count} and {total} are replaced."
+      },
+      {
+        "name": "data-label-all-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "All {total} row shown",
+        "description": "Announcement when the filter is cleared (\"one\" category). {total} is replaced by the number of rows; {count} holds the same number."
+      },
+      {
+        "name": "data-label-all-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "All {total} rows shown",
+        "description": "Announcement when the filter is cleared (\"other\" category and fallback). {total} is replaced by the number of rows; {count} holds the same number."
+      },
+      {
+        "name": "data-label-selected-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} row selected",
+        "description": "Announcement after a selection change when Intl.PluralRules selects \"one\" for the count. {count} is replaced by the number of selected rows. Any category works: -two, -few, -many, -zero."
+      },
+      {
+        "name": "data-label-selected-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} rows selected",
+        "description": "Announcement after a selection change for the \"other\" category and the fallback for unset categories. {count} is replaced."
       }
     ],
     "structure": [
@@ -16516,28 +16614,56 @@ export default {
             "ArrowDown"
           ],
           "action": "Move to the first child of the active node",
-          "when": "ia-tree mode with data-view=\"visual\", focus on the diagram"
+          "when": "ia-tree mode with data-view=\"visual\", vertical orientation (default), focus on the diagram"
         },
         {
           "keys": [
             "ArrowUp"
           ],
           "action": "Move to the parent of the active node",
-          "when": "ia-tree mode with data-view=\"visual\", focus on the diagram"
+          "when": "ia-tree mode with data-view=\"visual\", vertical orientation (default), focus on the diagram"
         },
         {
           "keys": [
             "ArrowRight"
           ],
           "action": "Move to the next sibling",
-          "when": "ia-tree mode with data-view=\"visual\", focus on the diagram"
+          "when": "ia-tree mode with data-view=\"visual\", vertical orientation (default), focus on the diagram"
         },
         {
           "keys": [
             "ArrowLeft"
           ],
           "action": "Move to the previous sibling",
-          "when": "ia-tree mode with data-view=\"visual\", focus on the diagram"
+          "when": "ia-tree mode with data-view=\"visual\", vertical orientation (default), focus on the diagram"
+        },
+        {
+          "keys": [
+            "ArrowRight"
+          ],
+          "action": "Move to the first child of the active node",
+          "when": "ia-tree mode with data-view=\"visual\" and data-orientation=\"horizontal\", focus on the diagram"
+        },
+        {
+          "keys": [
+            "ArrowLeft"
+          ],
+          "action": "Move to the parent of the active node",
+          "when": "ia-tree mode with data-view=\"visual\" and data-orientation=\"horizontal\", focus on the diagram"
+        },
+        {
+          "keys": [
+            "ArrowDown"
+          ],
+          "action": "Move to the next sibling",
+          "when": "ia-tree mode with data-view=\"visual\" and data-orientation=\"horizontal\", focus on the diagram"
+        },
+        {
+          "keys": [
+            "ArrowUp"
+          ],
+          "action": "Move to the previous sibling",
+          "when": "ia-tree mode with data-view=\"visual\" and data-orientation=\"horizontal\", focus on the diagram"
         },
         {
           "keys": [
@@ -18600,7 +18726,7 @@ export default {
         "purpose": "config",
         "type": "string",
         "default": "Theme",
-        "description": "Legend and accessible name of the theme chooser"
+        "description": "Visible label and accessible name of the theme select; legend of the swatch groups with swatches"
       }
     ],
     "childAttributes": [

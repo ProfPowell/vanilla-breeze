@@ -6,6 +6,19 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- **`<site-map>` visual view: horizontal orientation is drawn left to right.** The root is on the left, children sit to the right of their parent and labels are upright. It used to rotate the vertical chart, which turned the text sideways and pushed wide trees outside the drawing. Arrow keys follow the drawing: Right goes to the first child, Left to the parent, Up and Down to the previous and next sibling.
+- **`<activity-feed>` no longer intercepts plain Home and End**, so they scroll the page. Ctrl+Home, Ctrl+End, Page Up and Page Down are unchanged.
+- **`<theme-picker>` announces its theme select once.** The select has a visible label and is no longer wrapped in a group with the same name.
+- **`<social-links>` links carry no external-link arrow.** The service icon already says where the link goes.
+
+### Added
+- **`<data-table>`: every generated string can be translated** with `data-label-*` attributes on the element: the filter input's name and placeholder, the pagination name, Previous and Next, and the sort, filter and selection announcements. Messages are whole-sentence templates with `{column}`, `{direction}`, `{count}` and `{total}` placeholders and plural forms (`-one`, `-other` and the other `Intl.PluralRules` categories).
+- **The documentation site has a web app manifest**, so it can be installed from the browser.
+
+### Fixed
+- **`<data-table>` formats counts and page numbers for the page language.**
+
 ## [0.7.1] - 2026-11-15
 
 0.7.1 republishes the package with a current `custom-elements.json`. The manifest in 0.7.0 dated from 11 November and did not list `<share-wc>` or `<social-links>`; it now lists all 101 elements and is regenerated on every build.

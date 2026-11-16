@@ -268,7 +268,7 @@
       "declarations": [
         {
           "kind": "class",
-          "description": "Author renders entries as `<article data-activity>` children, each carrying\nits timestamp either as `data-time=\"ISO\"` or as an authored\n`<time datetime=\"ISO\">` direct child (which also gives a no-JS time).\nComponent:\n  - Decorates each entry with a relative-time badge (upgrading an authored\n    `<time>` in place, or creating one from data-time)\n  - Optionally groups entries under day / week date headings (data-group)\n  - Optionally renders a left-rail avatar / icon (data-activity-avatar /\n    data-activity-icon)\n  - Wires the WAI-ARIA Feed pattern: role=\"feed\", aria-labelledby /\n    aria-describedby per article, aria-posinset / aria-setsize (-1 while\n    more may load), aria-busy around load-more, keyboard nav\n    (PageDown / PageUp, Ctrl+Home / Ctrl+End; Home / End when the\n    article itself has focus; arrow keys are left to the page)\n  - Optionally arms an IntersectionObserver sentinel for infinite scroll\n    (data-infinite → activity-feed:load-more event with a done() callback)\n  - Watches for new direct children via MutationObserver and decorates them\n\nAccessibility tree: date headings, the sentinel and the empty-state text are\nDOM children of the host, but only <article>s are feed children. Headings\nand the sentinel are aria-hidden (a heading's text is attached to the first\narticle of its group via aria-describedby); while the feed is empty the host\nrole is \"group\" so the empty-state paragraph is a legitimate child.\n\nRead-only / immutable per entry — distinct from `<comment-thread>`\n(mutable + threaded) and `<chat-thread>` (real-time, sender-grouped).",
+          "description": "Author renders entries as `<article data-activity>` children, each carrying\nits timestamp either as `data-time=\"ISO\"` or as an authored\n`<time datetime=\"ISO\">` direct child (which also gives a no-JS time).\nComponent:\n  - Decorates each entry with a relative-time badge (upgrading an authored\n    `<time>` in place, or creating one from data-time)\n  - Optionally groups entries under day / week date headings (data-group)\n  - Optionally renders a left-rail avatar / icon (data-activity-avatar /\n    data-activity-icon)\n  - Wires the WAI-ARIA Feed pattern: role=\"feed\", aria-labelledby /\n    aria-describedby per article, aria-posinset / aria-setsize (-1 while\n    more may load), aria-busy around load-more, keyboard nav\n    (PageDown / PageUp, Ctrl+Home / Ctrl+End; plain Home / End and the\n    arrow keys are left to the page)\n  - Optionally arms an IntersectionObserver sentinel for infinite scroll\n    (data-infinite → activity-feed:load-more event with a done() callback)\n  - Watches for new direct children via MutationObserver and decorates them\n\nAccessibility tree: date headings, the sentinel and the empty-state text are\nDOM children of the host, but only <article>s are feed children. Headings\nand the sentinel are aria-hidden (a heading's text is attached to the first\narticle of its group via aria-describedby); while the feed is empty the host\nrole is \"group\" so the empty-state paragraph is a legitimate child.\n\nRead-only / immutable per entry — distinct from `<comment-thread>`\n(mutable + threaded) and `<chat-thread>` (real-time, sender-grouped).",
           "name": "ActivityFeed",
           "members": [
             {
@@ -9102,7 +9102,7 @@
       "declarations": [
         {
           "kind": "class",
-          "description": "Wraps a standard HTML table and adds interactive features based on\ndata attributes. Progressive enhancement - table works without JS.\n\nHost attributes:",
+          "description": "Wraps a standard HTML table and adds interactive features based on\ndata attributes. Progressive enhancement - table works without JS.\n\nHost attributes (every generated string; each is read when it is used):",
           "name": "DataTable",
           "members": [
             {
@@ -9411,19 +9411,63 @@
               "parameters": [
                 {
                   "name": "key",
-                  "description": "dataset key suffix, e.g. 'NoResults' for data-label-no-results",
-                  "type": {
-                    "text": "string"
-                  }
-                },
-                {
-                  "name": "fallback",
+                  "description": "LABELS key, e.g. 'no-results' for data-label-no-results",
                   "type": {
                     "text": "string"
                   }
                 }
               ],
-              "description": "Author-overridable UI string from a data-label-* attribute."
+              "description": "Author-overridable UI string: data-label-<key> on the host, else the\nEnglish default. Read on every use so a changed attribute applies to\nthe next render or announcement.",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "#countLabel",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "key",
+                  "description": "e.g. 'selected' for data-label-selected-one / -other",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "n",
+                  "description": "the number the plural form agrees with",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "values",
+                  "description": "placeholder values",
+                  "type": {
+                    "text": "Record<string, string | number>"
+                  }
+                }
+              ],
+              "description": "Counted message: picks data-label-<key>-<category> by Intl.PluralRules\nfor `n`, falling back to the author's -other, then the English default.",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "#number",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "n"
+                }
+              ],
+              "description": "Format a count or page number for the resolved locale (nearest [lang])."
             },
             {
               "kind": "method",
@@ -9784,6 +9828,118 @@
               },
               "description": "Empty-state / announcement text when the filter matches nothing (default \"No matching rows found\")",
               "fieldName": "data-label-no-results"
+            },
+            {
+              "name": "data-label-filter",
+              "type": {
+                "text": "string"
+              },
+              "description": "Accessible name of the filter input (default \"Filter table rows\")",
+              "fieldName": "data-label-filter"
+            },
+            {
+              "name": "data-label-placeholder",
+              "type": {
+                "text": "string"
+              },
+              "description": "Placeholder of the filter input (default \"Filter table...\")",
+              "fieldName": "data-label-placeholder"
+            },
+            {
+              "name": "data-label-pagination",
+              "type": {
+                "text": "string"
+              },
+              "description": "Accessible name of the pagination nav (default \"Table pagination\")",
+              "fieldName": "data-label-pagination"
+            },
+            {
+              "name": "data-label-prev",
+              "type": {
+                "text": "string"
+              },
+              "description": "Text of the previous-page button (default \"Previous\")",
+              "fieldName": "data-label-prev"
+            },
+            {
+              "name": "data-label-next",
+              "type": {
+                "text": "string"
+              },
+              "description": "Text of the next-page button (default \"Next\")",
+              "fieldName": "data-label-next"
+            },
+            {
+              "name": "data-label-sorted",
+              "type": {
+                "text": "string"
+              },
+              "description": "Sort announcement; {column} and {direction} are replaced (default \"Sorted by {column}, {direction}\")",
+              "fieldName": "data-label-sorted"
+            },
+            {
+              "name": "data-label-ascending",
+              "type": {
+                "text": "string"
+              },
+              "description": "Direction word for {direction} (default \"ascending\")",
+              "fieldName": "data-label-ascending"
+            },
+            {
+              "name": "data-label-descending",
+              "type": {
+                "text": "string"
+              },
+              "description": "Direction word for {direction} (default \"descending\")",
+              "fieldName": "data-label-descending"
+            },
+            {
+              "name": "data-label-filtered-one",
+              "type": {
+                "text": "string"
+              },
+              "description": "Filter announcement when Intl.PluralRules selects \"one\" for the total; {count} and {total} are replaced (default \"{count} of {total} row shown\"). Any category works: -two, -few, -many, -zero",
+              "fieldName": "data-label-filtered-one"
+            },
+            {
+              "name": "data-label-filtered-other",
+              "type": {
+                "text": "string"
+              },
+              "description": "Filter announcement for the \"other\" category and for unset categories (default \"{count} of {total} rows shown\")",
+              "fieldName": "data-label-filtered-other"
+            },
+            {
+              "name": "data-label-all-one",
+              "type": {
+                "text": "string"
+              },
+              "description": "Announcement when the filter is cleared, \"one\" category; {total} is replaced (default \"All {total} row shown\")",
+              "fieldName": "data-label-all-one"
+            },
+            {
+              "name": "data-label-all-other",
+              "type": {
+                "text": "string"
+              },
+              "description": "Announcement when the filter is cleared, \"other\" category and unset categories (default \"All {total} rows shown\")",
+              "fieldName": "data-label-all-other"
+            },
+            {
+              "name": "data-label-selected-one",
+              "type": {
+                "text": "string"
+              },
+              "description": "Selection announcement, \"one\" category; {count} is replaced (default \"{count} row selected\")",
+              "fieldName": "data-label-selected-one"
+            },
+            {
+              "name": "data-label-selected-other",
+              "type": {
+                "text": "string"
+              },
+              "description": "Selection announcement, \"other\" category and unset categories (default \"{count} rows selected\")",
+              "fieldName": "data-label-selected-other"
             },
             {
               "name": "data-filterable",
@@ -26378,6 +26534,14 @@
               "default": "20"
             },
             {
+              "kind": "field",
+              "name": "#TURNED_KEYS",
+              "privacy": "private",
+              "static": true,
+              "default": "({ ArrowRight: 'ArrowDown', // first child ArrowLeft: 'ArrowUp', // parent ArrowDown: 'ArrowRight', // next sibling ArrowUp: 'ArrowLeft', // previous sibling })",
+              "description": "Horizontal orientation: pressed arrow -> the vertical-layout arrow that makes the same tree move"
+            },
+            {
               "kind": "method",
               "name": "#parseVisualTree",
               "privacy": "private",
@@ -30953,7 +31117,7 @@
                   "name": "brand"
                 }
               ],
-              "description": "Default: the themes in one <select>, grouped when there are groups.\nThe legend is its only name source (no aria-label repeating the text)."
+              "description": "Default: the themes in one <select>, grouped when there are groups.\nOne control needs no group: a visible <label> names it, once."
             },
             {
               "kind": "method",

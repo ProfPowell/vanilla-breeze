@@ -707,7 +707,21 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-label-no-results": {}
+      "data-label-no-results": {},
+      "data-label-filter": {},
+      "data-label-placeholder": {},
+      "data-label-pagination": {},
+      "data-label-prev": {},
+      "data-label-next": {},
+      "data-label-sorted": {},
+      "data-label-ascending": {},
+      "data-label-descending": {},
+      "data-label-filtered-one": {},
+      "data-label-filtered-other": {},
+      "data-label-all-one": {},
+      "data-label-all-other": {},
+      "data-label-selected-one": {},
+      "data-label-selected-other": {}
     }
   },
 
