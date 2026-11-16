@@ -107,7 +107,9 @@ function registerComponentPlugin() {
         node.arguments.length >= 2
       ) {
         const tagArg = node.arguments[0];
-        const classArg = node.arguments[1];
+        // Unwrap JSDoc casts: registerComponent('x', /** @type {…} */ (Class))
+        let classArg = node.arguments[1];
+        while (ts.isParenthesizedExpression(classArg)) classArg = classArg.expression;
 
         if (ts.isStringLiteral(tagArg) && ts.isIdentifier(classArg)) {
           const tagName = tagArg.text;
