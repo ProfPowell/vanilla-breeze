@@ -6,6 +6,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-15
+
+0.7.1 republishes the package with a current `custom-elements.json`. The manifest in 0.7.0 dated from 11 November and did not list `<share-wc>` or `<social-links>`; it now lists all 101 elements and is regenerated on every build.
+
+### Fixed
+- **`custom-elements.json` is current and complete.** It was not part of the build, so it lagged behind the components, and two elements registered through a type cast were left out. Editors and tools that read the manifest now see `<share-wc>`, `<social-links>` and the attributes and events changed in 0.7.0.
+
 ## [0.7.0] - 2026-11-15
 
 0.7.0 is an accessibility and documentation release. The web components were audited for keyboard handling, names and announcements: keys now act only where focus is, panels return focus when they close, and the keyboard and ARIA tables in the docs are generated from each component's manifest. Several of these changes alter behaviour and are listed under Changed, as are stricter rules for signed pages: `<page-info>` accepts a signing key only from the page's own origin and `<change-set>` text is part of the signed document, so a page signed with a key on another origin, or one that contains a `<change-set>`, needs signing again. Color tokens are corrected for dark mode and contrast, DTCG export writes computed values, and `<social-links>` is new. The Guide gains overviews and new pages for Accessibility, Internationalization, Layouts, Styling, Content Management and Process.

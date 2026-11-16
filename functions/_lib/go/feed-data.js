@@ -2,6 +2,14 @@
 export default {
   "items": [
     {
+      "id": "0.7.1",
+      "type": "update",
+      "title": "v0.7.1",
+      "body": "0.7.1 republishes the package with a current `custom-elements.json`. The manifest in 0.7.0 dated from 11 November and did not list `<share-wc>` or `<social-links>`; it now lists all 101 elements and is regenerated on every build. `custom-elements.json` is current and complete.…",
+      "url": "https://vanilla-breeze.com/changelog/#v0-7-1",
+      "date": "2026-11-15"
+    },
+    {
       "id": "0.7.0",
       "type": "update",
       "title": "v0.7.0",

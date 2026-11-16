@@ -2560,152 +2560,6 @@
     },
     {
       "kind": "javascript-module",
-      "path": "src/web-components/brand-mark/logic.js",
-      "declarations": [
-        {
-          "kind": "class",
-          "description": "compact variants.\n\nContent contract: the author's children (text, <img>, <svg>, <em>/<small>\ntaglines, anything) are content and are NEVER removed, replaced, reordered\nor flattened. The component only ever touches ONE element it owns:\n\n  <picture data-brand-mark-img>\n    <source media=\"(width < 48rem)\" srcset=\"{src-compact}\">   (optional)\n    <img src=\"{src | src-dark}\" alt=\"…\" decoding=\"async\">\n  </picture>\n\nwhich it prepends when `src` is set, keeps up to date, and removes when\n`src` is removed. \"Image only\" vs \"image + wordmark\" is pure CSS (see\nstyles.css): without `wordmark`, authored content is visually hidden but\nstays in the DOM as the accessible name.\n\nAccessible name rules (owned <img> alt):\n  - image only + `alt` attribute → img alt = alt; CSS hides the authored\n    content from AT too (visibility), so the name is announced once.\n  - otherwise, if authored text exists → img alt=\"\" (decorative); the\n    authored text is the name (visually hidden in image-only mode).\n  - no authored text → img alt = `alt` attribute (or \"\" if absent).\n\nAttributes:\n  src           — logo URL (light mode / default). Without it, nothing is inserted.\n  src-dark      — dark-mode logo URL; follows <html data-mode> then the\n                  resolved color-scheme then prefers-color-scheme.\n  src-compact   — compact/icon logo used when `compact-media` matches.\n  compact-media — media query for src-compact (default \"(width < 48rem)\", --bp-m).\n  alt           — image text alternative (see rules above).\n  wordmark      — boolean; show authored content alongside the image.\n  height        — logo height: a number (px) or any CSS length; sets\n                  --brand-mark-height on the host.",
-          "name": "BrandMark",
-          "members": [
-            {
-              "kind": "field",
-              "name": "#modeObserver",
-              "privacy": "private",
-              "type": {
-                "text": "MutationObserver|null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "#contentObserver",
-              "privacy": "private",
-              "type": {
-                "text": "MutationObserver|null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "#darkMql",
-              "privacy": "private",
-              "type": {
-                "text": "MediaQueryList|null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "#watchingMode",
-              "privacy": "private",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false"
-            },
-            {
-              "kind": "method",
-              "name": "setup"
-            },
-            {
-              "kind": "method",
-              "name": "teardown"
-            },
-            {
-              "kind": "method",
-              "name": "#isDark",
-              "privacy": "private",
-              "description": "Determine if dark mode is active.\n\nPriority order (matches social-embed and other VB components):\n  1. Explicit data-mode on <html> — set by VB's theme-manager\n  2. The host element's resolved CSS color-scheme — driven by the\n     active VB theme tokens, catches theme changes that don't go\n     through data-mode\n  3. System preference (prefers-color-scheme) as a last resort"
-            },
-            {
-              "kind": "method",
-              "name": "#watchColorMode",
-              "privacy": "private",
-              "description": "Watch color mode changes (idempotent; released on disconnect)."
-            },
-            {
-              "kind": "field",
-              "name": "#onModeChange",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#syncHeight",
-              "privacy": "private",
-              "description": "--brand-mark-height from the height attribute (number → px)."
-            },
-            {
-              "kind": "method",
-              "name": "#owned",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "HTMLElement|null"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "#render",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#syncAlt",
-              "privacy": "private",
-              "description": "Apply the accessible-name rules (see file header) to the owned img."
-            },
-            {
-              "kind": "method",
-              "name": "#hasAuthoredText",
-              "privacy": "private",
-              "description": "Whether the author's content (everything but the owned image) has text."
-            }
-          ],
-          "attributes": [
-            {
-              "name": "src"
-            },
-            {
-              "name": "src-dark"
-            },
-            {
-              "name": "src-compact"
-            },
-            {
-              "name": "compact-media"
-            },
-            {
-              "name": "alt"
-            },
-            {
-              "name": "wordmark"
-            },
-            {
-              "name": "height"
-            }
-          ],
-          "superclass": {
-            "name": "VBElement",
-            "module": "/src/lib/vb-element.js"
-          },
-          "tagName": "brand-mark",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "custom-element-definition",
-          "name": "brand-mark",
-          "declaration": {
-            "name": "BrandMark",
-            "module": "src/web-components/brand-mark/logic.js"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
       "path": "src/web-components/author-index/logic.js",
       "declarations": [
         {
@@ -2951,6 +2805,152 @@
           "declaration": {
             "name": "AuthorIndex",
             "module": "src/web-components/author-index/logic.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/web-components/brand-mark/logic.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "compact variants.\n\nContent contract: the author's children (text, <img>, <svg>, <em>/<small>\ntaglines, anything) are content and are NEVER removed, replaced, reordered\nor flattened. The component only ever touches ONE element it owns:\n\n  <picture data-brand-mark-img>\n    <source media=\"(width < 48rem)\" srcset=\"{src-compact}\">   (optional)\n    <img src=\"{src | src-dark}\" alt=\"…\" decoding=\"async\">\n  </picture>\n\nwhich it prepends when `src` is set, keeps up to date, and removes when\n`src` is removed. \"Image only\" vs \"image + wordmark\" is pure CSS (see\nstyles.css): without `wordmark`, authored content is visually hidden but\nstays in the DOM as the accessible name.\n\nAccessible name rules (owned <img> alt):\n  - image only + `alt` attribute → img alt = alt; CSS hides the authored\n    content from AT too (visibility), so the name is announced once.\n  - otherwise, if authored text exists → img alt=\"\" (decorative); the\n    authored text is the name (visually hidden in image-only mode).\n  - no authored text → img alt = `alt` attribute (or \"\" if absent).\n\nAttributes:\n  src           — logo URL (light mode / default). Without it, nothing is inserted.\n  src-dark      — dark-mode logo URL; follows <html data-mode> then the\n                  resolved color-scheme then prefers-color-scheme.\n  src-compact   — compact/icon logo used when `compact-media` matches.\n  compact-media — media query for src-compact (default \"(width < 48rem)\", --bp-m).\n  alt           — image text alternative (see rules above).\n  wordmark      — boolean; show authored content alongside the image.\n  height        — logo height: a number (px) or any CSS length; sets\n                  --brand-mark-height on the host.",
+          "name": "BrandMark",
+          "members": [
+            {
+              "kind": "field",
+              "name": "#modeObserver",
+              "privacy": "private",
+              "type": {
+                "text": "MutationObserver|null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#contentObserver",
+              "privacy": "private",
+              "type": {
+                "text": "MutationObserver|null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#darkMql",
+              "privacy": "private",
+              "type": {
+                "text": "MediaQueryList|null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#watchingMode",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "method",
+              "name": "setup"
+            },
+            {
+              "kind": "method",
+              "name": "teardown"
+            },
+            {
+              "kind": "method",
+              "name": "#isDark",
+              "privacy": "private",
+              "description": "Determine if dark mode is active.\n\nPriority order (matches social-embed and other VB components):\n  1. Explicit data-mode on <html> — set by VB's theme-manager\n  2. The host element's resolved CSS color-scheme — driven by the\n     active VB theme tokens, catches theme changes that don't go\n     through data-mode\n  3. System preference (prefers-color-scheme) as a last resort"
+            },
+            {
+              "kind": "method",
+              "name": "#watchColorMode",
+              "privacy": "private",
+              "description": "Watch color mode changes (idempotent; released on disconnect)."
+            },
+            {
+              "kind": "field",
+              "name": "#onModeChange",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#syncHeight",
+              "privacy": "private",
+              "description": "--brand-mark-height from the height attribute (number → px)."
+            },
+            {
+              "kind": "method",
+              "name": "#owned",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "HTMLElement|null"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "#render",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#syncAlt",
+              "privacy": "private",
+              "description": "Apply the accessible-name rules (see file header) to the owned img."
+            },
+            {
+              "kind": "method",
+              "name": "#hasAuthoredText",
+              "privacy": "private",
+              "description": "Whether the author's content (everything but the owned image) has text."
+            }
+          ],
+          "attributes": [
+            {
+              "name": "src"
+            },
+            {
+              "name": "src-dark"
+            },
+            {
+              "name": "src-compact"
+            },
+            {
+              "name": "compact-media"
+            },
+            {
+              "name": "alt"
+            },
+            {
+              "name": "wordmark"
+            },
+            {
+              "name": "height"
+            }
+          ],
+          "superclass": {
+            "name": "VBElement",
+            "module": "/src/lib/vb-element.js"
+          },
+          "tagName": "brand-mark",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "custom-element-definition",
+          "name": "brand-mark",
+          "declaration": {
+            "name": "BrandMark",
+            "module": "src/web-components/brand-mark/logic.js"
           }
         }
       ]
@@ -7588,6 +7588,397 @@
     },
     {
       "kind": "javascript-module",
+      "path": "src/web-components/comment-thread/logic.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Author renders comments as `<article data-comment>` children with metadata\nattributes; component decorates each with author header, relative timestamp,\naction row (Reply / Edit / Delete) and threaded indentation via data-parent.\n\nDistinct from:\n  - <comment-wc>     (single inline action used by selection-menu — kept as-is)\n  - <chat-thread>    (real-time chat, sender-grouped)\n  - <comment-box>    (the FORM — composed here as the reply-form template)\n\nPresentational with respect to persistence: the component emits events and\nlets authors mutate the DOM (or call addComment / updateComment / removeComment).",
+          "name": "CommentThread",
+          "members": [
+            {
+              "kind": "field",
+              "name": "#replyTemplate",
+              "privacy": "private",
+              "type": {
+                "text": "HTMLTemplateElement | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#activeReplyForm",
+              "privacy": "private",
+              "type": {
+                "text": "HTMLElement | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#refreshTimer",
+              "privacy": "private",
+              "type": {
+                "text": "ReturnType<typeof setInterval> | 0"
+              },
+              "default": "0"
+            },
+            {
+              "kind": "method",
+              "name": "setup"
+            },
+            {
+              "kind": "method",
+              "name": "teardown"
+            },
+            {
+              "kind": "method",
+              "name": "#scanComments",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#findComment",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "id"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#decorateComment",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "comment"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#computeDepth",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "comment"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#mountHeader",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "comment"
+                }
+              ],
+              "description": "Build the header, mount it before the body, and name the article from it."
+            },
+            {
+              "kind": "method",
+              "name": "#buildHeader",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "comment"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#buildFooter",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "comment"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#labelActions",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "comment"
+                },
+                {
+                  "name": "footer",
+                  "default": "comment.querySelector(':scope > .comment-footer')"
+                }
+              ],
+              "description": "Per-comment action names: author + absolute time keep them distinct."
+            },
+            {
+              "kind": "field",
+              "name": "#onClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#onReplyClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "comment"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#replyWrapperFor",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e"
+                }
+              ],
+              "description": "The reply-form wrapper an event came from, if it is ours."
+            },
+            {
+              "kind": "field",
+              "name": "#onBoxSubmit",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "#onBoxCancel",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#dismissReplyForm",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "restoreFocus",
+                  "description": "move focus back to the comment's Reply button",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#onEditClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "comment"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#onDeleteClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "comment"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#lang",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#formatRelative",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "iso"
+                }
+              ],
+              "description": "Localized relative time (\"2 hours ago\"), or '' for an unparseable date."
+            },
+            {
+              "kind": "method",
+              "name": "#refreshTimes",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#formatAbsolute",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "iso"
+                }
+              ],
+              "description": "Localized absolute time, or '' for an unparseable date."
+            },
+            {
+              "kind": "method",
+              "name": "#fillBody",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "body"
+                },
+                {
+                  "name": "data"
+                }
+              ],
+              "description": "Fill a body element from `bodyText` (as text) or `bodyHtml` (sanitized)."
+            },
+            {
+              "kind": "method",
+              "name": "addComment",
+              "parameters": [
+                {
+                  "name": "data",
+                  "type": {
+                    "text": "{\n   *   id: string,\n   *   author: string,\n   *   authorHref?: string,   // http(s) or relative only; others render as text\n   *   authorAvatar?: string,\n   *   time: string,          // ISO-8601\n   *   bodyText?: string,     // plain text — set via textContent\n   *   bodyHtml?: string,     // HTML — passed through sanitizeHTML\n   *   parentId?: string,\n   *   mine?: boolean,\n   *   edited?: string,\n   * }"
+                  }
+                }
+              ],
+              "description": "Add a new comment from server data. A reply (parentId) is inserted after\nthe parent's last descendant; a top-level comment goes at the end.",
+              "return": {
+                "type": {
+                  "text": "HTMLElement"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "#lastInSubtree",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "parentId"
+                }
+              ],
+              "description": "The parent comment, or the last of its consecutive descendants."
+            },
+            {
+              "kind": "method",
+              "name": "updateComment",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "patch",
+                  "default": "{}",
+                  "type": {
+                    "text": "{ bodyText?: string, bodyHtml?: string, edited?: string, author?: string }"
+                  }
+                }
+              ],
+              "description": "Patch a comment's data after the server confirms an edit."
+            },
+            {
+              "kind": "method",
+              "name": "removeComment",
+              "parameters": [
+                {
+                  "name": "id"
+                }
+              ],
+              "description": "Remove a comment from the thread."
+            }
+          ],
+          "events": [
+            {
+              "name": "comment-thread:edit-request",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "comment-thread:delete-request",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "comment-thread:reply",
+              "type": {
+                "text": "CustomEvent"
+              },
+              "description": "{ parentId, value, waitUntil(promise) }"
+            }
+          ],
+          "superclass": {
+            "name": "VBElement",
+            "module": "/src/lib/vb-element.js"
+          },
+          "tagName": "comment-thread",
+          "attributes": [
+            {
+              "name": "aria-label",
+              "type": {
+                "text": "string"
+              },
+              "description": "Region label for the thread",
+              "fieldName": "aria-label"
+            },
+            {
+              "name": "data-disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Read-only mode (no Reply / Edit / Delete actions)",
+              "fieldName": "data-disabled"
+            }
+          ],
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "custom-element-definition",
+          "name": "comment-thread",
+          "declaration": {
+            "name": "CommentThread",
+            "module": "src/web-components/comment-thread/logic.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "CommentThread",
+          "declaration": {
+            "name": "CommentThread",
+            "module": "src/web-components/comment-thread/logic.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "src/web-components/comment-wc/logic.js",
       "declarations": [
         {
@@ -8429,6 +8820,278 @@
           "declaration": {
             "name": "ContentSwap",
             "module": "src/web-components/content-swap/logic.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/web-components/context-menu/logic.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Composes <pop-over data-mode=\"auto\"> for the popover surface.\npop-over owns the popover attribute, the display:none cascade\nre-assertion, and native light-dismiss (outside click, Escape).\nAnchoring is bespoke — the menu opens AT THE CURSOR, not anchored\nto a DOM element — so context-menu sets the pop-over's inline\ntop/left on contextmenu and re-clamps after first layout.\n\nItems with data-shortcut get real, page-wide keyboard shortcut bindings\n(hotkey-bind calls preventDefault, so never bind clipboard combos).\n\nKeyboard: the trigger is made focusable when it is not already, and\nShift+F10 / the ContextMenu key open the menu while focus is on the\ntrigger or on anything inside it. Focus returns to where it was on close.",
+          "name": "ContextMenuWc",
+          "members": [
+            {
+              "kind": "field",
+              "name": "#trigger",
+              "privacy": "private",
+              "type": {
+                "text": "HTMLElement"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "#menu",
+              "privacy": "private",
+              "type": {
+                "text": "HTMLElement"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "#popover",
+              "privacy": "private",
+              "type": {
+                "text": "HTMLElement"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "#items",
+              "privacy": "private",
+              "type": {
+                "text": "HTMLElement[]"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "#activeIndex",
+              "privacy": "private",
+              "type": {
+                "text": "number"
+              },
+              "default": "-1"
+            },
+            {
+              "kind": "field",
+              "name": "#isOpen",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "#unbindFns",
+              "privacy": "private",
+              "type": {
+                "text": "Array<() => void>"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "#statefulTrigger",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "True when the trigger is a control and carries the popup states."
+            },
+            {
+              "kind": "field",
+              "name": "#addedAttrs",
+              "privacy": "private",
+              "default": "([])",
+              "description": "Attributes setup() added to the trigger; teardown() removes only these."
+            },
+            {
+              "kind": "field",
+              "name": "#returnFocus",
+              "privacy": "private",
+              "default": "(null)",
+              "description": "Where focus was when the menu opened (the trigger, or a control inside it)."
+            },
+            {
+              "kind": "method",
+              "name": "setup"
+            },
+            {
+              "kind": "method",
+              "name": "teardown"
+            },
+            {
+              "kind": "method",
+              "name": "#addTriggerAttr",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "value",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Set an attribute on the trigger and remember it for teardown()."
+            },
+            {
+              "kind": "method",
+              "name": "#wrapGroups",
+              "privacy": "private",
+              "description": "role=\"group\" needs the items it labels as descendants, but authors write\na flat list (<li data-group> label, then sibling items). Wrap each run of\nitems after a label in <li role=\"group\" aria-labelledby><ul role=\"none\">,\nkeeping the label as the group's first (aria-hidden) row. A run ends at\nthe next label or separator. teardown() restores the authored list."
+            },
+            {
+              "kind": "method",
+              "name": "#unwrapGroups",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "items"
+            },
+            {
+              "kind": "field",
+              "name": "#handleContextMenu",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#handleTriggerKeyDown",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#openAtFocus",
+              "privacy": "private",
+              "description": "Open under the focused element when it is the trigger or inside it, else under the trigger."
+            },
+            {
+              "kind": "method",
+              "name": "#openAt",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "x"
+                },
+                {
+                  "name": "y"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "close"
+            },
+            {
+              "kind": "method",
+              "name": "#focusIsInMenu",
+              "privacy": "private",
+              "description": "Focus is still on a menu item (or was dropped to <body> by the hide)."
+            },
+            {
+              "kind": "method",
+              "name": "#restoreFocus",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#handleMenuKeyDown",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#blockDisabledClick",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#handleItemClick",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#handlePopoverHide",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#handleScroll",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#focusItem",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "index"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "isOpen",
+              "readonly": true
+            }
+          ],
+          "events": [
+            {
+              "name": "context-menu:open",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "context-menu:close",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "superclass": {
+            "name": "VBElement",
+            "module": "/src/lib/vb-element.js"
+          },
+          "tagName": "context-menu",
+          "attributes": [
+            {
+              "name": "data-label-available",
+              "type": {
+                "text": "string"
+              },
+              "description": "Description set on a trigger that is not a control (default: \"Context menu available\")",
+              "fieldName": "data-label-available"
+            }
+          ],
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "custom-element-definition",
+          "name": "context-menu",
+          "declaration": {
+            "name": "ContextMenuWc",
+            "module": "src/web-components/context-menu/logic.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "ContextMenuWc",
+          "declaration": {
+            "name": "ContextMenuWc",
+            "module": "src/web-components/context-menu/logic.js"
           }
         }
       ]
@@ -10253,278 +10916,6 @@
           "declaration": {
             "name": "DayView",
             "module": "src/web-components/day-view/logic.js"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/web-components/context-menu/logic.js",
-      "declarations": [
-        {
-          "kind": "class",
-          "description": "Composes <pop-over data-mode=\"auto\"> for the popover surface.\npop-over owns the popover attribute, the display:none cascade\nre-assertion, and native light-dismiss (outside click, Escape).\nAnchoring is bespoke — the menu opens AT THE CURSOR, not anchored\nto a DOM element — so context-menu sets the pop-over's inline\ntop/left on contextmenu and re-clamps after first layout.\n\nItems with data-shortcut get real, page-wide keyboard shortcut bindings\n(hotkey-bind calls preventDefault, so never bind clipboard combos).\n\nKeyboard: the trigger is made focusable when it is not already, and\nShift+F10 / the ContextMenu key open the menu while focus is on the\ntrigger or on anything inside it. Focus returns to where it was on close.",
-          "name": "ContextMenuWc",
-          "members": [
-            {
-              "kind": "field",
-              "name": "#trigger",
-              "privacy": "private",
-              "type": {
-                "text": "HTMLElement"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "#menu",
-              "privacy": "private",
-              "type": {
-                "text": "HTMLElement"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "#popover",
-              "privacy": "private",
-              "type": {
-                "text": "HTMLElement"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "#items",
-              "privacy": "private",
-              "type": {
-                "text": "HTMLElement[]"
-              },
-              "default": "[]"
-            },
-            {
-              "kind": "field",
-              "name": "#activeIndex",
-              "privacy": "private",
-              "type": {
-                "text": "number"
-              },
-              "default": "-1"
-            },
-            {
-              "kind": "field",
-              "name": "#isOpen",
-              "privacy": "private",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "#unbindFns",
-              "privacy": "private",
-              "type": {
-                "text": "Array<() => void>"
-              },
-              "default": "[]"
-            },
-            {
-              "kind": "field",
-              "name": "#statefulTrigger",
-              "privacy": "private",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "True when the trigger is a control and carries the popup states."
-            },
-            {
-              "kind": "field",
-              "name": "#addedAttrs",
-              "privacy": "private",
-              "default": "([])",
-              "description": "Attributes setup() added to the trigger; teardown() removes only these."
-            },
-            {
-              "kind": "field",
-              "name": "#returnFocus",
-              "privacy": "private",
-              "default": "(null)",
-              "description": "Where focus was when the menu opened (the trigger, or a control inside it)."
-            },
-            {
-              "kind": "method",
-              "name": "setup"
-            },
-            {
-              "kind": "method",
-              "name": "teardown"
-            },
-            {
-              "kind": "method",
-              "name": "#addTriggerAttr",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "name",
-                  "type": {
-                    "text": "string"
-                  }
-                },
-                {
-                  "name": "value",
-                  "type": {
-                    "text": "string"
-                  }
-                }
-              ],
-              "description": "Set an attribute on the trigger and remember it for teardown()."
-            },
-            {
-              "kind": "method",
-              "name": "#wrapGroups",
-              "privacy": "private",
-              "description": "role=\"group\" needs the items it labels as descendants, but authors write\na flat list (<li data-group> label, then sibling items). Wrap each run of\nitems after a label in <li role=\"group\" aria-labelledby><ul role=\"none\">,\nkeeping the label as the group's first (aria-hidden) row. A run ends at\nthe next label or separator. teardown() restores the authored list."
-            },
-            {
-              "kind": "method",
-              "name": "#unwrapGroups",
-              "privacy": "private"
-            },
-            {
-              "kind": "field",
-              "name": "items"
-            },
-            {
-              "kind": "field",
-              "name": "#handleContextMenu",
-              "privacy": "private"
-            },
-            {
-              "kind": "field",
-              "name": "#handleTriggerKeyDown",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#openAtFocus",
-              "privacy": "private",
-              "description": "Open under the focused element when it is the trigger or inside it, else under the trigger."
-            },
-            {
-              "kind": "method",
-              "name": "#openAt",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "x"
-                },
-                {
-                  "name": "y"
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "close"
-            },
-            {
-              "kind": "method",
-              "name": "#focusIsInMenu",
-              "privacy": "private",
-              "description": "Focus is still on a menu item (or was dropped to <body> by the hide)."
-            },
-            {
-              "kind": "method",
-              "name": "#restoreFocus",
-              "privacy": "private"
-            },
-            {
-              "kind": "field",
-              "name": "#handleMenuKeyDown",
-              "privacy": "private"
-            },
-            {
-              "kind": "field",
-              "name": "#blockDisabledClick",
-              "privacy": "private"
-            },
-            {
-              "kind": "field",
-              "name": "#handleItemClick",
-              "privacy": "private"
-            },
-            {
-              "kind": "field",
-              "name": "#handlePopoverHide",
-              "privacy": "private"
-            },
-            {
-              "kind": "field",
-              "name": "#handleScroll",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#focusItem",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "index"
-                }
-              ]
-            },
-            {
-              "kind": "field",
-              "name": "isOpen",
-              "readonly": true
-            }
-          ],
-          "events": [
-            {
-              "name": "context-menu:open",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "context-menu:close",
-              "type": {
-                "text": "CustomEvent"
-              }
-            }
-          ],
-          "superclass": {
-            "name": "VBElement",
-            "module": "/src/lib/vb-element.js"
-          },
-          "tagName": "context-menu",
-          "attributes": [
-            {
-              "name": "data-label-available",
-              "type": {
-                "text": "string"
-              },
-              "description": "Description set on a trigger that is not a control (default: \"Context menu available\")",
-              "fieldName": "data-label-available"
-            }
-          ],
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "custom-element-definition",
-          "name": "context-menu",
-          "declaration": {
-            "name": "ContextMenuWc",
-            "module": "src/web-components/context-menu/logic.js"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "ContextMenuWc",
-          "declaration": {
-            "name": "ContextMenuWc",
-            "module": "src/web-components/context-menu/logic.js"
           }
         }
       ]
@@ -13784,397 +14175,6 @@
           "declaration": {
             "name": "FormField",
             "module": "src/web-components/form-field/logic.js"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/web-components/comment-thread/logic.js",
-      "declarations": [
-        {
-          "kind": "class",
-          "description": "Author renders comments as `<article data-comment>` children with metadata\nattributes; component decorates each with author header, relative timestamp,\naction row (Reply / Edit / Delete) and threaded indentation via data-parent.\n\nDistinct from:\n  - <comment-wc>     (single inline action used by selection-menu — kept as-is)\n  - <chat-thread>    (real-time chat, sender-grouped)\n  - <comment-box>    (the FORM — composed here as the reply-form template)\n\nPresentational with respect to persistence: the component emits events and\nlets authors mutate the DOM (or call addComment / updateComment / removeComment).",
-          "name": "CommentThread",
-          "members": [
-            {
-              "kind": "field",
-              "name": "#replyTemplate",
-              "privacy": "private",
-              "type": {
-                "text": "HTMLTemplateElement | null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "#activeReplyForm",
-              "privacy": "private",
-              "type": {
-                "text": "HTMLElement | null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "#refreshTimer",
-              "privacy": "private",
-              "type": {
-                "text": "ReturnType<typeof setInterval> | 0"
-              },
-              "default": "0"
-            },
-            {
-              "kind": "method",
-              "name": "setup"
-            },
-            {
-              "kind": "method",
-              "name": "teardown"
-            },
-            {
-              "kind": "method",
-              "name": "#scanComments",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#findComment",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "id"
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#decorateComment",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "comment"
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#computeDepth",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "comment"
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#mountHeader",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "comment"
-                }
-              ],
-              "description": "Build the header, mount it before the body, and name the article from it."
-            },
-            {
-              "kind": "method",
-              "name": "#buildHeader",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "comment"
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#buildFooter",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "comment"
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#labelActions",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "comment"
-                },
-                {
-                  "name": "footer",
-                  "default": "comment.querySelector(':scope > .comment-footer')"
-                }
-              ],
-              "description": "Per-comment action names: author + absolute time keep them distinct."
-            },
-            {
-              "kind": "field",
-              "name": "#onClick",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "MouseEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#onReplyClick",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "comment"
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#replyWrapperFor",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e"
-                }
-              ],
-              "description": "The reply-form wrapper an event came from, if it is ours."
-            },
-            {
-              "kind": "field",
-              "name": "#onBoxSubmit",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "Event"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "field",
-              "name": "#onBoxCancel",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "Event"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#dismissReplyForm",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "restoreFocus",
-                  "description": "move focus back to the comment's Reply button",
-                  "type": {
-                    "text": "boolean"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#onEditClick",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "comment"
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#onDeleteClick",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "comment"
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#lang",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#formatRelative",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "iso"
-                }
-              ],
-              "description": "Localized relative time (\"2 hours ago\"), or '' for an unparseable date."
-            },
-            {
-              "kind": "method",
-              "name": "#refreshTimes",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#formatAbsolute",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "iso"
-                }
-              ],
-              "description": "Localized absolute time, or '' for an unparseable date."
-            },
-            {
-              "kind": "method",
-              "name": "#fillBody",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "body"
-                },
-                {
-                  "name": "data"
-                }
-              ],
-              "description": "Fill a body element from `bodyText` (as text) or `bodyHtml` (sanitized)."
-            },
-            {
-              "kind": "method",
-              "name": "addComment",
-              "parameters": [
-                {
-                  "name": "data",
-                  "type": {
-                    "text": "{\n   *   id: string,\n   *   author: string,\n   *   authorHref?: string,   // http(s) or relative only; others render as text\n   *   authorAvatar?: string,\n   *   time: string,          // ISO-8601\n   *   bodyText?: string,     // plain text — set via textContent\n   *   bodyHtml?: string,     // HTML — passed through sanitizeHTML\n   *   parentId?: string,\n   *   mine?: boolean,\n   *   edited?: string,\n   * }"
-                  }
-                }
-              ],
-              "description": "Add a new comment from server data. A reply (parentId) is inserted after\nthe parent's last descendant; a top-level comment goes at the end.",
-              "return": {
-                "type": {
-                  "text": "HTMLElement"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "#lastInSubtree",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "parentId"
-                }
-              ],
-              "description": "The parent comment, or the last of its consecutive descendants."
-            },
-            {
-              "kind": "method",
-              "name": "updateComment",
-              "parameters": [
-                {
-                  "name": "id",
-                  "type": {
-                    "text": "string"
-                  }
-                },
-                {
-                  "name": "patch",
-                  "default": "{}",
-                  "type": {
-                    "text": "{ bodyText?: string, bodyHtml?: string, edited?: string, author?: string }"
-                  }
-                }
-              ],
-              "description": "Patch a comment's data after the server confirms an edit."
-            },
-            {
-              "kind": "method",
-              "name": "removeComment",
-              "parameters": [
-                {
-                  "name": "id"
-                }
-              ],
-              "description": "Remove a comment from the thread."
-            }
-          ],
-          "events": [
-            {
-              "name": "comment-thread:edit-request",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "comment-thread:delete-request",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "comment-thread:reply",
-              "type": {
-                "text": "CustomEvent"
-              },
-              "description": "{ parentId, value, waitUntil(promise) }"
-            }
-          ],
-          "superclass": {
-            "name": "VBElement",
-            "module": "/src/lib/vb-element.js"
-          },
-          "tagName": "comment-thread",
-          "attributes": [
-            {
-              "name": "aria-label",
-              "type": {
-                "text": "string"
-              },
-              "description": "Region label for the thread",
-              "fieldName": "aria-label"
-            },
-            {
-              "name": "data-disabled",
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Read-only mode (no Reply / Edit / Delete actions)",
-              "fieldName": "data-disabled"
-            }
-          ],
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "custom-element-definition",
-          "name": "comment-thread",
-          "declaration": {
-            "name": "CommentThread",
-            "module": "src/web-components/comment-thread/logic.js"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "CommentThread",
-          "declaration": {
-            "name": "CommentThread",
-            "module": "src/web-components/comment-thread/logic.js"
           }
         }
       ]
@@ -17490,6 +17490,339 @@
     },
     {
       "kind": "javascript-module",
+      "path": "src/web-components/markdown-editor/logic.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Composes the author's <textarea> with a <markdown-viewer> in a split\nlayout. The textarea is ADOPTED, not replaced: it is moved into the editor\npane with every attribute intact (id + <label for>, aria-*, name,\nrequired, minlength/maxlength, readonly, dir, form, placeholder), so form\nsubmission, constraint validation and form.reset() are the native\ntextarea's own. Put `name` (and `required` etc.) on the <textarea> — that\nis what submits, with or without JavaScript. A textarea is only created\nwhen none is authored.\n\nThe structure is built once. Reconnecting (moving the element) keeps the\nsame textarea and viewer objects — only listeners are re-bound — so a\ncached `.textarea`, caret, scroll and undo history survive.\n\nPreview: the markdown is handed to <markdown-viewer> via its `.markdown`\nproperty; the viewer parses it and sanitises the result (its default).\nThe preview is not a live region — it would re-read the whole document\non every debounced keystroke.",
+          "name": "MarkdownEditor",
+          "members": [
+            {
+              "kind": "field",
+              "name": "#textarea",
+              "privacy": "private",
+              "type": {
+                "text": "HTMLTextAreaElement|null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#viewer",
+              "privacy": "private",
+              "type": {
+                "text": "any"
+              },
+              "default": "null",
+              "description": "<markdown-viewer>"
+            },
+            {
+              "kind": "field",
+              "name": "#editorPane",
+              "privacy": "private",
+              "type": {
+                "text": "HTMLElement|null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#previewPane",
+              "privacy": "private",
+              "type": {
+                "text": "HTMLElement|null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#tabHint",
+              "privacy": "private",
+              "type": {
+                "text": "HTMLElement|null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#lastValue",
+              "privacy": "private",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Last committed value for change detection"
+            },
+            {
+              "kind": "field",
+              "name": "#pendingValue",
+              "privacy": "private",
+              "type": {
+                "text": "string|null"
+              },
+              "default": "null",
+              "description": "Value assigned before the structure was built"
+            },
+            {
+              "kind": "field",
+              "name": "#debounceTimer",
+              "privacy": "private",
+              "type": {
+                "text": "ReturnType<typeof setTimeout> | null"
+              },
+              "default": "null",
+              "description": "Debounce timer for preview updates"
+            },
+            {
+              "kind": "field",
+              "name": "#tabReleased",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Escape was pressed: the next Tab moves focus instead of indenting."
+            },
+            {
+              "kind": "field",
+              "name": "#authored",
+              "privacy": "private",
+              "type": {
+                "text": "{ placeholder: string|null, rows: string|null }"
+              },
+              "default": "{ placeholder: null, rows: null }",
+              "description": "the textarea's own values"
+            },
+            {
+              "kind": "method",
+              "name": "setup"
+            },
+            {
+              "kind": "method",
+              "name": "teardown"
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "description": "Set the markdown value and update the preview at once. Assigning the\ncurrent value is a no-op. Emits markdown-editor:change with\nsource: 'api' so consumers can filter their own assignments out of the\nevent stream; the next blur does not repeat it.",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              }
+            },
+            {
+              "kind": "field",
+              "name": "textarea",
+              "description": "The textarea element — the author's own when one was provided. Stable\nacross reconnects.",
+              "return": {
+                "type": {
+                  "text": "HTMLTextAreaElement|null"
+                }
+              },
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "#isBuilt",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#buildDOM",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#applyRows",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#applyPaneLabels",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#label",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "key",
+                  "type": {
+                    "text": "'source'|'preview'"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#setOrRemove",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "el",
+                  "type": {
+                    "text": "Element"
+                  }
+                },
+                {
+                  "name": "attr",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "value",
+                  "type": {
+                    "text": "string|null"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#bindEvents",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#schedulePreview",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#updatePreview",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#emit",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "detail",
+                  "type": {
+                    "text": "object"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "name",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "markdown-editor:input",
+              "type": {
+                "text": "CustomEvent"
+              },
+              "description": "Each keystroke. Detail: { value }"
+            },
+            {
+              "name": "markdown-editor:change",
+              "type": {
+                "text": "CustomEvent"
+              },
+              "description": "On blur after the content changed (source \"user\"),"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "placeholder"
+            },
+            {
+              "name": "rows"
+            },
+            {
+              "name": "highlight"
+            },
+            {
+              "name": "data-label-source"
+            },
+            {
+              "name": "data-label-preview"
+            },
+            {
+              "name": "data-tab-indent",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Tab inserts two spaces; Escape then Tab moves focus",
+              "fieldName": "data-tab-indent"
+            },
+            {
+              "name": "data-auto-mermaid",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Upgrade mermaid fences in the preview to <diagram-wc>",
+              "fieldName": "data-auto-mermaid"
+            },
+            {
+              "name": "data-theme",
+              "type": {
+                "text": "string"
+              },
+              "description": "Theme propagated to the preview pane",
+              "fieldName": "data-theme"
+            },
+            {
+              "name": "data-label-tab-hint",
+              "type": {
+                "text": "string"
+              },
+              "description": "Tab-indent hint read with the textarea",
+              "fieldName": "data-label-tab-hint"
+            },
+            {
+              "name": "data-editing",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Present when textarea is focused",
+              "fieldName": "data-editing"
+            }
+          ],
+          "superclass": {
+            "name": "VBElement",
+            "module": "/src/lib/vb-element.js"
+          },
+          "tagName": "markdown-editor",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "custom-element-definition",
+          "name": "markdown-editor",
+          "declaration": {
+            "name": "MarkdownEditor",
+            "module": "src/web-components/markdown-editor/logic.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "MarkdownEditor",
+          "declaration": {
+            "name": "MarkdownEditor",
+            "module": "src/web-components/markdown-editor/logic.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "src/web-components/markdown-viewer/logic.js",
       "declarations": [
         {
@@ -17837,339 +18170,6 @@
           "declaration": {
             "name": "MarkdownViewer",
             "module": "src/web-components/markdown-viewer/logic.js"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/web-components/markdown-editor/logic.js",
-      "declarations": [
-        {
-          "kind": "class",
-          "description": "Composes the author's <textarea> with a <markdown-viewer> in a split\nlayout. The textarea is ADOPTED, not replaced: it is moved into the editor\npane with every attribute intact (id + <label for>, aria-*, name,\nrequired, minlength/maxlength, readonly, dir, form, placeholder), so form\nsubmission, constraint validation and form.reset() are the native\ntextarea's own. Put `name` (and `required` etc.) on the <textarea> — that\nis what submits, with or without JavaScript. A textarea is only created\nwhen none is authored.\n\nThe structure is built once. Reconnecting (moving the element) keeps the\nsame textarea and viewer objects — only listeners are re-bound — so a\ncached `.textarea`, caret, scroll and undo history survive.\n\nPreview: the markdown is handed to <markdown-viewer> via its `.markdown`\nproperty; the viewer parses it and sanitises the result (its default).\nThe preview is not a live region — it would re-read the whole document\non every debounced keystroke.",
-          "name": "MarkdownEditor",
-          "members": [
-            {
-              "kind": "field",
-              "name": "#textarea",
-              "privacy": "private",
-              "type": {
-                "text": "HTMLTextAreaElement|null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "#viewer",
-              "privacy": "private",
-              "type": {
-                "text": "any"
-              },
-              "default": "null",
-              "description": "<markdown-viewer>"
-            },
-            {
-              "kind": "field",
-              "name": "#editorPane",
-              "privacy": "private",
-              "type": {
-                "text": "HTMLElement|null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "#previewPane",
-              "privacy": "private",
-              "type": {
-                "text": "HTMLElement|null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "#tabHint",
-              "privacy": "private",
-              "type": {
-                "text": "HTMLElement|null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "#lastValue",
-              "privacy": "private",
-              "type": {
-                "text": "string"
-              },
-              "default": "''",
-              "description": "Last committed value for change detection"
-            },
-            {
-              "kind": "field",
-              "name": "#pendingValue",
-              "privacy": "private",
-              "type": {
-                "text": "string|null"
-              },
-              "default": "null",
-              "description": "Value assigned before the structure was built"
-            },
-            {
-              "kind": "field",
-              "name": "#debounceTimer",
-              "privacy": "private",
-              "type": {
-                "text": "ReturnType<typeof setTimeout> | null"
-              },
-              "default": "null",
-              "description": "Debounce timer for preview updates"
-            },
-            {
-              "kind": "field",
-              "name": "#tabReleased",
-              "privacy": "private",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Escape was pressed: the next Tab moves focus instead of indenting."
-            },
-            {
-              "kind": "field",
-              "name": "#authored",
-              "privacy": "private",
-              "type": {
-                "text": "{ placeholder: string|null, rows: string|null }"
-              },
-              "default": "{ placeholder: null, rows: null }",
-              "description": "the textarea's own values"
-            },
-            {
-              "kind": "method",
-              "name": "setup"
-            },
-            {
-              "kind": "method",
-              "name": "teardown"
-            },
-            {
-              "kind": "field",
-              "name": "value",
-              "description": "Set the markdown value and update the preview at once. Assigning the\ncurrent value is a no-op. Emits markdown-editor:change with\nsource: 'api' so consumers can filter their own assignments out of the\nevent stream; the next blur does not repeat it.",
-              "return": {
-                "type": {
-                  "text": "string"
-                }
-              }
-            },
-            {
-              "kind": "field",
-              "name": "textarea",
-              "description": "The textarea element — the author's own when one was provided. Stable\nacross reconnects.",
-              "return": {
-                "type": {
-                  "text": "HTMLTextAreaElement|null"
-                }
-              },
-              "readonly": true
-            },
-            {
-              "kind": "method",
-              "name": "#isBuilt",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#buildDOM",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#applyRows",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#applyPaneLabels",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#label",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "key",
-                  "type": {
-                    "text": "'source'|'preview'"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#setOrRemove",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "el",
-                  "type": {
-                    "text": "Element"
-                  }
-                },
-                {
-                  "name": "attr",
-                  "type": {
-                    "text": "string"
-                  }
-                },
-                {
-                  "name": "value",
-                  "type": {
-                    "text": "string|null"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#bindEvents",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#schedulePreview",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#updatePreview",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#emit",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "name",
-                  "type": {
-                    "text": "string"
-                  }
-                },
-                {
-                  "name": "detail",
-                  "type": {
-                    "text": "object"
-                  }
-                }
-              ]
-            }
-          ],
-          "events": [
-            {
-              "name": "name",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "markdown-editor:input",
-              "type": {
-                "text": "CustomEvent"
-              },
-              "description": "Each keystroke. Detail: { value }"
-            },
-            {
-              "name": "markdown-editor:change",
-              "type": {
-                "text": "CustomEvent"
-              },
-              "description": "On blur after the content changed (source \"user\"),"
-            }
-          ],
-          "attributes": [
-            {
-              "name": "placeholder"
-            },
-            {
-              "name": "rows"
-            },
-            {
-              "name": "highlight"
-            },
-            {
-              "name": "data-label-source"
-            },
-            {
-              "name": "data-label-preview"
-            },
-            {
-              "name": "data-tab-indent",
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Tab inserts two spaces; Escape then Tab moves focus",
-              "fieldName": "data-tab-indent"
-            },
-            {
-              "name": "data-auto-mermaid",
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Upgrade mermaid fences in the preview to <diagram-wc>",
-              "fieldName": "data-auto-mermaid"
-            },
-            {
-              "name": "data-theme",
-              "type": {
-                "text": "string"
-              },
-              "description": "Theme propagated to the preview pane",
-              "fieldName": "data-theme"
-            },
-            {
-              "name": "data-label-tab-hint",
-              "type": {
-                "text": "string"
-              },
-              "description": "Tab-indent hint read with the textarea",
-              "fieldName": "data-label-tab-hint"
-            },
-            {
-              "name": "data-editing",
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Present when textarea is focused",
-              "fieldName": "data-editing"
-            }
-          ],
-          "superclass": {
-            "name": "VBElement",
-            "module": "/src/lib/vb-element.js"
-          },
-          "tagName": "markdown-editor",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "custom-element-definition",
-          "name": "markdown-editor",
-          "declaration": {
-            "name": "MarkdownEditor",
-            "module": "src/web-components/markdown-editor/logic.js"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "MarkdownEditor",
-          "declaration": {
-            "name": "MarkdownEditor",
-            "module": "src/web-components/markdown-editor/logic.js"
           }
         }
       ]
@@ -19958,6 +19958,293 @@
     },
     {
       "kind": "javascript-module",
+      "path": "src/web-components/page-tools/logic.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Aggregates per-page tools (print, share, reading stats, etc.) into a\ncohesive toolbar with configurable positioning. On small viewports,\ncollapses to a floating action button (FAB) with a native popover panel.\n\nAuto-discovers children as tools — any direct child element counts.\nNo registry or allow-list needed.",
+          "name": "PageTools",
+          "members": [
+            {
+              "kind": "field",
+              "name": "#fab",
+              "privacy": "private",
+              "type": {
+                "text": "HTMLButtonElement | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#popover",
+              "privacy": "private",
+              "type": {
+                "text": "HTMLElement | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#mql",
+              "privacy": "private",
+              "type": {
+                "text": "MediaQueryList | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#collapsed",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "#observer",
+              "privacy": "private",
+              "type": {
+                "text": "MutationObserver | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#focusWasInside",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Focus was inside the popover when it started to close."
+            },
+            {
+              "kind": "field",
+              "name": "#rovingRaf",
+              "privacy": "private",
+              "type": {
+                "text": "number"
+              },
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "#current",
+              "privacy": "private",
+              "type": {
+                "text": "Element | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#ownsRole",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "The toolbar role was set here, not authored (kept across reconnects)."
+            },
+            {
+              "kind": "method",
+              "name": "setup"
+            },
+            {
+              "kind": "method",
+              "name": "teardown"
+            },
+            {
+              "kind": "field",
+              "name": "tools",
+              "description": "Tools = direct children that are not internal infrastructure\n(when collapsed, the tools live inside the popover panel).",
+              "return": {
+                "type": {
+                  "text": "Element[]"
+                }
+              },
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "#resolveOrientation",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#keyOrientation",
+              "privacy": "private",
+              "description": "The direction arrow keys move in: the popover panel is always a column."
+            },
+            {
+              "kind": "method",
+              "name": "#syncAriaOrientation",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#items",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "HTMLElement[]"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "#scheduleRoving",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#applyRoving",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "preferred",
+                  "default": "null",
+                  "optional": true,
+                  "type": {
+                    "text": "Element | null"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "#onFocusin",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "FocusEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "#onKeydown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#createCollapse",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#anchorPopover",
+              "privacy": "private",
+              "description": "With the FAB in a <fab-stack>, sit the panel just above the FAB."
+            },
+            {
+              "kind": "method",
+              "name": "#handleBreakpoint",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "mql"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#collapse",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#expand",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#syncPopover",
+              "privacy": "private"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "data-orientation"
+            },
+            {
+              "name": "data-position"
+            },
+            {
+              "name": "data-gap",
+              "type": {
+                "text": "string"
+              },
+              "description": "Gap token: 's' (default)",
+              "fieldName": "data-gap"
+            },
+            {
+              "name": "data-fab-icon",
+              "type": {
+                "text": "string"
+              },
+              "description": "Icon name for FAB (default: 'ellipsis-vertical')",
+              "fieldName": "data-fab-icon"
+            },
+            {
+              "name": "data-fab-label",
+              "type": {
+                "text": "string"
+              },
+              "description": "Accessible label for FAB (default: 'Page tools')",
+              "fieldName": "data-fab-label"
+            },
+            {
+              "name": "data-breakpoint",
+              "type": {
+                "text": "string"
+              },
+              "description": "Collapse width (default: '48rem')",
+              "fieldName": "data-breakpoint"
+            }
+          ],
+          "superclass": {
+            "name": "VBElement",
+            "module": "/src/lib/vb-element.js"
+          },
+          "tagName": "page-tools",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "custom-element-definition",
+          "name": "page-tools",
+          "declaration": {
+            "name": "PageTools",
+            "module": "src/web-components/page-tools/logic.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "PageTools",
+          "declaration": {
+            "name": "PageTools",
+            "module": "src/web-components/page-tools/logic.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "src/web-components/page-tour/logic.js",
       "declarations": [
         {
@@ -20771,293 +21058,6 @@
     },
     {
       "kind": "javascript-module",
-      "path": "src/web-components/page-tools/logic.js",
-      "declarations": [
-        {
-          "kind": "class",
-          "description": "Aggregates per-page tools (print, share, reading stats, etc.) into a\ncohesive toolbar with configurable positioning. On small viewports,\ncollapses to a floating action button (FAB) with a native popover panel.\n\nAuto-discovers children as tools — any direct child element counts.\nNo registry or allow-list needed.",
-          "name": "PageTools",
-          "members": [
-            {
-              "kind": "field",
-              "name": "#fab",
-              "privacy": "private",
-              "type": {
-                "text": "HTMLButtonElement | null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "#popover",
-              "privacy": "private",
-              "type": {
-                "text": "HTMLElement | null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "#mql",
-              "privacy": "private",
-              "type": {
-                "text": "MediaQueryList | null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "#collapsed",
-              "privacy": "private",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false"
-            },
-            {
-              "kind": "field",
-              "name": "#observer",
-              "privacy": "private",
-              "type": {
-                "text": "MutationObserver | null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "#focusWasInside",
-              "privacy": "private",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "Focus was inside the popover when it started to close."
-            },
-            {
-              "kind": "field",
-              "name": "#rovingRaf",
-              "privacy": "private",
-              "type": {
-                "text": "number"
-              },
-              "default": "0"
-            },
-            {
-              "kind": "field",
-              "name": "#current",
-              "privacy": "private",
-              "type": {
-                "text": "Element | null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "#ownsRole",
-              "privacy": "private",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false",
-              "description": "The toolbar role was set here, not authored (kept across reconnects)."
-            },
-            {
-              "kind": "method",
-              "name": "setup"
-            },
-            {
-              "kind": "method",
-              "name": "teardown"
-            },
-            {
-              "kind": "field",
-              "name": "tools",
-              "description": "Tools = direct children that are not internal infrastructure\n(when collapsed, the tools live inside the popover panel).",
-              "return": {
-                "type": {
-                  "text": "Element[]"
-                }
-              },
-              "readonly": true
-            },
-            {
-              "kind": "method",
-              "name": "#resolveOrientation",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#keyOrientation",
-              "privacy": "private",
-              "description": "The direction arrow keys move in: the popover panel is always a column."
-            },
-            {
-              "kind": "method",
-              "name": "#syncAriaOrientation",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#items",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": "HTMLElement[]"
-                }
-              }
-            },
-            {
-              "kind": "method",
-              "name": "#scheduleRoving",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#applyRoving",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "preferred",
-                  "default": "null",
-                  "optional": true,
-                  "type": {
-                    "text": "Element | null"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "field",
-              "name": "#onFocusin",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "FocusEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "field",
-              "name": "#onKeydown",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e",
-                  "type": {
-                    "text": "KeyboardEvent"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#createCollapse",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#anchorPopover",
-              "privacy": "private",
-              "description": "With the FAB in a <fab-stack>, sit the panel just above the FAB."
-            },
-            {
-              "kind": "method",
-              "name": "#handleBreakpoint",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "mql"
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#collapse",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#expand",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#syncPopover",
-              "privacy": "private"
-            }
-          ],
-          "attributes": [
-            {
-              "name": "data-orientation"
-            },
-            {
-              "name": "data-position"
-            },
-            {
-              "name": "data-gap",
-              "type": {
-                "text": "string"
-              },
-              "description": "Gap token: 's' (default)",
-              "fieldName": "data-gap"
-            },
-            {
-              "name": "data-fab-icon",
-              "type": {
-                "text": "string"
-              },
-              "description": "Icon name for FAB (default: 'ellipsis-vertical')",
-              "fieldName": "data-fab-icon"
-            },
-            {
-              "name": "data-fab-label",
-              "type": {
-                "text": "string"
-              },
-              "description": "Accessible label for FAB (default: 'Page tools')",
-              "fieldName": "data-fab-label"
-            },
-            {
-              "name": "data-breakpoint",
-              "type": {
-                "text": "string"
-              },
-              "description": "Collapse width (default: '48rem')",
-              "fieldName": "data-breakpoint"
-            }
-          ],
-          "superclass": {
-            "name": "VBElement",
-            "module": "/src/lib/vb-element.js"
-          },
-          "tagName": "page-tools",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "custom-element-definition",
-          "name": "page-tools",
-          "declaration": {
-            "name": "PageTools",
-            "module": "src/web-components/page-tools/logic.js"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "PageTools",
-          "declaration": {
-            "name": "PageTools",
-            "module": "src/web-components/page-tools/logic.js"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
       "path": "src/web-components/pager-wc/logic.js",
       "declarations": [
         {
@@ -21311,6 +21311,294 @@
           "declaration": {
             "name": "PagerWC",
             "module": "src/web-components/pager-wc/logic.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/web-components/poll-wc/logic.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Two authoring forms:\n\n1. Buttons — `<button data-option data-count [data-mine]>` children with an\n   optional `<span slot=\"question\">…</span>`.\n2. Native form (no-JS fallback) — a `<form>` whose `<fieldset>` holds a\n   `<legend>` and `<input type=\"radio|checkbox\" value data-count [checked]>`\n   inputs inside `<label>`s. Without JS it submits to the form's action;\n   with JS it is replaced by the button form (legend → question, value →\n   data-option, checked → data-mine, checkbox → data-multi,\n   fieldset[disabled] → data-closed).\n\nPresentational, like reaction-bar: emits `poll-wc:vote`, and the author\ncalls `setCount(option, count, { mine })` once their server confirms.\nDe-duplication and vote persistence are the author's server's job. While a\nvote is in flight the option carries `data-pending` and further clicks are\nignored (single-choice: the whole poll; multi-choice: that option) until\nsetCount / setCounts reports back.",
+          "name": "PollWc",
+          "members": [
+            {
+              "kind": "field",
+              "name": "#questionEl",
+              "privacy": "private",
+              "type": {
+                "text": "HTMLElement | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#optionsList",
+              "privacy": "private",
+              "type": {
+                "text": "HTMLElement | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#total",
+              "privacy": "private",
+              "type": {
+                "text": "HTMLOutputElement | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "method",
+              "name": "setup"
+            },
+            {
+              "kind": "method",
+              "name": "teardown"
+            },
+            {
+              "kind": "method",
+              "name": "#adoptForm",
+              "privacy": "private",
+              "description": "Convert native `<form><fieldset>` radio/checkbox markup into button options."
+            },
+            {
+              "kind": "method",
+              "name": "#build",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#scanOptions",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#updateGroupRole",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#decorateOption",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "option"
+                }
+              ],
+              "description": "Idempotent: wraps the authored label markup once, keeps it intact."
+            },
+            {
+              "kind": "method",
+              "name": "#inactive",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#onOptionClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "option"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#onOptionKeydown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e"
+                },
+                {
+                  "name": "option"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#setRoving",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "target"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#label",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "key"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#locale",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#refreshBusy",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#refresh",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#settle",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "option"
+                }
+              ],
+              "description": "Clear in-flight flags: one option (multi) or the whole poll (single)."
+            },
+            {
+              "kind": "method",
+              "name": "setCount",
+              "parameters": [
+                {
+                  "name": "option",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "count",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "opts",
+                  "default": "{}",
+                  "optional": true,
+                  "type": {
+                    "text": "{ mine?: boolean }"
+                  }
+                }
+              ],
+              "description": "Update a single option's count (and optionally its mine flag). Also\nclears the pending flag — call it on failure too, with the old values,\nto roll back."
+            },
+            {
+              "kind": "method",
+              "name": "setCounts",
+              "parameters": [
+                {
+                  "name": "counts",
+                  "type": {
+                    "text": "Record<string, number>"
+                  }
+                },
+                {
+                  "name": "opts",
+                  "default": "{}",
+                  "optional": true,
+                  "type": {
+                    "text": "{ mine?: string|string[] }"
+                  }
+                }
+              ],
+              "description": "Bulk-update counts. `mine` may be a string (single-choice) or string[] (multi).\nClears every pending flag."
+            },
+            {
+              "kind": "method",
+              "name": "close"
+            },
+            {
+              "kind": "method",
+              "name": "open"
+            },
+            {
+              "kind": "field",
+              "name": "totalVotes",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "myVotes",
+              "readonly": true
+            }
+          ],
+          "events": [
+            {
+              "name": "poll-wc:closed-change",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "poll-wc:vote",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "data-closed"
+            },
+            {
+              "name": "data-multi"
+            },
+            {
+              "name": "data-hide-counts"
+            },
+            {
+              "name": "disabled"
+            },
+            {
+              "name": "aria-label",
+              "type": {
+                "text": "string"
+              },
+              "description": "Group label (moved onto the option group)",
+              "fieldName": "aria-label"
+            },
+            {
+              "name": "data-label-vote",
+              "type": {
+                "text": "string"
+              },
+              "description": "/ data-label-votes / data-label-your-choice /",
+              "fieldName": "data-label-vote"
+            }
+          ],
+          "superclass": {
+            "name": "VBElement",
+            "module": "/src/lib/vb-element.js"
+          },
+          "tagName": "poll-wc",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "custom-element-definition",
+          "name": "poll-wc",
+          "declaration": {
+            "name": "PollWc",
+            "module": "src/web-components/poll-wc/logic.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "PollWc",
+          "declaration": {
+            "name": "PollWc",
+            "module": "src/web-components/poll-wc/logic.js"
           }
         }
       ]
@@ -21754,294 +22042,6 @@
           "declaration": {
             "name": "safeHref",
             "module": "src/web-components/popularity-index/logic.js"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/web-components/poll-wc/logic.js",
-      "declarations": [
-        {
-          "kind": "class",
-          "description": "Two authoring forms:\n\n1. Buttons — `<button data-option data-count [data-mine]>` children with an\n   optional `<span slot=\"question\">…</span>`.\n2. Native form (no-JS fallback) — a `<form>` whose `<fieldset>` holds a\n   `<legend>` and `<input type=\"radio|checkbox\" value data-count [checked]>`\n   inputs inside `<label>`s. Without JS it submits to the form's action;\n   with JS it is replaced by the button form (legend → question, value →\n   data-option, checked → data-mine, checkbox → data-multi,\n   fieldset[disabled] → data-closed).\n\nPresentational, like reaction-bar: emits `poll-wc:vote`, and the author\ncalls `setCount(option, count, { mine })` once their server confirms.\nDe-duplication and vote persistence are the author's server's job. While a\nvote is in flight the option carries `data-pending` and further clicks are\nignored (single-choice: the whole poll; multi-choice: that option) until\nsetCount / setCounts reports back.",
-          "name": "PollWc",
-          "members": [
-            {
-              "kind": "field",
-              "name": "#questionEl",
-              "privacy": "private",
-              "type": {
-                "text": "HTMLElement | null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "#optionsList",
-              "privacy": "private",
-              "type": {
-                "text": "HTMLElement | null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "field",
-              "name": "#total",
-              "privacy": "private",
-              "type": {
-                "text": "HTMLOutputElement | null"
-              },
-              "default": "null"
-            },
-            {
-              "kind": "method",
-              "name": "setup"
-            },
-            {
-              "kind": "method",
-              "name": "teardown"
-            },
-            {
-              "kind": "method",
-              "name": "#adoptForm",
-              "privacy": "private",
-              "description": "Convert native `<form><fieldset>` radio/checkbox markup into button options."
-            },
-            {
-              "kind": "method",
-              "name": "#build",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#scanOptions",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#updateGroupRole",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#decorateOption",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "option"
-                }
-              ],
-              "description": "Idempotent: wraps the authored label markup once, keeps it intact."
-            },
-            {
-              "kind": "method",
-              "name": "#inactive",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#onOptionClick",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "option"
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#onOptionKeydown",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "e"
-                },
-                {
-                  "name": "option"
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#setRoving",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "target"
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#label",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "key"
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "#locale",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#refreshBusy",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#refresh",
-              "privacy": "private"
-            },
-            {
-              "kind": "method",
-              "name": "#settle",
-              "privacy": "private",
-              "parameters": [
-                {
-                  "name": "option"
-                }
-              ],
-              "description": "Clear in-flight flags: one option (multi) or the whole poll (single)."
-            },
-            {
-              "kind": "method",
-              "name": "setCount",
-              "parameters": [
-                {
-                  "name": "option",
-                  "type": {
-                    "text": "string"
-                  }
-                },
-                {
-                  "name": "count",
-                  "type": {
-                    "text": "number"
-                  }
-                },
-                {
-                  "name": "opts",
-                  "default": "{}",
-                  "optional": true,
-                  "type": {
-                    "text": "{ mine?: boolean }"
-                  }
-                }
-              ],
-              "description": "Update a single option's count (and optionally its mine flag). Also\nclears the pending flag — call it on failure too, with the old values,\nto roll back."
-            },
-            {
-              "kind": "method",
-              "name": "setCounts",
-              "parameters": [
-                {
-                  "name": "counts",
-                  "type": {
-                    "text": "Record<string, number>"
-                  }
-                },
-                {
-                  "name": "opts",
-                  "default": "{}",
-                  "optional": true,
-                  "type": {
-                    "text": "{ mine?: string|string[] }"
-                  }
-                }
-              ],
-              "description": "Bulk-update counts. `mine` may be a string (single-choice) or string[] (multi).\nClears every pending flag."
-            },
-            {
-              "kind": "method",
-              "name": "close"
-            },
-            {
-              "kind": "method",
-              "name": "open"
-            },
-            {
-              "kind": "field",
-              "name": "totalVotes",
-              "readonly": true
-            },
-            {
-              "kind": "field",
-              "name": "myVotes",
-              "readonly": true
-            }
-          ],
-          "events": [
-            {
-              "name": "poll-wc:closed-change",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "poll-wc:vote",
-              "type": {
-                "text": "CustomEvent"
-              }
-            }
-          ],
-          "attributes": [
-            {
-              "name": "data-closed"
-            },
-            {
-              "name": "data-multi"
-            },
-            {
-              "name": "data-hide-counts"
-            },
-            {
-              "name": "disabled"
-            },
-            {
-              "name": "aria-label",
-              "type": {
-                "text": "string"
-              },
-              "description": "Group label (moved onto the option group)",
-              "fieldName": "aria-label"
-            },
-            {
-              "name": "data-label-vote",
-              "type": {
-                "text": "string"
-              },
-              "description": "/ data-label-votes / data-label-your-choice /",
-              "fieldName": "data-label-vote"
-            }
-          ],
-          "superclass": {
-            "name": "VBElement",
-            "module": "/src/lib/vb-element.js"
-          },
-          "tagName": "poll-wc",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "custom-element-definition",
-          "name": "poll-wc",
-          "declaration": {
-            "name": "PollWc",
-            "module": "src/web-components/poll-wc/logic.js"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "PollWc",
-          "declaration": {
-            "name": "PollWc",
-            "module": "src/web-components/poll-wc/logic.js"
           }
         }
       ]
