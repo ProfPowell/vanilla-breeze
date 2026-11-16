@@ -13,7 +13,7 @@ crumbLabel: Web Components
 <section>
     <h2>Description</h2>
     <p>The <code>&lt;context-menu&gt;</code> component provides a custom right-click menu that opens at the cursor position. It supports keyboard navigation, separators, danger items, and disabled states. Shares menu styling patterns with <code>&lt;drop-down&gt;</code>.</p>
-    <p>It is keyboard-operable too: a trigger that is not already focusable gets <code>tabindex="0"</code>, and <kbd>Shift+F10</kbd> or the <kbd>ContextMenu</kbd> key opens the menu at the trigger. Focus returns to the trigger when the menu closes. Any action in a context menu should still be reachable another way &mdash; a toolbar button or inline control &mdash; because touch users and many screen reader users never right-click.</p>
+    <p>It is keyboard-operable too: a trigger that is not already focusable gets <code>tabindex="0"</code>, and <kbd>Shift+F10</kbd> or the <kbd>ContextMenu</kbd> key opens the menu while focus is on the trigger or on anything inside it. Focus returns to where it was when the menu closes. Any action in a context menu should still be reachable another way &mdash; a toolbar button or inline control &mdash; because touch users and many screen reader users never right-click.</p>
   </section>
 
   <section>
@@ -110,7 +110,7 @@ crumbLabel: Web Components
         </tr>
       </thead>
       <tbody>
-        <tr><td><kbd>Shift+F10</kbd> / <kbd>ContextMenu</kbd></td><td>Open the menu at the focused trigger</td></tr>
+        <tr><td><kbd>Shift+F10</kbd> / <kbd>ContextMenu</kbd></td><td>Open the menu, with focus on the trigger or on anything inside it</td></tr>
         <tr><td><kbd>Arrow Down</kbd></td><td>Move to next item</td></tr>
         <tr><td><kbd>Arrow Up</kbd></td><td>Move to previous item</td></tr>
         <tr><td><kbd>Home</kbd></td><td>Move to first item</td></tr>
@@ -215,9 +215,11 @@ menu.addEventListener('context-menu:open', () => {
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Opens from the keyboard: the trigger is made focusable when needed, and <kbd>Shift+F10</kbd> / <kbd>ContextMenu</kbd> open the menu at the trigger</li>
-      <li>A trigger that is a native control, or that has a <code>role</code> of its own, carries <code>aria-haspopup="menu"</code>, <code>aria-expanded</code> and <code>aria-controls</code>. A plain element such as a <code>&lt;p&gt;</code> or <code>&lt;section&gt;</code> is made focusable and keeps its own semantics, because those states are not valid on an element without a role</li>
-      <li>Full keyboard navigation (Arrow keys, Home/End, Enter, Escape); focus returns to the trigger on close</li>
+      <li>Opens from the keyboard: the trigger is made focusable when needed, and <kbd>Shift+F10</kbd> / <kbd>ContextMenu</kbd> open the menu while focus is on the trigger or on a control inside it</li>
+      <li>A trigger that is a control (a button, a link, or a focusable element with a widget role such as <code>role="button"</code>) carries <code>aria-haspopup="menu"</code>, <code>aria-expanded</code> and <code>aria-controls</code></li>
+      <li>Any other trigger, such as a <code>&lt;p&gt;</code>, a <code>&lt;section&gt;</code> or an image, keeps its own semantics and gets no popup state, because screen readers ignore or misreport those states on an element that is not a control. It gets <code>aria-description="Context menu available"</code> instead, so the menu is announced when the trigger takes focus. Change the text with <code>data-label-available</code> on <code>&lt;context-menu&gt;</code>; a trigger that already has <code>aria-description</code> or <code>aria-describedby</code> is left alone</li>
+      <li>The attributes the component adds to the trigger are removed when it disconnects</li>
+      <li>Full keyboard navigation (Arrow keys, Home/End, Enter, Escape); focus returns to where it was on close</li>
       <li>Menu items have <code>role="menuitem"</code>, their <code>&lt;li&gt;</code> wrappers <code>role="none"</code>, separators <code>role="separator"</code></li>
       <li>Group labels name a <code>role="group"</code> through <code>aria-labelledby</code></li>
       <li><code>data-disabled</code> items expose <code>aria-disabled="true"</code> and stay reachable but inert</li>

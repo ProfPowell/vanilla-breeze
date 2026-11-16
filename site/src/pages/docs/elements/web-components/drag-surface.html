@@ -67,6 +67,12 @@ crumbLabel: Web Components
         <td>&mdash;</td>
         <td>Renders per-item Move buttons: a single-pointer alternative to dragging. See <a href="#move-controls">Move controls</a>.</td>
       </tr>
+      <tr>
+        <td><code>data-label-instructions</code></td>
+        <td>string</td>
+        <td><code>"Press Space or Enter to grab, then use the arrow keys to move"</code></td>
+        <td>Text of the <code>aria-description</code> set on each item, which tells screen reader users how to move it.</td>
+      </tr>
     </tbody>
   </table>
 
@@ -131,7 +137,7 @@ crumbLabel: Web Components
       <tr>
         <td><code>data-grabbed</code></td>
         <td>A child item</td>
-        <td>Item is grabbed for keyboard reorder (also given <code>aria-description="Grabbed"</code> unless it has its own)</td>
+        <td>Item is grabbed for keyboard reorder (its <code>aria-description</code> changes to &ldquo;Grabbed&rdquo; unless it has its own description)</td>
       </tr>
       <tr>
         <td><code>aria-disabled="true"</code></td>
@@ -362,7 +368,8 @@ document.addEventListener('drag-surface:transfer', (e) => {
   <h2>Accessibility</h2>
 
   <h3>ARIA Roles</h3>
-  <p>The surface sets <code>role="list"</code> on itself and gives each draggable child <code>role="listitem"</code> and <code>tabindex="0"</code>, including items added later. Grab state is not exposed through the deprecated <code>aria-grabbed</code>. A grabbed item gets <code>aria-description="Grabbed"</code>, a button handle gets <code>aria-pressed="true"</code>, and every change is announced.</p>
+  <p>The surface sets <code>role="list"</code> on itself and gives each draggable child <code>role="listitem"</code> and <code>tabindex="0"</code>, including items added later. Each item also gets an <code>aria-description</code> that says how to move it (&ldquo;Press Space or Enter to grab, then use the arrow keys to move&rdquo;); set <code>data-label-instructions</code> on the surface to change or translate the text. An item that has its own <code>aria-description</code> or <code>aria-describedby</code> keeps it. Grab state is not exposed through the deprecated <code>aria-grabbed</code>. While an item is grabbed its description changes to &ldquo;Grabbed&rdquo;, a button handle gets <code>aria-pressed="true"</code>, and every change is announced.</p>
+  <p>Every item is its own tab stop. That is deliberate: each item is a control you pick up and move, the same as a list of buttons, and separate tab stops let <kbd>Tab</kbd> reach the links, buttons and move controls inside each item. The arrow keys also move focus between items.</p>
 
   <h3>Live Region</h3>
   <p>A visually hidden <code>role="status"</code> region announces position changes during keyboard reorder (e.g., &ldquo;Position 2 of 5&rdquo;), grab/drop actions and move-control moves. It is inserted as the surface&rsquo;s next sibling, not inside the list, so the list only contains list items.</p>

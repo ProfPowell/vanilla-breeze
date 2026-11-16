@@ -301,9 +301,9 @@ crumbLabel: Web Components
         <td>Opens the panel and moves focus into it. If the element hasn't rendered yet (it isn't connected), the call is queued until it renders.</td>
       </tr>
       <tr>
-        <td><code>close({ returnFocus })</code></td>
+        <td><code>close()</code></td>
         <td>method</td>
-        <td>Closes the panel. Pass <code>returnFocus: true</code> to focus the trigger, as Escape and the close button do.</td>
+        <td>Closes the panel. If focus is inside the panel it returns to the trigger; focus that is elsewhere is not moved.</td>
       </tr>
       <tr>
         <td><code>toggle()</code></td>
@@ -321,7 +321,7 @@ crumbLabel: Web Components
   <code-block language="javascript" show-lines label="Programmatic control" data-escape>const settings = document.querySelector('settings-panel');
 
 settings.open();
-settings.close({ returnFocus: true });
+settings.close();
 
 // Apply and persist preferences in one assignment
 settings.data = { a11yThemes: ['a11y-large-text'], sticky: true };
@@ -420,7 +420,7 @@ settings.addEventListener('settings-panel:data-changed', (e) => {
       </tr>
       <tr>
         <td><kbd>Escape</kbd></td>
-        <td>Close the panel and return focus to the trigger</td>
+        <td>With focus on the trigger or inside the panel: close the panel and return focus to the trigger</td>
       </tr>
     </tbody>
   </table>
@@ -429,7 +429,7 @@ settings.addEventListener('settings-panel:data-changed', (e) => {
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li>The panel is a non-modal <code>role="dialog"</code>, named by <code>data-label-dialog</code> (default "Site settings"). When it opens, focus moves to the panel. It does <strong>not</strong> trap focus: tabbing out, clicking outside or pressing <kbd>Escape</kbd> closes it.</li>
+    <li>The panel is a non-modal <code>role="dialog"</code>, named by <code>data-label-dialog</code> (default "Site settings"). When it opens, focus moves to the panel. It does <strong>not</strong> trap focus, because the page behind it stays usable: tabbing out, clicking outside or pressing <kbd>Escape</kbd> (with focus on the trigger or in the panel) closes it. Whenever it closes while focus is inside it, focus returns to the trigger, so focus is never left on a hidden control.</li>
     <li>The trigger has <code>aria-haspopup="dialog"</code>, <code>aria-controls</code> and an <code>aria-expanded</code> that tracks the open state, including across a remove and reinsert.</li>
     <li>Color mode, density, backdrop style and chrome are radio groups inside <code>&lt;fieldset&gt;</code> elements with visually hidden <code>&lt;legend&gt;</code>s. Their radio <code>name</code>s and the control <code>id</code>s carry a per-instance suffix, so two panels on one page don't share groups or labels.</li>
     <li>Toggle switches are native <code>&lt;input type="checkbox" data-switch="s"&gt;</code> elements inside their <code>&lt;label&gt;</code>.</li>
