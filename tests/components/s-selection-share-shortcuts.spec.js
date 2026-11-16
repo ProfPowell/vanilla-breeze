@@ -349,6 +349,15 @@ test.describe('share-wc', () => {
     await expect(link).toHaveAttribute('href', 'https://x.com/intent/post?url=https%3A%2F%2Fexample.com%2Fnew&text=New%20title');
   });
 
+  test('slotted share links carry no external-link arrow', async ({ page }) => {
+    await load(page, `<share-wc id="s" tier="platforms" url="https://example.com/d">
+      <a data-platform="x" href="https://x.com/intent/post?url={url}">Post on X</a></share-wc>`,
+    { modules: ['share-wc'] });
+    await page.waitForSelector('share-wc[data-upgraded]', { state: 'attached' });
+    const content = await page.locator('#s a[data-platform="x"]').evaluate((a) => getComputedStyle(a, '::after').content);
+    expect(content).toBe('none');
+  });
+
   test('slotted copy button copies once per click', async ({ page }) => {
     await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
     await load(page, `<share-wc id="s" tier="platforms" url="https://example.com/c">
