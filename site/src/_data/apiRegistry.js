@@ -17263,6 +17263,73 @@ export default {
       ]
     }
   },
+  "social-links": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "social-links",
+    "type": "web-component",
+    "description": "A row of profile links. Cook writes a plain list of links inside it at build time; the element supplies the icons, variants and spacing. An empty element takes no space.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "ul"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "services",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Comma-separated service ids to show (bluesky, mastodon, github, linkedin, youtube, link); default all visible accounts. Read by Cook at build time."
+      },
+      {
+        "name": "variant",
+        "kind": "host-api",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "icon",
+          "label",
+          "icon-label"
+        ],
+        "default": "icon-label",
+        "description": "Icon only (label visually hidden but still the name), label only, or both"
+      },
+      {
+        "name": "color",
+        "kind": "host-api",
+        "purpose": "visual-variant",
+        "type": "boolean",
+        "description": "Brand colours on the icons only (label text stays --color-text)"
+      }
+    ],
+    "events": [],
+    "methods": [],
+    "properties": [],
+    "childAttributes": [
+      {
+        "name": "data-service",
+        "on": "span.social-icon",
+        "type": "string",
+        "description": "Service id that selects the icon: bluesky, mastodon, github, linkedin, youtube or link."
+      }
+    ],
+    "structure": [],
+    "a11y": {
+      "pattern": "A list of native links",
+      "manages": [],
+      "announces": "Nothing; each link is named by its label text",
+      "keyboard": [
+        {
+          "keys": [
+            "Enter"
+          ],
+          "action": "Follow the link",
+          "when": "Native behaviour of a"
+        }
+      ]
+    }
+  },
   "split-surface": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "split-surface",

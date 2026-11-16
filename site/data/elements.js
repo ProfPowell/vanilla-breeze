@@ -223,6 +223,7 @@ const elementsByLetter = {
     { name: 'selection-menu', type: 'component', href: '/docs/elements/web-components/selection-menu/' },
     { name: 'settings-panel', type: 'component', href: '/docs/elements/web-components/settings-panel/' },
     { name: 'share-wc', type: 'component', href: '/docs/elements/web-components/share/' },
+    { name: 'social-links', type: 'component', href: '/docs/elements/web-components/social-links/' },
     { name: 'short-cuts', type: 'component', href: '/docs/elements/web-components/shortcuts/' },
     { name: 'slide-accept', type: 'component', href: '/docs/elements/web-components/slide-accept/' },
     { name: 'slot', type: 'native', href: '/docs/elements/native/slot/' },

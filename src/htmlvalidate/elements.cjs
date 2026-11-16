@@ -1636,6 +1636,16 @@ module.exports = {
     }
   },
 
+  "social-links": {
+    flow: true,
+    permittedContent: ["ul"],
+    attributes: {
+      "services": {},
+      "variant": { enum: ["icon", "label", "icon-label"] },
+      "color": { boolean: true }
+    }
+  },
+
   "split-surface": {
     flow: true,
     permittedContent: ["@flow"],

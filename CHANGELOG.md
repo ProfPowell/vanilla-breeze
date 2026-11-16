@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **`<social-links>`: a row of profile links.** Cook fills it at build time with a plain list of links; the element adds CSS-drawn icons for Bluesky, Mastodon, GitHub, LinkedIn, YouTube and generic links, the `icon`, `label` and `icon-label` variants, and optional brand colours on the icons (`color`). An empty element takes no space.
+
 ### Changed
 - **Themes ship real italics for their body typefaces.** Inter, Nunito, DM Sans, Josefin Sans, Exo 2, Lora, Merriweather, JetBrains Mono, Barlow Condensed and DM Serif Display now include their italic files, so `<em>` and `<cite>` are drawn by the typeface and not slanted by the browser. An italic file is downloaded only when a page has italic text. The package grows by about 1.1 MB.
 - **Integration guide pages use the full docs canvas**, like the other docs pages, in place of a narrower fixed column.

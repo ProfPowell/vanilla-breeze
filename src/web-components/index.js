@@ -74,6 +74,7 @@ import './text-reader/logic.js';
 import './chat-input/logic.js';
 import './chat-window/logic.js';
 import './share-wc/logic.js';
+import './social-links/logic.js';
 import './reaction-bar/logic.js';
 import './comment-box/logic.js';
 import './comment-thread/logic.js';
