@@ -205,10 +205,17 @@ class ThemePicker extends VBElement {
         </div>
       </fieldset>
 
-      <fieldset class="section">
-        <legend id="${this.#name('legend')}">${themeLabel}${this.#swatches ? ' <span class="theme-name" aria-hidden="true"></span>' : ''}</legend>
-        ${this.#swatches ? this.#renderThemeGrid(brand) : this.#renderThemeSelect(brand)}
-      </fieldset>
+      ${this.#swatches ? `
+        <fieldset class="section">
+          <legend>${themeLabel} <span class="theme-name" aria-hidden="true"></span></legend>
+          ${this.#renderThemeGrid(brand)}
+        </fieldset>
+      ` : `
+        <div class="section">
+          <label class="section-label" for="${this.#name('select')}">${themeLabel}</label>
+          ${this.#renderThemeSelect(brand)}
+        </div>
+      `}
     `;
   }
 
@@ -227,7 +234,7 @@ class ThemePicker extends VBElement {
 
   /**
    * Default: the themes in one <select>, grouped when there are groups.
-   * The legend is its only name source (no aria-label repeating the text).
+   * One control needs no group: a visible <label> names it, once.
    */
   #renderThemeSelect(brand) {
     const groups = this.#groupsFor(brand);
@@ -235,7 +242,7 @@ class ThemePicker extends VBElement {
       <option value="${esc(t.id)}" ${brand === t.id ? 'selected' : ''}>${esc(t.name)}</option>
     `).join('');
     return `
-      <select class="theme-select" name="theme-brand-select" aria-labelledby="${this.#name('legend')}">
+      <select class="theme-select" name="theme-brand-select" id="${this.#name('select')}">
         ${groups.length === 1 ? options(groups[0].themes) : groups.map(group => `
           <optgroup label="${esc(group.label)}">${options(group.themes)}</optgroup>
         `).join('')}

@@ -144,10 +144,17 @@ test.describe('activity-feed', () => {
     await expect(entries.nth(1)).toHaveAttribute('tabindex', '0');
     await expect(entries.nth(0)).toHaveAttribute('tabindex', '-1');
 
-    await page.keyboard.press('End');
-    await expect(entries.nth(2)).toBeFocused();
-    await page.keyboard.press('Home');
-    await expect(entries.nth(0)).toBeFocused();
+    // Plain Home / End belong to the page: not cancelled, focus stays put.
+    for (const key of ['Home', 'End']) {
+      const cancelled = await page.evaluate((k) => {
+        const e = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true });
+        document.activeElement?.dispatchEvent(e);
+        return e.defaultPrevented;
+      }, key);
+      expect(cancelled, `${key} is left to the page`).toBe(false);
+      await page.keyboard.press(key);
+      await expect(entries.nth(1)).toBeFocused();
+    }
 
     // From a link inside an entry, arrows are left alone too and the APG
     // Page keys still navigate.

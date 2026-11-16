@@ -13,8 +13,8 @@
  *   - Wires the WAI-ARIA Feed pattern: role="feed", aria-labelledby /
  *     aria-describedby per article, aria-posinset / aria-setsize (-1 while
  *     more may load), aria-busy around load-more, keyboard nav
- *     (PageDown / PageUp, Ctrl+Home / Ctrl+End; Home / End when the
- *     article itself has focus; arrow keys are left to the page)
+ *     (PageDown / PageUp, Ctrl+Home / Ctrl+End; plain Home / End and the
+ *     arrow keys are left to the page)
  *   - Optionally arms an IntersectionObserver sentinel for infinite scroll
  *     (data-infinite → activity-feed:load-more event with a done() callback)
  *   - Watches for new direct children via MutationObserver and decorates them
@@ -396,7 +396,6 @@ class ActivityFeed extends VBElement {
     const current = this.#entryFor(e.target);
     const i = current ? entries.indexOf(current) : -1;
     if (i === -1) return;
-    const onArticle = t === current;
 
     // APG feed keys: work from anywhere inside an article.
     if (e.ctrlKey && (e.key === 'Home' || e.key === 'End')) {
@@ -410,10 +409,8 @@ class ActivityFeed extends VBElement {
     switch (e.key) {
       case 'PageDown': next = Math.min(entries.length - 1, i + 1); break;
       case 'PageUp':   next = Math.max(0, i - 1); break;
-      // Convenience keys, only while the article itself has focus. Arrow keys
-      // are never taken: they scroll the page and drive SR browse-mode reading.
-      case 'Home':      if (!onArticle) return; next = 0; break;
-      case 'End':       if (!onArticle) return; next = entries.length - 1; break;
+      // Plain Home / End and the arrow keys are never taken: they scroll the
+      // page and drive SR browse-mode reading.
       default: return;
     }
     e.preventDefault();

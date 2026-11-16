@@ -141,7 +141,9 @@ test.describe('theme-picker', () => {
       <theme-picker id="b" variant="inline" swatches></theme-picker>`, { modules: TP });
     await upgraded(page, 2);
     for (const id of ['a', 'b']) {
-      await expect(page.locator(`#${id} fieldset`)).toHaveCount(2);
+      await expect(page.locator(`#${id} .section`)).toHaveCount(2);
+      // The lone select is labelled, not grouped; the swatch groups keep a fieldset
+      await expect(page.locator(`#${id} fieldset`)).toHaveCount(id === 'a' ? 1 : 2);
       await expect(page.locator(`#${id} input[data-field=mode]`)).toHaveCount(3);
       await expect(page.locator(`#${id} :is([data-a11y-theme], [data-extension], [data-field=accent], [data-field=fluid], select[name*=accent], select[name*=fluid], a[download])`)).toHaveCount(0);
     }

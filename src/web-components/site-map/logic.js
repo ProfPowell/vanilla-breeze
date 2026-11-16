@@ -701,6 +701,13 @@ class SiteMap extends VBElement {
   static #H_GAP = 30;
   static #V_GAP = 50;
   static #PAD = 20;
+  /** Horizontal orientation: pressed arrow -> the vertical-layout arrow that makes the same tree move */
+  static #TURNED_KEYS = /** @type {Record<string, string>} */ ({
+    ArrowRight: 'ArrowDown',  // first child
+    ArrowLeft: 'ArrowUp',     // parent
+    ArrowDown: 'ArrowRight',  // next sibling
+    ArrowUp: 'ArrowLeft',     // previous sibling
+  });
 
   /**
    * Parse the nav tree into a node hierarchy for layout.
@@ -739,6 +746,9 @@ class SiteMap extends VBElement {
     const HG = SiteMap.#H_GAP;
     const VG = SiteMap.#V_GAP;
 
+    // subtreeWidth is the extent along the sibling axis: across for a
+    // vertical chart, down for a horizontal one.
+    const extent = this.#orientation === 'horizontal' ? H : W;
     for (const node of nodes) {
       node.childCount = this.#countDescendants(node);
       if (node.children.length > 0 && !node.collapsed) {
@@ -746,9 +756,9 @@ class SiteMap extends VBElement {
         node.subtreeWidth = node.children.reduce((sum, c) => sum + c.subtreeWidth, 0)
           + HG * (node.children.length - 1);
       } else {
-        node.subtreeWidth = W;
+        node.subtreeWidth = extent;
       }
-      node.subtreeWidth = Math.max(node.subtreeWidth, W);
+      node.subtreeWidth = Math.max(node.subtreeWidth, extent);
     }
   }
 
@@ -776,6 +786,20 @@ class SiteMap extends VBElement {
     const H = SiteMap.#NODE_H;
     const HG = SiteMap.#H_GAP;
     const VG = SiteMap.#V_GAP;
+
+    if (this.#orientation === 'horizontal') {
+      // Depth runs left to right, siblings stack top to bottom.
+      let cursor = y;
+      for (const node of nodes) {
+        node.x = x;
+        node.y = cursor + (node.subtreeWidth - H) / 2;
+        if (node.children.length > 0 && !node.collapsed) {
+          this.#assignPositions(node.children, x + W + VG, cursor);
+        }
+        cursor += node.subtreeWidth + HG;
+      }
+      return;
+    }
 
     let cursor = x;
     for (const node of nodes) {
@@ -918,11 +942,8 @@ class SiteMap extends VBElement {
 
     // Calculate total bounds
     const bounds = this.#calcBounds(this.#visualData);
-    let svgW = bounds.maxX + W + PAD;
-    let svgH = bounds.maxY + H + PAD;
-
-    // For horizontal, swap the coordinate space (SVG transform handles rotation)
-    if (horiz) [svgW, svgH] = [svgH, svgW];
+    const svgW = bounds.maxX + (horiz ? PAD + 24 : W + PAD);
+    const svgH = bounds.maxY + (horiz ? PAD : H + PAD);
 
     // Frame — toolbar/summary are built once and stay fixed
     let summary = this.#visualContainer?.querySelector('.sm-visual-summary');
@@ -955,17 +976,8 @@ class SiteMap extends VBElement {
     svg.style.transform = `scale(${this.#zoom})`;
     svg.style.transformOrigin = '0 0';
 
-    // Apply rotation for horizontal orientation
-    if (horiz) {
-      const g = /** @type {SVGGElement} */ (document.createElementNS(NS, 'g'));
-      g.setAttribute('transform', `rotate(90 0 0) translate(0 -${svgH})`);
-      this.#renderEdges(g, this.#visualData);
-      this.#renderNodes(g, this.#visualData);
-      svg.appendChild(g);
-    } else {
-      this.#renderEdges(svg, this.#visualData);
-      this.#renderNodes(svg, this.#visualData);
-    }
+    this.#renderEdges(svg, this.#visualData);
+    this.#renderNodes(svg, this.#visualData);
 
     zoomWrap.appendChild(svg);
     scroller.appendChild(zoomWrap);
@@ -1284,7 +1296,14 @@ class SiteMap extends VBElement {
     const current = this.#visualFocusId || '0';
     let handled = false;
 
-    switch (e.key) {
+    // Horizontal draws children to the right of their parent and siblings top
+    // to bottom, so the arrows turn with it: each key moves the way it points
+    // on screen.
+    const key = this.#orientation === 'horizontal'
+      ? (SiteMap.#TURNED_KEYS[e.key] ?? e.key)
+      : e.key;
+
+    switch (key) {
       case 'ArrowDown': {
         // Move into first child (visual: down the tree)
         handled = true;
@@ -1477,8 +1496,25 @@ class SiteMap extends VBElement {
     const H = SiteMap.#NODE_H;
     const VG = SiteMap.#V_GAP;
 
+    const horiz = this.#orientation === 'horizontal';
     for (const node of nodes) {
       if (node.children.length === 0 || node.collapsed) continue;
+      if (horiz) {
+        // Parent's right edge to each child's left edge
+        const px = node.x + W;
+        const py = node.y + H / 2;
+        const midX = px + VG / 2;
+        for (const child of node.children) {
+          const cy = child.y + H / 2;
+          const path = document.createElementNS(NS, 'path');
+          path.setAttribute('d', `M ${px} ${py} L ${midX} ${py} L ${midX} ${cy} L ${child.x} ${cy}`);
+          path.setAttribute('class', 'sm-vedge');
+          path.setAttribute('aria-hidden', 'true');
+          svg.appendChild(path);
+        }
+        this.#renderEdges(svg, node.children);
+        continue;
+      }
       const px = node.x + W / 2;
       const py = node.y + H;
       const midY = py + VG / 2;
@@ -1616,14 +1652,18 @@ class SiteMap extends VBElement {
         tg.setAttribute('aria-hidden', 'true');
 
         const toggleCircle = document.createElementNS(NS, 'circle');
-        toggleCircle.setAttribute('cx', String(node.x + W / 2));
-        toggleCircle.setAttribute('cy', String(node.y + H + 10));
+        // Sits where the edge to the children leaves the node
+        const horizToggle = this.#orientation === 'horizontal';
+        const tx = horizToggle ? node.x + W + 10 : node.x + W / 2;
+        const ty = horizToggle ? node.y + H / 2 : node.y + H + 10;
+        toggleCircle.setAttribute('cx', String(tx));
+        toggleCircle.setAttribute('cy', String(ty));
         toggleCircle.setAttribute('r', '10');
         tg.appendChild(toggleCircle);
 
         const toggleText = document.createElementNS(NS, 'text');
-        toggleText.setAttribute('x', String(node.x + W / 2));
-        toggleText.setAttribute('y', String(node.y + H + 14));
+        toggleText.setAttribute('x', String(tx));
+        toggleText.setAttribute('y', String(ty + 4));
         toggleText.setAttribute('text-anchor', 'middle');
         toggleText.setAttribute('font-size', '11');
         toggleText.setAttribute('font-weight', '700');

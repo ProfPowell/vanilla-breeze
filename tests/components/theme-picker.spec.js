@@ -78,26 +78,33 @@ test.describe('theme-picker', () => {
     await expect(page.locator('html')).toHaveAttribute('data-mode', 'dark');
   });
 
-  test('the theme select is named once, by its legend', async ({ page }) => {
+  test('the theme select is named once, by its label, with no group around it', async ({ page }) => {
     await page.goto(inlinePage);
     await waitForUpgrade(page);
 
     const select = page.locator('theme-picker select.theme-select');
     await expect(select).not.toHaveAttribute('aria-label');
+    await expect(select).not.toHaveAttribute('aria-labelledby');
     await expect(select).toHaveAccessibleName('Theme');
-    /* The one name source is the legend of the surrounding fieldset */
     const sources = await select.evaluate((el) => {
-      const legend = el.closest('fieldset')?.querySelector('legend');
+      const sel = /** @type {HTMLSelectElement} */ (el);
+      const panel = sel.closest('.panel');
+      /* Every grouping ancestor between the select and the panel */
+      const groups = [];
+      for (let n = sel.parentElement; n && n !== panel; n = n.parentElement) {
+        if (n.matches('fieldset, [role="group"], [role="radiogroup"]')) groups.push(n.tagName);
+      }
       return {
-        labelledBy: el.getAttribute('aria-labelledby'),
-        legendId: legend?.id,
-        labels: /** @type {HTMLSelectElement} */ (el).labels.length,
-        title: el.hasAttribute('title'),
+        labels: [...sel.labels].map((l) => ({ text: l.textContent.trim(), visible: l.getClientRects().length > 0 })),
+        groups,
+        title: sel.hasAttribute('title'),
+        /* The mode radios keep their fieldset */
+        modeGroup: !!panel.querySelector('fieldset[role="radiogroup"] > legend'),
       };
     });
-    expect(sources.labelledBy).toBeTruthy();
-    expect(sources.labelledBy).toBe(sources.legendId);
-    expect(sources.labels).toBe(0);
+    expect(sources.labels).toEqual([{ text: 'Theme', visible: true }]);
+    expect(sources.groups).toEqual([]);
     expect(sources.title).toBe(false);
+    expect(sources.modeGroup).toBe(true);
   });
 });

@@ -771,6 +771,68 @@ test.describe('site-map visual keyboard', () => {
     await page.waitForTimeout(100);
     expect(page.url()).toBe(before);
   });
+
+  test('visual mode, horizontal: each arrow moves focus the way it points on screen', async ({ page }) => {
+    await load(page, VISUAL.replace('data-view="visual"', 'data-view="visual" data-orientation="horizontal"'), { modules: ['site-map'] });
+    await page.waitForSelector('#sm svg[role="tree"]');
+    await page.locator('#sm svg[role="tree"]').focus();
+
+    /** Press a key; report the active node and where its box sits relative to the one it left. */
+    const press = (key) => page.evaluate((k) => {
+      const s = document.querySelector('#sm svg[role="tree"]');
+      const active = () => document.getElementById(s.getAttribute('aria-activedescendant') ?? '')
+        ?? s.querySelector('[data-node-id="0"]');
+      const centre = (g) => {
+        const r = g.querySelector('.sm-vbox').getBoundingClientRect();
+        return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+      };
+      const fromId = active().getAttribute('data-node-id');
+      s.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
+      // Both boxes are measured together, so scrolling cannot skew the result
+      const from = centre(s.querySelector(`[data-node-id="${fromId}"]`));
+      const to = centre(active());
+      return { id: active().getAttribute('data-node-id'), dx: to.x - from.x, dy: to.y - from.y };
+    }, key);
+
+    // Root has no sibling: Up / Down stay put (in vertical, Down is "first child")
+    expect((await press('ArrowDown')).id).toBe('0');
+    expect((await press('ArrowUp')).id).toBe('0');
+
+    // Tree move and on-screen direction agree for every arrow
+    const child = await press('ArrowRight');
+    expect(child.id).toBe('0-0');
+    expect(child.dx).toBeGreaterThan(0);
+    const next = await press('ArrowDown');
+    expect(next.id).toBe('0-1');
+    expect(next.dy).toBeGreaterThan(0);
+    const prev = await press('ArrowUp');
+    expect(prev.id).toBe('0-0');
+    expect(prev.dy).toBeLessThan(0);
+    const parent = await press('ArrowLeft');
+    expect(parent.id).toBe('0');
+    expect(parent.dx).toBeLessThan(0);
+
+    // The chart is not mirrored in RTL, so neither are its keys
+    await page.evaluate(() => { document.documentElement.dir = 'rtl'; });
+    expect((await press('ArrowRight')).id).toBe('0-0');
+    expect((await press('ArrowLeft')).id).toBe('0');
+  });
+
+  test('visual mode, horizontal: the chart fits its SVG and labels are upright', async ({ page }) => {
+    await load(page, VISUAL.replace('data-view="visual"', 'data-view="visual" data-orientation="horizontal"'), { modules: ['site-map'] });
+    await page.waitForSelector('#sm svg[role="tree"]');
+    const result = await page.evaluate(() => {
+      const s = document.querySelector('#sm svg[role="tree"]');
+      const frame = s.getBoundingClientRect();
+      const boxes = [...s.querySelectorAll('.sm-vbox')].map((b) => b.getBoundingClientRect());
+      return {
+        inside: boxes.every((r) => r.left >= frame.left - 1 && r.right <= frame.right + 1 && r.top >= frame.top - 1 && r.bottom <= frame.bottom + 1),
+        landscape: boxes.every((r) => r.width > r.height),
+        rotated: !!s.querySelector('g[transform*="rotate"]'),
+      };
+    });
+    expect(result).toEqual({ inside: true, landscape: true, rotated: false });
+  });
 });
 
 test.describe('site-map nav-enhance', () => {
