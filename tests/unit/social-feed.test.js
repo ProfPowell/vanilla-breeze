@@ -119,7 +119,9 @@ describe('social-feed logic.js and static.html', () => {
   });
   it('static.html is a built example: entries, more line and state JSON', () => {
     const html = read('static.html');
-    assert.match(html, /<social-feed[^>]*style="--social-feed-height: [^"]+"/);
+    // Cook writes no inline height without a height attribute (the CSS default applies)
+    assert.match(html, /<social-feed items="6">/);
+    assert.doesNotMatch(html, /<p class="social-feed-text">[^<]*\n/, 'line breaks are <br>, not raw newlines');
     assert.match(html, /<activity-feed aria-label="Recent posts" data-infinite/);
     assert.match(html, /<article data-activity data-id="bluesky:/);
     assert.match(html, /<p class="social-feed-more">More on /);

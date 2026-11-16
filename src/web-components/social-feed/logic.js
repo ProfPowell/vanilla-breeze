@@ -29,7 +29,10 @@
  * @attr {boolean} hide-counts - Present = no reply / repost / like counts
  *
  * CSS custom property: --social-feed-height, the max height of the scrolling
- * list (Cook writes it from `height`).
+ * list (default 32rem, from this component's CSS). A valid `height` sets it
+ * inline: Cook writes it at build and the element applies it when connected
+ * or when the attribute changes. With no valid `height` nothing is written
+ * inline, so a site stylesheet can set it.
  *
  * @example
  * <social-feed accounts="bluesky:alice.example.com" items="6"></social-feed>
