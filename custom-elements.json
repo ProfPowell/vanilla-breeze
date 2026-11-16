@@ -28488,6 +28488,257 @@
     },
     {
       "kind": "javascript-module",
+      "path": "src/web-components/social-feed/logic.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "GitHub accounts, in a scrolling region.\n\nCook fills an empty <social-feed> at build time: an <activity-feed> of\nentries (<article data-activity data-id>), a \"More on …\" line and a state\nJSON script. Without JavaScript that markup is the whole feature. With it:\n  - once per page view, each account's first page is fetched from the\n    service's public API, sending no credentials; posts not yet shown that\n    fall inside the shown window are inserted in date order, and the\n    counts on posts already shown are updated;\n  - on activity-feed:load-more, the next batch comes from the state buffer\n    first, then from each account that is not done, paged from its cursor\n    (at most 3 pages per account per load, tag filter applied);\n  - when every account is done and the buffer is empty, data-infinite is\n    removed from the activity-feed so no more loads are asked for.\nEntries are deduped by id across everything shown (a repost of a shown\npost is the same id). Failures are silent: an account whose request fails\nis marked done and the shown entries stay.\n\nBrowser entries are rendered by the same renderEntry Cook uses, so they\nmatch the built ones; renderEntry applies safeHttps and escaping, and the\nbuffer from the state JSON is never trusted as markup.",
+          "name": "SocialFeed",
+          "members": [
+            {
+              "kind": "field",
+              "name": "#state",
+              "privacy": "private",
+              "type": {
+                "text": "FeedState | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "#queue",
+              "privacy": "private",
+              "description": "Serialises refresh and load-more so they never interleave."
+            },
+            {
+              "kind": "field",
+              "name": "#refresh",
+              "privacy": "private",
+              "type": {
+                "text": "Promise<void> | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "method",
+              "name": "setup"
+            },
+            {
+              "kind": "method",
+              "name": "teardown"
+            },
+            {
+              "kind": "field",
+              "name": "refreshed",
+              "description": "Settles when this page view's refresh has finished (or at once when there is none).",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "#start",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#applyHeight",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#feed",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "HTMLElement | null"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "#batchSize",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#enqueue",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "task",
+                  "type": {
+                    "text": "() => Promise<void>"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#shown",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "Map<string, HTMLElement>"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "#dateOf",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "article",
+                  "type": {
+                    "text": "Element"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#render",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "item",
+                  "type": {
+                    "text": "object"
+                  }
+                },
+                {
+                  "name": "hideCounts",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ],
+              "return": {
+                "type": {
+                  "text": "HTMLElement | null"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "#insert",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "item"
+                }
+              ],
+              "description": "Insert one item where its date puts it, keeping the list newest first."
+            },
+            {
+              "kind": "method",
+              "name": "#updateCounts",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "article"
+                },
+                {
+                  "name": "item"
+                }
+              ],
+              "description": "Replace the counts of a shown entry with the item's fresh ones."
+            },
+            {
+              "kind": "method",
+              "name": "#unseen",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "lists",
+                  "type": {
+                    "text": "object[][]"
+                  }
+                },
+                {
+                  "name": "shown",
+                  "type": {
+                    "text": "Map<string, HTMLElement>"
+                  }
+                }
+              ],
+              "description": "Items not shown, filtered by the block's tags, deduped and newest first."
+            },
+            {
+              "kind": "method",
+              "name": "#syncEnd",
+              "privacy": "private",
+              "description": "End the feed when nothing more can come; start it when entries arrived."
+            },
+            {
+              "kind": "method",
+              "name": "#doRefresh",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#onLoadMore",
+              "privacy": "private",
+              "type": {
+                "text": "(e: Event) => void"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "#doLoadMore",
+              "privacy": "private"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "accounts"
+            },
+            {
+              "name": "tags"
+            },
+            {
+              "name": "items"
+            },
+            {
+              "name": "height"
+            },
+            {
+              "name": "hide-counts"
+            }
+          ],
+          "superclass": {
+            "name": "VBElement",
+            "module": "/src/lib/vb-element.js"
+          },
+          "tagName": "social-feed",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "custom-element-definition",
+          "name": "social-feed",
+          "declaration": {
+            "name": "SocialFeed",
+            "module": "src/web-components/social-feed/logic.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "SocialFeed",
+          "declaration": {
+            "name": "SocialFeed",
+            "module": "src/web-components/social-feed/logic.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "src/web-components/social-links/logic.js",
       "declarations": [
         {

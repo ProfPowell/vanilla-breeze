@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Social Feed (Static Fallback)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; line-height: 1.5; max-inline-size: 36rem; margin-inline: auto; padding: 2rem 1rem; }
+    activity-feed { display: block; max-block-size: var(--social-feed-height, 32rem); overflow-y: auto; }
+    article { padding-block: 0.75rem; border-block-start: 1px solid #ddd; }
+    article p, .social-feed-counts { margin: 0.25rem 0 0; }
+    .social-feed-avatar { float: inline-start; margin-inline-end: 0.75rem; border-radius: 50%; }
+    .social-feed-text { white-space: pre-line; }
+    .social-feed-image img { max-inline-size: 100%; }
+    .social-feed-counts { display: flex; gap: 1rem; list-style: none; padding: 0; }
+    .visually-hidden { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  </style>
+</head>
+<body>
+
+  <!--
+    Upgrade relationship
+    ====================
+    Cook writes everything inside <social-feed> at build time: an
+    <activity-feed> of post entries, the "More on" line and a state script.
+    This example is Cook's output for the fixtures in
+    tests/unit/fixtures/social-feed (items="6"). Without JavaScript it is the
+    whole feature: the first batch as of the last publish, scrolling inside
+    the block, and links to each account. With Vanilla Breeze loaded,
+    <social-feed> adds the post-card styles, refreshes the list once per page
+    view from the services' public APIs (updating counts, inserting newer
+    posts, no duplicates) and loads the next batch as the list scrolls: first
+    from the state's buffer, then from each account's cursor.
+  -->
+
+  <h1>Elsewhere</h1>
+
+  <social-feed items="6" style="--social-feed-height: 32rem">
+<activity-feed aria-label="Recent posts" data-infinite>
+<article data-activity data-id="mastodon:https://social.example/users/bob/statuses/113500000000000005" data-service="mastodon">
+<img class="social-feed-avatar" src="https://files.social.example/accounts/avatars/bob.png" alt="" width="40" height="40" loading="lazy">
+<header class="social-feed-head"><b>Bob B.</b> <span class="social-feed-handle">@bob@social.example</span> <a class="social-feed-permalink" href="https://social.example/@bob/113500000000000005"><time datetime="2026-11-15T09:00:00.000Z">Nov 15, 2026</time></a> <span class="social-feed-source">Mastodon</span></header>
+<p class="social-feed-text">Fish &amp; chips at the #Reading group.
+Second &lt;b&gt;paragraph&lt;/b&gt; &#39;quoted&#39; — ok
+third line https://example.org/notes</p>
+<a class="social-feed-image" href="https://social.example/@bob/113500000000000005"><img src="https://files.social.example/media_attachments/files/small/chips.jpg" alt="A plate of fish and chips" loading="lazy"></a>
+<ul class="social-feed-counts"><li><span aria-hidden="true">↩</span> 3<span class="visually-hidden"> replies</span></li><li><span aria-hidden="true">⟲</span> 1<span class="visually-hidden"> boosts</span></li><li><span aria-hidden="true">♡</span> 7<span class="visually-hidden"> favourites</span></li></ul>
+</article>
+<article data-activity data-id="bluesky:at://did:plc:alice0000000000000000000/app.bsky.feed.post/3lhost1aaaaa2" data-service="bluesky">
+<img class="social-feed-avatar" src="https://cdn.bsky.app/img/avatar/plain/did:plc:alice0000000000000000000/bafkreialiceavatar@jpeg" alt="" width="40" height="40" loading="lazy">
+<header class="social-feed-head"><b>Alice &quot;A&quot; &lt;Example&gt;</b> <span class="social-feed-handle">@alice.example.com</span> <a class="social-feed-permalink" href="https://bsky.app/profile/alice.example.com/post/3lhost1aaaaa2"><time datetime="2026-11-14T08:00:00.000Z">Nov 14, 2026</time></a> <span class="social-feed-source">Bluesky</span></header>
+<p class="social-feed-text">&lt;script&gt;alert(&#39;x&#39;)&lt;/script&gt; Tom &amp; Jerry say &quot;hi&quot;</p>
+<ul class="social-feed-counts"><li><span aria-hidden="true">↩</span> 0<span class="visually-hidden"> replies</span></li><li><span aria-hidden="true">⟲</span> 1<span class="visually-hidden"> reposts</span></li><li><span aria-hidden="true">♡</span> 2<span class="visually-hidden"> likes</span></li></ul>
+</article>
+<article data-activity data-id="mastodon:https://other.example/users/erin/statuses/113490000000000010" data-service="mastodon">
+<header class="social-feed-head"><b>erin</b> <span class="social-feed-handle">@erin@other.example</span> <a class="social-feed-permalink" href="https://other.example/@erin/113490000000000010"><time datetime="2026-11-13T11:00:00.000Z">Nov 13, 2026</time></a> <span class="social-feed-source">Mastodon</span></header>
+<p class="social-feed-reposted">Reposted</p>
+<p class="social-feed-text">Boost-worthy news &quot;today&quot;</p>
+<ul class="social-feed-counts"><li><span aria-hidden="true">↩</span> 2<span class="visually-hidden"> replies</span></li><li><span aria-hidden="true">⟲</span> 6<span class="visually-hidden"> boosts</span></li><li><span aria-hidden="true">♡</span> 14<span class="visually-hidden"> favourites</span></li></ul>
+</article>
+<article data-activity data-id="bluesky:at://did:plc:dave00000000000000000000/app.bsky.feed.post/3lrepost1bbb2" data-service="bluesky">
+<img class="social-feed-avatar" src="https://cdn.bsky.app/img/avatar/plain/did:plc:dave00000000000000000000/bafkreidaveavatar@jpeg" alt="" width="40" height="40" loading="lazy">
+<header class="social-feed-head"><b>Dave</b> <span class="social-feed-handle">@dave.example.net</span> <a class="social-feed-permalink" href="https://bsky.app/profile/dave.example.net/post/3lrepost1bbb2"><time datetime="2026-11-13T09:30:00.000Z">Nov 13, 2026</time></a> <span class="social-feed-source">Bluesky</span></header>
+<p class="social-feed-reposted">Reposted</p>
+<p class="social-feed-text">Shipping a small library today.</p>
+<ul class="social-feed-counts"><li><span aria-hidden="true">↩</span> 4<span class="visually-hidden"> replies</span></li><li><span aria-hidden="true">⟲</span> 9<span class="visually-hidden"> reposts</span></li><li><span aria-hidden="true">♡</span> 31<span class="visually-hidden"> likes</span></li></ul>
+</article>
+<article data-activity data-id="bluesky:at://did:plc:alice0000000000000000000/app.bsky.feed.post/3lcard1ddd2" data-service="bluesky">
+<img class="social-feed-avatar" src="https://cdn.bsky.app/img/avatar/plain/did:plc:alice0000000000000000000/bafkreialiceavatar@jpeg" alt="" width="40" height="40" loading="lazy">
+<header class="social-feed-head"><b>Alice</b> <span class="social-feed-handle">@alice.example.com</span> <a class="social-feed-permalink" href="https://bsky.app/profile/alice.example.com/post/3lcard1ddd2"><time datetime="2026-11-10T18:45:00.000Z">Nov 10, 2026</time></a> <span class="social-feed-source">Bluesky</span></header>
+<p class="social-feed-text">New write-up on static sites</p>
+<a class="social-feed-image" href="https://bsky.app/profile/alice.example.com/post/3lcard1ddd2"><img src="https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:alice0000000000000000000/bafkreicardthumb@jpeg" alt="Static sites, again" loading="lazy"></a>
+<ul class="social-feed-counts"><li><span aria-hidden="true">↩</span> 2<span class="visually-hidden"> replies</span></li><li><span aria-hidden="true">⟲</span> 3<span class="visually-hidden"> reposts</span></li><li><span aria-hidden="true">♡</span> 12<span class="visually-hidden"> likes</span></li></ul>
+</article>
+<article data-activity data-id="bluesky:at://did:plc:alice0000000000000000000/app.bsky.feed.post/3ltags1eee2" data-service="bluesky">
+<img class="social-feed-avatar" src="https://cdn.bsky.app/img/avatar/plain/did:plc:alice0000000000000000000/bafkreialiceavatar@jpeg" alt="" width="40" height="40" loading="lazy">
+<header class="social-feed-head"><b>Alice</b> <span class="social-feed-handle">@alice.example.com</span> <a class="social-feed-permalink" href="https://bsky.app/profile/alice.example.com/post/3ltags1eee2"><time datetime="2026-11-09T07:15:00.000Z">Nov 9, 2026</time></a> <span class="social-feed-source">Bluesky</span></header>
+<p class="social-feed-text">Finished a great novel #Reading</p>
+<ul class="social-feed-counts"><li><span aria-hidden="true">↩</span> 1<span class="visually-hidden"> replies</span></li><li><span aria-hidden="true">⟲</span> 0<span class="visually-hidden"> reposts</span></li><li><span aria-hidden="true">♡</span> 5<span class="visually-hidden"> likes</span></li></ul>
+</article>
+</activity-feed>
+<p class="social-feed-more">More on <a href="https://bsky.app/profile/alice.example.com">Bluesky</a> · <a href="https://social.example/@bob">Mastodon</a> · <a href="https://github.com/carol-dev">GitHub</a></p>
+<script type="application/json" class="social-feed-state">{"accounts":[{"key":"bluesky:alice.example.com","service":"bluesky","handle":"alice.example.com","did":"did:plc:alice0000000000000000000","cursor":"2026-11-08T12:00:01.000Z","done":false},{"key":"mastodon:@bob@social.example","service":"mastodon","handle":"@bob@social.example","cursor":"113500000000000003","done":false},{"key":"github:carol-dev","service":"github","handle":"carol-dev","done":true}],"tags":[],"newest":{"mastodon:@bob@social.example":"2026-11-15T09:00:00.000Z","bluesky:alice.example.com":"2026-11-14T08:00:00.000Z","github:carol-dev":"2026-11-07T14:30:00.000Z"},"buffer":[{"id":"bluesky:at://did:plc:alice0000000000000000000/app.bsky.feed.post/3lplain1fff2","service":"bluesky","source":"bluesky:alice.example.com","url":"https://bsky.app/profile/alice.example.com/post/3lplain1fff2","date":"2026-11-08T12:00:00.000Z","text":"Good morning.","tags":[],"reposted":false,"author":{"name":"Alice","handle":"@alice.example.com","avatar":"https://cdn.bsky.app/img/avatar/plain/did:plc:alice0000000000000000000/bafkreialiceavatar@jpeg","url":"https://bsky.app/profile/alice.example.com"},"counts":{"replies":0,"reposts":0,"likes":3}},{"id":"github:200000002","service":"github","source":"github:carol-dev","url":"https://github.com/carol-dev/widget/releases/tag/v1.2.0","date":"2026-11-07T14:30:00.000Z","text":"Released widget v1.2.0","tags":[],"reposted":false,"author":{"name":"carol-dev","handle":"carol-dev","avatar":"https://avatars.githubusercontent.com/u/9000001?v=4","url":"https://github.com/carol-dev"},"release":{"repo":"widget","tag":"v1.2.0","repoUrl":"https://github.com/carol-dev/widget","description":"A \u003csmall\u003e widget \u0026 friends","language":"JavaScript"}}]}</script>
+  </social-feed>
+
+</body>
+</html>

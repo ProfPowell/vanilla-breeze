@@ -1650,6 +1650,18 @@ module.exports = {
     }
   },
 
+  "social-feed": {
+    flow: true,
+    permittedContent: ["activity-feed", "p", "script"],
+    attributes: {
+      "accounts": {},
+      "tags": {},
+      "items": {},
+      "height": {},
+      "hide-counts": { boolean: true }
+    }
+  },
+
   "social-links": {
     flow: true,
     permittedContent: ["ul"],

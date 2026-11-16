@@ -13,6 +13,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - **`<social-links>` links carry no external-link arrow.** The service icon already says where the link goes.
 
 ### Added
+- **`<social-feed>`: one stream of posts from your Bluesky, Mastodon and GitHub accounts.** Cook writes the first batch of post cards at build time, so the feed works with no JavaScript. In the browser it refreshes once per page view from the services' public APIs (newer posts go in, counts update, nothing is duplicated) and loads the next batch as the list scrolls inside its fixed height. Attributes: `accounts`, `tags`, `items`, `height` and `hide-counts`. A service that is down changes nothing on the page.
 - **`<data-table>`: every generated string can be translated** with `data-label-*` attributes on the element: the filter input's name and placeholder, the pagination name, Previous and Next, and the sort, filter and selection announcements. Messages are whole-sentence templates with `{column}`, `{direction}`, `{count}` and `{total}` placeholders and plural forms (`-one`, `-other` and the other `Intl.PluralRules` categories).
 - **The documentation site has a web app manifest**, so it can be installed from the browser.
 

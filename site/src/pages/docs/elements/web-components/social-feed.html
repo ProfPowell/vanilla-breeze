@@ -1,0 +1,77 @@
+---
+layout: element
+title: "Social Feed"
+description: "One stream of posts from your Bluesky, Mastodon and GitHub accounts in a scrolling region, filled at build time by Cook"
+elementName: social-feed
+category: component
+currentPath: /docs/elements/web-components/social-feed/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>&lt;social-feed&gt;</code> shows recent posts from the site's accounts as post cards, newest first, in a list that scrolls inside a fixed height. Cook fills an empty <code>&lt;social-feed&gt;</code> at build time from <code>config/social.json</code>: an <code>&lt;activity-feed&gt;</code> of entries, a "More on" line linking to each account, and a small state script. Without JavaScript that markup is the whole feature.</p>
+  <p>With JavaScript, the element:</p>
+  <ul>
+    <li>reads each account's first page from the service's public API once per page view, inserts newer posts in date order and updates the counts on posts already shown;</li>
+    <li>loads the next batch when the list is scrolled near its end, first from posts Cook fetched but did not show, then page by page from each account;</li>
+    <li>never shows a post twice, including a repost of a post already in the list;</li>
+    <li>stays quiet when a service fails: the posts already shown stay and no error appears.</li>
+  </ul>
+  <p>Replies are left out; reposts and boosts are kept. GitHub contributes published releases only.</p>
+
+  <code-block language="html" show-lines label="Authored" data-escape><social-feed accounts="bluesky:example.bsky.social,github:example" items="8" height="24rem"></social-feed></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>accounts</code></td>
+        <td>string</td>
+        <td>all visible</td>
+        <td>Comma-separated account keys, <code>service:handle</code> as stored in <code>config/social.json</code>. A hidden account named here is included. Read by Cook.</td>
+      </tr>
+      <tr>
+        <td><code>tags</code></td>
+        <td>string</td>
+        <td>none</td>
+        <td>Comma-separated hashtags without <code>#</code>, matched case-insensitively. Filters Bluesky and Mastodon posts; a block with tags shows no GitHub releases.</td>
+      </tr>
+      <tr>
+        <td><code>items</code></td>
+        <td>number</td>
+        <td><code>12</code></td>
+        <td>How many posts to show first (1 to 50), and how many each scroll loads.</td>
+      </tr>
+      <tr>
+        <td><code>height</code></td>
+        <td>string</td>
+        <td><code>32rem</code></td>
+        <td>Height of the scrolling list, a <code>rem</code>, <code>em</code>, <code>px</code> or <code>vh</code> length. Cook writes it as <code>--social-feed-height</code>.</td>
+      </tr>
+      <tr>
+        <td><code>hide-counts</code></td>
+        <td>boolean</td>
+        <td>absent</td>
+        <td>Leave out the reply, repost and like counts.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <p>The list is an <code>&lt;activity-feed&gt;</code> labelled "Recent posts". It is in the tab order, so keyboard users can scroll it, and Page Up and Page Down move between posts. Counts carry visually hidden labels in each service's own terms (replies, reposts, likes; or replies, boosts, favourites on Mastodon).</p>
+</section>
+
+<section>
+  <h2>Styling</h2>
+  <p>Set <code>--social-feed-height</code> to change the list height. Entries use the classes <code>social-feed-avatar</code>, <code>social-feed-head</code>, <code>social-feed-source</code>, <code>social-feed-text</code>, <code>social-feed-image</code>, <code>social-feed-release</code> and <code>social-feed-counts</code>; each <code>article</code> carries <code>data-service</code>.</p>
+</section>

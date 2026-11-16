@@ -33,6 +33,7 @@ import './page-tools/logic.js';
 import './print-page/logic.js';
 import './share-wc/logic.js';
 import './social-links/logic.js';
+import './social-feed/logic.js';
 import './bread-crumb/logic.js';
 
 // Annotation & highlight

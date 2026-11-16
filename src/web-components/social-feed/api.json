@@ -1,0 +1,40 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "social-feed",
+  "type": "web-component",
+  "description": "One stream of posts from the site's Bluesky, Mastodon and GitHub accounts in a scrolling region. Cook writes the first batch, a \"More on\" line and a state script inside it at build time; with JavaScript the element refreshes once per page view from the services' public APIs and loads more as the list scrolls. Without JavaScript the built entries are the whole feature.",
+  "htmlvalidate": {
+    "flow": true,
+    "permittedContent": [
+      "activity-feed",
+      "p",
+      "script"
+    ]
+  },
+  "attributes": [
+    { "name": "accounts", "kind": "host-api", "purpose": "config", "type": "string", "description": "Comma-separated account keys (service:handle, for example bluesky:example.bsky.social); default every visible Bluesky, Mastodon and GitHub account. A hidden account named here is included. Read by Cook at build time." },
+    { "name": "tags", "kind": "host-api", "purpose": "config", "type": "string", "description": "Comma-separated hashtags without #, matched case-insensitively. Filters Bluesky and Mastodon; a block with tags shows no GitHub items. Read by Cook at build time." },
+    { "name": "items", "kind": "host-api", "purpose": "config", "type": "number", "default": "12", "description": "First batch size, a whole number from 1 to 50; also the size of each batch loaded on scroll" },
+    { "name": "height", "kind": "host-api", "purpose": "config", "type": "string", "default": "32rem", "description": "Height of the scrolling list: a rem, em, px or vh length. Cook writes it as --social-feed-height." },
+    { "name": "hide-counts", "kind": "host-api", "purpose": "visual-variant", "type": "boolean", "description": "Leave out reply, repost and like counts" }
+  ],
+  "events": [],
+  "methods": [],
+  "properties": [
+    { "name": "refreshed", "type": "Promise<void>", "description": "Settles when this page view's refresh from the services has finished" }
+  ],
+  "childAttributes": [
+    { "name": "data-id", "on": "article[data-activity]", "type": "string", "description": "The item id (service:native id) used to dedupe entries and update counts" },
+    { "name": "data-service", "on": "article[data-activity]", "type": "string", "description": "The entry's service: bluesky, mastodon or github" }
+  ],
+  "structure": [],
+  "a11y": {
+    "pattern": "A labelled, focusable scrolling region holding a WAI-ARIA feed (activity-feed) of articles",
+    "manages": ["tabindex"],
+    "announces": "Nothing; counts carry visually hidden labels",
+    "keyboard": [
+      { "keys": ["Tab"], "action": "Focus the scrolling list, then scroll it with the arrow keys", "when": "The activity-feed is in the tab order" },
+      { "keys": ["PageDown", "PageUp"], "action": "Move between entries", "when": "Focus is on an entry (activity-feed)" }
+    ]
+  }
+}

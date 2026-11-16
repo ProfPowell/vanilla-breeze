@@ -1,0 +1,206 @@
+/* social-feed: a mixed stream of posts (markup written by Cook at build time)
+   in a scrolling region. Entries are post cards: avatar, name, handle, date,
+   service label, text, an optional image or release card, and counts.
+   Rules match both the built markup (no JS) and the markup after
+   <activity-feed> wraps each entry's content in .activity-body. */
+
+social-feed {
+  --_avatar: 2.5rem;
+  --_gap: var(--size-s, 0.75rem);
+
+  display: block;
+}
+
+/* The list scrolls inside the block; the page around it does not move. */
+social-feed activity-feed {
+  max-height: var(--social-feed-height, 32rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  gap: 0;
+  padding-inline-end: var(--size-2xs, 0.25rem);
+  border-block: var(--border-width-thin, 1px) solid var(--color-border);
+}
+
+social-feed activity-feed:focus-visible {
+  outline: 2px solid var(--color-interactive, currentColor);
+  outline-offset: 2px;
+}
+
+/* -------- Post card -------- */
+
+social-feed activity-feed > article[data-activity] {
+  position: relative;
+  display: block;
+  /* activity-feed is a flex column; in a height-capped list its items would
+     shrink and overlap instead of scrolling. */
+  flex: none;
+  min-block-size: calc(var(--_avatar) + 2 * var(--_gap));
+  padding-block: var(--_gap);
+  padding-inline: calc(var(--_avatar) + var(--_gap)) 0;
+  border-radius: 0;
+  border-block-start: var(--border-width-thin, 1px) solid var(--color-border);
+}
+
+social-feed activity-feed > article[data-activity]:first-of-type {
+  border-block-start: 0;
+}
+
+/* activity-feed's body wrapper is one grid cell there; here it just flows. */
+social-feed article[data-activity] > .activity-body {
+  display: block;
+}
+
+social-feed .social-feed-avatar {
+  position: absolute;
+  inset-block-start: var(--_gap);
+  inset-inline-start: 0;
+  inline-size: var(--_avatar);
+  block-size: var(--_avatar);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-sunken);
+  object-fit: cover;
+}
+
+social-feed .social-feed-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--size-3xs, 0.125rem) var(--size-xs, 0.5rem);
+  margin: 0;
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+}
+
+social-feed .social-feed-head b {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+social-feed .social-feed-handle {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+social-feed .social-feed-permalink {
+  color: inherit;
+  font-family: var(--font-mono);
+}
+
+social-feed .social-feed-permalink:hover {
+  color: var(--color-text);
+}
+
+social-feed .social-feed-source {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding-inline: var(--size-2xs, 0.25rem);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-s);
+}
+
+social-feed .social-feed-reposted {
+  margin: var(--size-3xs, 0.125rem) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+social-feed .social-feed-reposted::before {
+  content: "⟲ " / "";
+}
+
+social-feed .social-feed-text {
+  margin: var(--size-3xs, 0.125rem) 0 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* Link-card or attached image */
+social-feed .social-feed-image {
+  display: block;
+  margin-block-start: var(--size-xs, 0.5rem);
+}
+
+social-feed .social-feed-image img {
+  display: block;
+  inline-size: 100%;
+  max-block-size: 16rem;
+  object-fit: cover;
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface-sunken);
+}
+
+/* GitHub release: a small repo card */
+social-feed .social-feed-release {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--size-3xs, 0.125rem) var(--size-xs, 0.5rem);
+  margin-block-start: var(--size-xs, 0.5rem);
+  padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.5rem);
+  font-size: var(--font-size-s);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-s);
+  background: var(--color-surface-sunken);
+}
+
+social-feed .social-feed-release a {
+  font-weight: 600;
+}
+
+social-feed .social-feed-release span {
+  color: var(--color-text-muted);
+}
+
+social-feed .social-feed-release span:last-child {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+}
+
+social-feed .social-feed-release span:empty {
+  display: none;
+}
+
+/* Counts in the service's own terms (labels are visually hidden) */
+social-feed .social-feed-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-m, 1rem);
+  margin: var(--size-2xs, 0.25rem) 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+social-feed .social-feed-counts li {
+  margin: 0;
+}
+
+/* -------- Around the list -------- */
+
+social-feed .social-feed-empty {
+  margin: 0;
+  padding-block: var(--size-m, 1rem);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+social-feed .social-feed-more {
+  margin: var(--size-xs, 0.5rem) 0 0;
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+}
+
+/* Every link here goes to a service; the label and line say so, and the
+   external-link arrow after each one crowds the cards. */
+social-feed a::after {
+  content: none;
+}
+
+social-feed .social-feed-state {
+  display: none;
+}

@@ -121,6 +121,7 @@ export default {
     { name: 'settings-panel', href: '/docs/elements/web-components/settings-panel/', desc: 'Theme/settings panel with gear trigger and details accordion' },
     { name: 'share-wc', href: '/docs/elements/web-components/share/', desc: 'Social share with native Web Share API and platform fallbacks' },
     { name: 'social-links', href: '/docs/elements/web-components/social-links/', desc: 'Profile links with CSS-drawn icons, written by Cook at build time' },
+    { name: 'social-feed', href: '/docs/elements/web-components/social-feed/', desc: 'Mixed Bluesky, Mastodon and GitHub stream in a scrolling region, built by Cook and refreshed in the browser' },
     { name: 'site-index', href: '/docs/elements/web-components/site-index/', desc: 'Site keyword index with search filtering' },
     { name: 'site-map', href: '/docs/elements/web-components/site-map/', desc: 'Sitemap enhancer (expand/collapse) or interactive IA tree via mode="ia-tree"' },
     { name: 'theme-picker', href: '/docs/elements/web-components/theme-picker/', desc: 'Theme picker for colors, typography, and accessibility settings' },
