@@ -3,7 +3,7 @@
  * tests/unit/styling-token-contracts.test.js):
  *   - --radius-inner follows the parent's --_radius / --_inset
  *   - --page-bg-image paints on <body>, under --page-bg-gradient
- *   - paper surfaces and --color-text-on-primary reach AA in both modes
+ *   - paper surfaces (body text, muted text, links) and --color-text-on-primary reach AA in both modes
  *   - data-surface="frosted" blurs with no theme
  *   - data-shadow material / flicker stop for data-motion-reduced
  *
@@ -72,12 +72,14 @@ test('--page-bg-image paints on body, under a gradient when both are set', async
 for (const scheme of ['light', 'dark']) {
   test(`paper surfaces and text on primary reach AA in ${scheme} mode`, async ({ page }) => {
     await load(page, `
-      ${['paper', 'dots', 'grid', 'lines', 'kraft'].map((s) => `<aside id="${s}" data-surface="${s}"><p>Note</p></aside>`).join('')}
+      ${['paper', 'dots', 'grid', 'lines', 'kraft'].map((s) => `<aside id="${s}" data-surface="${s}"><p>Note</p><small style="color: var(--color-text-muted)">Muted</small> <a href="#x">Link</a></aside>`).join('')}
       <p id="fill" style="background-color: var(--color-primary); color: var(--color-text-on-primary)">On primary</p>
       <p id="subtle" style="background-color: var(--color-primary-subtle)">On subtle</p>`, { scheme });
     for (const s of ['paper', 'dots', 'grid', 'lines', 'kraft']) {
       // paper and kraft paint their colour in the background shorthand's final layer
-      expect(await page.evaluate(contrastOf, { fg: `#${s} p`, bg: `#${s}` }), s).toBeGreaterThanOrEqual(AA);
+      for (const el of ['p', 'small', 'a']) {
+        expect(await page.evaluate(contrastOf, { fg: `#${s} ${el}`, bg: `#${s}` }), `${s} ${el}`).toBeGreaterThanOrEqual(AA);
+      }
     }
     expect(await page.evaluate(contrastOf, { fg: '#fill', bg: '#fill' }), 'text on primary').toBeGreaterThanOrEqual(AA);
     expect(await page.evaluate(contrastOf, { fg: '#subtle', bg: '#subtle' }), 'text on primary-subtle').toBeGreaterThanOrEqual(AA);
