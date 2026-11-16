@@ -17,6 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - **The documentation site has a web app manifest**, so it can be installed from the browser.
 
 ### Fixed
+- **`<share-wc>`: your own share links show no external-link arrow again.** 0.7.0 changed the wrapper from a `<nav>` to a named group, and links you supply with `data-platform` picked up the arrow that ordinary external links get.
 - **`<data-table>` formats counts and page numbers for the page language.**
 
 ## [0.7.1] - 2026-11-15
