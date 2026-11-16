@@ -298,6 +298,7 @@ Wrap the table in a focusable scroll container labelled by the caption (add `dat
 - Sortable headers follow the APG sortable-table pattern: `aria-sort` on the `<th>`, a native `<button data-sort-button>` inside it (Tab to focus, Enter/Space to sort, visible focus ring)
 - Sort arrows are CSS content keyed on `aria-sort` with empty alt text (no double reading)
 - Filter input has an `aria-label`; no results shows a real `<p data-table-empty>` (text from `data-label-no-results` on the host)
+- Every generated string (filter name and placeholder, pagination labels, announcements) has a `data-label-*` override on the host; see `api.json` for the list, defaults and placeholders
 - A visually hidden `role="status"` region announces sort changes, filter result counts and selection counts
 - Pagination navigation has `aria-label="Table pagination"`; current page button has `aria-current="page"`; focus is restored to the replacement button after paging
 - Expand buttons (author-supplied, `data-action="toggle-expand"`) get `aria-expanded`; content rows stay with their parent row when sorted, filtered or paged

@@ -6,6 +6,7 @@
  * (sort, filter count, no results, selection); the real no-results element
  * with its data-label override; pagination focus restoration; expansion
  * content rows hidden with their parent; refresh() parity with setup;
+ * data-label-* overrides for every generated string (cwx9);
  * goToPage without pagination; heatmap dark-mode contrast; bulk bar scoping.
  *
  * Tests the working tree: /src is served from disk, not the build.
@@ -163,6 +164,87 @@ test.describe('live region announcements', () => {
     await expect(status(page)).toHaveText(/1 row selected/);
     await page.getByLabel('Select all', { exact: true }).check();
     await expect(status(page)).toHaveText(/2 rows selected/);
+  });
+});
+
+test.describe('localized labels (cwx9)', () => {
+  const ES = `<data-table id="dt" lang="es"
+    data-label-filter="Filtrar las filas de la tabla"
+    data-label-placeholder="Filtrar la tabla..."
+    data-label-pagination="Paginación de la tabla"
+    data-label-prev="Anterior"
+    data-label-next="Siguiente"
+    data-label-sorted="Ordenado por {column}, en orden {direction}"
+    data-label-descending="descendente"
+    data-label-filtered-one="Mostrando {count} de {total} fila"
+    data-label-filtered-other="Mostrando {count} de {total} filas"
+    data-label-all-other="Mostrando las {total} filas">`;
+
+  test('defaults are the English strings', async ({ page }) => {
+    await load(page, BASIC);
+    const input = page.locator('#dt [data-filter-input]');
+    await expect(input).toHaveAttribute('placeholder', 'Filter table...');
+    await expect(input).toHaveAttribute('aria-label', 'Filter table rows');
+    await expect(page.locator('#dt nav[data-pagination]')).toHaveAttribute('aria-label', 'Table pagination');
+    await expect(page.locator('#dt [data-pagination-prev]')).toHaveText('Previous');
+    await expect(page.locator('#dt [data-pagination-next]')).toHaveText('Next');
+    await expect(page.locator('#dt [data-table-empty]')).toHaveText('No matching rows found');
+  });
+
+  test('data-label-* replaces the placeholder, names, buttons and announcements', async ({ page }) => {
+    await load(page, BASIC.replace('<data-table id="dt">', ES));
+    const input = page.locator('#dt [data-filter-input]');
+    await expect(input).toHaveAttribute('placeholder', 'Filtrar la tabla...');
+    await expect(input).toHaveAttribute('aria-label', 'Filtrar las filas de la tabla');
+    await expect(page.locator('#dt nav[data-pagination]')).toHaveAttribute('aria-label', 'Paginación de la tabla');
+    await expect(page.getByRole('button', { name: 'Anterior', exact: true })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Siguiente', exact: true })).toBeEnabled();
+
+    await page.locator('#dt th[data-sort]').first().locator('button').click();
+    await expect(status(page)).toHaveText(/^Ordenado por Name, en orden descendente/);
+
+    await input.fill('Name 01');
+    await expect(status(page)).toHaveText(/^Mostrando 1 de 8 filas/);
+    await page.evaluate(() => document.getElementById('dt').setFilter(''));
+    await expect(status(page)).toHaveText(/^Mostrando las 8 filas/);
+  });
+
+  test('labels are read when used; unset labels and plural categories fall back', async ({ page }) => {
+    await load(page, BASIC.replace('<data-table id="dt">', ES));
+    // ascending has no override: the English word fills {direction}
+    const name = page.locator('#dt th[data-sort]').first().locator('button');
+    await name.click();
+    await name.click();
+    await expect(status(page)).toHaveText(/^Ordenado por Name, en orden ascending/);
+
+    // changed after setup: the next announcement and render use the new text
+    await page.evaluate(() => {
+      const dt = document.getElementById('dt');
+      dt.setAttribute('data-label-ascending', 'ascendente');
+      dt.setAttribute('data-label-next', 'Más');
+    });
+    await name.click();
+    await name.click();
+    await expect(status(page)).toHaveText(/^Ordenado por Name, en orden ascendente/);
+    await expect(page.locator('#dt [data-pagination-next]')).toHaveText('Más');
+  });
+
+  test('plural category follows the count; numbers use the resolved locale', async ({ page }) => {
+    await load(page, `
+      <data-table id="dt" lang="de" data-label-selected-one="{count} Zeile ausgewählt" data-label-selected-other="{count} Zeilen ausgewählt"
+        data-label-filtered-other="{count} von {total} Zeilen angezeigt">
+        <table data-filterable>
+          <thead><tr><th><input type="checkbox" data-action="select-all" aria-label="Alle"></th><th>Name</th></tr></thead>
+          <tbody>${Array.from({ length: 1200 }, (_, i) =>
+            `<tr data-selectable><td><input type="checkbox" data-action="select-row" aria-label="Zeile ${i + 1}"></td><td>N${i + 1}</td></tr>`).join('')}</tbody>
+        </table>
+      </data-table>`);
+    await page.getByLabel('Zeile 1', { exact: true }).check();
+    await expect(status(page)).toHaveText(/^1 Zeile ausgewählt/);
+    await page.getByLabel('Alle', { exact: true }).check();
+    await expect(status(page)).toHaveText(/^1\.200 Zeilen ausgewählt/);
+    await page.locator('#dt [data-filter-input]').fill('N1');
+    await expect(status(page)).toHaveText(/^\d+ von 1\.200 Zeilen angezeigt/);
   });
 });
 

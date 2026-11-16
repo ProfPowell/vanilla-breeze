@@ -107,7 +107,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Filtering</h2>
-    <p>Add <code>data-filterable</code> to the table to enable text filtering. A search input is automatically generated above the table. Rows that don't match the filter text are hidden, and the result count is announced to screen readers. When nothing matches, a visible “No matching rows found” message appears below the table; override its text (and the announcement) with <code>data-label-no-results</code> on <code>&lt;data-table&gt;</code>.</p>
+    <p>Add <code>data-filterable</code> to the table to enable text filtering. A search input is automatically generated above the table. Rows that don't match the filter text are hidden, and the result count is announced to screen readers. When nothing matches, a visible “No matching rows found” message appears below the table; override its text (and the announcement) with <code>data-label-no-results</code> on <code>&lt;data-table&gt;</code>. The other generated strings are covered in <a href="#localizing">Localizing the labels</a>.</p>
 
     <code-block language="html" show-lines label="Filterable table" data-escape><data-table>
   <table data-filterable>
@@ -544,6 +544,70 @@ table.renderRow = (row, cols) =&gt; {
     <p>Tints use the <code>--color-error-subtle</code>, <code>--color-warning-subtle</code>, and <code>--color-success-subtle</code> tokens, which switch with the colour scheme; cell text stays <code>--color-text</code> so contrast holds in light and dark mode. Colour is never the only cue — the number stays in the cell.</p>
   </section>
 
+  <section id="localizing">
+    <h2>Localizing the labels</h2>
+    <p>The component generates some text of its own: the filter input's name and placeholder, the pagination buttons, and the messages it announces to screen readers. Each string has an English default and a <code>data-label-*</code> attribute on <code>&lt;data-table&gt;</code> that replaces it. Column headers, captions and cell content are your markup, so translate them there.</p>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Default text</th><th>Placeholders</th><th>Used for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-label-filter</code></td><td>Filter table rows</td><td>None</td><td>Accessible name of the filter input</td></tr>
+        <tr><td><code>data-label-placeholder</code></td><td>Filter table...</td><td>None</td><td>Placeholder of the filter input</td></tr>
+        <tr><td><code>data-label-no-results</code></td><td>No matching rows found</td><td>None</td><td>Empty-state message and its announcement</td></tr>
+        <tr><td><code>data-label-pagination</code></td><td>Table pagination</td><td>None</td><td>Accessible name of the pagination <code>&lt;nav&gt;</code></td></tr>
+        <tr><td><code>data-label-prev</code></td><td>Previous</td><td>None</td><td>Previous-page button</td></tr>
+        <tr><td><code>data-label-next</code></td><td>Next</td><td>None</td><td>Next-page button</td></tr>
+        <tr><td><code>data-label-sorted</code></td><td>Sorted by {column}, {direction}</td><td><code>{column}</code>, <code>{direction}</code></td><td>Announcement after a sort</td></tr>
+        <tr><td><code>data-label-ascending</code></td><td>ascending</td><td>None</td><td>Word used for <code>{direction}</code></td></tr>
+        <tr><td><code>data-label-descending</code></td><td>descending</td><td>None</td><td>Word used for <code>{direction}</code></td></tr>
+        <tr><td><code>data-label-filtered-one</code></td><td>{count} of {total} row shown</td><td><code>{count}</code>, <code>{total}</code></td><td>Announcement after filtering, when the total is one row</td></tr>
+        <tr><td><code>data-label-filtered-other</code></td><td>{count} of {total} rows shown</td><td><code>{count}</code>, <code>{total}</code></td><td>Announcement after filtering</td></tr>
+        <tr><td><code>data-label-all-one</code></td><td>All {total} row shown</td><td><code>{total}</code></td><td>Announcement when the filter is cleared, when the total is one row</td></tr>
+        <tr><td><code>data-label-all-other</code></td><td>All {total} rows shown</td><td><code>{total}</code></td><td>Announcement when the filter is cleared</td></tr>
+        <tr><td><code>data-label-selected-one</code></td><td>{count} row selected</td><td><code>{count}</code></td><td>Announcement when one row is selected</td></tr>
+        <tr><td><code>data-label-selected-other</code></td><td>{count} rows selected</td><td><code>{count}</code></td><td>Announcement after any other selection change</td></tr>
+      </tbody>
+    </table>
+    <p>Things to know:</p>
+    <ul>
+      <li><strong>Placeholders.</strong> The component fills in the tokens in braces. Keep them in the translation and move them where the grammar needs them. <code>{column}</code> is the header text of the sorted column. <code>{count}</code> is the number of matching or selected rows and <code>{total}</code> is the number of rows in the table.</li>
+      <li><strong>Plurals.</strong> The attributes ending in <code>-one</code> and <code>-other</code> are plural categories from <code>Intl.PluralRules</code>. A language with more categories can add <code>-two</code>, <code>-few</code>, <code>-many</code> or <code>-zero</code>. A category you leave out uses your <code>-other</code> text. The filter messages pick the category from <code>{total}</code>, and the selection messages pick it from <code>{count}</code>.</li>
+      <li><strong>Numbers.</strong> Counts and page numbers are formatted with <code>Intl.NumberFormat</code> in the language of the nearest <code>lang</code> attribute, so set <code>lang</code> on the component or the page.</li>
+      <li><strong>Changes.</strong> The messages, the empty-state text and the pagination buttons read their attribute each time they are used, so a changed attribute applies from the next announcement or render. The filter input's name and placeholder and the pagination name are read once, when the component starts.</li>
+    </ul>
+
+    <code-block language="html" show-lines label="A table in Spanish" data-escape><data-table lang="es"
+  data-label-filter="Filtrar las filas de la tabla"
+  data-label-placeholder="Filtrar la tabla..."
+  data-label-no-results="No se encontraron filas"
+  data-label-pagination="Paginación de la tabla"
+  data-label-prev="Anterior"
+  data-label-next="Siguiente"
+  data-label-sorted="Ordenado por {column}, en orden {direction}"
+  data-label-ascending="ascendente"
+  data-label-descending="descendente"
+  data-label-filtered-one="Mostrando {count} de {total} fila"
+  data-label-filtered-other="Mostrando {count} de {total} filas"
+  data-label-all-one="Mostrando {total} fila"
+  data-label-all-other="Mostrando las {total} filas"
+  data-label-selected-one="{count} fila seleccionada"
+  data-label-selected-other="{count} filas seleccionadas">
+  <table data-filterable data-paginate="10">
+    <thead>
+      <tr>
+        <th data-sort="string">Nombre</th>
+        <th data-sort="number">Precio</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- filas -->
+    </tbody>
+  </table>
+</data-table></code-block>
+    <p>The <a href="/docs/i18n/translation/">Translation</a> guide covers the same pattern in other components.</p>
+  </section>
+
   <section>
     <h2>Attributes Reference</h2>
 
@@ -612,6 +676,7 @@ table.renderRow = (row, cols) =&gt; {
       <li>Filter results, e.g. “3 of 12 rows shown”, or the <code>data-label-no-results</code> text when nothing matches</li>
       <li>Selection count changes, e.g. “2 rows selected”</li>
     </ul>
+    <p>Each message can be translated. See <a href="#localizing">Localizing the labels</a>.</p>
 
     <h3>Reduced Motion</h3>
     <p>When <code>prefers-reduced-motion: reduce</code> is set, transitions on the filter input and pagination buttons are disabled.</p>

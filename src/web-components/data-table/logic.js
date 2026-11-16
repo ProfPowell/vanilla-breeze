@@ -4,8 +4,22 @@
  * Wraps a standard HTML table and adds interactive features based on
  * data attributes. Progressive enhancement - table works without JS.
  *
- * Host attributes:
+ * Host attributes (every generated string; each is read when it is used):
  * @attr {string} data-label-no-results - Empty-state / announcement text when the filter matches nothing (default "No matching rows found")
+ * @attr {string} data-label-filter - Accessible name of the filter input (default "Filter table rows")
+ * @attr {string} data-label-placeholder - Placeholder of the filter input (default "Filter table...")
+ * @attr {string} data-label-pagination - Accessible name of the pagination nav (default "Table pagination")
+ * @attr {string} data-label-prev - Text of the previous-page button (default "Previous")
+ * @attr {string} data-label-next - Text of the next-page button (default "Next")
+ * @attr {string} data-label-sorted - Sort announcement; {column} and {direction} are replaced (default "Sorted by {column}, {direction}")
+ * @attr {string} data-label-ascending - Direction word for {direction} (default "ascending")
+ * @attr {string} data-label-descending - Direction word for {direction} (default "descending")
+ * @attr {string} data-label-filtered-one - Filter announcement when Intl.PluralRules selects "one" for the total; {count} and {total} are replaced (default "{count} of {total} row shown"). Any category works: -two, -few, -many, -zero
+ * @attr {string} data-label-filtered-other - Filter announcement for the "other" category and for unset categories (default "{count} of {total} rows shown")
+ * @attr {string} data-label-all-one - Announcement when the filter is cleared, "one" category; {total} is replaced (default "All {total} row shown")
+ * @attr {string} data-label-all-other - Announcement when the filter is cleared, "other" category and unset categories (default "All {total} rows shown")
+ * @attr {string} data-label-selected-one - Selection announcement, "one" category; {count} is replaced (default "{count} row selected")
+ * @attr {string} data-label-selected-other - Selection announcement, "other" category and unset categories (default "{count} rows selected")
  *
  * Table attributes (on the wrapped <table>):
  * @attr {boolean} data-filterable - Enable text search filtering
@@ -62,6 +76,27 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { diffByKey } from '../../lib/diff-by-key.js';
+import { fillTemplate } from '../../lib/data-paged-controls.js';
+import { getLocale } from '../../lib/i18n.js';
+
+/** English defaults; each is overridable with data-label-<key> on the host. */
+const LABELS = {
+  'no-results': 'No matching rows found',
+  'filter': 'Filter table rows',
+  'placeholder': 'Filter table...',
+  'pagination': 'Table pagination',
+  'prev': 'Previous',
+  'next': 'Next',
+  'sorted': 'Sorted by {column}, {direction}',
+  'ascending': 'ascending',
+  'descending': 'descending',
+  'filtered-one': '{count} of {total} row shown',
+  'filtered-other': '{count} of {total} rows shown',
+  'all-one': 'All {total} row shown',
+  'all-other': 'All {total} rows shown',
+  'selected-one': '{count} row selected',
+  'selected-other': '{count} rows selected',
+};
 
 /** Data rows only — expansion content rows travel with their parent row. */
 const DATA_ROWS = ':scope > tr:not([data-expand-content])';
@@ -393,12 +428,37 @@ class DataTable extends VBElement {
   }
 
   /**
-   * Author-overridable UI string from a data-label-* attribute.
-   * @param {string} key  dataset key suffix, e.g. 'NoResults' for data-label-no-results
-   * @param {string} fallback
+   * Author-overridable UI string: data-label-<key> on the host, else the
+   * English default. Read on every use so a changed attribute applies to
+   * the next render or announcement.
+   * @param {string} key  LABELS key, e.g. 'no-results' for data-label-no-results
+   * @returns {string}
    */
-  #label(key, fallback) {
-    return this.dataset[`label${key}`] || fallback;
+  #label(key) {
+    return this.getAttribute(`data-label-${key}`) || LABELS[key] || '';
+  }
+
+  /**
+   * Counted message: picks data-label-<key>-<category> by Intl.PluralRules
+   * for `n`, falling back to the author's -other, then the English default.
+   * @param {string} key  e.g. 'selected' for data-label-selected-one / -other
+   * @param {number} n  the number the plural form agrees with
+   * @param {Record<string, string | number>} values  placeholder values
+   * @returns {string}
+   */
+  #countLabel(key, n, values) {
+    let category = 'other';
+    try { category = new Intl.PluralRules(getLocale(this)).select(n); } catch { /* keep other */ }
+    const template = this.getAttribute(`data-label-${key}-${category}`)
+      || this.getAttribute(`data-label-${key}-other`)
+      || LABELS[`${key}-${category}`]
+      || LABELS[`${key}-other`];
+    return fillTemplate(template, values);
+  }
+
+  /** Format a count or page number for the resolved locale (nearest [lang]). */
+  #number(n) {
+    return new Intl.NumberFormat(getLocale(this)).format(n);
   }
 
   #setupLiveRegion() {
@@ -526,7 +586,10 @@ class DataTable extends VBElement {
     this.#render();
 
     const columnName = headerInfo.th.textContent.trim();
-    this.#announce(`Sorted by ${columnName}, ${direction === 'asc' ? 'ascending' : 'descending'}`);
+    this.#announce(fillTemplate(this.#label('sorted'), {
+      column: columnName,
+      direction: this.#label(direction === 'asc' ? 'ascending' : 'descending'),
+    }));
 
     // Dispatch event
     this.dispatchEvent(new CustomEvent('data-table:sort', {
@@ -597,8 +660,8 @@ class DataTable extends VBElement {
     const filterInput = document.createElement('input');
     filterInput.type = 'search';
     filterInput.setAttribute('data-filter-input', '');
-    filterInput.setAttribute('placeholder', 'Filter table...');
-    filterInput.setAttribute('aria-label', 'Filter table rows');
+    filterInput.setAttribute('placeholder', this.#label('placeholder'));
+    filterInput.setAttribute('aria-label', this.#label('filter'));
 
     filterContainer.appendChild(filterInput);
     this.insertBefore(filterContainer, this.#table);
@@ -609,7 +672,7 @@ class DataTable extends VBElement {
     const empty = document.createElement('p');
     empty.setAttribute('data-table-empty', '');
     empty.hidden = true;
-    empty.textContent = this.#label('NoResults', 'No matching rows found');
+    empty.textContent = this.#label('no-results');
     this.#table.after(empty);
     this.#emptyMessage = empty;
 
@@ -672,11 +735,11 @@ class DataTable extends VBElement {
     if (announce) {
       const count = this.#filteredRows.length;
       const total = this.#allRows.length;
+      // The plural form agrees with the total ("1 of 8 rows shown").
+      const values = { count: this.#number(count), total: this.#number(total) };
       this.#announce(count === 0
-        ? this.#label('NoResults', 'No matching rows found')
-        : this.#filterQuery
-          ? `${count} of ${total} ${total === 1 ? 'row' : 'rows'} shown`
-          : `All ${total} ${total === 1 ? 'row' : 'rows'} shown`);
+        ? this.#label('no-results')
+        : this.#countLabel(this.#filterQuery ? 'filtered' : 'all', total, values));
     }
 
     // Dispatch event
@@ -693,7 +756,7 @@ class DataTable extends VBElement {
     // Create pagination nav
     const nav = document.createElement('nav');
     nav.setAttribute('data-pagination', '');
-    nav.setAttribute('aria-label', 'Table pagination');
+    nav.setAttribute('aria-label', this.#label('pagination'));
 
     this.appendChild(nav);
     this.#paginationNav = nav;
@@ -816,7 +879,7 @@ class DataTable extends VBElement {
 
   #announceSelection() {
     const count = this.getSelectedRows().length;
-    this.#announce(`${count} ${count === 1 ? 'row' : 'rows'} selected`);
+    this.#announce(this.#countLabel('selected', count, { count: this.#number(count) }));
   }
 
   #syncSelectionState() {
@@ -893,7 +956,7 @@ class DataTable extends VBElement {
     // Previous button
     const prevBtn = document.createElement('button');
     prevBtn.type = 'button';
-    prevBtn.textContent = 'Previous';
+    prevBtn.textContent = this.#label('prev');
     prevBtn.setAttribute('data-pagination-prev', '');
     prevBtn.disabled = this.#currentPage === 1;
     prevBtn.addEventListener('click', () => this.goToPage(this.#currentPage - 1));
@@ -911,7 +974,7 @@ class DataTable extends VBElement {
       } else {
         const pageBtn = document.createElement('button');
         pageBtn.type = 'button';
-        pageBtn.textContent = pageNum;
+        pageBtn.textContent = this.#number(pageNum);
         pageBtn.setAttribute('data-pagination-page', '');
 
         if (pageNum === this.#currentPage) {
@@ -927,7 +990,7 @@ class DataTable extends VBElement {
     // Next button
     const nextBtn = document.createElement('button');
     nextBtn.type = 'button';
-    nextBtn.textContent = 'Next';
+    nextBtn.textContent = this.#label('next');
     nextBtn.setAttribute('data-pagination-next', '');
     nextBtn.disabled = this.#currentPage === totalPages;
     nextBtn.addEventListener('click', () => this.goToPage(this.#currentPage + 1));
@@ -1031,6 +1094,7 @@ class DataTable extends VBElement {
 
     // Empty state: only meaningful while a filter is active
     if (this.#emptyMessage) {
+      this.#emptyMessage.textContent = this.#label('no-results');
       this.#emptyMessage.hidden = !(this.#filterQuery && this.#filteredRows.length === 0 && this.#allRows.length > 0);
     }
 
