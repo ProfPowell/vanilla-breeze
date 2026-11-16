@@ -7,6 +7,7 @@
  * Custom plugins:
  * 1. Resolve registerComponent('tag-name', Class) to associate tags
  * 2. Hoist file-level JSDoc (@attr, @fires, description) to the class
+ * 3. Sort modules by path so the output is the same on every run
  */
 
 import { readFileSync } from 'node:fs';
@@ -95,6 +96,16 @@ function hoistFileJsdocPlugin() {
   };
 }
 
+/** The analyzer emits modules in file-system glob order, which varies between runs. */
+function sortModulesPlugin() {
+  return {
+    name: 'vb-sort-modules',
+    packageLinkPhase({ customElementsManifest }) {
+      customElementsManifest.modules.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+    },
+  };
+}
+
 function registerComponentPlugin() {
   return {
     name: 'vb-register-component',
@@ -151,5 +162,5 @@ export default {
   globs: ['src/web-components/*/logic.js'],
   exclude: ['node_modules', 'dist', 'site'],
   outdir: '.',
-  plugins: [hoistFileJsdocPlugin(), registerComponentPlugin()],
+  plugins: [hoistFileJsdocPlugin(), registerComponentPlugin(), sortModulesPlugin()],
 };
