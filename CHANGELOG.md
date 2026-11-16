@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-11-16
+
+0.7.2 adds `<social-feed>`, a single stream of your Bluesky, Mastodon and GitHub posts that Cook renders at build time, makes every `<data-table>` string translatable, and redraws the `<site-map>` horizontal view so it reads left to right. It also fixes the external-link arrow that 0.7.0 put on your own `<share-wc>` links.
+
 ### Changed
 - **`<site-map>` visual view: horizontal orientation is drawn left to right.** The root is on the left, children sit to the right of their parent and labels are upright. It used to rotate the vertical chart, which turned the text sideways and pushed wide trees outside the drawing. Arrow keys follow the drawing: Right goes to the first child, Left to the parent, Up and Down to the previous and next sibling.
 - **`<activity-feed>` no longer intercepts plain Home and End**, so they scroll the page. Ctrl+Home, Ctrl+End, Page Up and Page Down are unchanged.

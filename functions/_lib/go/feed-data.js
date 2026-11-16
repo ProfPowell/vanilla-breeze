@@ -2,6 +2,14 @@
 export default {
   "items": [
     {
+      "id": "0.7.2",
+      "type": "update",
+      "title": "v0.7.2",
+      "body": "0.7.2 adds `<social-feed>`, a single stream of your Bluesky, Mastodon and GitHub posts that Cook renders at build time, makes every `<data-table>` string translatable, and redraws the `<site-map>` horizontal view so it reads left to right. It also fixes the external-link arrow…",
+      "url": "https://vanilla-breeze.com/changelog/#v0-7-2",
+      "date": "2026-11-16"
+    },
+    {
       "id": "0.7.1",
       "type": "update",
       "title": "v0.7.1",
