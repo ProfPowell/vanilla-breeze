@@ -6,8 +6,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Added
-- **`<social-links>`: a row of profile links.** Cook fills it at build time with a plain list of links; the element adds CSS-drawn icons for Bluesky, Mastodon, GitHub, LinkedIn, YouTube and generic links, the `icon`, `label` and `icon-label` variants, and optional brand colours on the icons (`color`). An empty element takes no space.
+## [0.7.0] - 2026-11-15
+
+0.7.0 is an accessibility and documentation release. The web components were audited for keyboard handling, names and announcements: keys now act only where focus is, panels return focus when they close, and the keyboard and ARIA tables in the docs are generated from each component's manifest. Several of these changes alter behaviour and are listed under Changed, as are stricter rules for signed pages: `<page-info>` accepts a signing key only from the page's own origin and `<change-set>` text is part of the signed document, so a page signed with a key on another origin, or one that contains a `<change-set>`, needs signing again. Color tokens are corrected for dark mode and contrast, DTCG export writes computed values, and `<social-links>` is new. The Guide gains overviews and new pages for Accessibility, Internationalization, Layouts, Styling, Content Management and Process.
 
 ### Changed
 - **Themes ship real italics for their body typefaces.** Inter, Nunito, DM Sans, Josefin Sans, Exo 2, Lora, Merriweather, JetBrains Mono, Barlow Condensed and DM Serif Display now include their italic files, so `<em>` and `<cite>` are drawn by the typeface and not slanted by the browser. An italic file is downloaded only when a page has italic text. The package grows by about 1.1 MB.
@@ -32,7 +33,6 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - **`<text-reader>`: Escape hides the toolbar only when focus is in the reader.** It was handled for the whole page.
 - **`<date-picker>` announces the month and year in the locale's own order** ("2026年4月" in Japanese), and names the day grid the same way.
 - **`<glossary-wc>` disabled letters stay in the tab order**, so a keyboard user can reach one and hear that it is disabled.
-- **`<image-map>`: Left and Right Arrow reverse in right-to-left.** **`<page-tools>`: the collapsed popover is announced as a toolbar.** **`<theme-picker>`: the theme select and swatch groups take their name from their visible label.**
 - **`<icon-wc>`'s `basePath` property returns an absolute URL** when it is derived from the bundle location.
 - **`<poll-wc>`: arrow keys no longer vote.** Arrow keys, Home and End move between options; Enter or Space casts or withdraws the vote.
 - **`<tab-set>`: arrow keys follow the orientation.** Vertical tab sets respond to Up and Down only, horizontal ones to Left and Right only. Home and End work in both.
@@ -46,6 +46,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - **The Debugging page's browser support table links each feature to MDN** in place of listing version numbers.
 
 ### Added
+- **`<social-links>`: a row of profile links.** Cook fills it at build time with a plain list of links; the element adds CSS-drawn icons for Bluesky, Mastodon, GitHub, LinkedIn, YouTube and generic links, the `icon`, `label` and `icon-label` variants, and optional brand colours on the icons (`color`). An empty element takes no space.
 - **`diffLines` and `renderDiffFragment` are exported from the package.**
 - **Keyboard and ARIA tables generated from component data.** Each component's `api.json` has an `a11y` block naming the pattern it implements, the roles and states it sets, what the author provides, what it announces and the keys it handles. The Accessibility pages render their tables from it, and the API drift check fails when a listed key or attribute no longer appears in the component's source.
 - **`.skip-link` is in the core stylesheet.** `<a href="#main" class="skip-link">` is off screen until it takes keyboard focus; no CSS to copy.

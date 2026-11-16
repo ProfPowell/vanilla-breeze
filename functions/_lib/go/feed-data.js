@@ -2,6 +2,14 @@
 export default {
   "items": [
     {
+      "id": "0.7.0",
+      "type": "update",
+      "title": "v0.7.0",
+      "body": "0.7.0 is an accessibility and documentation release. The web components were audited for keyboard handling, names and announcements: keys now act only where focus is, panels return focus when they close, and the keyboard and ARIA tables in the docs are generated from each comp…",
+      "url": "https://vanilla-breeze.com/changelog/#v0-7-0",
+      "date": "2026-11-15"
+    },
+    {
       "id": "0.6.2",
       "type": "update",
       "title": "v0.6.2",
