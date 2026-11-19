@@ -6,6 +6,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Ambient pack: styling that follows the season, time of day and calendar occasions at the author's place.** Opt in with `<html data-ambient="season daypart occasion">`. The pack writes `data-season`, `data-daypart`, `data-occasion` and `data-occasion-day` on `<html>`, and maps them to decorative tokens (`--color-ambient`, `--color-ambient-surface`); it never changes `--color-primary`, text, border or focus colours. An inline head script under 1 KB sets the state before first paint. Includes a visitor opt-out (`[data-ambient-toggle]`, `Ambient.enabled`), a `?ambient=` preview, calendar rules, and pure resolvers for site builds (`vanilla-breeze/ambient-resolve`). Weather, motif icons and animated effects are not built yet. See `/docs/packs/ambient/`.
+
+### Changed
+- **`<settings-panel>`: the Environment section is now the ambient opt-out.** It holds one switch, Ambient Styling, and appears only on a page that uses the ambient pack. `data-label-time-of-day` and `data-label-seasonal` are replaced by `data-label-ambient`.
+
+### Removed
+- **The environment manager** (`src/lib/environment-manager.js`) and its Time-of-Day Shifts and Seasonal Tinting switches. It shifted the theme's primary, secondary and accent hues on the visitor's clock; the ambient pack replaces it and leaves those colours alone. The UI pack no longer loads it, and `window.__VB_ENV_LOCATION` is no longer read.
+
 ## [0.7.2] - 2026-11-16
 
 0.7.2 adds `<social-feed>`, a single stream of your Bluesky, Mastodon and GitHub posts that Cook renders at build time, makes every `<data-table>` string translatable, and redraws the `<site-map>` horizontal view so it reads left to right. It also fixes the external-link arrow that 0.7.0 put on your own `<share-wc>` links.

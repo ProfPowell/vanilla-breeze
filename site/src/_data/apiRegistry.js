@@ -15515,20 +15515,12 @@ export default {
         "description": "Text for the \"Environment\" string."
       },
       {
-        "name": "data-label-time-of-day",
+        "name": "data-label-ambient",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "default": "Time-of-Day Shifts",
-        "description": "Text for the \"Time-of-Day Shifts\" string."
-      },
-      {
-        "name": "data-label-seasonal",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string",
-        "default": "Seasonal Tinting",
-        "description": "Text for the \"Seasonal Tinting\" string."
+        "default": "Ambient Styling",
+        "description": "Text for the \"Ambient Styling\" string, the switch in the Environment section. The section appears only when the page opts in to the ambient pack."
       },
       {
         "name": "data-label-system",
