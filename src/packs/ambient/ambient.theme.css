@@ -1,0 +1,97 @@
+/* Ambient pack: tint tokens and state mapping.
+ *
+ * Ambient adds decorative tokens; it never changes --color-primary, text,
+ * border or focus tokens, so contrast for text and controls is the theme's
+ * own. State arrives as attributes on <html> (data-season, data-daypart,
+ * data-weather, data-occasion), written by the head script and the module.
+ *
+ * Tint model: a season has an absolute hue. The season colour takes its
+ * lightness from the theme's primary, caps the chroma, and keeps a share of
+ * the primary (--ambient-blend) so it still belongs to the theme. Weather
+ * scales the chroma; dawn and dusk warm the result.
+ *
+ * Where two signals set the same token the order below decides: season,
+ * daypart, weather, occasion.
+ */
+
+/* @property is ignored inside @layer, so these sit outside it. Registered
+   so a state change can transition. */
+@property --ambient-hue { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --ambient-chroma { syntax: "<number>"; inherits: true; initial-value: 1; }
+@property --ambient-wash { syntax: "<percentage>"; inherits: true; initial-value: 0%; }
+@property --ambient-warmth { syntax: "<percentage>"; inherits: true; initial-value: 0%; }
+
+@layer bundle-theme {
+  :root[data-ambient]:not([data-ambient~="off"]) {
+    --ambient-hue: 0;            /* absolute oklch hue of the season colour */
+    --ambient-season-chroma: 1;  /* season's own chroma factor */
+    --ambient-chroma: 1;         /* weather's chroma factor, 0.6 to 1.1 */
+    --ambient-wash: 3%;          /* share of the accent in the surface, at most 4% */
+    --ambient-warmth: 0%;        /* share of a warm hue mixed in at dawn and dusk */
+    --ambient-blend: 25%;        /* share of the theme primary kept in a season colour */
+    --ambient-icon: none;        /* url() of the current motif icon */
+
+    /* No season: the theme's own primary, scaled by the weather. */
+    --_ambient-base: oklch(from var(--color-primary) l calc(c * var(--ambient-chroma)) h);
+    --color-ambient: color-mix(in oklab, var(--_ambient-base), oklch(from var(--_ambient-base) l c 60) var(--ambient-warmth));
+    --color-ambient-surface: color-mix(in oklab, var(--color-surface), var(--color-ambient) var(--ambient-wash));
+
+    transition: --ambient-hue 600ms, --ambient-chroma 600ms, --ambient-wash 600ms, --ambient-warmth 600ms;
+
+    /* Season */
+    &:is([data-season="winter"], [data-season="spring"], [data-season="summer"], [data-season="autumn"]) {
+      --_ambient-base: color-mix(
+        in oklab,
+        oklch(from var(--color-primary) l calc(min(c, 0.14) * var(--ambient-season-chroma) * var(--ambient-chroma)) var(--ambient-hue)),
+        oklch(from var(--color-primary) l calc(c * var(--ambient-chroma)) h) var(--ambient-blend)
+      );
+    }
+    &[data-season="winter"] { --ambient-hue: 245; --ambient-season-chroma: 0.6; }
+    &[data-season="spring"] { --ambient-hue: 145; --ambient-season-chroma: 0.9; }
+    &[data-season="summer"] { --ambient-hue: 225; }
+    &[data-season="autumn"] { --ambient-hue: 55; --ambient-season-chroma: 0.9; }
+
+    /* Daypart. Night leaves a light page alone and deepens a dark one. */
+    &:is([data-daypart="dawn"], [data-daypart="dusk"]) { --ambient-warmth: 18%; }
+    &[data-daypart="night"] {
+      --color-ambient-surface: light-dark(var(--color-surface), color-mix(in oklab, var(--color-surface), var(--color-ambient) 4%));
+    }
+
+    /* Weather */
+    &:is([data-weather="cloudy"], [data-weather="fog"]) { --ambient-chroma: 0.75; }
+    &:is([data-weather="rain"], [data-weather="storm"]) { --ambient-chroma: 0.7; }
+    &[data-weather="snow"] { --ambient-chroma: 0.8; --ambient-wash: 4%; }
+
+    @media (prefers-reduced-motion: reduce) { transition: none; }
+    &[data-motion-reduced] { transition: none; }
+
+    /* Forced colours and print: no treatments. The :is() lifts this to the
+       specificity of the state rules above, so being last it wins. */
+    @media (forced-colors: active), print {
+      &:is(:root, [data-season], [data-daypart]) {
+        --color-ambient: var(--color-primary);
+        --color-ambient-surface: var(--color-surface);
+        --ambient-icon: none;
+      }
+    }
+  }
+
+  /* Opt-in page wash. */
+  [data-ambient-surface] {
+    background-color: var(--color-ambient-surface, var(--color-surface));
+  }
+
+  /* The decorative rule ornament follows the tint. */
+  :root[data-ambient]:not([data-ambient~="off"]) hr[data-ornament]::before {
+    color: var(--color-ambient);
+  }
+
+  /* A subtree opts out. */
+  :root [data-ambient="off"] {
+    --color-ambient: var(--color-primary);
+    --color-ambient-surface: var(--color-surface);
+    --ambient-icon: none;
+
+    & hr[data-ornament]::before { color: var(--color-text-muted); }
+  }
+}

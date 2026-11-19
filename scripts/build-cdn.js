@@ -478,12 +478,21 @@ async function buildPacks() {
       }
 
       // Build individual JS files
-      for (const jsFile of ['effects', 'components', 'bundle']) {
+      for (const jsFile of ['effects', 'components', 'core', 'resolve', 'bundle']) {
         const src = join(packSrc, `${name}.${jsFile}.js`);
         if (!existsSync(src)) continue;
         const out = join(outDir, `${name}.${jsFile}.js`);
         await esbuild.build({ ...JS_DEFAULTS, entryPoints: [src], outfile: out, logLevel: 'silent' });
         entry[jsFile + 'Js'] = { file: `${name}.${jsFile}.js`, size: statSync(out).size };
+      }
+
+      // Inline head snippet ({name}.head.js): a classic script a site pastes
+      // into <head>, so no module format and no sourcemap comment.
+      const headSrc = join(packSrc, `${name}.head.js`);
+      if (existsSync(headSrc)) {
+        const out = join(outDir, `${name}.head.js`);
+        await esbuild.build({ ...JS_DEFAULTS, format: 'iife', sourcemap: false, entryPoints: [headSrc], outfile: out, logLevel: 'silent' });
+        entry.headJs = { file: `${name}.head.js`, size: statSync(out).size };
       }
 
       // Build full CSS rollup (theme + effects concatenated)
@@ -499,7 +508,7 @@ async function buildPacks() {
 
       // Build full JS rollup (effects + components bundled together)
       const fullJsEntry = join(packSrc, `${name}.full.js`);
-      const fullJsImports = ['effects', 'components']
+      const fullJsImports = ['effects', 'components', 'core']
         .map(f => join(packSrc, `${name}.${f}.js`))
         .filter(existsSync);
       if (fullJsImports.length) {
