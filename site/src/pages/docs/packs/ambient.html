@@ -12,15 +12,15 @@ currentPath: /docs/packs/ambient/
 <table>
   <tbody>
     <tr><th>Type</th><td>Functional</td></tr>
-    <tr><th>Version</th><td>0.1.0</td></tr>
-    <tr><th>CSS</th><td><code>packs/ambient.full.css</code> (under 1 KB gzipped)</td></tr>
+    <tr><th>Version</th><td>0.2.0</td></tr>
+    <tr><th>CSS</th><td><code>packs/ambient.full.css</code> (about 2.8 KB gzipped, icons included)</td></tr>
     <tr><th>JS</th><td><code>packs/ambient.core.js</code> (about 2.3 KB gzipped)</td></tr>
     <tr><th>Inline head script</th><td><code>packs/ambient.head.js</code> (under 1 KB gzipped)</td></tr>
     <tr><th>Resolvers for builds</th><td><code>packs/ambient.resolve.js</code></td></tr>
   </tbody>
 </table>
 
-<p>This is the first release of the pack. Season, time of day, occasions, tint tokens, the visitor opt-out and the preview are in. The weather feed, motif icons and animated atmosphere effects are not built yet; <code>data-weather</code> can be set today only by a pin or a preview.</p>
+<p>Season, time of day, occasions with built-in calendars, tint tokens, motif icons, the visitor opt-out and the preview are in. The weather feed and animated atmosphere effects are not built yet; <code>data-weather</code> can be set today only by a pin or a preview.</p>
 
 <section>
   <h2 id="how-it-works">How it works</h2>
@@ -59,7 +59,7 @@ currentPath: /docs/packs/ambient/
       <tr><th>Stage</th><th>Sets</th><th>Without it</th></tr>
     </thead>
     <tbody>
-      <tr><td>Attributes written by your build</td><td><code>data-season</code> and <code>data-occasion</code> as of build time</td><td>No state; the plain theme</td></tr>
+      <tr><td>Attributes written by your build</td><td><code>data-season</code>, <code>data-occasion</code> and <code>data-occasion-icon</code> as of build time</td><td>No state; the plain theme</td></tr>
       <tr><td>Inline head script</td><td>Season, time of day and occasions from the clock, before first paint. Removes all state if the visitor opted out.</td><td>Built values stand until the module runs</td></tr>
       <tr><td>Module</td><td>Keeps the state current: it wakes once at the next boundary and when the tab becomes visible again. Wires the opt-out control.</td><td>State is right at load and does not update</td></tr>
     </tbody>
@@ -81,6 +81,8 @@ currentPath: /docs/packs/ambient/
       <tr><td><code>data-weather-intensity</code></td><td><code>light</code>, <code>heavy</code></td><td>Pack</td><td>Absent means moderate.</td></tr>
       <tr><td><code>data-occasion</code></td><td>Word list of occasion ids, highest priority first, at most two</td><td>Pack</td><td>Match with <code>~=</code>, like <code>data-theme</code>.</td></tr>
       <tr><td><code>data-occasion-day</code></td><td>Boolean</td><td>Pack</td><td>Present on the day itself, not during the lead-up.</td></tr>
+      <tr><td><code>data-occasion-icon</code></td><td>An icon name</td><td>Pack</td><td>The icon the active occasion's calendar entry names.</td></tr>
+      <tr><td><code>data-ambient-level</code></td><td><code>tint</code>, <code>motif</code> (default)</td><td>Author</td><td><code>tint</code> turns motif icons off and leaves the colour tokens.</td></tr>
       <tr><td><code>data-ambient-debug</code></td><td>Boolean</td><td>Author</td><td>Allows the <code>?ambient=</code> preview outside localhost.</td></tr>
     </tbody>
   </table>
@@ -100,7 +102,8 @@ currentPath: /docs/packs/ambient/
       <tr><td><code>hemisphere</code></td><td><code>north</code> (default) or <code>south</code>, which shifts the season by two.</td></tr>
       <tr><td><code>seasons</code></td><td>A month (1&ndash;12) to label map for places without four seasons. Custom labels get no built-in tint; style them yourself.</td></tr>
       <tr><td><code>occasions</code></td><td>Dated windows written by a build with <code>expandCalendar()</code>. The head script reads these.</td></tr>
-      <tr><td><code>calendar</code></td><td>Calendar rules, for a page with no build step. The module fetches the rule parser and applies occasions after load.</td></tr>
+      <tr><td><code>calendars</code></td><td>Names of built-in sets to use: <code>markers</code>, <code>geek</code>, <code>civic-us</code>. Default <code>["markers"]</code>.</td></tr>
+      <tr><td><code>calendar</code></td><td>Your own entries, added to the built-in sets. An entry with the id of a built-in one replaces it.</td></tr>
       <tr><td><code>pin</code></td><td>Fixes signals for a page: <code>{ "season": "winter", "weather": "snow" }</code>.</td></tr>
     </tbody>
   </table>
@@ -119,13 +122,28 @@ currentPath: /docs/packs/ambient/
       <tr><td>Explicit dates</td><td><code>{ "dates": ["2026-02-17"] }</code></td><td>Movable observances, written by your build</td></tr>
     </tbody>
   </table>
-  <p>An occasion is active from <code>lead</code> days before its date to <code>trail</code> days after. Active occasions are sorted by <code>priority</code>, then by how near their own day is, and the first two are kept. No calendars ship with the pack yet.</p>
-  <code-block language="js" label="Expanding a calendar in a build" data-escape>import { expandCalendar, resolveSeason } from 'vanilla-breeze/ambient-resolve'
+  <p>An occasion is active from <code>lead</code> days before its date to <code>trail</code> days after. Active occasions are sorted by <code>priority</code>, then by how near their own day is, and the first two are kept. An entry may name an <code>icon</code> from the <a href="#motifs">icon list</a>.</p>
+
+  <h3 id="built-in-calendars">Built-in calendars</h3>
+  <table>
+    <thead>
+      <tr><th>Set</th><th>Occasion ids</th><th>Default</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>markers</code></td><td><code>new-year</code>, <code>march-equinox</code>, <code>june-solstice</code>, <code>september-equinox</code>, <code>december-solstice</code>, <code>leap-day</code></td><td>On</td></tr>
+      <tr><td><code>geek</code></td><td><code>web-birthday</code>, <code>pi-day</code>, <code>css-naked-day</code>, <code>may-the-4th</code>, <code>towel-day</code>, <code>programmers-day</code>, <code>ada-lovelace-day</code></td><td>Off</td></tr>
+      <tr><td><code>civic-us</code></td><td>US federal holidays by their statutory names (<code>mlk-day</code>, <code>presidents-day</code>, <code>memorial-day</code>, <code>juneteenth</code>, <code>independence-day</code>, <code>labor-day</code>, <code>columbus-day</code>, <code>veterans-day</code>, <code>thanksgiving</code>, <code>christmas-day</code>, <code>new-year</code>), plus <code>valentines-day</code> and <code>halloween</code></td><td>Off</td></tr>
+    </tbody>
+  </table>
+  <p>Solstice and equinox dates are the usual ones, not astronomical calculations. Religious and cultural observances are not built in: add them as your own entries, with explicit dates for the movable ones.</p>
+  <p>The head script reads only dated windows (<code>occasions</code>), which a build writes. On a page that gives no <code>occasions</code>, the module fetches <code>packs/ambient.resolve.js</code> once and applies occasions after load.</p>
+  <code-block language="js" label="Expanding a calendar in a build" data-escape>import { calendarFor, expandCalendar, resolveSeason } from 'vanilla-breeze/ambient-resolve'
 
 const year = new Date().getFullYear()
+const site = { calendars: ['markers', 'geek'], calendar: [{ id: 'blog-birthday', rule: '03-01', icon: 'cake' }] }
 const config = {
   tz: 'America/Los_Angeles',
-  occasions: expandCalendar(calendar, [year, year + 1]),
+  occasions: expandCalendar(calendarFor(site), [year - 1, year, year + 1]),
 }
 const season = resolveSeason(new Date(), config) // write as data-season</code-block>
 </section>
@@ -155,10 +173,28 @@ const season = resolveSeason(new Date(), config) // write as data-season</code-b
 </section>
 
 <section>
+  <h2 id="motifs">Motifs</h2>
+  <p>A motif is a small static icon that appears only where you place a slot. The current icon is <code>--ambient-icon</code>, chosen in this order: the occasion's icon, then the weather, then the season. It is drawn as a mask filled with <code>--color-ambient</code>.</p>
+  <table>
+    <thead>
+      <tr><th>Slot</th><th>Markup</th><th>Result</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Inline mark</td><td><code>&lt;span data-ambient-slot="mark" aria-hidden="true"&gt;&lt;/span&gt;</code></td><td>The current icon at 1em. Empty, and no space taken, when there is no icon.</td></tr>
+      <tr><td>Rule ornament</td><td><code>&lt;hr data-ornament data-ambient-slot&gt;</code></td><td>The ornament becomes the current icon. With no state the rule keeps its normal ornament.</td></tr>
+      <tr><td>Surface</td><td><code>&lt;body data-ambient-surface&gt;</code></td><td>The background uses <code>--color-ambient-surface</code>.</td></tr>
+      <tr><td>Your own</td><td><code>[data-ambient-slot="name"]</code></td><td>Unstyled hook for site CSS.</td></tr>
+    </tbody>
+  </table>
+  <p>Icon names: <code>snowflake</code>, <code>sprout</code>, <code>sun</code>, <code>leaf</code>, <code>moon</code>, <code>cloud</code>, <code>drops</code>, <code>fog</code>, <code>wind</code>, <code>storm</code>, <code>sparkles</code>, <code>cake</code>, <code>heart</code>, <code>ghost</code>, <code>star</code>, <code>flag</code>, <code>pi</code>, <code>gift</code>. Each is also a token, <code>--ambient-icon-<var>name</var></code>, so site CSS can use one directly. They come from the Lucide set.</p>
+  <p>Seasons give a snowflake, sprout, sun or leaf. Weather gives a sun (a moon on a clear night), cloud, fog, drops, storm, snowflake or wind. Motifs are hidden in forced colours and in print, and with <code>data-ambient-level="tint"</code>. Add <code>aria-hidden="true"</code> to a mark: it carries no information.</p>
+</section>
+
+<section>
   <h2 id="api">JavaScript API</h2>
   <code-block language="js" label="Ambient" data-escape>import { Ambient } from '/cdn/packs/ambient.core.js'
 
-Ambient.state                        // frozen: { season, daypart, weather, intensity, occasions, occasionDay, tempC, asOf }
+Ambient.state                        // frozen: { season, daypart, weather, intensity, occasions, occasionDay, occasionIcon, tempC, asOf }
 Ambient.enabled = false              // visitor opt-out, stored in localStorage
 Ambient.override({ season: 'winter', daypart: 'night' })  // preview; null clears
 Ambient.refresh()                    // resolve again now
@@ -167,7 +203,7 @@ document.addEventListener('ambient:change', (e) => {
   e.detail.state    // the new state
   e.detail.changed  // ['daypart']
 })</code-block>
-  <p>The pure resolvers are in <code>packs/ambient.resolve.js</code> and have no DOM access: <code>resolveSeason(date, config)</code>, <code>resolveDaypart(date, config, sun)</code>, <code>resolveOccasions(date, calendar, config)</code>, <code>expandCalendar(calendar, years)</code> and <code>mapWeatherCode(code, windKmh)</code>.</p>
+  <p>The pure resolvers are in <code>packs/ambient.resolve.js</code> and have no DOM access: <code>resolveSeason(date, config)</code>, <code>resolveDaypart(date, config, sun)</code>, <code>resolveOccasions(date, calendar, config)</code>, <code>calendarFor(config)</code>, <code>expandCalendar(calendar, years)</code> and <code>mapWeatherCode(code, windKmh)</code>.</p>
 </section>
 
 <section>

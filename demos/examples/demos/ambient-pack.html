@@ -6,10 +6,9 @@
   <title>Ambient Pack Demo</title>
   <script type="application/json" id="ambient-config">
     {
+      "calendars": ["markers", "geek", "civic-us"],
       "calendar": [
-        { "id": "new-year", "rule": "12-31..01-01", "lead": 2, "priority": 10 },
-        { "id": "halloween", "rule": "10-31", "lead": 7, "priority": 50 },
-        { "id": "thanksgiving", "rule": "11:4:thu", "lead": 7, "priority": 40 }
+        { "id": "site-birthday", "rule": "03-01", "priority": 60, "icon": "cake" }
       ]
     }
   </script>
@@ -17,6 +16,7 @@
   <script src="/cdn/packs/ambient.head.js"></script>
   <link rel="stylesheet" href="/src/main.css" />
   <link rel="stylesheet" href="/src/packs/ambient/ambient.theme.css" />
+  <link rel="stylesheet" href="/src/packs/ambient/ambient.effects.css" />
   <style>
     body { padding: var(--size-xl); }
     .swatch {
@@ -47,13 +47,18 @@
         if (value(key)) preview[key] = value(key);
       }
       if (value('occasion')) {
-        preview.occasions = [value('occasion')];
+        const [id, icon] = value('occasion').split(':');
+        preview.occasions = [id];
         preview.occasionDay = true;
+        preview.occasionIcon = icon || null;
       }
+      if (value('level') === 'tint') document.documentElement.setAttribute('data-ambient-level', 'tint');
+      else document.documentElement.removeAttribute('data-ambient-level');
       Ambient.override(Object.keys(preview).length ? preview : null);
     });
     document.getElementById('clear').addEventListener('click', () => {
-      for (const select of form.querySelectorAll('select')) select.value = '';
+      for (const select of form.querySelectorAll('select')) select.selectedIndex = 0;
+      document.documentElement.removeAttribute('data-ambient-level');
       Ambient.override(null);
     });
     document.addEventListener('ambient:change', show);
@@ -62,8 +67,8 @@
 </head>
 <body data-ambient-surface data-layout="stack" data-layout-gap="l">
   <header>
-    <h1>Ambient pack</h1>
-    <p>The page reads the clock and sets a season and a time of day on <code>&lt;html&gt;</code>. The swatches show the decorative tokens that follow; text and control colours never change.</p>
+    <h1>Ambient pack <span data-ambient-slot="mark" aria-hidden="true"></span></h1>
+    <p>The page reads the clock and sets a season and a time of day on <code>&lt;html&gt;</code>. The swatches show the decorative tokens that follow; text and control colours never change. The icon beside the heading and on the rule below is the current motif.</p>
   </header>
 
   <layout-grid data-layout-min="s" data-layout-gap="m">
@@ -81,7 +86,7 @@
     </figure>
   </layout-grid>
 
-  <hr data-ornament />
+  <hr data-ornament data-ambient-slot />
 
   <fieldset id="preview" data-layout="cluster" data-layout-gap="m">
     <legend>Preview a state</legend>
@@ -118,9 +123,18 @@
     <label>Occasion
       <select name="occasion">
         <option value="">From the calendar</option>
-        <option>halloween</option>
-        <option>thanksgiving</option>
-        <option>new-year</option>
+        <option value="halloween:ghost">halloween</option>
+        <option value="thanksgiving:leaf">thanksgiving</option>
+        <option value="new-year:sparkles">new-year</option>
+        <option value="pi-day:pi">pi-day</option>
+        <option value="site-birthday:cake">site-birthday</option>
+        <option value="css-naked-day">css-naked-day (no icon)</option>
+      </select>
+    </label>
+    <label>Level
+      <select name="level">
+        <option value="motif">motif</option>
+        <option value="tint">tint</option>
       </select>
     </label>
     <button type="button" id="clear" class="secondary">Clear preview</button>
