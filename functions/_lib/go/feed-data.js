@@ -2,6 +2,14 @@
 export default {
   "items": [
     {
+      "id": "0.7.3",
+      "type": "update",
+      "title": "v0.7.3",
+      "body": "0.7.3 adds the Ambient pack: opt-in styling that follows the season, time of day and calendar occasions at the author's place, through data attributes on `<html>`, decorative tint tokens and small motif icons. It replaces the environment manager and its two `<settings-panel>`…",
+      "url": "https://vanilla-breeze.com/changelog/#v0-7-3",
+      "date": "2026-11-19"
+    },
+    {
       "id": "0.7.2",
       "type": "update",
       "title": "v0.7.2",

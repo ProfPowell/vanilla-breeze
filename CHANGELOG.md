@@ -6,8 +6,12 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-11-19
+
+0.7.3 adds the Ambient pack: opt-in styling that follows the season, time of day and calendar occasions at the author's place, through data attributes on `<html>`, decorative tint tokens and small motif icons. It replaces the environment manager and its two `<settings-panel>` switches, which shifted the theme's own hues.
+
 ### Added
-- **Ambient pack: styling that follows the season, time of day and calendar occasions at the author's place.** Opt in with `<html data-ambient="season daypart occasion">`. The pack writes `data-season`, `data-daypart`, `data-occasion` and `data-occasion-day` on `<html>`, and maps them to decorative tokens (`--color-ambient`, `--color-ambient-surface`); it never changes `--color-primary`, text, border or focus colours. An inline head script under 1 KB sets the state before first paint. Includes a visitor opt-out (`[data-ambient-toggle]`, `Ambient.enabled`), a `?ambient=` preview, calendar rules, and pure resolvers for site builds (`vanilla-breeze/ambient-resolve`). Weather, motif icons and animated effects are not built yet. See `/docs/packs/ambient/`.
+- **Ambient pack: styling that follows the season, time of day and calendar occasions at the author's place.** Opt in with `<html data-ambient="season daypart occasion">`. The pack writes `data-season`, `data-daypart`, `data-occasion` and `data-occasion-day` on `<html>`, and maps them to decorative tokens (`--color-ambient`, `--color-ambient-surface`); it never changes `--color-primary`, text, border or focus colours. An inline head script under 1 KB sets the state before first paint. Motif icons appear where you place a slot (`<span data-ambient-slot="mark">`, `<hr data-ornament data-ambient-slot>`), chosen by occasion, then weather, then season; `data-ambient-level="tint"` turns them off. Built-in calendars `markers`, `geek` and `civic-us` are opt-in by name, and a site adds its own entries. Includes a visitor opt-out (`[data-ambient-toggle]`, `Ambient.enabled`), a `?ambient=` preview, and pure resolvers for site builds (`vanilla-breeze/ambient-resolve`). The weather feed and animated effects are not built yet. See `/docs/packs/ambient/`.
 
 ### Changed
 - **`<settings-panel>`: the Environment section is now the ambient opt-out.** It holds one switch, Ambient Styling, and appears only on a page that uses the ambient pack. `data-label-time-of-day` and `data-label-seasonal` are replaced by `data-label-ambient`.
