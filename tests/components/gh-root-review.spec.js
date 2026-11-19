@@ -251,5 +251,9 @@ test('theme-color meta updates on mode change', async ({ page }) => {
     ctx.fillRect(0, 0, 1, 1);
     return '#' + [...ctx.getImageData(0, 0, 1, 1).data].slice(0, 3).map((n) => n.toString(16).padStart(2, '0')).join('');
   });
-  expect(dark[0].content).toBe(bg);
+  // Within one step per channel: the manager and this probe each round the
+  // colour through their own canvas, and CI has differed by 1 (#050606 / #060606).
+  const channels = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const [a, b] = [channels(dark[0].content), channels(bg)];
+  expect(Math.max(...a.map((v, i) => Math.abs(v - b[i]))), `${dark[0].content} vs ${bg}`).toBeLessThanOrEqual(1);
 });
