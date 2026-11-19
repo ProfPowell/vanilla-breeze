@@ -28,7 +28,7 @@ import { VBElement } from '../../lib/vb-element.js';
  */
 
 import { ThemeManager } from '../../lib/theme-manager.js';
-import { EnvironmentManager } from '../../lib/environment-manager.js';
+import { ambientEnabled, setAmbientEnabled } from '../../lib/ambient-pref.js';
 import { getVBVersion, getSWStatus, clearSWCache, checkForUpdate } from '../../lib/sw-register.js';
 import { THEME_GROUPS } from '../../lib/theme-data.js';
 import { VBStore } from '../../lib/vb-store.js';
@@ -97,8 +97,7 @@ const LABELS = {
   motion: 'Motion Effects',
   sounds: 'Sound Effects',
   environment: 'Environment',
-  'time-of-day': 'Time-of-Day Shifts',
-  seasonal: 'Seasonal Tinting',
+  ambient: 'Ambient Styling',
   system: 'System',
   'sw-label': 'Service Worker:',
   'sw-checking': 'checking…',
@@ -420,7 +419,11 @@ class SettingsPanel extends VBElement {
     const { mode, brand, fluid, backdrop, backdropChrome, pageBgType, pageBgColor, pageBgGradStart, pageBgGradEnd, pageBgGradDir } = ThemeManager.getState();
     const a11yThemes = [...this.#a11yThemes];
     const extensions = { ...this.#extensions };
-    const env = EnvironmentManager.load();
+    // The Environment section appears only on a page that opted in to the
+    // ambient pack (<html data-ambient="season …">); the switch is the
+    // visitor's opt-out.
+    const ambientWords = (document.documentElement.getAttribute('data-ambient') || '').split(/\s+/).filter(Boolean);
+    const hasAmbient = ambientWords.length > 0 && !ambientWords.includes('off');
     const fluidOn = this.#isFluidOn(fluid);
     const density = this.#getDensity(fluid);
     const backdropOn = this.#isBackdropOn(backdrop);
@@ -545,13 +548,12 @@ class SettingsPanel extends VBElement {
           </div>
         </details>
 
-        <details name="settings-${u}">
+        ${hasAmbient ? `<details name="settings-${u}">
           <summary>${t('environment')}</summary>
           <div class="settings-section">
-            ${toggle('time-of-day', 'data-env="timeOfDay"', !!env.timeOfDay)}
-            ${toggle('seasonal', 'data-env="seasonal"', !!env.seasonal)}
+            ${toggle('ambient', 'data-ambient-pref', ambientEnabled())}
           </div>
-        </details>
+        </details>` : ''}
 
         <details name="settings-${u}">
           <summary>${t('system')}</summary>
@@ -607,7 +609,7 @@ class SettingsPanel extends VBElement {
     this.#q('[data-field="grad-dir"]')?.addEventListener('change', this.#handlePageBgChange);
     panel.querySelectorAll('input[data-a11y]').forEach(input => input.addEventListener('change', this.#handleA11yChange));
     panel.querySelectorAll('input[data-ext]').forEach(input => input.addEventListener('change', this.#handleExtensionChange));
-    panel.querySelectorAll('input[data-env]').forEach(input => input.addEventListener('change', this.#handleEnvironmentChange));
+    panel.querySelectorAll('input[data-ambient-pref]').forEach(input => input.addEventListener('change', this.#handleAmbientChange));
 
     // Reset (in-panel confirm step)
     this.#q('.settings-reset')?.addEventListener('click', this.#showResetConfirm);
@@ -753,8 +755,8 @@ class SettingsPanel extends VBElement {
     this.#applyExtensions();
   };
 
-  #handleEnvironmentChange = (e) => {
-    EnvironmentManager.setSource(e.target.dataset.env, e.target.checked);
+  #handleAmbientChange = (e) => {
+    setAmbientEnabled(e.target.checked);
   };
 
   #showResetConfirm = () => {
@@ -803,9 +805,8 @@ class SettingsPanel extends VBElement {
     VBStore.remove(SETTINGS_NS, 'sticky').catch(() => { /* ignore */ });
     applySticky(this.#stickyOn);
 
-    // Reset environment
-    EnvironmentManager.setSource('timeOfDay', false);
-    EnvironmentManager.setSource('seasonal', false);
+    // Reset the ambient opt-out
+    if (!ambientEnabled()) setAmbientEnabled(true);
 
     this.#hideResetConfirm(true);
     this.#syncState();
@@ -877,11 +878,7 @@ class SettingsPanel extends VBElement {
 
     check('input[data-sticky-toggle]', this.#stickyOn);
 
-    const envPrefs = EnvironmentManager.load();
-    panel.querySelectorAll('input[data-env]').forEach(el => {
-      const input = /** @type {HTMLInputElement} */ (el);
-      input.checked = envPrefs[/** @type {string} */ (input.dataset.env)] ?? false;
-    });
+    check('input[data-ambient-pref]', ambientEnabled());
   }
 
   #updateDensityVisibility(show) {

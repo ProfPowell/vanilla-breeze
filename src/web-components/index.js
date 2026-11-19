@@ -64,7 +64,6 @@ import './notification-wc/logic.js';
 import './watch-wc/logic.js';
 import './analytics-panel/logic.js';
 import './day-view/logic.js';
-import '../lib/environment-manager-init.js';
 import '../utils/emoji-init.js';
 import '../utils/mock-init.js';
 import '../utils/lorem-init.js';

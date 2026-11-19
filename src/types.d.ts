@@ -17,7 +17,6 @@ interface Window {
   __VB_COMPONENT_BASE?: string;
   __VB_THEME_BASE?: string;
   __VB_SERVICE_WORKER?: string;
-  __VB_ENV_LOCATION?: { hemisphere?: 'north' | 'south' };
   VB?: typeof import('./lib/vb.js').VB;
   __commandRegistry?: VBCommandRegistry;
   webkitAudioContext?: typeof AudioContext;
