@@ -1,0 +1,188 @@
+---
+layout: docs
+title: "Ambient Pack"
+description: "Opt-in styling that follows the season, time of day, weather and calendar occasions at the author's place, through data attributes and decorative tokens."
+currentSection: docs
+currentPath: /docs/packs/ambient/
+---
+
+<h1><icon-wc name="cloud-sun" size="sm"></icon-wc> Ambient Pack</h1>
+<p class="lead">Lets a site look slightly like today. The pack resolves a season, a time of day and calendar occasions for the author's place, writes them as attributes on <code>&lt;html&gt;</code>, and maps them to decorative tokens. It never asks for or guesses the visitor's location.</p>
+
+<table>
+  <tbody>
+    <tr><th>Type</th><td>Functional</td></tr>
+    <tr><th>Version</th><td>0.1.0</td></tr>
+    <tr><th>CSS</th><td><code>packs/ambient.full.css</code> (under 1 KB gzipped)</td></tr>
+    <tr><th>JS</th><td><code>packs/ambient.core.js</code> (about 2.3 KB gzipped)</td></tr>
+    <tr><th>Inline head script</th><td><code>packs/ambient.head.js</code> (under 1 KB gzipped)</td></tr>
+    <tr><th>Resolvers for builds</th><td><code>packs/ambient.resolve.js</code></td></tr>
+  </tbody>
+</table>
+
+<p>This is the first release of the pack. Season, time of day, occasions, tint tokens, the visitor opt-out and the preview are in. The weather feed, motif icons and animated atmosphere effects are not built yet; <code>data-weather</code> can be set today only by a pin or a preview.</p>
+
+<section>
+  <h2 id="how-it-works">How it works</h2>
+  <ol>
+    <li><strong>Configure.</strong> The page lists the signals it wants in <code>data-ambient</code> and, optionally, gives a time zone and a calendar in a JSON block.</li>
+    <li><strong>Resolve.</strong> Pure functions turn the clock and the config into a state.</li>
+    <li><strong>Reflect.</strong> The state is written to attributes on <code>&lt;html&gt;</code>: by the inline head script before first paint, then kept current by the module.</li>
+    <li><strong>Respond.</strong> The pack's CSS maps the attributes to tokens. Your CSS and your theme can select on the same attributes.</li>
+  </ol>
+  <p>Ambient adds tokens. It does not change <code>--color-primary</code>, text colours, borders or focus styles, so contrast for text and controls stays the theme's own. Without <code>data-ambient</code> on <code>&lt;html&gt;</code> the pack does nothing.</p>
+</section>
+
+<section>
+  <h2 id="demo">Demo</h2>
+  <browser-window url="Ambient Pack Demo" reload>
+    <iframe src="/docs/examples/demos/ambient-pack.html" style="height: 640px"></iframe>
+  </browser-window>
+</section>
+
+<section>
+  <h2 id="loading">Loading</h2>
+  <code-block language="html" label="Page markup" data-escape><html lang="en" data-ambient="season daypart occasion">
+<head>
+  <script type="application/json" id="ambient-config">
+    { "tz": "America/Los_Angeles", "hemisphere": "north" }
+  </script>
+  <script>/* contents of packs/ambient.head.js, inlined */</script>
+  <link rel="stylesheet" href="/cdn/vanilla-breeze.css">
+  <link rel="stylesheet" href="/cdn/packs/ambient.full.css">
+  <script type="module" src="/cdn/vanilla-breeze.js"></script>
+  <script type="module" src="/cdn/packs/ambient.core.js"></script>
+</head></code-block>
+  <p>The page is correct at each stage of loading:</p>
+  <table>
+    <thead>
+      <tr><th>Stage</th><th>Sets</th><th>Without it</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Attributes written by your build</td><td><code>data-season</code> and <code>data-occasion</code> as of build time</td><td>No state; the plain theme</td></tr>
+      <tr><td>Inline head script</td><td>Season, time of day and occasions from the clock, before first paint. Removes all state if the visitor opted out.</td><td>Built values stand until the module runs</td></tr>
+      <tr><td>Module</td><td>Keeps the state current: it wakes once at the next boundary and when the tab becomes visible again. Wires the opt-out control.</td><td>State is right at load and does not update</td></tr>
+    </tbody>
+  </table>
+  <p>The head script must come after <code>#ambient-config</code>. It does not throw, wait on the network or touch layout. With JavaScript off, the attributes your build wrote are used as they are.</p>
+</section>
+
+<section>
+  <h2 id="attributes">Attributes on <code>&lt;html&gt;</code></h2>
+  <table>
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Written by</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-ambient</code></td><td>Word list of signals: <code>season</code> <code>daypart</code> <code>weather</code> <code>occasion</code></td><td>Author</td><td>The opt-in switch. Absent, or <code>off</code>, means the pack does nothing.</td></tr>
+      <tr><td><code>data-season</code></td><td><code>spring</code>, <code>summer</code>, <code>autumn</code>, <code>winter</code>, or a custom label</td><td>Pack</td><td>Meteorological seasons by month.</td></tr>
+      <tr><td><code>data-daypart</code></td><td><code>dawn</code>, <code>day</code>, <code>dusk</code>, <code>night</code></td><td>Pack</td><td>Dawn and dusk are the 45 minutes either side of sunrise and sunset.</td></tr>
+      <tr><td><code>data-weather</code></td><td><code>clear</code>, <code>cloudy</code>, <code>fog</code>, <code>rain</code>, <code>snow</code>, <code>storm</code>, <code>wind</code></td><td>Pack</td><td>Only from a pin or a preview until the weather feed is built.</td></tr>
+      <tr><td><code>data-weather-intensity</code></td><td><code>light</code>, <code>heavy</code></td><td>Pack</td><td>Absent means moderate.</td></tr>
+      <tr><td><code>data-occasion</code></td><td>Word list of occasion ids, highest priority first, at most two</td><td>Pack</td><td>Match with <code>~=</code>, like <code>data-theme</code>.</td></tr>
+      <tr><td><code>data-occasion-day</code></td><td>Boolean</td><td>Pack</td><td>Present on the day itself, not during the lead-up.</td></tr>
+      <tr><td><code>data-ambient-debug</code></td><td>Boolean</td><td>Author</td><td>Allows the <code>?ambient=</code> preview outside localhost.</td></tr>
+    </tbody>
+  </table>
+  <p>The pack writes a state attribute only for a signal you enabled and a value it knows. State attributes are a public contract: select on them freely.</p>
+  <p>Two attributes go on other elements. <code>data-ambient-surface</code> gives an element, usually <code>&lt;body&gt;</code>, the washed background. <code>data-ambient="off"</code> on any element resets the tokens for that subtree.</p>
+</section>
+
+<section>
+  <h2 id="config">Configuration</h2>
+  <p>All keys are optional. Without <code>tz</code> the visitor's own clock is used.</p>
+  <table>
+    <thead>
+      <tr><th>Key</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>tz</code></td><td>IANA time zone of the author's place, for example <code>America/Los_Angeles</code>.</td></tr>
+      <tr><td><code>hemisphere</code></td><td><code>north</code> (default) or <code>south</code>, which shifts the season by two.</td></tr>
+      <tr><td><code>seasons</code></td><td>A month (1&ndash;12) to label map for places without four seasons. Custom labels get no built-in tint; style them yourself.</td></tr>
+      <tr><td><code>occasions</code></td><td>Dated windows written by a build with <code>expandCalendar()</code>. The head script reads these.</td></tr>
+      <tr><td><code>calendar</code></td><td>Calendar rules, for a page with no build step. The module fetches the rule parser and applies occasions after load.</td></tr>
+      <tr><td><code>pin</code></td><td>Fixes signals for a page: <code>{ "season": "winter", "weather": "snow" }</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="calendar">Calendar rules</h3>
+  <code-block language="json" label="One calendar entry" data-escape>{ "id": "halloween", "rule": "10-31", "lead": 7, "trail": 0, "priority": 50 }</code-block>
+  <table>
+    <thead>
+      <tr><th>Rule form</th><th>Example</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Fixed date</td><td><code>"10-31"</code></td><td>Month and day, every year</td></tr>
+      <tr><td>Range</td><td><code>"12-24..01-01"</code></td><td>Inclusive; may wrap the year</td></tr>
+      <tr><td>Nth weekday</td><td><code>"11:4:thu"</code>, <code>"5:-1:mon"</code></td><td>Fourth Thursday of November; last Monday of May</td></tr>
+      <tr><td>Day of year</td><td><code>"doy:256"</code></td><td>The 256th day</td></tr>
+      <tr><td>Explicit dates</td><td><code>{ "dates": ["2026-02-17"] }</code></td><td>Movable observances, written by your build</td></tr>
+    </tbody>
+  </table>
+  <p>An occasion is active from <code>lead</code> days before its date to <code>trail</code> days after. Active occasions are sorted by <code>priority</code>, then by how near their own day is, and the first two are kept. No calendars ship with the pack yet.</p>
+  <code-block language="js" label="Expanding a calendar in a build" data-escape>import { expandCalendar, resolveSeason } from 'vanilla-breeze/ambient-resolve'
+
+const year = new Date().getFullYear()
+const config = {
+  tz: 'America/Los_Angeles',
+  occasions: expandCalendar(calendar, [year, year + 1]),
+}
+const season = resolveSeason(new Date(), config) // write as data-season</code-block>
+</section>
+
+<section>
+  <h2 id="tokens">Tokens</h2>
+  <table>
+    <thead>
+      <tr><th>Token</th><th>Set by</th><th>Use</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--color-ambient</code></td><td>Derived</td><td>Decorative marks, ornaments, chart accents</td></tr>
+      <tr><td><code>--color-ambient-surface</code></td><td>Derived</td><td>Page background, through <code>data-ambient-surface</code></td></tr>
+      <tr><td><code>--ambient-hue</code></td><td>Season</td><td>Absolute oklch hue of the season colour</td></tr>
+      <tr><td><code>--ambient-chroma</code></td><td>Weather</td><td>Chroma multiplier, 0.6 to 1.1</td></tr>
+      <tr><td><code>--ambient-warmth</code></td><td>Time of day</td><td>Share of a warm hue mixed in at dawn and dusk</td></tr>
+      <tr><td><code>--ambient-wash</code></td><td>Weather</td><td>Share of the accent in the surface, at most 4%</td></tr>
+      <tr><td><code>--ambient-blend</code></td><td>Theme</td><td>Share of the theme's primary kept in a season colour (default 25%)</td></tr>
+    </tbody>
+  </table>
+  <p>A season has a hue of its own: winter is a cool blue-grey, spring a soft green, summer a clear blue, autumn a warm brown. The season colour takes its lightness from the theme's primary and keeps a share of it, so it still belongs to the theme. Without a season, <code>--color-ambient</code> is the theme's primary, adjusted by weather and time of day.</p>
+  <p>At night the surface is left alone on a light page and washed at 4% on a dark one. The time of day never changes the visitor's light or dark mode.</p>
+  <code-block language="css" label="A theme restyles a state" data-escape>@layer bundle-theme {
+  [data-theme~="swiss"][data-season="winter"] { --ambient-hue: 230; --ambient-season-chroma: 0.5; }
+}</code-block>
+  <p>The treatments reset under forced colours and in print. Token changes transition over 600 ms, and not at all under reduced motion.</p>
+</section>
+
+<section>
+  <h2 id="api">JavaScript API</h2>
+  <code-block language="js" label="Ambient" data-escape>import { Ambient } from '/cdn/packs/ambient.core.js'
+
+Ambient.state                        // frozen: { season, daypart, weather, intensity, occasions, occasionDay, tempC, asOf }
+Ambient.enabled = false              // visitor opt-out, stored in localStorage
+Ambient.override({ season: 'winter', daypart: 'night' })  // preview; null clears
+Ambient.refresh()                    // resolve again now
+
+document.addEventListener('ambient:change', (e) => {
+  e.detail.state    // the new state
+  e.detail.changed  // ['daypart']
+})</code-block>
+  <p>The pure resolvers are in <code>packs/ambient.resolve.js</code> and have no DOM access: <code>resolveSeason(date, config)</code>, <code>resolveDaypart(date, config, sun)</code>, <code>resolveOccasions(date, calendar, config)</code>, <code>expandCalendar(calendar, years)</code> and <code>mapWeatherCode(code, windKmh)</code>.</p>
+</section>
+
+<section>
+  <h2 id="visitor-control">Visitor control and preview</h2>
+  <code-block language="html" label="Opt-out control" data-escape><button type="button" data-ambient-toggle aria-pressed="true">Ambient styling</button></code-block>
+  <p>The module wires any <code>[data-ambient-toggle]</code> button or checkbox and keeps <code>aria-pressed</code> or <code>checked</code> in step. <a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a> shows the same switch in its Environment section on a page that uses the pack. The choice is one <code>localStorage</code> key, <code>vb-ambient</code>.</p>
+  <p>To preview a state, add <code>?ambient=winter,night,snow,halloween</code> to the URL. It is honoured only on localhost or when <code>&lt;html&gt;</code> carries <code>data-ambient-debug</code>.</p>
+</section>
+
+<section>
+  <h2 id="privacy">Privacy</h2>
+  <p>The pack makes no network request, sets no cookie and never asks for location. The season and time are the author's, by the configured time zone, which is why a visitor elsewhere sees the author's evening and not a guess about their own.</p>
+</section>
+
+<section>
+  <h2 id="when-to-use">When to Use</h2>
+  <p>Load the ambient pack on a personal or editorial site where a returning reader should notice the site feels like today. Leave it out where colour carries meaning that must not drift, such as a data dashboard with a fixed palette.</p>
+</section>

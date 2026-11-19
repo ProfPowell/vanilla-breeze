@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en" data-ambient="season daypart weather occasion" data-ambient-debug>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ambient Pack Demo</title>
+  <script type="application/json" id="ambient-config">
+    {
+      "calendar": [
+        { "id": "new-year", "rule": "12-31..01-01", "lead": 2, "priority": 10 },
+        { "id": "halloween", "rule": "10-31", "lead": 7, "priority": 50 },
+        { "id": "thanksgiving", "rule": "11:4:thu", "lead": 7, "priority": 40 }
+      ]
+    }
+  </script>
+  <!-- A site inlines this file; the demo loads it as a blocking script. -->
+  <script src="/cdn/packs/ambient.head.js"></script>
+  <link rel="stylesheet" href="/src/main.css" />
+  <link rel="stylesheet" href="/src/packs/ambient/ambient.theme.css" />
+  <style>
+    body { padding: var(--size-xl); }
+    .swatch {
+      display: block;
+      inline-size: 100%;
+      block-size: 4rem;
+      border-radius: var(--radius-m);
+      border: var(--border-width-thin) solid var(--color-border);
+    }
+    .swatch[data-token="ambient"] { background: var(--color-ambient); }
+    .swatch[data-token="primary"] { background: var(--color-primary); }
+    .swatch[data-token="surface"] { background: var(--color-ambient-surface); }
+    figure { margin: 0; }
+  </style>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    import { Ambient } from '/src/packs/ambient/ambient.core.js';
+
+    const form = document.getElementById('preview');
+    const out = document.getElementById('state');
+    const show = () => { out.textContent = JSON.stringify(Ambient.state, null, 2); };
+
+    const value = (name) => form.querySelector(`[name="${name}"]`).value;
+
+    form.addEventListener('change', () => {
+      const preview = {};
+      for (const key of ['season', 'daypart', 'weather']) {
+        if (value(key)) preview[key] = value(key);
+      }
+      if (value('occasion')) {
+        preview.occasions = [value('occasion')];
+        preview.occasionDay = true;
+      }
+      Ambient.override(Object.keys(preview).length ? preview : null);
+    });
+    document.getElementById('clear').addEventListener('click', () => {
+      for (const select of form.querySelectorAll('select')) select.value = '';
+      Ambient.override(null);
+    });
+    document.addEventListener('ambient:change', show);
+    show();
+  </script>
+</head>
+<body data-ambient-surface data-layout="stack" data-layout-gap="l">
+  <header>
+    <h1>Ambient pack</h1>
+    <p>The page reads the clock and sets a season and a time of day on <code>&lt;html&gt;</code>. The swatches show the decorative tokens that follow; text and control colours never change.</p>
+  </header>
+
+  <layout-grid data-layout-min="s" data-layout-gap="m">
+    <figure>
+      <span class="swatch" data-token="primary" role="img" aria-label="Theme primary colour"></span>
+      <figcaption><code>--color-primary</code> (unchanged)</figcaption>
+    </figure>
+    <figure>
+      <span class="swatch" data-token="ambient" role="img" aria-label="Ambient accent colour"></span>
+      <figcaption><code>--color-ambient</code></figcaption>
+    </figure>
+    <figure>
+      <span class="swatch" data-token="surface" role="img" aria-label="Ambient surface colour"></span>
+      <figcaption><code>--color-ambient-surface</code></figcaption>
+    </figure>
+  </layout-grid>
+
+  <hr data-ornament />
+
+  <fieldset id="preview" data-layout="cluster" data-layout-gap="m">
+    <legend>Preview a state</legend>
+    <label>Season
+      <select name="season">
+        <option value="">From the clock</option>
+        <option>winter</option>
+        <option>spring</option>
+        <option>summer</option>
+        <option>autumn</option>
+      </select>
+    </label>
+    <label>Time of day
+      <select name="daypart">
+        <option value="">From the clock</option>
+        <option>dawn</option>
+        <option>day</option>
+        <option>dusk</option>
+        <option>night</option>
+      </select>
+    </label>
+    <label>Weather
+      <select name="weather">
+        <option value="">None</option>
+        <option>clear</option>
+        <option>cloudy</option>
+        <option>fog</option>
+        <option>rain</option>
+        <option>snow</option>
+        <option>storm</option>
+        <option>wind</option>
+      </select>
+    </label>
+    <label>Occasion
+      <select name="occasion">
+        <option value="">From the calendar</option>
+        <option>halloween</option>
+        <option>thanksgiving</option>
+        <option>new-year</option>
+      </select>
+    </label>
+    <button type="button" id="clear" class="secondary">Clear preview</button>
+    <button type="button" data-ambient-toggle aria-pressed="true">Ambient styling</button>
+  </fieldset>
+
+  <section>
+    <h2>Current state</h2>
+    <pre><code id="state"></code></pre>
+  </section>
+</body>
+</html>

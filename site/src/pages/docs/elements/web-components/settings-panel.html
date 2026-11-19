@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "settings-panel"
-description: "Compact, non-modal site settings panel with a gear trigger and six accordion sections: appearance, accessibility, layout, effects, environment and system."
+description: "Compact, non-modal site settings panel with a gear trigger and accordion sections: appearance, accessibility, layout, effects, system, and environment on pages that use the ambient pack."
 elementName: settings-panel
 category: component
 currentPath: /docs/elements/web-components/settings-panel/
@@ -12,9 +12,9 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>A compact settings panel opened from a gear button. It is built from native <code>&lt;details&gt;</code> sections that share a per-instance <code>name</code>, so only one section is open at a time. The sections hold theme selection, accessibility toggles, layout options, effects, environment shifts and system information.</p>
+  <p>A compact settings panel opened from a gear button. It is built from native <code>&lt;details&gt;</code> sections that share a per-instance <code>name</code>, so only one section is open at a time. The sections hold theme selection, accessibility toggles, layout options, effects, system information and, on pages that use the ambient pack, its opt-out.</p>
 
-  <p>It runs alongside <a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a>, which covers only color mode and theme. Both components read and write the same <code>ThemeManager</code> state and listen for <code>vb:theme-change</code>, so a mode or theme picked in one shows up in the other on the same page. Everything else (accessibility themes, layout, effects, environment) is set here. Other tabs are not synced: there is no <code>storage</code> listener, so a second tab picks up changes when it reloads.</p>
+  <p>It runs alongside <a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a>, which covers only color mode and theme. Both components read and write the same <code>ThemeManager</code> state and listen for <code>vb:theme-change</code>, so a mode or theme picked in one shows up in the other on the same page. Everything else (accessibility themes, layout, effects, the ambient opt-out) is set here. Other tabs are not synced: there is no <code>storage</code> listener, so a second tab picks up changes when it reloads.</p>
 
   <browser-window
     src="/docs/examples/demos/settings-panel-basic.html"
@@ -115,10 +115,9 @@ crumbLabel: Web Components
 
   <h3>Environment</h3>
   <ul>
-    <li>Time-of-Day Shifts</li>
-    <li>Seasonal Tinting</li>
+    <li>Ambient Styling (default on)</li>
   </ul>
-  <p>Both toggles call <code>EnvironmentManager.setSource()</code>.</p>
+  <p>This section appears only on a page that opts in to the <a href="/docs/packs/ambient/">ambient pack</a> with <code>&lt;html data-ambient="…"&gt;</code>. The switch is the visitor's opt-out: turning it off stores the choice in <code>localStorage</code> and removes the season, daypart, weather and occasion state from the page. The panel does not load the pack; it sets the preference the pack reads.</p>
 
   <h3>System</h3>
   <ul>
@@ -127,7 +126,7 @@ crumbLabel: Web Components
     <li><strong>Clear Cache</strong> and <strong>Check for Updates</strong> buttons. Their results are announced through a polite live region.</li>
   </ul>
 
-  <p>The <strong>Reset to Defaults</strong> button in the footer asks for confirmation inside the panel, with <strong>Reset</strong> and <strong>Cancel</strong> buttons; there is no browser <code>confirm()</code>. Confirming resets ThemeManager, clears the accessibility, effects and sticky preferences, and turns off the environment sources. Sticky navigation goes back to the page's authored state. The reset is announced.</p>
+  <p>The <strong>Reset to Defaults</strong> button in the footer asks for confirmation inside the panel, with <strong>Reset</strong> and <strong>Cancel</strong> buttons; there is no browser <code>confirm()</code>. Confirming resets ThemeManager, clears the accessibility, effects and sticky preferences, and clears an ambient opt-out. Sticky navigation goes back to the page's authored state. The reset is announced.</p>
 
   <browser-window
     src="/docs/examples/demos/settings-panel-panels.html"
@@ -259,8 +258,7 @@ crumbLabel: Web Components
       <tr><td><code>data-label-motion</code></td><td>Motion Effects</td></tr>
       <tr><td><code>data-label-sounds</code></td><td>Sound Effects</td></tr>
       <tr><td><code>data-label-environment</code></td><td>Environment</td></tr>
-      <tr><td><code>data-label-time-of-day</code></td><td>Time-of-Day Shifts</td></tr>
-      <tr><td><code>data-label-seasonal</code></td><td>Seasonal Tinting</td></tr>
+      <tr><td><code>data-label-ambient</code></td><td>Ambient Styling</td></tr>
       <tr><td><code>data-label-system</code></td><td>System</td></tr>
       <tr><td><code>data-label-sw-label</code></td><td>Service Worker:</td></tr>
       <tr><td><code>data-label-sw-checking</code></td><td>checking…</td></tr>
