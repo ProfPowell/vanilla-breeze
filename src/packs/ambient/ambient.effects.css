@@ -1,0 +1,85 @@
+/* Ambient pack: motif icons and slots.
+ *
+ * A motif appears only where the author places a slot. The current icon is
+ * --ambient-icon, chosen by precedence: occasion, then weather, then season.
+ * Icons are masks filled with --color-ambient, so they follow the tint.
+ *
+ * data-ambient-level="tint" on <html> turns motifs off; the default level
+ * is "motif".
+ */
+@import "./ambient.icons.css";
+
+@layer bundle-effects {
+  :root[data-ambient]:not([data-ambient~="off"]):not([data-ambient-level="tint"]) {
+    /* Season */
+    &[data-season="winter"] { --ambient-icon: var(--ambient-icon-snowflake); }
+    &[data-season="spring"] { --ambient-icon: var(--ambient-icon-sprout); }
+    &[data-season="summer"] { --ambient-icon: var(--ambient-icon-sun); }
+    &[data-season="autumn"] { --ambient-icon: var(--ambient-icon-leaf); }
+
+    /* Weather. :is() keeps every rule at one specificity so order decides. */
+    &:is([data-weather="clear"]) { --ambient-icon: var(--ambient-icon-sun); }
+    &:is([data-weather="clear"][data-daypart="night"]) { --ambient-icon: var(--ambient-icon-moon); }
+    &:is([data-weather="cloudy"]) { --ambient-icon: var(--ambient-icon-cloud); }
+    &:is([data-weather="fog"]) { --ambient-icon: var(--ambient-icon-fog); }
+    &:is([data-weather="rain"]) { --ambient-icon: var(--ambient-icon-drops); }
+    &:is([data-weather="storm"]) { --ambient-icon: var(--ambient-icon-storm); }
+    &:is([data-weather="snow"]) { --ambient-icon: var(--ambient-icon-snowflake); }
+    &:is([data-weather="wind"]) { --ambient-icon: var(--ambient-icon-wind); }
+
+    /* Occasion: the icon its calendar entry names */
+    &:is([data-occasion-icon="snowflake"]) { --ambient-icon: var(--ambient-icon-snowflake); }
+    &:is([data-occasion-icon="sprout"]) { --ambient-icon: var(--ambient-icon-sprout); }
+    &:is([data-occasion-icon="sun"]) { --ambient-icon: var(--ambient-icon-sun); }
+    &:is([data-occasion-icon="leaf"]) { --ambient-icon: var(--ambient-icon-leaf); }
+    &:is([data-occasion-icon="moon"]) { --ambient-icon: var(--ambient-icon-moon); }
+    &:is([data-occasion-icon="cloud"]) { --ambient-icon: var(--ambient-icon-cloud); }
+    &:is([data-occasion-icon="drops"]) { --ambient-icon: var(--ambient-icon-drops); }
+    &:is([data-occasion-icon="fog"]) { --ambient-icon: var(--ambient-icon-fog); }
+    &:is([data-occasion-icon="wind"]) { --ambient-icon: var(--ambient-icon-wind); }
+    &:is([data-occasion-icon="storm"]) { --ambient-icon: var(--ambient-icon-storm); }
+    &:is([data-occasion-icon="sparkles"]) { --ambient-icon: var(--ambient-icon-sparkles); }
+    &:is([data-occasion-icon="cake"]) { --ambient-icon: var(--ambient-icon-cake); }
+    &:is([data-occasion-icon="heart"]) { --ambient-icon: var(--ambient-icon-heart); }
+    &:is([data-occasion-icon="ghost"]) { --ambient-icon: var(--ambient-icon-ghost); }
+    &:is([data-occasion-icon="star"]) { --ambient-icon: var(--ambient-icon-star); }
+    &:is([data-occasion-icon="flag"]) { --ambient-icon: var(--ambient-icon-flag); }
+    &:is([data-occasion-icon="pi"]) { --ambient-icon: var(--ambient-icon-pi); }
+    &:is([data-occasion-icon="gift"]) { --ambient-icon: var(--ambient-icon-gift); }
+  }
+
+  /* An inline mark is empty and takes no space until there is an icon. */
+  [data-ambient-slot="mark"] {
+    display: none;
+  }
+
+  /* Motifs are decoration: not in forced colours, not in print. */
+  @media screen and (forced-colors: none) {
+    :root[data-ambient]:not([data-ambient~="off"]):not([data-ambient-level="tint"]):is(
+      [data-season="winter"], [data-season="spring"], [data-season="summer"], [data-season="autumn"],
+      [data-weather], [data-occasion-icon]
+    ) {
+      /* Inline mark: the current icon at 1em */
+      & [data-ambient-slot="mark"]:not([data-ambient="off"] *) {
+        display: inline-block;
+        inline-size: 1em;
+        block-size: 1em;
+        vertical-align: -0.125em;
+        background-color: var(--color-ambient);
+        mask: var(--ambient-icon) center / contain no-repeat;
+      }
+
+      /* Rule ornament: the existing ornament becomes the current icon.
+         Without state the rule keeps its normal ornament. */
+      & hr[data-ornament][data-ambient-slot]:not([data-ambient="off"] *)::before {
+        content: "" / "";
+        display: inline-block;
+        inline-size: 1.25em;
+        block-size: 1.25em;
+        vertical-align: middle;
+        background-color: var(--color-ambient);
+        mask: var(--ambient-icon) center / contain no-repeat;
+      }
+    }
+  }
+}

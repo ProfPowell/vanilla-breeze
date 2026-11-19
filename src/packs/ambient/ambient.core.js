@@ -32,6 +32,7 @@ import { ambientEnabled, setAmbientEnabled, AMBIENT_PREF_EVENT } from '../../lib
  * @property {string | null} intensity
  * @property {string[]} occasions
  * @property {boolean} occasionDay
+ * @property {string | null} occasionIcon motif icon named by the active occasions
  * @property {number | null} tempC
  * @property {string} asOf
  */
@@ -41,7 +42,7 @@ const SIGNALS = ['season', 'daypart', 'weather', 'occasion'];
 
 /** @type {AmbientState} */
 let state = Object.freeze({
-  season: null, daypart: null, weather: null, intensity: null, occasions: [], occasionDay: false, tempC: null, asOf: '',
+  season: null, daypart: null, weather: null, intensity: null, occasions: [], occasionDay: false, occasionIcon: null, tempC: null, asOf: '',
 });
 /** @type {Partial<AmbientState> | null} */
 let override = null;
@@ -81,7 +82,7 @@ function compute(now) {
   const pin = { ...config.pin, ...override };
   /** @type {AmbientState} */
   const next = {
-    season: null, daypart: null, weather: null, intensity: null, occasions: [], occasionDay: false, tempC: null,
+    season: null, daypart: null, weather: null, intensity: null, occasions: [], occasionDay: false, occasionIcon: null, tempC: null,
     asOf: now.toISOString(),
   };
 
@@ -101,11 +102,13 @@ function compute(now) {
       if (Array.isArray(pin.occasions)) {
         next.occasions = pin.occasions.filter((id) => ID.test(String(id))).slice(0, 2);
         next.occasionDay = !!pin.occasionDay;
+        next.occasionIcon = pin.occasionIcon && ID.test(pin.occasionIcon) ? pin.occasionIcon : null;
       } else {
         const { y, ymd } = zonedParts(now, config.tz);
         const active = activeOccasions(config.occasions || calendarWindows(config, y), ymd);
         next.occasions = active.ids.filter((id) => ID.test(String(id)));
         next.occasionDay = active.day;
+        next.occasionIcon = active.icon && ID.test(active.icon) ? active.icon : null;
       }
     }
   } catch { /* a bad time zone or config resolves to no state: the plain theme */ }
@@ -117,11 +120,10 @@ function compute(now) {
  * Dated windows for a config that carries rules. The rule parser is in the
  * resolver file, fetched once; until it arrives there are no occasions, and
  * the state is applied again when it does.
- * @param {{ calendar?: object[] }} config
+ * @param {{ calendars?: string[], calendar?: object[] }} config
  * @param {number} year
  */
 function calendarWindows(config, year) {
-  if (!Array.isArray(config.calendar) || !config.calendar.length) return null;
   if (expanded.year === year) return expanded.windows;
   if (!expanding) {
     expanding = true;
@@ -129,7 +131,7 @@ function calendarWindows(config, year) {
     // the sibling file rather than inlining the parser here.
     const url = new URL('./ambient.resolve.js', import.meta.url).href;
     import(url).then((m) => {
-      expanded = { year, windows: m.expandCalendar(config.calendar, [year - 1, year, year + 1]) };
+      expanded = { year, windows: m.expandCalendar(m.calendarFor(config), [year - 1, year, year + 1]) };
       expanding = false;
       apply();
     }).catch(() => { /* no rule parser: occasions stay off */ });
@@ -147,6 +149,7 @@ function reflect(s) {
   set('weather-intensity', s.intensity);
   set('occasion', s.occasions.join(' '));
   set('occasion-day', s.occasionDay);
+  set('occasion-icon', s.occasionIcon);
 }
 
 /** Wake once at the next daypart boundary or midnight in the place. */
@@ -173,7 +176,7 @@ function syncToggles() {
 function apply() {
   const now = new Date();
   const next = compute(now);
-  const changed = ['season', 'daypart', 'weather', 'intensity', 'occasionDay', 'tempC'].filter((k) => next[k] !== state[k]);
+  const changed = ['season', 'daypart', 'weather', 'intensity', 'occasionDay', 'occasionIcon', 'tempC'].filter((k) => next[k] !== state[k]);
   if (next.occasions.join(' ') !== state.occasions.join(' ')) changed.push('occasions');
   Object.freeze(next.occasions);
   state = Object.freeze(next);

@@ -138,12 +138,12 @@ describe('activeOccasions and resolveOccasions', () => {
   const on = (ymd) => resolveOccasions(at(`${ymd}T12:00:00Z`), calendar, { tz: 'UTC' });
 
   it('is active through the lead-up and sets day only on the date', () => {
-    assert.deepEqual(on('2026-10-23'), { ids: ['autumn-fair'], day: true });
-    assert.deepEqual(on('2026-11-01'), { ids: [], day: false });
+    assert.deepEqual(on('2026-10-23'), { ids: ['autumn-fair'], day: true, icon: undefined });
+    assert.deepEqual(on('2026-11-01'), { ids: [], day: false, icon: undefined });
     const lead = resolveOccasions(at('2026-10-25T12:00:00Z'), [calendar[0]], { tz: 'UTC' });
-    assert.deepEqual(lead, { ids: ['halloween'], day: false });
+    assert.deepEqual(lead, { ids: ['halloween'], day: false, icon: undefined });
     const day = resolveOccasions(at('2026-10-31T12:00:00Z'), [calendar[0]], { tz: 'UTC' });
-    assert.deepEqual(day, { ids: ['halloween'], day: true });
+    assert.deepEqual(day, { ids: ['halloween'], day: true, icon: undefined });
   });
 
   it('sorts by priority, breaks ties by nearness, and keeps two', () => {
@@ -152,19 +152,19 @@ describe('activeOccasions and resolveOccasions', () => {
   });
 
   it('finds a year-wrapping range on both sides of the new year', () => {
-    assert.deepEqual(on('2026-12-29'), { ids: ['new-year'], day: false });
-    assert.deepEqual(on('2027-01-01'), { ids: ['new-year'], day: true });
-    assert.deepEqual(on('2026-01-01'), { ids: ['new-year'], day: true });
+    assert.deepEqual(on('2026-12-29'), { ids: ['new-year'], day: false, icon: undefined });
+    assert.deepEqual(on('2027-01-01'), { ids: ['new-year'], day: true, icon: undefined });
+    assert.deepEqual(on('2026-01-01'), { ids: ['new-year'], day: true, icon: undefined });
   });
 
   it('uses the date in the place', () => {
     // 31 Oct 06:00 UTC is still 30 Oct in Los Angeles
     const result = resolveOccasions(at('2026-10-31T06:00:00Z'), [{ id: 'halloween', rule: '10-31' }], LA);
-    assert.deepEqual(result, { ids: [], day: false });
+    assert.deepEqual(result, { ids: [], day: false, icon: undefined });
   });
 
   it('accepts no windows', () => {
-    assert.deepEqual(activeOccasions(null, '2026-01-01'), { ids: [], day: false });
+    assert.deepEqual(activeOccasions(null, '2026-01-01'), { ids: [], day: false, icon: undefined });
   });
 });
 

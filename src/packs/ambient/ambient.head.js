@@ -31,6 +31,7 @@ try {
     if (occasions || !has('occasion')) {
       set('occasion', occasions && occasions.ids.join(' '));
       set('occasion-day', occasions && occasions.day);
+      set('occasion-icon', occasions && occasions.icon);
     }
   }
 } catch { /* any failure leaves the page as it was */ }

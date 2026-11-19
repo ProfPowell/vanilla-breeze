@@ -6,11 +6,11 @@
 
 export default {
   name: 'ambient',
-  version: '0.1.0',
+  version: '0.2.0',
   label: 'Ambient',
   description: 'Opt-in styling that follows the season, time of day, weather and calendar occasions at the author\'s place. State is data attributes on <html>; looks are decorative tokens.',
 
-  css: ['ambient.theme.css'],
+  css: ['ambient.theme.css', 'ambient.effects.css'],
   js: ['ambient.core.js'],
   head: 'ambient.head.js',
 
@@ -18,8 +18,8 @@ export default {
   components: [],
 
   attributes: [
-    'data-ambient', 'data-ambient-surface', 'data-ambient-toggle', 'data-ambient-debug',
-    'data-season', 'data-daypart', 'data-weather', 'data-weather-intensity', 'data-occasion', 'data-occasion-day',
+    'data-ambient', 'data-ambient-level', 'data-ambient-surface', 'data-ambient-slot', 'data-ambient-toggle', 'data-ambient-debug',
+    'data-season', 'data-daypart', 'data-weather', 'data-weather-intensity', 'data-occasion', 'data-occasion-day', 'data-occasion-icon',
   ],
 
   tokens: [

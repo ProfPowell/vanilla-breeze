@@ -10,13 +10,16 @@ Opt-in styling that follows the season, time of day, weather and calendar occasi
 | `ambient.head.js` | Source of the inline head snippet. Built as a classic script; a site inlines it after `#ambient-config`. |
 | `ambient.core.js` | Browser module: resolves, writes the attributes, schedules the next boundary, wires the opt-out and the preview. Exports `Ambient`. |
 | `ambient.theme.css` | Tokens and the state mapping, in `@layer bundle-theme`. |
+| `ambient.effects.css` | Motif icon precedence and the slots, in `@layer bundle-effects`. |
+| `ambient.icons.css` | Generated: the icons as data-URI tokens. Edit the `ICONS` map in `scripts/generate-ambient-icons.mjs` and run it. |
+| `ambient.calendars.js` | Built-in calendars (`markers`, `geek`, `civic-us`) and `calendarFor(config)`. Bundled into `ambient.resolve.js`. |
 | `ambient.bundle.js` | Pack manifest. |
 
 The visitor preference (`localStorage` key `vb-ambient`) is in `src/lib/ambient-pref.js`, outside the pack, so `<settings-panel>` can offer the switch without importing the pack.
 
 ## Status
 
-Phase 1 of the plan is built: resolvers, head script, attribute contract, tint tokens, opt-out, preview. Not built yet: built-in calendars, motif icons and slots, `data-ambient-level` (phase 2); the weather feed and its client (phase 3); atmosphere effects (phase 4), which are to reuse the `snow`, `rain`, `leaves`, `fog` and `confetti` presets of `@profpowell/bg-wc` when a page has it, with no second canvas engine in this pack.
+Phases 1 and 2 of the plan are built in this repo: resolvers, head script, attribute contract, tint tokens, opt-out, preview, built-in calendars, motif icons and slots, and `data-ambient-level` (`tint` and `motif`). The site-side half of phase 2 (settings, front matter and the build-time bake) belongs to Vanilla Press, Cook and the site. Not built yet: the weather feed and its client (phase 3); atmosphere effects (phase 4), which are to reuse the `snow`, `rain`, `leaves`, `fog` and `confetti` presets of `@profpowell/bg-wc` when a page has it, with no second canvas engine in this pack.
 
 ## Deviations from the plan
 
@@ -27,6 +30,10 @@ Phase 1 of the plan is built: resolvers, head script, attribute contract, tint t
 - **Resolver file.** The rule parser lives in `ambient.resolve.js`. The head script reads only dated windows (`config.occasions`), which a build writes with `expandCalendar()`; the module fetches the resolver file only for a page that gives rules (`config.calendar`).
 - **Core module budget.** 2.5 KB gzipped, not 2 KB (measured 2.36 KB before the weather client exists). Budgets are in `scripts/bundle-budget.config.json`.
 - **Preview.** A preview or pin never sets a signal the author did not enable.
+- **Icons.** Eighteen, taken from the Lucide set already in `src/icons/lucide` by a generator, not hand-drawn files in `icons/`. They are stroke icons of 250 to 500 bytes each, over the plan's 300; the stylesheet as a whole is 2.8 KB gzipped against its 4 KB budget.
+- **`data-occasion-icon`.** An extra state attribute. A calendar entry names its icon, and the head script writes that name, so the stylesheet needs one rule per icon and none per occasion id, and a site's own occasions get icons with no CSS.
+- **Calendars are a JS module**, not `calendars/*.json`, so the unbundled source loads in a browser without JSON import attributes. Solstices and equinoxes use neutral icons (sun, star) because the season they mark depends on the hemisphere.
+- **Default calendar.** With the occasion signal on and no `occasions` in the config, the module fetches the resolver file and applies `markers`. A built site ships `occasions` and makes no such request.
 - **Replaced.** `src/lib/environment-manager.js` and the two Environment switches in `<settings-panel>` are gone. They shifted `--hue-primary` itself, on the visitor's clock.
 
 ## Tests

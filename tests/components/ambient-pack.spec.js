@@ -56,6 +56,7 @@ async function load(page, {
       <script>window.__atHead = [...document.documentElement.attributes].map((a) => a.name + '=' + a.value).join(' ');</script>
       <link rel="stylesheet" href="/src/main.css">
       <link rel="stylesheet" href="/src/packs/ambient/ambient.theme.css">
+      <link rel="stylesheet" href="/src/packs/ambient/ambient.effects.css">
       ${head}
       ${imports.map((src) => `<script type="module" src="${src}"></script>`).join('\n')}
       </head><body data-ambient-surface><main><p id="text">Body text on the page.</p><hr data-ornament>${body}</main></body></html>`,
@@ -64,7 +65,7 @@ async function load(page, {
 }
 
 const attrs = (page) => page.evaluate(() => Object.fromEntries(
-  ['season', 'daypart', 'weather', 'weather-intensity', 'occasion', 'occasion-day']
+  ['season', 'daypart', 'weather', 'weather-intensity', 'occasion', 'occasion-day', 'occasion-icon']
     .map((n) => [n, document.documentElement.getAttribute(`data-${n}`)]),
 ));
 const ambient = (page, fn, arg) => page.evaluate(async ({ fn, arg }) => {
@@ -123,12 +124,12 @@ test.describe('head script', () => {
 
   test('applies dated occasion windows and the day flag', async ({ page }) => {
     const occasions = [
-      { id: 'halloween', from: '2026-10-24', to: '2026-10-31', start: '2026-10-31', end: '2026-10-31', p: 50 },
-      { id: 'fair', from: '2026-10-28', to: '2026-10-28', start: '2026-10-28', end: '2026-10-28', p: 10 },
+      { id: 'halloween', from: '2026-10-24', to: '2026-10-31', start: '2026-10-31', end: '2026-10-31', p: 50, icon: 'ghost' },
+      { id: 'fair', from: '2026-10-28', to: '2026-10-28', start: '2026-10-28', end: '2026-10-28', p: 10, icon: 'star' },
       { id: 'past', from: '2026-09-01', to: '2026-09-02', start: '2026-09-01', end: '2026-09-02' },
     ];
     await load(page, { module: false, config: { tz: 'UTC', occasions }, html: 'data-ambient="occasion" data-occasion="stale"' });
-    expect(await attrs(page)).toMatchObject({ occasion: 'halloween fair', 'occasion-day': '' });
+    expect(await attrs(page)).toMatchObject({ occasion: 'halloween fair', 'occasion-day': '', 'occasion-icon': 'ghost' });
   });
 
   test('leaves baked occasions alone when the config has only rules', async ({ page }) => {
@@ -152,8 +153,8 @@ test.describe('head script', () => {
 
   test('removes all state for a visitor who opted out', async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem('vb-ambient', 'off'));
-    await load(page, { module: false, html: 'data-ambient="season daypart occasion" data-season="summer" data-occasion="baked" data-occasion-day' });
-    expect(await attrs(page)).toEqual({ season: null, daypart: null, weather: null, 'weather-intensity': null, occasion: null, 'occasion-day': null });
+    await load(page, { module: false, html: 'data-ambient="season daypart occasion" data-season="summer" data-occasion="baked" data-occasion-day data-occasion-icon="ghost"' });
+    expect(await attrs(page)).toEqual({ season: null, daypart: null, weather: null, 'weather-intensity': null, occasion: null, 'occasion-day': null, 'occasion-icon': null });
   });
 });
 
@@ -181,16 +182,28 @@ test.describe('module', () => {
   });
 
   test('expands calendar rules after load when the page has no build step', async ({ page }) => {
-    const calendar = [{ id: 'halloween', rule: '10-31', lead: 7, priority: 50 }, { id: 'today', rule: '10-28' }];
+    const calendar = [{ id: 'halloween', rule: '10-31', lead: 7, priority: 50 }, { id: 'today', rule: '10-28', icon: 'cake' }];
     await load(page, { config: { tz: 'UTC', calendar } });
     await expect(page.locator('html')).toHaveAttribute('data-occasion', 'halloween today');
     await expect(page.locator('html')).toHaveAttribute('data-occasion-day', '');
+    await expect(page.locator('html')).toHaveAttribute('data-occasion-icon', 'cake');
+  });
+
+  test('built-in calendars: markers by default, others by name', async ({ page }) => {
+    await load(page, { time: '2026-12-31T12:00:00Z' });
+    await expect(page.locator('html')).toHaveAttribute('data-occasion', 'new-year');
+    await expect(page.locator('html')).toHaveAttribute('data-occasion-icon', 'sparkles');
+
+
+    await load(page, { time: '2026-03-14T12:00:00Z', config: { tz: 'UTC', calendars: ['geek'] } });
+    await expect(page.locator('html')).toHaveAttribute('data-occasion', 'pi-day');
+    await expect(page.locator('html')).toHaveAttribute('data-occasion-icon', 'pi');
   });
 
   test('override previews a state, rejects unknown values, and null clears it', async ({ page }) => {
     await load(page);
     await ambient(page, (A) => A.override({ season: 'winter', daypart: 'night', weather: 'snow', intensity: 'heavy', occasions: ['halloween', 'Bad Id'], occasionDay: true }));
-    expect(await attrs(page)).toEqual({ season: 'winter', daypart: 'night', weather: 'snow', 'weather-intensity': 'heavy', occasion: 'halloween', 'occasion-day': '' });
+    expect(await attrs(page)).toEqual({ season: 'winter', daypart: 'night', weather: 'snow', 'weather-intensity': 'heavy', occasion: 'halloween', 'occasion-day': '', 'occasion-icon': null });
     await ambient(page, (A) => A.override({ season: 'monsoon', weather: 'frogs', intensity: 'heavy' }));
     expect(await attrs(page)).toMatchObject({ season: null, weather: null, 'weather-intensity': null });
     await ambient(page, (A) => A.override(null));
@@ -205,7 +218,7 @@ test.describe('module', () => {
 
   test('?ambient= previews on localhost', async ({ page }) => {
     await load(page, { query: '?ambient=winter,night,snow,light,halloween' });
-    expect(await attrs(page)).toEqual({ season: 'winter', daypart: 'night', weather: 'snow', 'weather-intensity': 'light', occasion: 'halloween', 'occasion-day': '' });
+    expect(await attrs(page)).toEqual({ season: 'winter', daypart: 'night', weather: 'snow', 'weather-intensity': 'light', occasion: 'halloween', 'occasion-day': '', 'occasion-icon': null });
   });
 
   test('opt-out button removes state, persists across a reload, and comes back', async ({ page }) => {
@@ -325,4 +338,79 @@ test.describe('tokens', () => {
       });
     }
   }
+});
+
+/* ---------------- motifs ---------------- */
+
+test.describe('motifs', () => {
+  const SLOTS = '<p id="line">Text <span id="mark" data-ambient-slot="mark" aria-hidden="true"></span></p><hr id="rule" data-ornament data-ambient-slot><section data-ambient="off"><span id="off" data-ambient-slot="mark" aria-hidden="true"></span></section>';
+  const mask = (page, sel, pseudo) => page.evaluate(({ sel, pseudo }) => {
+    const cs = getComputedStyle(document.querySelector(sel), pseudo || undefined);
+    return { display: cs.display, mask: cs.maskImage, width: cs.width, content: cs.content };
+  }, { sel, pseudo });
+  /** The icon name inside a mask's data URI, by matching the generated tokens. */
+  const iconOf = (page, sel, pseudo) => page.evaluate(({ sel, pseudo }) => {
+    const image = getComputedStyle(document.querySelector(sel), pseudo || undefined).maskImage;
+    const root = getComputedStyle(document.documentElement);
+    const names = ['snowflake', 'sprout', 'sun', 'leaf', 'moon', 'cloud', 'drops', 'fog', 'wind', 'storm', 'sparkles', 'cake', 'heart', 'ghost', 'star', 'flag', 'pi', 'gift'];
+    const norm = (v) => v.replace(/\s+/g, '').replace(/^url\(["']?|["']?\)$/g, '');
+    return names.find((n) => norm(root.getPropertyValue(`--ambient-icon-${n}`)) === norm(image)) || image;
+  }, { sel, pseudo });
+
+  test('a mark takes no space without state and shows the season icon with it', async ({ page }) => {
+    await load(page, { html: '', module: false, body: SLOTS });
+    expect((await mask(page, '#mark')).display).toBe('none');
+    expect((await mask(page, '#rule', '::before')).mask).toBe('none');
+
+    await load(page, { body: SLOTS });
+    const mark = await mask(page, '#mark');
+    expect(mark.display).toBe('inline-block');
+    expect(mark.width).toBe(await page.evaluate(() => getComputedStyle(document.querySelector('#line')).fontSize));
+    expect(await iconOf(page, '#mark')).toBe('leaf');
+    expect(await iconOf(page, '#rule', '::before')).toBe('leaf');
+    // The mark is filled with the accent
+    expect(await rgb(page, '#mark', 'backgroundColor')).toEqual(await rgb(page, 'body', '--color-ambient'));
+  });
+
+  test('icon precedence is occasion, then weather, then season', async ({ page }) => {
+    await load(page, { body: SLOTS });
+    const set = async (state) => { await ambient(page, (A, s) => A.override(s), state); return iconOf(page, '#mark'); };
+    expect(await set({ season: 'winter' })).toBe('snowflake');
+    expect(await set({ season: 'spring' })).toBe('sprout');
+    expect(await set({ season: 'summer' })).toBe('sun');
+    expect(await set({ season: 'summer', weather: 'rain' })).toBe('drops');
+    expect(await set({ season: 'summer', weather: 'clear', daypart: 'night' })).toBe('moon');
+    expect(await set({ season: 'summer', weather: 'clear', daypart: 'day' })).toBe('sun');
+    expect(await set({ season: 'winter', weather: 'fog' })).toBe('fog');
+    expect(await set({ season: 'winter', weather: 'storm' })).toBe('storm');
+    expect(await set({ season: 'summer', weather: 'rain', occasions: ['party'], occasionIcon: 'cake' })).toBe('cake');
+    // An occasion with no icon leaves the weather icon
+    expect(await set({ season: 'summer', weather: 'rain', occasions: ['towel-day'] })).toBe('drops');
+  });
+
+  test('a subtree that opted out, the tint level, forced colours and print show no motif', async ({ page }) => {
+    await load(page, { body: SLOTS });
+    expect((await mask(page, '#off')).display).toBe('none');
+
+    await page.evaluate(() => document.documentElement.setAttribute('data-ambient-level', 'tint'));
+    expect((await mask(page, '#mark')).display).toBe('none');
+    expect((await mask(page, '#rule', '::before')).mask).toBe('none');
+    // The tint itself stays
+    expect(await rgb(page, 'body', '--color-ambient')).not.toEqual(await rgb(page, 'body', '--color-primary'));
+    await page.evaluate(() => document.documentElement.removeAttribute('data-ambient-level'));
+    expect((await mask(page, '#mark')).display).toBe('inline-block');
+
+    await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' });
+    expect((await mask(page, '#mark')).display).toBe('none');
+    await page.emulateMedia({ forcedColors: 'none', media: 'print', reducedMotion: 'reduce' });
+    expect((await mask(page, '#mark')).display).toBe('none');
+    expect((await mask(page, '#rule', '::before')).mask).toBe('none');
+  });
+
+  test('a rule without the slot keeps its ornament', async ({ page }) => {
+    await load(page, { body: '<hr id="plain" data-ornament>' });
+    const plain = await mask(page, '#plain', '::before');
+    expect(plain.mask).toBe('none');
+    expect(plain.content).not.toBe('""');
+  });
 });

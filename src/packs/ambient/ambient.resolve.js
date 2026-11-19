@@ -112,10 +112,11 @@ export function resolveDaypart(date, config = {}, sun) {
 
 /**
  * The occasions active on a day, from windows already expanded to dates.
- * Highest priority first, then nearest to its own day; at most two.
+ * Highest priority first, then nearest to its own day; at most two. The
+ * icon is the first one those occasions name.
  * @param {OccasionWindow[] | null | undefined} windows
  * @param {string} ymd today in the place, YYYY-MM-DD
- * @returns {{ ids: string[], day: boolean }}
+ * @returns {{ ids: string[], day: boolean, icon?: string }}
  */
 export function activeOccasions(windows, ymd) {
   const t = Date.parse(ymd);
@@ -124,10 +125,12 @@ export function activeOccasions(windows, ymd) {
     .filter((w) => w.from <= ymd && ymd <= w.to)
     .sort((a, b) => (b.p || 0) - (a.p || 0) || far(a) - far(b))
     .slice(0, 2);
-  return { ids: on.map((w) => w.id), day: on.some((w) => !far(w)) };
+  return { ids: on.map((w) => w.id), day: on.some((w) => !far(w)), icon: (on.find((w) => w.icon) || {}).icon };
 }
 
 /* ---------- calendar rules (build and module only; not in the head script) ---------- */
+
+export { CALENDARS, calendarFor } from './ambient.calendars.js';
 
 const DOW = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 const DAY = 86400000;
@@ -231,7 +234,7 @@ export function expandCalendar(calendar, years) {
  * @param {Date} date
  * @param {Parameters<typeof expandCalendar>[0]} calendar
  * @param {AmbientConfig} [config]
- * @returns {{ ids: string[], day: boolean }}
+ * @returns {{ ids: string[], day: boolean, icon?: string }}
  */
 export function resolveOccasions(date, calendar, config = {}) {
   const { y, ymd } = zonedParts(date, config.tz);
