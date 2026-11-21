@@ -14,13 +14,13 @@ currentPath: /docs/packs/ambient/
     <tr><th>Type</th><td>Functional</td></tr>
     <tr><th>Version</th><td>0.2.0</td></tr>
     <tr><th>CSS</th><td><code>packs/ambient.full.css</code> (about 2.8 KB gzipped, icons included)</td></tr>
-    <tr><th>JS</th><td><code>packs/ambient.core.js</code> (about 2.3 KB gzipped)</td></tr>
-    <tr><th>Inline head script</th><td><code>packs/ambient.head.js</code> (under 1 KB gzipped)</td></tr>
+    <tr><th>JS</th><td><code>packs/ambient.core.js</code> (about 3 KB gzipped)</td></tr>
+    <tr><th>Inline head script</th><td><code>packs/ambient.head.js</code> (under 1.25 KB gzipped)</td></tr>
     <tr><th>Resolvers for builds</th><td><code>packs/ambient.resolve.js</code></td></tr>
   </tbody>
 </table>
 
-<p>Season, time of day, occasions with built-in calendars, tint tokens, motif icons, the visitor opt-out and the preview are in. The weather feed and animated atmosphere effects are not built yet; <code>data-weather</code> can be set today only by a pin or a preview.</p>
+<p>Season, time of day, weather from a feed you serve, occasions with built-in calendars, tint tokens, motif icons, the visitor opt-out and the preview are in. Animated atmosphere effects are not built yet.</p>
 
 <section>
   <h2 id="how-it-works">How it works</h2>
@@ -60,8 +60,8 @@ currentPath: /docs/packs/ambient/
     </thead>
     <tbody>
       <tr><td>Attributes written by your build</td><td><code>data-season</code>, <code>data-occasion</code> and <code>data-occasion-icon</code> as of build time</td><td>No state; the plain theme</td></tr>
-      <tr><td>Inline head script</td><td>Season, time of day and occasions from the clock, before first paint. Removes all state if the visitor opted out.</td><td>Built values stand until the module runs</td></tr>
-      <tr><td>Module</td><td>Keeps the state current: it wakes once at the next boundary and when the tab becomes visible again. Wires the opt-out control.</td><td>State is right at load and does not update</td></tr>
+      <tr><td>Inline head script</td><td>Season, time of day and occasions from the clock, and the weather the module cached earlier in the session, before first paint. Removes all state if the visitor opted out.</td><td>Built values stand until the module runs</td></tr>
+      <tr><td>Module</td><td>Fetches the <a href="#feed">weather feed</a> once, at idle. Keeps the state current: it wakes at the next boundary and when the tab becomes visible again. Wires the opt-out control.</td><td>No weather; state is right at load and does not update</td></tr>
     </tbody>
   </table>
   <p>The head script must come after <code>#ambient-config</code>. It does not throw, wait on the network or touch layout. With JavaScript off, the attributes your build wrote are used as they are.</p>
@@ -77,7 +77,7 @@ currentPath: /docs/packs/ambient/
       <tr><td><code>data-ambient</code></td><td>Word list of signals: <code>season</code> <code>daypart</code> <code>weather</code> <code>occasion</code></td><td>Author</td><td>The opt-in switch. Absent, or <code>off</code>, means the pack does nothing.</td></tr>
       <tr><td><code>data-season</code></td><td><code>spring</code>, <code>summer</code>, <code>autumn</code>, <code>winter</code>, or a custom label</td><td>Pack</td><td>Meteorological seasons by month.</td></tr>
       <tr><td><code>data-daypart</code></td><td><code>dawn</code>, <code>day</code>, <code>dusk</code>, <code>night</code></td><td>Pack</td><td>Dawn and dusk are the 45 minutes either side of sunrise and sunset.</td></tr>
-      <tr><td><code>data-weather</code></td><td><code>clear</code>, <code>cloudy</code>, <code>fog</code>, <code>rain</code>, <code>snow</code>, <code>storm</code>, <code>wind</code></td><td>Pack</td><td>Only from a pin or a preview until the weather feed is built.</td></tr>
+      <tr><td><code>data-weather</code></td><td><code>clear</code>, <code>cloudy</code>, <code>fog</code>, <code>rain</code>, <code>snow</code>, <code>storm</code>, <code>wind</code></td><td>Pack</td><td>From the <a href="#feed">weather feed</a>, a pin or a preview. Absent when there is no fresh feed.</td></tr>
       <tr><td><code>data-weather-intensity</code></td><td><code>light</code>, <code>heavy</code></td><td>Pack</td><td>Absent means moderate.</td></tr>
       <tr><td><code>data-occasion</code></td><td>Word list of occasion ids, highest priority first, at most two</td><td>Pack</td><td>Match with <code>~=</code>, like <code>data-theme</code>.</td></tr>
       <tr><td><code>data-occasion-day</code></td><td>Boolean</td><td>Pack</td><td>Present on the day itself, not during the lead-up.</td></tr>
@@ -104,6 +104,7 @@ currentPath: /docs/packs/ambient/
       <tr><td><code>occasions</code></td><td>Dated windows written by a build with <code>expandCalendar()</code>. The head script reads these.</td></tr>
       <tr><td><code>calendars</code></td><td>Names of built-in sets to use: <code>markers</code>, <code>geek</code>, <code>civic-us</code>. Default <code>["markers"]</code>.</td></tr>
       <tr><td><code>calendar</code></td><td>Your own entries, added to the built-in sets. An entry with the id of a built-in one replaces it.</td></tr>
+      <tr><td><code>feed</code></td><td>URL of the <a href="#feed">weather feed</a>, for example <code>/ambient.json</code>. Without it the pack makes no request.</td></tr>
       <tr><td><code>pin</code></td><td>Fixes signals for a page: <code>{ "season": "winter", "weather": "snow" }</code>.</td></tr>
     </tbody>
   </table>
@@ -146,6 +147,60 @@ const config = {
   occasions: expandCalendar(calendarFor(site), [year - 1, year, year + 1]),
 }
 const season = resolveSeason(new Date(), config) // write as data-season</code-block>
+</section>
+
+<section>
+  <h2 id="feed">Weather feed</h2>
+  <p>Weather comes from one URL that you serve, named by <code>feed</code> in the config. The pack knows nothing about weather providers and the visitor's browser contacts only your site. Add <code>weather</code> to <code>data-ambient</code> to use it.</p>
+  <code-block language="json" label="/ambient.json" data-escape>{
+  "v": 1,
+  "asOf": "2026-11-15T20:00:00-08:00",
+  "ttl": 1800,
+  "weather": "rain",
+  "intensity": "light",
+  "tempC": 17,
+  "sunrise": "06:18",
+  "sunset": "16:47",
+  "attribution": "Weather data by Open-Meteo.com"
+}</code-block>
+  <table>
+    <thead>
+      <tr><th>Field</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>v</code></td><td>Schema version, <code>1</code>. Anything else is ignored.</td></tr>
+      <tr><td><code>asOf</code></td><td>ISO time of the observation. Required.</td></tr>
+      <tr><td><code>ttl</code></td><td>Seconds the observation is good for. Default 1800.</td></tr>
+      <tr><td><code>weather</code>, <code>intensity</code></td><td>Values of <code>data-weather</code> and <code>data-weather-intensity</code>. An unknown value is dropped.</td></tr>
+      <tr><td><code>tempC</code></td><td>Carried in <code>Ambient.state.tempC</code> for your own use, such as a status line. It has no attribute and no styling.</td></tr>
+      <tr><td><code>sunrise</code>, <code>sunset</code></td><td><code>HH:MM</code> in the place. They replace the fixed sun times for dawn and dusk.</td></tr>
+      <tr><td><code>attribution</code></td><td>For you to show; the pack does not read it.</td></tr>
+    </tbody>
+  </table>
+  <ul>
+    <li><strong>Stale weather is never shown.</strong> Past <code>asOf</code> plus twice the <code>ttl</code>, the pack ignores the feed and removes <code>data-weather</code>, in an open tab too.</li>
+    <li><strong>Failure is quiet.</strong> A missing, malformed or slow feed (over 3 seconds) leaves <code>data-weather</code> absent. There is no retry within the page view.</li>
+    <li><strong>One request.</strong> The feed is fetched at idle with low priority and kept in <code>sessionStorage</code> for its <code>ttl</code>, so the next page makes no request and the head script applies the weather before paint. An open tab asks again when the <code>ttl</code> ends.</li>
+    <li><strong>No request</strong> when the visitor opted out, when neither <code>weather</code> nor <code>daypart</code> is enabled, with <code>Save-Data</code>, or with <code>prefers-reduced-data: reduce</code>.</li>
+  </ul>
+
+  <h3 id="feed-producer">Producing the feed</h3>
+  <p>Anything that can write that JSON will do: a Worker, a serverless function or a scheduled build. The resolver file has two helpers for <a href="https://open-meteo.com/">Open-Meteo</a>, which needs no key. Your coordinates stay in the producer and never reach a page.</p>
+  <code-block language="js" label="A Cloudflare Pages Function at /ambient.json" data-escape>import { openMeteoUrl, feedFromOpenMeteo } from 'vanilla-breeze/ambient-resolve'
+
+export async function onRequestGet({ request, waitUntil }) {
+  const cached = await caches.default.match(request)
+  if (cached) return cached
+
+  const upstream = await fetch(openMeteoUrl({ lat: 32.72, lon: -117.16 }))
+  const feed = upstream.ok ? feedFromOpenMeteo(await upstream.json(), { ttl: 1800 }) : null
+  if (!feed) return new Response('{}', { status: 503, headers: { 'content-type': 'application/json' } })
+
+  const response = Response.json(feed, { headers: { 'cache-control': 'public, max-age=900' } })
+  waitUntil(caches.default.put(request, response.clone()))
+  return response
+}</code-block>
+  <p>Open-Meteo's data is CC BY 4.0, so show the attribution somewhere on your site, and its free tier is for non-commercial use: check the <a href="https://open-meteo.com/en/terms">terms</a> for your case. For another provider, map its conditions to the vocabulary above; <code>mapWeatherCode(code, windKmh)</code> does that for WMO codes.</p>
 </section>
 
 <section>
@@ -197,13 +252,13 @@ const season = resolveSeason(new Date(), config) // write as data-season</code-b
 Ambient.state                        // frozen: { season, daypart, weather, intensity, occasions, occasionDay, occasionIcon, tempC, asOf }
 Ambient.enabled = false              // visitor opt-out, stored in localStorage
 Ambient.override({ season: 'winter', daypart: 'night' })  // preview; null clears
-Ambient.refresh()                    // resolve again now
+Ambient.refresh()                    // resolve again now; refetch the feed if its ttl ended
 
 document.addEventListener('ambient:change', (e) => {
   e.detail.state    // the new state
   e.detail.changed  // ['daypart']
 })</code-block>
-  <p>The pure resolvers are in <code>packs/ambient.resolve.js</code> and have no DOM access: <code>resolveSeason(date, config)</code>, <code>resolveDaypart(date, config, sun)</code>, <code>resolveOccasions(date, calendar, config)</code>, <code>calendarFor(config)</code>, <code>expandCalendar(calendar, years)</code> and <code>mapWeatherCode(code, windKmh)</code>.</p>
+  <p>The pure resolvers are in <code>packs/ambient.resolve.js</code> and have no DOM access: <code>resolveSeason(date, config)</code>, <code>resolveDaypart(date, config, sun)</code>, <code>resolveOccasions(date, calendar, config)</code>, <code>calendarFor(config)</code>, <code>expandCalendar(calendar, years)</code>, <code>mapWeatherCode(code, windKmh)</code>, and for the feed <code>readFeed(feed)</code>, <code>feedFresh(feed, nowMs)</code>, <code>openMeteoUrl(place)</code> and <code>feedFromOpenMeteo(data, options)</code>.</p>
 </section>
 
 <section>
@@ -215,7 +270,7 @@ document.addEventListener('ambient:change', (e) => {
 
 <section>
   <h2 id="privacy">Privacy</h2>
-  <p>The pack makes no network request, sets no cookie and never asks for location. The season and time are the author's, by the configured time zone, which is why a visitor elsewhere sees the author's evening and not a guess about their own.</p>
+  <p>The pack sets no cookie and never asks for location. It makes no network request unless you name a <a href="#feed">weather feed</a>, and then one request to that URL per session and <code>ttl</code>; by default that is your own site, so the browser contacts no third party. It stores two things: the visitor's opt-out in <code>localStorage</code> and the last feed in <code>sessionStorage</code>. The season and time are the author's, by the configured time zone, which is why a visitor elsewhere sees the author's evening and not a guess about their own.</p>
 </section>
 
 <section>
