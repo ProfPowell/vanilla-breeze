@@ -2,6 +2,14 @@
 export default {
   "items": [
     {
+      "id": "0.7.4",
+      "type": "update",
+      "title": "v0.7.4",
+      "body": "0.7.4 gives the Ambient pack weather. A page names one feed URL on its own site, and the pack sets `data-weather` from it, uses its sunrise and sunset for dawn and dusk, and never shows a stale observation. Helpers for producing the feed from Open-Meteo are included. Ambient p…",
+      "url": "https://vanilla-breeze.com/changelog/#v0-7-4",
+      "date": "2026-11-20"
+    },
+    {
       "id": "0.7.3",
       "type": "update",
       "title": "v0.7.3",

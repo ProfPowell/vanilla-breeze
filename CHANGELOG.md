@@ -6,6 +6,18 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.7.4] - 2026-11-20
+
+0.7.4 gives the Ambient pack weather. A page names one feed URL on its own site, and the pack sets `data-weather` from it, uses its sunrise and sunset for dawn and dusk, and never shows a stale observation. Helpers for producing the feed from Open-Meteo are included.
+
+### Added
+- **Ambient pack: weather from a feed.** Set `"feed": "/ambient.json"` in `#ambient-config` and add `weather` to `data-ambient`. The module fetches the feed once, at idle and low priority, and writes `data-weather` and `data-weather-intensity`; the temperature is in `Ambient.state.tempC` for a site's own use. The feed's `sunrise` and `sunset` replace the fixed sun times for the daypart. The response is kept in `sessionStorage` for its `ttl`, so the next page makes no request and the inline head script applies the weather before first paint. Past `asOf` plus twice the `ttl` the weather is removed, in an open tab too. A missing, malformed or slow feed (over 3 seconds) leaves the page without weather and is not retried. No request is made for a visitor who opted out, with `Save-Data`, or with `prefers-reduced-data: reduce`. See [the feed section](https://vanilla-breeze.com/docs/packs/ambient/#feed).
+- **Ambient pack: feed producer helpers.** `vanilla-breeze/ambient-resolve` exports `openMeteoUrl(place)` and `feedFromOpenMeteo(data, options)` for a Worker or function that serves the feed, plus `readFeed(feed)` and `feedFresh(feed, nowMs)`. Coordinates stay in the producer and never reach a page.
+
+### Changed
+- **Ambient pack sizes.** The inline head script is about 1.15 KB gzipped (was 1 KB) and the module about 3.1 KB (was 2.4 KB).
+- **`Ambient.refresh()`** also refetches the feed when its `ttl` has ended.
+
 ## [0.7.3] - 2026-11-19
 
 0.7.3 adds the Ambient pack: opt-in styling that follows the season, time of day and calendar occasions at the author's place, through data attributes on `<html>`, decorative tint tokens and small motif icons. It replaces the environment manager and its two `<settings-panel>` switches, which shifted the theme's own hues.
