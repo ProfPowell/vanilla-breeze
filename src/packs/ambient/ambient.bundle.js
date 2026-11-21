@@ -6,7 +6,7 @@
 
 export default {
   name: 'ambient',
-  version: '0.2.0',
+  version: '0.3.0',
   label: 'Ambient',
   description: 'Opt-in styling that follows the season, time of day, weather and calendar occasions at the author\'s place. State is data attributes on <html>; looks are decorative tokens.',
 

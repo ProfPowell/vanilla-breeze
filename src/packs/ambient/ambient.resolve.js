@@ -263,3 +263,94 @@ export function mapWeatherCode(code, windKmh = 0) {
   if (c >= 95 && c <= 99) return { weather: 'storm' };
   return null;
 }
+
+/**
+ * @typedef {object} AmbientFeed the feed a page reads, default /ambient.json
+ * @property {1} v
+ * @property {string} asOf ISO time of the observation
+ * @property {number} ttl seconds the observation is good for
+ * @property {string | null} [weather]
+ * @property {string | null} [intensity]
+ * @property {number | null} [tempC]
+ * @property {string} [sunrise] HH:MM in the place
+ * @property {string} [sunset] HH:MM in the place
+ * @property {string} [attribution]
+ */
+
+const CLOCK = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/**
+ * A feed reduced to what the pack trusts: known values only. Null for
+ * anything that is not a version 1 feed with a readable time.
+ * @param {unknown} feed
+ * @returns {{ asOf: string, ttl: number, weather: string | null, intensity: string | null, tempC: number | null, sunrise?: string, sunset?: string } | null}
+ */
+export function readFeed(feed) {
+  const f = /** @type {any} */ (feed);
+  if (!f || f.v !== 1 || !Number.isFinite(Date.parse(f.asOf))) return null;
+  const weather = WEATHERS.includes(f.weather) ? f.weather : null;
+  const out = {
+    asOf: String(f.asOf),
+    ttl: f.ttl > 0 ? Math.max(60, +f.ttl) : 1800,
+    weather,
+    intensity: weather && INTENSITIES.includes(f.intensity) ? f.intensity : null,
+    tempC: typeof f.tempC === 'number' && Number.isFinite(f.tempC) ? f.tempC : null,
+  };
+  return CLOCK.test(f.sunrise) && CLOCK.test(f.sunset) ? { ...out, sunrise: f.sunrise, sunset: f.sunset } : out;
+}
+
+/**
+ * Whether a feed's observation may still be shown: until asOf + 2 × ttl.
+ * @param {{ asOf: string, ttl: number } | null | undefined} feed
+ * @param {number} nowMs
+ * @returns {boolean}
+ */
+export const feedFresh = (feed, nowMs) => !!feed && nowMs <= Date.parse(feed.asOf) + feed.ttl * 2000;
+
+/**
+ * For a feed producer (a Worker or a build): the Open-Meteo request for a
+ * place. Coordinates stay with the producer; they are never sent to a page.
+ * @param {{ lat: number, lon: number }} place two decimals are enough
+ * @returns {string}
+ */
+export function openMeteoUrl({ lat, lon }) {
+  const q = new URLSearchParams({
+    latitude: Number(lat).toFixed(2),
+    longitude: Number(lon).toFixed(2),
+    current: 'temperature_2m,weather_code,precipitation,wind_speed_10m',
+    daily: 'sunrise,sunset',
+    timezone: 'auto',
+    forecast_days: '1',
+  });
+  return `https://api.open-meteo.com/v1/forecast?${q}`;
+}
+
+/**
+ * For a feed producer: an Open-Meteo forecast response as a feed. Assumes
+ * the default units (°C, km/h) and `timezone=auto`. Null when the response
+ * has no current time; an unknown weather code gives a feed without weather.
+ * @param {any} data
+ * @param {{ ttl?: number, attribution?: string }} [options]
+ * @returns {AmbientFeed | null}
+ */
+export function feedFromOpenMeteo(data, { ttl = 1800, attribution = 'Weather data by Open-Meteo.com' } = {}) {
+  const current = data && data.current;
+  if (!current || !/^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(current.time)) return null;
+  const offset = Number(data.utc_offset_seconds) || 0;
+  const abs = Math.abs(offset);
+  const zone = `${offset < 0 ? '-' : '+'}${pad(Math.floor(abs / 3600))}:${pad(Math.floor((abs % 3600) / 60))}`;
+  /** @type {AmbientFeed} */
+  const feed = { v: 1, asOf: `${current.time}:00${zone}`, ttl };
+  const mapped = mapWeatherCode(current.weather_code, Number(current.wind_speed_10m) || 0);
+  if (mapped) {
+    feed.weather = mapped.weather;
+    if (mapped.intensity) feed.intensity = mapped.intensity;
+  }
+  if (typeof current.temperature_2m === 'number' && Number.isFinite(current.temperature_2m)) feed.tempC = Math.round(current.temperature_2m * 10) / 10;
+  const clock = (value) => (typeof value === 'string' && CLOCK.test(value.slice(11, 16)) ? value.slice(11, 16) : '');
+  const sunrise = clock(data.daily?.sunrise?.[0]);
+  const sunset = clock(data.daily?.sunset?.[0]);
+  if (sunrise && sunset) Object.assign(feed, { sunrise, sunset });
+  feed.attribution = attribution;
+  return feed;
+}

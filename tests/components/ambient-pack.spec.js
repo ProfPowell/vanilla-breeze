@@ -414,3 +414,160 @@ test.describe('motifs', () => {
     expect(plain.content).not.toBe('""');
   });
 });
+
+/* ---------------- weather feed ---------------- */
+
+test.describe('weather feed', () => {
+  const FEED_CONFIG = { tz: 'UTC', feed: '/ambient.json' };
+  /** A feed observed at the fixture's noon unless told otherwise. */
+  const feedBody = (over = {}) => ({ v: 1, asOf: NOON, ttl: 1800, weather: 'rain', intensity: 'light', tempC: 17, sunrise: '06:18', sunset: '16:47', attribution: 'Weather data by Open-Meteo.com', ...over });
+
+  /** Serve /ambient.json and count the requests. */
+  async function serveFeed(page, respond = () => ({ json: feedBody() })) {
+    const hits = { count: 0 };
+    await page.route('**/ambient.json', async (route) => {
+      hits.count += 1;
+      await route.fulfill(await respond(hits.count));
+    });
+    return hits;
+  }
+  const cache = (page) => page.evaluate(() => JSON.parse(sessionStorage.getItem('vb-ambient-feed') || 'null'));
+  const state = (page) => ambient(page, (A) => ({ ...A.state }));
+
+  test('a fresh feed sets weather, intensity and tempC, and tells listeners', async ({ page }) => {
+    const hits = await serveFeed(page);
+    await load(page, { config: FEED_CONFIG, head: '<script>document.addEventListener("ambient:change", (e) => (window.__changes ||= []).push(e.detail.changed.join(",")));</script>' });
+    await expect(page.locator('html')).toHaveAttribute('data-weather', 'rain');
+    expect(await attrs(page)).toMatchObject({ season: 'autumn', daypart: 'day', weather: 'rain', 'weather-intensity': 'light' });
+    expect(await state(page)).toMatchObject({ weather: 'rain', intensity: 'light', tempC: 17 });
+    expect(await page.evaluate(() => window.__changes)).toContain('weather,intensity,tempC');
+    expect(hits.count).toBe(1);
+    expect(await cache(page)).toMatchObject({ asOf: NOON, ttl: 1800, weather: 'rain', intensity: 'light', tempC: 17 });
+    expect(await page.evaluate(() => window.__atHead), 'nothing is cached on the first view').not.toContain('data-weather');
+  });
+
+  test('the cache skips the fetch on the next page and the head script applies it before paint', async ({ page }) => {
+    const hits = await serveFeed(page);
+    await load(page, { config: FEED_CONFIG });
+    await expect(page.locator('html')).toHaveAttribute('data-weather', 'rain');
+    await page.reload();
+    expect(await page.evaluate(() => window.__atHead)).toContain('data-weather=rain');
+    expect(await page.evaluate(() => window.__atHead)).toContain('data-weather-intensity=light');
+    await ambient(page, (A) => A.refresh());
+    expect(await attrs(page)).toMatchObject({ weather: 'rain', 'weather-intensity': 'light' });
+    expect(hits.count).toBe(1);
+  });
+
+  test('the feed\'s sunrise and sunset decide the daypart, also in the head script', async ({ page }) => {
+    await serveFeed(page, () => ({ json: feedBody({ sunrise: '11:40', sunset: '20:00' }) }));
+    await load(page, { config: FEED_CONFIG });
+    await expect(page.locator('html')).toHaveAttribute('data-daypart', 'dawn');
+    await page.reload();
+    expect(await page.evaluate(() => window.__atHead)).toContain('data-daypart=dawn');
+  });
+
+  test('a stale feed never renders', async ({ page }) => {
+    // Observed 61 minutes before noon with a 30 minute ttl.
+    const hits = await serveFeed(page, () => ({ json: feedBody({ asOf: '2026-10-28T10:59:00Z', sunrise: '11:40', sunset: '20:00' }) }));
+    await load(page, { config: FEED_CONFIG });
+    await expect.poll(() => hits.count).toBe(1);
+    await expect.poll(() => cache(page)).not.toBeNull();
+    expect(await attrs(page)).toMatchObject({ daypart: 'day', weather: null, 'weather-intensity': null });
+    expect((await state(page)).tempC).toBeNull();
+    await page.reload();
+    expect(await page.evaluate(() => window.__atHead)).not.toContain('data-weather');
+    expect(await page.evaluate(() => window.__atHead), 'stale sun times are not used either').toContain('data-daypart=day');
+  });
+
+  test('weather in an open tab is refetched when its ttl ends and goes when stale', async ({ page }) => {
+    // The producer is stuck: it keeps serving the observation from noon.
+    const hits = await serveFeed(page, () => ({ json: feedBody({ ttl: 60 }) }));
+    await load(page, { config: FEED_CONFIG });
+    await expect(page.locator('html')).toHaveAttribute('data-weather', 'rain');
+    await page.clock.fastForward('01:05');
+    await expect.poll(() => hits.count).toBe(2);
+    await page.clock.fastForward('01:05');
+    await expect(page.locator('html')).not.toHaveAttribute('data-weather');
+    expect((await state(page)).weather).toBeNull();
+  });
+
+  for (const [name, respond] of /** @type {Array<[string, () => object]>} */ ([
+    ['missing', () => ({ status: 404, body: 'Not found' })],
+    ['malformed', () => ({ status: 200, contentType: 'application/json', body: '{"v":1,"asOf":' })],
+    ['of another version', () => ({ json: feedBody({ v: 2 }) })],
+    ['without a time', () => ({ json: feedBody({ asOf: 'soon' }) })],
+  ])) {
+    test(`a feed that is ${name} leaves weather absent and is not retried`, async ({ page }) => {
+      const hits = await serveFeed(page, respond);
+      await load(page, { config: FEED_CONFIG });
+      await expect.poll(() => hits.count).toBe(1);
+      await ambient(page, (A) => A.refresh());
+      await ambient(page, (A) => A.refresh());
+      expect(await attrs(page)).toMatchObject({ season: 'autumn', daypart: 'day', weather: null, 'weather-intensity': null });
+      expect(await cache(page)).toBeNull();
+      expect(hits.count).toBe(1);
+    });
+  }
+
+  test('a value outside the vocabulary is never written', async ({ page }) => {
+    await serveFeed(page, () => ({ json: feedBody({ weather: 'frogs', intensity: 'heavy', tempC: 21 }) }));
+    await load(page, { config: FEED_CONFIG });
+    await expect.poll(async () => (await state(page)).tempC).toBe(21);
+    expect(await attrs(page)).toMatchObject({ weather: null, 'weather-intensity': null });
+  });
+
+  test('a slow feed is given up after 3 seconds', async ({ page }) => {
+    let hit = 0;
+    await page.route('**/ambient.json', async (route) => {
+      hit += 1;
+      await new Promise((r) => setTimeout(r, 3600));
+      await route.fulfill({ json: feedBody() }).catch(() => {});
+    });
+    await load(page, { config: FEED_CONFIG });
+    await expect.poll(() => hit).toBe(1);
+    await page.waitForTimeout(4200);
+    expect(await attrs(page)).toMatchObject({ weather: null });
+    expect(await cache(page)).toBeNull();
+  });
+
+  test('no request without a feed, without a signal that uses it, when opted out, or with Save-Data', async ({ page }) => {
+    const hits = await serveFeed(page);
+    await load(page);
+    await load(page, { config: FEED_CONFIG, html: 'data-ambient="season occasion"' });
+    await load(page, { config: FEED_CONFIG, html: 'data-ambient="off"' });
+    await page.evaluate(() => localStorage.setItem('vb-ambient', 'off'));
+    await load(page, { config: FEED_CONFIG });
+    await page.evaluate(() => localStorage.removeItem('vb-ambient'));
+    await load(page, { config: FEED_CONFIG, head: '<script>Object.defineProperty(navigator, "connection", { value: { saveData: true } });</script>' });
+    await page.waitForTimeout(300);
+    expect(hits.count).toBe(0);
+    expect(await attrs(page)).toMatchObject({ season: 'autumn', weather: null });
+    // The same page without Save-Data does ask.
+    await load(page, { config: FEED_CONFIG });
+    await expect(page.locator('html')).toHaveAttribute('data-weather', 'rain');
+    expect(hits.count).toBe(1);
+  });
+
+  test('a pin or a preview replaces the feed, and the opt-out removes its weather', async ({ page }) => {
+    await serveFeed(page);
+    await load(page, { config: { ...FEED_CONFIG, pin: { weather: 'snow' } }, body: '<button type="button" id="t" data-ambient-toggle aria-pressed="true">Ambient styling</button>' });
+    await expect.poll(() => cache(page)).not.toBeNull();
+    expect(await attrs(page)).toMatchObject({ weather: 'snow', 'weather-intensity': null });
+    await ambient(page, (A) => A.override({ weather: 'fog' }));
+    expect(await attrs(page)).toMatchObject({ weather: 'fog' });
+    await page.locator('#t').click();
+    expect(await attrs(page)).toMatchObject({ season: null, weather: null, 'weather-intensity': null });
+    await page.reload();
+    expect(await page.evaluate(() => window.__atHead)).not.toContain('data-weather');
+  });
+
+  test('the weather signal off means no weather attribute even with a feed', async ({ page }) => {
+    const hits = await serveFeed(page);
+    await load(page, { config: FEED_CONFIG, html: 'data-ambient="season daypart"' });
+    await expect.poll(() => hits.count, 'the daypart still uses the sun times').toBe(1);
+    await expect.poll(() => cache(page)).not.toBeNull();
+    expect(await attrs(page)).toMatchObject({ daypart: 'day', weather: null });
+    await page.reload();
+    expect(await page.evaluate(() => window.__atHead)).not.toContain('data-weather');
+  });
+});

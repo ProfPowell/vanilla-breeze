@@ -10,17 +10,22 @@
  *   Ambient.state                          // frozen state object
  *   Ambient.enabled = false                // visitor opt-out, persisted
  *   Ambient.override({ season: 'winter' }) // preview; null clears
- *   Ambient.refresh()                      // re-resolve now
+ *   Ambient.refresh()                      // re-resolve; refetch the feed if its cache expired
  *   document.addEventListener('ambient:change', (e) => e.detail.changed)
  *
  * The pure resolvers (resolveSeason, resolveDaypart, resolveOccasions,
  * expandCalendar, mapWeatherCode) are in ambient.resolve.js, for builds and
  * tests. This module fetches that file only when a page gives calendar
  * rules instead of the dated windows a build writes.
+ *
+ * Weather comes from one URL, config.feed (see AmbientFeed in
+ * ambient.resolve.js). It is fetched once at idle, kept in sessionStorage
+ * for its ttl, and dropped from the state when stale. The module knows
+ * nothing about weather providers.
  */
 import {
   SEASONS, DAYPARTS, WEATHERS, INTENSITIES, TWILIGHT,
-  zonedParts, resolveSeason, resolveDaypart, sunTimes, activeOccasions,
+  zonedParts, resolveSeason, resolveDaypart, sunTimes, activeOccasions, readFeed, feedFresh,
 } from './ambient.resolve.js';
 import { ambientEnabled, setAmbientEnabled, AMBIENT_PREF_EVENT } from '../../lib/ambient-pref.js';
 
@@ -39,6 +44,9 @@ import { ambientEnabled, setAmbientEnabled, AMBIENT_PREF_EVENT } from '../../lib
 
 const ID = /^[a-z0-9][a-z0-9-]*$/;
 const SIGNALS = ['season', 'daypart', 'weather', 'occasion'];
+/** sessionStorage: the last feed, as readFeed() returned it, plus `at`, the time it was fetched. */
+const FEED_KEY = 'vb-ambient-feed';
+const FEED_TIMEOUT = 3000;
 
 /** @type {AmbientState} */
 let state = Object.freeze({
@@ -52,6 +60,10 @@ let timer;
 let expanded = { year: 0, windows: /** @type {import('./ambient.resolve.js').OccasionWindow[] | null} */ (null) };
 let expanding = false;
 let started = false;
+/** @type {(NonNullable<ReturnType<typeof readFeed>> & { at: number }) | null | undefined} undefined until the cache is read */
+let feed;
+/** A fetch is under way, or one failed: no retry within the page view. */
+let feedBusy = false;
 
 const root = () => document.documentElement;
 
@@ -69,6 +81,52 @@ function readConfig() {
   }
 }
 
+/** The feed from this page view or the session cache. */
+function cachedFeed() {
+  if (feed === undefined) {
+    feed = null;
+    try {
+      const raw = JSON.parse(sessionStorage.getItem(FEED_KEY) || 'null');
+      const read = readFeed(raw && { ...raw, v: 1 });
+      if (read && raw.at > 0) feed = { ...read, at: raw.at };
+    } catch { /* storage blocked or not JSON: no cache */ }
+  }
+  return feed;
+}
+
+/** When the cached feed should be fetched again: its ttl after it was fetched. */
+const feedExpiry = () => (feed ? feed.at + feed.ttl * 1000 : 0);
+
+/**
+ * Fetch the feed when the page asks for one, a signal uses it and the cache
+ * has expired. One request, at idle and low priority, given up after 3 s.
+ * @param {{ feed?: string }} config
+ * @param {string[]} on enabled signals
+ */
+function loadFeed(config, on) {
+  if (feedBusy || !config.feed || typeof config.feed !== 'string' || document.hidden) return;
+  if (!on.includes('weather') && !on.includes('daypart')) return;
+  cachedFeed();
+  if (Date.now() < feedExpiry()) return;
+  // Data saving: no request.
+  if (/** @type {any} */ (navigator).connection?.saveData || matchMedia('(prefers-reduced-data: reduce)').matches) return;
+  feedBusy = true;
+  const url = config.feed;
+  const run = async () => {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(FEED_TIMEOUT), /** @type {any} */ priority: 'low' });
+      const read = res.ok ? readFeed(await res.json()) : null;
+      if (!read) return;
+      feed = { ...read, at: Date.now() };
+      feedBusy = false;
+      try { sessionStorage.setItem(FEED_KEY, JSON.stringify(feed)); } catch { /* storage blocked */ }
+      apply();
+    } catch { /* missing, slow or malformed: no weather, and no retry */ }
+  };
+  if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 2000 });
+  else setTimeout(run, 1);
+}
+
 /** A value from a closed vocabulary, or null. */
 const known = (value, list) => (list.includes(value) ? value : null);
 
@@ -80,6 +138,9 @@ function compute(now) {
   const config = readConfig();
   const on = ambientEnabled() ? signals() : [];
   const pin = { ...config.pin, ...override };
+  loadFeed(config, on);
+  // Stale weather is never shown: past asOf + 2 × ttl the feed counts for nothing.
+  const fresh = config.feed && on.length && feedFresh(cachedFeed(), now.getTime()) ? feed : null;
   /** @type {AmbientState} */
   const next = {
     season: null, daypart: null, weather: null, intensity: null, occasions: [], occasionDay: false, occasionIcon: null, tempC: null,
@@ -91,12 +152,13 @@ function compute(now) {
       const season = pin.season ?? resolveSeason(now, config);
       next.season = config.seasons ? (ID.test(String(season)) ? season : null) : known(season, SEASONS);
     }
-    if (on.includes('daypart')) next.daypart = known(pin.daypart ?? resolveDaypart(now, config), DAYPARTS);
+    if (on.includes('daypart')) next.daypart = known(pin.daypart ?? resolveDaypart(now, config, fresh), DAYPARTS);
     if (on.includes('weather')) {
-      // The feed arrives in a later phase; until then weather comes only
-      // from a pin or a preview override.
-      next.weather = known(pin.weather, WEATHERS);
-      next.intensity = next.weather ? known(pin.intensity, INTENSITIES) : null;
+      // A pin or a preview replaces the feed's weather, intensity included.
+      const source = pin.weather ? pin : fresh;
+      next.weather = known(source?.weather, WEATHERS);
+      next.intensity = next.weather ? known(source?.intensity, INTENSITIES) : null;
+      next.tempC = pin.tempC ?? fresh?.tempC ?? null;
     }
     if (on.includes('occasion')) {
       if (Array.isArray(pin.occasions)) {
@@ -152,16 +214,19 @@ function reflect(s) {
   set('occasion-icon', s.occasionIcon);
 }
 
-/** Wake once at the next daypart boundary or midnight in the place. */
+/** Wake once at the next daypart boundary or midnight in the place, or when the feed expires or goes stale. */
 function schedule(now) {
   clearTimeout(timer);
   if (!signals().length || !ambientEnabled()) return;
   try {
     const config = readConfig();
     const { min } = zonedParts(now, config.tz);
-    const [rise, set] = sunTimes(now, config);
+    const t = now.getTime();
+    const live = config.feed && feed ? feed : null;
+    const [rise, set] = sunTimes(now, config, feedFresh(live, t) ? live : null);
     const next = [rise - TWILIGHT, rise + TWILIGHT, set - TWILIGHT, set + TWILIGHT, 1440].find((b) => b > min) ?? 1440;
-    timer = setTimeout(apply, (next - min) * 60000 - now.getSeconds() * 1000 + 1000);
+    const feedTimes = live ? [feedExpiry(), Date.parse(live.asOf) + live.ttl * 2000].filter((ms) => ms > t).map((ms) => ms - t) : [];
+    timer = setTimeout(apply, Math.min((next - min) * 60000 - now.getSeconds() * 1000, ...feedTimes) + 1000);
   } catch { /* no schedule; visibilitychange still re-resolves */ }
 }
 
@@ -258,7 +323,7 @@ export const Ambient = {
     apply();
   },
 
-  /** Re-resolve from the clock and the config now. */
+  /** Re-resolve from the clock and the config now; refetch the feed if its cache expired. */
   refresh() {
     apply();
   },
