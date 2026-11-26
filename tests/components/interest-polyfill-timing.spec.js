@@ -4,7 +4,10 @@
  * The polyfill (src/utils/interest-polyfill.js) reads --interest-delay*
  * from the INVOKER. VB's 200ms/100ms tooltip timing used to sit on
  * [popover="hint"], where nothing reads it. Native interest invokers are
- * switched off in this file so the polyfill is what opens the hint.
+ * neutralised in this file so the polyfill is what opens the hint: Chromium
+ * no longer has a flag to turn them off (gone by 159), so an init script
+ * removes the property the polyfill detects and cancels the browser's own
+ * (trusted) interest events. The polyfill's events are untrusted and pass.
  *
  * Tests the working tree: /src is served from disk, not the build.
  */
@@ -13,9 +16,17 @@ import { join } from 'node:path';
 
 const REPO = join(import.meta.dirname, '..', '..');
 
-test.use({ launchOptions: { args: ['--disable-blink-features=HTMLInterestForAttribute'] } });
+function neutraliseNativeInterest() {
+  for (const name of Object.getOwnPropertyNames(globalThis)) {
+    if (!/^HTML\w*Element$|^SVGAElement$/.test(name)) continue;
+    const proto = globalThis[name]?.prototype;
+    if (proto && Object.hasOwn(proto, 'interestForElement')) delete proto.interestForElement;
+  }
+  addEventListener('interest', (event) => { if (event.isTrusted) event.preventDefault(); }, true);
+}
 
 async function load(page, body) {
+  await page.addInitScript(neutraliseNativeInterest);
   await page.route('**/src/**', (route) => route.fulfill({
     path: join(REPO, decodeURIComponent(new URL(route.request().url()).pathname)),
   }));
