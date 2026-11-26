@@ -6,6 +6,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Ambient pack: atmosphere effects.** `data-ambient-level="atmosphere"` plays a brief effect for some states inside `[data-ambient-slot="atmosphere"]`: snow, rain (also for a storm, with no flash), fog, leaves for wind in autumn, and confetti for an occasion whose calendar entry has `"effect": "confetti"`, on its day. The effect is drawn by `<bg-wc>` (`@profpowell/bg-wc`), which the page loads; the pack adds one element behind the slot's content, for five seconds, with no layout shift. The effects file (`packs/ambient.atmosphere.js`, 1.1 KB gzipped) is fetched only when an effect could play, and never under reduced motion, data saving or a visitor opt-out. `data-ambient-loop` keeps an effect playing only while a visible `[data-ambient-pause]` control exists. `Ambient.state.occasionEffect` is new. See [the atmosphere section](https://vanilla-breeze.com/docs/packs/ambient/#atmosphere).
+- **`data-visible="narrow"` and `"wide"`.** Container versions of the visibility attribute: they measure the nearest query container at 30rem, not the viewport, so the same markup can show its short form in a sidebar and its full form in the main column. With no query container above the element both variants show. See [data-visible](https://vanilla-breeze.com/docs/attributes/data-visible/#container).
+- **html-validate: layout attributes are checked on native elements.** The shipped element metadata now has a global attribute map generated from the layout CSS, so `<section data-layout="stak">`, `<main data-canvas="elavated">` and `data-layout-gap="medium"` fail `attribute-allowed-values` on any element, not only on the `layout-*` hosts.
+
+### Changed
+- **`npm run preview`** runs the full build before serving `site/dist/pages` on port 3456; it used to skip the bundle and demo builds.
+- **Tests run on Playwright 1.65**, which supports Ubuntu 26.04, so CI's quality gate is back on `ubuntu-latest`. Twenty-three visual baselines were refreshed for the newer Chromium's text layout.
+
 ## [0.7.4] - 2026-11-20
 
 0.7.4 gives the Ambient pack weather. A page names one feed URL on its own site, and the pack sets `data-weather` from it, uses its sunrise and sunset for dawn and dusk, and never shows a stale observation. Helpers for producing the feed from Open-Meteo are included.
