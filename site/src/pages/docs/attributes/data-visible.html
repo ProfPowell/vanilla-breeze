@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-visible"
-description: "Responsive visibility utility. Show or hide elements based on viewport width without writing custom media queries."
+description: "Responsive visibility utility. Show or hide elements by viewport width or by the width of their container, without writing custom media or container queries."
 attributeName: data-visible
 category: responsive
 attributeType: data
@@ -13,7 +13,7 @@ crumbLabel: Data Attributes
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>data-visible</code> attribute controls element visibility based on viewport width. It eliminates the need for custom <code>@media</code> queries when toggling between desktop and mobile layouts.</p>
+    <p>The <code>data-visible</code> attribute controls element visibility by width. <code>desktop</code> and <code>mobile</code> measure the viewport; <code>wide</code> and <code>narrow</code> measure the element's <a href="#container">container</a>. It eliminates the need for custom <code>@media</code> and <code>@container</code> queries for the common two-variant case.</p>
 
     <browser-window
       src="/docs/examples/demos/visible-basic.html"
@@ -25,16 +25,18 @@ crumbLabel: Data Attributes
     <ul>
       <li><code>data-visible="desktop"</code> &mdash; visible at 48 rem and above, hidden below</li>
       <li><code>data-visible="mobile"</code> &mdash; visible below 48 rem, hidden at 48 rem and above</li>
+      <li><code>data-visible="wide"</code> &mdash; visible when the nearest query container is 30 rem or wider, hidden when it is narrower</li>
+      <li><code>data-visible="narrow"</code> &mdash; visible when the nearest query container is under 30 rem, hidden at 30 rem and above</li>
     </ul>
 
-    <p>The breakpoint is <code>--bp-m</code> (48 rem, <code>src/tokens/breakpoints.css</code>), a typical tablet/desktop threshold. There are only these two values; for another breakpoint (a tablet tier at <code>--bp-l</code>, say) write your own <code>@media</code> rule.</p>
+    <p>The viewport breakpoint is <code>--bp-m</code> (48 rem, <code>src/tokens/breakpoints.css</code>), a typical tablet/desktop threshold. There are only these four values; for another breakpoint (a tablet tier at <code>--bp-l</code>, say) write your own <code>@media</code> or <code>@container</code> rule.</p>
   </section>
 
   <section>
     <h2>How It Works</h2>
-    <p>Two media queries set <code>display: none !important</code> on the opposite breakpoint:</p>
+    <p>For the viewport values, two media queries set <code>display: none !important</code> on the opposite breakpoint:</p>
 
-    <code-block language="css" show-lines label="The complete CSS (src/utils/responsive.css)" data-escape>@media screen and (width >= 48rem), print {
+    <code-block language="css" show-lines label="The viewport rules (src/utils/responsive.css)" data-escape>@media screen and (width >= 48rem), print {
   [data-visible="mobile"] { display: none !important; }
 }
 
@@ -47,11 +49,45 @@ crumbLabel: Data Attributes
     <h3>It always wins</h3>
     <p>The rules sit in the lowest framework layer (<code>reset</code>, next to <code>[hidden]</code>) with <code>!important</code>. An important declaration in an earlier layer beats every normal declaration and every later layer's important ones, so a hidden variant stays hidden even on components that lock their own <code>display</code> (<code>&lt;content-swap&gt;</code>'s <code>display: grid !important</code>) and against your own unlayered <code>display</code> rules. To show the element, remove or change the attribute.</p>
 
-    <h3>Viewport, not container</h3>
-    <p><code>data-visible</code> measures the <strong>viewport</strong>. Inside a narrow sidebar or card on a wide screen, <code>mobile</code> content stays hidden. For &ldquo;narrow container&rdquo; behaviour make the region a query container with <a href="/docs/attributes/data-container/"><code>data-container</code></a> and write an <code>@container</code> rule.</p>
+    <h3>Viewport or container</h3>
+    <p><code>desktop</code> and <code>mobile</code> measure the <strong>viewport</strong>. Inside a narrow sidebar or card on a wide screen, <code>mobile</code> content stays hidden. When the element should respond to the space it has, use <a href="#container"><code>narrow</code> and <code>wide</code></a>.</p>
 
     <h3>In print</h3>
     <p>The queries are screen-only. Printed, the page box (about 42 rem on A4 or Letter) would otherwise pick the mobile variant, so print always shows the <code>desktop</code> variant and hides the <code>mobile</code> one. Use <a href="/docs/attributes/data-print/"><code>data-print-only</code> / <code>data-screen-only</code></a> for content that differs between screen and paper.</p>
+  </section>
+
+  <section id="container">
+    <h2>Container Variants</h2>
+    <p><code>narrow</code> and <code>wide</code> measure the nearest <strong>query container</strong> above the element, so the same markup can sit in a sidebar and in the main column and show the variant that fits each.</p>
+
+    <browser-window
+      src="/docs/examples/demos/visible-container.html"
+      url="https://vanilla-breeze.com/data-visible"
+      title="Container Visibility"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="One card, two sizes" data-escape><article>
+  <h3>Sales this week</h3>
+  <p data-visible="narrow">Up 12% on last week.</p>
+  <table data-visible="wide">…</table>
+</article></code-block>
+
+    <code-block language="css" show-lines label="The container rules (src/utils/responsive.css)" data-escape>@container (inline-size >= 30rem) {
+  [data-visible="narrow"] { display: none !important; }
+}
+
+@container (inline-size < 30rem) {
+  [data-visible="wide"] { display: none !important; }
+}</code-block>
+
+    <ul>
+      <li><strong>Which box is measured.</strong> <code>&lt;main&gt;</code>, <code>&lt;article&gt;</code>, <code>&lt;section&gt;</code> and <code>&lt;aside&gt;</code> are query containers already. Add <a href="/docs/attributes/data-container/"><code>data-container</code></a> to make any other element one. The element is measured against its nearest container ancestor, never against itself.</li>
+      <li><strong>The threshold is 30 rem</strong>, the width the layouts already switch at (the <code>m</code> threshold of <a href="/docs/elements/custom-elements/switcher/"><code>&lt;layout-switcher&gt;</code></a>). For another width write your own <code>@container</code> rule.</li>
+      <li><strong>No container, no hiding.</strong> With no query container above the element neither rule matches and both variants show. Some layouts turn a semantic child's container off so it can size to its content (the children of a cluster or a reel, for example); there the next container out is the one measured.</li>
+      <li><strong>Same strength.</strong> These rules sit in the same reset layer with <code>!important</code>, so they win in the same way as the viewport values.</li>
+      <li><strong>One value per element.</strong> <code>data-visible</code> holds a single value. To combine a viewport and a container condition, nest two elements.</li>
+    </ul>
   </section>
 
   <section>
@@ -134,6 +170,16 @@ crumbLabel: Data Attributes
           <td>&lt; 48 rem</td>
           <td>&ge; 48 rem</td>
         </tr>
+        <tr>
+          <td><code>wide</code></td>
+          <td>Container &ge; 30 rem</td>
+          <td>Container &lt; 30 rem</td>
+        </tr>
+        <tr>
+          <td><code>narrow</code></td>
+          <td>Container &lt; 30 rem</td>
+          <td>Container &ge; 30 rem</td>
+        </tr>
       </tbody>
     </table>
   </section>
@@ -152,7 +198,7 @@ crumbLabel: Data Attributes
   <section>
     <h2>Related</h2>
     <ul>
-      <li><a href="/docs/attributes/data-container/"><code>data-container</code></a> &mdash; container queries, for components that should respond to the space they have rather than the viewport.</li>
+      <li><a href="/docs/attributes/data-container/"><code>data-container</code></a> &mdash; makes an element a query container, the box <code>narrow</code> and <code>wide</code> measure.</li>
       <li><a href="/docs/attributes/data-print/"><code>data-print</code></a> &mdash; <code>data-print-only</code>, <code>data-no-print</code> and <code>data-screen-only</code> for screen vs paper.</li>
       <li><a href="/docs/attributes/hide-until-ready/"><code>hide-until-ready</code></a> &mdash; hiding until a component is defined, not by width.</li>
       <li><a href="/docs/elements/custom-elements/mobile-menu/"><code>&lt;mobile-menu&gt;</code></a> &mdash; a complete responsive navigation that switches at its own <code>breakpoint</code>.</li>

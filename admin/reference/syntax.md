@@ -2452,7 +2452,7 @@ Gates live in the reset layer (imported from `src/main.css` / `main-core.css` wi
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-visible` | `mobile`, `desktop` | Viewport (not container) visibility at `--bp-m` (48rem): `mobile` hidden at ≥48rem, `desktop` hidden below. `display: none !important` in the reset layer (beats structural `!important` and author `display`). Screen-only queries: print shows `desktop`, hides `mobile`. Container variant: use `data-container` + `@container` |
+| `data-visible` | `mobile`, `desktop`, `narrow`, `wide` | Viewport visibility at `--bp-m` (48rem): `mobile` hidden at ≥48rem, `desktop` hidden below. Container visibility at 30rem of the nearest query container: `narrow` hidden at ≥30rem, `wide` hidden below; with no container both show. `display: none !important` in the reset layer (beats structural `!important` and author `display`). Screen-only queries: print shows `desktop`, hides `mobile`. |
 
 ### Print (`src/utils/print.css`)
 
@@ -3003,7 +3003,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-upload` | File input — drop zone |
 | `data-value` | Various — value binding |
 | `data-variant` | Various — style variant |
-| `data-visible` | Any — `mobile` / `desktop` viewport visibility |
+| `data-visible` | Any — `mobile` / `desktop` viewport visibility, `narrow` / `wide` container visibility |
 | `data-vt` | Any — view transition group |
 | `data-vt-class` | Any (with a vt name) — transition animation preset (`none` → class `vt-none`; `slide-forward`/`slide-back` follow dir) |
 | `data-vt-name` | Any — custom transition name (sets `view-transition-name`; no marker attribute, so clones / value changes / removal re-apply) |

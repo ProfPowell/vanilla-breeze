@@ -78,6 +78,56 @@ test.describe('data-visible', () => {
     expect(await page.locator('#btt').getAttribute('data-visible')).toBe('mobile');
     expect(await display(page, '#btt')).toBe('none');
   });
+
+  // Container variants (vanilla-breeze-3pw2): the nearest query container
+  // decides, whatever the viewport is.
+  const BOX = (width, tag = 'aside', attrs = '') => `
+    <${tag} id="box" ${attrs} style="inline-size:${width}">
+      <style>.author-flex { display: flex; }</style>
+      <content-swap id="cs" data-visible="wide"><section>front</section><section>back</section></content-swap>
+      <p id="n" class="author-flex" data-visible="narrow">narrow</p>
+      <p id="w" data-visible="wide">wide</p>
+    </${tag}>`;
+
+  test('narrow container on a wide viewport: narrow shown, wide hidden', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await load(page, BOX('20rem'));
+    expect(await display(page, '#n')).toBe('flex');
+    expect(await display(page, '#w')).toBe('none');
+    expect(await display(page, '#cs')).toBe('none');
+  });
+
+  test('wide container: wide shown, narrow hidden; the threshold is 30rem', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await load(page, BOX('30rem'));
+    expect(await display(page, '#n')).toBe('none');
+    expect(await display(page, '#w')).toBe('block');
+    await page.locator('#box').evaluate((el) => { el.style.inlineSize = '29.9rem'; });
+    expect(await display(page, '#n')).toBe('flex');
+    expect(await display(page, '#w')).toBe('none');
+  });
+
+  test('data-container makes any element the measured box', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await load(page, BOX('20rem', 'ul', 'data-container').replace(/<(\/?)p /g, '<$1li ').replace(/<\/p>/g, '</li>'));
+    expect(await display(page, '#w')).toBe('none');
+    expect(await display(page, '#n')).toBe('flex');
+  });
+
+  test('with no query container both variants show', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await load(page, '<p id="n" data-visible="narrow">narrow</p><p id="w" data-visible="wide">wide</p>');
+    expect(await display(page, '#n')).toBe('block');
+    expect(await display(page, '#w')).toBe('block');
+  });
+
+  test('container and viewport variants do not affect each other', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await load(page, `<aside style="inline-size:20rem">
+      <p id="d" data-visible="desktop">desktop</p><p id="m" data-visible="mobile">mobile</p></aside>`);
+    expect(await display(page, '#d')).toBe('block');
+    expect(await display(page, '#m')).toBe('none');
+  });
 });
 
 /* ---------------------------------------------------------- hide-until-ready */

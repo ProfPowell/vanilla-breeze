@@ -1,4 +1,5 @@
-/* data-visible: viewport visibility, and the data-responsive debug badge.
+/* data-visible: viewport and container visibility, and the data-responsive
+   debug badge.
 
    Imported into the RESET layer (src/main.css), not utils: !important in the
    lowest layer beats the structural display:… !important rules components
@@ -21,6 +22,27 @@
 
 @media screen and (width < 48rem) {
   [data-visible="desktop"] {
+    display: none !important;
+  }
+}
+
+/* Container variants: narrow | wide measure the nearest query container, not
+   the viewport. main, article, section and aside are containers already;
+   data-container makes any other element one. The threshold is 30rem, the
+   width the layouts already switch at (switcher threshold "m").
+
+   With no query container above the element neither rule matches, so both
+   variants show: content is never lost for want of a container. Print uses
+   the container's printed width, like any container query. */
+
+@container (inline-size >= 30rem) {
+  [data-visible="narrow"] {
+    display: none !important;
+  }
+}
+
+@container (inline-size < 30rem) {
+  [data-visible="wide"] {
     display: none !important;
   }
 }
