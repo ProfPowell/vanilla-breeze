@@ -30,6 +30,11 @@ describe('html-validate', () => {
       const result = runHtmlValidate(`${fixturesDir}/valid/custom-elements.html`);
       assert.strictEqual(result.passed, true, `Expected to pass but got: ${result.output}`);
     });
+
+    it('passes layout attributes on native elements', () => {
+      const result = runHtmlValidate(`${fixturesDir}/valid/layout-attributes.html`);
+      assert.strictEqual(result.passed, true, `Expected to pass but got: ${result.output}`);
+    });
   });
 
   describe('invalid files', () => {
@@ -55,6 +60,17 @@ describe('html-validate', () => {
       const result = runHtmlValidate(`${fixturesDir}/invalid/html-validate/multiple-h1.html`);
       assert.strictEqual(result.passed, false, 'Expected multiple h1 to fail');
       assert.match(result.output, /heading-level/i, 'Should report heading-level error');
+    });
+
+    // Global attribute map generated from the layout CSS
+    // (scripts/build-api-registry.js, vanilla-breeze-cxzk).
+    it('fails on layout attribute typos on native elements', () => {
+      const result = runHtmlValidate(`${fixturesDir}/invalid/html-validate/layout-attribute-typos.html`);
+      assert.strictEqual(result.passed, false, 'Expected layout attribute typos to fail');
+      for (const bad of ['"data-canvas" has invalid value "elavated"', '"data-layout" has invalid value "stak"',
+        '"data-layout-gap" has invalid value "medium"', '"data-layout" has invalid value "imposter"']) {
+        assert.ok(result.output.includes(bad), `Should report ${bad}; got: ${result.output}`);
+      }
     });
   });
 });

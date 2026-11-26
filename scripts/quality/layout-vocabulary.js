@@ -421,3 +421,20 @@ export function readLayoutVocabularyByLayout(root = DEFAULT_ROOT) {
   }
   return { byLayout, childAttrs };
 }
+
+/**
+ * Every layout name the CSS selects with `[data-layout="name"]`: the closed
+ * set of values `data-layout` can hold on a native element. Read from the
+ * same files as the rest of the vocabulary, never hand-listed.
+ *
+ * @param {string} [root] - Repo root; defaults to the checkout this file is in.
+ * @returns {string[]} sorted layout names
+ */
+export function readLayoutNames(root = DEFAULT_ROOT) {
+  const names = new Set();
+  for (const file of vocabularyFiles(root)) {
+    const css = stripComments(readFileSync(file, 'utf8'));
+    for (const [, name] of css.matchAll(/\[data-layout="([a-z-]+)"\]/g)) names.add(name);
+  }
+  return [...names].sort();
+}

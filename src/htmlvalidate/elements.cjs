@@ -1,5 +1,52 @@
 // @generated from api.json manifests — do not edit by hand
 module.exports = {
+  // ── Global layout attributes ────────────────────────────────────
+
+  "*": {
+    attributes: {
+      "data-layout": { enum: ["center", "cluster", "columns", "cover", "grid", "media", "page-stack", "prose", "reel", "regions", "sidebar", "sidebar-left", "sidebar-right", "split", "stack", "switcher"] },
+      "data-canvas": { enum: ["flush", "elevated"], omit: true },
+      "data-canvas-depth": { enum: ["1", "2"] },
+      "data-layout-align": { enum: ["baseline", "center", "end", "justify", "start", "stretch"] },
+      "data-layout-area": { enum: ["cta", "feature", "hero"] },
+      "data-layout-column-count": { enum: ["1", "2", "3", "auto"] },
+      "data-layout-content-min": { enum: ["l", "m", "s"] },
+      "data-layout-density": { enum: ["compact", "spacious"] },
+      "data-layout-gap": { enum: ["2xl", "2xs", "3xl", "3xs", "l", "m", "none", "s", "xl", "xs"], omit: true },
+      "data-layout-gutter": { enum: ["l", "none", "s"] },
+      "data-layout-item-width": { enum: ["auto", "full", "l", "m", "s", "xl"] },
+      "data-layout-justify": { enum: ["between", "center", "end", "start"] },
+      "data-layout-limit": { enum: ["2", "3", "4"] },
+      "data-layout-margin": { enum: ["l", "m", "s", "xl"] },
+      "data-layout-max": { enum: ["narrow", "normal", "prose", "wide"] },
+      "data-layout-measure": { enum: ["narrow", "normal", "wide"] },
+      "data-layout-min": { enum: ["auto", "l", "m", "s", "xl", "xs"] },
+      "data-layout-order": { enum: ["-1", "1", "99"] },
+      "data-layout-overlap": { enum: ["l", "m", "s", "xs"], omit: true },
+      "data-layout-padding": { enum: ["l", "m", "none", "s", "xl"] },
+      "data-layout-position": { enum: ["bottom", "bottom-end", "bottom-start", "center", "end", "start", "top", "top-end", "top-start"] },
+      "data-layout-ratio": { enum: ["1:2", "1:3", "2:1", "3:1", "golden"] },
+      "data-layout-side": { enum: ["end"] },
+      "data-layout-sidebar-width": { enum: ["narrow", "normal", "wide"] },
+      "data-layout-subgrid": { enum: ["2", "3", "4"], omit: true },
+      "data-layout-threshold": { enum: ["l", "m", "s"] },
+      "data-layout-bleed": { boolean: true },
+      "data-layout-centered": { boolean: true },
+      "data-layout-contain": { boolean: true },
+      "data-layout-cover-bottom": { boolean: true },
+      "data-layout-cover-top": { boolean: true },
+      "data-layout-fill": { boolean: true },
+      "data-layout-fixed": { boolean: true },
+      "data-layout-intrinsic": { boolean: true },
+      "data-layout-nowrap": { boolean: true },
+      "data-layout-principal": { boolean: true },
+      "data-layout-reverse": { boolean: true },
+      "data-layout-scrollbar": { boolean: true },
+      "data-layout-sticky": { boolean: true },
+      "data-layout-text": { boolean: true }
+    }
+  },
+
   // ── Layout Custom Elements ──────────────────────────────────────
 
   "layout-text": {

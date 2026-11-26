@@ -19,6 +19,7 @@
 import { readFileSync, writeFileSync, readdirSync, existsSync, statSync } from 'fs';
 import { join, dirname, relative } from 'path';
 import { fileURLToPath } from 'url';
+import { readLayoutNames, readLayoutVocabulary, readPresenceAttrs } from './quality/layout-vocabulary.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -342,6 +343,7 @@ function generateElementsCjs(manifests) {
     lines.push('');
   }
 
+  writeGlobalAttributes(lines, manifests);
   writeSection('Layout Custom Elements', customElements);
   writeSection('Other Custom Elements', other);
   writeSection('Web Components', webComponents);
@@ -351,6 +353,69 @@ function generateElementsCjs(manifests) {
   lines.push('');
 
   return lines.join('\n');
+}
+
+/**
+ * The layout attributes any element can carry, as html-validate's global
+ * ("*") attribute map, so a typo on a native element fails
+ * attribute-allowed-values the way it does on a custom-element host:
+ * <section data-layout="stak">, <main data-canvas="elavated">.
+ *
+ * Values come from the layout CSS (scripts/quality/layout-vocabulary.js) and
+ * from layout-canvas's manifest, never from a list kept here. data-layout-*
+ * enums are the union across layouts; the conformance checker
+ * (vb/layout-attr-value) does the stricter per-layout check. An element's own
+ * definition wins over a global one, so each layout element keeps its
+ * narrower enum.
+ *
+ * @param {string[]} lines - output lines, appended to
+ * @param {Array<object>} manifests
+ */
+function writeGlobalAttributes(lines, manifests) {
+  const attrs = new Map();
+  attrs.set('data-layout', { enum: readLayoutNames(ROOT) });
+
+  const canvas = manifests.find((m) => m.element === 'layout-canvas');
+  for (const attr of canvas?.attributes ?? []) {
+    if (!attr.name.startsWith('data-canvas') || !attr.values) continue;
+    const spec = { enum: attr.values.filter((v) => v !== '') };
+    if (attr.values.includes('')) spec.omit = true;
+    attrs.set(attr.name, spec);
+  }
+
+  // A presence selector ([data-layout-gap]) beside value selectors means the
+  // bare form is styled too, so the value may be omitted.
+  const bare = new Set();
+  const css = readLayoutVocabulary(ROOT);
+  for (const m of manifests) {
+    for (const attr of m.attributes ?? []) {
+      if (attr.name.startsWith('data-layout-') && attr.values?.includes('')) bare.add(attr.name);
+    }
+  }
+  for (const [name, values] of [...css].sort(([a], [b]) => a.localeCompare(b))) {
+    const spec = { enum: [...values].sort() };
+    if (bare.has(`data-layout-${name}`)) spec.omit = true;
+    attrs.set(`data-layout-${name}`, spec);
+  }
+  for (const name of [...readPresenceAttrs(ROOT)].sort()) {
+    attrs.set(`data-layout-${name}`, { boolean: true });
+  }
+
+  lines.push(`  // ── Global layout attributes ${'─'.repeat(36)}`);
+  lines.push('');
+  lines.push('  "*": {');
+  lines.push('    attributes: {');
+  const rows = [...attrs].map(([name, spec]) => {
+    const parts = [];
+    if (spec.boolean) parts.push('boolean: true');
+    if (spec.enum) parts.push(`enum: [${spec.enum.map((v) => `"${v}"`).join(', ')}]`);
+    if (spec.omit) parts.push('omit: true');
+    return `      "${name}": { ${parts.join(', ')} }`;
+  });
+  lines.push(rows.join(',\n'));
+  lines.push('    }');
+  lines.push('  },');
+  lines.push('');
 }
 
 // ── Generate apiRegistry.js (11ty data file) ─────────────────────────
