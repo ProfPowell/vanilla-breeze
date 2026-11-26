@@ -163,6 +163,19 @@ describe('activeOccasions and resolveOccasions', () => {
     assert.deepEqual(result, { ids: [], day: false, icon: undefined });
   });
 
+  it('gives an occasion\'s effect on its own day, not in the lead-up or the trail', () => {
+    const party = [{ id: 'launch', rule: '10-28', lead: 2, trail: 1, effect: 'confetti' }];
+    const eff = (ymd) => resolveOccasions(at(`${ymd}T12:00:00Z`), party, { tz: 'UTC' }).effect;
+    assert.equal(eff('2026-10-27'), undefined);
+    assert.equal(eff('2026-10-28'), 'confetti');
+    assert.equal(eff('2026-10-29'), undefined);
+    // A higher-priority occasion in its lead-up does not hide the effect of one on its day.
+    const both = [...party, { id: 'big', rule: '10-30', lead: 5, priority: 90 }];
+    assert.deepEqual(resolveOccasions(at('2026-10-28T12:00:00Z'), both, { tz: 'UTC' }), {
+      ids: ['big', 'launch'], day: true, icon: undefined, effect: 'confetti',
+    });
+  });
+
   it('accepts no windows', () => {
     assert.deepEqual(activeOccasions(null, '2026-01-01'), { ids: [], day: false, icon: undefined });
   });

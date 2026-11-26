@@ -478,7 +478,7 @@ async function buildPacks() {
       }
 
       // Build individual JS files
-      for (const jsFile of ['effects', 'components', 'core', 'resolve', 'bundle']) {
+      for (const jsFile of ['effects', 'components', 'core', 'resolve', 'atmosphere', 'bundle']) {
         const src = join(packSrc, `${name}.${jsFile}.js`);
         if (!existsSync(src)) continue;
         const out = join(outDir, `${name}.${jsFile}.js`);

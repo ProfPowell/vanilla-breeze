@@ -33,14 +33,15 @@ const NOON = '2026-10-28T12:00:00Z';
  * @param {string} [opts.scheme]
  * @param {string} [opts.head] extra head markup
  * @param {string[]} [opts.modules] extra /src modules
+ * @param {'reduce' | 'no-preference'} [opts.motion]
  */
 async function load(page, {
   html = 'data-ambient="season daypart weather occasion"', config = { tz: 'UTC' }, module = true, body = '',
-  time = NOON, query = '', scheme = 'light', head = '', modules = [],
+  time = NOON, query = '', scheme = 'light', head = '', modules = [], motion = 'reduce',
 } = {}) {
   // Reduced motion: the 600 ms token transition is off, so a state can be
   // measured as soon as it is set.
-  await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' });
+  await page.emulateMedia({ colorScheme: scheme, reducedMotion: motion });
   await page.clock.install({ time: new Date(time) });
   await page.route('**/src/**', (route) => route.fulfill({
     path: join(REPO, decodeURIComponent(new URL(route.request().url()).pathname)),
@@ -569,5 +570,173 @@ test.describe('weather feed', () => {
     expect(await attrs(page)).toMatchObject({ daypart: 'day', weather: null });
     await page.reload();
     expect(await page.evaluate(() => window.__atHead)).not.toContain('data-weather');
+  });
+});
+
+test.describe('atmosphere', () => {
+  // A stand-in for @profpowell/bg-wc: the pack only creates the element and
+  // sets attributes on it; the drawing is bg-wc's and is tested there.
+  const BG = '<script>customElements.define("bg-wc", class extends HTMLElement {});</script>';
+  const SLOT = '<header id="slot" data-ambient-slot="atmosphere"><h1 id="title">Site title</h1></header>';
+  const ATMOSPHERE = 'data-ambient="season weather occasion" data-ambient-level="atmosphere"';
+  const layer = (page) => page.evaluate(() => {
+    const el = document.querySelector('#slot > bg-wc');
+    return el && Object.fromEntries([...el.attributes].map((a) => [a.name, a.value]));
+  });
+  const fetched = (page) => {
+    const urls = [];
+    page.on('request', (req) => { if (req.url().includes('ambient.atmosphere.js')) urls.push(req.url()); });
+    return urls;
+  };
+
+  test('snow plays in the slot for five seconds, behind the content, then is removed', async ({ page }) => {
+    await load(page, { html: ATMOSPHERE, motion: 'no-preference', head: BG, body: SLOT, config: { tz: 'UTC', pin: { weather: 'snow' } } });
+    await expect(page.locator('#slot > bg-wc')).toHaveCount(1);
+    expect(await layer(page)).toMatchObject({
+      preset: 'snow', 'aria-hidden': 'true', 'data-ambient-atmosphere': 'snow', quality: 'low', density: '0.3',
+    });
+    await expect(page.locator('#slot')).toHaveAttribute('data-ambient-effect', 'ambient-snow');
+    const box = await page.evaluate(() => {
+      const slot = document.querySelector('#slot');
+      const el = slot.querySelector('bg-wc');
+      const cs = getComputedStyle(el);
+      const [a, b] = [slot.getBoundingClientRect(), el.getBoundingClientRect()];
+      return {
+        covers: Math.abs(a.width - b.width) < 1 && Math.abs(a.height - b.height) < 1,
+        z: cs.zIndex, events: cs.pointerEvents, first: slot.firstElementChild === el,
+        top: document.elementFromPoint(a.left + 20, a.top + a.height / 2)?.localName,
+      };
+    });
+    expect(box).toMatchObject({ covers: true, z: '-1', events: 'none', first: true });
+    expect(box.top).not.toBe('bg-wc');
+
+    await page.clock.runFor(4500);
+    await expect(page.locator('#slot > bg-wc')).toHaveAttribute('data-ambient-ending', '');
+    await page.clock.runFor(600);
+    await expect(page.locator('#slot > bg-wc')).toHaveCount(0);
+    expect(await page.locator('#slot').getAttribute('data-ambient-effect')).toBeNull();
+    // The same state does not replay.
+    await ambient(page, (A) => A.refresh());
+    await page.clock.runFor(100);
+    await expect(page.locator('#slot > bg-wc')).toHaveCount(0);
+  });
+
+  test('the slot keeps its size: no layout shift when the layer comes and goes', async ({ page }) => {
+    await load(page, { html: ATMOSPHERE, motion: 'no-preference', head: BG, body: SLOT, config: { tz: 'UTC' } });
+    const rect = () => page.evaluate(() => JSON.stringify(document.querySelector('#title').getBoundingClientRect()));
+    const before = await rect();
+    await ambient(page, (A) => A.override({ weather: 'rain', intensity: 'heavy' }));
+    await expect(page.locator('#slot > bg-wc')).toHaveAttribute('preset', 'rain');
+    expect(await layer(page)).toMatchObject({ density: '0.5', intensity: '0.8' });
+    expect(await rect()).toBe(before);
+    await page.clock.runFor(5100);
+    await expect(page.locator('#slot > bg-wc')).toHaveCount(0);
+    expect(await rect()).toBe(before);
+  });
+
+  test('each state maps to its effect; a season alone plays nothing', async ({ page }) => {
+    await load(page, { html: ATMOSPHERE, motion: 'no-preference', head: BG, body: SLOT, config: { tz: 'UTC', pin: { weather: 'snow' } } });
+    await expect(page.locator('#slot > bg-wc')).toHaveCount(1);
+    const cases = [
+      [{ weather: 'storm' }, 'rain'], [{ weather: 'fog' }, 'fog'], [{ weather: 'wind', season: 'autumn' }, 'leaves'],
+      [{ weather: 'snow', occasions: ['party'], occasionDay: true, occasionEffect: 'confetti' }, 'confetti'],
+    ];
+    for (const [state, preset] of cases) {
+      await ambient(page, (A, s) => A.override(s), state);
+      await expect(page.locator('#slot > bg-wc')).toHaveAttribute('preset', preset);
+      await expect(page.locator('#slot > bg-wc')).toHaveCount(1);
+    }
+    for (const state of [{ weather: 'wind', season: 'spring' }, { weather: 'clear', season: 'winter' }, { weather: 'cloudy' }]) {
+      await ambient(page, (A, s) => A.override(s), state);
+      await expect(page.locator('#slot > bg-wc')).toHaveCount(0);
+    }
+  });
+
+  test('an occasion effect plays on its day only', async ({ page }) => {
+    const occasions = [{ id: 'launch', start: '2026-10-28', end: '2026-10-28', from: '2026-10-26', to: '2026-10-29', effect: 'confetti' }];
+    await load(page, { html: ATMOSPHERE, motion: 'no-preference', head: BG, body: SLOT, config: { tz: 'UTC', occasions } });
+    await expect(page.locator('#slot > bg-wc')).toHaveAttribute('preset', 'confetti');
+    expect(await ambient(page, (A) => A.state.occasionEffect)).toBe('confetti');
+    await load(page, {
+      html: ATMOSPHERE, motion: 'no-preference', head: BG, body: SLOT, config: { tz: 'UTC', occasions }, time: '2026-10-27T12:00:00Z',
+    });
+    expect(await ambient(page, (A) => [A.state.occasions.join(), A.state.occasionEffect])).toEqual(['launch', null]);
+    await expect(page.locator('#slot > bg-wc')).toHaveCount(0);
+  });
+
+  test('the effects file is not fetched under reduced motion, data saving, another level, or without a slot', async ({ page }) => {
+    const urls = fetched(page);
+    const config = { tz: 'UTC', pin: { weather: 'snow' } };
+    await load(page, { html: ATMOSPHERE, head: BG, body: SLOT, config });
+    await load(page, { html: `${ATMOSPHERE} data-motion-reduced`, motion: 'no-preference', head: BG, body: SLOT, config });
+    await load(page, { html: 'data-ambient="season weather"', motion: 'no-preference', head: BG, body: SLOT, config });
+    await load(page, { html: ATMOSPHERE, motion: 'no-preference', head: BG, config });
+    await load(page, { html: ATMOSPHERE, motion: 'no-preference', head: BG, body: SLOT, config: { tz: 'UTC' } });
+    await load(page, {
+      html: ATMOSPHERE, motion: 'no-preference', body: SLOT, config,
+      head: `${BG}<script>Object.defineProperty(navigator, 'connection', { value: { saveData: true } });</script>`,
+    });
+    await page.clock.runFor(500);
+    expect(urls).toEqual([]);
+    await expect(page.locator('bg-wc')).toHaveCount(0);
+  });
+
+  test('the opt-out stops a playing effect; without bg-wc nothing is added', async ({ page }) => {
+    const config = { tz: 'UTC', pin: { weather: 'snow' } };
+    await load(page, { html: ATMOSPHERE, motion: 'no-preference', head: BG, body: SLOT, config });
+    await expect(page.locator('#slot > bg-wc')).toHaveCount(1);
+    await ambient(page, (A) => { A.enabled = false; });
+    await expect(page.locator('#slot > bg-wc')).toHaveCount(0);
+    await ambient(page, (A) => { A.enabled = true; });
+
+    await load(page, { html: ATMOSPHERE, motion: 'no-preference', body: SLOT, config });
+    await page.clock.runFor(500);
+    await expect(page.locator('bg-wc')).toHaveCount(0);
+    // Defined late, it plays then.
+    await page.evaluate(() => customElements.define('bg-wc', class extends HTMLElement {}));
+    await expect(page.locator('#slot > bg-wc')).toHaveCount(1);
+  });
+
+  test('data-ambient-loop keeps playing only with a visible pause control, which pauses it', async ({ page }) => {
+    const config = { tz: 'UTC', pin: { weather: 'snow' } };
+    const loop = SLOT.replace('data-ambient-slot', 'data-ambient-loop data-ambient-slot');
+    // No control: the time box still applies.
+    await load(page, { html: ATMOSPHERE, motion: 'no-preference', head: BG, body: loop, config });
+    await expect(page.locator('#slot > bg-wc')).toHaveCount(1);
+    await page.clock.runFor(5100);
+    await expect(page.locator('#slot > bg-wc')).toHaveCount(0);
+    // A hidden control does not count.
+    await load(page, {
+      html: ATMOSPHERE, motion: 'no-preference', head: BG, config, body: `${loop}<button type="button" data-ambient-pause hidden>Pause</button>`,
+    });
+    await expect(page.locator('#slot > bg-wc')).toHaveCount(1);
+    await page.clock.runFor(5100);
+    await expect(page.locator('#slot > bg-wc')).toHaveCount(0);
+
+    await load(page, {
+      html: ATMOSPHERE, motion: 'no-preference', head: BG, config,
+      body: `${loop}<button type="button" id="pause" data-ambient-pause aria-pressed="false">Pause the weather effect</button>`,
+    });
+    await expect(page.locator('#slot > bg-wc')).toHaveCount(1);
+    await page.clock.runFor(8000);
+    await expect(page.locator('#slot > bg-wc')).toHaveCount(1);
+    await page.click('#pause');
+    await expect(page.locator('#pause')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#slot > bg-wc')).toHaveAttribute('paused', '');
+    await page.click('#pause');
+    expect(await page.locator('#slot > bg-wc').getAttribute('paused')).toBeNull();
+    // data-paused on the slot pauses too.
+    await page.locator('#slot').evaluate((el) => el.setAttribute('data-paused', ''));
+    await expect(page.locator('#slot > bg-wc')).toHaveAttribute('paused', '');
+  });
+
+  test('print and forced colours show no layer', async ({ page }) => {
+    await load(page, { html: ATMOSPHERE, motion: 'no-preference', head: BG, body: SLOT, config: { tz: 'UTC', pin: { weather: 'snow' } } });
+    await expect(page.locator('#slot > bg-wc')).toHaveCount(1);
+    const display = () => page.locator('#slot > bg-wc').evaluate((el) => getComputedStyle(el).display);
+    await page.emulateMedia({ media: 'print' });
+    expect(await display()).toBe('none');
+    await page.emulateMedia({ media: 'screen', forcedColors: 'active' });
+    expect(await display()).toBe('none');
   });
 });

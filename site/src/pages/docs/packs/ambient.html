@@ -62,6 +62,7 @@ currentPath: /docs/packs/ambient/
       <tr><td>Attributes written by your build</td><td><code>data-season</code>, <code>data-occasion</code> and <code>data-occasion-icon</code> as of build time</td><td>No state; the plain theme</td></tr>
       <tr><td>Inline head script</td><td>Season, time of day and occasions from the clock, and the weather the module cached earlier in the session, before first paint. Removes all state if the visitor opted out.</td><td>Built values stand until the module runs</td></tr>
       <tr><td>Module</td><td>Fetches the <a href="#feed">weather feed</a> once, at idle. Keeps the state current: it wakes at the next boundary and when the tab becomes visible again. Wires the opt-out control.</td><td>No weather; state is right at load and does not update</td></tr>
+      <tr><td>Effects file (<code>packs/ambient.atmosphere.js</code>)</td><td>Fetched by the module only for the <a href="#atmosphere"><code>atmosphere</code> level</a>, when the state has an effect to play.</td><td>No effect</td></tr>
     </tbody>
   </table>
   <p>The head script must come after <code>#ambient-config</code>. It does not throw, wait on the network or touch layout. With JavaScript off, the attributes your build wrote are used as they are.</p>
@@ -82,7 +83,7 @@ currentPath: /docs/packs/ambient/
       <tr><td><code>data-occasion</code></td><td>Word list of occasion ids, highest priority first, at most two</td><td>Pack</td><td>Match with <code>~=</code>, like <code>data-theme</code>.</td></tr>
       <tr><td><code>data-occasion-day</code></td><td>Boolean</td><td>Pack</td><td>Present on the day itself, not during the lead-up.</td></tr>
       <tr><td><code>data-occasion-icon</code></td><td>An icon name</td><td>Pack</td><td>The icon the active occasion's calendar entry names.</td></tr>
-      <tr><td><code>data-ambient-level</code></td><td><code>tint</code>, <code>motif</code> (default)</td><td>Author</td><td><code>tint</code> turns motif icons off and leaves the colour tokens.</td></tr>
+      <tr><td><code>data-ambient-level</code></td><td><code>tint</code>, <code>motif</code> (default), <code>atmosphere</code></td><td>Author</td><td><code>tint</code> turns motif icons off and leaves the colour tokens. <code>atmosphere</code> adds the brief <a href="#atmosphere">effects</a> to the motifs.</td></tr>
       <tr><td><code>data-ambient-debug</code></td><td>Boolean</td><td>Author</td><td>Allows the <code>?ambient=</code> preview outside localhost.</td></tr>
     </tbody>
   </table>
@@ -246,10 +247,53 @@ export async function onRequestGet({ request, waitUntil }) {
 </section>
 
 <section>
+  <h2 id="atmosphere">Atmosphere</h2>
+  <p>The third level adds a brief effect for some states: a greeting, not a screensaver. It plays once, inside a slot you place, for five seconds, and then it is gone.</p>
+  <code-block language="html" label="Atmosphere in the header" data-escape><html lang="en" data-ambient="season weather occasion" data-ambient-level="atmosphere">
+  …
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@profpowell/bg-wc/dist/bg-wc.js"></script>
+  <script type="module" src="/cdn/packs/ambient.core.js"></script>
+  …
+  <header data-ambient-slot="atmosphere">
+    <h1>Site title</h1>
+  </header></code-block>
+  <table>
+    <thead>
+      <tr><th>State</th><th>Effect</th><th><code>data-ambient-effect</code> on the slot</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-weather="snow"</code></td><td>Falling snow</td><td><code>ambient-snow</code></td></tr>
+      <tr><td><code>data-weather="rain"</code> or <code>"storm"</code></td><td>Rain. A storm has no lightning: nothing flashes.</td><td><code>ambient-rain</code></td></tr>
+      <tr><td><code>data-weather="fog"</code></td><td>A drifting wash of mist</td><td><code>ambient-fog</code></td></tr>
+      <tr><td><code>data-weather="wind"</code> in <code>autumn</code></td><td>Blown leaves</td><td><code>ambient-leaves</code></td></tr>
+      <tr><td>An occasion whose calendar entry has <code>"effect": "confetti"</code>, on its day</td><td>Confetti</td><td><code>ambient-confetti</code></td></tr>
+    </tbody>
+  </table>
+  <p>An occasion's effect comes before the weather. A season alone plays nothing, and neither do clear or cloudy skies. <code>data-weather-intensity</code> makes the effect lighter or heavier.</p>
+  <ul>
+    <li><strong>Drawn by <code>&lt;bg-wc&gt;</code>.</strong> The pack has no canvas code. It adds one <a href="https://www.npmjs.com/package/@profpowell/bg-wc"><code>&lt;bg-wc&gt;</code></a> element with the matching preset, so the page must load that component. Without it nothing plays.</li>
+    <li><strong>In the slot, behind the content.</strong> The layer fills <code>[data-ambient-slot="atmosphere"]</code>, sits below everything in it, takes no pointer events and is <code>aria-hidden</code>. Text and links stay on top and usable. It never covers the viewport unless the slot does.</li>
+    <li><strong>Five seconds.</strong> The effect fades out and its element is removed. The same state does not replay until the page is loaded again.</li>
+    <li><strong>No layout shift.</strong> The layer is absolutely positioned. A slot with <code>position: static</code> is given <code>position: relative</code>; a slot you positioned is left alone.</li>
+    <li><strong>Never under reduced motion.</strong> With <code>prefers-reduced-motion: reduce</code> or <code>data-motion-reduced</code> the effects file is not fetched. The same holds for <code>Save-Data</code> and <code>prefers-reduced-data</code>, for a visitor who opted out, and for a page without the level or without a slot. Print and forced colours hide the layer.</li>
+    <li><strong>Colour.</strong> Snow, rain and leaves are drawn in <code>--color-ambient</code> on a clear background. Fog is a wash over <code>--color-background</code>. Set <code>--bg-wc-color-fg</code> or <code>--bg-wc-color-bg</code> on the slot to change them.</li>
+  </ul>
+
+  <h3 id="atmosphere-loop">Looping and pausing</h3>
+  <p>Motion that starts by itself and lasts more than five seconds needs a way to stop it (WCAG 2.2.2). <code>data-ambient-loop</code> on the slot keeps the effect playing, but only while the page has a visible <code>[data-ambient-pause]</code> control. Without one the five seconds still apply.</p>
+  <code-block language="html" label="A looping effect with its pause control" data-escape><header data-ambient-slot="atmosphere" data-ambient-loop>
+  <h1>Site title</h1>
+  <button type="button" data-ambient-pause aria-pressed="false">Pause the weather effect</button>
+</header></code-block>
+  <p>The control pauses and resumes every playing effect and keeps <code>aria-pressed</code> in step. <code>data-paused</code> on the slot pauses its effect too, and <code>&lt;bg-wc&gt;</code> stops drawing while the tab is hidden.</p>
+  <p>To preview an effect, use the <a href="#visitor-control"><code>?ambient=</code> query</a>: <code>?ambient=snow</code>, <code>?ambient=rain,heavy</code>, <code>?ambient=autumn,wind</code> or <code>?ambient=confetti</code>.</p>
+</section>
+
+<section>
   <h2 id="api">JavaScript API</h2>
   <code-block language="js" label="Ambient" data-escape>import { Ambient } from '/cdn/packs/ambient.core.js'
 
-Ambient.state                        // frozen: { season, daypart, weather, intensity, occasions, occasionDay, occasionIcon, tempC, asOf }
+Ambient.state                        // frozen: { season, daypart, weather, intensity, occasions, occasionDay, occasionIcon, occasionEffect, tempC, asOf }
 Ambient.enabled = false              // visitor opt-out, stored in localStorage
 Ambient.override({ season: 'winter', daypart: 'night' })  // preview; null clears
 Ambient.refresh()                    // resolve again now; refetch the feed if its ttl ended

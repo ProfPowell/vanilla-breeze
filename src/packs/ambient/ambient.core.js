@@ -18,6 +18,11 @@
  * tests. This module fetches that file only when a page gives calendar
  * rules instead of the dated windows a build writes.
  *
+ * With data-ambient-level="atmosphere" and a [data-ambient-slot="atmosphere"]
+ * on the page, a state that has an effect (snow, rain, fog, leaves, confetti)
+ * fetches ambient.atmosphere.js, which plays it for five seconds. The file is
+ * never fetched under reduced motion or data saving.
+ *
  * Weather comes from one URL, config.feed (see AmbientFeed in
  * ambient.resolve.js). It is fetched once at idle, kept in sessionStorage
  * for its ttl, and dropped from the state when stale. The module knows
@@ -38,6 +43,7 @@ import { ambientEnabled, setAmbientEnabled, AMBIENT_PREF_EVENT } from '../../lib
  * @property {string[]} occasions
  * @property {boolean} occasionDay
  * @property {string | null} occasionIcon motif icon named by the active occasions
+ * @property {string | null} occasionEffect atmosphere effect named by an occasion on its day
  * @property {number | null} tempC
  * @property {string} asOf
  */
@@ -50,7 +56,8 @@ const FEED_TIMEOUT = 3000;
 
 /** @type {AmbientState} */
 let state = Object.freeze({
-  season: null, daypart: null, weather: null, intensity: null, occasions: [], occasionDay: false, occasionIcon: null, tempC: null, asOf: '',
+  season: null, daypart: null, weather: null, intensity: null, occasions: [], occasionDay: false, occasionIcon: null, occasionEffect: null,
+  tempC: null, asOf: '',
 });
 /** @type {Partial<AmbientState> | null} */
 let override = null;
@@ -64,8 +71,12 @@ let started = false;
 let feed;
 /** A fetch is under way, or one failed: no retry within the page view. */
 let feedBusy = false;
+/** @type {Promise<{ play(state: AmbientState): void } | null> | undefined} the atmosphere module, once it was needed */
+let atmo;
 
 const root = () => document.documentElement;
+/** Data saving: no feed request and no atmosphere. */
+const saving = () => /** @type {any} */ (navigator).connection?.saveData || matchMedia('(prefers-reduced-data: reduce)').matches;
 
 /** The signals the author enabled; empty when the feature is off. */
 function signals() {
@@ -108,8 +119,7 @@ function loadFeed(config, on) {
   if (!on.includes('weather') && !on.includes('daypart')) return;
   cachedFeed();
   if (Date.now() < feedExpiry()) return;
-  // Data saving: no request.
-  if (/** @type {any} */ (navigator).connection?.saveData || matchMedia('(prefers-reduced-data: reduce)').matches) return;
+  if (saving()) return;
   feedBusy = true;
   const url = config.feed;
   const run = async () => {
@@ -143,8 +153,8 @@ function compute(now) {
   const fresh = config.feed && on.length && feedFresh(cachedFeed(), now.getTime()) ? feed : null;
   /** @type {AmbientState} */
   const next = {
-    season: null, daypart: null, weather: null, intensity: null, occasions: [], occasionDay: false, occasionIcon: null, tempC: null,
-    asOf: now.toISOString(),
+    season: null, daypart: null, weather: null, intensity: null, occasions: [], occasionDay: false, occasionIcon: null, occasionEffect: null,
+    tempC: null, asOf: now.toISOString(),
   };
 
   try {
@@ -165,12 +175,14 @@ function compute(now) {
         next.occasions = pin.occasions.filter((id) => ID.test(String(id))).slice(0, 2);
         next.occasionDay = !!pin.occasionDay;
         next.occasionIcon = pin.occasionIcon && ID.test(pin.occasionIcon) ? pin.occasionIcon : null;
+        next.occasionEffect = pin.occasionEffect && ID.test(pin.occasionEffect) ? pin.occasionEffect : null;
       } else {
         const { y, ymd } = zonedParts(now, config.tz);
         const active = activeOccasions(config.occasions || calendarWindows(config, y), ymd);
         next.occasions = active.ids.filter((id) => ID.test(String(id)));
         next.occasionDay = active.day;
         next.occasionIcon = active.icon && ID.test(active.icon) ? active.icon : null;
+        next.occasionEffect = active.effect && ID.test(active.effect) ? active.effect : null;
       }
     }
   } catch { /* a bad time zone or config resolves to no state: the plain theme */ }
@@ -230,6 +242,23 @@ function schedule(now) {
   } catch { /* no schedule; visibilitychange still re-resolves */ }
 }
 
+/**
+ * Atmosphere: fetch the effects file the first time a state could play one,
+ * then hand it every state. It is not fetched under reduced motion or data
+ * saving, without the level, or without a slot.
+ */
+function atmosphere() {
+  if (!atmo) {
+    const el = root();
+    if (el.getAttribute('data-ambient-level') !== 'atmosphere' || !(state.weather || state.occasionEffect)
+      || !document.querySelector('[data-ambient-slot="atmosphere"]')
+      || matchMedia('(prefers-reduced-motion: reduce)').matches || el.hasAttribute('data-motion-reduced') || saving()) return;
+    // A computed specifier: a runtime import of the sibling file, not inlined.
+    atmo = import(new URL('./ambient.atmosphere.js', import.meta.url).href).catch(() => null);
+  }
+  atmo.then((m) => m?.play(state));
+}
+
 function syncToggles() {
   const on = ambientEnabled();
   for (const el of document.querySelectorAll('[data-ambient-toggle]')) {
@@ -241,18 +270,19 @@ function syncToggles() {
 function apply() {
   const now = new Date();
   const next = compute(now);
-  const changed = ['season', 'daypart', 'weather', 'intensity', 'occasionDay', 'occasionIcon', 'tempC'].filter((k) => next[k] !== state[k]);
+  const changed = ['season', 'daypart', 'weather', 'intensity', 'occasionDay', 'occasionIcon', 'occasionEffect', 'tempC'].filter((k) => next[k] !== state[k]);
   if (next.occasions.join(' ') !== state.occasions.join(' ')) changed.push('occasions');
   Object.freeze(next.occasions);
   state = Object.freeze(next);
   reflect(state);
+  atmosphere();
   schedule(now);
   if (changed.length) {
     document.dispatchEvent(new CustomEvent('ambient:change', { detail: { state, changed } }));
   }
 }
 
-/** ?ambient=winter,night,snow,halloween — only on localhost or with data-ambient-debug. */
+/** ?ambient=winter,night,snow,halloween (confetti previews that effect) — only on localhost or with data-ambient-debug. */
 function previewFromQuery() {
   const local = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
   if (!local && !root().hasAttribute('data-ambient-debug')) return;
@@ -266,9 +296,10 @@ function previewFromQuery() {
     else if (DAYPARTS.includes(word)) preview.daypart = word;
     else if (WEATHERS.includes(word)) preview.weather = word;
     else if (INTENSITIES.includes(word)) preview.intensity = word;
+    else if (word === 'confetti') preview.occasionEffect = word;
     else if (ID.test(word)) occasions.push(word);
   }
-  if (occasions.length) {
+  if (occasions.length || preview.occasionEffect) {
     preview.occasions = occasions;
     preview.occasionDay = true;
   }

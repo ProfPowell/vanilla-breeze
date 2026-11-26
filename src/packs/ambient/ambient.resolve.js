@@ -113,10 +113,11 @@ export function resolveDaypart(date, config = {}, sun) {
 /**
  * The occasions active on a day, from windows already expanded to dates.
  * Highest priority first, then nearest to its own day; at most two. The
- * icon is the first one those occasions name.
+ * icon is the first one those occasions name; the effect is the first one
+ * named by an occasion that is on its own day, not in its lead or trail.
  * @param {OccasionWindow[] | null | undefined} windows
  * @param {string} ymd today in the place, YYYY-MM-DD
- * @returns {{ ids: string[], day: boolean, icon?: string }}
+ * @returns {{ ids: string[], day: boolean, icon?: string, effect?: string }}
  */
 export function activeOccasions(windows, ymd) {
   const t = Date.parse(ymd);
@@ -125,7 +126,9 @@ export function activeOccasions(windows, ymd) {
     .filter((w) => w.from <= ymd && ymd <= w.to)
     .sort((a, b) => (b.p || 0) - (a.p || 0) || far(a) - far(b))
     .slice(0, 2);
-  return { ids: on.map((w) => w.id), day: on.some((w) => !far(w)), icon: (on.find((w) => w.icon) || {}).icon };
+  const result = { ids: on.map((w) => w.id), day: on.some((w) => !far(w)), icon: (on.find((w) => w.icon) || {}).icon };
+  const effect = (on.find((w) => w.effect && !far(w)) || {}).effect;
+  return effect ? { ...result, effect } : result;
 }
 
 /* ---------- calendar rules (build and module only; not in the head script) ---------- */
@@ -234,7 +237,7 @@ export function expandCalendar(calendar, years) {
  * @param {Date} date
  * @param {Parameters<typeof expandCalendar>[0]} calendar
  * @param {AmbientConfig} [config]
- * @returns {{ ids: string[], day: boolean, icon?: string }}
+ * @returns {{ ids: string[], day: boolean, icon?: string, effect?: string }}
  */
 export function resolveOccasions(date, calendar, config = {}) {
   const { y, ymd } = zonedParts(date, config.tz);

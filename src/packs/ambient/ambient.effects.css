@@ -5,7 +5,7 @@
  * Icons are masks filled with --color-ambient, so they follow the tint.
  *
  * data-ambient-level="tint" on <html> turns motifs off; the default level
- * is "motif".
+ * is "motif". "atmosphere" adds the brief effects (Atmosphere, below).
  */
 @import "./ambient.icons.css";
 
@@ -46,6 +46,51 @@
     &:is([data-occasion-icon="flag"]) { --ambient-icon: var(--ambient-icon-flag); }
     &:is([data-occasion-icon="pi"]) { --ambient-icon: var(--ambient-icon-pi); }
     &:is([data-occasion-icon="gift"]) { --ambient-icon: var(--ambient-icon-gift); }
+  }
+
+  /* Atmosphere (ambient.atmosphere.js): one <bg-wc> layer behind the slot's
+     content, for five seconds. The slot is a stacking context so the layer
+     sits above the slot's own background and below everything in it. The
+     canvas effects draw on a clear background in the ambient colour; fog is
+     a full-frame shader, so it is a wash over the page background. */
+  [data-ambient-slot="atmosphere"] {
+    isolation: isolate;
+  }
+
+  [data-ambient-atmosphere] {
+    --bg-wc-color-bg: transparent;
+    --bg-wc-color-fg: var(--color-ambient, currentColor);
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: none;
+    pointer-events: none;
+    opacity: 0.8;
+    transition: opacity 0.6s;
+
+    @starting-style {
+      opacity: 0;
+    }
+
+    &[data-ambient-atmosphere="fog"] {
+      --bg-wc-color-bg: var(--color-background, Canvas);
+      opacity: 0.5;
+    }
+
+    &[data-ambient-ending] {
+      opacity: 0;
+    }
+
+    /* Motion the visitor did not ask for, decoration on paper or in forced
+       colours, and a subtree that opted out: no layer. */
+    @media print, (forced-colors: active), (prefers-reduced-motion: reduce) {
+      display: none;
+    }
+
+    :root[data-motion-reduced] &,
+    [data-ambient~="off"] & {
+      display: none;
+    }
   }
 
   /* An inline mark is empty and takes no space until there is an icon. */
