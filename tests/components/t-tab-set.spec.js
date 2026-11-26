@@ -11,6 +11,7 @@
  * Tests the working tree: /src is served from disk, not the build.
  */
 import { test, expect } from 'playwright/test';
+import { settle as settleTransitions } from '../support/settle.js';
 import { join } from 'node:path';
 
 const REPO = join(import.meta.dirname, '..', '..');
@@ -29,6 +30,7 @@ async function load(page, body, { dir = 'ltr', css = '' } = {}) {
       </head><body><main>${body}</main></body></html>`,
   }));
   await page.goto(url, { waitUntil: 'load' });
+  await settleTransitions(page);
   await page.waitForFunction(() => customElements.get('tab-set'));
   if (body.includes('<tab-set')) await page.waitForSelector('tab-set[data-upgraded]', { state: 'attached' });
 }

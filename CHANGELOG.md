@@ -13,7 +13,6 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - **`npm run preview`** runs the full build before serving `site/dist/pages` on port 3456; it used to skip the bundle and demo builds.
-- **Tests run on Playwright 1.65**, which supports Ubuntu 26.04, so CI's quality gate is back on `ubuntu-latest`. Twenty-three visual baselines were refreshed for the newer Chromium's text layout.
 
 ## [0.7.4] - 2026-11-20
 

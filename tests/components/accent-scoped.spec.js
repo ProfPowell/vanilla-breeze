@@ -12,6 +12,7 @@
  * Tests the working tree: /src is served from disk, not the build.
  */
 import { test, expect } from 'playwright/test';
+import { settle } from '../support/settle.js';
 import { join } from 'node:path';
 
 const REPO = join(import.meta.dirname, '..', '..');
@@ -31,6 +32,7 @@ async function load(page, htmlAttrs, body, extraHead = '') {
       <link rel="stylesheet" href="/src/main.css">${extraHead}</head><body><main>${body}</main></body></html>`,
   }));
   await page.goto(url, { waitUntil: 'load' });
+  await settle(page);
 }
 
 /** Paint a computed colour on a canvas and read back sRGB, OKLCH hue and luminance. */

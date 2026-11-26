@@ -7,6 +7,7 @@
  * runtime and VB.observe) plus the status-message dismiss module.
  */
 import { test, expect } from 'playwright/test';
+import { settle } from '../support/settle.js';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -32,6 +33,7 @@ async function load(page, body, { dir = 'ltr', lang = 'en', head = '' } = {}) {
       </head><body><main>${body}</main></body></html>`,
   }));
   await page.goto(url, { waitUntil: 'load' });
+  await settle(page);
   await page.waitForFunction(() => ['score-card', 'star-rating', 'status-wc'].every((n) => customElements.get(n)));
 }
 
