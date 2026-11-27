@@ -54,6 +54,36 @@ function discoverManifests() {
   return manifests;
 }
 
+// ── Known data-* attributes ──────────────────────────────────────────
+
+/**
+ * Sorted names of every data-* attribute mentioned in src CSS or JS.
+ * @param {string} dir
+ * @returns {string[]}
+ */
+function collectDataAttributes(dir) {
+  const names = new Set();
+  const skip = new Set(['vendor', 'htmlvalidate', 'icons', 'fonts']);
+  /** @param {string} current */
+  const walk = (current) => {
+    for (const entry of readdirSync(current)) {
+      const full = join(current, entry);
+      if (statSync(full).isDirectory()) {
+        if (!skip.has(entry)) walk(full);
+      } else if (/\.(css|js)$/.test(entry)) {
+        const source = readFileSync(full, 'utf8');
+        for (const [name] of source.matchAll(/\bdata-[a-z][a-z0-9]*(?:-[a-z0-9]+)*/g)) names.add(name);
+        // dataset.fooBar reads data-foo-bar
+        for (const [, prop] of source.matchAll(/\bdataset\.([a-zA-Z][a-zA-Z0-9]*)/g)) {
+          names.add(`data-${prop.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`);
+        }
+      }
+    }
+  };
+  walk(dir);
+  return [...names].sort();
+}
+
 // ── Schema validation ────────────────────────────────────────────────
 
 const VALID_KINDS = ['native', 'aria', 'host-api', 'data', 'class'];
@@ -527,6 +557,15 @@ const elementsCjs = generateElementsCjs(manifests);
 const elementsOut = join(SRC, 'htmlvalidate', 'elements.cjs');
 writeFileSync(elementsOut, elementsCjs);
 console.log(`✓ Generated ${relative(ROOT, elementsOut)} (${manifests.length} elements)`);
+
+// Every data-* attribute name the Vanilla Breeze source reads, for the
+// vb/known-data-attribute rule (src/htmlvalidate/rules.js): a data attribute
+// on a VB element that nothing in src/ mentions is the author's own or was
+// invented. Scanned from CSS and JS, never hand-listed.
+const knownData = collectDataAttributes(SRC);
+const knownDataOut = join(SRC, 'htmlvalidate', 'data-attributes.cjs');
+writeFileSync(knownDataOut, `// @generated from src/**/*.{css,js} by scripts/build-api-registry.js — do not edit by hand\nmodule.exports = ${JSON.stringify(knownData, null, 2)};\n`);
+console.log(`✓ Generated ${relative(ROOT, knownDataOut)} (${knownData.length} attributes)`);
 
 const registryJs = generateApiRegistry(manifests);
 const registryOut = join(ROOT, 'site', 'src', '_data', 'apiRegistry.js');
