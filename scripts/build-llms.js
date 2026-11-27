@@ -6,6 +6,8 @@
  * Output, in dist/cdn/llms/ (ships in the npm package, served at /cdn/llms/):
  *   llms.txt             index: conventions, then one line per component
  *   components/<tag>.md  attributes, structure, events, keyboard, an example
+ *   patterns/<name>.md   page-level recipes (hero, navbar, footer, pricing…)
+ *   themes.md            themes, accents and the tokens to style with
  *   attributes.md        attributes that work on any element
  *   native-elements.md   native elements with dedicated documentation
  *   llms-full.txt        all of the above in one file
@@ -22,7 +24,7 @@ import { readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync } from 'nod
 import { join, resolve, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { readLayoutNames } from './quality/layout-vocabulary.js';
-import { parseFrontmatter, firstHtmlExample, componentMarkdown, pageReference, indexText } from './lib/llms.js';
+import { parseFrontmatter, firstHtmlExample, componentMarkdown, patternMarkdown, pageReference, indexText } from './lib/llms.js';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const DOCS = join(ROOT, 'site/src/pages/docs');
@@ -122,6 +124,46 @@ for (const entry of entries) {
   }));
 }
 
+// ── Pattern files ───────────────────────────────────────────────────────────
+// One file per docs pattern page (hero, navbar, footer, pricing, contact form…):
+// the page-level recipes, with the HTML and the small CSS each one needs.
+/** @type {{ file: string, page: import('./lib/llms.js').DocPage, markdown: string }[]} */
+const patterns = [];
+for (const page of pages) {
+  if (page.layout !== 'pattern' || !page.source) continue;
+  const markdown = patternMarkdown(page.source, { page, siteUrl, version });
+  if (!markdown) continue;
+  const file = `patterns/${page.path.replace(/^\/docs\/patterns\//, '').replace(/\/$/, '').replaceAll('/', '-')}.md`;
+  patterns.push({ file, page, markdown });
+}
+
+// ── Themes ──────────────────────────────────────────────────────────────────
+const themeRegistry = (await import(pathToFileURL(join(ROOT, 'site/data/themeRegistry.js')).href)).default;
+const themesMd = (() => {
+  const tier = (/** @type {string} */ name) => themeRegistry.filter((/** @type {any} */ t) => t.tier === name);
+  const list = (/** @type {any[]} */ themes) => themes.map((t) => `- \`${t.id}\`: ${t.character}`).join('\n');
+  const standalone = [...tier('showcase'), ...tier('community')];
+  return [
+    `# Vanilla Breeze ${version}: themes\n`,
+    'A theme changes colour, type, shape and shadow for the whole page or for one element and its descendants. Pick one that suits the content; do not restyle components by hand to get a look a theme already provides.\n',
+    '## Use a theme\n',
+    '```html\n<html lang="en" data-theme="modern">\n```\n',
+    `Colour scheme is separate: \`data-mode="light"\` or \`data-mode="dark"\` on \`<html>\` forces one; without it the page follows the visitor's system setting. Every theme has both.\n`,
+    '## Core themes (in the main stylesheet)\n',
+    `${list(tier('core'))}\n`,
+    '## Accents (in the main stylesheet)\n',
+    'An accent swaps the brand hues and keeps everything else. It is a separate attribute, so it combines with a theme: `<html data-theme="modern" data-accent="forest">`.\n',
+    `${list(tier('accent'))}\n`,
+    '## Standalone themes (one extra stylesheet each)\n',
+    'Add the theme file after the main stylesheet, then set `data-theme`:\n',
+    '```html\n<link rel="stylesheet" href="node_modules/vanilla-breeze/dist/cdn/vanilla-breeze.css">\n<link rel="stylesheet" href="node_modules/vanilla-breeze/dist/cdn/themes/nord.css">\n```\n',
+    `${list(standalone)}\n`,
+    '## Your own colours and spacing\n',
+    'When a page needs a rule of its own, write it in a stylesheet with design tokens, never literal values: `var(--color-primary)`, `var(--color-surface)`, `var(--color-text-muted)`, `var(--size-m)` (sizes run `3xs` to `3xl`), `var(--radius-m)`, `var(--shadow-m)`. Tokens follow the theme and the colour scheme.\n',
+    `Documentation: ${siteUrl}/docs/themes/ and ${siteUrl}/docs/tokens/`,
+  ].join('\n') + '\n';
+})();
+
 // ── Reference files ─────────────────────────────────────────────────────────
 const attributesMd = pageReference({
   title: `Vanilla Breeze ${version}: attributes`,
@@ -154,6 +196,7 @@ const guideItems = GUIDES.map((path) => byPath.get(path)).filter((page) => page 
 const isLayout = (/** @type {any} */ e) => e.element.startsWith('layout-');
 const isExternal = (/** @type {any} */ e) => EXTERNAL.has(e.element);
 const sections = [
+  { heading: 'Page patterns (start here for a page section)', items: patterns.map(({ file, page }) => ({ name: page.title.replace(/ Patterns?$/, ''), href: file, description: page.description })) },
   { heading: 'Layouts', items: entries.filter(isLayout).map(componentItem) },
   { heading: 'Web components (need the script; children are the fallback)', items: entries.filter((e) => e.type === 'web-component').map(componentItem) },
   { heading: 'CSS-only elements', items: entries.filter((e) => e.type !== 'web-component' && !isLayout(e) && !isExternal(e)).map(componentItem) },
@@ -161,6 +204,7 @@ const sections = [
   {
     heading: 'Reference',
     items: [
+      { name: 'Themes', href: 'themes.md', description: 'Every theme and accent with a one-line character, how to load one, and the design tokens to use in your own rules' },
       { name: 'Attributes', href: 'attributes.md', description: 'Attributes that work on any element, grouped by purpose' },
       { name: 'Native elements', href: 'native-elements.md', description: 'Native elements with dedicated documentation' },
       { name: 'Everything in one file', href: 'llms-full.txt', description: 'This index, every component file and both reference files' },
@@ -171,15 +215,18 @@ const sections = [
 
 const layouts = readLayoutNames(ROOT);
 const index = (/** @type {string} */ base) => indexText({ preamble, version, layouts, base, sections });
-const full = (/** @type {string} */ base) => [index(base), ...componentFiles.values(), attributesMd, nativeMd].join('\n---\n\n');
+const full = (/** @type {string} */ base) => [index(base), ...patterns.map((p) => p.markdown), ...componentFiles.values(), themesMd, attributesMd, nativeMd].join('\n---\n\n');
 
 // ── Write ───────────────────────────────────────────────────────────────────
 rmSync(OUT, { recursive: true, force: true });
 rmSync(SITE_OUT, { recursive: true, force: true });
 mkdirSync(join(OUT, 'components'), { recursive: true });
+mkdirSync(join(OUT, 'patterns'), { recursive: true });
 mkdirSync(SITE_OUT, { recursive: true });
 
 for (const [tag, markdown] of componentFiles) writeFileSync(join(OUT, 'components', `${tag}.md`), markdown);
+for (const { file, markdown } of patterns) writeFileSync(join(OUT, file), markdown);
+writeFileSync(join(OUT, 'themes.md'), themesMd);
 writeFileSync(join(OUT, 'attributes.md'), attributesMd);
 writeFileSync(join(OUT, 'native-elements.md'), nativeMd);
 writeFileSync(join(OUT, 'llms.txt'), index(''));
@@ -192,6 +239,6 @@ writeFileSync(join(SITE_OUT, 'llms-full.txt'), full(absolute));
 const kb = (/** @type {string} */ text) => `${(Buffer.byteLength(text) / 1024).toFixed(1)} KB`;
 const withoutDescription = entries.filter((e) => !describe(e)).map((e) => e.element);
 const withoutExample = entries.filter((e) => !pageOf.get(e.element)?.example).map((e) => e.element);
-console.log(`build:llms ${version}: ${componentFiles.size} component files, llms.txt ${kb(index(''))}, llms-full.txt ${kb(full(''))}`);
+console.log(`build:llms ${version}: ${componentFiles.size} component files, ${patterns.length} pattern files, llms.txt ${kb(index(''))}, llms-full.txt ${kb(full(''))}`);
 if (withoutDescription.length) console.log(`  no description for ${withoutDescription.length}: ${withoutDescription.join(', ')}`);
 if (withoutExample.length) console.log(`  no example found for ${withoutExample.length}: ${withoutExample.join(', ')}`);

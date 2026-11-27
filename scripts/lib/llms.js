@@ -210,3 +210,54 @@ export function indexText({ preamble, version, layouts, base, sections }) {
   }
   return `${out.join('\n').trimEnd()}\n`;
 }
+
+/** @param {string} html */
+const plainText = (html) => oneLine(decodeEntities(html.replace(/<code>([\s\S]*?)<\/code>/g, '`$1`').replace(/<[^>]+>/g, '')));
+
+/**
+ * Markdown for one pattern page: each section's heading, its prose, and its
+ * code examples (HTML and the CSS that goes with it).
+ * @param {string} source - the docs page source
+ * @param {{ page: DocPage, siteUrl: string, version: string }} context
+ * @returns {string | undefined} undefined when the page has no HTML example
+ */
+export function patternMarkdown(source, { page, siteUrl, version }) {
+  const body = source.replace(/^---[\s\S]*?\n---/, '');
+  const out = [`# ${page.title}\n`];
+  if (page.description) out.push(`${oneLine(page.description)}\n`);
+  out.push(`- Documentation: ${siteUrl}${page.path}\n- Vanilla Breeze ${version}\n`);
+
+  let examples = 0;
+  const chunks = body.split(/<h2[^>]*>/).slice(1);
+  for (const chunk of chunks) {
+    const close = chunk.indexOf('</h2>');
+    if (close === -1) continue;
+    const heading = plainText(chunk.slice(0, close));
+    const rest = chunk.slice(close + 5);
+    const blocks = [];
+    for (const open of rest.matchAll(/<code-block\b([^>]*)>/g)) {
+      const language = /\blanguage="([a-z]+)"/.exec(open[1])?.[1] ?? '';
+      if (!['html', 'css', 'javascript', 'js'].includes(language)) continue;
+      const start = open.index + open[0].length;
+      const end = rest.indexOf('</code-block>', start);
+      if (end === -1) continue;
+      let code = rest.slice(start, end).replace(/^\n+|\s+$/g, '');
+      if (language === 'html' ? !code.includes('<') && code.includes('&lt;') : !/\bdata-escape\b/.test(open[1])) code = decodeEntities(code);
+      if (!code || /\{[{%]/.test(code)) continue;
+      const label = /\blabel="([^"]*)"/.exec(open[1])?.[1];
+      blocks.push({ language: language === 'js' ? 'javascript' : language, label, code });
+    }
+    const prose = [...rest.replace(/<code-block\b[\s\S]*?<\/code-block>/g, '').matchAll(/<(p|li)\b[^>]*>([\s\S]*?)<\/\1>/g)]
+      .map(([, tag, text]) => (tag === 'li' ? `- ${plainText(text)}` : plainText(text)))
+      .filter((text) => text && text !== '-');
+    if (!blocks.length && !prose.length) continue;
+    examples += blocks.filter((b) => b.language === 'html').length;
+    out.push(`## ${heading}\n`);
+    if (prose.length) out.push(`${prose.join('\n\n').replace(/\n\n- /g, '\n- ')}\n`);
+    for (const { language, label, code } of blocks) {
+      out.push(`${label ? `${label}:\n\n` : ''}\`\`\`${language}\n${code}\n\`\`\`\n`);
+    }
+  }
+  if (!examples) return undefined;
+  return `${out.join('\n').trimEnd()}\n`;
+}

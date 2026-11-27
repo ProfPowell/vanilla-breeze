@@ -3,7 +3,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseFrontmatter, firstHtmlExample, componentMarkdown, linkList, pageReference, indexText } from '../../scripts/lib/llms.js';
+import { parseFrontmatter, firstHtmlExample, componentMarkdown, patternMarkdown, linkList, pageReference, indexText } from '../../scripts/lib/llms.js';
 
 test('parseFrontmatter reads quoted and bare values and ignores the body', () => {
   const meta = parseFrontmatter('---\nlayout: element\ntitle: "tab-set"\ndescription: "Tabs: with \\"quotes\\"."\ncurrentPath: /docs/x/\n\ncrumbLabel: \'It\'\'s\'\n---\n<h1>title: no</h1>');
@@ -131,4 +131,80 @@ test('indexText fills placeholders, quotes the lead and prefixes only relative l
     '- [Quick start](https://example.test/docs/quick-start/)',
     '',
   ].join('\n'));
+});
+
+test('patternMarkdown keeps each section heading, its prose and its HTML and CSS examples', () => {
+  const source = `---
+layout: pattern
+title: "Navbar Patterns"
+---
+<section>
+  <h2>Overview</h2>
+  <layout-text>
+    <p>Uses <code>header.site</code> and <code>&lt;nav&gt;</code>.</p>
+    <ul><li>Active page via <code>aria-current</code></li></ul>
+  </layout-text>
+</section>
+<section>
+  <h2>Simple nav</h2>
+  <browser-window src="/demo.html"></browser-window>
+  <code-block language="html" label="Simple horizontal nav" data-escape><header class="site">
+  <nav class="horizontal"><ul><li><a href="/">Home</a></li></ul></nav>
+</header></code-block>
+  <code-block language="html" label="Escaped">&lt;p class="lead"&gt;Text &amp;amp; more&lt;/p&gt;</code-block>
+  <code-block language="css" label="Brand colour" data-escape>header.site { color: var(--color-primary); }</code-block>
+  <code-block language="bash" data-escape>npm i</code-block>
+</section>
+<section>
+  <h2>Empty</h2>
+</section>`;
+  const md = patternMarkdown(source, {
+    page: { path: '/docs/patterns/navigation/navbar/', title: 'Navbar Patterns', description: 'Header navigation.' },
+    siteUrl: 'https://example.test',
+    version: '1.2.3',
+  });
+  assert.equal(md, [
+    '# Navbar Patterns',
+    '',
+    'Header navigation.',
+    '',
+    '- Documentation: https://example.test/docs/patterns/navigation/navbar/',
+    '- Vanilla Breeze 1.2.3',
+    '',
+    '## Overview',
+    '',
+    'Uses `header.site` and `<nav>`.',
+    '- Active page via `aria-current`',
+    '',
+    '## Simple nav',
+    '',
+    'Simple horizontal nav:',
+    '',
+    '```html',
+    '<header class="site">',
+    '  <nav class="horizontal"><ul><li><a href="/">Home</a></li></ul></nav>',
+    '</header>',
+    '```',
+    '',
+    'Escaped:',
+    '',
+    '```html',
+    '<p class="lead">Text &amp; more</p>',
+    '```',
+    '',
+    'Brand colour:',
+    '',
+    '```css',
+    'header.site { color: var(--color-primary); }',
+    '```',
+    '',
+  ].join('\n'));
+});
+
+test('patternMarkdown returns nothing for a page with no HTML example', () => {
+  assert.equal(patternMarkdown('---\ntitle: x\n---\n<h2>Index</h2><p>Links only.</p>', {
+    page: { path: '/docs/patterns/', title: 'Patterns', description: '' },
+    siteUrl: 'https://example.test',
+    version: '1.0.0',
+  }), undefined);
 });
