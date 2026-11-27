@@ -28,6 +28,11 @@ npm run build:feed
 echo "── cf-pages-build: cdn bundles ──"
 npm run build:cdn
 
+echo "── cf-pages-build: llms docs ──"
+# After build:api (the registry) and build:cdn (which owns dist/cdn).
+# assemble-site.js copies dist/llms/*.txt to the site root and fails without it.
+npm run build:llms
+
 echo "── cf-pages-build: doc-extras ──"
 ( cd site && npm run build:doc-extras 2>/dev/null || true )
 
