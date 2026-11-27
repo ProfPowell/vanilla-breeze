@@ -11,6 +11,21 @@
 
   display: block;
   box-sizing: content-box;
+  /* A definite width, not auto. In a flex or grid parent (stack, cover, a
+     grid cell) margin-inline: auto turns off stretch, so an auto width is
+     the content width, and a <section> / <article> host is an inline-size
+     container whose content contributes nothing: the box collapsed to its
+     padding and text wrapped one character per line (vanilla-breeze-salwj).
+     `stretch` fills the parent less this box's own margin, border and
+     padding, whatever they are (an author's larger padding included) and
+     without touching box-sizing, which would also change how an author's
+     min-block-size plus padding adds up. The first line is the fallback
+     where no keyword is supported; it is exact only when the padding is
+     the gutter. */
+  inline-size: calc(100% - 2 * var(--_gutter));
+  inline-size: -moz-available;
+  inline-size: -webkit-fill-available;
+  inline-size: stretch;
   max-inline-size: var(--_max, var(--content-normal, 60rem));
   margin-inline: auto;
   padding-inline: var(--_gutter);
@@ -36,16 +51,10 @@
   &[data-layout-gutter="l"]    { --_gutter: var(--size-l); }
 
   /* Gap support - center becomes flex-column when gap is present.
-     An explicit inline-size prevents collapse when nested in a flex parent
-     (e.g. cover), where margin-inline: auto would otherwise shrink the
-     element to content width. The element fork lacked this guard, and the
-     attribute fork's `inline-size: 100%` overflowed by the padding on a
-     content-box element — subtract the gutter so the box fills exactly.
      The bare attribute gets the default m gap (it used to give none). */
   &[data-layout-gap] {
     display: flex;
     flex-direction: column;
-    inline-size: calc(100% - 2 * var(--_gutter));
     gap: var(--size-m);
   }
 

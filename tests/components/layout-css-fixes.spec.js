@@ -361,3 +361,82 @@ test.describe('data-layout-density follows rem', () => {
     expect(await style(page, '#S', 'padding-top')).toBe('30px');
   });
 });
+
+/* A centered container has margin-inline: auto, which turns off stretch in a
+ * flex or grid parent, so the item is sized by its content. A <section> or
+ * <article> is an inline-size container, so its content contributes nothing
+ * and the box collapsed to its padding: text wrapped one character per line
+ * (vanilla-breeze-salwj, found on an agent-written pricing page). */
+test.describe('center inside a flex or grid parent keeps its width', () => {
+  const HERO = (attrs, tag = 'section') => `<${tag} id="c" ${attrs}><hgroup><h1 id="h">Simple pricing for every notebook</h1><p>Start free.</p></hgroup></${tag}>`;
+  const PARENTS = [
+    ['a stack', (inner) => `<main data-layout="stack" data-layout-gap="3xl">${inner}</main>`],
+    ['a cover', (inner) => `<main data-layout="cover">${inner}</main>`],
+    ['a grid', (inner) => `<main style="display: grid">${inner}</main>`],
+    ['a block', (inner) => `<main>${inner}</main>`],
+  ];
+  const CENTERS = [
+    'data-layout="center"',
+    'data-layout="center" data-layout-max="narrow" data-layout-text',
+    'data-layout="center" data-layout-max="wide" data-layout-gutter="l"',
+    'data-layout="center" data-layout-intrinsic',
+  ];
+  for (const [label, wrap] of PARENTS) {
+    for (const attrs of CENTERS) {
+      test(`${attrs} in ${label}`, async ({ page }) => {
+        await load(page, wrap(HERO(attrs)));
+        const r = await page.evaluate(() => {
+          const c = /** @type {HTMLElement} */ (document.getElementById('c'));
+          const h = /** @type {HTMLElement} */ (document.getElementById('h'));
+          const box = c.getBoundingClientRect();
+          const cs = getComputedStyle(c);
+          return {
+            content: box.width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight),
+            left: box.left,
+            right: innerWidth - box.right,
+            lines: h.getBoundingClientRect().height / parseFloat(getComputedStyle(h).lineHeight),
+            overflow: document.documentElement.scrollWidth - innerWidth,
+            // Space the parent offers: its width less its own padding (a cover has some).
+            available: (() => {
+              const parent = /** @type {HTMLElement} */ (c.parentElement);
+              const ps = getComputedStyle(parent);
+              return parent.getBoundingClientRect().width - parseFloat(ps.paddingLeft) - parseFloat(ps.paddingRight);
+            })(),
+          };
+        });
+        const max = attrs.includes('narrow') ? 640 : attrs.includes('wide') ? 1280 : 960;
+        const gutter = attrs.includes('gutter="l"') ? 24 : 16;
+        expect(r.content).toBeCloseTo(Math.min(max, r.available - 2 * gutter), 0);
+        expect(Math.abs(r.left - r.right)).toBeLessThan(1);
+        expect(r.lines).toBeLessThan(1.5);
+        expect(r.overflow).toBeLessThanOrEqual(0);
+      });
+    }
+  }
+
+  test('a host with its own, larger padding still fits its parent', async ({ page }) => {
+    // <body data-layout="center"> with page padding, and a padded section in a stack.
+    await load(page, `<main data-layout="stack"><section id="c" data-layout="center" data-layout-text><p>Text</p></section></main>`,
+      { width: 375, css: 'body { padding: 32px; } #c { padding: 48px; }' });
+    const r = await page.evaluate(() => ({
+      right: /** @type {HTMLElement} */ (document.getElementById('c')).getBoundingClientRect().right,
+      overflow: document.documentElement.scrollWidth - innerWidth,
+    }));
+    expect(r.right).toBeLessThanOrEqual(375 - 32);
+    expect(r.overflow).toBeLessThanOrEqual(0);
+
+    await load(page, '<p>Dashboard</p>', { width: 1280, css: 'body { padding: 24px; }' });
+    await page.evaluate(() => { document.body.dataset.layout = 'center'; document.body.dataset.layoutMax = 'wide'; });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
+  });
+
+  test('<layout-center> as a flex item, and a narrow viewport, do not overflow', async ({ page }) => {
+    await load(page, `<main data-layout="stack"><layout-center id="c" data-layout-max="narrow"><p>Text that is long enough to wrap onto a second line at this width.</p></layout-center></main>`, { width: 375 });
+    const r = await page.evaluate(() => ({
+      width: /** @type {HTMLElement} */ (document.getElementById('c')).getBoundingClientRect().width,
+      overflow: document.documentElement.scrollWidth - innerWidth,
+    }));
+    expect(r.width).toBeCloseTo(375, 0);
+    expect(r.overflow).toBeLessThanOrEqual(0);
+  });
+});
