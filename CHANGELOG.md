@@ -17,6 +17,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 - **`npm run preview`** runs the full build before serving `site/dist/pages` on port 3456; it used to skip the bundle and demo builds.
 
+### Fixed
+- **`<color-picker>` no longer pulls focus back into its panel** when focus moved elsewhere (or the panel closed) in the frame after it opened.
+
+
 ## [0.7.4] - 2026-11-20
 
 0.7.4 gives the Ambient pack weather. A page names one feed URL on its own site, and the pack sets `data-weather` from it, uses its sunrise and sunset for dawn and dusk, and never shows a stale observation. Helpers for producing the feed from Open-Meteo are included.

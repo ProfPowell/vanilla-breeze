@@ -120,10 +120,24 @@ test('non-modal panel: Tab leaves it, a handled Escape is ignored, Escape from a
   await expect(trigger).toBeFocused();
 
   // No trap: focus can leave the open panel, and Escape from outside does nothing.
+  // Opening moves focus into the panel a frame later; wait for that so the
+  // next focus() is the user leaving the panel, not a race with the open.
   await trigger.click();
+  await expect(page.locator('.color-area')).toBeFocused();
   await page.locator('button[type="reset"]').focus();
   await page.keyboard.press('Escape');
   await expect(picker).toHaveAttribute('open', '');
+  await expect(page.locator('button[type="reset"]')).toBeFocused();
+});
+
+test('opening does not pull focus back from where the user moved it in the same frame', async ({ page }) => {
+  await load(page, LABELLED);
+  await page.evaluate(() => {
+    /** @type {HTMLElement} */ (document.querySelector('.color-trigger')).click();
+    /** @type {HTMLElement} */ (document.querySelector('button[type="reset"]')).focus();
+  });
+  await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+  await expect(page.locator('color-picker')).toHaveAttribute('open', '');
   await expect(page.locator('button[type="reset"]')).toBeFocused();
 });
 

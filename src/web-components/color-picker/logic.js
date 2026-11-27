@@ -714,7 +714,13 @@ class ColorPicker extends VBElement {
       window.addEventListener('resize', this.#onReposition, { passive: true });
     }
 
-    requestAnimationFrame(() => this.#colorArea.focus());
+    // Focus moves into the panel on the next frame. If the panel closed or
+    // focus went somewhere else in that frame, leave it where it is.
+    requestAnimationFrame(() => {
+      const active = document.activeElement;
+      const stillHere = !active || active === document.body || active === this.#trigger || this.#panel.contains(active);
+      if (this.#isOpen && stillHere) this.#colorArea.focus();
+    });
     this.dispatchEvent(new CustomEvent('color-picker:open', { bubbles: true }));
   }
 
