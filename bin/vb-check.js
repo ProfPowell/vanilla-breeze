@@ -66,6 +66,9 @@ const config = (/** @type {boolean} */ isDocument) => ({
   root: true,
   plugins: [plugin],
   extends: ['html-validate:recommended', ...(isDocument ? ['html-validate:document'] : []), 'vanilla-breeze:recommended'],
+  // A fragment is part of some page: it may start below <h1> and repeat a
+  // landmark the rest of the page names. Heading order inside it still counts.
+  rules: isDocument ? {} : { 'heading-level': ['error', { minInitialRank: 'any', sectioningRoots: [] }], 'unique-landmark': 'off' },
 });
 const validators = {
   document: new HtmlValidate(new StaticConfigLoader(config(true))),

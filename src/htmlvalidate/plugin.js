@@ -34,7 +34,8 @@ export default {
         'attribute-allowed-values': 'error',
         'element-permitted-content': 'error',
         'element-required-attributes': 'error',
-        'heading-level': 'error',
+        // A <dialog> heading continues the page outline; it need not restart at <h1>.
+        'heading-level': ['error', { sectioningRoots: [] }],
         'prefer-native-element': 'error',
 
         'vb/no-div': 'error',
@@ -52,6 +53,11 @@ export default {
         'doctype-style': 'off',
         'no-trailing-whitespace': 'off',
         'no-implicit-input-type': 'off',
+        'no-implicit-button-type': 'off',
+        // Idioms Vanilla Breeze documents: a named list (<ol aria-label>) and
+        // a muted background <video autoplay> in a hero.
+        'aria-label-misuse': ['error', { allowAnyNamable: true }],
+        'no-autoplay': 'off',
         'require-sri': 'off',
         'no-raw-characters': ['error', { relaxed: true }],
         'form-dup-name': ['error', { shared: ['radio', 'submit', 'button', 'reset', 'checkbox'] }],
