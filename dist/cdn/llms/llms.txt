@@ -1,0 +1,187 @@
+# Vanilla Breeze 0.7.4
+
+> Vanilla Breeze is an HTML-first component system. Native HTML elements are styled with no classes, layout comes from `data-layout` attributes, and custom elements add behaviour on top of markup that already works without JavaScript. There is no build step.
+
+## Load it
+
+```html
+<link rel="stylesheet" href="https://unpkg.com/vanilla-breeze@0.7.4/dist/cdn/vanilla-breeze.css">
+<script type="module" src="https://unpkg.com/vanilla-breeze@0.7.4/dist/cdn/vanilla-breeze.js"></script>
+```
+
+With npm: `npm install vanilla-breeze`, then `import 'vanilla-breeze/css'` and `import 'vanilla-breeze'`.
+
+## Rules for writing markup
+
+1. **Write complete native HTML first.** Use `header`, `nav`, `main`, `article`, `section`, `aside`, `footer`, headings in order, `label` with every form control. The page must be readable and usable before any Vanilla Breeze element or script is involved.
+2. **Do not use `<div>` or `<span>` for layout.** Put `data-layout` on a semantic element, or use a `layout-*` element where no semantic element fits. Layout values: `center`, `cluster`, `columns`, `cover`, `grid`, `media`, `page-stack`, `prose`, `reel`, `regions`, `sidebar`, `sidebar-left`, `sidebar-right`, `split`, `stack`, `switcher`.
+3. **Do not write inline styles or utility classes.** Native elements are already styled. Spacing, alignment and variants are set with the `data-*` attributes each layout or component documents.
+4. **Attributes carry state and configuration; classes do not.** Use the `data-*` attributes listed for a component, with the values listed. Never invent a tag, an attribute or a value: if it is not in these files, it does not exist.
+5. **Custom elements wrap working markup.** A component's children are its fallback: `<tab-set>` and `<accordion-wc>` wrap `<details>`, `<form-field>` wraps a `label` and an `input`. Never leave a component empty and expect script to fill it.
+6. **Use `<form-field>` for form controls and `<icon-wc name="…">` for icons**, not hand-written wrappers or inline SVG.
+7. **Theme with attributes on `<html>`**: `data-theme="name"` selects a theme, `data-mode="light"` or `"dark"` forces a colour scheme. Colours, spacing and type come from design tokens (CSS custom properties); do not hard-code values.
+
+## How to use these files
+
+Start from the component list below and open the file for each component you plan to use; it has the allowed attributes, values, child structure, events and keyboard behaviour, plus an example. `attributes.md` lists the attributes that work on any element, `native-elements.md` the native elements with dedicated documentation, and `llms-full.txt` holds everything in one file.
+
+## Layouts
+
+- [<layout-badge>](components/layout-badge.md): Small inline status or count badge.
+- [<layout-canvas>](components/layout-canvas.md): Elevated content surface (a panel with radius, shadow and a 1px edge: a hairline on a plain page, transparent under data-backdrop, CanvasText in forced colours).
+- [<layout-card>](components/layout-card.md): Card surface.
+- [<layout-center>](components/layout-center.md): Horizontally centered, max-width-constrained container with side gutters.
+- [<layout-cluster>](components/layout-cluster.md): Horizontal wrapping flex row for groups of short items — tags, buttons, metadata.
+- [<layout-columns>](components/layout-columns.md): Multi-column text flow with a readable measure, vertical rhythm (between direct children), column rules and break hygiene.
+- [<layout-cover>](components/layout-cover.md): Full-height (min-block-size) flex column that vertically centers a principal element (data-layout-principal; a sole child auto-centers), with header/footer or cover-top/-bottom children pinned to the edges.
+- [<layout-grid>](components/layout-grid.md): Auto-fit responsive grid: as many columns as fit the minimum width, then wrap.
+- [<layout-imposter>](components/layout-imposter.md): Positioned overlay centred over (or pinned to an edge or corner of) its containing block, logically (mirrored in RTL).
+- [<layout-reel>](components/layout-reel.md): Horizontal scrolling strip with proximity snap points, an optional scrollbar and edge hints.
+- [<layout-sidebar>](components/layout-sidebar.md): Two-column layout: a fixed-basis sidebar beside a flexible content column that wraps below it when there is no room.
+- [<layout-stack>](components/layout-stack.md): Vertical flex stack with a consistent gap between children.
+- [<layout-switcher>](components/layout-switcher.md): Flex row that switches to a column once the switcher's own width drops below the threshold (a flex-basis formula, no media or container query).
+- [<layout-text>](components/layout-text.md): Long-form reading container: a readable measure plus vertical rhythm between direct children.
+
+## Web components (need the script; children are the fallback)
+
+- [<accordion-wc>](components/accordion-wc.md): Accordion built on native details/summary with exclusive mode and transitions
+- [<activity-feed>](components/activity-feed.md): WAI-ARIA Feed timeline of user actions.
+- [<ai-chat>](components/ai-chat.md): On-device chat via Chrome's LanguageModel API.
+- [<ai-summary>](components/ai-summary.md): Summarise wrapped content via Chrome's Summarizer API, with optional inline endpoint fallback and external deep-link fallback.
+- [<analytics-panel>](components/analytics-panel.md): Visitor-facing view of what analytics is doing on this page: whether it runs, why it is off, and which fields an event carries, with a Pause / Resume control.
+- [<audio-player>](components/audio-player.md): Platform audio player web component
+- [<audio-visualizer>](components/audio-visualizer.md): Canvas-based audio visualization companion
+- [<author-index>](components/author-index.md): Author-grouped view of site content.
+- [<brand-mark>](components/brand-mark.md): Brand/logo display.
+- [<bread-crumb>](components/bread-crumb.md): Hierarchical navigation trail.
+- [<calendar-wc>](components/calendar-wc.md): Standalone calendar display with rich cell content
+- [<card-list>](components/card-list.md): Template-based list rendering with safe data binding: property paths only, sanitized HTML, and URL-checked attribute bindings
+- [<carousel-wc>](components/carousel-wc.md): Scrolling carousel with autoplay, looping, indicators, and view transitions
+- [<change-set>](components/change-set.md): Interactive change tracking group: a caption from author/datetime plus Tracking / Final / Original toggles over its <ins> / <del> descendants
+- [<chart-wc>](components/chart-wc.md): SVG chart component with progressive enhancement: semantic table → CSS chart → SVG chart.
+- [<chat-input>](components/chat-input.md): Form-associated chat input with auto-growing textarea; submits its form, or fires chat-input:send when standalone
+- [<chat-window>](components/chat-window.md): Light DOM orchestrator for chat UI
+- [<color-picker>](components/color-picker.md): Form-associated color picker with saturation/lightness area, hue slider, HEX/RGB/HSL/OKLCH inputs, preset swatches, Copy and EyeDropper
+- [<combo-box>](components/combo-box.md): Autocomplete combobox with filtering, keyboard navigation, and native form association
+- [<command-group>](components/command-group.md): A labelled group of <command-item> elements inside a <command-palette>.
+- [<command-item>](components/command-item.md): One command inside a <command-palette>, optionally within a <command-group>.
+- [<command-palette>](components/command-palette.md): Command palette / Cmd+K launcher (modal dialog, combobox + listbox)
+- [<comment-box>](components/comment-box.md): Form-associated comment form composing <markdown-editor> + Submit / Cancel buttons.
+- [<comment-thread>](components/comment-thread.md): Persistent threaded-discussion container.
+- [<comment-wc>](components/comment-wc.md): EXPERIMENTAL / STUB: inline "Add comment" action for selection-menu.
+- [<compare-surface>](components/compare-surface.md): Before/after comparison slider: two overlaid children with a draggable, keyboard-operable divider (side by side without JS)
+- [<consent-banner>](components/consent-banner.md): Cookie consent banner with granular category controls and persistence
+- [<content-lens>](components/content-lens.md): Universal switchable host for VB lens components; JS API: activeLens (read-only), setLens(name)
+- [<content-swap>](components/content-swap.md): Two-face content toggle with accessible state management.
+- [<context-menu>](components/context-menu.md): Right-click (and Shift+F10 / ContextMenu key) menu with keyboard navigation and shortcut bindings
+- [<data-table>](components/data-table.md): Enhanced HTML table with sorting, filtering, pagination, row expansion, and selection
+- [<date-picker>](components/date-picker.md): Form-associated calendar date picker with combobox text entry
+- [<day-view>](components/day-view.md): Hour-grid schedule for a single day, using hour-view and calendar-event children
+- [<diagram-wc>](components/diagram-wc.md): Declarative diagram renderer — wraps Mermaid (v1) with VB token-driven theming, lazy load, and HTML-first authoring via fenced code blocks
+- [<drag-surface>](components/drag-surface.md): Accessible drag-and-drop reorder surface with keyboard reorder, optional single-pointer move controls, live announcements and cross-surface transfer
+- [<drop-down>](components/drop-down.md): Accessible dropdown: an APG menu button for actions, or (with hover) an APG disclosure for navigation links
+- [<emoji-picker>](components/emoji-picker.md): Accessible emoji picker with search, a category toolbar, a listbox of emoji, and undoable insertion into a target field
+- [<flow-diagram>](components/flow-diagram.md): User flow and sequence visualization — progressively enhances an ol into a labelled figure holding a nested list drawn as a connected node graph with actions, decisions, and branches
+- [<foot-note>](components/foot-note.md): One footnote, written inline where its reference mark belongs.
+- [<foot-notes>](components/foot-notes.md): Progressive enhancement for footnotes: collects the <foot-note> elements that precede it into a labelled doc-endnotes list (or margin sidenotes), with doc-noteref references, doc-backlink return links, shared notes for repeat citations and a hover/focus preview.
+- [<form-field>](components/form-field.md): Accessible form field: binds its control (native or form-associated custom element), times validation, shows hint/error outputs and wires aria-describedby / aria-invalid
+- [<geo-map>](components/geo-map.md): A zero-dependency map component using OpenStreetMap / CARTO raster tiles or your own tile proxy, with a lazy-loaded interactive pan / zoom mode.
+- [<glossary-index>](components/glossary-index.md): Interactive glossary with search filtering and scroll-spy letter tracking; copyable term permalinks are opt-in
+- [<glossary-wc>](components/glossary-wc.md): Searchable, categorized, cross-linked glossary that progressively enhances a definition list
+- [<heading-links>](components/heading-links.md): Add permalink anchors to headings; activating one follows the fragment and copies the section URL
+- [<highlight-wc>](components/highlight-wc.md): Text highlighting with localStorage persistence.
+- [<icon-wc>](components/icon-wc.md): Inline SVG icon: fetches one sanitized SVG file per icon from <base-path>/<set>/<name>.svg, sized by preset and labelled for assistive tech
+- [<image-gallery>](components/image-gallery.md): Thumbnail grid with lightbox viewer.
+- [<image-map>](components/image-map.md): Responsive image map: <map-area> children define percentage-coordinate hotspots (rect, circle, poly) over a child <img>, with an SVG hit-testing overlay, keyboard-focusable anchors, and rich HTML tooltips.
+- [<include-file>](components/include-file.md): Fetch a same-origin HTML fragment, sanitize it, and insert it into the page
+- [<markdown-editor>](components/markdown-editor.md): Side-by-side markdown editor with live preview.
+- [<markdown-viewer>](components/markdown-viewer.md): Render markdown content with progressive enhancement.
+- [<nav-bar>](components/nav-bar.md): Top-level site/app navigation primitive.
+- [<note-wc>](components/note-wc.md): Private reader notes on highlights: a note action inside selection-menu, a page-level button with for="id", and the note panel itself.
+- [<notification-wc>](components/notification-wc.md): Dual-mode notification component: dismissible banner or bell-icon panel with history + read tracking.
+- [<page-info>](components/page-info.md): Document provenance disclosure panel
+- [<page-stats>](components/page-stats.md): Lightweight reading statistics
+- [<page-toc>](components/page-toc.md): Table of contents with scroll-spy
+- [<page-tools>](components/page-tools.md): Configurable toolbar for page-level utilities
+- [<page-tour>](components/page-tour.md): Progressive-enhancement guided tour.
+- [<pager-wc>](components/pager-wc.md): Standalone pagination controls element targeting any [data-paged] container.
+- [<poll-wc>](components/poll-wc.md): Voting + live results.
+- [<pop-over>](components/pop-over.md): General-purpose popover container with CSS Anchor Positioning.
+- [<popularity-index>](components/popularity-index.md): Aggregated most-visited lens.
+- [<print-page>](components/print-page.md): Print button with optional raw-mode toggle
+- [<progress-tracker>](components/progress-tracker.md): Multi-step progress bar for wizards / checkout / onboarding flows.
+- [<qr-code>](components/qr-code.md): QR code generator: black-on-white canvas with quiet zone, author children kept as the caption
+- [<reaction-bar>](components/reaction-bar.md): GitHub-style emoji reaction picker.
+- [<reader-view>](components/reader-view.md): Immersive reading shell with scroll and paged modes.
+- [<reading-progress>](components/reading-progress.md): Decorative fixed-position scroll progress bar (CSS scroll-timeline for the document, JS for data-for targets).
+- [<recently-visited>](components/recently-visited.md): Device-local reader history lens (localStorage, never sent or aggregated).
+- [<score-card>](components/score-card.md): Single KPI tile for dashboards: title, headline value, optional change indicator, sparkline (composed with <chart-wc>), description, and icon.
+- [<selection-menu>](components/selection-menu.md): Floating toolbar that appears on text selection (pointer or keyboard).
+- [<settings-panel>](components/settings-panel.md): Compact, non-modal site settings panel (Appearance, Accessibility, Layout, Effects, Environment, System) opened from a gear trigger; shares state with theme-picker through ThemeManager, VBStore and window events
+- [<share-wc>](components/share-wc.md): Social share component: native Web Share button (falls back to copying the link), platform buttons, or enhanced slotted links; inside selection-menu, shares or copies the selected text as a quote.
+- [<short-cuts>](components/short-cuts.md): Keyboard shortcuts help overlay: a modal dialog listing the command registry ([data-command][data-shortcut]) and data-hotkey actions, toggled by ? (remappable or off) or show()/toggle().
+- [<site-index>](components/site-index.md): Interactive keyword index: one filter box, an A–Z jump strip, a term count per letter and an optional display limit over a hand-authored (or src JSON) index
+- [<site-map>](components/site-map.md): Dual-mode sitemap: a lightweight static-sitemap enhancer (nav-enhance) or an interactive information-architecture tree with badges and an org-chart visual mode (ia-tree)
+- [<site-search>](components/site-search.md): Pagefind-powered site search in a native modal <dialog>: combobox input, listbox of results, live result count
+- [<slide-accept>](components/slide-accept.md): Slide-to-confirm interaction.
+- [<social-embed>](components/social-embed.md): Privacy-first social post embed.
+- [<social-feed>](components/social-feed.md): One stream of posts from the site's Bluesky, Mastodon and GitHub accounts in a scrolling region.
+- [<social-links>](components/social-links.md): A row of profile links.
+- [<split-surface>](components/split-surface.md): Resizable split panel with drag, keyboard, collapse, and persistence support.
+- [<star-rating>](components/star-rating.md): Form-associated star rating web component: generates a fieldset[data-rating] of radios (CSS layer) opted into the rating effect (clear, rating:change), and submits one name=value entry via ElementInternals.
+- [<status-wc>](components/status-wc.md): Visual state indicator.
+- [<stepper-wc>](components/stepper-wc.md): Stepper for values <input type="number"> + data-stepper cannot reach: formatted units, currency, time, token-snap scales, discrete enums.
+- [<tab-set>](components/tab-set.md): Tab container built on native details/summary with keyboard navigation and view transitions
+- [<text-reader>](components/text-reader.md): Text-to-speech reader with word-level highlighting (Web Speech API + CSS Custom Highlight API)
+- [<theme-picker>](components/theme-picker.md): Theme selection: color mode and theme (a select of every theme, or a short list as swatches), as a popover or inline panel
+- [<time-index>](components/time-index.md): Interactive changelog/timeline component: relative dates, an order select, a version filter and a recently-updated-pages feed
+- [<time-picker>](components/time-picker.md): Form-associated time input with combobox text entry and a spinbutton popup
+- [<toast-msg>](components/toast-msg.md): Toast notification stack: one polite live region, queued toasts beyond max, auto-dismiss that pauses on hover/focus, localisable labels
+- [<tool-tip>](components/tool-tip.md): Tooltip or hover card composed on <pop-over>: hover/focus with delay, interestfor where available, Escape and outside dismiss
+- [<topic-map>](components/topic-map.md): SKOS-aware hierarchical view of site concepts.
+- [<trust-filter>](components/trust-filter.md): Provenance lens: filter pages.json by vb:provenance, vb:review, vb:status and whether a signature is declared (not verified).
+- [<version-switcher>](components/version-switcher.md): Surface and switch between versions of a page over time.
+- [<video-player>](components/video-player.md): Platform video player: custom, keyboard-accessible controls (shadow DOM) over a light-DOM <video>, with optional playlist
+- [<watch-wc>](components/watch-wc.md): Drop-in wrapper for the data-watch-page button.
+- [<week-view>](components/week-view.md): Week time grid composing day-view-style columns in a semantic table.
+- [<youtube-player>](components/youtube-player.md): YouTube embed behind a facade: a thumbnail (or local poster) and one play button; the youtube-nocookie.com iframe loads only when the reader presses play.
+
+## CSS-only elements
+
+- [<calendar-event>](components/calendar-event.md): CSS-only event block for <day-view>, <week-view> and the <calendar-wc> day detail: category colour, inline-start accent bar, half-hour placement.
+- [<chat-bubble>](components/chat-bubble.md): Content wrapper for chat messages with typography, code block styling, and CSS-only typing dots animation.
+- [<chat-message>](components/chat-message.md): A single chat turn with role-based alignment, optional avatar support, sender metadata, and message state indicators.
+- [<chat-thread>](components/chat-thread.md): Scrollable message container for chat conversations.
+- [<dl>](components/dl.md): The description list element represents a collection of term-description pairs, such as glossaries, metadata, or key-value data.
+- [<dl-item>](components/dl-item.md): Groups a dt/dd pair within a description list for built-in layout variants.
+- [<fab-stack>](components/fab-stack.md): Fixed action button stack.
+- [<hour-view>](components/hour-view.md): CSS-only container for calendar events within a single hour slot.
+- [<loading-spinner>](components/loading-spinner.md): CSS-only animated loading spinner.
+- [<mobile-menu>](components/mobile-menu.md): Breakpoint observer for a header menu.
+- [<site-legal>](components/site-legal.md): Legal and compliance content container for copyright, license, privacy, and terms links
+- [<site-tools>](components/site-tools.md): Site-wide utility container for header and footer actions like search, theme picker, and settings
+- [<status-message>](components/status-message.md): Inline notification banners for important messages.
+- [<table>](components/table.md): Tables display tabular data with full-width layout, collapsed borders, tabular numerals, and automatic row hover states.
+- [<text-divider>](components/text-divider.md): Horizontal divider with centered text.
+- [<user-avatar>](components/user-avatar.md): CSS-only avatar shell: a photo <img>, an initials / icon fallback stacked under it, and an optional presence dot.
+
+## Separate packages (not in the bundle)
+
+- [<browser-window>](components/browser-window.md): Safari-style browser window frame for demos and tutorials.
+- [<code-block>](components/code-block.md): Code block with syntax highlighting, copy button, line numbers and themes.
+
+## Reference
+
+- [Attributes](attributes.md): Attributes that work on any element, grouped by purpose
+- [Native elements](native-elements.md): Native elements with dedicated documentation
+- [Everything in one file](llms-full.txt): This index, every component file and both reference files
+
+## Guides
+
+- [Quick Start](https://vanilla-breeze.com/docs/quick-start/): One HTML file, ten minutes. Write plain semantic HTML, then add Vanilla Breeze one optional layer at a time: styles, layout attributes, components and a theme. No utility classes, no wrapper divs, no build step.
+- [Principles](https://vanilla-breeze.com/docs/principles/): What Vanilla Breeze commits to: HTML as the atom, one grammar across HTML, CSS and JavaScript, optional layers, themeable presentation, minimal execution, overridable defaults and the web for all.
+- [Semantic Layouts](https://vanilla-breeze.com/docs/semantic-layouts/): Put a layout on the element you already have with data-layout, and skip the wrapper. The rules are the same as the layout elements, with a few differences that come from the host element.
+- [Layouts Overview](https://vanilla-breeze.com/docs/layouts/): How Vanilla Breeze arranges things on a page: a small set of layouts that each do one job, respond to the space they are given and nest inside each other.
+- [Themes](https://vanilla-breeze.com/docs/themes/): Color themes and personality themes for Vanilla Breeze. Customize your design with a single attribute.
+- [Design Tokens](https://vanilla-breeze.com/docs/tokens/): CSS custom properties for colors, spacing, typography, borders, shadows, and motion. Consistent values for your entire design system.
+- [Accessibility Overview](https://vanilla-breeze.com/docs/accessibility/): What Vanilla Breeze does for accessibility, what you still provide, the standard it aims at and the checks that hold it there.
