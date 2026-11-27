@@ -19,6 +19,16 @@ With npm: `npm install vanilla-breeze`, then `import 'vanilla-breeze/css'` and `
 6. **Use `<form-field>` for form controls and `<icon-wc name="…">` for icons**, not hand-written wrappers or inline SVG.
 7. **Theme with attributes on `<html>`**: `data-theme="name"` selects a theme, `data-mode="light"` or `"dark"` forces a colour scheme. Colours, spacing and type come from design tokens (CSS custom properties); do not hard-code values.
 
+## Check your work
+
+Run the checker on every file you write or change, and fix everything it reports before you finish:
+
+```bash
+npx vb-check page.html
+```
+
+It needs `html-validate` installed beside `vanilla-breeze` (`npm install --save-dev html-validate`). It lists each problem with file, line, rule and the fix: unknown elements, attribute values that do not exist, `<div>` used for layout, inline styles, layout attributes no layout reads. An error means the markup is wrong; a warning asks you to confirm an attribute or class is intentional.
+
 ## How to use these files
 
 Start from the component list below and open the file for each component you plan to use; it has the allowed attributes, values, child structure, events and keyboard behaviour, plus an example. `attributes.md` lists the attributes that work on any element, `native-elements.md` the native elements with dedicated documentation, and `llms-full.txt` holds everything in one file.

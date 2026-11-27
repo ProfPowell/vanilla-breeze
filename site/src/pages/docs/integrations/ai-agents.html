@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: AI Agents
-description: "Machine-readable documentation for coding agents: llms.txt, one Markdown file per component and a single full-text file, generated from the same manifests as these docs."
+description: "Machine-readable documentation for coding agents (llms.txt, one Markdown file per component) and vb-check, a checker for Vanilla Breeze markup, all generated from the same manifests as these docs."
 currentSection: resources
 currentPath: /docs/integrations/ai-agents/
 ---
@@ -14,7 +14,7 @@ currentPath: /docs/integrations/ai-agents/
 </nav>
 
 <h1>AI Agents</h1>
-<p class="lead">Documentation written for a coding agent to read before it writes Vanilla Breeze markup: a short index, one Markdown file per component and a single full-text file.</p>
+<p class="lead">Documentation written for a coding agent to read before it writes Vanilla Breeze markup, and <code>vb-check</code>, a command that tells it (or you) what it got wrong.</p>
 
 <section>
   <h2>What is published</h2>
@@ -69,11 +69,96 @@ node_modules/vanilla-breeze/dist/cdn/llms/components/tab-set.md</code-block>
 </section>
 
 <section>
+  <h2>vb-check</h2>
+  <layout-text>
+    <p><code>vb-check</code> validates HTML against the same component manifests: every element, attribute and allowed value, plus the conventions a manifest cannot express. It needs no configuration file. It ships with the package and uses <a href="https://html-validate.org/">html-validate</a>, an optional peer dependency you install beside it.</p>
+  </layout-text>
+  <code-block language="bash" label="Install and run" data-escape>npm install vanilla-breeze
+npm install --save-dev html-validate
+
+npx vb-check page.html
+npx vb-check src/ --quiet    # a directory, errors only
+npx vb-check page.html --json</code-block>
+  <code-block language="text" label="Output" data-escape>page.html:5:4  error  <div> wraps a single <section>: remove the <div> and move its attributes to the <section>  [vb/no-div]
+page.html:8:22  error  Attribute "data-layout" has invalid value "stak"  [attribute-allowed-values]
+page.html:11:42  warning  data-zoom is not read by Vanilla Breeze: check the attributes documented for <tab-set>, or ignore this if it is your own hook  [vb/known-data-attribute]
+
+1 file checked: 2 errors, 1 warning</code-block>
+  <layout-text>
+    <p>The exit code is 1 when there are errors, 0 otherwise; warnings alone do not fail. A file that contains <code>&lt;html&gt;</code> is also checked as a whole document (language, title, landmarks).</p>
+  </layout-text>
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Rule</th>
+        <th scope="col">Level</th>
+        <th scope="col">Reports</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>no-unknown-elements</code></td>
+        <td>Error</td>
+        <td>A custom element that Vanilla Breeze does not define.</td>
+      </tr>
+      <tr>
+        <td><code>attribute-allowed-values</code></td>
+        <td>Error</td>
+        <td>A value an attribute does not accept, on components and on <code>data-layout</code> attributes anywhere.</td>
+      </tr>
+      <tr>
+        <td><code>vb/layout-attribute</code></td>
+        <td>Error</td>
+        <td>A <code>data-layout-*</code> attribute that no layout defines.</td>
+      </tr>
+      <tr>
+        <td><code>vb/no-div</code></td>
+        <td>Error</td>
+        <td>A <code>&lt;div&gt;</code>, with the semantic element or layout to use. The group <code>&lt;div&gt;</code> inside <code>&lt;dl&gt;</code> is allowed.</td>
+      </tr>
+      <tr>
+        <td><code>vb/no-inline-style</code></td>
+        <td>Error</td>
+        <td>A <code>style</code> attribute, unless it only sets a documented layout custom property such as <code>--layout-min</code>.</td>
+      </tr>
+      <tr>
+        <td><code>vb/icon-wc-required</code></td>
+        <td>Error</td>
+        <td>An inline <code>&lt;svg&gt;</code> with neither <code>role="img"</code> nor <code>aria-hidden="true"</code>.</td>
+      </tr>
+      <tr>
+        <td><code>vb/known-data-attribute</code></td>
+        <td>Warning</td>
+        <td>A <code>data-*</code> attribute on a Vanilla Breeze element that nothing in Vanilla Breeze reads.</td>
+      </tr>
+      <tr>
+        <td><code>vb/no-class-for-state</code></td>
+        <td>Warning</td>
+        <td>A state word used as a class, such as <code>class="active"</code>.</td>
+      </tr>
+      <tr>
+        <td><code>vb/use-form-field</code></td>
+        <td>Warning</td>
+        <td>A form control with validation outside <code>&lt;form-field&gt;</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+  <layout-text>
+    <p>Heading order, permitted content and the rest of html-validate's recommended rules run too. If you already use html-validate, load the same rules from your own configuration:</p>
+  </layout-text>
+  <code-block language="json" label=".htmlvalidate.json" data-escape>{
+  "plugins": ["vanilla-breeze/html-validate"],
+  "extends": ["html-validate:recommended", "vanilla-breeze:recommended"]
+}</code-block>
+</section>
+
+<section>
   <h2>Prompting an agent</h2>
   <layout-text>
     <p>Point the agent at the index and tell it to read the component files it needs before writing anything. The index tells it not to invent tags, attributes or values.</p>
   </layout-text>
   <code-block language="text" label="Example instruction" data-escape>Build this page with Vanilla Breeze. First read
 node_modules/vanilla-breeze/dist/cdn/llms/llms.txt and follow its rules,
-then read the component file for each component you use.</code-block>
+then read the component file for each component you use. When you are
+done, run npx vb-check on the files you wrote and fix what it reports.</code-block>
 </section>
