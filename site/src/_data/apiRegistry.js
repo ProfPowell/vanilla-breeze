@@ -1086,6 +1086,7 @@ export default {
   "browser-window": {
     "element": "browser-window",
     "type": "custom-element",
+    "description": "Safari-style browser window frame for demos and tutorials. A separate package, @profpowell/browser-window, not part of the Vanilla Breeze bundle: load it yourself. Docs: https://profpowell.github.io/browser-window/",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -1253,6 +1254,7 @@ export default {
   "code-block": {
     "element": "code-block",
     "type": "custom-element",
+    "description": "Code block with syntax highlighting, copy button, line numbers and themes. A separate package, @profpowell/code-block, not part of the Vanilla Breeze bundle: load it yourself. For plain code, native <pre><code> is already styled. Docs: https://profpowell.github.io/code-block/",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -1275,24 +1277,6 @@ export default {
       {
         "name": "label",
         "kind": "host-api",
-        "purpose": "config",
-        "type": "string"
-      }
-    ]
-  },
-  "day-schedule": {
-    "element": "day-schedule",
-    "type": "custom-element",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
-    "attributes": [
-      {
-        "name": "data-date",
-        "kind": "data",
         "purpose": "config",
         "type": "string"
       }
@@ -5095,6 +5079,7 @@ export default {
   "command-group": {
     "element": "command-group",
     "type": "web-component",
+    "description": "A labelled group of <command-item> elements inside a <command-palette>.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -5113,6 +5098,7 @@ export default {
   "command-item": {
     "element": "command-item",
     "type": "web-component",
+    "description": "One command inside a <command-palette>, optionally within a <command-group>.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -8557,6 +8543,7 @@ export default {
   "foot-note": {
     "element": "foot-note",
     "type": "web-component",
+    "description": "One footnote, written inline where its reference mark belongs. Collected and numbered by a <foot-notes> element later in the page.",
     "htmlvalidate": {
       "flow": true,
       "phrasing": true,

@@ -369,14 +369,6 @@ module.exports = {
     permittedContent: ["@flow"]
   },
 
-  "day-schedule": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "data-date": {}
-    }
-  },
-
   "hour-view": {
     flow: true,
     permittedContent: ["@flow"],
