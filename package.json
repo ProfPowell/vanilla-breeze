@@ -42,7 +42,10 @@
     "./ambient-head": "./dist/cdn/packs/ambient.head.js",
     "./ambient-resolve": "./dist/cdn/packs/ambient.resolve.js",
     "./ambient-atmosphere": "./dist/cdn/packs/ambient.atmosphere.js",
-    "./emoji-extended": "./dist/cdn/emoji-extended.js"
+    "./emoji-extended": "./dist/cdn/emoji-extended.js",
+    "./llms.txt": "./dist/cdn/llms/llms.txt",
+    "./llms-full.txt": "./dist/cdn/llms/llms-full.txt",
+    "./llms/*": "./dist/cdn/llms/*"
   },
   "files": [
     "dist/cdn/",
@@ -71,7 +74,7 @@
     "prebuild": "npm run clean",
     "dev": "cd site && npm run dev",
     "dev:functions": "npx wrangler pages dev site/dist/pages --port 8788 --kv VB_KV --d1 vanilla_breeze_analytics --compatibility-date 2026-04-17",
-    "build": "npm run build:api && npm run -s build:cem && npm run check:nav && node scripts/generate-page-dates.mjs && npm run build:feed && npm run build:cdn && npm run build:demos && cd site && npm run build && cd .. && npm run build:site-assets && cd site && node scripts/setup-preview.js",
+    "build": "npm run build:api && npm run -s build:cem && npm run check:nav && node scripts/generate-page-dates.mjs && npm run build:feed && npm run build:cdn && npm run build:llms && npm run build:demos && cd site && npm run build && cd .. && npm run build:site-assets && cd site && node scripts/setup-preview.js",
     "build:site-assets": "node scripts/build-demos.js && node scripts/assemble-site.js && node scripts/generate-sitemap.js",
     "audit:deploy": "node scripts/audit-deploy-parity.js",
     "build:dev": "cd site && npm run build",
@@ -80,6 +83,7 @@
     "check:links": "node scripts/check-links.mjs",
     "check:nav": "node scripts/check-nav-drift.js",
     "build:feed": "node scripts/build-feed.js",
+    "build:llms": "node scripts/build-llms.js",
     "build:cdn": "node scripts/build-cdn.js && npm run gen:icon-css",
     "gen:icon-css": "node scripts/gen-icon-css.js",
     "build:demos": "node scripts/build-demos.js",
@@ -121,7 +125,7 @@
     "test:all": "npm test && npx playwright test",
     "budget": "node scripts/bundle-budget.js",
     "budget:themes": "node scripts/theme-budget.js",
-    "prepublishOnly": "npm run -s build:cem && npm run build:cdn",
+    "prepublishOnly": "npm run -s build:cem && npm run build:cdn && npm run build:llms",
     "generate:shape-edges": "node scripts/generate-shape-edges.mjs",
     "check:shape-edges": "node scripts/generate-shape-edges.mjs --check"
   },

@@ -83,6 +83,11 @@ clearSymlinksIn(join(pagesDir, 'docs', 'patterns'));
 // CDN bundles (referenced as /cdn/… in generated HTML)
 copyDir('dist/cdn', join(pagesDir, 'cdn'));
 
+// LLM-facing docs at the site root (scripts/build-llms.js); the per-component
+// files they link to are under /cdn/llms/ with the rest of dist/cdn.
+copyFile('dist/llms/llms.txt', join(pagesDir, 'llms.txt'));
+copyFile('dist/llms/llms-full.txt', join(pagesDir, 'llms-full.txt'));
+
 // Icons under /src/icons/…
 copyDir('src/icons', join(pagesDir, 'src', 'icons'));
 
