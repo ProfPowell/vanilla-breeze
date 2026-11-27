@@ -368,7 +368,7 @@ test.describe('data-layout-density follows rem', () => {
  * and the box collapsed to its padding: text wrapped one character per line
  * (vanilla-breeze-salwj, found on an agent-written pricing page). */
 test.describe('center inside a flex or grid parent keeps its width', () => {
-  const HERO = (attrs, tag = 'section') => `<${tag} id="c" ${attrs}><hgroup><h1 id="h">Simple pricing for every notebook</h1><p>Start free.</p></hgroup></${tag}>`;
+  const HERO = (attrs, tag = 'section') => `<${tag} id="c" ${attrs}><hgroup><h1 id="h">Simple pricing</h1><p>Start free.</p></hgroup></${tag}>`;
   const PARENTS = [
     ['a stack', (inner) => `<main data-layout="stack" data-layout-gap="3xl">${inner}</main>`],
     ['a cover', (inner) => `<main data-layout="cover">${inner}</main>`],
@@ -408,6 +408,8 @@ test.describe('center inside a flex or grid parent keeps its width', () => {
         const gutter = attrs.includes('gutter="l"') ? 24 : 16;
         expect(r.content).toBeCloseTo(Math.min(max, r.available - 2 * gutter), 0);
         expect(Math.abs(r.left - r.right)).toBeLessThan(1);
+        // Two words: one line at any of these widths in any font (the collapse
+        // put one character on each line).
         expect(r.lines).toBeLessThan(1.5);
         expect(r.overflow).toBeLessThanOrEqual(0);
       });
