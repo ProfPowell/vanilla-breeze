@@ -267,3 +267,40 @@ test.describe('footer', () => {
     expect(r).toEqual({ h: 'static', f: 'static', fab: 'none', float: 'none', btt: 'none' });
   });
 });
+
+/* footer.site nav zeroes the inline link padding and tightens the gap for
+ * stacked link lists. In a horizontal nav that left the links touching
+ * ("About Pricing Support"), which is what the Simple Footer pattern renders
+ * (vanilla-breeze-mdh0u). Widths are measured, not text: font-independent. */
+test.describe('footer.site horizontal nav', () => {
+  const NAV = (cls) => `<nav class="${cls}" aria-label="Footer navigation"><ul>
+      <li><a href="/a/">About</a></li><li><a href="/b/">Pricing</a></li><li><a href="/c/">Support</a></li>
+    </ul></nav>`;
+  const gaps = (page, sel) => page.evaluate((s) => {
+    const links = [...document.querySelectorAll(`${s} a`)].map((a) => a.getBoundingClientRect());
+    return links.slice(1).map((r, i) => ({ inline: r.left - links[i].right, block: r.top - links[i].bottom }));
+  }, sel);
+
+  test('links in a horizontal footer nav are spaced like the header nav', async ({ page }) => {
+    await page.setViewportSize({ width: 1000, height: 600 });
+    await load(page, `<header class="site">${NAV('horizontal')}</header>
+      <footer class="site" data-layout="stack" data-layout-gap="m">
+        <layout-cluster data-layout-justify="between"><a href="/">Brand</a>${NAV('horizontal')}</layout-cluster>
+      </footer>`);
+    const footer = await gaps(page, 'footer');
+    for (const gap of footer) {
+      expect(gap.inline).toBeGreaterThanOrEqual(16);
+      expect(gap.block).toBeLessThan(0); // same row
+    }
+  });
+
+  test('a stacked footer nav keeps its compact spacing', async ({ page }) => {
+    await page.setViewportSize({ width: 1000, height: 600 });
+    await load(page, `<footer class="site">${NAV('')}</footer>`);
+    const stacked = await gaps(page, 'footer');
+    for (const gap of stacked) {
+      expect(gap.block).toBeGreaterThanOrEqual(0);
+      expect(gap.block).toBeLessThanOrEqual(8);
+    }
+  });
+});
