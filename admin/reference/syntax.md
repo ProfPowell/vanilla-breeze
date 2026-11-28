@@ -619,7 +619,7 @@ Base: monospace font, `<code>` gets background highlight, `<kbd>` gets border + 
 
 ### `<dl>` Definition List
 
-Base: `<dt>` bold, `<dd>` indented (inline-start). Groups may be flat or wrapped in `<div>` (spec) or `<dl-item>` (VB, non-conforming); a plain `<dl>` spaces wrapped groups like flat pairs.
+Base: `<dt>` bold, `<dd>` indented (inline-start). Groups may be flat or wrapped in `<div>`; a plain `<dl>` spaces wrapped groups like flat pairs.
 
 | Data Attribute | Values | Description |
 |----------------|--------|-------------|
@@ -630,7 +630,6 @@ Base: `<dt>` bold, `<dd>` indented (inline-start). Groups may be flat or wrapped
 
 Custom properties: `--dl-term-min` (default `10ch`), `--dl-term-max` (default `40%`) bound the horizontal term column.
 
-`<dl-item>`: group wrapper for dt/dd inside `<dl>` only; styled identically to `<div>`; variants live on the parent `<dl>`.
 
 ### `<hr>` Horizontal Rule
 
@@ -980,7 +979,7 @@ Hook `--bubble-bg` (themes set this, not `background`; shadows via `filter: drop
 
 CSS-only custom HTML tags. No JavaScript required. Use as regular HTML elements.
 
-CSS-only custom elements (every `src/custom-elements/<tag>/` without JS: `layout-*`, `user-avatar`, `chat-*`, `calendar-event`, `hour-view`, `dl-item`, `fab-stack`, `loading-spinner`, `semantic-card`, `site-legal`, `site-tools`, `status-message`, `text-divider`, `token-swatch`) are defined inertly by `src/custom-elements/register.js` (`INERT_ELEMENTS`), so they match `:defined` (kept in sync by `tests/unit/inert-custom-elements.test.js`).
+CSS-only custom elements (every `src/custom-elements/<tag>/` without JS: `layout-*`, `user-avatar`, `chat-*`, `calendar-event`, `hour-view`, `fab-stack`, `loading-spinner`, `semantic-card`, `site-legal`, `site-tools`, `status-message`, `text-divider`, `token-swatch`) are defined inertly by `src/custom-elements/register.js` (`INERT_ELEMENTS`), so they match `:defined` (kept in sync by `tests/unit/inert-custom-elements.test.js`).
 
 ### Layout Primitives
 

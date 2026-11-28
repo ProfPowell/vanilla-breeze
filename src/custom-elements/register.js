@@ -18,7 +18,6 @@ export const INERT_ELEMENTS = [
   'chat-bubble',
   'chat-message',
   'chat-thread',
-  'dl-item',
   'fab-stack',
   'hour-view',
   'layout-badge',

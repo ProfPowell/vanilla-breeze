@@ -3,7 +3,6 @@ const all = [
   { name: 'chat-bubble', href: '/docs/elements/custom-elements/chat-bubble/', desc: 'Chat bubble speech container' },
   { name: 'chat-message', href: '/docs/elements/custom-elements/chat-message/', desc: 'Individual chat message wrapper' },
   { name: 'chat-thread', href: '/docs/elements/custom-elements/chat-thread/', desc: 'Threaded chat conversation container' },
-  { name: 'dl-item', href: '/docs/elements/custom-elements/dl-item/', desc: 'Groups a dt/dd pair within a description list' },
   { name: 'fab-stack', href: '/docs/elements/custom-elements/fab-stack/', desc: 'Fixed stack of floating action buttons in the bottom-right corner' },
   { name: 'hour-view', href: '/docs/elements/custom-elements/hour-view/', desc: 'Subgrid container positioning calendar events within an hour slot' },
   { name: 'layout-badge', href: '/docs/elements/custom-elements/layout-badge/', desc: 'Badge/tag component' },

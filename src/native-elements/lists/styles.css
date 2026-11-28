@@ -36,13 +36,11 @@ li > ol {
 }
 
 /* Definition lists
-   Groups are either flat (dt… dd…) or wrapped in the spec's <div> or VB's
-   <dl-item>. A plain dl spaces wrapped groups exactly like flat pairs. A dl
+   Groups are either flat (dt… dd…) or wrapped in the spec's <div>. A plain dl spaces wrapped groups exactly like flat pairs. A dl
    carrying a class or data-layout is treated as author/primitive-styled
    and manages its own group spacing (wrapper margins would otherwise
    double a flex/grid gap or offset items on the cross axis). */
-dl,
-dl-item {
+dl {
   display: block;
 }
 
@@ -55,7 +53,7 @@ dd {
 }
 
 dd + dt,
-:where(dl:not([class], [data-layout])) > :is(div, dl-item) + :is(div, dl-item) {
+:where(dl:not([class], [data-layout])) > div + div {
   margin-block-start: var(--size-m);
 }
 
@@ -114,7 +112,7 @@ dl[data-striped] > dd + dt {
 
 /* Flat pairs: stripe odd dt and the dd run that follows it (up to four dd).
    Flat striping counts visible <dt> elements, so a group with several <dt>
-   shifts the parity — wrap multi-term groups in <div> (or <dl-item>)
+   shifts the parity — wrap multi-term groups in <div>
    instead. Hidden (filtered) entries are skipped so the alternation holds.
    The stripe is the shared --color-row-stripe token, the same wash as
    table[data-striped]. */
@@ -126,19 +124,19 @@ dl[data-striped] > dt:nth-child(odd of dt:not([hidden])) + dd + dd + dd + dd {
   background: var(--color-row-stripe);
 }
 
-/* Wrapped groups (<div> or <dl-item>): stripe odd groups as a whole */
-dl[data-striped] > :is(div, dl-item) {
+/* Wrapped groups (<div>): stripe odd groups as a whole */
+dl[data-striped] > div {
   padding-inline: var(--size-s);
   padding-block: var(--size-2xs);
 }
 
-dl[data-striped] > :nth-child(odd of :is(div, dl-item):not([hidden])) {
+dl[data-striped] > :nth-child(odd of div:not([hidden])) {
   background: var(--color-row-stripe);
 }
 
 /* --- Description list variants ---
    data-variant="horizontal" | "stacked", data-bordered, data-density="compact".
-   They work on flat dt/dd pairs and on <div> / <dl-item> group wrappers.
+   They work on flat dt/dd pairs and on <div> group wrappers.
    Tunables: --dl-term-min (default 10ch) and --dl-term-max (default 40%)
    bound the term column of the horizontal variant. */
 
@@ -165,11 +163,11 @@ dl[data-variant="horizontal"] {
   align-items: baseline;
 }
 
-dl[data-variant="horizontal"]:has(> :is(div, dl-item)) {
+dl[data-variant="horizontal"]:has(> div) {
   row-gap: 0;
 }
 
-dl[data-variant="horizontal"] > :is(div, dl-item) {
+dl[data-variant="horizontal"] > div {
   display: grid;
   grid-column: 1 / -1;
   grid-template-columns: fit-content(var(--dl-term-max, 40%)) minmax(0, 1fr);
@@ -179,18 +177,18 @@ dl[data-variant="horizontal"] > :is(div, dl-item) {
   align-items: baseline;
 }
 
-dl[data-variant="horizontal"] > :is(div, dl-item) + :is(div, dl-item),
+dl[data-variant="horizontal"] > div + div,
 dl[data-variant="horizontal"] > dd + dt {
   margin-block-start: 0;
 }
 
-:is(dl[data-variant="horizontal"], dl[data-variant="horizontal"] > :is(div, dl-item)) > dt {
+:is(dl[data-variant="horizontal"], dl[data-variant="horizontal"] > div) > dt {
   grid-column: 1;
   min-inline-size: var(--dl-term-min, 10ch);
   overflow-wrap: break-word;
 }
 
-:is(dl[data-variant="horizontal"], dl[data-variant="horizontal"] > :is(div, dl-item)) > dd {
+:is(dl[data-variant="horizontal"], dl[data-variant="horizontal"] > div) > dd {
   grid-column: 2;
   min-inline-size: 0;
   margin-inline-start: 0;
@@ -198,24 +196,24 @@ dl[data-variant="horizontal"] > dd + dt {
 }
 
 @container vb-dl (inline-size < 16rem) {
-  :is(dl[data-variant="horizontal"], dl[data-variant="horizontal"] > :is(div, dl-item)) > :is(dt, dd) {
+  :is(dl[data-variant="horizontal"], dl[data-variant="horizontal"] > div) > :is(dt, dd) {
     grid-column: 1 / -1;
     min-inline-size: 0;
   }
 }
 
 /* Stacked — muted label above its value(s), no indent */
-:is(dl[data-variant="stacked"], dl[data-variant="stacked"] > :is(div, dl-item)) > dt {
+:is(dl[data-variant="stacked"], dl[data-variant="stacked"] > div) > dt {
   font-size: var(--font-size-s);
   color: var(--color-text-muted);
   margin-block-end: var(--size-2xs);
 }
 
-:is(dl[data-variant="stacked"], dl[data-variant="stacked"] > :is(div, dl-item)) > dd {
+:is(dl[data-variant="stacked"], dl[data-variant="stacked"] > div) > dd {
   margin-inline-start: 0;
 }
 
-:is(dl[data-variant="stacked"], dl[data-variant="stacked"] > :is(div, dl-item)) > dd + dd {
+:is(dl[data-variant="stacked"], dl[data-variant="stacked"] > div) > dd + dd {
   margin-block-start: var(--size-2xs);
 }
 
@@ -225,25 +223,25 @@ dl[data-variant="horizontal"] > dd + dt {
    after the first down off the row. :where() keeps the exemption at zero
    specificity, so the bordered / striped reset below still wins. */
 dl[data-variant="stacked"]:where(:not([data-layout])) > dd + dt,
-dl[data-variant="stacked"]:where(:not([data-layout])) > :is(div, dl-item) + :is(div, dl-item) {
+dl[data-variant="stacked"]:where(:not([data-layout])) > div + div {
   margin-block-start: var(--_dl-group-gap, var(--size-l));
 }
 
 /* Bordered — separator lines between wrapped groups */
-dl[data-bordered] > :is(div, dl-item) {
+dl[data-bordered] > div {
   border-block-end: var(--border-width-thin) solid var(--color-border);
 }
 
-dl[data-bordered] > :is(div, dl-item):last-child {
+dl[data-bordered] > div:last-child {
   border-block-end: none;
 }
 
-dl:is([data-variant="horizontal"], [data-bordered]) > :is(div, dl-item) {
+dl:is([data-variant="horizontal"], [data-bordered]) > div {
   padding-block: var(--_dl-pad, var(--size-s));
 }
 
 /* Bordered and striped groups are separated by padding, not margin */
-dl:is([data-bordered], [data-striped]) > :is(div, dl-item) + :is(div, dl-item) {
+dl:is([data-bordered], [data-striped]) > div + div {
   margin-block-start: 0;
 }
 

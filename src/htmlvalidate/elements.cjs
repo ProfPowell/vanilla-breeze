@@ -206,11 +206,6 @@ module.exports = {
     }
   },
 
-  "dl-item": {
-    flow: true,
-    permittedContent: ["dt", "dd"]
-  },
-
   "fab-stack": {
     flow: true,
     permittedContent: ["@flow"],
@@ -291,7 +286,7 @@ module.exports = {
 
   "dl": {
     flow: true,
-    permittedContent: ["@script", "dt", "dd", "div", "dl-item"],
+    permittedContent: ["@script", "dt", "dd", "div"],
     attributes: {
       "data-variant": { enum: ["horizontal", "stacked"] },
       "data-bordered": { boolean: true },

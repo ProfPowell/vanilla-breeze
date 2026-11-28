@@ -1282,18 +1282,6 @@ export default {
       }
     ]
   },
-  "dl-item": {
-    "element": "dl-item",
-    "type": "custom-element",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "dt",
-        "dd"
-      ]
-    },
-    "attributes": []
-  },
   "fab-stack": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "fab-stack",
@@ -7433,8 +7421,7 @@ export default {
         "@script",
         "dt",
         "dd",
-        "div",
-        "dl-item"
+        "div"
       ]
     },
     "attributes": [

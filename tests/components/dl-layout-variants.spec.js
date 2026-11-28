@@ -37,7 +37,7 @@ const load = (page, body) => serve(page, `<!doctype html><html lang="en" data-mo
 
 const tops = (page, sel) => page.$$eval(`${sel} > *`, (els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
 
-const GROUPS = '<dl-item><dt>Posts</dt><dd>128</dd></dl-item><dl-item><dt>Followers</dt><dd>2.4k</dd></dl-item><dl-item><dt>Following</dt><dd>312</dd></dl-item>';
+const GROUPS = '<div><dt>Posts</dt><dd>128</dd></div><div><dt>Followers</dt><dd>2.4k</dd></div><div><dt>Following</dt><dd>312</dd></div>';
 
 for (const layout of ['cluster', 'grid']) {
   test(`stacked dl with data-layout="${layout}" keeps its groups on one row`, async ({ page }) => {
@@ -52,8 +52,8 @@ test('stacked dl in normal flow keeps its group spacing; bordered still resets i
   await load(page, `<dl id="flow" data-variant="stacked">${GROUPS}</dl>
     <dl id="bordered" data-variant="stacked" data-bordered>${GROUPS}</dl>`);
   const m = (sel) => page.locator(sel).evaluate((el) => getComputedStyle(el).marginBlockStart);
-  expect(await m('#flow > dl-item:nth-child(2)')).not.toBe('0px');
-  expect(await m('#bordered > dl-item:nth-child(2)')).toBe('0px');
+  expect(await m('#flow > div:nth-child(2)')).not.toBe('0px');
+  expect(await m('#bordered > div:nth-child(2)')).toBe('0px');
 });
 
 test('profile demos lay the stat row out on one line without local CSS', async ({ page }) => {

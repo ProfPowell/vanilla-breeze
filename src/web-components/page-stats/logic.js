@@ -26,10 +26,10 @@
  * @example SSR-adopted (pre-rendered by SSG)
  * <page-stats>
  *   <dl class="page-stats-list">
- *     <dl-item>
+ *     <div>
  *       <dt class="visually-hidden">Reading time</dt>
  *       <dd><time datetime="PT5M">5 min read</time></dd>
- *     </dl-item>
+ *     </div>
  *   </dl>
  * </page-stats>
  *
@@ -126,7 +126,7 @@ class PageStats extends VBElement {
    * @param {Node | string} value
    */
   #statItem(label, value) {
-    const item = document.createElement('dl-item');
+    const item = document.createElement('div');
     const dt = document.createElement('dt');
     dt.className = 'visually-hidden';
     dt.textContent = label;

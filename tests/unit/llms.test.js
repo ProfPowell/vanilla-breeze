@@ -73,12 +73,12 @@ test('componentMarkdown renders every section the entry has, and none it lacks',
 });
 
 test('componentMarkdown falls back to the page description and works without a page', () => {
-  const md = componentMarkdown({ element: 'dl-item', type: 'custom-element', attributes: [] }, {
-    page: { path: '/docs/dl-item/', title: 'dl-item', description: 'From the page.' },
+  const md = componentMarkdown({ element: 'text-divider', type: 'custom-element', attributes: [] }, {
+    page: { path: '/docs/text-divider/', title: 'text-divider', description: 'From the page.' },
     siteUrl: 'https://example.test',
     version: '1.0.0',
   });
-  assert.match(md, /# <dl-item>\n\nFrom the page\.\n/);
+  assert.match(md, /# <text-divider>\n\nFrom the page\.\n/);
   assert.match(md, /CSS-only custom element/);
   assert.doesNotMatch(md, /## (Example|Attributes)/);
 

@@ -286,7 +286,7 @@ test('page-stats segments Japanese words and times them by characters', async ({
       <article id="t"><p>${ja}</p></article>`,
   });
   await page.evaluate(() => document.getElementById('ps').setAttribute('data-for', 't'));
-  const words = await page.locator('#ps dl-item').nth(1).locator('dd').textContent();
+  const words = await page.locator('#ps dl > div').nth(1).locator('dd').textContent();
   const n = Number(words.replace(/[^\d]/g, ''));
   expect(n).toBeGreaterThan(400);
   expect(words).toContain('語');
@@ -298,7 +298,7 @@ test('page-stats skips script/style/hidden text, recomputes on attribute change,
   await load(page, {
     tag: 'page-stats',
     body: `<page-stats id="ps" data-for="t" data-show="word-count"></page-stats>
-      <page-stats id="ssr"><dl class="page-stats-list"><dl-item><dt class="visually-hidden">Reading time</dt><dd>9 min read</dd></dl-item></dl></page-stats>
+      <page-stats id="ssr"><dl class="page-stats-list"><div><dt class="visually-hidden">Reading time</dt><dd>9 min read</dd></div></dl></page-stats>
       <article id="t"><p>one two three</p><script>var a = "x y z";</script><style>p{}</style>
         <p hidden>four five</p><p aria-hidden="true">six</p><p data-stats-ignore>seven</p></article>`,
   });
@@ -316,7 +316,7 @@ test('page-stats skips script/style/hidden text, recomputes on attribute change,
   await expect(page.locator('#ps dd').nth(1)).toHaveText('1 word');
   await expect(page.locator('#ps time')).toHaveText('1 min read');
   await expect(page.locator('#ssr dd')).toHaveText('9 min read');
-  const sep = await page.evaluate(() => getComputedStyle(document.querySelector('#ps dl-item + dl-item'), '::before').content);
+  const sep = await page.evaluate(() => getComputedStyle(document.querySelector('#ps dl > div + div'), '::before').content);
   expect(sep).toContain('/');
 });
 
@@ -327,7 +327,7 @@ test('page-stats last-modified: declared date only, localized, absolute title', 
   });
   await page.waitForSelector('#ps[data-upgraded]');
   /* No meta → no last-modified item (document.lastModified is not used). */
-  await expect(page.locator('#ps dl-item')).toHaveCount(1);
+  await expect(page.locator('#ps dl > div')).toHaveCount(1);
   await expect(page.locator('#ps time')).toHaveText('1 min');
 
   await page.evaluate(() => {

@@ -74,7 +74,6 @@ const elementsByLetter = {
     { name: 'dialog', type: 'native', href: '/docs/elements/native/dialog/' },
     { name: 'div', type: 'native', href: '/docs/elements/native/div/' },
     { name: 'dl', type: 'native', href: '/docs/elements/native/dl/' },
-    { name: 'dl-item', type: 'custom', href: '/docs/elements/custom-elements/dl-item/' },
     { name: 'data-table', type: 'component', href: '/docs/elements/web-components/data-table/' },
     { name: 'date-picker', type: 'component', href: '/docs/elements/web-components/date-picker/' },
     { name: 'day-view', type: 'component', href: '/docs/elements/web-components/day-view/' },

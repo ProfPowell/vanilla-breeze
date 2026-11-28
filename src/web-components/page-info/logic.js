@@ -298,7 +298,7 @@ class PageInfo extends VBElement {
     const sep = () => h('span', { class: 'page-info-sep', 'aria-hidden': 'true' }, '·');
     const time = (value) => h('time', { datetime: value, 'data-relative': '' }, value);
     const link = (href, text, rel) => (href ? h('a', { href, rel }, text) : text);
-    const item = (key, ...value) => h('dl-item', {}, h('dt', {}, this.#label(key)), h('dd', {}, ...value));
+    const item = (key, ...value) => h('div', {}, h('dt', {}, this.#label(key)), h('dd', {}, ...value));
 
     /* Summary (trust bar). The author is plain text here — interactive
        content inside <summary> would fight the disclosure toggle; the

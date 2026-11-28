@@ -23,25 +23,6 @@ module.exports = {
     },
   },
 
-  // <dl-item> is VB's named alternative to the spec's <div> group
-  // wrapper. It is only meaningful as a direct child of <dl> (the HTML
-  // spec itself does not list it among <dl>'s permitted children — see
-  // the Conformance note on the dl-item doc page). Require the full
-  // <dl> > <dl-item> chain so a stray <dl-item> (and the <dt>/<dd>
-  // inside it) is flagged when used outside a description list.
-  "dl-item": {
-    inherit: "dl-item",
-    requiredAncestors: ["dl > dl-item"],
-  },
-  "dt": {
-    inherit: "dt",
-    requiredAncestors: ["dl > dt", "dl > div > dt", "dl > dl-item > dt"],
-  },
-  "dd": {
-    inherit: "dd",
-    requiredAncestors: ["dl > dd", "dl > div > dd", "dl > dl-item > dd"],
-  },
-
   // <li> per spec requires <ul>/<ol>/<menu>/<template> parent.
   // (<progress-tracker> now takes an inner <ol>, so it no longer needs an
   // exception for direct <li> children.)

@@ -1,11 +1,11 @@
 /**
- * dl / dt / dd / dl-item — D-review fixes (vanilla-breeze-8s1z, -rb3n, -8kf7).
+ * dl / dt / dd and <div> groups — D-review fixes (vanilla-breeze-8s1z, -rb3n, -8kf7).
  *
  * Covers: horizontal variant keeps every dd in column 2 (multi-dd groups,
  * multi-dt groups); variants apply to spec <div> wrappers; narrow containers
  * stack without overflow; plain wrapped groups keep group spacing + dd
  * indent; striping of wrapped groups and flat multi-dd runs; html-validate
- * flags <dl-item> outside <dl>. Plus smoke tests for the three attribute
+ * flags <div> outside <dl>. Plus smoke tests for the three attribute
  * demos (floating label, hotkey action, loading button).
  *
  * Tests the working tree: /src (and the demo files) are served from disk.
@@ -65,7 +65,7 @@ const MULTI = (wrapper, attrs = 'data-variant="horizontal" data-bordered') => `
     <${wrapper}><dt>Role</dt><dd>Engineer</dd></${wrapper}>
   </dl>`;
 
-for (const wrapper of ['dl-item', 'div']) {
+for (const wrapper of ['div']) {
   test(`horizontal: every dd in column 2, terms in column 1 (${wrapper})`, async ({ page }) => {
     await page.setViewportSize({ width: 800, height: 600 });
     await load(page, MULTI(wrapper));
@@ -132,8 +132,8 @@ test('horizontal: narrow container stacks and nothing overflows', async ({ page 
   await load(page, `
     <section id="wrap">
       <dl id="t" data-variant="horizontal" data-bordered>
-        <dl-item><dt>Full Name</dt><dd>Alexandra Chen</dd></dl-item>
-        <dl-item><dt>Email</dt><dd>alexandra.chen.with.a.very.long.address@example-company.com</dd></dl-item>
+        <div><dt>Full Name</dt><dd>Alexandra Chen</dd></div>
+        <div><dt>Email</dt><dd>alexandra.chen.with.a.very.long.address@example-company.com</dd></div>
       </dl>
     </section>
     <style>#wrap { inline-size: 240px; }</style>`); // under the 16rem stack point
@@ -160,7 +160,7 @@ test('horizontal: wide container keeps long values inside the description column
   await load(page, `
     <section id="wrap">
       <dl id="t" data-variant="horizontal">
-        <dl-item><dt>Email</dt><dd>alexandra.chen.with.a.very.long.address.that.keeps.going@example-company.com</dd></dl-item>
+        <div><dt>Email</dt><dd>alexandra.chen.with.a.very.long.address.that.keeps.going@example-company.com</dd></div>
       </dl>
     </section>
     <style>#wrap { inline-size: 480px; }</style>`);
@@ -176,16 +176,16 @@ test('horizontal: wide container keeps long values inside the description column
 
 test('horizontal: RTL puts the term column on the right', async ({ page }) => {
   await page.setViewportSize({ width: 800, height: 600 });
-  await load(page, MULTI('dl-item'), { dir: 'rtl' });
+  await load(page, MULTI('div'), { dir: 'rtl' });
   const b = await boxes(page, '#t');
   const dt = b.find((e) => e.tag === 'dt');
   const dd = b.find((e) => e.tag === 'dd');
   expect(dt.x).toBeGreaterThan(dd.right);
 });
 
-test('plain dl-item / div wrappers keep group spacing and dd indent', async ({ page }) => {
+test('plain div wrappers keep group spacing and dd indent', async ({ page }) => {
   await load(page, `
-    <dl id="a"><dl-item><dt>A</dt><dd>One</dd></dl-item><dl-item><dt>B</dt><dd>Two</dd></dl-item></dl>
+    <dl id="a"><div><dt>A</dt><dd>One</dd></div><div><dt>B</dt><dd>Two</dd></div></dl>
     <dl id="b"><div><dt>A</dt><dd>One</dd></div><div><dt>B</dt><dd>Two</dd></div></dl>
     <dl id="c"><dt>A</dt><dd>One</dd><dt>B</dt><dd>Two</dd></dl>`);
   const r = await page.evaluate(() => ['a', 'b', 'c'].map((id) => {
@@ -209,7 +209,7 @@ test('plain dl-item / div wrappers keep group spacing and dd indent', async ({ p
 test('dl with a class or data-layout manages its own wrapper spacing', async ({ page }) => {
   await load(page, `
     <dl id="a" class="custom"><div><dt>A</dt><dd>1</dd></div><div><dt>B</dt><dd>2</dd></div></dl>
-    <dl id="b" data-layout="stack"><dl-item><dt>A</dt><dd>1</dd></dl-item><dl-item><dt>B</dt><dd>2</dd></dl-item></dl>`);
+    <dl id="b" data-layout="stack"><div><dt>A</dt><dd>1</dd></div><div><dt>B</dt><dd>2</dd></div></dl>`);
   const m = await page.evaluate(() => ['#a', '#b'].map((s) =>
     getComputedStyle(document.querySelectorAll(`${s} > *`)[1]).marginBlockStart));
   expect(m).toEqual(['0px', '0px']);
@@ -218,16 +218,16 @@ test('dl with a class or data-layout manages its own wrapper spacing', async ({ 
 test('--dl-term-min sets the horizontal term column minimum', async ({ page }) => {
   await page.setViewportSize({ width: 900, height: 600 });
   await load(page, `
-    <dl id="t" data-variant="horizontal"><dl-item><dt>A</dt><dd>One</dd></dl-item></dl>
+    <dl id="t" data-variant="horizontal"><div><dt>A</dt><dd>One</dd></div></dl>
     <style>#t { --dl-term-min: 200px; }</style>`);
   const w = await page.evaluate(() => document.querySelector('#t dt').getBoundingClientRect().width);
   expect(w).toBeGreaterThanOrEqual(199);
 });
 
 test('data-density="compact" tightens wrapper padding', async ({ page }) => {
-  await load(page, `${MULTI('dl-item')}${MULTI('dl-item', 'data-variant="horizontal" data-bordered data-density="compact"').replace('id="t"', 'id="c"')}`);
+  await load(page, `${MULTI('div')}${MULTI('div', 'data-variant="horizontal" data-bordered data-density="compact"').replace('id="t"', 'id="c"')}`);
   const [normal, compact] = await page.evaluate(() => ['#t', '#c'].map((s) =>
-    parseFloat(getComputedStyle(document.querySelector(`${s} > dl-item`)).paddingBlockStart)));
+    parseFloat(getComputedStyle(document.querySelector(`${s} > div`)).paddingBlockStart)));
   expect(compact).toBeLessThan(normal);
 });
 
@@ -236,7 +236,7 @@ test('striped: wrapped groups stripe as a whole; flat multi-dd runs share the st
     <dl id="w" data-striped>
       <div><dt>A</dt><dt>A2</dt><dd>1</dd><dd>2</dd></div>
       <div><dt>B</dt><dd>3</dd></div>
-      <dl-item><dt>C</dt><dd>4</dd></dl-item>
+      <div><dt>C</dt><dd>4</dd></div>
     </dl>
     <dl id="f" data-striped>
       <dt>A</dt><dd>1</dd><dd>2</dd><dd>3</dd>
@@ -261,14 +261,14 @@ test('striped: wrapped groups stripe as a whole; flat multi-dd runs share the st
   expect(r.wrapperGap).toBe(0);
 });
 
-test('Chrome a11y tree keeps term/definition roles inside dl-item', async ({ page }) => {
-  await load(page, '<dl id="t"><dl-item><dt>Term</dt><dd>Definition</dd></dl-item></dl>');
+test('Chrome a11y tree keeps term/definition roles inside a div group', async ({ page }) => {
+  await load(page, '<dl id="t"><div><dt>Term</dt><dd>Definition</dd></div></dl>');
   const snap = await page.locator('#t').ariaSnapshot();
   expect(snap).toMatch(/term: Term/);
   expect(snap).toMatch(/definition: Definition/);
 });
 
-test.describe('html-validate dl-item rules', () => {
+test.describe('html-validate dl group rules', () => {
   async function lint(markup) {
     const hv = new HtmlValidate(new FileSystemConfigLoader());
     const doc = `<!doctype html><html lang="en"><head><meta charset="utf-8" /><title>t</title></head><body><main>${markup}</main></body></html>`;
@@ -276,18 +276,17 @@ test.describe('html-validate dl-item rules', () => {
     return report.results.flatMap((r) => r.messages).filter((m) => m.ruleId === 'element-required-ancestor');
   }
 
-  test('dl-item outside dl is flagged (with its dt/dd)', async () => {
-    const msgs = await lint('<dl-item><dt>A</dt><dd>B</dd></dl-item>');
-    expect(msgs.map((m) => m.selector || m.message).join('\n')).toMatch(/dl-item/);
-    expect(msgs.length).toBe(3);
+  test('dt and dd in a div outside dl are flagged', async () => {
+    const msgs = await lint('<section><dt>A</dt><dd>B</dd></section>');
+    expect(msgs.length).toBe(2);
   });
 
-  test('dl > dl-item and dl > div are accepted', async () => {
-    expect(await lint('<dl><dl-item><dt>A</dt><dd>B</dd></dl-item><div><dt>C</dt><dd>D</dd></div></dl>')).toEqual([]);
+  test('dl > div groups are accepted', async () => {
+    expect(await lint('<dl><div><dt>A</dt><dd>B</dd></div><div><dt>C</dt><dd>D</dd></div></dl>')).toEqual([]);
   });
 
-  test('dl-item nested in another wrapper is flagged', async () => {
-    const msgs = await lint('<dl><div><dl-item><dt>A</dt><dd>B</dd></dl-item></div></dl>');
+  test('a group nested in another wrapper is flagged', async () => {
+    const msgs = await lint('<dl><div><div><dt>A</dt><dd>B</dd></div></div></dl>');
     expect(msgs.length).toBeGreaterThan(0);
   });
 });
