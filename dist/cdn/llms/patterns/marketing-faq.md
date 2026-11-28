@@ -38,20 +38,20 @@ FAQ accordion with accordion-wc:
 
 ## Two-Column Grid
 
-A grid layout that displays all FAQ items at once, arranged in two columns on wider screens. Best for shorter lists (4&ndash;8 items) where users benefit from scanning all questions at a glance. Question-and-answer pairs are a description list: each `<dl-item>` groups a `<dt>` question with its `<dd>` answer, and `data-layout="grid"` goes straight on the `<dl>`.
+A grid layout that displays all FAQ items at once, arranged in two columns on wider screens. Best for shorter lists (4&ndash;8 items) where users benefit from scanning all questions at a glance. Question-and-answer pairs are a description list: each `<div>` groups a `<dt>` question with its `<dd>` answer, and `data-layout="grid"` goes straight on the `<dl>`.
 
 Two-column FAQ grid:
 
 ```html
 <dl data-layout="grid" data-layout-min="xl" data-layout-gap="xl">
-  <dl-item>
+  <div>
     <dt>What is Vanilla Breeze?</dt>
     <dd>A lightweight CSS framework...</dd>
-  </dl-item>
-  <dl-item>
+  </div>
+  <div>
     <dt>How do I get started?</dt>
     <dd>Include via CDN or install via npm...</dd>
-  </dl-item>
+  </div>
   <!-- More items... -->
 </dl>
 ```

@@ -44,18 +44,18 @@ profile-header.html:
 
     <!-- Stats -->
     <dl data-layout="cluster" data-layout-gap="xl" data-variant="stacked">
-      <dl-item>
+      <div>
         <dt>Posts</dt>
         <dd><strong>142</strong></dd>
-      </dl-item>
-      <dl-item>
+      </div>
+      <div>
         <dt>Followers</dt>
         <dd><strong>12.4K</strong></dd>
-      </dl-item>
-      <dl-item>
+      </div>
+      <div>
         <dt>Following</dt>
         <dd><strong>891</strong></dd>
-      </dl-item>
+      </div>
     </dl>
 
     <!-- Edit Button -->
@@ -131,10 +131,10 @@ profile-full.html:
         <p>Leading distributed teams...</p>
 
         <dl data-layout="cluster" data-layout-gap="l" data-layout-justify="center" data-variant="stacked">
-          <dl-item>
+          <div>
             <dt>Posts</dt>
             <dd><strong>89</strong></dd>
-          </dl-item>
+          </div>
           <!-- More stats... -->
         </dl>
 
@@ -175,7 +175,7 @@ Profile patterns use these layout elements and attributes:
 - Avatar fallbacks: Always provide initials via `<span data-fallback>` as a fallback when images fail to load
 - Status indicators: Use `<span data-status="online">` inside `user-avatar` to show user presence
 - Heading groups: Use `<hgroup>` for name + role pairs — the `<p>` inside automatically gets muted color styling
-- Semantic stats: Use `<dl data-variant="stacked">` with one `<dl-item>` per stat, label (`<dt>`) before value (`<dd>`), instead of generic `<div>` / `<span>` elements
+- Semantic stats: Use `<dl data-variant="stacked">` with one `<div>` per stat, label (`<dt>`) before value (`<dd>`), instead of generic `<div>` / `<span>` elements
 - Responsive layouts: The sidebar layout automatically stacks on smaller screens when `data-layout-content-min` is reached
 - Sticky sidebar: `data-layout-sticky` works on `<nav>` and `<aside>` within page layouts, not on `<layout-card>`
 - Accessibility: Ensure avatar images have meaningful `alt` text and buttons have clear labels

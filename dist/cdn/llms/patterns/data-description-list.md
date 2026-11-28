@@ -19,7 +19,7 @@ Key features:
 
 ## Simple Vertical Layout
 
-A basic vertical description list with terms stacked above their descriptions, using `data-variant="stacked"`. The `<dl-item>` custom element groups each `<dt>`/`<dd>` pair.
+A basic vertical description list with terms stacked above their descriptions, using `data-variant="stacked"`. A `<div>` groups each `<dt>`/`<dd>` pair.
 
 No custom CSS: `data-variant="stacked"` mutes and shrinks each `<dt>`, drops the `<dd>` indent and spaces the groups.
 
@@ -27,27 +27,27 @@ Simple vertical description list:
 
 ```html
 <dl data-variant="stacked">
-  <dl-item>
+  <div>
     <dt>Full Name</dt>
     <dd>Alexandra Chen</dd>
-  </dl-item>
+  </div>
 
-  <dl-item>
+  <div>
     <dt>Email Address</dt>
     <dd>alexandra.chen@example.com</dd>
-  </dl-item>
+  </div>
 
-  <dl-item>
+  <div>
     <dt>Phone Number</dt>
     <dd>+1 (555) 123-4567</dd>
-  </dl-item>
+  </div>
 
-  <dl-item>
+  <div>
     <dt>Status</dt>
     <dd>
       <layout-badge data-color="success" data-variant="subtle" data-size="l">Active</layout-badge>
     </dd>
-  </dl-item>
+  </div>
 </dl>
 ```
 
@@ -55,33 +55,33 @@ Simple vertical description list:
 
 A horizontal layout with labels on the left and values on the right. This format works well for detail panels, settings pages, and profile information where you want to scan labels quickly.
 
-No custom CSS: `data-variant="horizontal"` puts terms and descriptions in two columns that line up across every row (each `<dl-item>` is a subgrid), and falls back to a stacked flow below 16rem of available width. `data-bordered` draws the row separators; swap it for `data-striped` to alternate row backgrounds, or add `data-density="compact"` for dense data.
+No custom CSS: `data-variant="horizontal"` puts terms and descriptions in two columns that line up across every row (each `<div>` is a subgrid), and falls back to a stacked flow below 16rem of available width. `data-bordered` draws the row separators; swap it for `data-striped` to alternate row backgrounds, or add `data-density="compact"` for dense data.
 
 Horizontal description list:
 
 ```html
 <dl data-variant="horizontal" data-bordered>
-  <dl-item>
+  <div>
     <dt>Full Name</dt>
     <dd>Alexandra Chen</dd>
-  </dl-item>
+  </div>
 
-  <dl-item>
+  <div>
     <dt>Email</dt>
     <dd>alexandra.chen@example.com</dd>
-  </dl-item>
+  </div>
 
-  <dl-item>
+  <div>
     <dt>Phone</dt>
     <dd>+1 (555) 123-4567</dd>
-  </dl-item>
+  </div>
 
-  <dl-item>
+  <div>
     <dt>Status</dt>
     <dd>
       <layout-badge data-color="success" data-variant="subtle" data-size="l">Active</layout-badge>
     </dd>
-  </dl-item>
+  </div>
 </dl>
 ```
 
@@ -101,14 +101,14 @@ Grouped description lists:
       <h2>Personal Information</h2>
     </header>
     <dl data-variant="horizontal" data-bordered>
-      <dl-item>
+      <div>
         <dt>Full Name</dt>
         <dd>Alexandra Chen</dd>
-      </dl-item>
-      <dl-item>
+      </div>
+      <div>
         <dt>Date of Birth</dt>
         <dd>March 15, 1992</dd>
-      </dl-item>
+      </div>
     </dl>
   </layout-card>
 
@@ -118,14 +118,14 @@ Grouped description lists:
       <h2>Contact Details</h2>
     </header>
     <dl data-variant="horizontal" data-bordered>
-      <dl-item>
+      <div>
         <dt>Email</dt>
         <dd>alexandra.chen@example.com</dd>
-      </dl-item>
-      <dl-item>
+      </div>
+      <div>
         <dt>Phone</dt>
         <dd>+1 (555) 123-4567</dd>
-      </dl-item>
+      </div>
     </dl>
   </layout-card>
 </layout-stack>
@@ -139,7 +139,7 @@ Description list patterns use these elements and CSS techniques:
 
 - Semantic HTML: Always use `<dl>`, `<dt>`, and `<dd>` elements for proper accessibility. Screen readers announce these as description lists.
 - No classes: The layouts are `data-variant` values on the `<dl>` itself, so the list stays plain `<dl>`/`<dt>`/`<dd>` markup.
-- Item grouping: The `<dl-item>` custom element groups each term/description pair. This is valid HTML5 and enables grid layout for horizontal display.
+- Item grouping: A `<div>` groups each term/description pair. This is valid HTML5 and enables grid layout for horizontal display.
 - Multiple values: A single `<dt>` can have multiple `<dd>` elements for multiple values (e.g., multiple phone numbers).
 - Responsive design: The horizontal variant is a container query: it stacks when the list itself is narrower than 16rem, wherever it sits on the page.
 - Value formatting: Use badges, icons, or formatted text in `<dd>` elements to enhance readability.

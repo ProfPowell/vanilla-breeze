@@ -315,14 +315,14 @@ wizard-progress.html:
         <fieldset data-wizard-step>
           <legend>Your cart</legend>
           <dl data-variant="horizontal">
-            <dl-item>
+            <div>
               <dt>Premium Wireless Headphones</dt>
               <dd>$249.00</dd>
-            </dl-item>
-            <dl-item>
+            </div>
+            <div>
               <dt>USB-C Charging Cable &times; 2</dt>
               <dd>$29.98</dd>
-            </dl-item>
+            </div>
           </dl>
         </fieldset>
 

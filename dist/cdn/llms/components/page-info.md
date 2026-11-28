@@ -39,43 +39,43 @@ Document provenance disclosure panel
       <section>
         <h2 class="page-info-section-heading">History</h2>
         <dl>
-          <dl-item>
+          <div>
             <dt>Published</dt>
             <dd><time datetime="2026-01-10">January 10, 2026</time></dd>
-          </dl-item>
-          <dl-item>
+          </div>
+          <div>
             <dt>Last updated</dt>
             <dd>
               <time datetime="2026-03-15" data-relative>
                 15 March 2026
               </time>
             </dd>
-          </dl-item>
-          <dl-item>
+          </div>
+          <div>
             <dt>Version</dt>
             <dd>1.4.0</dd>
-          </dl-item>
-          <dl-item>
+          </div>
+          <div>
             <dt>Reading time</dt>
             <dd data-reading-time>&mdash;</dd>
-          </dl-item>
+          </div>
         </dl>
       </section>
       <section>
         <h2 class="page-info-section-heading">How this was made</h2>
         <dl>
-          <dl-item>
+          <div>
             <dt>Authorship</dt>
             <dd>Human-written, AI-assisted</dd>
-          </dl-item>
-          <dl-item>
+          </div>
+          <div>
             <dt>AI tools used</dt>
             <dd>Claude Sonnet 4 &mdash; research and drafting</dd>
-          </dl-item>
-          <dl-item>
+          </div>
+          <div>
             <dt>Review</dt>
             <dd>Editor-reviewed</dd>
-          </dl-item>
+          </div>
         </dl>
       </section>
     </section>

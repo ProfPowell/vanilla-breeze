@@ -204,7 +204,6 @@ Read the pattern file for each section of the page you are building, then the co
 - [<chat-message>](components/chat-message.md): A single chat turn with role-based alignment, optional avatar support, sender metadata, and message state indicators.
 - [<chat-thread>](components/chat-thread.md): Scrollable message container for chat conversations.
 - [<dl>](components/dl.md): The description list element represents a collection of term-description pairs, such as glossaries, metadata, or key-value data.
-- [<dl-item>](components/dl-item.md): Groups a dt/dd pair within a description list for built-in layout variants.
 - [<fab-stack>](components/fab-stack.md): Fixed action button stack.
 - [<hour-view>](components/hour-view.md): CSS-only container for calendar events within a single hour slot.
 - [<loading-spinner>](components/loading-spinner.md): CSS-only animated loading spinner.
@@ -692,18 +691,18 @@ profile-header.html:
 
     <!-- Stats -->
     <dl data-layout="cluster" data-layout-gap="xl" data-variant="stacked">
-      <dl-item>
+      <div>
         <dt>Posts</dt>
         <dd><strong>142</strong></dd>
-      </dl-item>
-      <dl-item>
+      </div>
+      <div>
         <dt>Followers</dt>
         <dd><strong>12.4K</strong></dd>
-      </dl-item>
-      <dl-item>
+      </div>
+      <div>
         <dt>Following</dt>
         <dd><strong>891</strong></dd>
-      </dl-item>
+      </div>
     </dl>
 
     <!-- Edit Button -->
@@ -779,10 +778,10 @@ profile-full.html:
         <p>Leading distributed teams...</p>
 
         <dl data-layout="cluster" data-layout-gap="l" data-layout-justify="center" data-variant="stacked">
-          <dl-item>
+          <div>
             <dt>Posts</dt>
             <dd><strong>89</strong></dd>
-          </dl-item>
+          </div>
           <!-- More stats... -->
         </dl>
 
@@ -823,7 +822,7 @@ Profile patterns use these layout elements and attributes:
 - Avatar fallbacks: Always provide initials via `<span data-fallback>` as a fallback when images fail to load
 - Status indicators: Use `<span data-status="online">` inside `user-avatar` to show user presence
 - Heading groups: Use `<hgroup>` for name + role pairs — the `<p>` inside automatically gets muted color styling
-- Semantic stats: Use `<dl data-variant="stacked">` with one `<dl-item>` per stat, label (`<dt>`) before value (`<dd>`), instead of generic `<div>` / `<span>` elements
+- Semantic stats: Use `<dl data-variant="stacked">` with one `<div>` per stat, label (`<dt>`) before value (`<dd>`), instead of generic `<div>` / `<span>` elements
 - Responsive layouts: The sidebar layout automatically stacks on smaller screens when `data-layout-content-min` is reached
 - Sticky sidebar: `data-layout-sticky` works on `<nav>` and `<aside>` within page layouts, not on `<layout-card>`
 - Accessibility: Ensure avatar images have meaningful `alt` text and buttons have clear labels
@@ -1614,7 +1613,7 @@ Key features:
 
 ## Simple Vertical Layout
 
-A basic vertical description list with terms stacked above their descriptions, using `data-variant="stacked"`. The `<dl-item>` custom element groups each `<dt>`/`<dd>` pair.
+A basic vertical description list with terms stacked above their descriptions, using `data-variant="stacked"`. A `<div>` groups each `<dt>`/`<dd>` pair.
 
 No custom CSS: `data-variant="stacked"` mutes and shrinks each `<dt>`, drops the `<dd>` indent and spaces the groups.
 
@@ -1622,27 +1621,27 @@ Simple vertical description list:
 
 ```html
 <dl data-variant="stacked">
-  <dl-item>
+  <div>
     <dt>Full Name</dt>
     <dd>Alexandra Chen</dd>
-  </dl-item>
+  </div>
 
-  <dl-item>
+  <div>
     <dt>Email Address</dt>
     <dd>alexandra.chen@example.com</dd>
-  </dl-item>
+  </div>
 
-  <dl-item>
+  <div>
     <dt>Phone Number</dt>
     <dd>+1 (555) 123-4567</dd>
-  </dl-item>
+  </div>
 
-  <dl-item>
+  <div>
     <dt>Status</dt>
     <dd>
       <layout-badge data-color="success" data-variant="subtle" data-size="l">Active</layout-badge>
     </dd>
-  </dl-item>
+  </div>
 </dl>
 ```
 
@@ -1650,33 +1649,33 @@ Simple vertical description list:
 
 A horizontal layout with labels on the left and values on the right. This format works well for detail panels, settings pages, and profile information where you want to scan labels quickly.
 
-No custom CSS: `data-variant="horizontal"` puts terms and descriptions in two columns that line up across every row (each `<dl-item>` is a subgrid), and falls back to a stacked flow below 16rem of available width. `data-bordered` draws the row separators; swap it for `data-striped` to alternate row backgrounds, or add `data-density="compact"` for dense data.
+No custom CSS: `data-variant="horizontal"` puts terms and descriptions in two columns that line up across every row (each `<div>` is a subgrid), and falls back to a stacked flow below 16rem of available width. `data-bordered` draws the row separators; swap it for `data-striped` to alternate row backgrounds, or add `data-density="compact"` for dense data.
 
 Horizontal description list:
 
 ```html
 <dl data-variant="horizontal" data-bordered>
-  <dl-item>
+  <div>
     <dt>Full Name</dt>
     <dd>Alexandra Chen</dd>
-  </dl-item>
+  </div>
 
-  <dl-item>
+  <div>
     <dt>Email</dt>
     <dd>alexandra.chen@example.com</dd>
-  </dl-item>
+  </div>
 
-  <dl-item>
+  <div>
     <dt>Phone</dt>
     <dd>+1 (555) 123-4567</dd>
-  </dl-item>
+  </div>
 
-  <dl-item>
+  <div>
     <dt>Status</dt>
     <dd>
       <layout-badge data-color="success" data-variant="subtle" data-size="l">Active</layout-badge>
     </dd>
-  </dl-item>
+  </div>
 </dl>
 ```
 
@@ -1696,14 +1695,14 @@ Grouped description lists:
       <h2>Personal Information</h2>
     </header>
     <dl data-variant="horizontal" data-bordered>
-      <dl-item>
+      <div>
         <dt>Full Name</dt>
         <dd>Alexandra Chen</dd>
-      </dl-item>
-      <dl-item>
+      </div>
+      <div>
         <dt>Date of Birth</dt>
         <dd>March 15, 1992</dd>
-      </dl-item>
+      </div>
     </dl>
   </layout-card>
 
@@ -1713,14 +1712,14 @@ Grouped description lists:
       <h2>Contact Details</h2>
     </header>
     <dl data-variant="horizontal" data-bordered>
-      <dl-item>
+      <div>
         <dt>Email</dt>
         <dd>alexandra.chen@example.com</dd>
-      </dl-item>
-      <dl-item>
+      </div>
+      <div>
         <dt>Phone</dt>
         <dd>+1 (555) 123-4567</dd>
-      </dl-item>
+      </div>
     </dl>
   </layout-card>
 </layout-stack>
@@ -1734,7 +1733,7 @@ Description list patterns use these elements and CSS techniques:
 
 - Semantic HTML: Always use `<dl>`, `<dt>`, and `<dd>` elements for proper accessibility. Screen readers announce these as description lists.
 - No classes: The layouts are `data-variant` values on the `<dl>` itself, so the list stays plain `<dl>`/`<dt>`/`<dd>` markup.
-- Item grouping: The `<dl-item>` custom element groups each term/description pair. This is valid HTML5 and enables grid layout for horizontal display.
+- Item grouping: A `<div>` groups each term/description pair. This is valid HTML5 and enables grid layout for horizontal display.
 - Multiple values: A single `<dt>` can have multiple `<dd>` elements for multiple values (e.g., multiple phone numbers).
 - Responsive design: The horizontal variant is a container query: it stacks when the list itself is narrower than 16rem, wherever it sits on the page.
 - Value formatting: Use badges, icons, or formatted text in `<dd>` elements to enhance readability.
@@ -2917,7 +2916,7 @@ Key features:
 - `<form-field>` for consistent input styling and validation
 - `data-layout="sidebar"` with `<main>` and `<aside>` for order summary placement
 - `data-layout="split"` for side-by-side fields (city/state, expiry/CVC)
-- `<dl>` with `<dl-item>` rows for the order summary; `<small>` for the security note
+- `<dl>` with `<div>` rows for the order summary; `<small>` for the security note
 - `<icon-wc name="lock">` for security indicators
 - Proper `autocomplete` attributes for address and payment autofill
 - `inputmode="numeric"` for mobile keyboard optimization
@@ -3064,7 +3063,7 @@ fieldset small icon-wc {
 
 ## Split Layout with Order Summary
 
-A two-column layout using `data-layout="sidebar"` with the checkout form in a `<main>` and an order summary `<aside>`. The sidebar layout automatically recognizes these semantic elements for content vs sidebar sizing. The order summary is a description list: each `<dl-item>` pairs a `<dt>` label (item details in `<small>`) with its `<dd>` price, laid out as a `data-layout="cluster"` row. Native `<hr>` elements provide visual dividers.
+A two-column layout using `data-layout="sidebar"` with the checkout form in a `<main>` and an order summary `<aside>`. The sidebar layout automatically recognizes these semantic elements for content vs sidebar sizing. The order summary is a description list: each `<div>` pairs a `<dt>` label (item details in `<small>`) with its `<dd>` price, laid out as a `data-layout="cluster"` row. Native `<hr>` elements provide visual dividers.
 
 Complete your purchase by providing shipping and payment information.
 
@@ -3077,7 +3076,7 @@ Layout is handled entirely by `data-layout` attributes. These element styles cov
 Order summary styling:
 
 ```css
-/* Each dl-item is a cluster row; drop the default dd indent */
+/* Each dl group is a cluster row; drop the default dd indent */
 aside dd {
   margin: 0;
   white-space: nowrap;
@@ -4249,14 +4248,14 @@ wizard-progress.html:
         <fieldset data-wizard-step>
           <legend>Your cart</legend>
           <dl data-variant="horizontal">
-            <dl-item>
+            <div>
               <dt>Premium Wireless Headphones</dt>
               <dd>$249.00</dd>
-            </dl-item>
-            <dl-item>
+            </div>
+            <div>
               <dt>USB-C Charging Cable &times; 2</dt>
               <dd>$29.98</dd>
-            </dl-item>
+            </div>
           </dl>
         </fieldset>
 
@@ -4883,20 +4882,20 @@ FAQ accordion with accordion-wc:
 
 ## Two-Column Grid
 
-A grid layout that displays all FAQ items at once, arranged in two columns on wider screens. Best for shorter lists (4&ndash;8 items) where users benefit from scanning all questions at a glance. Question-and-answer pairs are a description list: each `<dl-item>` groups a `<dt>` question with its `<dd>` answer, and `data-layout="grid"` goes straight on the `<dl>`.
+A grid layout that displays all FAQ items at once, arranged in two columns on wider screens. Best for shorter lists (4&ndash;8 items) where users benefit from scanning all questions at a glance. Question-and-answer pairs are a description list: each `<div>` groups a `<dt>` question with its `<dd>` answer, and `data-layout="grid"` goes straight on the `<dl>`.
 
 Two-column FAQ grid:
 
 ```html
 <dl data-layout="grid" data-layout-min="xl" data-layout-gap="xl">
-  <dl-item>
+  <div>
     <dt>What is Vanilla Breeze?</dt>
     <dd>A lightweight CSS framework...</dd>
-  </dl-item>
-  <dl-item>
+  </div>
+  <div>
     <dt>How do I get started?</dt>
     <dd>Include via CDN or install via npm...</dd>
-  </dl-item>
+  </div>
   <!-- More items... -->
 </dl>
 ```
@@ -10483,39 +10482,6 @@ The description list element represents a collection of term-description pairs, 
 
 ---
 
-# <dl-item>
-
-Groups a dt/dd pair within a description list for built-in layout variants.
-
-- CSS-only custom element. Works without JavaScript.
-- Documentation: https://vanilla-breeze.com/docs/elements/custom-elements/dl-item/
-- Vanilla Breeze 0.7.4
-
-## Example
-
-```html
-<dl data-variant="horizontal" data-bordered>
-  <dl-item>
-    <dt>Full Name</dt>
-    <dd>Alexandra Chen</dd>
-  </dl-item>
-  <dl-item>
-    <dt>Email</dt>
-    <dd>alexandra.chen@example.com</dd>
-  </dl-item>
-  <dl-item>
-    <dt>Role</dt>
-    <dd>Senior Engineer</dd>
-  </dl-item>
-  <dl-item>
-    <dt>Status</dt>
-    <dd>Active</dd>
-  </dl-item>
-</dl>
-```
-
----
-
 # <drag-surface>
 
 Accessible drag-and-drop reorder surface with keyboard reorder, optional single-pointer move controls, live announcements and cross-surface transfer
@@ -12955,43 +12921,43 @@ Document provenance disclosure panel
       <section>
         <h2 class="page-info-section-heading">History</h2>
         <dl>
-          <dl-item>
+          <div>
             <dt>Published</dt>
             <dd><time datetime="2026-01-10">January 10, 2026</time></dd>
-          </dl-item>
-          <dl-item>
+          </div>
+          <div>
             <dt>Last updated</dt>
             <dd>
               <time datetime="2026-03-15" data-relative>
                 15 March 2026
               </time>
             </dd>
-          </dl-item>
-          <dl-item>
+          </div>
+          <div>
             <dt>Version</dt>
             <dd>1.4.0</dd>
-          </dl-item>
-          <dl-item>
+          </div>
+          <div>
             <dt>Reading time</dt>
             <dd data-reading-time>&mdash;</dd>
-          </dl-item>
+          </div>
         </dl>
       </section>
       <section>
         <h2 class="page-info-section-heading">How this was made</h2>
         <dl>
-          <dl-item>
+          <div>
             <dt>Authorship</dt>
             <dd>Human-written, AI-assisted</dd>
-          </dl-item>
-          <dl-item>
+          </div>
+          <div>
             <dt>AI tools used</dt>
             <dd>Claude Sonnet 4 &mdash; research and drafting</dd>
-          </dl-item>
-          <dl-item>
+          </div>
+          <div>
             <dt>Review</dt>
             <dd>Editor-reviewed</dd>
-          </dl-item>
+          </div>
         </dl>
       </section>
     </section>

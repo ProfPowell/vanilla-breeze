@@ -14,7 +14,7 @@ Key features:
 - `<form-field>` for consistent input styling and validation
 - `data-layout="sidebar"` with `<main>` and `<aside>` for order summary placement
 - `data-layout="split"` for side-by-side fields (city/state, expiry/CVC)
-- `<dl>` with `<dl-item>` rows for the order summary; `<small>` for the security note
+- `<dl>` with `<div>` rows for the order summary; `<small>` for the security note
 - `<icon-wc name="lock">` for security indicators
 - Proper `autocomplete` attributes for address and payment autofill
 - `inputmode="numeric"` for mobile keyboard optimization
@@ -161,7 +161,7 @@ fieldset small icon-wc {
 
 ## Split Layout with Order Summary
 
-A two-column layout using `data-layout="sidebar"` with the checkout form in a `<main>` and an order summary `<aside>`. The sidebar layout automatically recognizes these semantic elements for content vs sidebar sizing. The order summary is a description list: each `<dl-item>` pairs a `<dt>` label (item details in `<small>`) with its `<dd>` price, laid out as a `data-layout="cluster"` row. Native `<hr>` elements provide visual dividers.
+A two-column layout using `data-layout="sidebar"` with the checkout form in a `<main>` and an order summary `<aside>`. The sidebar layout automatically recognizes these semantic elements for content vs sidebar sizing. The order summary is a description list: each `<div>` pairs a `<dt>` label (item details in `<small>`) with its `<dd>` price, laid out as a `data-layout="cluster"` row. Native `<hr>` elements provide visual dividers.
 
 Complete your purchase by providing shipping and payment information.
 
@@ -174,7 +174,7 @@ Layout is handled entirely by `data-layout` attributes. These element styles cov
 Order summary styling:
 
 ```css
-/* Each dl-item is a cluster row; drop the default dd indent */
+/* Each dl group is a cluster row; drop the default dd indent */
 aside dd {
   margin: 0;
   white-space: nowrap;
