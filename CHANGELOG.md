@@ -18,7 +18,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 - **`npm run preview`** runs the full build before serving `site/dist/pages` on port 3456; it used to skip the bundle and demo builds.
 
+### Removed
+- **`<dl-item>` is gone (breaking).** It was VB's named alternative to the `<div>` that HTML allows around a `<dt>`/`<dd>` group, but it is not a permitted child of `<dl>`, and axe reports it as a serious failure (`definition-list`, `dlitem`). Replace `<dl-item>` with `<div>`: every `<dl>` variant (`data-variant`, `data-bordered`, `data-striped`, `data-density`) styles the two identically, so nothing else changes. `<page-info>` and `<page-stats>` now render `<div>` groups.
+
 ### Fixed
+- **Footer navigation links have a gap.** `nav.horizontal` inside `footer.site` rendered its links touching ("About Pricing Support"), including in the Simple Footer pattern; they are now spaced.
 - **`data-layout="center"` (and `<layout-center>`) no longer collapses inside a stack, cover or grid.** A `<section>` or `<article>` with `data-layout="center"` placed directly in a flex or grid parent shrank to its padding, wrapping text one character per line, unless it also had `data-layout-gap`. It now takes the available width in every parent.
 - **Pattern examples pass `vb-check`:** the checkout, registration and sign-in patterns no longer use `<div>` for layout, the chat patterns no longer use inline styles, and a few missing `scope`, `aria-label` and `autocomplete` values are corrected.
 - **`<color-picker>` no longer pulls focus back into its panel** when focus moved elsewhere (or the panel closed) in the frame after it opened.
