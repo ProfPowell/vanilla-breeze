@@ -181,13 +181,13 @@ import 'vanilla-breeze';</code-block>
   <form id="qs-theme-form" data-layout="cluster" data-layout-gap="l" data-layout-align="end" aria-label="Theme preview controls">
     <label>Theme
       <select name="theme">
-        <optgroup label="Bundled">
+        <optgroup label="Built-in">
           <option value="default">Default</option>
           <option value="modern">Modern</option>
           <option value="minimal">Minimal</option>
           <option value="classic">Classic</option>
         </optgroup>
-        <optgroup label="One extra stylesheet">
+        <optgroup label="Needs a stylesheet">
           <option value="swiss">Swiss</option>
           <option value="editorial">Editorial</option>
           <option value="brutalist">Brutalist</option>
@@ -201,10 +201,16 @@ import 'vanilla-breeze';</code-block>
         </optgroup>
       </select>
     </label>
+    <fieldset data-layout="cluster" data-layout-gap="s">
+      <legend>Mode</legend>
+      <label><input type="radio" name="mode" value="auto" checked> Auto</label>
+      <label><input type="radio" name="mode" value="light"> Light</label>
+      <label><input type="radio" name="mode" value="dark"> Dark</label>
+    </fieldset>
   </form>
   <code-block language="html" label="HTML" data-escape>
 <html lang="en"></code-block>
-  <browser-window id="qs-theme-frame" url="trailhead.example" title="Trailhead" data-demo-height="xl" src="/docs/examples/demos/quick-start/step-5-components.html"></browser-window>
+  <browser-window id="qs-theme-frame" url="trailhead.example" title="/trailhead" data-demo-height="xl" src="/docs/examples/demos/quick-start/step-5-components.html"></browser-window>
 </section>
 
 <template slot="extraScripts">
@@ -214,29 +220,38 @@ import 'vanilla-breeze';</code-block>
     const snippet = form?.nextElementSibling;
     const cdn = 'https://unpkg.com/vanilla-breeze/dist/cdn/themes/';
 
-    const snippetFor = (theme, bundled) => {
+    const snippetFor = (theme, bundled, mode) => {
+      const modeAttr = mode === 'auto' ? '' : ' data-mode="' + mode + '"';
       if (theme === 'default') {
-        return '<html lang="en">';
+        return '<html lang="en"' + modeAttr + '>';
       }
+      const tag = '<html lang="en" data-theme="' + theme + '"' + modeAttr + '>';
       if (bundled) {
-        return '<!-- This theme is built-in to Vanilla Breeze -->\n<html lang="en" data-theme="' + theme + '">';
+        return tag;
       }
-      return '<!-- This theme requires an additional stylesheet -->\n'
-        + '<link rel="stylesheet" href="' + cdn + theme + '.css">\n'
-        + '<html lang="en" data-theme="' + theme + '">';
+      return '<link rel="stylesheet" href="' + cdn + theme + '.css">\n' + tag;
     };
 
     if (form && frame) {
       const base = '/docs/examples/demos/quick-start/step-5-components.html';
+      const frameMode = (m) => m === 'auto'
+        ? (document.documentElement.dataset.mode === 'dark' ? 'dark' : 'light')
+        : m;
+      window.addEventListener('vb:theme-change', () => queueMicrotask(() => {
+        frame.setAttribute('mode', frameMode(String(new FormData(form).get('mode') || 'auto')));
+      }));
       form.addEventListener('submit', (event) => event.preventDefault());
       form.addEventListener('change', () => {
         const data = new FormData(form);
         const theme = String(data.get('theme') || 'default');
         const params = new URLSearchParams();
         if (theme !== 'default') params.set('theme', theme);
+        const mode = String(data.get('mode') || 'auto');
+        if (mode !== 'auto') params.set('mode', mode);
         const group = form.elements.theme.selectedOptions[0]?.parentElement;
-        snippet?.setCode?.(snippetFor(theme, group?.label === 'Bundled'));
+        snippet?.setCode?.(snippetFor(theme, group?.label === 'Built-in', mode));
         const qs = params.toString();
+        frame.setAttribute('mode', frameMode(mode));
         frame.setAttribute('src', qs ? base + '?' + qs : base);
       });
     }
