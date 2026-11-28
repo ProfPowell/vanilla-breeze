@@ -1,400 +1,323 @@
 ---
 layout: docs
 title: Quick Start
-description: "One HTML file, ten minutes. Write plain semantic HTML, then add Vanilla Breeze one optional layer at a time: styles, layout attributes, components and a theme. No utility classes, no wrapper divs, no build step."
+description: "Install Vanilla Breeze from a CDN, npm or your own server, then see what it adds to plain HTML: layouts, elements and themes."
 currentSection: start
 currentPath: /docs/quick-start/
 ---
 
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
   <h1>Quick Start</h1>
-  <p class="lead">One HTML file, ten minutes. You'll write a plain page, then add Vanilla Breeze one optional layer at a time: styles, layout, components, theme. No utility classes, no wrapper divs, no build step.</p>
-
-  <figure data-layout="stack" data-layout-gap="s">
-    <browser-window url="trailhead.example" title="The finished Quick Start page" data-demo-height="xl" src="/docs/examples/demos/quick-start/step-5-components.html"></browser-window>
-    <figcaption>Here's where you'll be in ten minutes: the same semantic HTML from step 2, with layout, two components and a theme layered on top.</figcaption>
-  </figure>
+  <p class="lead">Vanilla Breeze is a layered component system that styles plain, semantic HTML. Add attributes and elements to your HTML to control layout, behavior and themes, with no utility classes or build step.</p>
 </section>
 
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="install">1. Install in 60 seconds</h2>
-  <p>Save this as <code>index.html</code> and open it in a browser. That's the whole setup.</p>
+  <h2 id="install">Installation</h2>
 
   <tab-set>
     <details open name="qs-install">
       <summary>CDN</summary>
       <figure data-layout="stack" data-layout-gap="s">
-        <code-block language="html" label="index.html" data-escape><!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Trailhead</title>
-  <link rel="stylesheet" href="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.css">
-  <script type="module" src="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.js"></script>
-</head>
-<body>
-  <main>
-    <h1>Hello, Vanilla Breeze</h1>
-    <p>Save this as index.html and open it in a browser.</p>
-  </main>
-</body>
-</html></code-block>
-        <figcaption><small>These URLs have no version, so they always load the newest release. Vanilla Breeze is pre-release and a new version may change syntax: for production, pin an exact version (<code>vanilla-breeze@0.6.1</code>) and add <a href="/docs/attributes/integrity/">Subresource Integrity</a>.</small></figcaption>
+        <code-block wrap language="html" label="Add to your head" data-escape><link rel="stylesheet" href="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.css">
+<script type="module" src="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.js"></script></code-block>
+        <figcaption><small>These URLs have no version, so they always load the newest version. Vanilla Breeze is pre-release and a new version may change syntax. For production, pin an exact version (<code>vanilla-breeze@0.7.4</code>) and add <a href="/docs/attributes/integrity/">Subresource Integrity</a>.</small></figcaption>
       </figure>
     </details>
     <details name="qs-install">
-      <summary>npm</summary>
+      <summary>NPM</summary>
       <figure data-layout="stack" data-layout-gap="s">
-        <code-block language="bash" label="Install the package" data-escape>npm install vanilla-breeze</code-block>
-        <code-block language="javascript" label="Import in your entry file" data-escape>import 'vanilla-breeze/css';
+        <code-block wrap language="bash" label="Install the package" data-escape>npm install vanilla-breeze</code-block>
+        <code-block wrap language="javascript" label="Import in your entry file" data-escape>import 'vanilla-breeze/css';
 import 'vanilla-breeze';</code-block>
         <figcaption><small>Needs a bundler that handles CSS imports. Using Astro or Eleventy? See <a href="/docs/integrations/">Integrations</a>.</small></figcaption>
       </figure>
     </details>
     <details name="qs-install">
       <summary>Self-host</summary>
-      <p>Copy <code>node_modules/vanilla-breeze/dist/cdn/</code> into your site and link <code>vanilla-breeze.css</code> and <code>vanilla-breeze.js</code> from there, exactly as in the CDN version.</p>
+      <figure data-layout="stack" data-layout-gap="s">
+        <ol>
+          <li>Download the zip for the newest version from the <a href="https://github.com/ProfPowell/vanilla-breeze/tags">GitHub tags page</a>.</li>
+          <li>Copy its <code>dist/cdn/</code> folder into your site, for example as <code>vanilla-breeze/</code>.</li>
+          <li>Link the two files in your <code>&lt;head&gt;</code>:</li>
+        </ol>
+        <code-block wrap language="html" label="Add to your head" data-escape><link rel="stylesheet" href="/vanilla-breeze/vanilla-breeze.css">
+<script type="module" src="/vanilla-breeze/vanilla-breeze.js"></script></code-block>
+        <figcaption><small>Using npm? Run <code>npm install vanilla-breeze</code> and copy <code>node_modules/vanilla-breeze/dist/cdn/</code> instead.</small></figcaption>
+      </figure>
     </details>
   </tab-set>
-
-  <p><small>The JS line is optional; step 5 shows when you need it. Zero dependencies. Want a smaller footprint? The core bundles (<code>vanilla-breeze-core.css</code> and <code>vanilla-breeze-core.js</code>) cover most pages; see <a href="/docs/performance/">loading strategies</a>.</small></p>
 </section>
 
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="html">2. Plain HTML already looks right</h2>
-  <p>Write ordinary semantic HTML: landmarks, headings, a table, a form. Here is the same file with and without the stylesheet.</p>
-
-  <code-block language="html" label="The page body (same in every step)" max-lines="18" data-escape><header>
-  <a href="#trips"><strong>Trailhead</strong></a>
-  <nav aria-label="Main">
-    <ul>
-      <li><a href="#trips" aria-current="page">Trips</a></li>
-      <li><a href="#departures">Departures</a></li>
-      <li><a href="#routes">Routes</a></li>
-    </ul>
-  </nav>
-</header>
-
-<main>
-  <h1>Plan your next trip</h1>
-  <p>Three routes our guides are running this season.</p>
-
-  <section id="trips" aria-label="Trips">
-    <article>
-      <h2>Ridge Loop</h2>
-      <p>A one-day climb with views over two valleys.</p>
-      <p><strong>8 mi</strong> · Moderate</p>
-      <a href="#route-ridge">Route details</a>
-    </article>
-    <!-- Lake Traverse, Summit Push -->
-  </section>
-
-  <table id="departures">
-    <caption>Upcoming departures</caption>
-    <thead>
-      <tr><th scope="col">Trip</th><th scope="col">Date</th><th scope="col">Spots left</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>Ridge Loop</td><td><time datetime="2026-11-14">Nov 14</time></td><td>6</td></tr>
-      <!-- two more rows -->
-    </tbody>
-  </table>
-
-  <section id="routes" aria-labelledby="routes-title">
-    <h2 id="routes-title">Route details</h2>
-    <details name="route" id="route-ridge" open>
-      <summary>Ridge Loop</summary>
-      <p>Start at the north lot, climb the switchbacks to the saddle…</p>
-    </details>
-    <!-- Lake Traverse, Summit Push -->
-  </section>
-
-  <form>
-    <form-field>
-      <label for="email">Email me new routes</label>
-      <input id="email" name="email" type="email" required>
-    </form-field>
-    <button type="submit">Subscribe</button>
-  </form>
-
-  <aside>
-    <h2>Before you go</h2>
-    <p>Check the trail report the night before.</p>
-  </aside>
-</main>
-
-<footer>
-  <p><small>© 2026 Trailhead Guides</small></p>
-</footer></code-block>
-
+  <h2 id="default-styles">Default styles</h2>
+  <p>Both pages use the same HTML. The second one also loads <code>vanilla-breeze.css</code>, which styles standard HTML elements by default, like headings, links, tables and forms.</p>
   <section data-layout="grid" data-layout-min="l" data-layout-gap="l" aria-label="Before and after the stylesheet">
-    <figure data-layout="stack" data-layout-gap="s">
-      <browser-window url="trailhead.example" title="No CSS" data-demo-height="xl" src="/docs/examples/demos/quick-start/step-1-plain.html"></browser-window>
-      <figcaption>Browser defaults. It already works: links, the accordion, form validation.</figcaption>
-    </figure>
-    <figure data-layout="stack" data-layout-gap="s">
-      <browser-window url="trailhead.example" title="+ vanilla-breeze.css" data-demo-height="xl" src="/docs/examples/demos/quick-start/step-2-styled.html"></browser-window>
-      <figcaption>Add one <code>&lt;link&gt;</code>: type scale, spacing, table, form controls, nav and focus styles.</figcaption>
-    </figure>
+    <browser-window url="https://trailhead.example" title="trailhead.example/native" data-demo-height="xl" src="/docs/examples/demos/quick-start/step-1-plain.html"></browser-window>
+    <browser-window url="https://trailhead.example" title="trailhead.example/styled" data-demo-height="xl" src="/docs/examples/demos/quick-start/step-2-styled.html"></browser-window>
   </section>
-
-  <p>No layout yet: everything is still one column. That's the next step.</p>
 </section>
-
 <section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="layout">3. Layout is an attribute</h2>
-  <p>Put <code>data-layout</code> on the element you already have. Same markup, different arrangement.</p>
-
-  <h3 id="layout-values">One attribute, four arrangements</h3>
+  <h2 id="layout">Layout</h2>
+  <p>Add <code>data-layout</code> to any element to arrange its children as a stack, cluster, grid and more. The <a href="/docs/layouts/">Layouts guide</a> covers every layout and the other ways to build them.</p>
   <tab-set>
     <details open name="qs-layout">
       <summary>stack</summary>
-      <figure data-layout="stack" data-layout-gap="s">
-        <code-block language="html" label="Vertical, even spacing" data-escape><section data-layout="stack" data-layout-gap="m">
-  <article class="card">…</article> <!-- × 3 -->
+      <section data-layout="split" data-layout-gap="m" aria-label="Stack">
+        <section data-layout="stack" data-layout-gap="m" aria-label="Stack example">
+          <article class="card"><p><strong>Ridge Loop</strong></p><p>8 mi · Moderate</p></article>
+          <article class="card"><p><strong>Cascade Crest Traverse</strong></p><p>22 mi · Strenuous</p></article>
+          <article class="card"><p><strong>Bluff</strong></p><p>3 mi · Easy</p></article>
+          <article class="card"><p><strong>Lake Traverse</strong></p><p>14 mi · Easy</p></article>
+        </section>
+        <code-block wrap language="html" data-escape><section data-layout="stack">
+  <article class="card">
+    <p><strong>Ridge Loop</strong></p>
+    <p>8 mi · Moderate</p>
+  </article>
+  <article class="card">
+    <p><strong>Cascade Crest Traverse</strong></p>
+    <p>22 mi · Strenuous</p>
+  </article>
+  <article class="card">
+    <p><strong>Bluff</strong></p>
+    <p>3 mi · Easy</p>
+  </article>
+  <article class="card">
+    <p><strong>Lake Traverse</strong></p>
+    <p>14 mi · Easy</p>
+  </article>
 </section></code-block>
-        <browser-window url="trailhead.example/trips">
-          <section data-layout="stack" data-layout-gap="m" aria-label="Stack example">
-            <article class="card"><p><strong>Ridge Loop</strong></p><p>8 mi · Moderate</p></article>
-            <article class="card"><p><strong>Lake Traverse</strong></p><p>14 mi · Easy</p></article>
-            <article class="card"><p><strong>Summit Push</strong></p><p>11 mi · Hard</p></article>
-          </section>
-        </browser-window>
-      </figure>
+      </section>
     </details>
     <details name="qs-layout">
       <summary>cluster</summary>
-      <figure data-layout="stack" data-layout-gap="s">
-        <code-block language="html" label="Natural width, wraps like words" data-escape><section data-layout="cluster" data-layout-gap="m">
-  <article class="card">…</article> <!-- × 3 -->
+      <section data-layout="split" data-layout-gap="m" aria-label="Cluster">
+        <section data-layout="cluster" data-layout-gap="m" aria-label="Cluster example">
+          <article class="card"><p><strong>Ridge Loop</strong></p><p>8 mi · Moderate</p></article>
+          <article class="card"><p><strong>Cascade Crest Traverse</strong></p><p>22 mi · Strenuous</p></article>
+          <article class="card"><p><strong>Bluff</strong></p><p>3 mi · Easy</p></article>
+          <article class="card"><p><strong>Lake Traverse</strong></p><p>14 mi · Easy</p></article>
+        </section>
+        <code-block wrap language="html" data-escape><section data-layout="cluster">
+  <article class="card">
+    <p><strong>Ridge Loop</strong></p>
+    <p>8 mi · Moderate</p>
+  </article>
+  <article class="card">
+    <p><strong>Cascade Crest Traverse</strong></p>
+    <p>22 mi · Strenuous</p>
+  </article>
+  <article class="card">
+    <p><strong>Bluff</strong></p>
+    <p>3 mi · Easy</p>
+  </article>
+  <article class="card">
+    <p><strong>Lake Traverse</strong></p>
+    <p>14 mi · Easy</p>
+  </article>
 </section></code-block>
-        <browser-window url="trailhead.example/trips">
-          <section data-layout="cluster" data-layout-gap="m" aria-label="Cluster example">
-            <article class="card"><p><strong>Ridge Loop</strong></p><p>8 mi · Moderate</p></article>
-            <article class="card"><p><strong>Lake Traverse</strong></p><p>14 mi · Easy</p></article>
-            <article class="card"><p><strong>Summit Push</strong></p><p>11 mi · Hard</p></article>
-          </section>
-        </browser-window>
-      </figure>
+      </section>
     </details>
     <details name="qs-layout">
       <summary>grid</summary>
-      <figure data-layout="stack" data-layout-gap="s">
-        <code-block language="html" label="As many 10rem+ columns as fit, no breakpoints" data-escape><section data-layout="grid" data-layout-min="s" data-layout-gap="m">
-  <article class="card">…</article> <!-- × 3 -->
+      <section data-layout="split" data-layout-gap="m" aria-label="Grid">
+        <section data-layout="grid" data-layout-min="xs" data-layout-gap="m" aria-label="Grid example">
+          <article class="card"><p><strong>Ridge Loop</strong></p><p>8 mi · Moderate</p></article>
+          <article class="card"><p><strong>Cascade Crest Traverse</strong></p><p>22 mi · Strenuous</p></article>
+          <article class="card"><p><strong>Bluff</strong></p><p>3 mi · Easy</p></article>
+          <article class="card"><p><strong>Lake Traverse</strong></p><p>14 mi · Easy</p></article>
+        </section>
+        <code-block wrap language="html" data-escape><section data-layout="grid" data-layout-min="xs">
+  <article class="card">
+    <p><strong>Ridge Loop</strong></p>
+    <p>8 mi · Moderate</p>
+  </article>
+  <article class="card">
+    <p><strong>Cascade Crest Traverse</strong></p>
+    <p>22 mi · Strenuous</p>
+  </article>
+  <article class="card">
+    <p><strong>Bluff</strong></p>
+    <p>3 mi · Easy</p>
+  </article>
+  <article class="card">
+    <p><strong>Lake Traverse</strong></p>
+    <p>14 mi · Easy</p>
+  </article>
 </section></code-block>
-        <browser-window url="trailhead.example/trips">
-          <section data-layout="grid" data-layout-min="s" data-layout-gap="m" aria-label="Grid example">
-            <article class="card"><p><strong>Ridge Loop</strong></p><p>8 mi · Moderate</p></article>
-            <article class="card"><p><strong>Lake Traverse</strong></p><p>14 mi · Easy</p></article>
-            <article class="card"><p><strong>Summit Push</strong></p><p>11 mi · Hard</p></article>
-          </section>
-        </browser-window>
-      </figure>
-    </details>
-    <details name="qs-layout">
-      <summary>switcher</summary>
-      <figure data-layout="stack" data-layout-gap="s">
-        <code-block language="html" label="All in a row, or all stacked: never 2 + 1" data-escape><section data-layout="switcher" data-layout-threshold="m" data-layout-gap="m">
-  <article class="card">…</article> <!-- × 3 -->
-</section></code-block>
-        <browser-window url="trailhead.example/trips">
-          <section data-layout="switcher" data-layout-threshold="m" data-layout-gap="m" aria-label="Switcher example">
-            <article class="card"><p><strong>Ridge Loop</strong></p><p>8 mi · Moderate</p></article>
-            <article class="card"><p><strong>Lake Traverse</strong></p><p>14 mi · Easy</p></article>
-            <article class="card"><p><strong>Summit Push</strong></p><p>11 mi · Hard</p></article>
-          </section>
-        </browser-window>
-      </figure>
+      </section>
     </details>
   </tab-set>
-  <p><small><code>class="card"</code> is one of a few semantic variant classes (with <code>.lead</code>, <code>.secondary</code>, <code>.ghost</code>). There are no utility classes. Without JavaScript the tabs above are a native exclusive accordion: <code>&lt;tab-set&gt;</code> enhances <code>&lt;details name&gt;</code>, it doesn't replace it.</small></p>
 
-  <h3 id="layout-compose">Compose the page</h3>
-  <p>Now lay out the step 2 page. These are the only changes:</p>
-  <code-block language="html" label="Step 2 + layout attributes" data-escape><header data-layout="cluster" data-layout-justify="between" data-layout-align="center">
-  <a href="#trips"><strong>Trailhead</strong></a>
-  <nav aria-label="Main">
-    <ul data-layout="cluster" data-layout-gap="xs">…</ul>
-  </nav>
-</header>
-
-<main data-layout="sidebar" data-layout-side="end" data-layout-gap="xl">
-  <section data-layout="stack" data-layout-gap="l">
-    <h1>Plan your next trip</h1>
-    <p>Three routes our guides are running this season.</p>
-
-    <section id="trips" aria-label="Trips" data-layout="grid" data-layout-min="s" data-layout-gap="m">
-      <article class="card" data-layout="stack" data-layout-gap="s">…</article>
-      <!-- Lake Traverse, Summit Push -->
-    </section>
-
-    <table id="departures">…</table>
-
-    <section id="routes" aria-labelledby="routes-title" data-layout="stack" data-layout-gap="s">…</section>
-
-    <form data-layout="cluster" data-layout-gap="s" data-layout-align="end">…</form>
-  </section>
-
-  <aside>…</aside>
-</main></code-block>
-  <p>The one structural change is the <code>&lt;section&gt;</code> wrapping the main column, because <code>sidebar</code> needs a content child next to the <code>&lt;aside&gt;</code>. It finds the <code>&lt;aside&gt;</code> by element type, not by class. Resize the window: the cards reflow and the aside drops below when space runs out.</p>
-  <browser-window url="trailhead.example" title="Step 3: layout attributes" data-demo-height="xl" src="/docs/examples/demos/quick-start/step-3-layout.html"></browser-window>
-
+  <h2 id="elements">Elements</h2>
+  <p>Vanilla Breeze styles native HTML elements and adds custom elements and web components. Browse the ${elements.nativeCount} <a href="/docs/elements/native/">native elements</a>, ${elements.customCount} <a href="/docs/elements/custom-elements/">custom elements</a> and ${elements.componentCount} <a href="/docs/elements/web-components/">web components</a>.</p>
+  <tab-set>
+    <details open name="qs-components">
+      <summary>Native</summary>
+      <section data-layout="stack" data-layout-gap="none">
+        <p>Vanilla Breeze styles and animates the native <code>&lt;details&gt;</code> element, which shows a summary and expands to reveal more content.</p>
+        <section data-layout="split" data-layout-gap="m" aria-label="Details example">
+          <details>
+            <summary>What should I pack?</summary>
+            <p>Layers, water and a headlamp.</p>
+          </details>
+          <code-block wrap language="html" data-escape><details>
+  <summary>What should I pack?</summary>
+  <p>Layers, water and a headlamp.</p>
+</details></code-block>
+        </section>
+      </section>
+    </details>
+    <details name="qs-components">
+      <summary>Custom</summary>
+      <section data-layout="stack" data-layout-gap="none">
+        <p>Custom elements are new tags styled entirely with CSS. Use <code>&lt;chat-thread&gt;</code>, <code>&lt;chat-message&gt;</code> and <code>&lt;chat-bubble&gt;</code> to show a conversation, including the typing indicator.</p>
+        <section data-layout="split" data-layout-gap="m" aria-label="Chat example">
+          <chat-thread role="log" aria-label="Trip chat">
+            <chat-message data-role="agent" data-from-label="Vince">
+              <chat-bubble><p>Can you send the permit for the hike?</p></chat-bubble>
+            </chat-message>
+            <chat-message data-role="user">
+              <chat-bubble><p>Uh... what permit?</p></chat-bubble>
+            </chat-message>
+            <chat-message data-role="agent" data-from-label="Vince" data-status="typing">
+              <chat-bubble><span class="visually-hidden" data-chat-typing>Vince is typing</span></chat-bubble>
+            </chat-message>
+          </chat-thread>
+          <code-block wrap language="html" data-escape><chat-thread role="log" aria-label="Trip chat">
+  <chat-message data-role="agent" data-from-label="Vince">
+    <chat-bubble><p>Can you send the permit for the hike?</p></chat-bubble>
+  </chat-message>
+  <chat-message data-role="user">
+    <chat-bubble><p>Uh... what permit?</p></chat-bubble>
+  </chat-message>
+  <chat-message data-role="agent" data-from-label="Vince" data-status="typing">
+    <chat-bubble><span class="visually-hidden" data-chat-typing>Vince is typing</span></chat-bubble>
+  </chat-message>
+</chat-thread></code-block>
+        </section>
+      </section>
+    </details>
+    <details name="qs-components">
+      <summary>Web component</summary>
+      <section data-layout="stack" data-layout-gap="none">
+        <p>Web components are new tags that use JavaScript to progressively enhance the HTML inside them. <code>&lt;data-table&gt;</code> adds sortable columns to a regular <code>&lt;table&gt;</code>.</p>
+        <section data-layout="split" data-layout-gap="m" aria-label="Data table example">
+          <data-table>
+            <table>
+              <caption>Trips</caption>
+              <thead>
+                <tr><th scope="col" data-sort="string">Trip</th><th scope="col" data-sort="number">Miles</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Ridge Loop</td><td>8</td></tr>
+                <tr><td>Cascade Crest Traverse</td><td>22</td></tr>
+                <tr><td>Bluff</td><td>3</td></tr>
+                <tr><td>Lake Traverse</td><td>14</td></tr>
+              </tbody>
+            </table>
+          </data-table>
+          <code-block wrap language="html" data-escape><data-table>
   <table>
-    <caption>The layout vocabulary</caption>
-    <thead>
-      <tr><th scope="col"><code>data-layout</code></th><th scope="col">Arranges children…</th><th scope="col">Key modifiers</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><code>stack</code></td><td>vertically, evenly spaced</td><td><code>data-layout-gap</code>, <code>data-layout-align</code></td></tr>
-      <tr><td><code>cluster</code></td><td>in a wrapping row at natural width</td><td><code>data-layout-justify</code>, <code>data-layout-align</code>, <code>data-layout-nowrap</code></td></tr>
-      <tr><td><code>grid</code></td><td>in auto-fit columns</td><td><code>data-layout-min</code> (xs–xl)</td></tr>
-      <tr><td><code>sidebar</code></td><td>as a <code>nav</code>/<code>aside</code> beside content, wrapping when narrow</td><td><code>data-layout-side="end"</code>, <code>data-layout-sidebar-width</code></td></tr>
-      <tr><td><code>switcher</code></td><td>in one row or one column</td><td><code>data-layout-threshold</code>, <code>data-layout-limit</code></td></tr>
-      <tr><td><code>center</code></td><td>in a centered, max-width column</td><td><code>data-layout-max</code> (narrow, normal, wide, prose)</td></tr>
-      <tr><td><code>cover</code></td><td>around a vertically centered principal element</td><td><code>data-layout-min</code>, <code>data-layout-centered</code></td></tr>
-      <tr><td><code>columns</code></td><td>in newspaper-style text columns</td><td><code>data-layout-column-count</code></td></tr>
-    </tbody>
-  </table>
-  <p>Every value takes <code>data-layout-gap</code> on the spacing scale (<code>none</code>, <code>3xs</code> to <code>3xl</code>). Prefer elements? <code>&lt;layout-stack&gt;</code>, <code>&lt;layout-grid&gt;</code> and friends are the same layouts. <a href="/docs/attributes/data-layout/">Full data-layout reference →</a></p>
-</section>
-
-<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="page-layout">4. Whole-page layout</h2>
-  <p><code>data-layout</code> arranges a component. <code>data-page-layout</code> on <code>&lt;body&gt;</code> arranges the page: <code>header</code>, <code>nav</code>, <code>main</code>, <code>aside</code> and <code>footer</code> go to their regions by element type.</p>
-  <code-block language="html" label="The aside moves out of main and becomes a page region" data-escape><body data-page-layout="sidebar-right" data-layout-gap="xl">
-  <header data-layout="cluster" data-layout-justify="between" data-layout-align="center">…</header>
-  <main data-layout="stack" data-layout-gap="l">…</main>
-  <aside>…</aside>
-  <footer>…</footer>
-</body></code-block>
-
-  <section data-layout="sidebar" data-layout-side="end" data-layout-sidebar-width="wide" data-layout-gap="l" aria-label="Page layout on desktop and phone">
-    <figure data-layout="stack" data-layout-gap="s">
-      <browser-window url="trailhead.example" title="Step 4: desktop" data-demo-height="xl" src="/docs/examples/demos/quick-start/step-4-page.html"></browser-window>
-      <figcaption>Wide: main and aside side by side.</figcaption>
-    </figure>
-    <aside>
-      <figure data-layout="stack" data-layout-gap="s">
-        <browser-window url="trailhead.example" title="Step 4: phone" device="iphone-16" src="/docs/examples/demos/quick-start/step-4-page.html"></browser-window>
-        <figcaption>Below 48rem the template collapses to one column.</figcaption>
-      </figure>
-    </aside>
-  </section>
-
-  <p>Try it in your own file:</p>
-  <ul>
-    <li>Delete the <code>&lt;aside&gt;</code>: the template drops to one column by itself.</li>
-    <li>Change the value to <code>holy-grail</code> and add a <code>&lt;nav&gt;</code> before <code>&lt;main&gt;</code>: three columns.</li>
-    <li>Other templates: <code>stack</code>, <code>sidebar-left</code>, <code>app-shell</code>, <code>dashboard</code>, <code>article</code>, <code>landing</code>. <a href="/docs/attributes/data-page-layout/">data-page-layout reference →</a></li>
-  </ul>
-</section>
-
-<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="components">5. Add components where HTML runs out</h2>
-  <p>Steps 2–4 were CSS only. You already used one CSS-only custom element: <code>&lt;form-field&gt;</code> around the email input, which shows validation messages without JavaScript (<code>&lt;layout-card&gt;</code> is another). For behaviour, add the script and wrap elements you already have.</p>
-  <code-block language="html" label="Wrap the table and the route details" data-escape><data-table>
-  <table id="departures" data-filterable>
-    <caption>Upcoming departures</caption>
+    <caption>Trips</caption>
     <thead>
       <tr>
         <th scope="col" data-sort="string">Trip</th>
-        <th scope="col" data-sort="date">Date</th>
-        <th scope="col" data-sort="number">Spots left</th>
+        <th scope="col" data-sort="number">Miles</th>
       </tr>
     </thead>
     <tbody>
-      <tr><td>Ridge Loop</td><td data-sort-value="2026-11-14"><time datetime="2026-11-14">Nov 14</time></td><td>6</td></tr>
-      <!-- two more rows -->
+      <tr><td>Ridge Loop</td><td>8</td></tr>
+      <tr><td>Cascade Crest Traverse</td><td>22</td></tr>
+      <tr><td>Bluff</td><td>3</td></tr>
+      <tr><td>Lake Traverse</td><td>14</td></tr>
     </tbody>
   </table>
-</data-table>
+</data-table></code-block>
+        </section>
+      </section>
+    </details>
+  </tab-set>
 
-<tab-set>
-  <details name="route" id="route-ridge" open>…</details>
-  <details name="route" id="route-lake">…</details>
-  <details name="route" id="route-summit">…</details>
-</tab-set></code-block>
-  <browser-window url="trailhead.example" title="Step 5: components" data-demo-height="xl" src="/docs/examples/demos/quick-start/step-5-components.html"></browser-window>
-  <p>Sort a column, filter the table, arrow through the route tabs. Turn JavaScript off and you're back at step 4: a plain table and an exclusive accordion. Nothing breaks. <a href="/docs/elements/web-components/">Browse all ${elements.componentCount} web components →</a></p>
-</section>
-
-<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
-  <h2 id="themes">6. Theme with one attribute</h2>
-  <p>The whole page re-skins from one attribute on <code>&lt;html&gt;</code>.</p>
-
-  <figure data-layout="stack" data-layout-gap="s">
-    <form id="qs-theme-form" data-layout="cluster" data-layout-gap="l" data-layout-align="end" aria-label="Theme preview controls">
-      <label>Theme
-        <select name="theme">
-          <optgroup label="Bundled">
-            <option value="default">Default</option>
-            <option value="modern">Modern</option>
-            <option value="minimal">Minimal</option>
-            <option value="classic">Classic</option>
-          </optgroup>
-          <optgroup label="One extra stylesheet">
-            <option value="swiss">Swiss</option>
-            <option value="editorial">Editorial</option>
-            <option value="brutalist">Brutalist</option>
-            <option value="art-deco">Art Deco</option>
-            <option value="cottagecore">Cottagecore</option>
-            <option value="kawaii">Kawaii</option>
-            <option value="glassmorphism">Glassmorphism</option>
-            <option value="vaporwave">Vaporwave</option>
-            <option value="8bit">8-bit</option>
-            <option value="terminal">Terminal</option>
-          </optgroup>
-        </select>
-      </label>
-      <fieldset data-layout="cluster" data-layout-gap="s">
-        <legend>Mode</legend>
-        <label><input type="radio" name="mode" value="auto" checked> Auto</label>
-        <label><input type="radio" name="mode" value="light"> Light</label>
-        <label><input type="radio" name="mode" value="dark"> Dark</label>
-      </fieldset>
-    </form>
-    <pre><code id="qs-theme-code">&lt;html lang="en"&gt;</code></pre>
-    <browser-window id="qs-theme-frame" url="trailhead.example" title="Step 6: theme" data-demo-height="xl" src="/docs/examples/demos/quick-start/step-5-components.html"></browser-window>
-    <figcaption>The line above the preview is the only change to the page.</figcaption>
-  </figure>
-
-  <code-block language="html" label="Bundled themes need nothing else; the rest add one link" data-escape><!-- Bundled, no extra file: modern, minimal, classic -->
-<html lang="en" data-theme="modern">
-
-<!-- Any other theme: one more link, same attribute -->
-<link rel="stylesheet" href="https://unpkg.com/vanilla-breeze/dist/cdn/themes/art-deco.css">
-<html lang="en" data-theme="art-deco" data-mode="dark"></code-block>
-  <p>Want visitors to choose? Drop in <a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a>; it fetches theme files the first time each one is used. <a href="/docs/themes/">Browse all ${themeRegistry.length} themes →</a></p>
+  <h2 id="themes">Themes</h2>
+  <p>Vanilla Breeze changes the look of the whole page with two attributes on the <code>&lt;html&gt;</code> element: <code>data-theme</code> and <code>data-mode</code>. See all ${themeRegistry.length} themes on the <a href="/docs/themes/">Themes page</a>.</p>
+  <form id="qs-theme-form" data-layout="cluster" data-layout-gap="l" data-layout-align="end" aria-label="Theme preview controls">
+    <label>Theme
+      <select name="theme">
+        <optgroup label="Built-in">
+          <option value="default">Default</option>
+          <option value="modern">Modern</option>
+          <option value="minimal">Minimal</option>
+          <option value="classic">Classic</option>
+        </optgroup>
+        <optgroup label="Needs a stylesheet">
+          <option value="swiss">Swiss</option>
+          <option value="editorial">Editorial</option>
+          <option value="brutalist">Brutalist</option>
+          <option value="art-deco">Art Deco</option>
+          <option value="cottagecore">Cottagecore</option>
+          <option value="kawaii">Kawaii</option>
+          <option value="glassmorphism">Glassmorphism</option>
+          <option value="vaporwave">Vaporwave</option>
+          <option value="8bit">8-bit</option>
+          <option value="terminal">Terminal</option>
+        </optgroup>
+      </select>
+    </label>
+    <fieldset data-layout="cluster" data-layout-gap="s">
+      <legend>Mode</legend>
+      <label><input type="radio" name="mode" value="auto" checked> Auto</label>
+      <label><input type="radio" name="mode" value="light"> Light</label>
+      <label><input type="radio" name="mode" value="dark"> Dark</label>
+    </fieldset>
+  </form>
+  <code-block wrap language="html" label="HTML" data-escape>
+<html lang="en"></code-block>
+  <browser-window id="qs-theme-frame" url="https://trailhead.example" title="trailhead.example" data-demo-height="xl" src="/docs/examples/demos/quick-start/step-5-components.html"></browser-window>
 </section>
 
 <template slot="extraScripts">
   <script type="module">
     const form = document.querySelector('#qs-theme-form');
     const frame = document.querySelector('#qs-theme-frame');
-    const code = document.querySelector('#qs-theme-code');
-    if (form && frame && code) {
+    const snippet = form?.nextElementSibling;
+    const cdn = 'https://unpkg.com/vanilla-breeze/dist/cdn/themes/';
+
+    const snippetFor = (theme, bundled, mode) => {
+      const modeAttr = mode === 'auto' ? '' : ' data-mode="' + mode + '"';
+      if (theme === 'default') {
+        return '<html lang="en"' + modeAttr + '>';
+      }
+      const tag = '<html lang="en" data-theme="' + theme + '"' + modeAttr + '>';
+      if (bundled) {
+        return tag;
+      }
+      return '<link rel="stylesheet" href="' + cdn + theme + '.css">\n' + tag;
+    };
+
+    if (form && frame) {
       const base = '/docs/examples/demos/quick-start/step-5-components.html';
+      const frameMode = (m) => m === 'auto'
+        ? (document.documentElement.dataset.mode === 'dark' ? 'dark' : 'light')
+        : m;
+      window.addEventListener('vb:theme-change', () => queueMicrotask(() => {
+        frame.setAttribute('mode', frameMode(String(new FormData(form).get('mode') || 'auto')));
+      }));
       form.addEventListener('submit', (event) => event.preventDefault());
       form.addEventListener('change', () => {
         const data = new FormData(form);
         const theme = String(data.get('theme') || 'default');
-        const mode = String(data.get('mode') || 'auto');
         const params = new URLSearchParams();
-        let tag = '<html lang="en"';
-        if (theme !== 'default') {
-          params.set('theme', theme);
-          tag += ' data-theme="' + theme + '"';
-        }
-        if (mode !== 'auto') {
-          params.set('mode', mode);
-          tag += ' data-mode="' + mode + '"';
-        }
-        code.textContent = tag + '>';
+        if (theme !== 'default') params.set('theme', theme);
+        const mode = String(data.get('mode') || 'auto');
+        if (mode !== 'auto') params.set('mode', mode);
+        const group = form.elements.theme.selectedOptions[0]?.parentElement;
+        snippet?.setCode?.(snippetFor(theme, group?.label === 'Built-in', mode));
         const qs = params.toString();
-        frame.setAttribute('src', qs ? base + '?' + qs : base);
+        frame.setAttribute('mode', frameMode(mode));
+        const path = qs ? base + '?' + qs : base;
+        frame.setAttribute('title', qs ? 'trailhead.example/?' + qs : 'trailhead.example');
+        frame.setAttribute('src', path);
       });
     }
   </script>
@@ -404,21 +327,48 @@ import 'vanilla-breeze';</code-block>
   <h2 id="next">Next steps</h2>
   <nav aria-label="Next steps">
     <ul data-layout="grid" data-layout-min="m" data-layout-gap="m">
-      <li><a class="section-card" href="/docs/tutorial/"><strong>Tutorials</strong> <span>Four guided builds (landing page, dashboard, contact form, blog post), about 15 minutes each.</span></a></li>
-      <li><a class="section-card" href="/docs/semantic-layouts/"><strong>Layouts guide</strong> <span>Composing data-layout on semantic HTML, with patterns.</span></a></li>
-      <li><a class="section-card" href="/docs/elements/"><strong>Elements</strong> <span>${elements.nativeCount} native elements, ${elements.customCount} custom elements, ${elements.componentCount} web components.</span></a></li>
-      <li><a class="section-card" href="/docs/themes/"><strong>Themes</strong> <span>All ${themeRegistry.length} themes with live previews.</span></a></li>
-      <li><a class="section-card" href="/docs/integrations/"><strong>Integrations</strong> <span>Astro, Eleventy and wrapped libraries.</span></a></li>
-      <li><a class="section-card" href="/docs/performance/"><strong>Loading strategies</strong> <span>Core, full bundle and packs: pick what you ship.</span></a></li>
-      <li><a class="section-card" href="/docs/principles/"><strong>Principles</strong> <span>Why HTML first, and how the layers fit.</span></a></li>
+      <li>
+        <a class="section-card" href="/docs/tutorial/">
+          <h3>Tutorials</h3>
+          <p>Create four pages using Vanilla Breeze.</p>
+        </a>
+      </li>
+      <li>
+        <a class="section-card" href="/docs/layouts/">
+          <h3>Layout guide</h3>
+          <p>Learn how to create responsive layouts with Vanilla Breeze.</p>
+        </a>
+      </li>
+      <li>
+        <a class="section-card" href="/docs/elements/">
+          <h3>Elements</h3>
+          <p>Explore ${elements.nativeCount} native elements, ${elements.customCount} custom elements, and ${elements.componentCount} web components.</p>
+        </a>
+      </li>
+      <li>
+        <a class="section-card" href="/docs/themes/">
+          <h3>Themes</h3>
+          <p>Browse all ${themeRegistry.length} themes with live previews.</p>
+        </a>
+      </li>
+      <li>
+        <a class="section-card" href="/docs/integrations/">
+          <h3>Integrations</h3>
+          <p>Integrate Vanilla Breeze with your favorite static site generator or framework.</p>
+        </a>
+      </li>
+      <li>
+        <a class="section-card" href="/docs/performance/">
+          <h3>Loading strategies</h3>
+          <p>Learn how to optimize the loading of Vanilla Breeze in your application.</p>
+        </a>
+      </li>
+      <li>
+        <a class="section-card" href="/docs/principles/">
+          <h3>Principles</h3>
+          <p>Understand the philosophy behind Vanilla Breeze.</p>
+        </a>
+      </li>
     </ul>
   </nav>
-
-  <h3 id="starters">Starter templates</h3>
-  <p>Complete pages to copy. Point the stylesheet and script at the CDN links from step 1.</p>
-  <ul>
-    <li><a href="/docs/examples/demos/quick-start/article.html">Article</a>: a centered reading column with a byline, pull quote and action bar.</li>
-    <li><a href="/docs/examples/demos/quick-start/form.html">Sign-up form</a>: <code>&lt;form-field&gt;</code> with hints and validation messages, no JavaScript needed.</li>
-    <li><a href="/docs/examples/demos/quick-start/step-5-components.html">Trailhead</a>: the page you just built.</li>
-  </ul>
 </section>
